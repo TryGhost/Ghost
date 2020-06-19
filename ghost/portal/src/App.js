@@ -83,7 +83,7 @@ export default class App extends React.Component {
         try {
             this.GhostApi = setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
-            site.isStripeConfigured = (site.isStripeConfigured === undefined) || site.isStripeConfigured;
+            site.is_stripe_configured = (site.is_stripe_configured === undefined) || site.is_stripe_configured;
             const stripeParam = this.getStripeUrlParam();
             const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
             this.setState({
@@ -245,8 +245,8 @@ export default class App extends React.Component {
     }
 
     renderTriggerButton() {
-        const {site} = this.state;
-        if (site.show_beacon === undefined || site.show_beacon) {
+        const {portal_button: portalButton} = this.state.site;
+        if (portalButton === undefined || portalButton) {
             return (
                 <TriggerButton
                     isPopupOpen={this.state.showPopup}

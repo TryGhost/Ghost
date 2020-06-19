@@ -81,7 +81,7 @@ class FreeAccountHomePage extends React.Component {
     }
 
     renderSubscribeButton() {
-        const {isStripeConfigured} = this.context.site;
+        const {is_stripe_configured: isStripeConfigured} = this.context.site;
 
         if (isStripeConfigured) {
             return (
@@ -157,7 +157,7 @@ class PaidAccountHomePage extends React.Component {
     }
 
     openUpdatePlan() {
-        const {isStripeConfigured} = this.context.site;
+        const {is_stripe_configured: isStripeConfigured} = this.context.site;
         if (isStripeConfigured) {
             this.context.onAction('switchPage', {
                 page: 'accountPlan',

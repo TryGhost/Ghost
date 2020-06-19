@@ -12,8 +12,11 @@ export const site = {
         currency: 'USD',
         currency_symbol: '$'
     },
-    allowSelfSignup: true,
-    isStripeConfigured: true
+    allow_self_signup: true,
+    is_stripe_configured: true,
+    portal_button: true,
+    portal_name: true,
+    portal_plans: ['free', 'monthly', 'yearly']
 };
 
 export const member = {
