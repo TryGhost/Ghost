@@ -1,3 +1,5 @@
+// default content sizes: [600, 1000, 1600, 2400]
+
 module.exports = function setSrcsetAttribute(elem, image, options) {
     if (!elem || !['IMG', 'SOURCE'].includes(elem.tagName) || !elem.getAttribute('src')) {
         return;

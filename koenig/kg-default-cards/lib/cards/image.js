@@ -30,7 +30,23 @@ module.exports = {
             img.setAttribute('title', payload.title);
         }
 
+        if (payload.width && payload.height) {
+            img.setAttribute('width', payload.width);
+            img.setAttribute('height', payload.height);
+        }
+
         setSrcsetAttribute(img, payload, options);
+
+        if (img.getAttribute('srcset') && payload.width && payload.width >= 720) {
+            // standard size
+            if (!payload.cardWidth) {
+                img.setAttribute('sizes', '(min-width: 720px) 720px');
+            }
+
+            if (payload.cardWidth === 'wide' && payload.width >= 1200) {
+                img.setAttribute('sizes', '(min-width: 1200px) 1200px');
+            }
+        }
 
         figure.appendChild(img);
 

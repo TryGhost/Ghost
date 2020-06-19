@@ -75,6 +75,22 @@ describe('Image card', function () {
         serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image"></figure>');
     });
 
+    it('renders an image with width/height', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                src: 'https://www.ghost.org/image.png',
+                title: 'example image',
+                width: 640,
+                height: 480
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image" width="640" height="480"></figure>');
+    });
+
     it('renders nothing with no src', function () {
         let opts = {
             env: {
@@ -154,7 +170,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="3000" height="6000" srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w" sizes="(min-width: 720px) 720px"></figure>');
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
@@ -170,7 +186,7 @@ describe('Image card', function () {
                 options: {}
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="3000" height="6000"></figure>');
         });
 
         it('is omitted when `srcsets: false` is passed in as an option', function () {
@@ -194,7 +210,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="3000" height="6000"></figure>');
         });
 
         it('is omitted when no width is provided', function () {
@@ -239,7 +255,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="500" height="700"></figure>');
         });
 
         it('omits sizes larger than image width and includes original image width if smaller than largest responsive width', function () {
@@ -262,7 +278,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w750/2020/06/image.png 750w"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="750" height="300" srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w750/2020/06/image.png 750w" sizes="(min-width: 720px) 720px"></figure>');
         });
 
         it('works correctly with subdirectories', function () {
@@ -285,7 +301,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/subdir/content/images/2020/06/image.png" class="kg-image" alt srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/subdir/content/images/2020/06/image.png" class="kg-image" alt width="3000" height="6000" srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w" sizes="(min-width: 720px) 720px"></figure>');
         });
 
         it('is included when src is an Unsplash image', function () {
@@ -309,7 +325,7 @@ describe('Image card', function () {
             };
 
             // note that '&' in URLs will be rendered as '&amp;' to maintain HTML encoding
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" alt srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" alt width="3000" height="6000" srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w" sizes="(min-width: 720px) 720px"></figure>');
         });
 
         it('has same size omission behaviour for Unsplash as local files', function () {
@@ -332,7 +348,197 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" alt srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" alt width="750" height="300" srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w" sizes="(min-width: 720px) 720px"></figure>');
+        });
+    });
+
+    describe('sizes attribute', function () {
+        it('is added for standard images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+        });
+
+        it('is added for wide images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000,
+                    cardWidth: 'wide'
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 1200px\) 1200px"/);
+        });
+
+        it('is omitted when srcset is not added', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    srcsets: false,
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+        });
+
+        it('is omitted when width is missing', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    // width: 3000,
+                    height: 2000
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+        });
+
+        it('is included when only height is missing', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 3000
+                    // height: 2000
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+        });
+
+        it('is omitted for standard images when width is less than 720', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 640,
+                    height: 480
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+        });
+
+        it('is omitted for wide images when width is less than 1200', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 900,
+                    height: 600,
+                    cardWidth: 'wide'
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+        });
+
+        it('is omitted for full images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000,
+                    cardWidth: 'full'
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
         });
     });
 
