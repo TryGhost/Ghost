@@ -222,6 +222,25 @@
             "defaultValue": "{}"
         }
     },
+    "portal" : {
+        "portal_name": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            }
+        },
+        "portal_button": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            }
+        },
+        "portal_plans": {
+            "defaultValue": "[\"free\", \"monthly\", \"yearly\"]"
+        }
+    },
     "bulk_email": {
         "bulk_email_settings": {
             "defaultValue": "{\"provider\":\"mailgun\", \"apiKey\": \"\", \"domain\": \"\", \"baseUrl\": \"\"}"
