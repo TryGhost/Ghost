@@ -9,7 +9,7 @@ module.exports = {
     async up(options) {
         const settingsKeys = ['force_i18n', 'permalinks', 'members_session_secret'];
 
-        logging.info(`Removing ${settingsKeys.concat(', ')} from "settings" table.`);
+        logging.info(`Removing ${settingsKeys.join(',')} from "settings" table.`);
 
         return await options
             .transacting('settings')
@@ -53,7 +53,7 @@ module.exports = {
             updated_by: 1
         };
 
-        logging.info('Adding force_i18n, permalinks, and members_session_secret  to "settings" table.');
+        logging.info('Adding force_i18n, permalinks, and members_session_secret to "settings" table.');
 
         return options.transacting('settings')
             .insert([
