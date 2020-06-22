@@ -10,14 +10,6 @@ const security = require('../../lib/security');
 const models = require('../../models');
 const EXCLUDED_TABLES = ['sessions', 'mobiledoc_revisions'];
 
-const EXCLUDED_FIELDS_CONDITIONS = {
-    settings: [{
-        operator: 'whereNot',
-        key: 'key',
-        value: 'permalinks'
-    }]
-};
-
 const modelOptions = {context: {internal: true}};
 
 // private
@@ -66,12 +58,6 @@ exportTable = function exportTable(tableName, options) {
     if (EXCLUDED_TABLES.indexOf(tableName) < 0 ||
         (options.include && _.isArray(options.include) && options.include.indexOf(tableName) !== -1)) {
         const query = (options.transacting || db.knex)(tableName);
-
-        if (EXCLUDED_FIELDS_CONDITIONS[tableName]) {
-            EXCLUDED_FIELDS_CONDITIONS[tableName].forEach((condition) => {
-                query[condition.operator](condition.key, condition.value);
-            });
-        }
 
         return query.select();
     }

@@ -64,14 +64,6 @@
                 "isEmpty": false
             }
         },
-        "permalinks": {
-            "defaultValue": "/:slug/",
-            "validations": {
-                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "matches": "(:id|:slug|:year|:month|:day|:author|:primary_tag|:primary_author)",
-                "notContains": "/ghost/"
-            }
-        },
         "amp": {
             "defaultValue" : "true",
             "validations": {

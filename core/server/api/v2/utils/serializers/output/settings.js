@@ -2,7 +2,7 @@ const _ = require('lodash');
 const utils = require('../../index');
 const mapper = require('./utils/mapper');
 const _private = {};
-const deprecatedSettings = ['permalinks', 'secondary_nav'];
+const deprecatedSettings = ['secondary_nav'];
 
 /**
  * ### Settings Filter
