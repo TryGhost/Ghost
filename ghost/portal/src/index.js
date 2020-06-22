@@ -12,10 +12,10 @@ function addRootDiv() {
     document.body.appendChild(elem);
 }
 
-function getSiteUrlFromMeta() {
-    const ghostSiteMeta = document.querySelector('meta[name="ghost:site"]');
-    if (ghostSiteMeta) {
-        return ghostSiteMeta.getAttribute('content');
+function getSiteUrl() {
+    const scriptTag = document.querySelector('script[data-ghost]');
+    if (scriptTag) {
+        return scriptTag.dataset.ghost;
     }
     return '';
 }
@@ -53,7 +53,7 @@ function setup({siteUrl}) {
 }
 
 function init() {
-    const siteUrl = getSiteUrlFromMeta() || window.location.origin;
+    const siteUrl = getSiteUrl() || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
