@@ -920,22 +920,13 @@ describe('Integration: Importer', function () {
                 value: '[{\\"url\\":\\"https://hook.slack.com\\"}]'
             });
 
-            exportData.data.settings[1] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'permalinks',
-                value: '/:primary_author/:slug/'
-            });
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(1);
+                    imported.problems.length.should.eql(0);
                     return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal));
                 })
                 .then(function (result) {
                     result.attributes.value.should.eql('[{"url":""}]');
-                    return models.Settings.findOne(_.merge({key: 'permalinks'}, testUtils.context.internal));
-                })
-                .then((result) => {
-                    result.attributes.value.should.eql('/:slug/');
                 });
         });
 
@@ -952,11 +943,6 @@ describe('Integration: Importer', function () {
                 value: '0'
             });
 
-            exportData.data.settings[2] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'force_i18n',
-                value: false
-            });
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     imported.problems.length.should.eql(0);
@@ -965,10 +951,6 @@ describe('Integration: Importer', function () {
                 .then(function (result) {
                     result.attributes.value.should.eql(true);
                     return models.Settings.findOne(_.merge({key: 'is_private'}, testUtils.context.internal));
-                })
-                .then((result) => {
-                    result.attributes.value.should.eql(false);
-                    return models.Settings.findOne(_.merge({key: 'force_i18n'}, testUtils.context.internal));
                 })
                 .then((result) => {
                     result.attributes.value.should.eql(false);
@@ -983,13 +965,6 @@ describe('Integration: Importer', function () {
                     return db
                         .knex('settings')
                         .where('key', 'is_private');
-                })
-                .then((result) => {
-                    result[0].value.should.eql('false');
-
-                    return db
-                        .knex('settings')
-                        .where('key', 'force_i18n');
                 })
                 .then((result) => {
                     result[0].value.should.eql('false');

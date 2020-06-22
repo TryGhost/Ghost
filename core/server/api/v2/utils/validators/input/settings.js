@@ -1,18 +1,9 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const {i18n} = require('../../../../../lib/common');
-const {NotFoundError, BadRequestError} = require('@tryghost/errors');
+const {BadRequestError} = require('@tryghost/errors');
 
 module.exports = {
-    read(apiConfig, frame) {
-        // @NOTE: was removed (https://github.com/TryGhost/Ghost/commit/8bb7088ba026efd4a1c9cf7d6f1a5e9b4fa82575)
-        if (frame.options.key === 'permalinks') {
-            return Promise.reject(new NotFoundError({
-                message: i18n.t('errors.errors.resourceNotFound')
-            }));
-        }
-    },
-
     edit(apiConfig, frame) {
         const errors = [];
 
@@ -25,11 +16,6 @@ module.exports = {
                         help: i18n.t('errors.api.settings.activeThemeSetViaAPI.help')
                     })
                 );
-            } else if (setting.key === 'permalinks') {
-                // @NOTE: was removed (https://github.com/TryGhost/Ghost/commit/8bb7088ba026efd4a1c9cf7d6f1a5e9b4fa82575)
-                errors.push(new NotFoundError({
-                    message: i18n.t('errors.api.settings.problemFindingSetting', {key: setting.key})
-                }));
             }
         });
 

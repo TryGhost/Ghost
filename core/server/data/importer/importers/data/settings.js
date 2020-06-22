@@ -71,20 +71,6 @@ class SettingsImporter extends BaseImporter {
             return !_.includes(deprecatedSettings, data.key);
         });
 
-        const permalinks = _.find(this.dataToImport, {key: 'permalinks'});
-
-        if (permalinks) {
-            this.problems.push({
-                message: 'Permalink Setting was removed. Please configure permalinks in your routes.yaml.',
-                help: this.modelName,
-                context: JSON.stringify(permalinks)
-            });
-
-            this.dataToImport = _.filter(this.dataToImport, (data) => {
-                return data.key !== 'permalinks';
-            });
-        }
-
         // Remove core and theme data types
         this.dataToImport = _.filter(this.dataToImport, (data) => {
             return ['core', 'theme'].indexOf(data.type) === -1;

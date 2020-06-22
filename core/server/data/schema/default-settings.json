@@ -64,21 +64,6 @@
                 "isEmpty": false
             }
         },
-        "force_i18n": {
-            "defaultValue": "true",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["true", "false"]]
-            }
-        },
-        "permalinks": {
-            "defaultValue": "/:slug/",
-            "validations": {
-                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "matches": "(:id|:slug|:year|:month|:day|:author|:primary_tag|:primary_author)",
-                "notContains": "/ghost/"
-            }
-        },
         "amp": {
             "defaultValue" : "true",
             "validations": {
@@ -204,9 +189,6 @@
             "defaultValue": null
         },
         "members_private_key": {
-            "defaultValue": null
-        },
-        "members_session_secret": {
             "defaultValue": null
         },
         "members_email_auth_secret": {
