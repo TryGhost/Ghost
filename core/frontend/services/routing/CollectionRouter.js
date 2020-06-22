@@ -138,7 +138,7 @@ class CollectionRouter extends ParentRouter {
          * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
          */
         this._onTimezoneEditedListener = this._onTimezoneEdited.bind(this);
-        events.on('settings.active_timezone.edited', this._onTimezoneEditedListener);
+        events.on('settings.timezone.edited', this._onTimezoneEditedListener);
     }
 
     /**
@@ -197,7 +197,7 @@ class CollectionRouter extends ParentRouter {
 
     reset() {
         if (this._onTimezoneEditedListener) {
-            events.removeListener('settings.active_timezone.edited', this._onTimezoneEditedListener);
+            events.removeListener('settings.timezone.edited', this._onTimezoneEditedListener);
         }
     }
 }

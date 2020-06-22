@@ -157,6 +157,14 @@ describe('Settings API', function () {
                         {
                             key: 'labs',
                             value: '{"subscribers":false,"members":true}'
+                        },
+                        {
+                            key: 'lang',
+                            value: 'ua'
+                        },
+                        {
+                            key: 'timezone',
+                            value: 'Pacific/Auckland'
                         }
                     ]
                 };
@@ -223,6 +231,12 @@ describe('Settings API', function () {
 
                         putBody.settings[13].key.should.eql('labs');
                         should.equal(putBody.settings[13].value, '{"subscribers":false,"members":true}');
+
+                        putBody.settings[14].key.should.eql('lang');
+                        should.equal(putBody.settings[14].value, 'ua');
+
+                        putBody.settings[15].key.should.eql('timezone');
+                        should.equal(putBody.settings[15].value, 'Pacific/Auckland');
 
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();

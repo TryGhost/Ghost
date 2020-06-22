@@ -21,7 +21,7 @@ module.exports.forSettings = (attrs, frame) => {
     const _ = require('lodash');
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10106
-    // @NOTE: Admin & Content API return a different format, need to mappers
+    // @NOTE: Admin & Content API return a different format, needs two mappers
     if (_.isArray(attrs)) {
         // CASE: read single setting
         if (frame.original.params && frame.original.params.key) {
@@ -42,6 +42,16 @@ module.exports.forSettings = (attrs, frame) => {
                 attrs[0].key = 'codeinjection_foot';
                 return;
             }
+
+            if (frame.original.params.key === 'active_timezone') {
+                attrs[0].key = 'active_timezone';
+                return;
+            }
+
+            if (frame.original.params.key === 'default_locale') {
+                attrs[0].key = 'default_locale';
+                return;
+            }
         }
 
         // CASE: edit
@@ -53,6 +63,12 @@ module.exports.forSettings = (attrs, frame) => {
                 } else if (setting.key === 'codeinjection_foot') {
                     const target = _.find(attrs, {key: 'ghost_foot'});
                     target.key = 'codeinjection_foot';
+                } else if (setting.key === 'active_timezone') {
+                    const target = _.find(attrs, {key: 'timezone'});
+                    target.key = 'active_timezone';
+                } else if (setting.key === 'default_locale') {
+                    const target = _.find(attrs, {key: 'timezone'});
+                    target.key = 'lang';
                 }
             });
 
@@ -62,6 +78,8 @@ module.exports.forSettings = (attrs, frame) => {
         // CASE: browse all settings, add extra keys and keep deprecated
         const ghostHead = _.cloneDeep(_.find(attrs, {key: 'ghost_head'}));
         const ghostFoot = _.cloneDeep(_.find(attrs, {key: 'ghost_foot'}));
+        const timezone = _.cloneDeep(_.find(attrs, {key: 'timezone'}));
+        const lang = _.cloneDeep(_.find(attrs, {key: 'lang'}));
 
         if (ghostHead) {
             ghostHead.key = 'codeinjection_head';
@@ -72,8 +90,20 @@ module.exports.forSettings = (attrs, frame) => {
             ghostFoot.key = 'codeinjection_foot';
             attrs.push(ghostFoot);
         }
+
+        if (timezone) {
+            timezone.key = 'active_timezone';
+            attrs.push(timezone);
+        }
+
+        if (lang) {
+            lang.key = 'default_locale';
+            attrs.push(lang);
+        }
     } else {
         attrs.codeinjection_head = attrs.ghost_head;
         attrs.codeinjection_foot = attrs.ghost_foot;
+        attrs.active_timezone = attrs.timezone;
+        attrs.default_locale = attrs.lang;
     }
 };

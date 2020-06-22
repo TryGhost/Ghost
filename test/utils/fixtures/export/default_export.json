@@ -2306,7 +2306,7 @@
                     },
                     {
                         "id": "5c2ca6e0e015a67616182417",
-                        "key": "active_timezone",
+                        "key": "timezone",
                         "value": "Etc/UTC",
                         "type": "site",
                         "created_at": "2019-01-02T11:56:16.000Z",
