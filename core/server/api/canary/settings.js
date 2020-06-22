@@ -10,8 +10,7 @@ const membersService = require('../../services/members');
 
 const SETTINGS_BLACKLIST = [
     'members_public_key',
-    'members_private_key',
-    'members_session_secret'
+    'members_private_key'
 ];
 
 module.exports = {

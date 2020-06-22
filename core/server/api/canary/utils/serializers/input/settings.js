@@ -68,12 +68,5 @@ module.exports = {
                 setting.value = JSON.stringify(memberSubscriptionSettings);
             }
         });
-
-        // CASE: deprecated, won't accept
-        const index = _.findIndex(frame.data.settings, {key: 'force_i18n'});
-
-        if (index !== -1) {
-            frame.data.settings.splice(index, 1);
-        }
     }
 };

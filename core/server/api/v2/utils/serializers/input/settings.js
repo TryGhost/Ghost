@@ -50,12 +50,5 @@ module.exports = {
                 setting = url.forSetting(setting);
             }
         });
-
-        // CASE: deprecated, won't accept
-        const index = _.findIndex(frame.data.settings, {key: 'force_i18n'});
-
-        if (index !== -1) {
-            frame.data.settings.splice(index, 1);
-        }
     }
 };

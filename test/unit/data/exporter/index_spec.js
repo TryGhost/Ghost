@@ -43,9 +43,6 @@ describe('Exporter', function () {
         });
 
         it('should try to export all the correct tables (without excluded)', function (done) {
-            // Setup for success
-            queryMock.select.returns(new Promise.resolve({}));
-
             // Execute
             exporter.doExport().then(function (exportData) {
                 // No tables, less the number of excluded tables
@@ -58,8 +55,6 @@ describe('Exporter', function () {
 
                 tablesStub.calledOnce.should.be.true();
                 db.knex.called.should.be.true();
-                queryMock.select.called.should.be.true();
-                queryMock.whereNot.calledOnce.should.be.true();
 
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
