@@ -145,6 +145,28 @@ module.exports = {
     },
     settings: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        group: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'core',
+            validations: {
+                isIn: [[
+                    'amp',
+                    'core',
+                    'email',
+                    'labs',
+                    'members',
+                    'portal',
+                    'private',
+                    'site',
+                    'slack',
+                    'theme',
+                    'unsplash',
+                    'views'
+                ]]
+            }
+        },
         key: {type: 'string', maxlength: 50, nullable: false, unique: true},
         value: {type: 'text', maxlength: 65535, nullable: true},
         type: {
@@ -167,6 +189,7 @@ module.exports = {
                 'views'
             ]]}
         },
+        flags: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
