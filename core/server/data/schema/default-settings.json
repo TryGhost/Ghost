@@ -191,9 +191,6 @@
         "members_private_key": {
             "defaultValue": null
         },
-        "members_session_secret": {
-            "defaultValue": null
-        },
         "members_email_auth_secret": {
             "defaultValue": null
         },

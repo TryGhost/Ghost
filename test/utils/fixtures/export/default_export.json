@@ -2483,16 +2483,6 @@
                         "created_by": "1",
                         "updated_at": "2019-01-02T11:56:16.000Z",
                         "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6e0e015a6761618242b",
-                        "key": "members_session_secret",
-                        "value": "77ec615343ad860d9320a65719182e046b7d925f01139dae68386009d98c9498",
-                        "type": "members",
-                        "created_at": "2019-01-02T11:56:16.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:16.000Z",
-                        "updated_by": "1"
                     }
                 ],
                 "subscribers": [],
