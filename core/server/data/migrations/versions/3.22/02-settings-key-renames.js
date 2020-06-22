@@ -1,17 +1,17 @@
 const logging = require('../../../../../shared/logging');
 
 const renameMapping = [{
-    down: 'default_locale',
-    up: 'lang'
+    from: 'default_locale',
+    to: 'lang'
 }, {
-    down: 'active_timezone',
-    up: 'timezone'
+    from: 'active_timezone',
+    to: 'timezone'
 }, {
-    down: 'ghost_head',
-    up: 'codeinjection_head'
+    from: 'ghost_head',
+    to: 'codeinjection_head'
 }, {
-    down: 'ghost_foot',
-    up: 'codeinjection_foot'
+    from: 'ghost_foot',
+    to: 'codeinjection_foot'
 }];
 
 module.exports = {
@@ -21,13 +21,13 @@ module.exports = {
 
     async up(options) {
         await Promise.map(renameMapping, async (renameMap) => {
-            logging.info(`Renaming ${renameMap.down} to ${renameMap.up}`);
+            logging.info(`Renaming ${renameMap.from} to ${renameMap.to}`);
 
             return await options
                 .transacting('settings')
-                .where('key', renameMap.down)
+                .where('key', renameMap.from)
                 .update({
-                    key: renameMap.up
+                    key: renameMap.to
                 });
         });
 
@@ -49,13 +49,13 @@ module.exports = {
 
     async down(options) {
         await Promise.map(renameMapping, async (renameMap) => {
-            logging.info(`Renaming ${renameMap.up} to ${renameMap.down}`);
+            logging.info(`Renaming ${renameMap.to} to ${renameMap.from}`);
 
             return await options
                 .transacting('settings')
-                .where('key', renameMap.up)
+                .where('key', renameMap.to)
                 .update({
-                    key: renameMap.down
+                    key: renameMap.from
                 });
         });
 
