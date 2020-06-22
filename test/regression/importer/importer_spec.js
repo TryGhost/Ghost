@@ -920,22 +920,13 @@ describe('Integration: Importer', function () {
                 value: '[{\\"url\\":\\"https://hook.slack.com\\"}]'
             });
 
-            exportData.data.settings[1] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'permalinks',
-                value: '/:primary_author/:slug/'
-            });
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
-                    imported.problems.length.should.eql(1);
+                    imported.problems.length.should.eql(0);
                     return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal));
                 })
                 .then(function (result) {
                     result.attributes.value.should.eql('[{"url":""}]');
-                    return models.Settings.findOne(_.merge({key: 'permalinks'}, testUtils.context.internal));
-                })
-                .then((result) => {
-                    result.attributes.value.should.eql('/:slug/');
                 });
         });
 
