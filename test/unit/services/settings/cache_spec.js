@@ -39,12 +39,12 @@ describe('UNIT: settings cache', function () {
     it('correctly filters and formats public values', function () {
         cache.set('key1', {value: 'something'});
         cache.set('title', {value: 'hello world'});
-        cache.set('active_timezone', {value: 'PST'});
+        cache.set('timezone', {value: 'PST'});
 
         cache.getAll().should.eql({
             key1: {value: 'something'},
             title: {value: 'hello world'},
-            active_timezone: {value: 'PST'}
+            timezone: {value: 'PST'}
         });
 
         let values = _.zipObject(_.values(publicSettings), _.fill(Array(_.size(publicSettings)), null));

@@ -532,7 +532,7 @@ const members = {
         async query(frame) {
             const dateFormat = 'YYYY-MM-DD HH:mm:ss';
             const isSQLite = config.get('database:client') === 'sqlite3';
-            const siteTimezone = settingsCache.get('active_timezone');
+            const siteTimezone = settingsCache.get('timezone');
             const tzOffsetMins = moment.tz(siteTimezone).utcOffset();
 
             const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);

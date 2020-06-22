@@ -1,9 +1,55 @@
+const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../../core/shared/config');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
+
+// NOTE: in future iterations these fields should be fetched from a central module.
+//       Have put a list as is here for the lack of better place for it.
+const defaultSettingsKeys = [
+    'title',
+    'description',
+    'logo',
+    'cover_image',
+    'icon',
+    'lang',
+    'timezone',
+    'amp',
+    'facebook',
+    'twitter',
+    'labs',
+    'navigation',
+    'secondary_navigation',
+    'slack',
+    'unsplash',
+    'meta_title',
+    'meta_description',
+    'og_image',
+    'og_title',
+    'og_description',
+    'twitter_image',
+    'twitter_title',
+    'twitter_description',
+    'shared_views',
+    'active_theme',
+    'is_private',
+    'password',
+    'public_hash',
+    'members_email_auth_secret',
+    'default_content_visibility',
+    'members_subscription_settings',
+    'stripe_connect_integration',
+    'portal_name',
+    'portal_button',
+    'portal_plans',
+    'bulk_email_settings',
+    'codeinjection_head',
+    'codeinjection_foot',
+    'active_timezone',
+    'default_locale'
+];
 
 describe('Settings API (canary)', function () {
     let ghostServer;
@@ -18,6 +64,29 @@ describe('Settings API (canary)', function () {
                 })
                 .then(function () {
                     return localUtils.doAuth(request);
+                });
+        });
+
+        it('Can request all settings', function () {
+            return request.get(localUtils.API.getApiQuery(`settings/`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.settings);
+                    should.exist(jsonResponse.meta);
+
+                    jsonResponse.settings.should.be.an.Object();
+                    const settings = jsonResponse.settings;
+
+                    Object.keys(settings).length.should.equal(40);
+                    settings.map(s => s.key).should.deepEqual(defaultSettingsKeys);
+
+                    localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
         });
 
@@ -41,6 +110,106 @@ describe('Settings API (canary)', function () {
                         return done(err);
                     }
 
+                    done();
+                });
+        });
+
+        it('Can read deprecated default_locale', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/default_locale/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('default_locale');
+                    done();
+                });
+        });
+
+        it('Can read timezone', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/timezone/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('timezone');
+                    done();
+                });
+        });
+
+        it('Can read active_timezone', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/active_timezone/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('active_timezone');
+                    done();
+                });
+        });
+
+        it('Can read deprecated active_timezone', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/active_timezone/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('active_timezone');
                     done();
                 });
         });

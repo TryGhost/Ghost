@@ -64,7 +64,7 @@ function getMetaData(data, root) {
             url: urlUtils.urlFor('home', true),
             facebook: settingsCache.get('facebook'),
             twitter: settingsCache.get('twitter'),
-            timezone: settingsCache.get('active_timezone'),
+            timezone: settingsCache.get('timezone'),
             navigation: settingsCache.get('navigation'),
             icon: settingsCache.get('icon'),
             cover_image: settingsCache.get('cover_image'),

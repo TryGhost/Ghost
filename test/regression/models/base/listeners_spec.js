@@ -77,7 +77,7 @@ describe('Models: listeners', function () {
                 });
             });
 
-            it('active_timezone changes from London to Los Angeles', function (done) {
+            it('timezone changes from London to Los Angeles', function (done) {
                 let timeout;
 
                 /**
@@ -101,7 +101,7 @@ describe('Models: listeners', function () {
                 scope.newTimezone = 'America/Los_Angeles';
                 scope.oldTimezone = 'Europe/London';
 
-                eventsToRemember['settings.active_timezone.edited']({
+                eventsToRemember['settings.timezone.edited']({
                     attributes: {value: scope.newTimezone},
                     _previousAttributes: {value: scope.oldTimezone}
                 });
@@ -138,7 +138,7 @@ describe('Models: listeners', function () {
                 })();
             });
 
-            it('active_timezone changes from Baghdad to UTC', function (done) {
+            it('timezone changes from Baghdad to UTC', function (done) {
                 let timeout;
 
                 /**
@@ -160,7 +160,7 @@ describe('Models: listeners', function () {
                 scope.oldTimezone = 'Asia/Baghdad';
                 scope.newTimezone = 'Etc/UTC';
 
-                eventsToRemember['settings.active_timezone.edited']({
+                eventsToRemember['settings.timezone.edited']({
                     attributes: {value: scope.newTimezone},
                     _previousAttributes: {value: scope.oldTimezone}
                 });
@@ -197,7 +197,7 @@ describe('Models: listeners', function () {
                 })();
             });
 
-            it('active_timezone changes from Amsterdam to Seoul', function (done) {
+            it('timezone changes from Amsterdam to Seoul', function (done) {
                 let timeout;
 
                 /**
@@ -219,7 +219,7 @@ describe('Models: listeners', function () {
                 scope.oldTimezone = 'Europe/Amsterdam';
                 scope.newTimezone = 'Asia/Seoul';
 
-                eventsToRemember['settings.active_timezone.edited']({
+                eventsToRemember['settings.timezone.edited']({
                     attributes: {value: scope.newTimezone},
                     _previousAttributes: {value: scope.oldTimezone}
                 });
@@ -258,7 +258,7 @@ describe('Models: listeners', function () {
 
         describe('db has no scheduled posts', function () {
             it('no scheduled posts', function (done) {
-                eventsToRemember['settings.active_timezone.edited']({
+                eventsToRemember['settings.timezone.edited']({
                     attributes: {value: scope.newTimezone},
                     _previousAttributes: {value: scope.oldTimezone}
                 });

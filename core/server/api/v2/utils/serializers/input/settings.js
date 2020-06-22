@@ -10,6 +10,14 @@ module.exports = {
         if (frame.options.key === 'codeinjection_foot') {
             frame.options.key = 'ghost_foot';
         }
+
+        if (frame.options.key === 'default_locale') {
+            frame.options.key = 'lang';
+        }
+
+        if (frame.options.key === 'active_timezone') {
+            frame.options.key = 'timezone';
+        }
     },
 
     edit(apiConfig, frame) {
@@ -44,6 +52,14 @@ module.exports = {
 
             if (setting.key === 'codeinjection_foot') {
                 setting.key = 'ghost_foot';
+            }
+
+            if (frame.options.key === 'default_locale') {
+                frame.options.key = 'lang';
+            }
+
+            if (frame.options.key === 'active_timezone') {
+                frame.options.key = 'timezone';
             }
 
             if (['cover_image', 'icon', 'logo'].includes(setting.key)) {
