@@ -64,13 +64,6 @@
                 "isEmpty": false
             }
         },
-        "force_i18n": {
-            "defaultValue": "true",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["true", "false"]]
-            }
-        },
         "permalinks": {
             "defaultValue": "/:slug/",
             "validations": {
