@@ -2296,7 +2296,7 @@
                     },
                     {
                         "id": "5c2ca6e0e015a67616182416",
-                        "key": "default_locale",
+                        "key": "lang",
                         "value": "en",
                         "type": "site",
                         "created_at": "2019-01-02T11:56:16.000Z",

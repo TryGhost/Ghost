@@ -17,7 +17,7 @@ describe('{{t}} helper', function () {
     });
 
     it('theme translation is DE', function () {
-        settingsCache.set('default_locale', {value: 'de'});
+        settingsCache.set('lang', {value: 'de'});
         themeI18n.init();
 
         let rendered = helpers.t.call({}, 'Top left Button', {
@@ -28,7 +28,7 @@ describe('{{t}} helper', function () {
     });
 
     it('theme translation is EN', function () {
-        settingsCache.set('default_locale', {value: 'en'});
+        settingsCache.set('lang', {value: 'en'});
         themeI18n.init();
 
         let rendered = helpers.t.call({}, 'Top left Button', {
@@ -39,7 +39,7 @@ describe('{{t}} helper', function () {
     });
 
     it('[fallback] no theme translation file found for FR', function () {
-        settingsCache.set('default_locale', {value: 'fr'});
+        settingsCache.set('lang', {value: 'fr'});
         themeI18n.init();
 
         let rendered = helpers.t.call({}, 'Top left Button', {
@@ -51,7 +51,7 @@ describe('{{t}} helper', function () {
 
     it('[fallback] no theme files at all, use key as translation', function () {
         settingsCache.set('active_theme', {value: 'casper-1.4'});
-        settingsCache.set('default_locale', {value: 'de'});
+        settingsCache.set('lang', {value: 'de'});
         themeI18n.init();
 
         let rendered = helpers.t.call({}, 'Top left Button', {
