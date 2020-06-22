@@ -72,7 +72,7 @@ class ThemeI18n extends i18n.I18n {
      * Load the current locale out of the settings cache
      */
     _loadLocale() {
-        this._locale = settingsCache.get('default_locale');
+        this._locale = settingsCache.get('lang');
         return this._locale;
     }
 
@@ -108,7 +108,7 @@ events.on('services.themes.activated', function () {
 /**
  * When locale changes, we reload theme translations
  */
-events.on('settings.default_locale.edited', function () {
+events.on('settings.lang.edited', function () {
     themeI18n.init();
 });
 

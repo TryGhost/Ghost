@@ -5,7 +5,7 @@ const proxy = require('../../../core/frontend/services/proxy');
 
 describe('{{lang}} helper', function () {
     beforeEach(function () {
-        settingsCache.set('default_locale', {value: 'en'});
+        settingsCache.set('lang', {value: 'en'});
     });
 
     afterEach(function () {

@@ -60,7 +60,7 @@
         "accent_color": {
             "defaultValue": ""
         },
-        "default_locale": {
+        "lang": {
             "defaultValue": "en",
             "validations": {
                 "isEmpty": false
