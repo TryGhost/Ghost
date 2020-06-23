@@ -4,8 +4,15 @@ const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const defaultSettings = require('../../../schema').defaultSettings;
+
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
-const deprecatedSettings = ['active_apps', 'installed_apps'];
+const ignoredSettings = ['active_apps', 'installed_apps'];
+const deprecatedSupportedSettingsMap = {
+    default_locale: 'lang',
+    active_timezone: 'timezone',
+    ghost_head: 'codeinjection_head',
+    ghost_foot: 'codeinjection_foot'
+};
 
 const isFalse = (value) => {
     // Catches false, null, undefined, empty string
@@ -68,7 +75,16 @@ class SettingsImporter extends BaseImporter {
 
         // Don't import any old, deprecated settings
         this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return !_.includes(deprecatedSettings, data.key);
+            return !_.includes(ignoredSettings, data.key);
+        });
+
+        // NOTE: import settings removed in v3 and move them to ignored once Ghost v4 changes are done
+        this.dataToImport = this.dataToImport.map((data) => {
+            if (deprecatedSupportedSettingsMap[data.key]) {
+                data.key = deprecatedSupportedSettingsMap[data.key];
+            }
+
+            return data;
         });
 
         // Remove core and theme data types

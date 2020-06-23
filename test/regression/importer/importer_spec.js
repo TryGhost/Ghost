@@ -930,6 +930,46 @@ describe('Integration: Importer', function () {
                 });
         });
 
+        it('imports settings fields deprecated in v2 and removed in v3: slack hook, permalinks', function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'default_locale',
+                value: 'ua'
+            });
+
+            exportData.data.settings[1] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'active_timezone',
+                value: 'Pacific/Auckland'
+            });
+
+            exportData.data.settings[2] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'ghost_foot',
+                value: 'AVADA KEDAVRA'
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (imported) {
+                    imported.problems.length.should.eql(0);
+                    return models.Settings.findOne(_.merge({key: 'lang'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    result.attributes.value.should.eql('ua');
+                })
+                .then(function () {
+                    return models.Settings.findOne(_.merge({key: 'timezone'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    result.attributes.value.should.eql('Pacific/Auckland');
+                })
+                .then(function () {
+                    return models.Settings.findOne(_.merge({key: 'codeinjection_foot'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    result.attributes.value.should.eql('AVADA KEDAVRA');
+                });
+        });
+
         it('does import settings with string booleans', function () {
             const exportData = exportedLatestBody().db[0];
 
