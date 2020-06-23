@@ -67,25 +67,28 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '10.13.0'
-      - run: npm install -g ghost-cli@latest
+      - run: npm install -g knex-migrator ghost-cli@latest
       - run: zip -r ghost.zip .
 
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          cp $DIR/config.development.json $DIR/current && cd $DIR/current && knex-migrator migrate --force
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          cp $DIR/config.development.json $DIR/current && cd $DIR/current && knex-migrator migrate --force
 
       - name: Previous Major
         run: |
           DIR=$(mktemp -d)
           ghost install v2 --local -d $DIR
           ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          cp $DIR/config.development.json $DIR/current && cd $DIR/current && knex-migrator migrate --force
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
