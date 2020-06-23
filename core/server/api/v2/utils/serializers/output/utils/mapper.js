@@ -87,14 +87,14 @@ const mapSettings = (attrs, frame) => {
 
     if (_.isArray(attrs)) {
         attrs = _.filter(attrs, (o) => {
-            return o.key !== 'lang' && o.key !== 'timezone' && o.key !== 'brand';
+            return o.key !== 'lang' && o.key !== 'timezone' && o.key !== 'accent_color';
         });
     } else {
         delete attrs.lang;
         delete attrs.timezone;
         delete attrs.codeinjection_head;
         delete attrs.codeinjection_foot;
-        delete attrs.brand;
+        delete attrs.accent_color;
     }
 
     return attrs;
