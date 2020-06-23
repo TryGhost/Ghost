@@ -17,6 +17,8 @@ const defaultSettingsKeys = [
     'lang',
     'timezone',
     'amp',
+    'codeinjection_head',
+    'codeinjection_foot',
     'facebook',
     'twitter',
     'labs',
@@ -45,8 +47,6 @@ const defaultSettingsKeys = [
     'portal_button',
     'portal_plans',
     'bulk_email_settings',
-    'codeinjection_head',
-    'codeinjection_foot',
     'active_timezone',
     'default_locale'
 ];
