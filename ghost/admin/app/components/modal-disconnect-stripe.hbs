@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Are you sure you want to disconnect?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    You're about to disconnect your Stripe account ({{this.stripeConnectIntegration.name}}) from this site. This will automatically turn off paid memberships on this site.
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Disconnect" @successText="Disconnected" @task={{this.disconnectStripe}} @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>
