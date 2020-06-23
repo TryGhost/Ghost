@@ -38,7 +38,8 @@
                 "isLength": {
                     "max": 150
                 }
-            }
+            },
+            "flags": "PUBLIC"
         },
         "description": {
             "defaultValue": "The professional publishing platform",
@@ -46,7 +47,8 @@
                 "isLength": {
                     "max": 200
                 }
-            }
+            },
+            "flags": "PUBLIC"
         },
         "logo": {
             "defaultValue": "https://static.ghost.org/v1.0.0/images/ghost-logo.svg"
@@ -58,7 +60,8 @@
             "defaultValue": ""
         },
         "accent_color": {
-            "defaultValue": ""
+            "defaultValue": "",
+            "flags": "PUBLIC"
         },
         "lang": {
             "defaultValue": "en",
@@ -158,7 +161,8 @@
     },
     "theme": {
         "active_theme": {
-            "defaultValue": "casper"
+            "defaultValue": "casper",
+            "flags": "RO"
         }
     },
     "private": {
