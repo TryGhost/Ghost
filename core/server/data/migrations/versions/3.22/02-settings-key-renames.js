@@ -36,15 +36,16 @@ module.exports = {
             .where('key', 'brand')
             .select('value');
 
-        const brand = JSON.parse(brandResult[0].value);
+        const value = JSON.parse(brandResult[0].value);
+        const accentColor = value.brand.primaryColor || '';
 
-        logging.info(`Updating brand.primaryColor in settings to accent_color with value ${brand.primaryColor}`);
+        logging.info(`Updating brand.primaryColor in settings to accent_color with value '${accentColor}'`);
 
         return await options
             .transacting('settings')
             .where('key', 'brand')
             .update('key', 'accent_color')
-            .update('value', brand.primaryColor);
+            .update('value', accentColor);
     },
 
     async down(options) {
@@ -64,9 +65,9 @@ module.exports = {
             .where('key', 'accent_color')
             .select('value');
 
-        const brand = accentColor[0].value;
+        const primaryColor = accentColor[0].value || '';
 
-        logging.info(`Updating accent_color in settings to brand.primaryColor with value ${brand.primaryColor}`);
+        logging.info(`Updating accent_color in settings to brand.primaryColor with value '${primaryColor}'`);
 
         return await options
             .transacting('settings')
@@ -74,7 +75,7 @@ module.exports = {
             .update('key', 'brand')
             .update('value', JSON.stringify({
                 brand: {
-                    primaryColor: ''
+                    primaryColor
                 }
             }));
     }
