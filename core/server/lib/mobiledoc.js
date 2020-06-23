@@ -108,8 +108,9 @@ module.exports = {
             }
 
             // local storage adapter's .exists() expects image paths without any prefixes
-            const imageUrlPrefix = urlUtils.urlJoin(urlUtils.getSubdir(), urlUtils.STATIC_IMAGE_URL_PREFIX);
-            const storagePath = url.replace(imageUrlPrefix, '');
+            const subdirRegex = new RegExp(`^${urlUtils.getSubdir()}`);
+            const contentRegex = new RegExp(`^/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
+            const storagePath = url.replace(subdirRegex, '').replace(contentRegex, '');
 
             const {dir, name, ext} = path.parse(storagePath);
             const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];

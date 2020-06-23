@@ -8,6 +8,11 @@ const storage = require('../../../core/server/adapters/storage');
 describe('lib/mobiledoc', function () {
     beforeEach(function () {
         configUtils.set('url', 'https://example.com');
+
+        // UrlUtils gets cached with old config data so we need to make sure it's
+        // reloaded when it gets required in modules under test so that our config
+        // changes actually have an effect
+        delete require.cache[require.resolve('../../../core/shared/url-utils')];
     });
 
     afterEach(function () {
@@ -150,19 +155,34 @@ describe('lib/mobiledoc', function () {
             unsplashMock.isDone().should.be.true();
 
             transformed.cards.length.should.equal(4);
+        });
+
+        it('works with subdir', async function () {
+            // images can be stored with and without subdir when a subdir is configured
+            // but storage adapter always needs paths relative to content dir
+            configUtils.set('url', 'http://localhost:2368/subdir/');
+
+            let mobiledoc = {
+                cards: [
+                    ['image', {src: '/content/images/ghost-logo.png'}],
+                    ['image', {src: '/subdir/content/images/ghost-logo.png'}]
+                ]
+            };
+
+            const transformedMobiledoc = await mobiledocLib.populateImageSizes(JSON.stringify(mobiledoc));
+            const transformed = JSON.parse(transformedMobiledoc);
+
+            transformed.cards.length.should.equal(2);
 
             should.exist(transformed.cards[0][1].width);
             transformed.cards[0][1].width.should.equal(800);
             should.exist(transformed.cards[0][1].height);
             transformed.cards[0][1].height.should.equal(257);
 
-            should.not.exist(transformed.cards[1][1].width);
-            should.not.exist(transformed.cards[1][1].height);
-
-            should.exist(transformed.cards[2][1].width);
-            transformed.cards[2][1].width.should.equal(100);
-            should.exist(transformed.cards[2][1].height);
-            transformed.cards[2][1].height.should.equal(80);
+            should.exist(transformed.cards[1][1].width);
+            transformed.cards[1][1].width.should.equal(800);
+            should.exist(transformed.cards[1][1].height);
+            transformed.cards[1][1].height.should.equal(257);
         });
     });
 });
