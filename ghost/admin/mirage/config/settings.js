@@ -27,7 +27,7 @@ export default function mockSettings(server) {
             if (db.settings.where({key}).length > 0) {
                 db.settings.update({key}, newSetting);
             } else {
-                newSetting.type = newSetting.type || 'blog';
+                newSetting.type = newSetting.type || 'site';
                 db.settings.insert(newSetting);
             }
         });
