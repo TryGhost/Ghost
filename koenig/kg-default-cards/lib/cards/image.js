@@ -30,10 +30,12 @@ module.exports = {
             img.setAttribute('title', payload.title);
         }
 
-        if (payload.width && payload.height) {
-            img.setAttribute('width', payload.width);
-            img.setAttribute('height', payload.height);
-        }
+        // TODO: add back in Ghost 4.0? Adding width/height can be a breaking change
+        // for sites that don't specify a height or `height: auto` in their CSS
+        // if (payload.width && payload.height) {
+        //     img.setAttribute('width', payload.width);
+        //     img.setAttribute('height', payload.height);
+        // }
 
         setSrcsetAttribute(img, payload, options);
 
