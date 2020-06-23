@@ -37,7 +37,7 @@ module.exports = {
             .select('value');
 
         const value = JSON.parse(brandResult[0].value);
-        const accentColor = value.brand.primaryColor || '';
+        const accentColor = value.primaryColor || '';
 
         logging.info(`Updating brand.primaryColor in settings to accent_color with value '${accentColor}'`);
 
@@ -74,9 +74,7 @@ module.exports = {
             .where('key', 'accent_color')
             .update('key', 'brand')
             .update('value', JSON.stringify({
-                brand: {
-                    primaryColor
-                }
+                primaryColor
             }));
     }
 };
