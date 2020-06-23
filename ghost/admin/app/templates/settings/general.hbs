@@ -165,26 +165,26 @@
                 </GhUploader>
             </div>
             {{#if this.config.enableDeveloperExperiments}}
-                <div class="gh-setting" data-test-setting="brand-color">
+                <div class="gh-setting" data-test-setting="accent-color">
                     <div class="gh-setting-content">
                         <div class="gh-setting-title">Accent Color</div>
                         <div class="gh-setting-desc">Primary color used in your publication theme</div>
                     </div>
                     <div class="gh-setting-action">
-                        <GhFormGroup @errors={{settings.errors}} @hasValidated={{settings.hasValidated}} @property="brandColor" @class="input-color-form-group">
+                        <GhFormGroup @errors={{settings.errors}} @hasValidated={{settings.hasValidated}} @property="accentColor" @class="input-color-form-group">
                             <div class="input-color">
                                 <GhTextInput
-                                    @name="brand-color"
+                                    @name="accent-color"
                                     @placeholder="abcdef"
                                     @autocorrect="off"
                                     @maxlength="6"
-                                    @focus-out={{action "validateBrandColor"}}
-                                    @value={{brandColor}}
-                                    data-test-brand-color-input={{true}}
+                                    @focus-out={{action "validateAccentColor"}}
+                                    @value={{accentColor}}
+                                    data-test-input="accentColor"
                                 />
                                 <div class="color-box" style={{this.backgroundStyle}}></div>
                             </div>
-                            <GhErrorMessage @errors={{settings.errors}} @property="brandColor" data-test-brandColor-error={{true}} />
+                            <GhErrorMessage @errors={{settings.errors}} @property="accentColor" data-test-error="accentColor" />
                         </GhFormGroup>
                     </div>
                 </div>
