@@ -7,7 +7,7 @@ const localUtils = require('./utils');
 
 // Values to test against
 const publicSettings = require('../../../core/server/services/settings/public');
-const defaultSettings = require('../../../core/server/data/schema').defaultSettings.blog;
+const defaultSettings = require('../../../core/server/data/schema').defaultSettings.site;
 
 const ghost = testUtils.startGhost;
 let request;

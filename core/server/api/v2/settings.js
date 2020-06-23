@@ -23,7 +23,7 @@ module.exports = {
             // CASE: no context passed (functional call)
             if (!frame.options.context) {
                 return Promise.resolve(settings.filter((setting) => {
-                    return setting.type === 'blog';
+                    return setting.type === 'site';
                 }));
             }
 
