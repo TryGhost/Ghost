@@ -17,9 +17,8 @@ module.exports = {
     twitter: 'twitter',
     lang: 'lang',
     timezone: 'timezone',
-    // TODO: substitute ghost_head and ghost_foot with codeinjection_* when we drop v2 (Ghost 4.0)
-    ghost_head: 'ghost_head',
-    ghost_foot: 'ghost_foot',
+    codeinjection_head: 'codeinjection_head',
+    codeinjection_foot: 'codeinjection_foot',
     navigation: 'navigation',
     secondary_navigation: 'secondary_navigation',
     meta_title: 'meta_title',

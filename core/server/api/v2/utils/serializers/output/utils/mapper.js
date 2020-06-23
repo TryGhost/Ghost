@@ -92,6 +92,8 @@ const mapSettings = (attrs, frame) => {
     } else {
         delete attrs.lang;
         delete attrs.timezone;
+        delete attrs.codeinjection_head;
+        delete attrs.codeinjection_foot;
         delete attrs.brand;
     }
 
