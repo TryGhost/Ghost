@@ -67,12 +67,21 @@
                                 <span class="gh-members-connect-testmodelabel">Test mode</span>
                             {{/unless}}
                         </p>
+                        {{#if this.hasActiveStripeSubscriptions}}
+                        <p class="red ma0 pa0 f8">
+                            Cannot disconnect while there are members with active Stripe subscriptions.
+                        </p>
+                        {{/if}}
                     {{else}}
                         <p class="gh-setting-desc pa0 ma0">Connect to Stripe to create subscriptions and take payments</p>
                     {{/if}}
                 </div>
                 <div>
-                    <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
+                    {{#if this.stripeConnectIntegration}}
+                        <button type="button" class="gh-btn" {{action "openDisconnectStripeModal"}}><span>Disconnect</span></button>
+                    {{else}}
+                        <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
+                    {{/if}}
                 </div>
             </div>
 
@@ -367,6 +376,16 @@
         </section>
     {{/unless}}
 </div>
+
+{{#if this.showDisconnectStripeConnectModal}}
+    <GhFullscreenModal @modal="disconnect-stripe"
+        @model={{hash
+            stripeConnectIntegration=this.stripeConnectIntegration
+        }}
+        @confirm={{action "disconnectStripeConnectIntegration"}}
+        @close={{action "closeDisconnectStripeModal"}}
+        @modifier="action wide" />
+{{/if}}
 
 {{#if this.showMembersModalSettings}}
     <GhFullscreenModal @modal="members-modal-settings"
