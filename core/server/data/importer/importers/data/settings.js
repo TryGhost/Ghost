@@ -4,7 +4,7 @@ const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const defaultSettings = require('../../../schema').defaultSettings;
-const labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
+const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const deprecatedSettings = ['active_apps', 'installed_apps'];
 
 const isFalse = (value) => {

@@ -152,7 +152,20 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'core',
-            validations: {isIn: [['core', 'blog', 'theme', 'private', 'members', 'bulk_email', 'portal']]}
+            validations: {isIn: [[
+                'core',
+                'site',
+                'theme',
+                'private',
+                'members',
+                'portal',
+                'email',
+                'amp',
+                'labs',
+                'slack',
+                'unsplash',
+                'views'
+            ]]}
         },
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},

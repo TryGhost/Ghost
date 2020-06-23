@@ -652,7 +652,7 @@ DataGenerator.forKnex = (function () {
             uuid: '95ce1c53-69b0-4f5f-be91-d3aeb39046b5',
             key: 'title',
             value: null,
-            type: 'blog',
+            type: 'site',
             created_at: new Date(),
             created_by: DataGenerator.Content.users[0].id,
             updated_at: new Date(),
