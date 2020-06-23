@@ -222,8 +222,43 @@ export default Component.extend({
 
         setStripeConnectIntegrationToken(key, event) {
             this.setStripeConnectIntegrationTokenSetting(event.target.value);
+        },
+
+        openDisconnectStripeModal() {
+            this.openDisconnectStripeConnectModal.perform();
+        },
+
+        closeDisconnectStripeModal() {
+            this.set('showDisconnectStripeConnectModal', false);
+        },
+
+        disconnectStripeConnectIntegration() {
+            this.disconnectStripeConnectIntegration.perform();
         }
     },
+
+    openDisconnectStripeConnectModal: task(function* () {
+        this.set('hasActiveStripeSubscriptions', false);
+        if (!this.get('stripeConnectIntegration')) {
+            return;
+        }
+        const url = this.get('ghostPaths.url').api('/members/hasActiveStripeSubscriptions');
+        const response = yield this.ajax.request(url);
+
+        if (response.hasActiveStripeSubscriptions) {
+            this.set('hasActiveStripeSubscriptions', true);
+            return;
+        }
+        this.set('showDisconnectStripeConnectModal', true);
+    }).drop(),
+
+    disconnectStripeConnectIntegration: task(function* () {
+        this.set('disconnectStripeError', false);
+        const url = this.get('ghostPaths.url').api('/settings/stripe/connect');
+
+        yield this.ajax.delete(url);
+        yield this.settings.reload();
+    }),
 
     saveStripeSettings: task(function* () {
         this.set('stripeConnectError', null);
