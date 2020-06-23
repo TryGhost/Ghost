@@ -132,7 +132,11 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                     head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
                 }
 
-                head.push('<link rel="shortcut icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                // no output in head if a publication icon is not set
+                if (iconType === 'png') {
+                    head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                }
+
                 head.push('<link rel="canonical" href="' +
                     escapeExpression(metaData.canonicalUrl) + '" />');
                 head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
