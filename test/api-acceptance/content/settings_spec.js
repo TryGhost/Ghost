@@ -12,6 +12,31 @@ const defaultSettings = require('../../../core/server/data/schema').defaultSetti
 const ghost = testUtils.startGhost;
 let request;
 
+const defaultSettingsKeys = [
+    'title',
+    'description',
+    'logo',
+    'icon',
+    'cover_image',
+    'facebook',
+    'twitter',
+    'lang',
+    'timezone',
+    'codeinjection_head',
+    'codeinjection_foot',
+    'navigation',
+    'secondary_navigation',
+    'meta_title',
+    'meta_description',
+    'og_image',
+    'og_title',
+    'og_description',
+    'twitter_image',
+    'twitter_title',
+    'twitter_description',
+    'url'
+];
+
 describe('Settings Content API', function () {
     before(function () {
         return ghost()
@@ -43,27 +68,14 @@ describe('Settings Content API', function () {
 
                 // Verify we have the right keys for settings
                 const publicProperties = _.filter(_.values(publicSettings), (o) => {
-                    return (o !== 'ghost_head' && o !== 'ghost_foot' && o !== 'brand');
+                    return (o !== 'brand');
                 });
-                publicProperties.push('codeinjection_head', 'codeinjection_foot');
-                settings.should.have.properties(publicProperties);
-                Object.keys(settings).length.should.equal(22);
 
+                // settings.should.have.properties(publicProperties);
+                // Object.keys(settings).length.should.equal(22);
+                Object.keys(settings).should.deepEqual(defaultSettingsKeys);
                 // Verify that we are returning the defaults for each value
                 _.forEach(settings, (value, key) => {
-                    /**
-                     * @TODO:
-                     * This test is coupled with the settings cache and the model schema.
-                     * This test should compare against the API result using the test utility.
-                     * The settings cache should only cache model responses and should not know about
-                     * API or theme formats.
-                     *
-                     * This is just a hack to be able to alias ghost_head & ghost_foot quickly.
-                     */
-                    if (['codeinjection_head', 'codeinjection_foot'].includes(key)) {
-                        return;
-                    }
-
                     // `url` does not come from the settings cache
                     if (key === 'url') {
                         should(value).eql(`${config.get('url')}/`);

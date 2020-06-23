@@ -106,8 +106,6 @@ const mapSettings = (attrs, frame) => {
             return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
         });
     } else {
-        delete attrs.ghost_head;
-        delete attrs.ghost_foot;
         if (!config.get('enableDeveloperExperiments')) {
             delete attrs.brand;
         }

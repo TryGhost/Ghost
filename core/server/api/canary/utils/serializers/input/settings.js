@@ -4,12 +4,12 @@ const settingsCache = require('../../../../../services/settings/cache');
 
 module.exports = {
     read(apiConfig, frame) {
-        if (frame.options.key === 'codeinjection_head') {
-            frame.options.key = 'ghost_head';
+        if (frame.options.key === 'ghost_head') {
+            frame.options.key = 'codeinjection_head';
         }
 
-        if (frame.options.key === 'codeinjection_foot') {
-            frame.options.key = 'ghost_foot';
+        if (frame.options.key === 'ghost_foot') {
+            frame.options.key = 'codeinjection_foot';
         }
 
         if (frame.options.key === 'active_timezone') {
@@ -47,12 +47,12 @@ module.exports = {
                 setting.value = setting.value === 'true';
             }
 
-            if (setting.key === 'codeinjection_head') {
-                setting.key = 'ghost_head';
+            if (setting.key === 'ghost_head') {
+                setting.key = 'codeinjection_head';
             }
 
-            if (setting.key === 'codeinjection_foot') {
-                setting.key = 'ghost_foot';
+            if (setting.key === 'ghost_foot') {
+                setting.key = 'codeinjection_foot';
             }
 
             if (frame.options.key === 'active_timezone') {

@@ -14,8 +14,8 @@ const defaultSettingsKeys = [
     'cover_image',
     'icon',
     'amp',
-    'ghost_head',
-    'ghost_foot',
+    'codeinjection_head',
+    'codeinjection_foot',
     'facebook',
     'twitter',
     'labs',
@@ -44,8 +44,8 @@ const defaultSettingsKeys = [
     'portal_button',
     'portal_plans',
     'bulk_email_settings',
-    'codeinjection_head',
-    'codeinjection_foot',
+    'ghost_head',
+    'ghost_foot',
     'active_timezone',
     'default_locale'
 ];

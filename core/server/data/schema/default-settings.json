@@ -73,10 +73,10 @@
                 "isEmpty": false
             }
         },
-        "ghost_head": {
+        "codeinjection_head": {
             "defaultValue" : ""
         },
-        "ghost_foot": {
+        "codeinjection_foot": {
             "defaultValue" : ""
         },
         "facebook": {
