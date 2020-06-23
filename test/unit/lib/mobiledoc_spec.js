@@ -1,22 +1,15 @@
 const path = require('path');
 const should = require('should');
+const sinon = require('sinon');
 const nock = require('nock');
 const configUtils = require('../../utils/configUtils');
 const mobiledocLib = require('../../../core/server/lib/mobiledoc');
 const storage = require('../../../core/server/adapters/storage');
+const urlUtils = require('../../../core/shared/url-utils');
 
 describe('lib/mobiledoc', function () {
-    beforeEach(function () {
-        configUtils.set('url', 'https://example.com');
-
-        // UrlUtils gets cached with old config data so we need to make sure it's
-        // reloaded when it gets required in modules under test so that our config
-        // changes actually have an effect
-        // TODO: find why this breaks routing tests if they are run after this test
-        // delete require.cache[require.resolve('../../../core/shared/url-utils')];
-    });
-
     afterEach(function () {
+        sinon.restore();
         nock.cleanAll();
         configUtils.restore();
         // ensure config changes are reset and picked up by next test
@@ -158,11 +151,12 @@ describe('lib/mobiledoc', function () {
             transformed.cards.length.should.equal(4);
         });
 
-        // TODO: unskip once `delete require.cache` issue above is resolved
-        it.skip('works with subdir', async function () {
-            // images can be stored with and without subdir when a subdir is configured
-            // but storage adapter always needs paths relative to content dir
-            configUtils.set('url', 'http://localhost:2368/subdir/');
+        // images can be stored with and without subdir when a subdir is configured
+        // but storage adapter always needs paths relative to content dir
+        it('works with subdir', async function () {
+            // urlUtils is a class instance and won't pick up changes to config so
+            // it's necessary to stub out the internals used by
+            sinon.stub(urlUtils, 'getSubdir').returns('/subdir');
 
             let mobiledoc = {
                 cards: [
