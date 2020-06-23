@@ -100,14 +100,14 @@ const mapSettings = (attrs, frame) => {
     //      fields completely.
     if (_.isArray(attrs)) {
         attrs = _.filter(attrs, (o) => {
-            if (o.key === 'brand' && !config.get('enableDeveloperExperiments')) {
+            if (o.key === 'accent_color' && !config.get('enableDeveloperExperiments')) {
                 return false;
             }
             return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
         });
     } else {
         if (!config.get('enableDeveloperExperiments')) {
-            delete attrs.brand;
+            delete attrs.accent_color;
         }
     }
 

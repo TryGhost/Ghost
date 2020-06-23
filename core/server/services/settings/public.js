@@ -11,7 +11,7 @@ module.exports = {
     description: 'description',
     logo: 'logo',
     icon: 'icon',
-    brand: 'brand',
+    accent_color: 'accent_color',
     cover_image: 'cover_image',
     facebook: 'facebook',
     twitter: 'twitter',
