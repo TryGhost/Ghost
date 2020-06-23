@@ -11,7 +11,7 @@ function stubSettings(server, labs, validSave = true) {
     let settings = [
         {
             id: '1',
-            type: 'blog',
+            type: 'labs',
             key: 'labs',
             value: JSON.stringify(labs)
         }
