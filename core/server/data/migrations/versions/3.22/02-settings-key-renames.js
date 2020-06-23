@@ -38,7 +38,7 @@ module.exports = {
 
         const brand = JSON.parse(brandResult[0].value);
 
-        logging.info(`Updating brand.publicationColor in settings to accent_color with value ${brand.primaryColor}`);
+        logging.info(`Updating brand.primaryColor in settings to accent_color with value ${brand.primaryColor}`);
 
         return await options
             .transacting('settings')
@@ -66,7 +66,7 @@ module.exports = {
 
         const brand = accentColor[0].value;
 
-        logging.info(`Updating accent_color in settings to brand.publicationColor with value ${brand.primaryColor}`);
+        logging.info(`Updating accent_color in settings to brand.primaryColor with value ${brand.primaryColor}`);
 
         return await options
             .transacting('settings')
