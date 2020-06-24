@@ -177,7 +177,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
     }),
 
-    publishedAtBlogTZ: computed('publishedAtBlogDate', 'publishedAtBlogTime', 'settings.activeTimezone', {
+    publishedAtBlogTZ: computed('publishedAtBlogDate', 'publishedAtBlogTime', 'settings.timezone', {
         get() {
             return this._getPublishedAtBlogTZ();
         },
@@ -192,7 +192,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtUTC = this.publishedAtUTC;
         let publishedAtBlogDate = this.publishedAtBlogDate;
         let publishedAtBlogTime = this.publishedAtBlogTime;
-        let blogTimezone = this.get('settings.activeTimezone');
+        let blogTimezone = this.get('settings.timezone');
 
         if (!publishedAtUTC && isBlank(publishedAtBlogDate) && isBlank(publishedAtBlogTime)) {
             return null;
@@ -226,14 +226,14 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     // TODO: is there a better way to handle this?
     // eslint-disable-next-line ghost/ember/no-observers
-    _setPublishedAtBlogTZ: on('init', observer('publishedAtUTC', 'settings.activeTimezone', function () {
+    _setPublishedAtBlogTZ: on('init', observer('publishedAtUTC', 'settings.timezone', function () {
         let publishedAtUTC = this.publishedAtUTC;
         this._setPublishedAtBlogStrings(publishedAtUTC);
     })),
 
     _setPublishedAtBlogStrings(momentDate) {
         if (momentDate) {
-            let blogTimezone = this.get('settings.activeTimezone');
+            let blogTimezone = this.get('settings.timezone');
             let publishedAtBlog = moment.tz(momentDate, blogTimezone);
 
             this.set('publishedAtBlogDate', publishedAtBlog.format('YYYY-MM-DD'));
