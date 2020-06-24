@@ -65,15 +65,6 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it('Can\'t read core setting', function () {
-            return request
-                .get(localUtils.API.getApiQuery('settings/db_hash/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403);
-        });
-
         it('Can request all settings', function () {
             return request.get(localUtils.API.getApiQuery(`settings/`))
                 .set('Origin', config.get('url'))
@@ -95,6 +86,62 @@ describe('Settings API (v2)', function () {
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
+        });
+
+        it('Can request settings by type', function () {
+            return request.get(localUtils.API.getApiQuery(`settings/?type=theme`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.settings);
+                    should.exist(jsonResponse.meta);
+
+                    jsonResponse.settings.should.be.an.Object();
+                    const settings = jsonResponse.settings;
+
+                    Object.keys(settings).length.should.equal(1);
+                    settings[0].key.should.equal('active_theme');
+                    settings[0].value.should.equal('casper');
+                    settings[0].type.should.equal('theme');
+
+                    localUtils.API.checkResponse(jsonResponse, 'settings');
+                });
+        });
+
+        it('Requesting core settings type returns no results', function () {
+            return request.get(localUtils.API.getApiQuery(`settings/?type=core`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.settings);
+                    should.exist(jsonResponse.meta);
+
+                    jsonResponse.settings.should.be.an.Object();
+                    const settings = jsonResponse.settings;
+
+                    Object.keys(settings).length.should.equal(0);
+
+                    localUtils.API.checkResponse(jsonResponse, 'settings');
+                });
+        });
+
+        it('Can\'t read core setting', function () {
+            return request
+                .get(localUtils.API.getApiQuery('settings/db_hash/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
         });
 
         it('Can\'t read permalinks', function (done) {
