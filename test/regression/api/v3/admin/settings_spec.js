@@ -194,7 +194,7 @@ describe('Settings API (v3)', function () {
 
                             jsonResponse.settings.length.should.eql(1);
 
-                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                             jsonResponse.settings[0].key.should.eql('default_locale');
                             jsonResponse.settings[0].value.should.eql('ua');
                         });
