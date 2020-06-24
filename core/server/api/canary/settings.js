@@ -92,12 +92,9 @@ module.exports = {
                 try {
                     const updatedFromAddress = membersService.settings.getEmailFromToken({token: frame.options.token});
                     if (updatedFromAddress) {
-                        let subscriptionSetting = settingsCache.get('members_subscription_settings', {resolve: false});
-                        const settingsValue = subscriptionSetting.value ? JSON.parse(subscriptionSetting.value) : {};
-                        settingsValue.fromAddress = updatedFromAddress;
                         return models.Settings.edit({
-                            key: 'members_subscription_settings',
-                            value: JSON.stringify(settingsValue)
+                            key: 'members_from_address',
+                            value: updatedFromAddress
                         }).then(() => {
                             // Redirect to Ghost-Admin settings page
                             const adminLink = membersService.settings.getAdminRedirectLink();

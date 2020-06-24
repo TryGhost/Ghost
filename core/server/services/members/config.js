@@ -34,11 +34,8 @@ class MembersConfigProvider {
         return domain && domain[1];
     }
 
-    /**
-     */
     getEmailFromAddress() {
-        const subscriptionSettings = this._settingsCache.get('members_subscription_settings') || {};
-        const fromAddress = subscriptionSettings.fromAddress || 'noreply';
+        const fromAddress = this._settingsCache.get('members_from_address') || 'noreply';
 
         // Any fromAddress without domain uses site domain, like default setting `noreply`
         if (fromAddress.indexOf('@') < 0) {
