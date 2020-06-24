@@ -178,7 +178,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('default_locale');
                     done();
                 });
@@ -203,7 +203,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('active_timezone');
                     done();
                 });
@@ -228,7 +228,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('ghost_head');
                     done();
                 });
@@ -253,7 +253,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('codeinjection_foot');
                     done();
                 });
