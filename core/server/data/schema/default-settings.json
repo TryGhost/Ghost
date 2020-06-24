@@ -239,7 +239,7 @@
     },
     "views": {
         "shared_views": {
-            "defaultValue": "{}"
+            "defaultValue": "[]"
         }
     }
 }
