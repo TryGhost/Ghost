@@ -76,23 +76,23 @@
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Publication Language</div>
                     <div class="gh-setting-desc">Set the language/locale which is used on your site</div>
-                    {{#liquid-if this.defaultLocaleOpen}}
+                    {{#liquid-if this.langOpen}}
                     <div class="gh-setting-content-extended">
-                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="defaultLocale">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="lang">
                             <GhTextInput
-                                @value={{readonly this.settings.defaultLocale}}
-                                @input={{action (mut this.settings.defaultLocale) value="target.value"}}
-                                @focus-out={{action "validate" "defaultLocale" target=this.settings}}
-                                data-test-default-locale-input={{true}}
+                                @value={{readonly this.settings.lang}}
+                                @input={{action (mut this.settings.lang) value="target.value"}}
+                                @focus-out={{action "validate" "lang" target=this.settings}}
+                                data-test-input="lang"
                             />
-                            <GhErrorMessage @errors={{this.settings.errors}} @property="defaultLocale" />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="lang" />
                             <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/api/handlebars-themes/helpers/translate/" target="_blank" rel="noopener">any language</a></p>
                         </GhFormGroup>
                     </div>
                     {{/liquid-if}}
                 </div>
                 <div class="gh-setting-action">
-                    <button type="button" class="gh-btn" {{action (toggle "defaultLocaleOpen" this)}} data-test-toggle-default-locale><span>{{if this.defaultLocaleOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{action (toggle "langOpen" this)}} data-test-toggle-lang><span>{{if this.langOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
         </div>

@@ -126,7 +126,7 @@ export default class CustomViewsService extends Service {
             return;
         }
 
-        let views = JSON.parse(settings.get('sharedViews') || '{}');
+        let views = JSON.parse(settings.get('sharedViews') || '[]');
         views = isArray(views) ? views : [];
 
         let viewList = [];
