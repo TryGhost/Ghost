@@ -23,7 +23,19 @@ let membersSettings;
 
 // Bind to events to automatically keep subscription info up-to-date from settings
 events.on('settings.edited', function updateSettingFromModel(settingModel) {
-    if (!['members_subscription_settings', 'stripe_connect_integration'].includes(settingModel.get('key'))) {
+    if (![
+        'members_allow_signup',
+        'members_from_address',
+        'stripe_direct_publishable_key',
+        'stripe_direct_secret_key',
+        'stripe_product_name',
+        'stripe_plans',
+        'stripe_connect_publishable_key',
+        'stripe_connect_secret_key',
+        'stripe_connect_livemode',
+        'stripe_connect_display_name',
+        'stripe_connect_account_id'
+    ].includes(settingModel.get('key'))) {
         return;
     }
 
