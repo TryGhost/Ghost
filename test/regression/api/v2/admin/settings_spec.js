@@ -13,16 +13,12 @@ const defaultSettingsKeys = [
     'logo',
     'cover_image',
     'icon',
-    'amp',
     'codeinjection_head',
     'codeinjection_foot',
     'facebook',
     'twitter',
-    'labs',
     'navigation',
     'secondary_navigation',
-    'slack',
-    'unsplash',
     'meta_title',
     'meta_description',
     'og_image',
@@ -31,12 +27,10 @@ const defaultSettingsKeys = [
     'twitter_image',
     'twitter_title',
     'twitter_description',
-    'shared_views',
     'active_theme',
     'is_private',
     'password',
     'public_hash',
-    'members_email_auth_secret',
     'default_content_visibility',
     'members_subscription_settings',
     'stripe_connect_integration',
@@ -44,6 +38,11 @@ const defaultSettingsKeys = [
     'portal_button',
     'portal_plans',
     'bulk_email_settings',
+    'amp',
+    'labs',
+    'slack',
+    'unsplash',
+    'shared_views',
     'ghost_head',
     'ghost_foot',
     'active_timezone',
@@ -91,7 +90,7 @@ describe('Settings API (v2)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    Object.keys(settings).length.should.equal(40);
+                    Object.keys(settings).length.should.equal(39);
                     settings.map(s => s.key).should.deepEqual(defaultSettingsKeys);
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
