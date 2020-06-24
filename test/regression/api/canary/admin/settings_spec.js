@@ -185,6 +185,44 @@ describe('Settings API (canary)', function () {
                 });
         });
 
+        it('can edit deprecated default_locale setting', function () {
+            return request.get(localUtils.API.getApiQuery('settings/default_locale/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .then(function (res) {
+                    let jsonResponse = res.body;
+                    const newValue = 'new value';
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+                    jsonResponse.settings = [{key: 'default_locale', value: 'ua'}];
+
+                    return jsonResponse;
+                })
+                .then((editedSetting) => {
+                    return request.put(localUtils.API.getApiQuery('settings/'))
+                        .set('Origin', config.get('url'))
+                        .send(editedSetting)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .then(function (res) {
+                            should.exist(res.headers['x-cache-invalidate']);
+                            const jsonResponse = res.body;
+
+                            should.exist(jsonResponse);
+                            should.exist(jsonResponse.settings);
+
+                            jsonResponse.settings.length.should.eql(1);
+
+                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
+                            jsonResponse.settings[0].key.should.eql('default_locale');
+                            jsonResponse.settings[0].value.should.eql('ua');
+                        });
+                });
+        });
+
         it('Can read timezone', function (done) {
             request.get(localUtils.API.getApiQuery('settings/timezone/'))
                 .set('Origin', config.get('url'))
@@ -358,34 +396,29 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('can\'t edit non existent setting', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/'))
+        it('can\'t edit non existent setting', function () {
+            return request.get(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .then(function (res) {
                     let jsonResponse = res.body;
                     const newValue = 'new value';
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'testvalue', value: newValue}];
 
-                    request.put(localUtils.API.getApiQuery('settings/'))
+                    return jsonResponse;
+                })
+                .then((jsonResponse) => {
+                    return request.put(localUtils.API.getApiQuery('settings/'))
                         .set('Origin', config.get('url'))
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-
+                        .then(function (res) {
                             jsonResponse = res.body;
                             should.not.exist(res.headers['x-cache-invalidate']);
                             should.exist(jsonResponse.errors);
@@ -399,7 +432,6 @@ describe('Settings API (canary)', function () {
                                 'code',
                                 'id'
                             ]);
-                            done();
                         });
                 });
         });
