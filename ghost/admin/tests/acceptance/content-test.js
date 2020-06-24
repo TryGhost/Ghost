@@ -171,7 +171,7 @@ describe('Acceptance: Content', function () {
 
         it('can navigate to custom views', async function () {
             this.server.create('setting', {
-                type: 'site',
+                group: 'site',
                 key: 'shared_views',
                 value: JSON.stringify([{
                     route: 'posts',
