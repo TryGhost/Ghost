@@ -17,7 +17,7 @@ module.exports = {
     docName: 'settings',
 
     browse: {
-        options: ['type'],
+        options: ['type', 'group'],
         permissions: true,
         query(frame) {
             let settings = settingsCache.getAll();
@@ -25,14 +25,14 @@ module.exports = {
             // CASE: no context passed (functional call)
             if (!frame.options.context) {
                 return Promise.resolve(settings.filter((setting) => {
-                    return setting.type === 'site';
+                    return setting.group === 'site';
                 }));
             }
 
             // CASE: omit core settings unless internal request
             if (!frame.options.context.internal) {
                 settings = _.filter(settings, (setting) => {
-                    const isCore = setting.type === 'core';
+                    const isCore = setting.group === 'core';
                     const isBlacklisted = SETTINGS_BLACKLIST.includes(setting.key);
                     return !isBlacklisted && !isCore;
                 });
@@ -68,7 +68,7 @@ module.exports = {
             }
 
             // @TODO: handle in settings model permissible fn
-            if (setting.type === 'core' && !(frame.options.context && frame.options.context.internal)) {
+            if (setting.group === 'core' && !(frame.options.context && frame.options.context.internal)) {
                 return Promise.reject(new NoPermissionError({
                     message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
                 }));
@@ -181,7 +181,7 @@ module.exports = {
                     return;
                 }
 
-                const firstCoreSetting = frame.data.settings.find(setting => setting.type === 'core');
+                const firstCoreSetting = frame.data.settings.find(setting => setting.group === 'core');
                 if (firstCoreSetting) {
                     throw new NoPermissionError({
                         message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
@@ -211,7 +211,7 @@ module.exports = {
             }
 
             if (!(frame.options.context && frame.options.context.internal)) {
-                const firstCoreSetting = settings.find(setting => getSetting(setting).type === 'core');
+                const firstCoreSetting = settings.find(setting => getSetting(setting).group === 'core');
                 if (firstCoreSetting) {
                     throw new NoPermissionError({
                         message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
