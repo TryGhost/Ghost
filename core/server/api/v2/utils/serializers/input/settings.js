@@ -54,12 +54,12 @@ module.exports = {
                 setting.key = 'codeinjection_foot';
             }
 
-            if (frame.options.key === 'default_locale') {
-                frame.options.key = 'lang';
+            if (setting.key === 'default_locale') {
+                setting.key = 'lang';
             }
 
-            if (frame.options.key === 'active_timezone') {
-                frame.options.key = 'timezone';
+            if (setting.key === 'active_timezone') {
+                setting.key = 'timezone';
             }
 
             if (['cover_image', 'icon', 'logo'].includes(setting.key)) {
