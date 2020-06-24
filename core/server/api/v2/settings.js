@@ -6,11 +6,6 @@ const {i18n} = require('../../lib/common');
 const {NoPermissionError, NotFoundError} = require('@tryghost/errors');
 const settingsCache = require('../../services/settings/cache');
 
-const SETTINGS_BLACKLIST = [
-    'members_public_key',
-    'members_private_key'
-];
-
 module.exports = {
     docName: 'settings',
 
@@ -31,8 +26,7 @@ module.exports = {
             if (!frame.options.context.internal) {
                 settings = _.filter(settings, (setting) => {
                     const isCore = setting.type === 'core';
-                    const isBlacklisted = SETTINGS_BLACKLIST.includes(setting.key);
-                    return !isBlacklisted && !isCore;
+                    return !isCore;
                 });
             }
 

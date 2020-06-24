@@ -8,11 +8,6 @@ const {BadRequestError, NoPermissionError, NotFoundError} = require('@tryghost/e
 const settingsCache = require('../../services/settings/cache');
 const membersService = require('../../services/members');
 
-const SETTINGS_BLACKLIST = [
-    'members_public_key',
-    'members_private_key'
-];
-
 module.exports = {
     docName: 'settings',
 
@@ -33,8 +28,7 @@ module.exports = {
             if (!frame.options.context.internal) {
                 settings = _.filter(settings, (setting) => {
                     const isCore = setting.group === 'core';
-                    const isBlacklisted = SETTINGS_BLACKLIST.includes(setting.key);
-                    return !isBlacklisted && !isCore;
+                    return !isCore;
                 });
             }
 
