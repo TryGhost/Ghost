@@ -19,7 +19,7 @@ const fixtures = require('../../../../core/server/data/schema/fixtures');
  */
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    const currentSchemaHash = '7cd198f085844aa5725964069b051189';
+    const currentSchemaHash = '74b599e66e9d28c591cb7a3d9ec528cf';
     const currentFixturesHash = '94cf7dfe95e88022b3515c9664af2e66';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
