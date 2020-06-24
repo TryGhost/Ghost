@@ -1,20 +1,20 @@
 export default function mockSettings(server) {
     server.get('/settings/', function ({db}, {queryParams}) {
-        let {type} = queryParams;
-        let filters = type.split(',');
+        let {group} = queryParams;
+        let filters = group.split(',');
         let settings = [];
 
         if (!db.settings.length) {
             server.loadFixtures('settings');
         }
 
-        filters.forEach((type) => {
-            settings.pushObjects(db.settings.where({type}));
+        filters.forEach((groupFilter) => {
+            settings.pushObjects(db.settings.where({group: groupFilter}));
         });
 
         return {
             settings,
-            meta: {filters: {type}}
+            meta: {filters: {group}}
         };
     });
 
@@ -27,7 +27,7 @@ export default function mockSettings(server) {
             if (db.settings.where({key}).length > 0) {
                 db.settings.update({key}, newSetting);
             } else {
-                newSetting.type = newSetting.type || 'site';
+                newSetting.group = newSetting.group || 'site';
                 db.settings.insert(newSetting);
             }
         });
