@@ -1306,10 +1306,10 @@
     lodash "^4.17.15"
     redent "^3.0.0"
 
-"@testing-library/react@10.4.1":
-  version "10.4.1"
-  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-10.4.1.tgz#d38dee4abab172c06f6cf8894c51190e6c503f61"
-  integrity sha512-QX31fRDGLnOdBYoQ95VEOYgRahaPfsI+toOaYhlvuGNFQrcagZv/KLWCIctRGB0h1PTsQt3JpLBbbLGM63yy5Q==
+"@testing-library/react@10.4.2":
+  version "10.4.2"
+  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-10.4.2.tgz#9f1ee0051a516469d4afaf350d2a467ac19cd57f"
+  integrity sha512-srhsdY+Mq2xhjE/ha8xh0U9YJSCNYbOhzPsUiNvxy4bgltB87PjuxDtkWMWwWJOIkngyJaMgoJuHm13EOq4V0Q==
   dependencies:
     "@babel/runtime" "^7.10.3"
     "@testing-library/dom" "^7.17.1"
