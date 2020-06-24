@@ -266,17 +266,17 @@ describe('Acceptance: Editor', function () {
 
             expect(currentURL(), 'currentURL for settings')
                 .to.equal('/settings/general');
-            expect(find('#activeTimezone option:checked').textContent.trim(), 'default timezone')
+            expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
                 .to.equal('(GMT) UTC');
 
             // select a new timezone
-            find('#activeTimezone option[value="Pacific/Kwajalein"]').selected = true;
+            find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
 
-            await triggerEvent('#activeTimezone', 'change');
+            await triggerEvent('#timezone', 'change');
             // save the settings
             await click('.gh-btn.gh-btn-blue');
 
-            expect(find('#activeTimezone option:checked').textContent.trim(), 'new timezone after saving')
+            expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
                 .to.equal('(GMT +12:00) International Date Line West');
 
             // and now go back to the editor
@@ -526,7 +526,7 @@ describe('Acceptance: Editor', function () {
             let compareDateString = compareDate.format('YYYY-MM-DD');
             let compareTimeString = compareDate.format('HH:mm');
             this.server.create('post', {publishedAt: moment.utc().add(4, 'minutes'), status: 'scheduled', authors: [author]});
-            this.server.create('setting', {activeTimezone: 'Europe/Dublin'});
+            this.server.create('setting', {timezone: 'Europe/Dublin'});
             clock.restore();
 
             await visit('/editor/post/1');

@@ -30,7 +30,7 @@ export default Component.extend({
     // actions
     setTypedDateError() {},
 
-    blogTimezone: reads('settings.activeTimezone'),
+    blogTimezone: reads('settings.timezone'),
     hasError: or('dateError', 'timeError'),
 
     dateValue: computed('_date', '_scratchDate', function () {

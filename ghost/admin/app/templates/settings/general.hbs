@@ -62,7 +62,7 @@
                     {{#liquid-if this.timezoneOpen}}
                     <div class="gh-setting-content-extended">
                         <GhTimezoneSelect
-                            @activeTimezone={{this.settings.activeTimezone}}
+                            @timezone={{this.settings.timezone}}
                             @availableTimezones={{this.availableTimezones}}
                             @update={{action "setTimezone"}} />
                     </div>

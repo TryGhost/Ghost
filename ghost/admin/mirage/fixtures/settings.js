@@ -147,7 +147,7 @@ export default [
         id: 19,
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
-        key: 'active_timezone',
+        key: 'timezone',
         group: 'site',
         updated_at: '2015-09-23T13:32:49.868Z',
         updated_by: 1,

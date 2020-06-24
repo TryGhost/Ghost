@@ -14,13 +14,13 @@ describe('Integration: Component: gh-timezone-select', function () {
             {name: 'Etc/UTC', label: '(GMT) UTC'},
             {name: 'Pacific/Kwajalein', label: '(GMT +12:00) International Date Line West'}
         ]);
-        this.set('activeTimezone', 'Etc/UTC');
+        this.set('timezone', 'Etc/UTC');
     });
 
     it('renders', async function () {
         await render(hbs`{{gh-timezone-select
             availableTimezones=availableTimezones
-            activeTimezone=activeTimezone}}`);
+            timezone=timezone}}`);
 
         expect(this.element, 'top-level elements').to.exist;
         expect(findAll('option'), 'number of options').to.have.length(3);
@@ -28,11 +28,11 @@ describe('Integration: Component: gh-timezone-select', function () {
     });
 
     it('handles an unknown timezone', async function () {
-        this.set('activeTimezone', 'Europe/London');
+        this.set('timezone', 'Europe/London');
 
         await render(hbs`{{gh-timezone-select
             availableTimezones=availableTimezones
-            activeTimezone=activeTimezone}}`);
+            timezone=timezone}}`);
 
         // we have an additional blank option at the top
         expect(findAll('option'), 'number of options').to.have.length(4);
@@ -48,7 +48,7 @@ describe('Integration: Component: gh-timezone-select', function () {
 
         await render(hbs`{{gh-timezone-select
             availableTimezones=availableTimezones
-            activeTimezone=activeTimezone
+            timezone=timezone
             update=(action update)}}`);
 
         await fillIn('select', 'Pacific/Pago_Pago');

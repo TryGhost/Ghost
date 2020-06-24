@@ -69,7 +69,7 @@ export default Controller.extend({
         },
 
         setTimezone(timezone) {
-            this.set('settings.activeTimezone', timezone.name);
+            this.set('settings.timezone', timezone.name);
         },
 
         removeImage(image) {

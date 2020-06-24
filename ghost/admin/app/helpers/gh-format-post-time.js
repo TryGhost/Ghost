@@ -14,7 +14,7 @@ export default Helper.extend({
             return moment(timeago).from(moment.utc());
         }
 
-        let timezone = this.get('settings.activeTimezone');
+        let timezone = this.get('settings.timezone');
         let time = moment.tz(timeago, timezone);
         let now = moment.tz(moment.utc(), timezone);
 
