@@ -9,7 +9,7 @@ export default Component.extend({
 
     classNames: ['form-group', 'for-select'],
 
-    activeTimezone: null,
+    timezone: null,
     availableTimezones: null,
 
     // Allowed actions
@@ -17,16 +17,16 @@ export default Component.extend({
 
     availableTimezoneNames: mapBy('availableTimezones', 'name'),
 
-    hasTimezoneOverride: computed('activeTimezone', 'availableTimezoneNames', function () {
-        let activeTimezone = this.activeTimezone;
+    hasTimezoneOverride: computed('timezone', 'availableTimezoneNames', function () {
+        let timezone = this.timezone;
         let availableTimezoneNames = this.availableTimezoneNames;
 
-        return !availableTimezoneNames.includes(activeTimezone);
+        return !availableTimezoneNames.includes(timezone);
     }),
 
-    selectedTimezone: computed('activeTimezone', 'availableTimezones', 'hasTimezoneOverride', function () {
+    selectedTimezone: computed('timezone', 'availableTimezones', 'hasTimezoneOverride', function () {
         let hasTimezoneOverride = this.hasTimezoneOverride;
-        let activeTimezone = this.activeTimezone;
+        let timezone = this.timezone;
         let availableTimezones = this.availableTimezones;
 
         if (hasTimezoneOverride) {
@@ -34,7 +34,7 @@ export default Component.extend({
         }
 
         return availableTimezones
-            .filterBy('name', activeTimezone)
+            .filterBy('name', timezone)
             .get('firstObject');
     }),
 
@@ -49,9 +49,9 @@ export default Component.extend({
         return availableTimezones;
     }),
 
-    localTime: computed('hasTimezoneOverride', 'activeTimezone', 'selectedTimezone', 'clock.second', function () {
+    localTime: computed('hasTimezoneOverride', 'timezone', 'selectedTimezone', 'clock.second', function () {
         let hasTimezoneOverride = this.hasTimezoneOverride;
-        let timezone = hasTimezoneOverride ? this.activeTimezone : this.get('selectedTimezone.name');
+        let timezone = hasTimezoneOverride ? this.timezone : this.get('selectedTimezone.name');
 
         this.get('clock.second');
         return timezone ? moment().tz(timezone).format('HH:mm:ss') : moment().utc().format('HH:mm:ss');

@@ -12,7 +12,7 @@ export default Model.extend(ValidationEngine, {
     icon: attr('string'),
     accentColor: attr('string'),
     lang: attr('string'),
-    activeTimezone: attr('string', {defaultValue: 'Etc/UTC'}),
+    timezone: attr('string', {defaultValue: 'Etc/UTC'}),
     codeinjectionHead: attr('string'),
     codeinjectionFoot: attr('string'),
     facebook: attr('facebook-url-user'),

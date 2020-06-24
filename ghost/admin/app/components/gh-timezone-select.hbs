@@ -1,7 +1,7 @@
 <span class="gh-select" data-select-text="{{this.selectedTimezone.label}}" tabindex="0">
     <OneWaySelect
-        @id="activeTimezone"
-        @name="general[activeTimezone]"
+        @id="timezone"
+        @name="general[timezone]"
         @options={{this.selectableTimezones}}
         @optionValuePath="name"
         @optionLabelPath="label"
@@ -11,6 +11,6 @@
     {{svg-jar "arrow-down-small"}}
 </span>
 {{#if this.hasTimezoneOverride}}
-    <p>Your timezone has been automatically set to {{this.activeTimezone}}.</p>
+    <p>Your timezone has been automatically set to {{this.timezone}}.</p>
 {{/if}}
 <p>The local time here is currently {{this.localTime}}</p>

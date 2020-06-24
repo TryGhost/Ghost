@@ -311,13 +311,13 @@ describe('Acceptance: Settings - General', function () {
 
             expect(currentURL(), 'currentURL').to.equal('/settings/general');
 
-            expect(findAll('#activeTimezone option').length, 'available timezones').to.equal(66);
-            expect(find('#activeTimezone option:checked').textContent.trim()).to.equal('(GMT) UTC');
-            find('#activeTimezone option[value="Africa/Cairo"]').selected = true;
+            expect(findAll('#timezone option').length, 'available timezones').to.equal(66);
+            expect(find('#timezone option:checked').textContent.trim()).to.equal('(GMT) UTC');
+            find('#timezone option[value="Africa/Cairo"]').selected = true;
 
-            await triggerEvent('#activeTimezone', 'change');
+            await triggerEvent('#timezone', 'change');
             await click('[data-test-save-button]');
-            expect(find('#activeTimezone option:checked').textContent.trim()).to.equal('(GMT +2:00) Cairo, Egypt');
+            expect(find('#timezone option:checked').textContent.trim()).to.equal('(GMT +2:00) Cairo, Egypt');
         });
 
         it('handles private blog settings correctly', async function () {
