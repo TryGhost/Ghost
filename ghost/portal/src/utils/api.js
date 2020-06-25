@@ -222,7 +222,6 @@ function setupGhostApi({siteUrl = window.location.origin}) {
 
         const {site} = await api.site.read();
         const member = await api.member.sessionData();
-
         return {site, member};
     };
 
