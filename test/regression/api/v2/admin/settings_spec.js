@@ -113,6 +113,55 @@ describe('Settings API (v2)', function () {
                 });
         });
 
+        it('Can not request settings by group, returns all settings instead', function () {
+            return request.get(localUtils.API.getApiQuery(`settings/?group=theme`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.settings);
+                    should.exist(jsonResponse.meta);
+
+                    jsonResponse.settings.should.be.an.Object();
+                    const settings = jsonResponse.settings;
+
+                    Object.keys(settings).length.should.equal(39);
+                    settings.map(s => s.key).should.deepEqual(defaultSettingsKeys);
+
+                    localUtils.API.checkResponse(jsonResponse, 'settings');
+                });
+        });
+
+        it('Can request settings by type and ignores group ', function () {
+            return request.get(localUtils.API.getApiQuery(`settings/?group=theme&type=private`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.settings);
+                    should.exist(jsonResponse.meta);
+
+                    jsonResponse.settings.should.be.an.Object();
+                    const settings = jsonResponse.settings;
+
+                    Object.keys(settings).length.should.equal(3);
+                    settings[0].key.should.equal('is_private');
+                    settings[0].value.should.equal(false);
+                    settings[0].type.should.equal('private');
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    localUtils.API.checkResponse(jsonResponse, 'settings');
+                });
+        });
+
         it('Requesting core settings type returns no results', function () {
             return request.get(localUtils.API.getApiQuery(`settings/?type=core`))
                 .set('Origin', config.get('url'))
@@ -178,7 +227,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('default_locale');
                     done();
                 });
@@ -203,7 +252,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('active_timezone');
                     done();
                 });
@@ -228,7 +277,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('ghost_head');
                     done();
                 });
@@ -253,7 +302,7 @@ describe('Settings API (v2)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('codeinjection_foot');
                     done();
                 });
