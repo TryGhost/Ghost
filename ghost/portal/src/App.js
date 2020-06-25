@@ -2,6 +2,7 @@ import TriggerButton from './components/TriggerButton';
 import PopupModal from './components/PopupModal';
 import setupGhostApi from './utils/api';
 import AppContext from './AppContext';
+import * as Fixtures from './utils/fixtures';
 import './App.css';
 
 const React = require('react');
@@ -25,7 +26,7 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchData();
+        this.initSetup();
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -77,31 +78,98 @@ export default class App extends React.Component {
         };
     }
 
+    updateStateForPreview() {
+        const {site: previewSite, ...restPreview} = this.getPreviewState();
+        this.setState({
+            site: {
+                ...this.state.site,
+                ...(previewSite || {})
+            },
+            ...restPreview
+        });
+    }
+
+    isPreviewMode() {
+        const [path, qs] = window.location.hash.substr(1).split('?');
+        return (path === '/portal' && qs);
+    }
+
+    getPreviewState() {
+        const [path, qs] = window.location.hash.substr(1).split('?');
+        if (path === '/portal' && qs) {
+            const previewSettings = {
+                site: {}
+            };
+            const allowedPlans = [];
+            const qsParams = new URLSearchParams(qs);
+            // Display the key/value pairs
+            for (let pair of qsParams.entries()) {
+                const key = pair[0];
+                const value = pair[1];
+                if (key === 'button') {
+                    previewSettings.site.portal_button = JSON.parse(value);
+                } else if (key === 'name') {
+                    previewSettings.site.portal_name = JSON.parse(value);
+                } else if (key === 'isFree' && JSON.parse(value)) {
+                    allowedPlans.push('free');
+                } else if (key === 'isMonthly' && JSON.parse(value)) {
+                    allowedPlans.push('monthly');
+                } else if (key === 'isYearly' && JSON.parse(value)) {
+                    allowedPlans.push('yearly');
+                } else if (key === 'page') {
+                    previewSettings.page = value;
+                }
+            }
+            previewSettings.site.portal_plans = allowedPlans;
+            previewSettings.showPopup = true;
+            return previewSettings;
+        }
+        return {};
+    }
+
+    async initSetup() {
+        const {site, member} = await this.fetchData() || {};
+        if (!site) {
+            this.setState({
+                action: 'init:failed',
+                initStatus: 'failed'
+            });
+        } else {
+            const stripeParam = this.getStripeUrlParam();
+            const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
+            const {site: previewSite, ...restPreview} = this.getPreviewState();
+            const initState = {
+                site: {
+                    ...site,
+                    ...(previewSite || {})
+                },
+                member: member || (this.isPreviewMode() ? Fixtures.member.free : null),
+                page,
+                showPopup,
+                action: 'init:success',
+                initStatus: 'success',
+                ...restPreview
+            };
+            this.setState(initState);
+            this.hashHandler = () => {
+                this.updateStateForPreview();
+            };
+            window.addEventListener('hashchange', this.hashHandler, false);
+        }
+    }
+
     // Fetch site and member session data with Ghost Apis
     async fetchData() {
         const {siteUrl} = this.props;
         try {
             this.GhostApi = setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
-            site.is_stripe_configured = (site.is_stripe_configured === undefined) || site.is_stripe_configured;
-            const stripeParam = this.getStripeUrlParam();
-            const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
-            this.setState({
-                site,
-                member,
-                page,
-                showPopup,
-                action: 'init:success',
-                initStatus: 'success'
-            });
+            return {site, member};
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Members.js] Failed to initialize`);
             /* eslint-enable no-console */
-            this.setState({
-                action: 'init:failed',
-                initStatus: 'failed'
-            });
+            return null;
         }
     }
 
