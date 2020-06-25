@@ -25,8 +25,8 @@ function createSettingsMock({setDirect, setConnect}) {
 
     getStub.withArgs('members_from_address').returns('noreply');
     getStub.withArgs('members_allow_free_signup').returns(true);
-    getStub.withArgs('stripe_direct_secret_key').returns(setDirect ? 'direct_secret' : null);
-    getStub.withArgs('stripe_direct_publishable_key').returns(setDirect ? 'direct_publishable' : null);
+    getStub.withArgs('stripe_secret_key').returns(setDirect ? 'direct_secret' : null);
+    getStub.withArgs('stripe_publishable_key').returns(setDirect ? 'direct_publishable' : null);
     getStub.withArgs('stripe_product_name').returns('Test');
     getStub.withArgs('stripe_plans').returns([{
         name: 'Monthly',

@@ -26,8 +26,8 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
     if (![
         'members_allow_free_signup',
         'members_from_address',
-        'stripe_direct_publishable_key',
-        'stripe_direct_secret_key',
+        'stripe_publishable_key',
+        'stripe_secret_key',
         'stripe_product_name',
         'stripe_plans',
         'stripe_connect_publishable_key',

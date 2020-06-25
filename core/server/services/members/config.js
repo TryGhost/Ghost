@@ -93,8 +93,9 @@ class MembersConfigProvider {
         if (type !== 'direct' && type !== 'connect') {
             throw new Error();
         }
-        const secretKey = this._settingsCache.get(`stripe_${type}_secret_key`);
-        const publicKey = this._settingsCache.get(`stripe_${type}_publishable_key`);
+
+        const secretKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);
+        const publicKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}publishable_key`);
 
         if (!secretKey || !publicKey) {
             return null;

@@ -192,10 +192,10 @@
         "stripe_product_name": {
             "defaultValue": "Ghost Subscription"
         },
-        "stripe_direct_secret_key": {
+        "stripe_secret_key": {
             "defaultValue": null
         },
-        "stripe_direct_publishable_key": {
+        "stripe_publishable_key": {
             "defaultValue": null
         },
         "stripe_plans": {

@@ -37,8 +37,8 @@ function finaliseStructuredData(metaData) {
 }
 
 function getMembersHelper() {
-    const stripeDirectSecretKey = settingsCache.get('stripe_direct_secret_key');
-    const stripeDirectPublishableKey = settingsCache.get('stripe_direct_publishable_key');
+    const stripeDirectSecretKey = settingsCache.get('stripe_secret_key');
+    const stripeDirectPublishableKey = settingsCache.get('stripe_publishable_key');
     const stripeConnectAccountId = settingsCache.get('stripe_connect_account_id');
 
     let membersHelper = `<script defer src="${getAssetUrl('public/members.js', true)}"></script>`;
