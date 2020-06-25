@@ -1,7 +1,16 @@
 const _ = require('lodash');
 const url = require('./utils/url');
+const typeGroupMapper = require('./utils/settings-type-group-mapper');
 
 module.exports = {
+    browse(apiConfig, frame) {
+        if (frame.options.type) {
+            let mappedGroupOptions = typeGroupMapper(frame.options.type);
+
+            frame.options.group = mappedGroupOptions;
+        }
+    },
+
     read(apiConfig, frame) {
         if (frame.options.key === 'ghost_head') {
             frame.options.key = 'codeinjection_head';
