@@ -42,19 +42,17 @@ describe('SettingsImporter', function () {
 
         it('Does not overwrite members from address', function () {
             const fakeSettings = [{
-                key: 'members_subscription_settings',
-                value: '{"fromAddress":"newemail@example.com"}'
+                key: 'members_from_address',
+                value: 'newemail@example.com'
             }];
 
             const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
 
             importer.beforeImport();
 
-            const membersetting = find(importer.dataToImport, {key: 'members_subscription_settings'});
-            const membersSettingsVal = JSON.parse(membersetting.value);
-            const membersFromAddress = membersSettingsVal.fromAddress;
+            const membersFromAddress = find(importer.dataToImport, {key: 'members_from_address'});
 
-            should.not.exist(membersFromAddress);
+            should.not.exist(membersFromAddress.value);
         });
 
         it('Adds a problem if the existing data is_private is false, and new data is_private is true', function () {
