@@ -201,7 +201,7 @@ class MembersConfigProvider {
     }
 
     getAllowSelfSignup() {
-        return this._settingsCache.get('members_allow_signup');
+        return this._settingsCache.get('members_allow_free_signup');
     }
 
     getTokenConfig() {

@@ -183,7 +183,7 @@
         "default_content_visibility": {
             "defaultValue": "public"
         },
-        "members_allow_signup": {
+        "members_allow_free_signup": {
             "defaultValue": true
         },
         "members_from_address": {

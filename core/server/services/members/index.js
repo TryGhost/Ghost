@@ -24,7 +24,7 @@ let membersSettings;
 // Bind to events to automatically keep subscription info up-to-date from settings
 events.on('settings.edited', function updateSettingFromModel(settingModel) {
     if (![
-        'members_allow_signup',
+        'members_allow_free_signup',
         'members_from_address',
         'stripe_direct_publishable_key',
         'stripe_direct_secret_key',
