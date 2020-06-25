@@ -23,7 +23,7 @@ describe('Models: listeners', function () {
 
     before(testUtils.teardownDb);
 
-    beforeEach(testUtils.setup('owner', 'settings'));
+    beforeEach(testUtils.setup('owner:pre', 'settings'));
 
     beforeEach(function () {
         sinon.stub(events, 'on').callsFake(function (eventName, callback) {
