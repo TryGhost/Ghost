@@ -6,10 +6,25 @@ import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
     settings: service(),
-    confirm() {},
+    config: service(),
+    page: 'signup',
 
+    confirm() {},
     subscriptionSettings: alias('model.subscriptionSettings'),
     stripeConnectIntegration: alias('model.stripeConnectIntegration'),
+
+    portalPreviewUrl: computed('page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked', 'settings.{portalName,portalButton}', function () {
+        const baseUrl = this.config.get('blogUrl');
+        const portalBase = '/#/portal';
+        const settingsParam = new URLSearchParams();
+        settingsParam.append('button', this.settings.get('portalButton'));
+        settingsParam.append('name', this.settings.get('portalName'));
+        settingsParam.append('isFree', this.isFreeChecked);
+        settingsParam.append('isMonthly', this.isMonthlyChecked);
+        settingsParam.append('isYearly', this.isYearlyChecked);
+        settingsParam.append('page', this.page);
+        return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
+    }),
 
     isFreeChecked: computed('settings.{portalPlans.[],membersSubscriptionSettings}', function () {
         const allowSelfSignup = this.subscriptionSettings.allowSelfSignup;
@@ -62,6 +77,10 @@ export default ModalComponent.extend({
         isPlanSelected(plan) {
             const allowedPlans = this.settings.get('portalPlans');
             return allowedPlans.includes(plan);
+        },
+
+        switchPreviewPage(page) {
+            this.set('page', page);
         }
     },
 
