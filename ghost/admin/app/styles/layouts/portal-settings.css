@@ -1,0 +1,54 @@
+.fullscreen-modal-portal-settings {
+    margin: 30px;
+    max-width: 100%;
+}
+
+.fullscreen-modal-portal-settings .modal-content {
+    position: relative;
+    overflow: scroll;
+    height: 100%;
+    padding: 0;
+}
+
+.fullscreen-modal-portal-settings .modal-body {
+    margin: 0;
+}
+
+.gh-ps-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 18px 32px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    overflow: hidden;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background: var(--white);
+    z-index: 9999;
+}
+
+.gh-ps-header h2 {
+    width: calc(50vw - 200px);
+    margin: 0;
+}
+
+.gh-ps-header-border {
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-ps-close {
+    width: calc(50vw - 200px);
+}
+
+.gh-ps-modal-body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
