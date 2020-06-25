@@ -108,7 +108,29 @@ describe('Unit: models/settings', function () {
         });
 
         it('populates unset defaults', function () {
+            let insertQueries = [];
+
             tracker.on('query', (query) => {
+                // skip group and flags columns so we can test the insertion column skip
+                if (query.method === 'columnInfo') {
+                    return query.response([
+                        {name: 'id', type: 'varchar'},
+                        // {name: 'group', type: 'varchar'},
+                        {name: 'key', type: 'varchar'},
+                        {name: 'value', type: 'varchar'},
+                        {name: 'type', type: 'varchar'},
+                        // {name: 'flags', type: 'varchar'},
+                        {name: 'created_at', type: 'datetime'},
+                        {name: 'created_by', type: 'varchar'},
+                        {name: 'updated_at', type: 'varchar'},
+                        {name: 'updated_by', type: 'datetime'}
+                    ]);
+                }
+
+                if (query.method === 'insert') {
+                    insertQueries.push(query);
+                }
+
                 return query.response([{}]);
             });
 
@@ -117,22 +139,34 @@ describe('Unit: models/settings', function () {
                     const numberOfSettings = Object.keys(defaultSettings).reduce((settings, settingGroup) => {
                         return settings.concat(Object.keys(defaultSettings[settingGroup]));
                     }, []).length;
-                    // 2 events per item - settings.added and settings.[name].added
-                    eventSpy.callCount.should.equal(numberOfSettings * 2);
 
-                    const eventsEmitted = eventSpy.args.map(args => args[0]);
-                    const checkEventEmitted = event => should.ok(eventsEmitted.includes(event), `${event} event should be emitted`);
+                    insertQueries.length.should.equal(numberOfSettings);
 
-                    checkEventEmitted('settings.db_hash.added');
-                    checkEventEmitted('settings.description.added');
+                    // non-existent columns should not be populated
+                    insertQueries[0].sql.should.not.match(/group/);
+                    insertQueries[0].sql.should.not.match(/flags/);
 
-                    checkEventEmitted('settings.default_content_visibility.added');
-                    checkEventEmitted('settings.members_subscription_settings.added');
+                    // no events are emitted because we're not using the model layer
+                    eventSpy.callCount.should.equal(0);
                 });
         });
 
         it('doesn\'t overwrite any existing settings', function () {
+            let insertQueries = [];
+
             tracker.on('query', (query) => {
+                if (query.method === 'columnInfo') {
+                    return query.response([
+                        {name: 'id', type: 'varchar'},
+                        {name: 'key', type: 'varchar'},
+                        {name: 'value', type: 'varchar'}
+                    ]);
+                }
+
+                if (query.method === 'insert') {
+                    insertQueries.push(query);
+                }
+
                 return query.response([{
                     key: 'description',
                     value: 'Adam\'s Blog'
@@ -141,9 +175,11 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    const eventsEmitted = eventSpy.args.map(args => args[0]);
-                    const checkEventNotEmitted = event => should.ok(!eventsEmitted.includes(event), `${event} event should be emitted`);
-                    checkEventNotEmitted('settings.description.added');
+                    const numberOfSettings = Object.keys(defaultSettings).reduce((settings, settingGroup) => {
+                        return settings.concat(Object.keys(defaultSettings[settingGroup]));
+                    }, []).length;
+
+                    insertQueries.length.should.equal(numberOfSettings - 1);
                 });
         });
     });
