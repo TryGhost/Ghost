@@ -298,7 +298,14 @@ export default class MembersController extends Controller {
 
     @task({drop: true})
     *deleteMembersTask() {
-        let query = new URLSearchParams({all: true});
+        let {label, paidParam, searchParam} = this;
+
+        let filter = label ? `label:${label}` : '';
+        let paidQuery = paidParam ? {paid: paidParam} : {};
+        let searchQuery = searchParam ? {search: searchParam} : {};
+        let allQuery = !label && !paidParam && !searchParam ? {all: true} : {};
+
+        let query = new URLSearchParams(Object.assign({}, {filter}, paidQuery, searchQuery, allQuery));
         let url = `${this.ghostPaths.url.api('members')}?${query}`;
 
         // response contains details of which members failed to be deleted
