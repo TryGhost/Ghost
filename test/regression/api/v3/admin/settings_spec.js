@@ -35,8 +35,17 @@ const defaultSettingsKeys = [
     'password',
     'public_hash',
     'default_content_visibility',
-    'members_subscription_settings',
-    'stripe_connect_integration',
+    'members_allow_free_signup',
+    'members_from_address',
+    'stripe_product_name',
+    'stripe_plans',
+    'stripe_secret_key',
+    'stripe_publishable_key',
+    'stripe_connect_secret_key',
+    'stripe_connect_publishable_key',
+    'stripe_connect_account_id',
+    'stripe_connect_display_name',
+    'stripe_connect_livemode',
     'portal_name',
     'portal_button',
     'portal_plans',
@@ -82,8 +91,7 @@ describe('Settings API (v3)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    Object.keys(settings).length.should.equal(39);
-                    settings.map(s => s.key).should.deepEqual(defaultSettingsKeys);
+                    settings.map(s => s.key).sort().should.deepEqual(defaultSettingsKeys.sort());
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
