@@ -81,13 +81,6 @@ module.exports.start = (apiVersion) => {
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
     });
 
-    _.each(dynamicRoutes.taxonomies, (value, key) => {
-        const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG);
-        siteRouter.mountRouter(taxonomyRouter.router());
-
-        registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
-    });
-
     _.each(dynamicRoutes.collections, (value, key) => {
         const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG);
         siteRouter.mountRouter(collectionRouter.router());
@@ -98,6 +91,13 @@ module.exports.start = (apiVersion) => {
     siteRouter.mountRouter(staticPagesRouter.router());
 
     registry.setRouter('staticPagesRouter', staticPagesRouter);
+
+    _.each(dynamicRoutes.taxonomies, (value, key) => {
+        const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG);
+        siteRouter.mountRouter(taxonomyRouter.router());
+
+        registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);
+    });
 
     const appRouter = new ParentRouter('AppsRouter');
     siteRouter.mountRouter(appRouter.router());
