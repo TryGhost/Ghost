@@ -84,14 +84,8 @@ const updateMemberData = async function (req, res) {
 };
 
 const getMemberSiteData = async function (req, res) {
-    const stripePaymentProcessor = settingsCache.get('members_subscription_settings').paymentProcessors.find(
-        paymentProcessor => paymentProcessor.adapter === 'stripe'
-    );
-    const stripeSecretToken = stripePaymentProcessor && stripePaymentProcessor.config.secret_token;
-    const stripePublicToken = stripePaymentProcessor && stripePaymentProcessor.config.public_token;
-    const stripeConnectIntegration = settingsCache.get('stripe_connect_integration');
+    const isStripeConfigured = membersService.config.isStripeConnected();
 
-    const isStripeConfigured = (!!stripeSecretToken && !!stripePublicToken) || !!(stripeConnectIntegration && stripeConnectIntegration.account_id);
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),

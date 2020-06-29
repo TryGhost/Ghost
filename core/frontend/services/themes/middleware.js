@@ -61,12 +61,9 @@ function haxGetMembersPriceData() {
     };
 
     try {
-        const membersSettings = settingsCache.get('members_subscription_settings');
-        const stripeProcessor = membersSettings.paymentProcessors.find(
-            processor => processor.adapter === 'stripe'
-        );
+        const stripePlans = settingsCache.get('stripe_plans');
 
-        const priceData = stripeProcessor.config.plans.reduce((prices, plan) => {
+        const priceData = stripePlans.reduce((prices, plan) => {
             const numberAmount = 0 + plan.amount;
             const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
             return Object.assign(prices, {
@@ -74,7 +71,7 @@ function haxGetMembersPriceData() {
             });
         }, {});
 
-        priceData.currency = String.prototype.toUpperCase.call(stripeProcessor.config.currency || 'usd');
+        priceData.currency = stripePlans[0].currency;
         priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency];
 
         if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {

@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const url = require('./utils/url');
 const typeGroupMapper = require('./utils/settings-type-group-mapper');
-const settingsCache = require('../../../../../services/settings/cache');
 
 module.exports = {
     browse(apiConfig, frame) {
@@ -84,17 +83,6 @@ module.exports = {
             if (setting.key === 'bulk_email_settings') {
                 const {apiKey = '', domain = '', baseUrl = '', provider = 'mailgun'} = setting.value ? JSON.parse(setting.value) : {};
                 setting.value = JSON.stringify({apiKey, domain, baseUrl, provider});
-            }
-
-            //CASE: Ensure we don't update fromAddress for member as that goes through magic link flow
-            if (setting.key === 'members_subscription_settings') {
-                const memberSubscriptionSettings = setting.value ? JSON.parse(setting.value) : {};
-
-                let subscriptionSettingCache = settingsCache.get('members_subscription_settings', {resolve: false});
-                const settingsCacheValue = subscriptionSettingCache.value ? JSON.parse(subscriptionSettingCache.value) : {};
-                memberSubscriptionSettings.fromAddress = settingsCacheValue.fromAddress;
-
-                setting.value = JSON.stringify(memberSubscriptionSettings);
             }
         });
     }
