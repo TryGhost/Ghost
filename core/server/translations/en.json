@@ -368,7 +368,10 @@
             },
             "members": {
                 "memberNotFound": "Member not found.",
-                "memberAlreadyExists": "Email address is already member.",
+                "memberAlreadyExists": {
+                    "message": "Email address is already member.",
+                    "context": "Attempting to add member with existing email address."
+                },
                 "stripeNotConnected": {
                     "message": "Member not imported, Stripe account missing",
                     "context": "Attempting to import members with Stripe data when there is no Stripe account connected",
