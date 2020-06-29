@@ -1,0 +1,137 @@
+const logging = require('../../../../../shared/logging');
+const ObjectId = require('bson-objectid').default;
+
+module.exports = {
+    config: {
+        transaction: true
+    },
+
+    async up(config) {
+        const knex = config.transacting;
+        const membersSubscriptionSettingsJSON = await knex('settings')
+            .select('value')
+            .where('key', 'members_subscription_settings')
+            .first();
+
+        const membersSubscriptionSettings = JSON.parse(membersSubscriptionSettingsJSON.value);
+
+        const membersFromAddress = membersSubscriptionSettings.fromAddress;
+        const membersAllowSelfSignup = membersSubscriptionSettings.allowSelfSignup;
+
+        const stripe = membersSubscriptionSettings.paymentProcessors[0];
+
+        const stripeDirectSecretKey = stripe.config.secret_token;
+        const stripeDirectPublishableKey = stripe.config.public_token;
+        const stripeProductName = stripe.config.product.name;
+
+        const stripePlans = stripe.config.plans.map((plan) => {
+            return Object.assign(plan, {
+                amount: plan.amount || 0
+            });
+        });
+
+        const operations = [{
+            key: 'members_from_address',
+            value: membersFromAddress,
+            flags: 'RO'
+        }, {
+            key: 'members_allow_free_signup',
+            value: membersAllowSelfSignup.toString()
+        }, {
+            key: 'stripe_product_name',
+            value: stripeProductName
+        }, {
+            key: 'stripe_secret_key',
+            value: stripeDirectSecretKey
+        }, {
+            key: 'stripe_publishable_key',
+            value: stripeDirectPublishableKey
+        }, {
+            key: 'stripe_plans',
+            value: JSON.stringify(stripePlans)
+        }];
+
+        for (const operation of operations) {
+            logging.info(`Updating ${operation.key} setting`);
+            await knex('settings')
+                .where({
+                    key: operation.key
+                })
+                .update({
+                    value: operation.value,
+                    group: 'members',
+                    flags: operation.flags || '',
+                    type: 'members'
+                });
+        }
+
+        logging.info(`Deleting members_subscription_settings setting`);
+        await knex('settings')
+            .where('key', 'members_subscription_settings')
+            .del();
+    },
+
+    async down(config) {
+        const knex = config.transacting;
+
+        const getSetting = key => knex.select('value').from('settings').where('key', key).first();
+
+        const membersFromAddress = await getSetting('members_from_address');
+        const allowSelfSignup = await getSetting('members_allow_free_signup');
+        const stripeDirectSecretKey = await getSetting('stripe_secret_key');
+        const stripeDirectPublishableKey = await getSetting('stripe_publishable_key');
+        const stripeProductName = await getSetting('stripe_product_name');
+
+        const stripePlans = await getSetting('stripe_plans');
+
+        const allowSelfSignupBoolean = allowSelfSignup.value === 'true';
+
+        const membersSubscriptionSettings = {
+            fromAddress: membersFromAddress.value,
+            allowSelfSignup: allowSelfSignupBoolean,
+            paymentProcessors: [{
+                adapter: 'stripe',
+                config: {
+                    secret_token: stripeDirectSecretKey.value,
+                    public_token: stripeDirectPublishableKey.value,
+                    product: {
+                        name: stripeProductName.value
+                    },
+                    plans: JSON.parse(stripePlans.value)
+                }
+            }]
+        };
+
+        const now = knex.raw('CURRENT_TIMESTAMP');
+
+        logging.info(`Inserting members_subscription_settings setting`);
+        await knex('settings')
+            .insert({
+                id: ObjectId.generate(),
+                key: 'members_subscription_settings',
+                value: JSON.stringify(membersSubscriptionSettings),
+                group: 'members',
+                type: 'members',
+                flags: '',
+                created_at: now,
+                created_by: 1,
+                updated_at: now,
+                updated_by: 1
+            });
+
+        const settingsToDelete = [
+            'members_from_address',
+            'members_allow_free_signup',
+            'stripe_plans',
+            'stripe_product_name',
+            'stripe_publishable_key',
+            'stripe_secret_key'
+        ];
+
+        for (const setting of settingsToDelete) {
+            logging.info(`Deleting ${setting} setting`);
+        }
+        await knex('settings').whereIn('key', settingsToDelete).del();
+    }
+};
+
