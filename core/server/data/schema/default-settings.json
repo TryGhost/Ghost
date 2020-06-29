@@ -184,10 +184,10 @@
             "defaultValue": "public"
         },
         "members_allow_free_signup": {
-            "defaultValue": true
+            "defaultValue": "true"
         },
         "members_from_address": {
-            "defaultValue": null
+            "defaultValue": "noreply"
         },
         "stripe_product_name": {
             "defaultValue": "Ghost Subscription"
