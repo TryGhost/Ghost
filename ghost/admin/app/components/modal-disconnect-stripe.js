@@ -6,7 +6,7 @@ export default ModalComponent.extend({
     // Allowed actions
     confirm: () => {},
 
-    stripeConnectIntegration: alias('model.stripeConnectIntegration'),
+    stripeConnectAccountName: alias('model.stripeConnectAccountName'),
 
     actions: {
         confirm() {
