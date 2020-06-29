@@ -225,7 +225,10 @@ const members = {
                 return decorateWithSubscriptions(member);
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                    throw new errors.ValidationError({message: i18n.t('errors.api.members.memberAlreadyExists')});
+                    throw new errors.ValidationError({
+                        message: i18n.t('errors.api.members.memberAlreadyExists.message'),
+                        context: i18n.t('errors.api.members.memberAlreadyExists.context')
+                    });
                 }
 
                 // NOTE: failed to link Stripe customer/plan/subscription
@@ -482,7 +485,7 @@ const members = {
             }).then(() => {
                 // NOTE: grouping by context because messages can contain unique data like "customer_id"
                 const groupedErrors = _.groupBy(invalid.errors, 'context');
-                const uniqueErrors = _.uniq(invalid.errors, 'context');
+                const uniqueErrors = _.uniqBy(invalid.errors, 'context');
 
                 const outputErrors = uniqueErrors.map((error) => {
                     let errorGroup = groupedErrors[error.context];
