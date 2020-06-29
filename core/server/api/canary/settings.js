@@ -92,12 +92,9 @@ module.exports = {
                 try {
                     const updatedFromAddress = membersService.settings.getEmailFromToken({token: frame.options.token});
                     if (updatedFromAddress) {
-                        let subscriptionSetting = settingsCache.get('members_subscription_settings', {resolve: false});
-                        const settingsValue = subscriptionSetting.value ? JSON.parse(subscriptionSetting.value) : {};
-                        settingsValue.fromAddress = updatedFromAddress;
                         return models.Settings.edit({
-                            key: 'members_subscription_settings',
-                            value: JSON.stringify(settingsValue)
+                            key: 'members_from_address',
+                            value: updatedFromAddress
                         }).then(() => {
                             // Redirect to Ghost-Admin settings page
                             const adminLink = membersService.settings.getAdminRedirectLink();
@@ -155,10 +152,22 @@ module.exports = {
                 });
             }
 
-            return models.Settings.edit({
-                key: 'stripe_connect_integration',
-                value: '{}'
-            }, frame.options);
+            return models.Settings.edit([{
+                key: 'stripe_connect_publishable_key',
+                value: null
+            }, {
+                key: 'stripe_connect_secret_key',
+                value: null
+            }, {
+                key: 'stripe_connect_livemode',
+                value: null
+            }, {
+                key: 'stripe_connect_display_name',
+                value: null
+            }, {
+                key: 'stripe_connect_account_id',
+                value: null
+            }], frame.options);
         }
     },
 
@@ -187,9 +196,8 @@ module.exports = {
             const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
 
             // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_integration` setting.
-            // The `stripe_connect_integration` setting is not allowed to be set directly.
             const settings = frame.data.settings.filter((setting) => {
-                return !['stripe_connect_integration', 'stripe_connect_integration_token'].includes(setting.key);
+                return !['stripe_connect_integration_token'].includes(setting.key);
             });
 
             const getSetting = setting => settingsCache.get(setting.key, {resolve: false});
@@ -218,8 +226,24 @@ module.exports = {
                 try {
                     const data = await membersService.stripeConnect.getStripeConnectTokenData(stripeConnectIntegrationToken.value, getSessionProp);
                     settings.push({
-                        key: 'stripe_connect_integration',
-                        value: JSON.stringify(data)
+                        key: 'stripe_connect_publishable_key',
+                        value: data.public_key
+                    });
+                    settings.push({
+                        key: 'stripe_connect_secret_key',
+                        value: data.secret_key
+                    });
+                    settings.push({
+                        key: 'stripe_connect_livemode',
+                        value: data.livemode
+                    });
+                    settings.push({
+                        key: 'stripe_connect_display_name',
+                        value: data.display_name
+                    });
+                    settings.push({
+                        key: 'stripe_connect_account_id',
+                        value: data.account_id
                     });
                 } catch (err) {
                     throw new BadRequestError({

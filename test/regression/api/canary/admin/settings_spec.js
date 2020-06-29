@@ -9,45 +9,54 @@ const ghost = testUtils.startGhost;
 // NOTE: in future iterations these fields should be fetched from a central module.
 //       Have put a list as is here for the lack of better place for it.
 const defaultSettingsKeyTypes = [
-    {key: 'title',type: 'blog'},
-    {key: 'description',type: 'blog'},
-    {key: 'logo',type: 'blog'},
-    {key: 'cover_image',type: 'blog'},
-    {key: 'icon',type: 'blog'},
-    {key: 'lang',type: 'blog'},
-    {key: 'timezone',type: 'blog'},
-    {key: 'codeinjection_head',type: 'blog'},
-    {key: 'codeinjection_foot',type: 'blog'},
-    {key: 'facebook',type: 'blog'},
-    {key: 'twitter',type: 'blog'},
-    {key: 'navigation',type: 'blog'},
-    {key: 'secondary_navigation',type: 'blog'},
-    {key: 'meta_title',type: 'blog'},
-    {key: 'meta_description',type: 'blog'},
-    {key: 'og_image',type: 'blog'},
-    {key: 'og_title',type: 'blog'},
-    {key: 'og_description',type: 'blog'},
-    {key: 'twitter_image',type: 'blog'},
-    {key: 'twitter_title',type: 'blog'},
-    {key: 'twitter_description',type: 'blog'},
-    {key: 'active_theme',type: 'theme'},
-    {key: 'is_private',type: 'private'},
-    {key: 'password',type: 'private'},
-    {key: 'public_hash',type: 'private'},
-    {key: 'default_content_visibility',type: 'members'},
-    {key: 'members_subscription_settings',type: 'members'},
-    {key: 'stripe_connect_integration',type: 'members'},
-    {key: 'portal_name',type: 'portal'},
-    {key: 'portal_button',type: 'portal'},
-    {key: 'portal_plans',type: 'portal'},
-    {key: 'bulk_email_settings',type: 'bulk_email'},
-    {key: 'amp',type: 'blog'},
-    {key: 'labs',type: 'blog'},
-    {key: 'slack',type: 'blog'},
-    {key: 'unsplash',type: 'blog'},
-    {key: 'shared_views',type: 'blog'},
-    {key: 'active_timezone',type: 'blog'},
-    {key: 'default_locale',type: 'blog'}
+    {key: 'title', type: 'blog'},
+    {key: 'description', type: 'blog'},
+    {key: 'logo', type: 'blog'},
+    {key: 'cover_image', type: 'blog'},
+    {key: 'icon', type: 'blog'},
+    {key: 'lang', type: 'blog'},
+    {key: 'timezone', type: 'blog'},
+    {key: 'codeinjection_head', type: 'blog'},
+    {key: 'codeinjection_foot', type: 'blog'},
+    {key: 'facebook', type: 'blog'},
+    {key: 'twitter', type: 'blog'},
+    {key: 'navigation', type: 'blog'},
+    {key: 'secondary_navigation', type: 'blog'},
+    {key: 'meta_title', type: 'blog'},
+    {key: 'meta_description', type: 'blog'},
+    {key: 'og_image', type: 'blog'},
+    {key: 'og_title', type: 'blog'},
+    {key: 'og_description', type: 'blog'},
+    {key: 'twitter_image', type: 'blog'},
+    {key: 'twitter_title', type: 'blog'},
+    {key: 'twitter_description', type: 'blog'},
+    {key: 'active_theme', type: 'theme'},
+    {key: 'is_private', type: 'private'},
+    {key: 'password', type: 'private'},
+    {key: 'public_hash', type: 'private'},
+    {key: 'default_content_visibility', type: 'members'},
+    {key: 'members_allow_free_signup', type: 'members'},
+    {key: 'members_from_address', type: 'members'},
+    {key: 'stripe_product_name', type: 'members'},
+    {key: 'stripe_plans', type: 'members'},
+    {key: 'stripe_secret_key', type: 'members'},
+    {key: 'stripe_publishable_key', type: 'members'},
+    {key: 'stripe_connect_secret_key', type: 'members'},
+    {key: 'stripe_connect_publishable_key', type: 'members'},
+    {key: 'stripe_connect_account_id', type: 'members'},
+    {key: 'stripe_connect_display_name', type: 'members'},
+    {key: 'stripe_connect_livemode', type: 'members'},
+    {key: 'portal_name', type: 'portal'},
+    {key: 'portal_button', type: 'portal'},
+    {key: 'portal_plans', type: 'portal'},
+    {key: 'bulk_email_settings', type: 'bulk_email'},
+    {key: 'amp', type: 'blog'},
+    {key: 'labs', type: 'blog'},
+    {key: 'slack', type: 'blog'},
+    {key: 'unsplash', type: 'blog'},
+    {key: 'shared_views', type: 'blog'},
+    {key: 'active_timezone', type: 'blog'},
+    {key: 'default_locale', type: 'blog'}
 ];
 
 describe('Settings API (canary)', function () {
@@ -82,8 +91,12 @@ describe('Settings API (canary)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    Object.keys(settings).length.should.equal(39);
-                    settings.map(s => ({key: s.key, type: s.type})).should.deepEqual(defaultSettingsKeyTypes);
+                    should.equal(settings.length, defaultSettingsKeyTypes.length);
+                    for (const defaultSetting of defaultSettingsKeyTypes) {
+                        should.exist(settings.find((setting) => {
+                            return setting.key === defaultSetting.key && setting.type === defaultSetting.type;
+                        }));
+                    }
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });

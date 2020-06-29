@@ -21,42 +21,31 @@ function createConfigMock({stripeDirectValue}) {
  */
 
 function createSettingsMock({setDirect, setConnect}) {
-    const membersSubscriptionSettings = {
-        fromAddress: 'noreply',
-        allowSelfSignup: true,
-        paymentProcessors: [{
-            adapter: 'stripe',
-            config: {
-                secret_token: setDirect ? 'direct_secret' : null,
-                public_token: setDirect ? 'direct_public' : null,
-                product: {
-                    name: 'Test'
-                },
-                plans: [{
-                    name: 'Monthly',
-                    currency: 'usd',
-                    interval: 'month',
-                    amount: 1000
-                }, {
-                    name: 'Yearly',
-                    currency: 'usd',
-                    interval: 'year',
-                    amount: 10000
-                }]
-            }
-        }]
-    };
-
-    const stripeConnectIntegration = {
-        secret_key: setConnect ? 'connect_secret' : null,
-        public_key: setConnect ? 'connect_public' : null,
-        livemode: true
-    };
-
     const getStub = sinon.stub();
 
-    getStub.withArgs('members_subscription_settings').returns(membersSubscriptionSettings);
-    getStub.withArgs('stripe_connect_integration').returns(stripeConnectIntegration);
+    getStub.withArgs('members_from_address').returns('noreply');
+    getStub.withArgs('members_allow_free_signup').returns(true);
+    getStub.withArgs('stripe_secret_key').returns(setDirect ? 'direct_secret' : null);
+    getStub.withArgs('stripe_publishable_key').returns(setDirect ? 'direct_publishable' : null);
+    getStub.withArgs('stripe_product_name').returns('Test');
+    getStub.withArgs('stripe_plans').returns([{
+        name: 'Monthly',
+        currency: 'usd',
+        interval: 'month',
+        amount: 1000
+    }, {
+        name: 'Yearly',
+        currency: 'usd',
+        interval: 'year',
+        amount: 10000
+    }]);
+
+    getStub.withArgs('stripe_connect_secret_key').returns(setConnect ? 'connect_secret' : null);
+    getStub.withArgs('stripe_connect_publishable_key').returns(setConnect ? 'connect_publishable' : null);
+    getStub.withArgs('stripe_connect_livemode').returns(true);
+    getStub.withArgs('stripe_connect_display_name').returns('Test');
+    getStub.withArgs('stripe_connect_account_id').returns('ac_XXXXXXXXXXXXX');
+
     return {
         get: getStub
     };
@@ -77,7 +66,7 @@ describe('Members - config', function () {
 
         const paymentConfig = membersConfig.getStripePaymentConfig();
 
-        should.equal(paymentConfig.publicKey, 'direct_public');
+        should.equal(paymentConfig.publicKey, 'direct_publishable');
         should.equal(paymentConfig.secretKey, 'direct_secret');
     });
 
@@ -112,7 +101,7 @@ describe('Members - config', function () {
 
         const paymentConfig = membersConfig.getStripePaymentConfig();
 
-        should.equal(paymentConfig.publicKey, 'connect_public');
+        should.equal(paymentConfig.publicKey, 'connect_publishable');
         should.equal(paymentConfig.secretKey, 'connect_secret');
     });
 
@@ -130,7 +119,7 @@ describe('Members - config', function () {
 
         const paymentConfig = membersConfig.getStripePaymentConfig();
 
-        should.equal(paymentConfig.publicKey, 'direct_public');
+        should.equal(paymentConfig.publicKey, 'direct_publishable');
         should.equal(paymentConfig.secretKey, 'direct_secret');
     });
 });
