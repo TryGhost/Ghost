@@ -30,10 +30,6 @@ export default Model.extend(ValidationEngine, {
             return {isActive: true};
         }
     }),
-    defaultContentVisibility: attr('string'),
-    membersSubscriptionSettings: attr('string'),
-    stripeConnectIntegrationToken: attr('string'),
-    stripeConnectIntegration: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     twitterTitle: attr('string'),
@@ -46,5 +42,21 @@ export default Model.extend(ValidationEngine, {
     portalButton: attr('boolean'),
     portalName: attr('boolean'),
     portalPlans: attr('json-string'),
-    sharedViews: attr('string')
+    sharedViews: attr('string'),
+    /**
+     * Members settings
+     */
+    defaultContentVisibility: attr('string'),
+    membersAllowFreeSignup: attr('boolean'),
+    membersFromAddress: attr('string'),
+    stripeProductName: attr('string'),
+    stripeSecretKey: attr('string'),
+    stripePublishableKey: attr('string'),
+    stripePlans: attr('json-string'),
+    stripeConnectIntegrationToken: attr('string'),
+    stripeConnectPublishableKey: attr('string'),
+    stripeConnectSecretKey: attr('string'),
+    stripeConnectLivemode: attr('boolean'),
+    stripeConnectDisplayName: attr('string'),
+    stripeConnectAccountId: attr('string')
 });

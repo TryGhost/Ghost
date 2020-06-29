@@ -3,21 +3,18 @@ import {inject as service} from '@ember/service';
 
 export default class MembersUtilsService extends Service {
     @service settings;
+    @service config;
 
     get isStripeEnabled() {
-        let stripeConnectIntegration;
+        const stripeDirect = this.config.get('stripeDirect');
 
-        try {
-            stripeConnectIntegration = JSON.parse(this.settings.get('stripeConnectIntegration'));
-        } catch (err) {
-            stripeConnectIntegration = null;
+        const hasDirectKeys = !!this.settings.get('stripeSecretKey') && !!this.settings.get('stripePublishableKey');
+        const hasConnectKeys = !!this.settings.get('stripeConnectSecretKey') && !!this.settings.get('stripeConnectPublishableKey');
+
+        if (stripeDirect) {
+            return hasDirectKeys;
         }
 
-        let stripeConnectEnabled = stripeConnectIntegration && stripeConnectIntegration.account_id;
-
-        let membersSubscriptionSettings = this.settings.parseSubscriptionSettings(this.settings.get('membersSubscriptionSettings'));
-        let stripeEnabled = membersSubscriptionSettings && !!(membersSubscriptionSettings.paymentProcessors[0].config.secret_token) && !!(membersSubscriptionSettings.paymentProcessors[0].config.public_token);
-
-        return stripeEnabled || stripeConnectEnabled;
+        return hasConnectKeys || hasDirectKeys;
     }
 }

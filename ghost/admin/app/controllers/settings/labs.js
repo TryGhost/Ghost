@@ -180,10 +180,6 @@ export default Controller.extend({
             this.set('settings.defaultContentVisibility', value);
         },
 
-        setMembersSubscriptionSettings(subscriptionSettings) {
-            this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
-        },
-
         setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
             this.set('settings.stripeConnectIntegrationToken', stripeConnectIntegrationToken);
         },
@@ -239,8 +235,7 @@ export default Controller.extend({
     },
 
     parseFromAddress() {
-        let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
-        const fromAddress = subscriptionSettings.fromAddress || '';
+        const fromAddress = this.settings.get('membersFromAddress') || 'noreply';
         // Adds default domain as site domain
         if (fromAddress.indexOf('@') < 0 && this.blogDomain) {
             return `${fromAddress}@${this.blogDomain}`;
