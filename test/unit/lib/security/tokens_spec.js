@@ -23,7 +23,7 @@ describe('Utils: tokens', function () {
         const expires = Date.now() + 60 * 1000;
         const dbHash = uuid.v4();
         let token;
-        let tokenIsCorrect;
+        let tokenStatus;
 
         token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
@@ -32,20 +32,20 @@ describe('Utils: tokens', function () {
             dbHash: dbHash
         });
 
-        tokenIsCorrect = security.tokens.resetToken.compare({
+        tokenStatus = security.tokens.resetToken.compare({
             token: token,
             dbHash: dbHash,
             password: '12345678'
         });
 
-        tokenIsCorrect.should.eql(true);
+        tokenStatus.isCorrect.should.eql(true);
     });
 
     it('compare: error', function () {
         const expires = Date.now() + 60 * 1000;
         const dbHash = uuid.v4();
         let token;
-        let tokenIsCorrect;
+        let tokenStatus;
 
         token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
@@ -54,13 +54,57 @@ describe('Utils: tokens', function () {
             dbHash: dbHash
         });
 
-        tokenIsCorrect = security.tokens.resetToken.compare({
+        tokenStatus = security.tokens.resetToken.compare({
             token: token,
             dbHash: dbHash,
             password: '123456'
         });
 
-        tokenIsCorrect.should.eql(false);
+        tokenStatus.isCorrect.should.eql(false);
+    });
+
+    it('compare: expired', function () {
+        const expires = Date.now() - 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+        let tokenStatus;
+
+        token = security.tokens.resetToken.generateHash({
+            email: 'test1@ghost.org',
+            expires: expires,
+            password: '12345678',
+            dbHash: dbHash
+        });
+
+        tokenStatus = security.tokens.resetToken.compare({
+            token: token,
+            dbHash: dbHash,
+            password: '123456'
+        });
+
+        tokenStatus.isExpired.should.eql(true);
+    });
+
+    it('compare: not expired', function () {
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+        let tokenStatus;
+
+        token = security.tokens.resetToken.generateHash({
+            email: 'test1@ghost.org',
+            expires: expires,
+            password: '12345678',
+            dbHash: dbHash
+        });
+
+        tokenStatus = security.tokens.resetToken.compare({
+            token: token,
+            dbHash: dbHash,
+            password: '123456'
+        });
+
+        tokenStatus.isExpired.should.eql(false);
     });
 
     it('extract', function () {
@@ -116,7 +160,7 @@ describe('Utils: tokens', function () {
         const email = 'test1@ghost.org';
         const dbHash = uuid.v4();
         let token;
-        let tokenIsCorrect;
+        let tokenStatus;
         let parts;
 
         token = security.tokens.resetToken.generateHash({
@@ -138,13 +182,13 @@ describe('Utils: tokens', function () {
         parts.email.should.eql(email);
         parts.expires.should.eql(expires);
 
-        tokenIsCorrect = security.tokens.resetToken.compare({
+        tokenStatus = security.tokens.resetToken.compare({
             token: token,
             dbHash: dbHash,
             password: '12345678'
         });
 
-        tokenIsCorrect.should.eql(true);
+        tokenStatus.isCorrect.should.eql(true);
     });
 });
 

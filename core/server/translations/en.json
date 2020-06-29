@@ -285,6 +285,8 @@
         "api": {
             "common": {
                 "invalidTokenStructure": "Invalid token structure",
+                "invalidTokenOrPasswordReset": "The token is invalid or the password has already been reset",
+                "expiredToken": "The token has expired",
                 "notImplemented": "The server does not support the functionality required to fulfill the request."
             },
             "authentication": {

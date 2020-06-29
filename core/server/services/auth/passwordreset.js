@@ -86,15 +86,21 @@ function doReset(options, tokenParts, settingsAPI) {
                 throw new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')});
             }
 
-            let tokenIsCorrect = security.tokens.resetToken.compare({
+            let tokenStatus = security.tokens.resetToken.compare({
                 token: resetToken,
                 dbHash: dbHash,
                 password: user.get('password')
             });
 
-            if (!tokenIsCorrect) {
+            if (tokenStatus.isExpired) {
+                return Promise.reject(new errors.UnauthorizedError({
+                    message: i18n.t('errors.api.common.expiredToken')
+                }));
+            }
+
+            if (!tokenStatus.isCorrect) {
                 return Promise.reject(new errors.BadRequestError({
-                    message: i18n.t('errors.api.common.invalidTokenStructure')
+                    message: i18n.t('errors.api.common.invalidTokenOrPasswordReset')
                 }));
             }
 
