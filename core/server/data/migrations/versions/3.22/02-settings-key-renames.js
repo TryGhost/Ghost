@@ -15,12 +15,12 @@ const renameMappings = [{
 }, {
     from: 'brand',
     to: 'accent_color',
-    getValue: (oldValue) => {
-        return JSON.parse(oldValue).primaryColor || '';
+    getToValue: (fromValue) => {
+        return JSON.parse(fromValue).primaryColor || '';
     },
-    getOldValue: (newValue) => {
+    getFromValue: (toValue) => {
         return JSON.stringify({
-            primaryColor: newValue || ''
+            primaryColor: toValue || ''
         });
     }
 }];
@@ -37,7 +37,7 @@ module.exports = {
                 .select('value')
                 .first();
 
-            const updatedValue = renameMapping.getValue ? renameMapping.getValue(oldSetting.value) : oldSetting.value;
+            const updatedValue = renameMapping.getToValue ? renameMapping.getToValue(oldSetting.value) : oldSetting.value;
 
             logging.info(`Updating ${renameMapping.to} with value from ${renameMapping.from}`);
             await options.transacting('settings')
@@ -58,7 +58,7 @@ module.exports = {
                 .select('value')
                 .first();
 
-            const updatedValue = renameMapping.getOldValue ? renameMapping.getOldValue(newSetting.value) : newSetting.value;
+            const updatedValue = renameMapping.getFromValue ? renameMapping.getFromValue(newSetting.value) : newSetting.value;
 
             logging.info(`Updating ${renameMapping.from} with value from ${renameMapping.to}`);
             await options.transacting('settings')
