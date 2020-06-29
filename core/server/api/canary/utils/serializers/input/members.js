@@ -47,6 +47,6 @@ module.exports = {
 
     async importCSV(apiConfig, frame) {
         debug('importCSV');
-        frame.data.members = await parse(frame.file.path);
+        frame.data.members = await parse(frame.file.path, frame.data.mapping);
     }
 };
