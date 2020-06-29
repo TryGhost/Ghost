@@ -71,40 +71,5 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
 
     changedAttributes() {
         return this.content.changedAttributes();
-    },
-
-    parseSubscriptionSettings(settingsString) {
-        try {
-            return JSON.parse(settingsString);
-        } catch (e) {
-            return {
-                allowSelfSignup: true,
-                fromAddress: 'noreply',
-                paymentProcessors: [{
-                    adapter: 'stripe',
-                    config: {
-                        secret_token: '',
-                        public_token: '',
-                        product: {
-                            name: this.settings.get('title')
-                        },
-                        plans: [
-                            {
-                                name: 'Monthly',
-                                currency: 'usd',
-                                interval: 'month',
-                                amount: ''
-                            },
-                            {
-                                name: 'Yearly',
-                                currency: 'usd',
-                                interval: 'year',
-                                amount: ''
-                            }
-                        ]
-                    }
-                }]
-            };
-        }
     }
 });

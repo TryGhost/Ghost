@@ -42,12 +42,21 @@ export default Component.extend({
     showMembersModalSettings: false,
 
     // passed in actions
-    setMembersSubscriptionSettings() {},
     setStripeConnectIntegrationTokenSetting() {},
 
     defaultContentVisibility: reads('settings.defaultContentVisibility'),
 
     stripeDirect: reads('config.stripeDirect'),
+
+    allowSelfSignup: reads('settings.membersAllowFreeSignup'),
+
+    /** OLD **/
+    stripeDirectPublicKey: reads('settings.stripePublishableKey'),
+    stripeDirectSecretKey: reads('settings.stripeSecretKey'),
+
+    stripeConnectAccountId: reads('settings.stripeConnectAccountId'),
+    stripeConnectAccountName: reads('settings.stripeConnectAccountName'),
+    stripeConnectLivemode: reads('settings.stripeConnectLivemode'),
 
     stripeConnectIntegration: computed('settings.stripeConnectIntegration', function () {
         try {
@@ -66,13 +75,13 @@ export default Component.extend({
         }
     }),
 
-    selectedCurrency: computed('subscriptionSettings.stripeConfig.plans.monthly.currency', function () {
-        return CURRENCIES.findBy('value', this.get('subscriptionSettings.stripeConfig.plans.monthly.currency'));
+    selectedCurrency: computed('stripePlans.monthly.currency', function () {
+        return CURRENCIES.findBy('value', this.get('stripePlans.monthly.currency'));
     }),
 
     disableUpdateFromAddressButton: computed('fromAddress', function () {
-        const savedFromAddress = this.get('subscriptionSettings.fromAddress');
-        if (savedFromAddress.indexOf('@') < 0 && this.blogDomain) {
+        const savedFromAddress = this.get('settings.membersFromAddress') || '';
+        if (savedFromAddress.includes('@') && this.blogDomain) {
             return (this.fromAddress === `${savedFromAddress}@${this.blogDomain}`);
         }
         return (this.fromAddress === savedFromAddress);
@@ -94,28 +103,21 @@ export default Component.extend({
         });
     }),
 
-    subscriptionSettings: computed('settings.membersSubscriptionSettings', function () {
-        let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
-        let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
-            return (proc.adapter === 'stripe');
-        });
-        let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
-        let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year' && plan.name !== 'Complimentary');
+    stripePlans: computed('settings.stripePlans', function () {
+        const plans = this.settings.get('stripePlans');
+        const monthly = plans.find(plan => plan.interval === 'month');
+        const yearly = plans.find(plan => plan.interval === 'year' && plan.name !== 'Complimentary');
 
-        // NOTE: need to be careful about division by zero if we introduce zero decimal currencies
-        //       ref.: https://stripe.com/docs/currencies#zero-decimal
-        monthlyPlan.amount = parseInt(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : 0;
-        yearlyPlan.amount = parseInt(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : 0;
-
-        stripeProcessor.config.plans = {
-            monthly: monthlyPlan,
-            yearly: yearlyPlan
+        return {
+            monthly: {
+                amount: parseInt(monthly.amount) / 100 || 0,
+                currency: monthly.currency
+            },
+            yearly: {
+                amount: parseInt(yearly.amount) / 100 || 0,
+                yearly: yearly.currency
+            }
         };
-        subscriptionSettings.stripeConfig = stripeProcessor.config;
-        subscriptionSettings.allowSelfSignup = !!subscriptionSettings.allowSelfSignup;
-        subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || '';
-
-        return subscriptionSettings;
     }),
 
     bulkEmailSettings: computed('settings.bulkEmailSettings', function () {
@@ -167,60 +169,63 @@ export default Component.extend({
             this.setFromAddress(fromAddress);
         },
 
-        setSubscriptionSettings(key, event) {
-            let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
-            let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
-                return (proc.adapter === 'stripe');
-            });
-            let stripeConfig = stripeProcessor.config;
-            stripeConfig.product = {
-                name: this.settings.get('title')
-            };
-
-            if (key === 'secret_token' || key === 'public_token') {
-                stripeConfig[key] = event.target.value;
-            }
-            if (key === 'month' || key === 'year') {
-                stripeConfig.plans = stripeConfig.plans.map((plan) => {
-                    if (key === plan.interval && plan.name !== 'Complimentary') {
-                        plan.amount = parseInt(event.target.value) ? (event.target.value * 100) : 0;
-                    }
-                    return plan;
-                });
-            }
-            if (key === 'allowSelfSignup') {
-                subscriptionSettings.allowSelfSignup = !subscriptionSettings.allowSelfSignup;
-            }
-
-            if (key === 'currency') {
-                stripeProcessor.config.plans.forEach((plan) => {
-                    if (plan.name !== 'Complimentary') {
-                        plan.currency = event.value;
-                    }
-                });
-
-                // NOTE: need to keep Complimentary plans with all available currencies so they don't conflict
-                //       when applied to members with existing subscriptions in different currencies (ref. https://stripe.com/docs/billing/customer#currency)
-                let currentCurrencyComplimentary = stripeProcessor.config.plans.filter(plan => (plan.currency === event.value && plan.name === 'Complimentary'));
-
-                if (!currentCurrencyComplimentary.length) {
-                    let complimentary = {
-                        name: 'Complimentary',
-                        currency: event.value,
-                        interval: 'year',
-                        amount: '0'
-                    };
-
-                    stripeProcessor.config.plans.push(complimentary);
-                }
-
-                stripeProcessor.config.currency = event.value;
-            }
-
-            this.setMembersSubscriptionSettings(subscriptionSettings);
+        toggleSelfSignup() {
+            this.set('settings.membersAllowFreeSignup', !this.get('allowSelfSignup'));
         },
 
-        setStripeConnectIntegrationToken(key, event) {
+        setStripeDirectPublicKey(event) {
+            this.set('settings.stripeProductName', this.get('settings.title'));
+            this.set('settings.stripePublishableKey', event.target.value);
+        },
+
+        setStripeDirectSecretKey(event) {
+            this.set('settings.stripeProductName', this.get('settings.title'));
+            this.set('settings.stripeSecretKey', event.target.value);
+        },
+
+        setStripePlan(type, event) {
+            const updatedPlans = this.get('settings.stripePlans').map((plan) => {
+                if (plan.interval === type && plan.name !== 'Complimentary') {
+                    const newAmount = parseInt(event.target.value) * 100 || 0;
+                    return Object.assign({}, plan, {
+                        amount: newAmount
+                    });
+                }
+                return plan;
+            });
+
+            this.set('settings.stripePlans', updatedPlans);
+        },
+
+        setStripePlansCurrency(event) {
+            const newCurrency = event.value;
+            const updatedPlans = this.get('settings.stripePlans').map((plan) => {
+                if (plan.name !== 'Complimentary') {
+                    return Object.assign({}, plan, {
+                        currency: newCurrency
+                    });
+                }
+                return plan;
+            });
+
+            const currentComplimentaryPlan = updatedPlans.find((plan) => {
+                return plan.name === 'Complimentary' && plan.currency === event.value;
+            });
+
+            if (!currentComplimentaryPlan) {
+                updatedPlans.push({
+                    name: 'Complimentary',
+                    currency: event.value,
+                    interval: 'year',
+                    amount: 0
+                });
+            }
+
+            this.set('settings.stripePlans', updatedPlans);
+        },
+
+        setStripeConnectIntegrationToken(event) {
+            this.set('settings.stripeProductName', this.get('settings.title'));
             this.setStripeConnectIntegrationTokenSetting(event.target.value);
         },
 

@@ -19,8 +19,8 @@
                             <label class="fw6 f8">Stripe Publishable key</label>
                             <GhTextInput
                                 @type="password"
-                                @value={{readonly this.subscriptionSettings.stripeConfig.public_token}}
-                                @input={{action "setSubscriptionSettings" "public_token"}}
+                                @value={{readonly this.stripeDirectPublicKey}}
+                                @input={{action "setStripeDirectPublicKey"}}
                                 @class="mt1 password"
                             />
                         </div>
@@ -28,8 +28,8 @@
                             <label class="fw6 f8 mt4">Stripe Secret key</label>
                             <GhTextInput
                                 @type="password"
-                                @value={{readonly this.subscriptionSettings.stripeConfig.secret_token}}
-                                @input={{action "setSubscriptionSettings" "secret_token"}}
+                                @value={{readonly this.stripeDirectSecretKey}}
+                                @input={{action "setStripeDirectSecretKey"}}
                                 @class="mt1 password"
                             />
                             <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
@@ -58,12 +58,12 @@
                     {{#if this.stripeConnectIntegration}}
                         <p class="gh-setting-desc pa0 ma0">
                             {{#if this.stripeConnectSuccess}}
-                                {{svg-jar "check-circle" class="stroke-green w4 h4 nudge-top--3"}} <span class="green-d1">Successfully connected to {{this.stripeConnectIntegration.name}}</span>
+                                {{svg-jar "check-circle" class="stroke-green w4 h4 nudge-top--3"}} <span class="green-d1">Successfully connected to {{this.stripeConnectAccountName}}</span>
                             {{else}}
-                                Connected to <a href="https://dashboard.stripe.com/{{this.stripeConnectIntegration.id}}" target="_blank">{{this.stripeConnectIntegration.name}}</a>
+                                Connected to <a href="https://dashboard.stripe.com/{{this.stripeConnectAccountId}}" target="_blank">{{this.stripeConnectAccountName}}</a>
                             {{/if}}
 
-                            {{#unless this.stripeConnectIntegration.livemode}}
+                            {{#unless this.stripeConnectLivemode}}
                                 <span class="gh-members-connect-testmodelabel">Test mode</span>
                             {{/unless}}
                         </p>
@@ -106,7 +106,7 @@
                             <GhTextarea
                                 @class="gh-members-stripe-connect-token"
                                 @placeholder="Paste your secure key here"
-                                @input={{action "setStripeConnectIntegrationToken" "stripe_connect_integration_token"}}
+                                @input={{action "setStripeConnectIntegrationToken"}}
                             />
                             {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
                         </div>
@@ -162,7 +162,7 @@
                                 options=(readonly this.currencies)
                                 optionValuePath="value"
                                 optionLabelPath="label"
-                                update=(action "setSubscriptionSettings" "currency")
+                                update=(action "setStripePlansCurrency")
                             }}
                             {{svg-jar "arrow-down-small"}}
                         </span>
@@ -176,11 +176,11 @@
 
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         <GhTextInput
-                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.monthly.amount}}
+                            @value={{readonly this.stripePlans.monthly.amount}}
                             @type="number"
-                            @input={{action "setSubscriptionSettings" "month"}}
+                            @input={{action "setStripePlan" "month"}}
                         />
-                        <span class="gh-input-append"><span class="ttu">{{this.subscriptionSettings.stripeConfig.plans.monthly.currency}}</span>/month</span>
+                        <span class="gh-input-append"><span class="ttu">{{this.stripePlans.monthly.currency}}</span>/month</span>
                     </div>
                     </GhFormGroup>
                 </div>
@@ -189,11 +189,11 @@
                     <label class="fw6 f8">Yearly price</label>
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         <GhTextInput
-                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.yearly.amount}}
+                            @value={{readonly this.stripePlans.yearly.amount}}
                             @type="number"
-                            @input={{action "setSubscriptionSettings" "year"}}
+                            @input={{action "setStripePlan" "year"}}
                         />
-                        <span class="gh-input-append"><span class="ttu">{{this.subscriptionSettings.stripeConfig.plans.yearly.currency}}</span>/year</span>
+                        <span class="gh-input-append"><span class="ttu">{{this.stripePlans.yearly.currency}}</span>/year</span>
                     </div>
                     </GhFormGroup>
                 </div>
@@ -209,8 +209,8 @@
             </div>
             <div>
                 <div class="for-switch">
-                    <label class="switch" for="members-allow-self-signup" {{action "setSubscriptionSettings" "allowSelfSignup" bubbles="false"}}>
-                        <input type="checkbox" checked={{this.subscriptionSettings.allowSelfSignup}} class="gh-input" onclick={{action "setSubscriptionSettings" "allowSelfSignup"}} data-test-checkbox="members-allow-self-signup">
+                    <label class="switch" for="members-allow-self-signup" {{action "toggleSelfSignup" bubbles="false"}}>
+                        <input type="checkbox" checked={{this.allowSelfSignup}} class="gh-input" onclick={{action "toggleSelfSignup"}} data-test-checkbox="members-allow-self-signup">
                         <span class="input-toggle-component mt1"></span>
                     </label>
                 </div>
@@ -380,7 +380,7 @@
 {{#if this.showDisconnectStripeConnectModal}}
     <GhFullscreenModal @modal="disconnect-stripe"
         @model={{hash
-            stripeConnectIntegration=this.stripeConnectIntegration
+            stripeConnectAccountName=this.stripeConnectAccountName
         }}
         @confirm={{action "disconnectStripeConnectIntegration"}}
         @close={{action "closeDisconnectStripeModal"}}
@@ -390,8 +390,7 @@
 {{#if this.showMembersModalSettings}}
     <GhFullscreenModal @modal="members-modal-settings"
         @model={{hash
-            subscriptionSettings=this.subscriptionSettings
-            stripeConnectIntegration=this.stripeConnectIntegration
+            allowSelfSignup=this.allowSelfSignup
         }}
         @close={{action "closeMembersModalSettings"}}
         @modifier="full-overlay portal-settings" />
