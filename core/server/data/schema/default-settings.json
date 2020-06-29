@@ -199,7 +199,7 @@
             "defaultValue": null
         },
         "stripe_plans": {
-            "defaultValue": "[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":5},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":50}]"
+            "defaultValue": "[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":500},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":5000}]"
         },
         "stripe_connect_publishable_key": {
             "defaultValue": null
