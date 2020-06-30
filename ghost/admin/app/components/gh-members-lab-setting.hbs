@@ -55,7 +55,7 @@
             <div class="flex justify-between">
                 <div>
                     <h4 class="gh-setting-title">Connect to Stripe</h4>
-                    {{#if this.stripeConnectIntegration}}
+                    {{#if this.stripeConnectAccountId}}
                         <p class="gh-setting-desc pa0 ma0">
                             {{#if this.stripeConnectSuccess}}
                                 {{svg-jar "check-circle" class="stroke-green w4 h4 nudge-top--3"}} <span class="green-d1">Successfully connected to {{this.stripeConnectAccountName}}</span>
@@ -77,7 +77,7 @@
                     {{/if}}
                 </div>
                 <div>
-                    {{#if this.stripeConnectIntegration}}
+                    {{#if this.stripeConnectAccountId}}
                         <button type="button" class="gh-btn" {{action "openDisconnectStripeModal"}}><span>Disconnect</span></button>
                     {{else}}
                         <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
