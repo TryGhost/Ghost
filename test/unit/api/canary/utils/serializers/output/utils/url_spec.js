@@ -36,8 +36,10 @@ describe('Unit: canary/utils/serializers/output/utils/url', function () {
                 codeinjection_head: 'codeinjectionHead',
                 codeinjection_foot: 'codeinjectionFoot',
                 feature_image: 'featureImage',
-                og_image: 'ogImage',
-                twitter_image: 'twitterImage',
+                posts_meta: {
+                    og_image: 'ogImage',
+                    twitter_image: 'twitterImage'
+                },
                 canonical_url: 'canonicalUrl'
             }));
 
