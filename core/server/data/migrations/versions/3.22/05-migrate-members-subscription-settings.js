@@ -13,6 +13,11 @@ module.exports = {
             .where('key', 'members_subscription_settings')
             .first();
 
+        if (!membersSubscriptionSettingsJSON) {
+            logging.warn(`Could not find members_subscription_settings - using default values`);
+            return;
+        }
+
         const membersSubscriptionSettings = JSON.parse(membersSubscriptionSettingsJSON.value);
 
         const membersFromAddress = membersSubscriptionSettings.fromAddress;
@@ -84,20 +89,30 @@ module.exports = {
 
         const stripePlans = await getSetting('stripe_plans');
 
-        const allowSelfSignupBoolean = allowSelfSignup.value === 'true';
+        const allowSelfSignupBoolean = allowSelfSignup && allowSelfSignup.value === 'true';
 
         const membersSubscriptionSettings = {
-            fromAddress: membersFromAddress.value,
+            fromAddress: membersFromAddress ? membersFromAddress.value : 'noreply',
             allowSelfSignup: allowSelfSignupBoolean,
             paymentProcessors: [{
                 adapter: 'stripe',
                 config: {
-                    secret_token: stripeDirectSecretKey.value,
-                    public_token: stripeDirectPublishableKey.value,
+                    secret_token: stripeDirectSecretKey ? stripeDirectSecretKey.value : null,
+                    public_token: stripeDirectPublishableKey ? stripeDirectPublishableKey.value : null,
                     product: {
-                        name: stripeProductName.value
+                        name: stripeProductName ? stripeProductName.value : 'Ghost Subscription'
                     },
-                    plans: JSON.parse(stripePlans.value)
+                    plans: stripePlans ? JSON.parse(stripePlans.value) : [{
+                        name: 'Monthly',
+                        currency: 'usd',
+                        interval: 'month',
+                        amount: 500
+                    }, {
+                        name: 'Yearly',
+                        currency: 'usd',
+                        interval: 'year',
+                        amount: 5000
+                    }]
                 }
             }]
         };

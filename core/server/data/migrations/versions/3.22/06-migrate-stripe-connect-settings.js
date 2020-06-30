@@ -13,6 +13,11 @@ module.exports = {
             .where('key', 'stripe_connect_integration')
             .first();
 
+        if (!stripeConnectIntegrationJSON) {
+            logging.warn(`Could not find stripe_connect_integration - using default values`);
+            return;
+        }
+
         const stripeConnectIntegration = JSON.parse(stripeConnectIntegrationJSON.value);
 
         const operations = [{
@@ -64,11 +69,11 @@ module.exports = {
         const secretKey = await getSetting('stripe_connect_secret_key');
 
         const stripeConnectIntegration = {
-            account_id: accountId.value,
-            display_name: displayName.value,
-            livemode: livemode.value,
-            public_key: publishableKey.value,
-            secret_key: secretKey.value
+            account_id: accountId ? accountId.value : null,
+            display_name: displayName ? displayName.value : null,
+            livemode: livemode ? livemode.value : null,
+            public_key: publishableKey ? publishableKey.value : null,
+            secret_key: secretKey ? secretKey.value : null
         };
 
         const now = knex.raw('CURRENT_TIMESTAMP');
