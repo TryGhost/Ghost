@@ -43,7 +43,7 @@ module.exports = {
 
             if (!oldSetting) {
                 logging.warn(`Could not find setting ${renameMapping.from}, not updating ${renameMapping.to} value`);
-                return;
+                continue;
             }
 
             const updatedValue = renameMapping.getToValue ? renameMapping.getToValue(oldSetting.value) : oldSetting.value;
@@ -69,7 +69,7 @@ module.exports = {
 
             if (!newSetting) {
                 logging.warn(`Could not find setting ${renameMapping.to}, not updating ${renameMapping.from} value`);
-                return;
+                continue;
             }
 
             const updatedValue = renameMapping.getFromValue ? renameMapping.getFromValue(newSetting.value) : newSetting.value;
