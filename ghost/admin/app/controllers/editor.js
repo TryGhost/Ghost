@@ -812,7 +812,7 @@ export default Controller.extend({
         let actions, type, path;
 
         if (status === 'published' || status === 'scheduled') {
-            type = this.get('post.page') ? 'Page' : 'Post';
+            type = this.get('post.displayName') === 'page' ? 'Page' : 'Post';
             path = this.get('post.url');
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         } else {
