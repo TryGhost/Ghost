@@ -122,13 +122,9 @@ Settings = ghostBookshelf.Model.extend({
         model.emitChange(model.attributes.key + '.' + 'edited', options);
     },
 
-    onValidate: function onValidate() {
-        const self = this;
-
-        return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments)
-            .then(function then() {
-                return validation.validateSettings(getDefaultSettings(), self);
-            });
+    async onValidate(model, attr, options) {
+        await ghostBookshelf.Model.prototype.onValidate.call(this, model, attr, options);
+        await validation.validateSettings(getDefaultSettings(), model);
     },
 
     format() {
