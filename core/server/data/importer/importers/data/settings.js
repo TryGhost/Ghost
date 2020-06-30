@@ -4,6 +4,8 @@ const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const defaultSettings = require('../../../schema').defaultSettings;
+const keyGroupMapper = require('../../../../api/shared/serializers/input/utils/settings-key-group-mapper');
+const keyTypeMapper = require('../../../../api/shared/serializers/input/utils/settings-key-type-mapper');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const ignoredSettings = ['active_apps', 'installed_apps'];
@@ -87,9 +89,21 @@ class SettingsImporter extends BaseImporter {
             return data;
         });
 
+        // NOTE: keep back compatibility with settings object structure present before migration
+        //       ref. https://github.com/TryGhost/Ghost/issues/10318
+        this.dataToImport = this.dataToImport.map((data) => {
+            // group property wasn't present in previous version of settings
+            if (!data.group && data.type) {
+                data.group = keyGroupMapper(data.key);
+                data.type = keyTypeMapper(data.key);
+            }
+
+            return data;
+        });
+
         // Remove core and theme data types
         this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return ['core', 'theme'].indexOf(data.type) === -1;
+            return ['core', 'theme'].indexOf(data.group) === -1;
         });
 
         const newIsPrivate = _.find(this.dataToImport, {key: 'is_private'});
@@ -101,6 +115,10 @@ class SettingsImporter extends BaseImporter {
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
             return data.key !== 'password';
+        });
+
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
+            return !(['members_subscription_settings', 'stripe_connect_integration'].includes(data.key));
         });
 
         // Only show warning if we are importing a private site into a non-private site.
