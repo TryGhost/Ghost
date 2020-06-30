@@ -55,25 +55,8 @@ export default Component.extend({
     stripeDirectSecretKey: reads('settings.stripeSecretKey'),
 
     stripeConnectAccountId: reads('settings.stripeConnectAccountId'),
-    stripeConnectAccountName: reads('settings.stripeConnectAccountName'),
+    stripeConnectAccountName: reads('settings.stripeConnectDisplayName'),
     stripeConnectLivemode: reads('settings.stripeConnectLivemode'),
-
-    stripeConnectIntegration: computed('settings.stripeConnectIntegration', function () {
-        try {
-            const integration = JSON.parse(this.get('settings.stripeConnectIntegration'));
-            if (!integration || !integration.account_id) {
-                return null;
-            }
-
-            return {
-                id: integration.account_id,
-                name: integration.display_name,
-                livemode: integration.livemode
-            };
-        } catch (err) {
-            return null;
-        }
-    }),
 
     selectedCurrency: computed('stripePlans.monthly.currency', function () {
         return CURRENCIES.findBy('value', this.get('stripePlans.monthly.currency'));
