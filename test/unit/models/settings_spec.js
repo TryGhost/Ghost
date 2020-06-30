@@ -48,9 +48,10 @@ describe('Unit: models/settings', function () {
                 ][step - 1]();
             });
 
-            return models.Settings.edit({
+            return models.Settings.add({
                 key: 'description',
-                value: 'added value'
+                value: 'added value',
+                type: 'string'
             })
                 .then(() => {
                     eventSpy.calledTwice.should.be.true();
@@ -188,22 +189,22 @@ describe('Unit: models/settings', function () {
         it('ensure correct parsing when fetching from db', function () {
             const setting = models.Settings.forge();
 
-            let returns = setting.parse({key: 'is_private', value: 'false'});
+            let returns = setting.parse({key: 'is_private', value: 'false', type: 'boolean'});
             should.equal(returns.value, false);
 
-            returns = setting.parse({key: 'is_private', value: false});
+            returns = setting.parse({key: 'is_private', value: false, type: 'boolean'});
             should.equal(returns.value, false);
 
-            returns = setting.parse({key: 'is_private', value: true});
+            returns = setting.parse({key: 'is_private', value: true, type: 'boolean'});
             should.equal(returns.value, true);
 
-            returns = setting.parse({key: 'is_private', value: 'true'});
+            returns = setting.parse({key: 'is_private', value: 'true', type: 'boolean'});
             should.equal(returns.value, true);
 
-            returns = setting.parse({key: 'is_private', value: '0'});
+            returns = setting.parse({key: 'is_private', value: '0', type: 'boolean'});
             should.equal(returns.value, false);
 
-            returns = setting.parse({key: 'is_private', value: '1'});
+            returns = setting.parse({key: 'is_private', value: '1', type: 'boolean'});
             should.equal(returns.value, true);
 
             returns = setting.parse({key: 'something', value: 'null'});
