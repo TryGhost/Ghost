@@ -227,6 +227,7 @@ describe('api/canary/content/posts', function () {
         let publicPost;
         let membersPost;
         let paidPost;
+        let contentGatingFields = ['access'];
 
         before(function () {
             // NOTE: ideally this would be set through Admin API request not a stub
@@ -290,7 +291,7 @@ describe('api/canary/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
-                    localUtils.API.checkResponse(post, 'post', null, null);
+                    localUtils.API.checkResponse(post, 'post', contentGatingFields, null);
                     post.slug.should.eql('thou-shalt-not-be-seen');
                     post.html.should.eql('');
                 });
@@ -308,7 +309,7 @@ describe('api/canary/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
-                    localUtils.API.checkResponse(post, 'post', null, null);
+                    localUtils.API.checkResponse(post, 'post', contentGatingFields, null);
                     post.slug.should.eql('thou-shalt-be-paid-for');
                     post.html.should.eql('');
                 });
@@ -347,7 +348,7 @@ describe('api/canary/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(14);
-                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post', contentGatingFields, null);
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 

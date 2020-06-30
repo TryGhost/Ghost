@@ -32,6 +32,7 @@ describe('Unit: canary/utils/serializers/output/utils/post-gating', function () 
                 };
 
                 const frame = {
+                    options: {},
                     original: {
                         context: {}
                     }
@@ -50,6 +51,7 @@ describe('Unit: canary/utils/serializers/output/utils/post-gating', function () 
                 };
 
                 const frame = {
+                    options: {},
                     original: {
                         context: {}
                     }
@@ -69,6 +71,7 @@ describe('Unit: canary/utils/serializers/output/utils/post-gating', function () 
                 };
 
                 const frame = {
+                    options: {},
                     original: {
                         context: {
                             member: {}
@@ -90,6 +93,7 @@ describe('Unit: canary/utils/serializers/output/utils/post-gating', function () 
                 };
 
                 const frame = {
+                    options: {},
                     original: {
                         context: {
                             member: {
@@ -115,6 +119,7 @@ describe('Unit: canary/utils/serializers/output/utils/post-gating', function () 
                 };
 
                 const frame = {
+                    options: {},
                     original: {
                         context: {
                             member: {
