@@ -1,34 +1,44 @@
 {
     "core": {
         "db_hash": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "next_update_check": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "number"
         },
         "notifications": {
-            "defaultValue": "[]"
+            "defaultValue": "[]",
+            "type": "array"
         },
         "session_secret": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "theme_session_secret": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "ghost_public_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "ghost_private_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "members_public_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "members_private_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "members_email_auth_secret": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "site": {
@@ -39,7 +49,8 @@
                     "max": 150
                 }
             },
-            "flags": "PUBLIC"
+            "flags": "PUBLIC",
+            "type": "string"
         },
         "description": {
             "defaultValue": "The professional publishing platform",
@@ -48,51 +59,64 @@
                     "max": 200
                 }
             },
-            "flags": "PUBLIC"
+            "flags": "PUBLIC",
+            "type": "string"
         },
         "logo": {
-            "defaultValue": "https://static.ghost.org/v1.0.0/images/ghost-logo.svg"
+            "defaultValue": "https://static.ghost.org/v1.0.0/images/ghost-logo.svg",
+            "type": "string"
         },
         "cover_image": {
-            "defaultValue": "https://static.ghost.org/v3.0.0/images/publication-cover.png"
+            "defaultValue": "https://static.ghost.org/v3.0.0/images/publication-cover.png",
+            "type": "string"
         },
         "icon": {
-            "defaultValue": ""
+            "defaultValue": "",
+            "type": "string"
         },
         "accent_color": {
             "defaultValue": "",
-            "flags": "PUBLIC"
+            "flags": "PUBLIC",
+            "type": "string"
         },
         "lang": {
             "defaultValue": "en",
             "validations": {
                 "isEmpty": false
-            }
+            },
+            "type": "string"
         },
         "timezone": {
             "defaultValue": "Etc/UTC",
             "validations": {
                 "isTimezone": true,
                 "isEmpty": false
-            }
+            },
+            "type": "string"
         },
         "codeinjection_head": {
-            "defaultValue" : ""
+            "defaultValue": "",
+            "type": "string"
         },
         "codeinjection_foot": {
-            "defaultValue" : ""
+            "defaultValue": "",
+            "type": "string"
         },
         "facebook": {
-            "defaultValue" : "ghost"
+            "defaultValue": "ghost",
+            "type": "string"
         },
         "twitter": {
-            "defaultValue" : "tryghost"
+            "defaultValue": "tryghost",
+            "type": "string"
         },
         "navigation": {
-            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"},{\"label\":\"Tag\", \"url\":\"/tag/getting-started/\"}, {\"label\":\"Author\", \"url\":\"/author/ghost/\"},{\"label\":\"Help\", \"url\":\"https://ghost.org/docs/\"}]"
+            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"},{\"label\":\"Tag\", \"url\":\"/tag/getting-started/\"}, {\"label\":\"Author\", \"url\":\"/author/ghost/\"},{\"label\":\"Help\", \"url\":\"https://ghost.org/docs/\"}]",
+            "type": "array"
         },
         "secondary_navigation": {
-            "defaultValue": "[]"
+            "defaultValue": "[]",
+            "type": "array"
         },
         "meta_title": {
             "defaultValue": null,
@@ -100,7 +124,8 @@
                 "isLength": {
                     "max": 300
                 }
-            }
+            },
+            "type": "string"
         },
         "meta_description": {
             "defaultValue": null,
@@ -108,7 +133,8 @@
                 "isLength": {
                     "max": 500
                 }
-            }
+            },
+            "type": "string"
         },
         "og_image": {
             "defaultValue": null,
@@ -116,7 +142,8 @@
                 "isLength": {
                     "max": 2000
                 }
-            }
+            },
+            "type": "string"
         },
         "og_title": {
             "defaultValue": null,
@@ -124,7 +151,8 @@
                 "isLength": {
                     "max": 300
                 }
-            }
+            },
+            "type": "string"
         },
         "og_description": {
             "defaultValue": null,
@@ -132,7 +160,8 @@
                 "isLength": {
                     "max": 300
                 }
-            }
+            },
+            "type": "string"
         },
         "twitter_image": {
             "defaultValue": null,
@@ -140,7 +169,8 @@
                 "isLength": {
                     "max": 2000
                 }
-            }
+            },
+            "type": "string"
         },
         "twitter_title": {
             "defaultValue": null,
@@ -148,7 +178,8 @@
                 "isLength": {
                     "max": 300
                 }
-            }
+            },
+            "type": "string"
         },
         "twitter_description": {
             "defaultValue": null,
@@ -156,13 +187,15 @@
                 "isLength": {
                     "max": 300
                 }
-            }
+            },
+            "type": "string"
         }
     },
     "theme": {
         "active_theme": {
             "defaultValue": "casper",
-            "flags": "RO"
+            "flags": "RO",
+            "type": "string"
         }
     },
     "private": {
@@ -170,104 +203,132 @@
             "defaultValue": "false",
             "validations": {
                 "isIn": [["true", "false"]]
-            }
+            },
+            "type": "boolean"
         },
         "password": {
-            "defaultValue": ""
+            "defaultValue": "",
+            "type": "string"
         },
         "public_hash": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "members": {
         "default_content_visibility": {
-            "defaultValue": "public"
+            "defaultValue": "public",
+            "type": "string"
         },
         "members_allow_free_signup": {
-            "defaultValue": "true"
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         },
         "members_from_address": {
             "defaultValue": "noreply",
-            "flags": "RO"
+            "flags": "RO",
+            "type": "string"
         },
         "stripe_product_name": {
-            "defaultValue": "Ghost Subscription"
+            "defaultValue": "Ghost Subscription",
+            "type": "string"
         },
         "stripe_secret_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "stripe_publishable_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "stripe_plans": {
-            "defaultValue": "[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":500},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":5000}]"
+            "defaultValue": "[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":500},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":5000}]",
+            "type": "array"
         },
         "stripe_connect_publishable_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "stripe_connect_secret_key": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "stripe_connect_livemode": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "boolean"
         },
         "stripe_connect_display_name": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         },
         "stripe_connect_account_id": {
-            "defaultValue": null
+            "defaultValue": null,
+            "type": "string"
         }
     },
-    "portal" : {
+    "portal": {
         "portal_name": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
-            }
+            },
+            "type": "boolean"
         },
         "portal_button": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
-            }
+            },
+            "type": "boolean"
         },
         "portal_plans": {
-            "defaultValue": "[\"free\", \"monthly\", \"yearly\"]"
+            "defaultValue": "[\"free\", \"monthly\", \"yearly\"]",
+            "type": "array"
         }
     },
     "email": {
         "bulk_email_settings": {
-            "defaultValue": "{\"provider\":\"mailgun\", \"apiKey\": \"\", \"domain\": \"\", \"baseUrl\": \"\"}"
+            "defaultValue": "{\"provider\":\"mailgun\", \"apiKey\": \"\", \"domain\": \"\", \"baseUrl\": \"\"}",
+            "type": "object"
         }
     },
     "amp": {
         "amp": {
-            "defaultValue" : "true",
+            "defaultValue": "true",
             "validations": {
                 "isIn": [["true", "false"]]
-            }
+            },
+            "type": "boolean"
         }
     },
     "labs": {
         "labs": {
-            "defaultValue": "{}"
+            "defaultValue": "{}",
+            "type": "object"
         }
     },
     "slack": {
         "slack": {
-            "defaultValue": "[{\"url\":\"\", \"username\":\"Ghost\"}]"
+            "defaultValue": "[{\"url\":\"\", \"username\":\"Ghost\"}]",
+            "type": "array"
         }
     },
     "unsplash": {
         "unsplash": {
-            "defaultValue": "{\"isActive\": true}"
+            "defaultValue": "{\"isActive\": true}",
+            "type": "object"
         }
     },
     "views": {
         "shared_views": {
-            "defaultValue": "[]"
+            "defaultValue": "[]",
+            "type": "array"
         }
     }
 }
