@@ -195,9 +195,16 @@ module.exports = {
         async query(frame) {
             const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
 
-            // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_integration` setting.
+            // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_*` settings.
             const settings = frame.data.settings.filter((setting) => {
-                return !['stripe_connect_integration_token'].includes(setting.key);
+                return ![
+                    'stripe_connect_integration_token',
+                    'stripe_connect_publishable_key',
+                    'stripe_connect_secret_key',
+                    'stripe_connect_livemode',
+                    'stripe_connect_account_id',
+                    'stripe_connect_display_name'
+                ].includes(setting.key);
             });
 
             const getSetting = setting => settingsCache.get(setting.key, {resolve: false});
