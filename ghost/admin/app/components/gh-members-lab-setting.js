@@ -227,7 +227,7 @@ export default Component.extend({
 
     openDisconnectStripeConnectModal: task(function* () {
         this.set('hasActiveStripeSubscriptions', false);
-        if (!this.get('stripeConnectIntegration')) {
+        if (!this.get('stripeConnectAccountId')) {
             return;
         }
         const url = this.get('ghostPaths.url').api('/members/hasActiveStripeSubscriptions');
