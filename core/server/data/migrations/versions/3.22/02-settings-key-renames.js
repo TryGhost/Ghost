@@ -16,7 +16,11 @@ const renameMappings = [{
     from: 'brand',
     to: 'accent_color',
     getToValue: (fromValue) => {
-        return JSON.parse(fromValue).primaryColor || '';
+        try {
+            return JSON.parse(fromValue).primaryColor || '';
+        } catch (err) {
+            return '';
+        }
     },
     getFromValue: (toValue) => {
         return JSON.stringify({
