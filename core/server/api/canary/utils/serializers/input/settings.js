@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const url = require('./utils/url');
-const typeGroupMapper = require('./utils/settings-type-group-mapper');
+const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
+const settingsCache = require('../../../../../services/settings/cache');
 
 module.exports = {
     browse(apiConfig, frame) {
@@ -38,11 +39,22 @@ module.exports = {
         if (_.isString(frame.data)) {
             frame.data = {settings: [{key: frame.data, value: frame.options}]};
         }
+        const settings = settingsCache.getAll();
+
+        // Ignore and drop all values with Read-only flag
+        frame.data.settings = frame.data.settings.filter((setting) => {
+            const settingFlagsStr = settings[setting.key] ? settings[setting.key].flags : '';
+            const settingFlagsArr = settingFlagsStr ? settingFlagsStr.split(',') : [];
+            return !settingFlagsArr.includes('RO');
+        });
 
         frame.data.settings.forEach((setting) => {
             // CASE: transform objects/arrays into string (we store stringified objects in the db)
             // @TODO: This belongs into the model layer. We should stringify before saving and parse when fetching from db.
             // @TODO: Fix when dropping v0.1
+            const settingType = settings[setting.key] ? settings[setting.key].type : '';
+
+            //TODO: Needs to be removed once we get rid of all `object` type settings
             if (_.isObject(setting.value)) {
                 setting.value = JSON.stringify(setting.value);
             }
@@ -50,12 +62,12 @@ module.exports = {
             // @TODO: handle these transformations in a centralised API place (these rules should apply for ALL resources)
 
             // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
-            if (setting.value === '0' || setting.value === '1') {
+            if (settingType === 'boolean' && (setting.value === '0' || setting.value === '1')) {
                 setting.value = !!+setting.value;
             }
 
             // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
-            if (setting.value === 'false' || setting.value === 'true') {
+            if (settingType === 'boolean' && (setting.value === 'false' || setting.value === 'true')) {
                 setting.value = setting.value === 'true';
             }
 

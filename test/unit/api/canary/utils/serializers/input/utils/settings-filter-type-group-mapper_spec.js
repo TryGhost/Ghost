@@ -1,5 +1,5 @@
 const should = require('should');
-const mapper = require('../../../../../../../../core//server/api/canary/utils/serializers/input/utils/settings-type-group-mapper');
+const mapper = require('../../../../../../../../core/server/api/shared/serializers/input/utils/settings-filter-type-group-mapper');
 
 describe('Unit: canary/utils/serializers/input/utils/settings-type-group-mapper', function () {
     describe('browse', function () {
