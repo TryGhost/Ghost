@@ -176,18 +176,12 @@ module.exports = {
             defaultTo: 'core',
             validations: {
                 isIn: [[
-                    'amp',
-                    'core',
-                    'email',
-                    'labs',
-                    'members',
-                    'portal',
-                    'private',
-                    'site',
-                    'slack',
-                    'theme',
-                    'unsplash',
-                    'views'
+                    'array',
+                    'string',
+                    'number',
+                    'boolean',
+                    // TODO: `object` type needs to be removed once all existing object settings are removed
+                    'object'
                 ]]
             }
         },
