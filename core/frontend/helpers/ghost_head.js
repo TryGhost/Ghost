@@ -125,8 +125,12 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 if (metaData.metaDescription && metaData.metaDescription.length > 0) {
                     head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
                 }
+                
+                // no output in head if a publication icon is not set
+                if (settingsCache.get('icon')) {
+                    head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                }
 
-                head.push('<link rel="shortcut icon" href="' + favicon + '" type="image/' + iconType + '" />');
                 head.push('<link rel="canonical" href="' +
                     escapeExpression(metaData.canonicalUrl) + '" />');
                 head.push('<meta name="referrer" content="' + referrerPolicy + '" />');

@@ -1710,7 +1710,7 @@ describe('Integration - Web - Site', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
                         response.statusCode.should.eql(200);
-                        $('head link')[2].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
+                        $('head link')[1].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
                     });
             });
         });
@@ -3410,7 +3410,7 @@ describe('Integration - Web - Site', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
                         response.statusCode.should.eql(200);
-                        $('head link')[2].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
+                        $('head link')[1].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
                     });
             });
         });
@@ -5111,7 +5111,7 @@ describe('Integration - Web - Site', function () {
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
                         response.statusCode.should.eql(200);
-                        $('head link')[2].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
+                        $('head link')[1].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
                     });
             });
         });
