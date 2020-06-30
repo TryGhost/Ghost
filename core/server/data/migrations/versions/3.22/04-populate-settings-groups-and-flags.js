@@ -109,6 +109,9 @@ const flagMapping = [{
     key: 'description',
     flags: 'PUBLIC'
 }, {
+    key: 'logo',
+    flags: 'PUBLIC'
+}, {
     key: 'accent_color',
     flags: 'PUBLIC'
 }, {
