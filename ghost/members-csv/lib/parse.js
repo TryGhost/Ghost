@@ -3,13 +3,62 @@ const csvParser = require('csv-parser');
 const _ = require('lodash');
 const fs = require('fs-extra');
 
-const readCSV = (options) => {
-    const columnsToExtract = options.columnsToExtract || [];
+const mapRowsWithRegexes = (rows, columnsToExtract) => {
     let results = [];
+    const columnMap = {};
+    // If CSV is single column - return all values including header
+    const headers = _.keys(rows[0]);
+
+    if (columnsToExtract.length === 1 && headers.length === 1) {
+        results = _.map(rows, function (value) {
+            let result = {};
+            result[columnsToExtract[0].name] = value[headers[0]];
+            return result;
+        });
+    } else {
+        // If there are multiple columns in csv file
+        // try to match headers using lookup value
+        _.map(columnsToExtract, function findMatches(column) {
+            _.each(headers, function checkheader(header) {
+                if (column.lookup.test(header)) {
+                    columnMap[column.name] = header;
+                }
+            });
+        });
+
+        results = _.map(rows, function evaluateRow(row) {
+            const result = {};
+            _.each(columnMap, function returnMatches(value, key) {
+                result[key] = row[value];
+            });
+            return result;
+        });
+    }
+
+    return results;
+};
+
+const mapRowsWithMappings = (rows, mapping) => {
+    const results = rows.map((row) => {
+        for (const key in mapping) {
+            row[key] = row[mapping[key]];
+
+            if (key !== mapping[key]) {
+                delete row[mapping[key]];
+            }
+        }
+
+        return row;
+    });
+
+    return results;
+};
+
+const readCSV = ({path, columnsToExtract, mapping}) => {
     const rows = [];
 
     return new Promise(function (resolve, reject) {
-        const readFile = fs.createReadStream(options.path);
+        const readFile = fs.createReadStream(path);
 
         readFile.on('err', function (err) {
             reject(err);
@@ -19,43 +68,20 @@ const readCSV = (options) => {
                 rows.push(row);
             })
             .on('end', function () {
-            // If CSV is single column - return all values including header
-                const headers = _.keys(rows[0]);
+                let results = [];
 
-                let result = {};
-                const columnMap = {};
-                if (columnsToExtract.length === 1 && headers.length === 1) {
-                    results = _.map(rows, function (value) {
-                        result = {};
-                        result[columnsToExtract[0].name] = value[headers[0]];
-                        return result;
-                    });
+                if (columnsToExtract) {
+                    results = mapRowsWithRegexes(rows, columnsToExtract);
                 } else {
-                // If there are multiple columns in csv file
-                // try to match headers using lookup value
-
-                    _.map(columnsToExtract, function findMatches(column) {
-                        _.each(headers, function checkheader(header) {
-                            if (column.lookup.test(header)) {
-                                columnMap[column.name] = header;
-                            }
-                        });
-                    });
-
-                    results = _.map(rows, function evaluateRow(row) {
-                        const result = {};
-                        _.each(columnMap, function returnMatches(value, key) {
-                            result[key] = row[value];
-                        });
-                        return result;
-                    });
+                    results = mapRowsWithMappings(rows, mapping);
                 }
+
                 resolve(results);
             });
     });
 };
 
-const parse = async (filePath) => {
+const parse = async (filePath, mapping) => {
     const columnsToExtract = [{
         name: 'email',
         lookup: /^email/i
@@ -82,10 +108,17 @@ const parse = async (filePath) => {
         lookup: /created_at/i
     }];
 
-    return await readCSV({
-        path: filePath,
-        columnsToExtract: columnsToExtract
-    });
+    const options = {
+        path: filePath
+    };
+
+    if (mapping) {
+        options.mapping = mapping;
+    } else {
+        options.columnsToExtract = columnsToExtract;
+    }
+
+    return await readCSV(options);
 };
 
 module.exports = parse;
