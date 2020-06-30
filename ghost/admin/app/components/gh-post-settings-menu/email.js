@@ -75,7 +75,7 @@ export default Component.extend({
                 return false;
             }
             if (!this.settings.get('bulkEmailSettings.isEnabled')) {
-                this.set('sendTestEmailError', 'Please check your Mailgun configuration');
+                this.set('sendTestEmailError', 'Please verify your email settings');
                 return false;
             }
             this.set('sendTestEmailError', '');
@@ -88,7 +88,7 @@ export default Component.extend({
             return yield this.ajax.post(url, options);
         } catch (error) {
             if (error) {
-                this.set('sendTestEmailError', 'Error sending mail, please check your Mailgun configuration');
+                this.set('sendTestEmailError', 'Email could not be sent, verify mail settings');
             }
         }
     }).drop(),
