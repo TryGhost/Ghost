@@ -8,6 +8,35 @@ module.exports = {
 
     async up(config) {
         const knex = config.transacting;
+
+        const defaultOperations = [{
+            key: 'members_from_address',
+            flags: 'RO'
+        }, {
+            key: 'members_allow_free_signup'
+        }, {
+            key: 'stripe_product_name'
+        }, {
+            key: 'stripe_secret_key'
+        }, {
+            key: 'stripe_publishable_key'
+        }, {
+            key: 'stripe_plans'
+        }];
+
+        for (const operation of defaultOperations) {
+            logging.info(`Updating ${operation.key} setting group,type,flags`);
+            await knex('settings')
+                .where({
+                    key: operation.key
+                })
+                .update({
+                    group: 'members',
+                    type: 'members',
+                    flags: operation.flags || ''
+                });
+        }
+
         const membersSubscriptionSettingsJSON = await knex('settings')
             .select('value')
             .where('key', 'members_subscription_settings')
@@ -35,10 +64,9 @@ module.exports = {
             });
         });
 
-        const operations = [{
+        const valueOperations = [{
             key: 'members_from_address',
-            value: membersFromAddress,
-            flags: 'RO'
+            value: membersFromAddress
         }, {
             key: 'members_allow_free_signup',
             value: membersAllowSelfSignup.toString()
@@ -56,17 +84,14 @@ module.exports = {
             value: JSON.stringify(stripePlans)
         }];
 
-        for (const operation of operations) {
-            logging.info(`Updating ${operation.key} setting`);
+        for (const operation of valueOperations) {
+            logging.info(`Updating ${operation.key} setting value`);
             await knex('settings')
                 .where({
                     key: operation.key
                 })
                 .update({
-                    value: operation.value,
-                    group: 'members',
-                    flags: operation.flags || '',
-                    type: 'members'
+                    value: operation.value
                 });
         }
 
