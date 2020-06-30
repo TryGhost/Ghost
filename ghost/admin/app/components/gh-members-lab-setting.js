@@ -81,7 +81,7 @@ export default Component.extend({
 
     disableUpdateFromAddressButton: computed('fromAddress', function () {
         const savedFromAddress = this.get('settings.membersFromAddress') || '';
-        if (savedFromAddress.includes('@') && this.blogDomain) {
+        if (!savedFromAddress.includes('@') && this.blogDomain) {
             return (this.fromAddress === `${savedFromAddress}@${this.blogDomain}`);
         }
         return (this.fromAddress === savedFromAddress);
