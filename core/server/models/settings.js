@@ -56,8 +56,7 @@ function parseDefaultSettings() {
     };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
-        _.each(settings, function each(setting, settingName) {
-            setting.type = categoryName;
+        _.each(settings, function eachSetting(setting, settingName) {
             setting.group = categoryName;
             setting.key = settingName;
 
