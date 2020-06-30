@@ -187,7 +187,8 @@
             "defaultValue": "true"
         },
         "members_from_address": {
-            "defaultValue": "noreply"
+            "defaultValue": "noreply",
+            "flags": "RO"
         },
         "stripe_product_name": {
             "defaultValue": "Ghost Subscription"
