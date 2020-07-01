@@ -71,7 +71,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate published=true}}`);
-        expect(this.element).to.have.trimmed.text(`${expectedTime} Today`);
+        expect(this.element).to.have.trimmed.text(`${expectedTime} (UTC) Today`);
     });
 
     it('returns correct format if post is scheduled for the same day', async function () {
@@ -83,7 +83,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate scheduled=true}}`);
-        expect(this.element).to.have.trimmed.text(`at ${expectedTime} Today`);
+        expect(this.element).to.have.trimmed.text(`at ${expectedTime} (UTC) Today`);
     });
 
     it('returns correct format if post was published yesterday', async function () {
@@ -94,7 +94,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate published=true}}`);
-        expect(this.element).to.have.trimmed.text(`${expectedTime} Yesterday`);
+        expect(this.element).to.have.trimmed.text(`${expectedTime} (UTC) Yesterday`);
     });
 
     it('returns correct format if post is scheduled for tomorrow', async function () {
@@ -105,7 +105,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate scheduled=true}}`);
-        expect(this.element).to.have.trimmed.text(`at ${expectedTime} Tomorrow`);
+        expect(this.element).to.have.trimmed.text(`at ${expectedTime} (UTC) Tomorrow`);
     });
 
     it('returns correct format if post was published prior to yesterday', async function () {
@@ -127,6 +127,6 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate scheduled=true}}`);
-        expect(this.element).to.have.trimmed.text(`at ${expectedTime} on 10 Sep 2017`);
+        expect(this.element).to.have.trimmed.text(`at ${expectedTime} (UTC) on 10 Sep 2017`);
     });
 });
