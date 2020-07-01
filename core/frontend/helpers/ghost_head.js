@@ -99,7 +99,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
     const context = dataRoot._locals.context ? dataRoot._locals.context : null;
     const safeVersion = dataRoot._locals.safeVersion;
     const postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null;
-    const globalCodeinjection = settingsCache.get('ghost_head');
+    const globalCodeinjection = settingsCache.get('codeinjection_head');
     const useStructuredData = !config.isPrivacyDisabled('useStructuredData');
     const referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade';
     const favicon = blogIcon.getIconUrl();
@@ -125,7 +125,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 if (metaData.metaDescription && metaData.metaDescription.length > 0) {
                     head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
                 }
-                
+
                 // no output in head if a publication icon is not set
                 if (settingsCache.get('icon')) {
                     head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');

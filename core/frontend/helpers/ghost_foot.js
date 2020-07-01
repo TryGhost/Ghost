@@ -9,7 +9,7 @@ const _ = require('lodash');
 module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
     const foot = [];
 
-    const globalCodeinjection = settingsCache.get('ghost_foot');
+    const globalCodeinjection = settingsCache.get('codeinjection_foot');
     const postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
 
     if (!_.isEmpty(globalCodeinjection)) {
