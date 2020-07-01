@@ -18,7 +18,7 @@
                 {{/if}}
 
                 {{#if @post.isScheduled}}
-                    – <span class="gh-schedule-time">Will be published and sent {{gh-format-post-time @post.publishedAtUTC scheduled=true}}</span>
+                    – <span class="gh-schedule-time">Will be published {{this.scheduledText}}</span>
                 {{/if}}
             </span>
         </p>
@@ -39,7 +39,7 @@
             {{/if}}
 
             {{#if @post.isPublished}}
-            <span class="gh-content-status-published nowrap" title="Post has been sent by email">
+            <span class="gh-content-status-published nowrap">
                 Published
             </span>
             {{/if}}
@@ -52,11 +52,11 @@
                         </span>
                     {{else}}
                         {{#if @post.isScheduled}}
-                            <span data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
+                            <span title="To be send by email" data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
                                 {{svg-jar "send-email" class="stroke-green-d2"}}
                             </span>
                         {{else}}
-                            <span data-tooltip="Sent by email" class="gh-content-status-emailed">
+                            <span title="Sent by email" data-tooltip="Sent by email" class="gh-content-status-emailed">
                                 {{svg-jar "send-email" class="stroke-midgrey"}}
                             </span>
                         {{/if}}
