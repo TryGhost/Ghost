@@ -115,6 +115,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     tags: hasMany('tag', {embedded: 'always', async: false}),
 
     primaryAuthor: reads('authors.firstObject'),
+    primaryTag: reads('tags.firstObject'),
 
     scratch: null,
     titleScratch: null,
