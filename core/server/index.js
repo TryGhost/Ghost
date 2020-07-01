@@ -130,8 +130,10 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
 
                 migrator.migrate()
                     .then(() => {
-                        events.emit('db.ready');
-                        return initialiseServices();
+                        return settings.reinit().then(() => {
+                            events.emit('db.ready');
+                            return initialiseServices();
+                        });
                     })
                     .then(() => {
                         config.set('maintenance:enabled', false);
