@@ -14,5 +14,10 @@ module.exports = {
                 // This will bind to events for further updates
                 SettingsCache.init(settingsCollection);
             });
+    },
+
+    reinit: function reinit() {
+        SettingsCache.shutdown();
+        return this.init();
     }
 };
