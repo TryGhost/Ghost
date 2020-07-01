@@ -231,8 +231,10 @@ const members = {
                     });
                 }
 
-                // NOTE: failed to link Stripe customer/plan/subscription
-                const isStripeLinkingError = error.message && error.message.match(/customer|plan|subscription|Stripe account/g);
+                // NOTE: failed to link Stripe customer/plan/subscription or have thrown custom Stripe connection error.
+                //       It's a bit ugly doing regex matching to detect errors, but it's the easiest way that works without
+                //       introducing additional logic/data format into current error handling
+                const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g) || error.context === i18n.t('errors.api.members.stripeNotConnected.context'));
                 if (model && isStripeLinkingError) {
                     if (error.message.indexOf('customer') && error.code === 'resource_missing') {
                         error.message = `Member not imported. ${error.message}`;
