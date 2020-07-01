@@ -63,6 +63,8 @@ describe('Posts API', function () {
                 jsonResponse.posts[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
                 jsonResponse.posts[2].url.should.eql(`${config.get('url')}/welcome/`);
                 jsonResponse.posts[11].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
+                jsonResponse.posts[11].twitter_image.should.eql(`${config.get('url')}/content/images/2020/hey-twitter.jpg`);
+                jsonResponse.posts[11].og_image.should.eql(`${config.get('url')}/content/images/2020/hey-facebook.jpg`);
 
                 jsonResponse.posts[0].tags.length.should.eql(0);
                 jsonResponse.posts[2].tags.length.should.eql(1);

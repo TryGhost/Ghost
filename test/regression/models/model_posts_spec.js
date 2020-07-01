@@ -15,6 +15,19 @@ const configUtils = require('../../utils/configUtils');
 const context = testUtils.context.owner;
 const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
+const cleanupTables = function cleanupTables() {
+    return testUtils.truncate('posts_meta')
+        .then(function () {
+            return testUtils.truncate('posts_tags');
+        })
+        .then(function () {
+            return testUtils.truncate('tags');
+        })
+        .then(function () {
+            return testUtils.truncate('posts');
+        });
+};
+
 /**
  * IMPORTANT:
  * - do not spy the events unit, because when we only spy, all listeners get the event
@@ -46,28 +59,12 @@ describe('Post Model', function () {
 
         describe('fetchOne/fetchAll/fetchPage', function () {
             before(testUtils.fixtures.insertPostsAndTags);
-            after(function () {
-                return testUtils.truncate('posts_tags')
-                    .then(function () {
-                        return testUtils.truncate('tags');
-                    })
-                    .then(function () {
-                        return testUtils.truncate('posts');
-                    });
-            });
+            after(cleanupTables);
 
             describe('findPage', function () {
                 // @TODO: this test case fails for mysql currently if you run all regression tests, the test does not fail if you run this as a single test
                 describe.skip('with more posts/tags', function () {
-                    beforeEach(function () {
-                        return testUtils.truncate('posts_tags')
-                            .then(function () {
-                                return testUtils.truncate('tags');
-                            })
-                            .then(function () {
-                                return testUtils.truncate('posts');
-                            });
-                    });
+                    beforeEach(cleanupTables);
 
                     beforeEach(function () {
                         return testUtils.fixtures.insertPostsAndTags()
@@ -172,15 +169,7 @@ describe('Post Model', function () {
         describe('edit', function () {
             beforeEach(testUtils.fixtures.insertPostsAndTags);
 
-            afterEach(function () {
-                return testUtils.truncate('posts_tags')
-                    .then(function () {
-                        return testUtils.truncate('tags');
-                    })
-                    .then(function () {
-                        return testUtils.truncate('posts');
-                    });
-            });
+            afterEach(cleanupTables);
 
             beforeEach(function () {
                 eventsTriggered = {};
@@ -689,16 +678,7 @@ describe('Post Model', function () {
 
         describe('add', function () {
             before(testUtils.fixtures.insertPostsAndTags);
-
-            after(function () {
-                return testUtils.truncate('posts_tags')
-                    .then(function () {
-                        return testUtils.truncate('tags');
-                    })
-                    .then(function () {
-                        return testUtils.truncate('posts');
-                    });
-            });
+            after(cleanupTables);
 
             beforeEach(function () {
                 eventsTriggered = {};
@@ -1164,16 +1144,7 @@ describe('Post Model', function () {
 
         describe('destroy', function () {
             beforeEach(testUtils.fixtures.insertPostsAndTags);
-
-            afterEach(function () {
-                return testUtils.truncate('posts_tags')
-                    .then(function () {
-                        return testUtils.truncate('tags');
-                    })
-                    .then(function () {
-                        return testUtils.truncate('posts');
-                    });
-            });
+            afterEach(cleanupTables);
 
             beforeEach(function () {
                 eventsTriggered = {};
@@ -1346,16 +1317,7 @@ describe('Post Model', function () {
 
         describe('Collision Protection', function () {
             before(testUtils.fixtures.insertPostsAndTags);
-
-            after(function () {
-                return testUtils.truncate('posts_tags')
-                    .then(function () {
-                        return testUtils.truncate('tags');
-                    })
-                    .then(function () {
-                        return testUtils.truncate('posts');
-                    });
-            });
+            after(cleanupTables);
 
             it('update post title, but updated_at is out of sync', function () {
                 const postToUpdate = {id: testUtils.DataGenerator.Content.posts[1].id};
@@ -1585,15 +1547,7 @@ describe('Post Model', function () {
         let editOptions;
         const createTag = testUtils.DataGenerator.forKnex.createTag;
 
-        beforeEach(function () {
-            return testUtils.truncate('posts_tags')
-                .then(function () {
-                    return testUtils.truncate('tags');
-                })
-                .then(function () {
-                    return testUtils.truncate('posts');
-                });
-        });
+        beforeEach(cleanupTables);
 
         beforeEach(function () {
             tagJSON = [];

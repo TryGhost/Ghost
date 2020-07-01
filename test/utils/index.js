@@ -56,6 +56,9 @@ require('./assertions');
 fixtures = {
     insertPosts: function insertPosts(posts) {
         return Promise.map(posts, function (post) {
+            if (post.posts_meta) {
+                post.posts_meta.post_id = post.id;
+            }
             return models.Post.add(post, module.exports.context.internal);
         });
     },
@@ -78,6 +81,10 @@ fixtures = {
 
                 post.tags = postTagRelations;
                 post.authors = postAuthorsRelations;
+
+                if (post.posts_meta) {
+                    post.posts_meta.post_id = post.id;
+                }
                 return models.Post.add(post, module.exports.context.internal);
             });
         });
