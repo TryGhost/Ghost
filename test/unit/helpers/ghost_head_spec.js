@@ -1411,7 +1411,7 @@ describe('{{ghost_head}} helper', function () {
         beforeEach(function () {
             sandbox = sinon.createSandbox();
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
-            settingsCache.get.withArgs('ghost_head').returns('<style>body {background: red;}</style>');
+            settingsCache.get.withArgs('codeinjection_head').returns('<style>body {background: red;}</style>');
 
             testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
         });
