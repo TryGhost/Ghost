@@ -72,7 +72,7 @@ function haxGetMembersPriceData() {
         }, {});
 
         priceData.currency = stripePlans[0].currency;
-        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency];
+        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency.toUpperCase()];
 
         if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
             return priceData;
