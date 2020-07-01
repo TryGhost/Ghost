@@ -46,7 +46,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         expect(this.element).to.have.trimmed.text('an hour ago');
     });
 
-    it('returns difference if post was published less than 15 minutes ago', async function () {
+    it('returns difference if post was published less than 2 minutes ago', async function () {
         let mockDate = moment.utc().subtract(13, 'minutes');
         this.set('mockDate', mockDate);
 
@@ -54,7 +54,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         expect(this.element).to.have.trimmed.text('13 minutes ago');
     });
 
-    it('returns difference if post is scheduled for less than 15 minutes from now', async function () {
+    it('returns difference if post is scheduled for less than 2 minutes from now', async function () {
         let mockDate = moment.utc().add(13, 'minutes');
         this.set('mockDate', mockDate);
 
@@ -63,9 +63,10 @@ describe('Integration: Helper: gh-format-post-time', function () {
     });
 
     it('returns correct format if post was published on the same day', async function () {
+        // needs to be outside of 12 hours
         let {mockDate, expectedTime} = setupMockDate({
-            date: '2017-09-06T16:00:00Z',
-            utcDate: '2017-09-06T18:00:00Z'
+            date: '2017-09-06T06:00:00Z',
+            utcDate: '2017-09-06T19:00:00Z'
         });
         this.set('mockDate', mockDate);
 
@@ -74,9 +75,10 @@ describe('Integration: Helper: gh-format-post-time', function () {
     });
 
     it('returns correct format if post is scheduled for the same day', async function () {
+        // needs to be outside of 12 hours
         let {mockDate, expectedTime} = setupMockDate({
-            date: '2017-09-06T18:00:00Z',
-            utcDate: '2017-09-06T16:00:00Z'
+            date: '2017-09-06T06:00:00Z',
+            utcDate: '2017-09-06T19:00:00Z'
         });
         this.set('mockDate', mockDate);
 
