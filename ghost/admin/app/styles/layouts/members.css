@@ -474,8 +474,8 @@ textarea.gh-member-details-textarea {
     padding: 0 32px;
     background:
         /* Shadow covers */
-        linear-gradient(white 30%, rgba(255,255,255,0)),
-        linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+        linear-gradient(var(--white) 30%, rgba(255,255,255,0)),
+        linear-gradient(rgba(255,255,255,0), var(--white) 70%) 0 100%,
         
         /* Shadows */
         /* radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.12), rgba(0,0,0,0)) -64px 0,
@@ -483,7 +483,7 @@ textarea.gh-member-details-textarea {
         linear-gradient(rgba(0,0,0,0.08), rgba(0,0,0,0)),
         linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.08)) 0 100%;
 	background-repeat: no-repeat;
-	background-color: white;
+	background-color: var(--white);
 	background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
 	
 	/* Opera doesn't support this in the shorthand */
@@ -536,7 +536,7 @@ p.gh-members-import-errordetailtext {
     display: block;
     content: "";
     top: 0;
-    right: -33px;
+    right: -32px;
     bottom: 0;
     height: 100%;
     width: 32px;
