@@ -1,56 +1,56 @@
-<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-featured" @title="Edit this post">
-    {{#if this.isFeatured}}
+<LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-featured" @title="Edit this post">
+    {{#if @post.isFeatured}}
         <span data-tooltip="Featured" class="dib pl1 pr1 nr1 nl1">{{svg-jar "star-filled" class="fill-blue w3 h3"}}</span>
     {{/if}}
 </LinkTo>
 
-<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-title" @title="Edit this post">
+<LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title" @title="Edit this post">
     <h3 class="gh-content-entry-title">
-        {{this.post.title}}
+        {{@post.title}}
     </h3>
     <p>
         <span class="gh-content-entry-meta">
             By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
 
-            {{#if this.primaryTag}}
-                in <span class="midgrey-l2 fw5">{{this.primaryTag}}</span>
+            {{#if @post.primaryTag}}
+                in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
             {{/if}}
 
-            {{#if this.isScheduled}}
-                – <span class="gh-schedule-time">Scheduled to be published and sent {{gh-format-post-time this.post.publishedAtUTC scheduled=true}}</span>
+            {{#if @post.isScheduled}}
+                – <span class="gh-schedule-time">Will be published and sent {{gh-format-post-time @post.publishedAtUTC scheduled=true}}</span>
             {{/if}}
         </span>
     </p>
 </LinkTo>
 
-<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-status" @title="Edit this post">
+<LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status" @title="Edit this post">
     <div class="flex items-center">
-        {{#if this.isScheduled}}
+        {{#if @post.isScheduled}}
         <span class="gh-content-status-draft gh-badge nowrap">
             Scheduled
         </span>
         {{/if}}
 
-        {{#if this.isDraft}}
+        {{#if @post.isDraft}}
         <span class="gh-content-status-draft gh-badge gh-badge-purple nowrap">
             Draft
         </span>
         {{/if}}
 
-        {{#if (and this.isPublished (not this.post.page))}}
+        {{#if @post.isPublished}}
         <span class="gh-content-status-published nowrap" title="Post has been sent by email">
             Published
         </span>
         {{/if}}
 
         {{#if this.session.user.isOwnerOrAdmin}}
-            {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
-                {{#if (eq this.post.email.status "failed")}}
+            {{#if (or @post.email (and @post.isScheduled @post.sendEmailWhenPublished))}}
+                {{#if (eq @post.email.status "failed")}}
                     <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
                         {{svg-jar "send-email" class="stroke-red"}}
                     </span>
                 {{else}}
-                    {{#if this.isScheduled}}
+                    {{#if @post.isScheduled}}
                         <span data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
                             {{svg-jar "send-email" class="stroke-green-d2"}}
                         </span>
@@ -65,6 +65,6 @@
     </div>
 </LinkTo>
 
-<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-updated" @title="Edit this post">
-    <span class="nowrap">{{gh-format-post-time this.post.updatedAtUTC draft=true}}</span>
+<LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-updated" @title="Edit this post">
+    <span class="nowrap">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
 </LinkTo>
