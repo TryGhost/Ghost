@@ -220,10 +220,10 @@ describe('Default Frontend routing', function () {
                     should.not.exist(res.headers['set-cookie']);
                     should.exist(res.headers.date);
 
-                    $('title').text().should.equal('Welcome to Ghost');
+                    $('.post-title').text().should.equal('Welcome to Ghost');
 
                     $('.content .post').length.should.equal(1);
-                    $('.poweredby').text().should.equal('Proudly published with Ghost');
+                    $('.powered').text().should.equal(' Published with Ghost');
                     $('body.amp-template').length.should.equal(1);
                     $('article.post').length.should.equal(1);
 
