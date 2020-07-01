@@ -369,22 +369,22 @@
             "members": {
                 "memberNotFound": "Member not found.",
                 "memberAlreadyExists": {
-                    "message": "Email address is already member.",
+                    "message": "Duplicate email address",
                     "context": "Attempting to add member with existing email address."
                 },
                 "stripeNotConnected": {
-                    "message": "Member not imported, Stripe account missing",
+                    "message": "Missing Stripe connection",
                     "context": "Attempting to import members with Stripe data when there is no Stripe account connected",
-                    "help": "Connect the correct Stripe account, and re-run the import"
+                    "help": "You need to connect to Stripe to import Stripe customers. "
                 },
                 "stripeCustomerNotFound": {
-                    "context": "The customer does not exist in currently linked Stripe account.",
-                    "help": "Connect the correct Stripe account, and re-run the import."
+                    "context": "Missing Stripe customer.",
+                    "help": "Make sure you’re connected to the correct Stripe Account."
                 },
                 "duplicateStripeCustomerIds": {
-                    "message": "Members not imported. Members with duplicate Stripe customer ids are not allowed.",
+                    "message": "Duplicate Stripe ID",
                     "context": "Attempting to import members with duplicate Stripe customer ids.",
-                    "help": "Remove duplicate Stripe customer ids from the import file, and re-run the import."
+                    "help": "Remove duplicate Stripe customer IDs from the CSV and re-run the import."
                 }
             },
             "tags": {
