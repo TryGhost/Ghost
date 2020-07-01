@@ -1,52 +1,57 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
-import moment from 'moment';
-import {computed} from '@ember/object';
+import {formatPostTime} from 'ghost-admin/helpers/gh-format-post-time';
+import {get} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-export default Component.extend({
-    clock: service(),
+export default class GhEditorPostStatusComponent extends Component {
+    @service clock;
+    @service settings;
 
-    post: null,
-    isSaving: false,
+    @tracked _isSaving = false;
 
-    'data-test-editor-post-status': true,
-
-    _isSaving: false,
-
-    countdown: computed('post.{publishedAtUTC,isScheduled}', 'clock.second', function () {
-        let isScheduled = this.get('post.isScheduled');
-        let publishTime = this.get('post.publishedAtUTC') || moment.utc();
-
-        let timeUntilPublished = publishTime.diff(moment.utc(), 'minutes', true);
-        let isPublishedSoon = timeUntilPublished > 0 && timeUntilPublished < 15;
-
-        // force a recompute
-        this.get('clock.second');
-
-        if (isScheduled && isPublishedSoon) {
-            return moment(publishTime).fromNow();
-        } else {
-            return false;
-        }
-    }),
-
-    // isSaving will only be true briefly whilst the post is saving,
+    // this.args.isSaving will only be true briefly whilst the post is saving,
     // we want to ensure that the "Saving..." message is shown for at least
-    // a few seconds so that it's noticeable
-    didReceiveAttrs() {
-        if (this.isSaving) {
+    // a few seconds so that it's noticeable so we use autotracking to trigger
+    // a task that sets _isSaving to true for 3 seconds
+    get isSaving() {
+        if (this.args.isSaving) {
             this.showSavingMessage.perform();
         }
-    },
 
-    showSavingMessage: task(function* () {
-        this.set('_isSaving', true);
+        return this._isSaving;
+    }
+
+    get scheduledText() {
+        // force a recompute every second
+        get(this.clock, 'second');
+
+        let text = [];
+
+        if (this.args.post.sendEmailWhenPublished) {
+            let paid = this.args.post.visibility === 'paid';
+            text.push(`and sent to ${paid ? 'paid' : 'all'} members`);
+        }
+
+        let formattedTime = formatPostTime(
+            this.args.post.publishedAtUTC,
+            {timezone: this.settings.get('timezone'), scheduled: true}
+        );
+        text.push(formattedTime);
+
+        return text.join(' ');
+    }
+
+    @task({drop: true})
+    *showSavingMessage() {
+        this._isSaving = true;
         yield timeout(config.environment === 'test' ? 0 : 3000);
 
         if (!this.isDestroyed && !this.isDestroying) {
-            this.set('_isSaving', false);
+            this._isSaving = false;
         }
-    }).drop()
-});
+    }
+}
