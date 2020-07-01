@@ -299,7 +299,7 @@ describe('Members API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.errors);
-                jsonResponse.errors[0].message.should.match(/Member not imported/i);
+                jsonResponse.errors[0].message.should.match(/Missing Stripe connection/i);
                 jsonResponse.errors[0].context.should.match(/no Stripe account connected/i);
             });
     });
