@@ -24,7 +24,7 @@
             </div>
             {{#if this.config.enableDeveloperExperiments}}
             {{#each this.importResponse.invalid.errors as |error|}}
-                <p class="gh-members-import-errordetail">{{error.message}} <span class="fw6">{{error.count}}</span></p>
+                <p class="gh-members-import-errordetail">{{error.message}} <span class="fw6">({{error.count}})</span></p>
             {{/each}}
             {{/if}}
         {{/if}}

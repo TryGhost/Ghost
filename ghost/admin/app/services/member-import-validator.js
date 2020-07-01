@@ -42,11 +42,11 @@ export default Service.extend({
         if (hasStripeId) {
             // check can be done on whole set as it won't be too slow
             if (!this.membersUtils.isStripeEnabled) {
-                validationResults.push(new MemberImportError(`You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
+                validationResults.push(new MemberImportError(`<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
             } else {
                 let stripeSeverValidation = await this._checkStripeServer(validatedSet);
                 if (stripeSeverValidation !== true) {
-                    validationResults.push(new MemberImportError(`The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
+                    validationResults.push(new MemberImportError(`<strong>Wrong Stripe account</strong><br>The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
                 }
             }
         }
