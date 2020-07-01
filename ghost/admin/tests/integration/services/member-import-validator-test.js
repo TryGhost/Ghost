@@ -56,6 +56,6 @@ describe('Integration: Service: member-import-validator', function () {
         }]);
 
         expect(result.length).to.equal(1);
-        expect(result[0].message).to.equal('You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.');
+        expect(result[0].message).to.equal('<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.');
     });
 });
