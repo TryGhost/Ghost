@@ -4,6 +4,28 @@ const fs = require('fs-extra');
 const path = require('path');
 
 /**
+ * Check if this tool can handle any file transformations as Sharp is an optional dependency
+ */
+const canTransformFiles = () => {
+    try {
+        require('sharp');
+        return true;
+    } catch (err) {
+        return false;
+    }
+};
+
+/**
+ * Check if this tool can handle a particular extension
+ * NOTE: .gif optimization is currently not supported by sharp but will be soon
+ *       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
+ *       As for .svg files, sharp only supports conversion to png, and this does not
+ *       play well with animated svg files
+ * @param {String} ext the extension to check, including the leading dot
+ */
+const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz', '.ico'].includes(ext);
+
+/**
   * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
   *
   * We currently can't enable compression or having more config options, because of
@@ -47,16 +69,6 @@ const unsafeResizeFromBuffer = (originalBuffer, {width, height} = {}) => {
 };
 
 /**
- * Check if this tool can handle a particular extension
- * NOTE: .gif optimization is currently not supported by sharp but will be soon
- *       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
- *       As for .svg files, sharp only supports conversion to png, and this does not
- *       play well with animated svg files
- * @param {String} ext the extension to check, including the leading dot
- */
-const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz', '.ico'].includes(ext);
-
-/**
  * Internal utility to wrap all transform functions in error handling
  * Allows us to keep Sharp as an optional dependency
  *
@@ -86,7 +98,8 @@ const generateOriginalImageName = (originalPath) => {
     return path.join(parsedFileName.dir, `${parsedFileName.name}_o${parsedFileName.ext}`);
 };
 
-module.exports.generateOriginalImageName = generateOriginalImageName;
+module.exports.canTransformFiles = canTransformFiles;
 module.exports.canTransformFileExtension = canTransformFileExtension;
+module.exports.generateOriginalImageName = generateOriginalImageName;
 module.exports.resizeFromPath = makeSafe(unsafeResizeFromPath);
 module.exports.resizeFromBuffer = makeSafe(unsafeResizeFromBuffer);
