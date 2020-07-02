@@ -24,9 +24,6 @@
     <a href="https://github.com/TryGhost/Ghost/contributors/">
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
     </a>
-    <a href="https://opencollective.com/ghost">
-        <img src="https://opencollective.com/ghost/backers/badge.svg" alt="OpenCollective" />
-    </a>
 </p>
 
 &nbsp;
