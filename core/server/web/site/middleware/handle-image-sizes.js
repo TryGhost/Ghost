@@ -73,6 +73,11 @@ module.exports = function (req, res, next) {
             return;
         }
 
+        // exit early if sharp isn't installed to avoid extra file reads
+        if (!imageTransform.canTransformFiles()) {
+            return redirectToOriginal();
+        }
+
         const imagePath = path.relative(sizeImageDir, req.url);
         const {dir, name, ext} = path.parse(imagePath);
         const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
