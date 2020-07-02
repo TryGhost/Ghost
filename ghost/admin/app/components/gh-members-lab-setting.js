@@ -98,7 +98,7 @@ export default Component.extend({
             },
             yearly: {
                 amount: parseInt(yearly.amount) / 100 || 0,
-                yearly: yearly.currency
+                currency: yearly.currency
             }
         };
     }),
