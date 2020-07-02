@@ -6,6 +6,7 @@ const configUtils = require('../../utils/configUtils');
 const mobiledocLib = require('../../../core/server/lib/mobiledoc');
 const storage = require('../../../core/server/adapters/storage');
 const urlUtils = require('../../../core/shared/url-utils');
+const mockUtils = require('../../utils/mocks');
 
 describe('lib/mobiledoc', function () {
     afterEach(function () {
@@ -14,6 +15,7 @@ describe('lib/mobiledoc', function () {
         configUtils.restore();
         // ensure config changes are reset and picked up by next test
         mobiledocLib.reload();
+        mockUtils.modules.unmockNonExistentModule(/sharp/);
     });
 
     describe('mobiledocHtmlRenderer', function () {
@@ -111,6 +113,72 @@ describe('lib/mobiledoc', function () {
 
             mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
                 .should.eql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt><figcaption>Birdies</figcaption></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/test.png" width="1000" height="500" alt></div></div></div></figure>');
+        });
+
+        it('does not render srcsets for non-resizable images', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    ['image', {
+                        cardWidth: '',
+                        src: '/content/images/2020/07/animated.gif',
+                        width: 4000,
+                        height: 2000
+                    }]
+                ],
+                markups: [],
+                sections: [[10, 0]]
+            };
+
+            mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
+                .should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/07/animated.gif" class="kg-image" alt></figure>');
+        });
+
+        it('does not render srcsets when sharp is not available', function () {
+            mockUtils.modules.mockNonExistentModule('sharp', new Error(), true);
+
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    ['image', {
+                        src: '/content/images/2018/04/NatGeo06.jpg',
+                        width: 4000,
+                        height: 2000
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            };
+
+            mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
+                .should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt></figure>');
+        });
+
+        it('does not render srcsets with incompatible storage engine', function () {
+            sinon.stub(storage.getStorage(), 'saveRaw').value(null);
+
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    ['image', {
+                        src: '/content/images/2018/04/NatGeo06.jpg',
+                        width: 4000,
+                        height: 2000
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            };
+
+            mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
+                .should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt></figure>');
         });
     });
 
