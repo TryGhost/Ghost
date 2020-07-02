@@ -544,10 +544,10 @@
     chalk "^3.0.0"
     sywac "^1.2.1"
 
-"@tryghost/session-service@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.4.tgz#f9a4f62c7c8fad714f6b3a7ab52c069c6fb776ff"
-  integrity sha512-4KRSRDIhfzvg8X7QiCHZWBLgZvX6KhydzaJZXwUckkQ3jnKwkrc0gnvoyixTZBEFK9g8n6TZSNlrCE/vRrXKeA==
+"@tryghost/session-service@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.5.tgz#5182c02d2de0d1c68ba81ed9b9eb006fcbae8846"
+  integrity sha512-d6/frJWl8X2YriJpL5+yxjcReCq4n5KTF3z/yMVmDoliRoxLBqafpCdJYf0WaHn+czq/zABicqhwYfVcJDp6sw==
   dependencies:
     "@tryghost/errors" "^0.2.0"
 
