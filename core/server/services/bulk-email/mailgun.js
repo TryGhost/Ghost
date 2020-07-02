@@ -20,9 +20,14 @@ function createMailgun(config) {
 
 function getInstance() {
     const bulkEmailConfig = configService.get('bulkEmail');
-    const bulkEmailSetting = settingsCache.get('bulk_email_settings');
+    const bulkEmailSetting = {
+        apiKey: settingsCache.get('mailgun_api_key'),
+        domain: settingsCache.get('mailgun_domain'),
+        baseUrl: settingsCache.get('mailgun_base_url')
+    };
     const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
     const hasMailgunSetting = !!(bulkEmailSetting && bulkEmailSetting.apiKey && bulkEmailSetting.baseUrl && bulkEmailSetting.domain);
+
     if (!hasMailgunConfig && !hasMailgunSetting) {
         logging.warn(`Bulk email service is not configured`);
     } else {
