@@ -386,10 +386,10 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.6.tgz#91e4b6ae284db16c6cf1a4a23e8f2bdfeabbe608"
-  integrity sha512-kO839p7Ac/2M6acB0L1R5fvG/80pTaotktZ1M4EP3LXWT9ehiwZzLVrElPTug2SwPklX3aG83OsE+dGrR/z6Hw==
+"@tryghost/adapter-manager@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.7.tgz#85da92b37ba586552508a48609d23e075a6c9e9f"
+  integrity sha512-nQqw9txGcpjTD5wXZd57xYdgZMyfQ8WRutSo0iRtC507Dn56NsYyVYGKtEApSGHIhEnFHQsEgVGk0TmiPcLw0A==
   dependencies:
     "@tryghost/errors" "^0.2.0"
 
