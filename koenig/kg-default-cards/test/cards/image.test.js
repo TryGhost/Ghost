@@ -214,6 +214,32 @@ describe('Image card', function () {
             serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
         });
 
+        it('is omitted when canTransformImages is provided and returns false', function () {
+            const canTransformImage = () => false;
+
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 6000
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    },
+                    canTransformImage
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+        });
+
         it('is omitted when no width is provided', function () {
             let opts = {
                 env: {

@@ -1,11 +1,16 @@
 // default content sizes: [600, 1000, 1600, 2400]
 
 module.exports = function setSrcsetAttribute(elem, image, options) {
-    if (!elem || !['IMG', 'SOURCE'].includes(elem.tagName) || !elem.getAttribute('src')) {
+    if (!elem || !['IMG', 'SOURCE'].includes(elem.tagName) || !elem.getAttribute('src') || !image) {
         return;
     }
 
     if (options.srcsets === false || !image.width || !options.contentImageSizes) {
+        return;
+    }
+
+    const isLocalContentImage = /^\/.*\/?content\/images\//.test(image.src);
+    if (isLocalContentImage && options.canTransformImage && !options.canTransformImage(image.src)) {
         return;
     }
 
@@ -26,11 +31,9 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         srcsetWidths.push(image.width);
     }
 
-    const src = elem.getAttribute('src');
-
     // apply srcset if this is a relative image that matches Ghost's image url structure
-    if (/^\/.*\/?content\/images\//.test(src)) {
-        const [, imagesPath, filename] = src.match(/(.*\/content\/images)\/(.*)/);
+    if (isLocalContentImage) {
+        const [, imagesPath, filename] = image.src.match(/(.*\/content\/images)\/(.*)/);
         const srcs = [];
 
         srcsetWidths.forEach((width) => {
@@ -49,8 +52,8 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
     }
 
     // apply srcset if this is an Unsplash image
-    if (/images\.unsplash\.com/.test(src)) {
-        const unsplashUrl = new URL(src);
+    if (/images\.unsplash\.com/.test(image.src)) {
+        const unsplashUrl = new URL(image.src);
         const srcs = [];
 
         srcsetWidths.forEach((width) => {
