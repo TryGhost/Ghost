@@ -1269,22 +1269,17 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/kg-clean-basic-html@1.0.6":
+"@tryghost/kg-clean-basic-html@1.0.6", "@tryghost/kg-clean-basic-html@^1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.6.tgz#8106cbde961163fc143728b89a3294b94a46ea22"
   integrity sha512-aA/8+RzGF9SXr2todtuJFGtB29GmudsS0Eb2pNNSLJ5IkLndR2JUZ3mSYdeOjW3mLI8xbKykRC8AYyfMwziqWw==
 
-"@tryghost/kg-clean-basic-html@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.5.tgz#27cbc727e90356188d57e77b24a41fe33629f49c"
-  integrity sha512-uVbUM6R6d726liP1AyD1jyixhNVhLg0J+u5z96WOGPO7CINSWEXpdeUSCksS/dMfGo5kFEOgw19dEBR2rKaHSQ==
-
-"@tryghost/kg-parser-plugins@1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-1.0.5.tgz#bfc82c949bbec1f2d8a68ed346f7d47afa7ea976"
-  integrity sha512-DuWca7BStqLwIlSZ8hFU5I7LVcLXUmSkTVtsSSeYqCw5Kzv7/kxoWtkl2j7r13C/Wfhig6xSXpMnHm/fOEREyQ==
+"@tryghost/kg-parser-plugins@1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-1.0.6.tgz#8655a61255d7860ed02a43f6c48ff6e17be91d06"
+  integrity sha512-18x2ORsXj6A74EqpoT4C6C/JIAeuleN/LfBCQkEhwgMOBqerV5OeRXFwFreVNVoeYZ/LSZ7kgoP2RHzwSI80WQ==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^1.0.5"
+    "@tryghost/kg-clean-basic-html" "^1.0.6"
 
 "@tryghost/mobiledoc-kit@0.12.4-ghost.1":
   version "0.12.4-ghost.1"
