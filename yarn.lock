@@ -417,10 +417,10 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.2.2"
 
-"@tryghost/image-transform@0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.2.4.tgz#bc0e791c909beff03f85ce61f7f8c7ece1213c9e"
-  integrity sha512-4FXm8VnRsv9SbXFqRKhrc4U56h1Bx58UTRxAMsp0FA2Sq68AU9YmTtjFS5t6h+mA0eQ/I6O5BiS1qPMdoWg/BA==
+"@tryghost/image-transform@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.0.tgz#0389adae9eae0feb879d884658150eec9b067038"
+  integrity sha512-4bIS8BcokyvjmOk2QGIzOToP+nhNRV98RtcMwajnL1O53Ko1R5fIw93U+6OyOgzDHpYy+NZDK37hkEamNkq5sQ==
   dependencies:
     "@tryghost/errors" "^0.2.0"
     bluebird "3.7.2"
@@ -443,10 +443,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-2.0.1.tgz#3223ef5210d73af02c53795e5a5f1a9c5fc5bd92"
   integrity sha512-0/Fx98ZIj/gyPglKg9HQP+cKPSBpbue1pnzh3E8hR4WXzqnSWMFA8VTUyMeI+8oNwxkxhZrWt5KifngHbBfw2A==
 
-"@tryghost/kg-default-cards@2.3.2":
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-2.3.2.tgz#247c9b472742467d4d624f5070f71c36ecacb07a"
-  integrity sha512-gYROUJJMoUUFPjY56YWHn9I/akKwEg51HrBkeyHaXC4xEyAuDwpMdRtToVObSJCoAPjs9nB+TifHYZGk32aeWg==
+"@tryghost/kg-default-cards@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-2.4.0.tgz#2f8d8f4bd362a22cd13bf15af0d4689ac4568222"
+  integrity sha512-kl5Oa+UTtnruZe/6/45QRp5A9jwtxrhjVnop46S6Ojl1w2SVwWDgTkKV6V4nHhCW/I7MJcWbzaABFwrULlRBiA==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^2.0.1"
     "@tryghost/url-utils" "^0.6.14"

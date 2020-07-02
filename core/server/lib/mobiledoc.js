@@ -1,9 +1,9 @@
 const path = require('path');
 const errors = require('@tryghost/errors');
-const imageTransform = require('@tryghost/image-transform');
 const logging = require('../../shared/logging');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
+const imageTransform = require('@tryghost/image-transform');
 
 let cardFactory;
 let cards;
@@ -32,7 +32,14 @@ module.exports = {
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
                 contentImageSizes: config.get('imageOptimization:contentImageSizes'),
-                srcsets: config.get('imageOptimization:srcsets')
+                srcsets: config.get('imageOptimization:srcsets'),
+                canTransformImage(storagePath) {
+                    const {ext} = path.parse(storagePath);
+
+                    return imageTransform.canTransformFiles()
+                        && imageTransform.canTransformFileExtension(ext)
+                        && typeof storage.getStorage().saveRaw === 'function';
+                }
             });
 
             cards = defaultCards.map((card) => {
@@ -100,13 +107,7 @@ module.exports = {
             return await imageSize.getImageSizeFromUrl(parsedUrl.href);
         }
 
-        // TODO: extract conditional logic lifted from handle-image-sizes.js
         async function getLocalSize(url) {
-            // skip local images if adapter doesn't support size transforms
-            if (typeof storageInstance.saveRaw !== 'function') {
-                return;
-            }
-
             // local storage adapter's .exists() expects image paths without any prefixes
             const subdirRegex = new RegExp(`^${urlUtils.getSubdir()}`);
             const contentRegex = new RegExp(`^/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
@@ -115,10 +116,7 @@ module.exports = {
             const {dir, name, ext} = path.parse(storagePath);
             const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
 
-            if (!imageNameMatched
-                || !imageTransform.canTransformFileExtension(ext)
-                || !(await storageInstance.exists(storagePath))
-            ) {
+            if (!imageNameMatched || !(await storageInstance.exists(storagePath))) {
                 return;
             }
 
