@@ -11,6 +11,17 @@ describe('Transform', function () {
         testUtils.modules.unmockNonExistentModule();
     });
 
+    describe('canTransformFiles', function () {
+        it('returns true when sharp is available', function () {
+            transform.canTransformFiles().should.be.true;
+        });
+
+        it('returns false when sharp is not available', function () {
+            testUtils.modules.mockNonExistentModule('sharp', new Error(), true);
+            transform.canTransformFiles().should.be.false;
+        });
+    });
+
     describe('canTransformFileExtension', function () {
         it('returns false for ".gif"', function () {
             should.equal(
