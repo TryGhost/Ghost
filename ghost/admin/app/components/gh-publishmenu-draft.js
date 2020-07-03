@@ -8,6 +8,7 @@ import {inject as service} from '@ember/service';
 export default Component.extend({
     feature: service(),
     settings: service(),
+    config: service(),
     session: service(),
     post: null,
     saveType: null,
@@ -24,9 +25,9 @@ export default Component.extend({
         return (this.get('session.user.isOwnerOrAdmin') && this.memberCount === 0);
     }),
 
-    canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', function () {
+    canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
         let membersEnabled = this.feature.get('labs.members');
-        let mailgunIsConfigured = this.get('settings.bulkEmailSettings.isEnabled');
+        let mailgunIsConfigured = this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
         let isPost = this.post.displayName === 'post';
         let hasSentEmail = !!this.post.email;
 

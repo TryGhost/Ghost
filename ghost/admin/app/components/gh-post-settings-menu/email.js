@@ -2,7 +2,7 @@ import Component from '@ember/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import validator from 'validator';
 import {action} from '@ember/object';
-import {alias, oneWay, or} from '@ember/object/computed';
+import {alias, not, oneWay, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -16,6 +16,7 @@ export default Component.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+    config: service(),
 
     post: null,
     sendTestEmailError: '',
@@ -29,8 +30,10 @@ export default Component.extend({
 
     testEmailAddress: oneWay('session.user.email'),
 
-    mailgunError: computed('settings.memberSubscriptionSettings', function () {
-        return !this.settings.get('bulkEmailSettings.isEnabled');
+    mailgunError: not('mailgunIsEnabled'),
+
+    mailgunIsEnabled: computed('settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
+        return this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
     }),
 
     actions: {
@@ -74,7 +77,7 @@ export default Component.extend({
                 this.set('sendTestEmailError', 'Please enter a valid email');
                 return false;
             }
-            if (!this.settings.get('bulkEmailSettings.isEnabled')) {
+            if (!this.get('mailgunIsEnabled')) {
                 this.set('sendTestEmailError', 'Please verify your email settings');
                 return false;
             }
