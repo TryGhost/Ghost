@@ -2,7 +2,6 @@ import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
-import {set} from '@ember/object';
 import {task} from 'ember-concurrency';
 
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
@@ -51,6 +50,8 @@ export default Component.extend({
 
     stripeDirect: reads('config.stripeDirect'),
 
+    mailgunIsConfigured: reads('config.mailgunIsConfigured'),
+
     allowSelfSignup: reads('settings.membersAllowFreeSignup'),
 
     /** OLD **/
@@ -79,13 +80,13 @@ export default Component.extend({
         return (domainExp && domainExp[1]) || '';
     }),
 
-    mailgunRegion: computed('settings.bulkEmailSettings.baseUrl', function () {
-        if (!this.settings.get('bulkEmailSettings.baseUrl')) {
+    mailgunRegion: computed('settings.mailgunBaseUrl', function () {
+        if (!this.settings.get('mailgunBaseUrl')) {
             return US;
         }
 
         return [US, EU].find((region) => {
-            return region.baseUrl === this.settings.get('bulkEmailSettings.baseUrl');
+            return region.baseUrl === this.settings.get('mailgunBaseUrl');
         });
     }),
 
@@ -106,15 +107,12 @@ export default Component.extend({
         };
     }),
 
-    bulkEmailSettings: computed('settings.bulkEmailSettings', function () {
-        let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
-        const {apiKey = '', baseUrl = US.baseUrl, domain = ''} = bulkEmailSettings;
-        return {apiKey, baseUrl, domain};
-    }),
-
-    hasBulkEmailConfig: computed('settings.bulkEmailSettings', function () {
-        let bulkEmailSettings = this.get('settings.bulkEmailSettings');
-        return !!bulkEmailSettings.isConfig;
+    mailgunSettings: computed('settings.{mailgunBaseUrl,mailgunApiKey,mailgunDomain}', function () {
+        return {
+            apiKey: this.get('settings.mailgunApiKey') || '',
+            domain: this.get('settings.mailgunDomain') || '',
+            baseUrl: this.get('settings.mailgunBaseUrl') || ''
+        };
     }),
 
     init() {
@@ -136,19 +134,16 @@ export default Component.extend({
             this.setDefaultContentVisibility(value);
         },
 
-        setBulkEmailSettings(key, event) {
-            let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
-            bulkEmailSettings[key] = event.target.value;
-            if (!bulkEmailSettings.baseUrl) {
-                set(bulkEmailSettings, 'baseUrl', US.baseUrl);
-            }
-            this.setBulkEmailSettings(bulkEmailSettings);
+        setMailgunDomain(event) {
+            this.set('settings.mailgunDomain', event.target.value);
         },
 
-        setBulkEmailRegion(region) {
-            let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
-            set(bulkEmailSettings, 'baseUrl', region.baseUrl);
-            this.setBulkEmailSettings(bulkEmailSettings);
+        setMailgunApiKey(event) {
+            this.set('settings.mailgunApiKey', event.target.value);
+        },
+
+        setMailgunRegion(region) {
+            this.set('settings.mailgunBaseUrl', region.baseUrl);
         },
 
         setFromAddress(fromAddress) {

@@ -318,7 +318,7 @@
             </div>
         </section>
     {{/if}}
-    {{#unless this.hasBulkEmailConfig}}
+    {{#unless this.mailgunIsConfigured}}
         <section class="bb b--whitegrey pa5">
             <div class="flex justify-between">
                 <div>
@@ -341,7 +341,7 @@
                                 <PowerSelect
                                     @options={{this.mailgunRegions}}
                                     @selected={{this.mailgunRegion}}
-                                    @onChange={{action "setBulkEmailRegion"}}
+                                    @onChange={{action "setMailgunRegion"}}
                                     @searchEnabled={{false}}
                                     @triggerComponent="gh-power-select/trigger"
                                     as |region|
@@ -353,8 +353,8 @@
                         <GhFormGroup>
                             <label class="fw6 f8">Mailgun domain</label>
                             <GhTextInput
-                                @value={{readonly this.bulkEmailSettings.domain}}
-                                @input={{action "setBulkEmailSettings" "domain"}}
+                                @value={{readonly this.mailgunSettings.domain}}
+                                @input={{action "setMailgunDomain"}}
                                 @class="mt1"
                             />
                         </GhFormGroup>
@@ -368,8 +368,8 @@
                         <label class="fw6 f8">Mailgun API key</label>
                         <GhTextInput
                             @type="password"
-                            @value={{readonly this.bulkEmailSettings.apiKey}}
-                            @input={{action "setBulkEmailSettings" "apiKey"}}
+                            @value={{readonly this.mailgunSettings.apiKey}}
+                            @input={{action "setMailgunApiKey"}}
                             @class="mt1 password" @autocomplete="new-password"
                         />
                         <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
