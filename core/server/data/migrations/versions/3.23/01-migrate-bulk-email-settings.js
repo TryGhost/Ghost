@@ -8,9 +8,9 @@ module.exports = {
     async up({transacting: knex}) {
         const defaultValue = {
             provider: 'mailgun',
-            apiKey: '',
-            domain: '',
-            baseUrl: ''
+            apiKey: null,
+            domain: null,
+            baseUrl: null
         };
         const bulkEmailSettingsJSON = await knex('settings').where({
             key: 'bulk_email_settings'
