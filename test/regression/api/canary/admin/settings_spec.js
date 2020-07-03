@@ -49,7 +49,6 @@ const defaultSettingsKeyTypes = [
     {key: 'portal_name', type: 'portal'},
     {key: 'portal_button', type: 'portal'},
     {key: 'portal_plans', type: 'portal'},
-    {key: 'bulk_email_settings', type: 'bulk_email'},
     {key: 'mailgun_api_key', type: 'bulk_email'},
     {key: 'mailgun_domain', type: 'bulk_email'},
     {key: 'mailgun_base_url', type: 'bulk_email'},

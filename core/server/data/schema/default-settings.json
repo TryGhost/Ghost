@@ -293,10 +293,6 @@
         }
     },
     "email": {
-        "bulk_email_settings": {
-            "defaultValue": "{\"provider\":\"mailgun\", \"apiKey\": \"\", \"domain\": \"\", \"baseUrl\": \"\"}",
-            "type": "object"
-        },
         "mailgun_domain": {
             "defaultValue": null,
             "type": "string"
