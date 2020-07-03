@@ -12,6 +12,83 @@ import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
+
+class MembersFieldMapping {
+    _supportedImportFields = [
+        'email',
+        'name',
+        'note',
+        'subscribed_to_emails',
+        'stripe_customer_id',
+        'complimentary_plan',
+        'labels',
+        'created_at'
+    ];
+
+    @tracked _mapping = {};
+
+    constructor(sampleRecord) {
+        let importedKeys = Object.keys(sampleRecord);
+
+        this._supportedImportFields.forEach((destinaitonField) => {
+            let matchedImportedKey = importedKeys.find(key => (key === destinaitonField));
+
+            if (!matchedImportedKey) {
+                if (destinaitonField === 'email') {
+                    // scan sample record for any occurances of '@' symbol to autodetect email
+                    for (const [key, value] of Object.entries(sampleRecord)) {
+                        if (value && value.includes('@')) {
+                            matchedImportedKey = key;
+                            break;
+                        }
+                    }
+                }
+
+                if (destinaitonField === 'stripe_customer_id') {
+                    // scan sample record for any occurances of 'cus_' as that's conventional Stripe customer id prefix
+                    for (const [key, value] of Object.entries(sampleRecord)) {
+                        if (value && value.startsWith('cus_')) {
+                            matchedImportedKey = key;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (matchedImportedKey) {
+                this.set(matchedImportedKey, destinaitonField);
+                importedKeys = importedKeys.filter(key => (key !== matchedImportedKey));
+            }
+        });
+    }
+
+    set(key, value) {
+        this._mapping[key] = value;
+
+        // trigger an update
+        // eslint-disable-next-line no-self-assign
+        this._mapping = this._mapping;
+    }
+
+    get(key) {
+        return this._mapping[key];
+    }
+
+    get mapping() {
+        return this._mapping;
+    }
+
+    updateMapping(from, to) {
+        for (const key in this._mapping) {
+            if (this.get(key) === to) {
+                this.set(key, null);
+            }
+        }
+
+        this.set(from, to);
+    }
+}
 
 export default ModalComponent.extend({
     config: service(),
@@ -24,6 +101,7 @@ export default ModalComponent.extend({
     dragClass: null,
     file: null,
     fileData: null,
+    mapping: null,
     paramName: 'membersfile',
     uploading: false,
     uploadPercentage: 0,
@@ -58,6 +136,18 @@ export default ModalComponent.extend({
             this.labels.labels.forEach((label) => {
                 formData.append('labels', label.name);
             });
+        }
+
+        // TODO: remove "if" below once import validations are production ready
+        if (this.config.get('enableDeveloperExperiments')) {
+            if (this.mapping) {
+                for (const key in this.mapping.mapping) {
+                    if (this.mapping.get(key)){
+                        // reversing mapping direction to match the structure accepted in the API
+                        formData.append(`mapping[${this.mapping.get(key)}]`, key);
+                    }
+                }
+            }
         }
 
         return formData;
@@ -102,6 +192,7 @@ export default ModalComponent.extend({
                         worker: true, // NOTE: compare speed and file sizes with/without this flag
                         complete: async (results) => {
                             this.set('fileData', results.data);
+                            this.set('mapping', new MembersFieldMapping(results.data[0]));
 
                             let result = await this.memberImportValidator.check(results.data);
 
@@ -122,6 +213,7 @@ export default ModalComponent.extend({
             this.set('labels', {labels: []});
             this.set('file', null);
             this.set('fileData', null);
+            this.set('mapping', null);
             this.set('validationErrors', null);
         },
 
@@ -139,6 +231,10 @@ export default ModalComponent.extend({
             if (!this.closeDisabled) {
                 this._super(...arguments);
             }
+        },
+
+        updateMapping(mapFrom, mapTo) {
+            this.mapping.updateMapping(mapFrom, mapTo);
         }
     },
 

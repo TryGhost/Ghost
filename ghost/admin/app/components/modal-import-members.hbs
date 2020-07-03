@@ -12,12 +12,12 @@
 {{#if this.importResponse}}
     <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3 pa4">
         <div class="flex items-center">
-            {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}} 
+            {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
             <p class="ma0 pa0"><span class="fw6">{{this.importResponse.imported.count}}</span> members were added</p>
         </div>
         {{#if this.importResponse.invalid.count}}
             <div class="flex items-start mt2">
-                {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}} 
+                {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
                 <div>
                     <p class="ma0 pa0"><span class="fw5">{{this.importResponse.invalid.count}}</span> members were skipped</p>
                 </div>
@@ -44,10 +44,14 @@
             {{/if}}
             <GhFormGroup>
                 {{#if this.config.enableDeveloperExperiments}}
-                    <h4 class="fw6 f8 dib mb1">Preview</h4>
+                    <h4 class="fw6 f8 dib mb1">Mapping</h4>
                     <div class="gh-members-import-scrollarea">
-                        <GhMembersImportTable @importData={{this.fileData}}/>
+                        <GhMembersImportTable
+                            @importData={{this.fileData}}
+                            @mapping={{this.mapping}}
+                            @updateMapping={{action "updateMapping"}}/>
                     </div>
+                    <p>Match the fields in your uploaded file to Ghost members.</p>
                 {{else}}
                     <div class="bg-whitegrey-l2 ba b--whitegrey br3">
                         <div class="flex flex-column items-center justify-center gh-members-import-file">
