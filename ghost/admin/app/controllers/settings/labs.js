@@ -184,10 +184,6 @@ export default Controller.extend({
             this.set('settings.stripeConnectIntegrationToken', stripeConnectIntegrationToken);
         },
 
-        setBulkEmailSettings(bulkEmailSettings) {
-            this.set('settings.bulkEmailSettings', bulkEmailSettings);
-        },
-
         setFromAddress(fromAddress) {
             this.set('fromAddress', fromAddress);
         }
