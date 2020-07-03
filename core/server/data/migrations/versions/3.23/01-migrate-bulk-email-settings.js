@@ -44,7 +44,7 @@ module.exports = {
                 .update({
                     group: 'email',
                     type: 'string',
-                    flags: '',
+                    flags: null,
                     value: operation.value
                 });
         }
