@@ -118,7 +118,7 @@ class SettingsImporter extends BaseImporter {
         });
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return !(['members_subscription_settings', 'stripe_connect_integration'].includes(data.key));
+            return !(['members_subscription_settings', 'stripe_connect_integration', 'bulk_email_settings'].includes(data.key));
         });
 
         // Only show warning if we are importing a private site into a non-private site.
