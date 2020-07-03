@@ -296,6 +296,18 @@
         "bulk_email_settings": {
             "defaultValue": "{\"provider\":\"mailgun\", \"apiKey\": \"\", \"domain\": \"\", \"baseUrl\": \"\"}",
             "type": "object"
+        },
+        "mailgun_domain": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mailgun_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mailgun_base_url": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "amp": {
