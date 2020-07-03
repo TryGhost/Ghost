@@ -50,6 +50,9 @@ const defaultSettingsKeyTypes = [
     {key: 'portal_button', type: 'portal'},
     {key: 'portal_plans', type: 'portal'},
     {key: 'bulk_email_settings', type: 'bulk_email'},
+    {key: 'mailgun_api_key', type: 'bulk_email'},
+    {key: 'mailgun_domain', type: 'bulk_email'},
+    {key: 'mailgun_base_url', type: 'bulk_email'},
     {key: 'amp', type: 'blog'},
     {key: 'labs', type: 'blog'},
     {key: 'slack', type: 'blog'},
@@ -95,7 +98,7 @@ describe('Settings API (canary)', function () {
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
                             return setting.key === defaultSetting.key && setting.type === defaultSetting.type;
-                        }));
+                        }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
                     }
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
