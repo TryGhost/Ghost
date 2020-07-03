@@ -49,7 +49,6 @@ const defaultSettingsKeys = [
     'portal_name',
     'portal_button',
     'portal_plans',
-    'bulk_email_settings',
     'mailgun_api_key',
     'mailgun_domain',
     'mailgun_base_url',
