@@ -6,11 +6,26 @@ export default class GhMembersImportTable extends Component {
     @tracked dataPreviewIndex = 0;
 
     get currentlyDisplayedData() {
-        if (this.args && this.args.importData) {
-            return this.args.importData[this.dataPreviewIndex];
+        let rows = [];
+
+        if (this.args && this.args.importData && this.args.mapping && this.args.mapping.mapping) {
+            let currentRecord = this.args.importData[this.dataPreviewIndex];
+
+            for (const [key, value] of Object.entries(currentRecord)) {
+                rows.push({
+                    key: key,
+                    value: value,
+                    mapTo: this.args.mapping.get(key)
+                });
+            }
         }
 
-        return {};
+        return rows;
+    }
+
+    @action
+    updateMapping(mapFrom, mapTo) {
+        this.args.updateMapping(mapFrom, mapTo);
     }
 
     @action
