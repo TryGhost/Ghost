@@ -45,6 +45,10 @@ module.exports = {
             return !settingFlagsArr.includes('RO');
         });
 
+        frame.data.settings = frame.data.settings.filter((setting) => {
+            return setting.key !== 'bulk_email_settings';
+        });
+
         frame.data.settings.forEach((setting) => {
             const settingType = settings[setting.key] ? settings[setting.key].type : '';
 

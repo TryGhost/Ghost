@@ -48,6 +48,10 @@ module.exports = {
             return !settingFlagsArr.includes('RO');
         });
 
+        frame.data.settings = frame.data.settings.filter((setting) => {
+            return setting.key !== 'bulk_email_settings';
+        });
+
         frame.data.settings.forEach((setting) => {
             // CASE: transform objects/arrays into string (we store stringified objects in the db)
             // @TODO: This belongs into the model layer. We should stringify before saving and parse when fetching from db.
