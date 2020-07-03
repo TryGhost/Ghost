@@ -1,26 +1,28 @@
 <table class="f8 gh-members-import-table ma0">
     <thead>
-        <th class="bb br b--whitegrey"><span class="f-small midgrey ttu fw5">Header</span></th>
+        <th class="bb br b--whitegrey"><span class="f-small midgrey ttu fw5">Field</span></th>
         <th class="bb b--whitegrey">
             <div class="flex items-center justify-between">
                 <span class="f-small midgrey ttu fw5 nudge-top--1">Data</span>
                 <div class="flex items-center bg-white br2 ml1 nr1 gh-members-import-datanav">
-                    <a href="#" {{action "prev"}} class="pa1 flex items-center justify-center br b--whitegrey" data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 fill-middarkgrey" }}</a> 
+                    <a href="#" {{action "prev"}} class="pa1 flex items-center justify-center br b--whitegrey" data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 fill-middarkgrey" }}</a>
                     <a href="#" {{action "next"}} class="pa1 flex items-center justify-center" data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 fill-middarkgrey" }}</a>
                 </div>
             </div>
         </th>
+        <th class="bb b--whitegrey"><span class="f-small midgrey ttu fw5">Import as...</span></th>
     </thead>
     <tbody>
-        {{#each-in currentlyDisplayedData as |key value|}}
+        {{#each currentlyDisplayedData as |row|}}
             <tr>
-                <td class="middarkgrey"><span>{{key}}</span></td>
-                <td class="middarkgrey {{unless value "empty-cell"}}"><span>{{value}}</span></td>
+                <td class="middarkgrey"><span>{{row.key}}</span></td>
+                <td class="middarkgrey {{unless value "empty-cell"}}"><span>{{row.value}}</span></td>
+                <td><span><GhMembersImportMappingInput @updateMapping={{this.updateMapping}} @mapFrom={{row.key}} @mapTo={{row.mapTo}} /></span></td>
             </tr>
         {{else}}
             <tr>
                 <td><span>No data</span></td>
             </tr>
-        {{/each-in}}
+        {{/each}}
     </tbody>
 </table>

@@ -1,0 +1,13 @@
+<span class="gh-select">
+    <OneWaySelect @value={{this.mapTo}}
+        @options={{this.availableFields}}
+        @optionValuePath="value"
+        @optionLabelPath="label"
+        @optionTargetPath="value"
+        @includeBlank={{true}}
+        @promptIsSelectable={{true}}
+        @prompt="Not imported"
+        @update={{action "updateMapping"}}
+    />
+    {{svg-jar "arrow-down-small"}}
+</span>
