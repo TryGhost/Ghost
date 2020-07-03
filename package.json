@@ -48,7 +48,7 @@
     "@tryghost/image-transform": "1.0.0",
     "@tryghost/kg-card-factory": "2.1.1",
     "@tryghost/kg-default-atoms": "2.0.1",
-    "@tryghost/kg-default-cards": "2.4.0",
+    "@tryghost/kg-default-cards": "2.4.1",
     "@tryghost/kg-markdown-html-renderer": "2.0.1",
     "@tryghost/kg-mobiledoc-html-renderer": "3.0.1",
     "@tryghost/magic-link": "0.4.9",
