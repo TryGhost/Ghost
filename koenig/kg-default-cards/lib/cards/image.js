@@ -37,16 +37,19 @@ module.exports = {
         //     img.setAttribute('height', payload.height);
         // }
 
-        setSrcsetAttribute(img, payload, options);
+        // email clients do not have good support for srcset or sizes
+        if (options.target !== 'email') {
+            setSrcsetAttribute(img, payload, options);
 
-        if (img.getAttribute('srcset') && payload.width && payload.width >= 720) {
-            // standard size
-            if (!payload.cardWidth) {
-                img.setAttribute('sizes', '(min-width: 720px) 720px');
-            }
+            if (img.getAttribute('srcset') && payload.width && payload.width >= 720) {
+                // standard size
+                if (!payload.cardWidth) {
+                    img.setAttribute('sizes', '(min-width: 720px) 720px');
+                }
 
-            if (payload.cardWidth === 'wide' && payload.width >= 1200) {
-                img.setAttribute('sizes', '(min-width: 1200px) 1200px');
+                if (payload.cardWidth === 'wide' && payload.width >= 1200) {
+                    img.setAttribute('sizes', '(min-width: 1200px) 1200px');
+                }
             }
         }
 
