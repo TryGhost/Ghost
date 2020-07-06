@@ -320,7 +320,7 @@ fieldset[disabled] .gh-btn {
     fill: color-mod(var(--midgrey) l(+15%));
 }
 
-.gh-btn:not(.gh-btn-blue):not(.gh-btn-green) svg.gh-icon-spinner rect {
+.gh-btn:not(.gh-btn-blue):not(.gh-btn-green):not(.gh-btn-red) svg.gh-icon-spinner rect {
     fill: color-mod(var(--midgrey) l(-7%));
 } 
 
