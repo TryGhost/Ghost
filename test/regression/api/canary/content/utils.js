@@ -28,6 +28,8 @@ const expectedProperties = {
         .without('type')
         // canary returns a calculated excerpt field
         .concat('excerpt')
+        // Access is a calculated property in >= v3
+        .concat('access')
         // returns meta fields from `posts_meta` schema
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')
