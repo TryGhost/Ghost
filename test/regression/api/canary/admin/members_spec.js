@@ -70,6 +70,26 @@ describe('Members API', function () {
             });
     });
 
+    it('Can search for paid members', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/?search=egon&paid=true'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                jsonResponse.members.should.have.length(1);
+                jsonResponse.members[0].email.should.equal('paid@test.com');
+                localUtils.API.checkResponse(jsonResponse, 'members');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+            });
+    });
+
     it('Add should fail when passing incorrect email_type query parameter', function () {
         const member = {
             name: 'test',
