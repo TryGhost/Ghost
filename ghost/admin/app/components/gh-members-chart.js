@@ -1,9 +1,12 @@
 /* global Chart */
 import Component from '@ember/component';
+import moment from 'moment';
 import {action} from '@ember/object';
 import {computed, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+
+const DATE_FORMAT = 'D MMM YYYY';
 
 export default Component.extend({
     ajax: service(),
@@ -135,6 +138,9 @@ export default Component.extend({
                 callbacks: {
                     label: function (tooltipItems, data) {
                         return data.datasets[0].label + `: ` + data.datasets[0].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    },
+                    title: function (tooltipItems) {
+                        return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
                     }
                 }
             },
