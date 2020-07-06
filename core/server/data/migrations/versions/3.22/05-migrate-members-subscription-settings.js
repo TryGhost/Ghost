@@ -49,16 +49,18 @@ module.exports = {
 
         const membersSubscriptionSettings = JSON.parse(membersSubscriptionSettingsJSON.value);
 
-        const membersFromAddress = membersSubscriptionSettings.fromAddress;
-        const membersAllowSelfSignup = membersSubscriptionSettings.allowSelfSignup;
+        const membersFromAddress = typeof membersSubscriptionSettings.fromAddress === 'string' ? membersSubscriptionSettings.fromAddress : 'noreply';
+        const membersAllowSelfSignup = typeof membersSubscriptionSettings.allowSelfSignup === 'boolean' ? membersSubscriptionSettings.allowSelfSignup : true;
 
-        const stripe = membersSubscriptionSettings.paymentProcessors[0];
+        const stripe = membersSubscriptionSettings && membersSubscriptionSettings.paymentProcessors && membersSubscriptionSettings.paymentProcessors[0];
 
-        const stripeDirectSecretKey = stripe.config.secret_token;
-        const stripeDirectPublishableKey = stripe.config.public_token;
-        const stripeProductName = stripe.config.product.name;
+        const stripeConfig = stripe && stripe.config || {};
 
-        const stripePlans = stripe.config.plans.map((plan) => {
+        const stripeDirectSecretKey = stripeConfig.secret_token || '';
+        const stripeDirectPublishableKey = stripeConfig.public_token || '';
+        const stripeProductName = stripeConfig.product && stripeConfig.product.name || 'Ghost Members';
+
+        const stripePlans = (stripeConfig.plans || []).map((plan) => {
             return Object.assign(plan, {
                 amount: plan.amount || 0
             });
