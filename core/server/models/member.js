@@ -155,8 +155,8 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     searchQuery: function searchQuery(queryBuilder, query) {
-        queryBuilder.where('name', 'like', `%${query}%`);
-        queryBuilder.orWhere('email', 'like', `%${query}%`);
+        queryBuilder.where('members.name', 'like', `%${query}%`);
+        queryBuilder.orWhere('members.email', 'like', `%${query}%`);
     },
 
     // TODO: hacky way to filter by members with an active subscription,
