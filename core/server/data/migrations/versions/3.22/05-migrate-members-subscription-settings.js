@@ -42,7 +42,7 @@ module.exports = {
             .where('key', 'members_subscription_settings')
             .first();
 
-        if (!membersSubscriptionSettingsJSON) {
+        if (!membersSubscriptionSettingsJSON || !membersSubscriptionSettingsJSON.value) {
             logging.warn(`Could not find members_subscription_settings - using default values`);
             return;
         }
