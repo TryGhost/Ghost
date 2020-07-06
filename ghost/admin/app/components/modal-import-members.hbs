@@ -10,6 +10,7 @@
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 {{#if this.importResponse}}
+    {{!-- post upload step with import stats --}}
     <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3 pa4">
         <div class="flex items-center">
             {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
@@ -32,41 +33,51 @@
 {{else}}
     <div class="modal-body">
         {{#if (and this.filePresent (not this.failureMessage))}}
-            {{#if validationErrors}}
-                <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-warningmessage">
-                    <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}</div>
-                    <div>
-                        {{#each validationErrors as |error|}}
-                            <p class="ma0 pa0 gh-members-import-errorheading">{{{error.message}}}</p>
-                        {{/each}}
+            {{#if this.validating}}
+                {{#if validationErrors}}
+                    <div class="flex">
+                        <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}</div>
+                        <p>The CSV contains errors some members will not be imported</p>
                     </div>
-                </div>
-            {{/if}}
-            <GhFormGroup>
-                {{#if this.config.enableDeveloperExperiments}}
-                    <h4 class="fw6 f8 dib mb1">Mapping</h4>
-                    <div class="gh-members-import-scrollarea">
-                        <GhMembersImportTable
-                            @importData={{this.fileData}}
-                            @mapping={{this.mapping}}
-                            @updateMapping={{action "updateMapping"}}/>
-                    </div>
-                    <p>Match the fields in your uploaded file to Ghost members.</p>
-                {{else}}
-                    <div class="bg-whitegrey-l2 ba b--whitegrey br3">
-                        <div class="flex flex-column items-center justify-center gh-members-import-file">
-                            {{svg-jar "file-tabular-data" class="w9 h9 mb1 stroke-midgrey"}}
-                            <div class="description midgrey">{{this.file.name}}</div>
-                        </div>
-                    </div>
-                {{/if}}
 
-                <div class="mt4">
-                    <label for="label-input"><span class="fw6 f8 dib mb1">Labels</span></label>
-                    <GhMemberLabelInput @member={{this.labels}} @triggerId="label-input" />
-                    <p>Will be applied to all newly imported members</p>
-                </div>
-            </GhFormGroup>
+                    {{#each validationErrors as |error|}}
+                    <div class="failed items-start gh-members-upload-errorcontainer gh-members-upload-warningmessage">
+                        <p class="ma0 pa0 fw6 gh-members-import-errorheading">{{{error.message}}}</p>
+                        {{#if error.context}}
+                            <p class="ma0 pa0 gh-members-import-errorheading">{{{error.context}}}</p>
+                        {{/if}}
+                    </div>
+                    {{/each}}
+                {{else}}
+                    Validating...
+                {{/if}}
+            {{else}}
+                <GhFormGroup>
+                    {{#if this.config.enableDeveloperExperiments}}
+                        <h4 class="fw6 f8 dib mb1">Mapping</h4>
+                        <div class="gh-members-import-scrollarea">
+                            <GhMembersImportTable
+                                @importData={{this.fileData}}
+                                @mapping={{this.mapping}}
+                                @updateMapping={{action "updateMapping"}}/>
+                        </div>
+                        <p>Match the fields in your uploaded file to Ghost members.</p>
+                    {{else}}
+                        <div class="bg-whitegrey-l2 ba b--whitegrey br3">
+                            <div class="flex flex-column items-center justify-center gh-members-import-file">
+                                {{svg-jar "file-tabular-data" class="w9 h9 mb1 stroke-midgrey"}}
+                                <div class="description midgrey">{{this.file.name}}</div>
+                            </div>
+                        </div>
+                    {{/if}}
+
+                    <div class="mt4">
+                        <label for="label-input"><span class="fw6 f8 dib mb1">Labels</span></label>
+                        <GhMemberLabelInput @member={{this.labels}} @triggerId="label-input" />
+                        <p>Will be applied to all newly imported members</p>
+                    </div>
+                </GhFormGroup>
+            {{/if}}
         {{else}}
             {{#if this.failureMessage}}
                 <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-errormessage">
@@ -97,9 +108,15 @@
         <button {{action "reset"}} class="gh-btn" data-test-button="close-import-members">
             <span>Start over</span>
         </button>
-        <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}>
-            <span>Import{{#if this.fileData.length}} {{pluralize this.fileData.length 'member'}}{{/if}}</span>
-        </button>
+        {{#if this.validating}}
+            <button class="gh-btn gh-btn-green" {{action "continueImport"}} disabled={{this.importDisabled}}>
+                <span>Continue</span>
+            </button>
+        {{else}}
+            <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}>
+                <span>Import{{#if this.fileData.length}} {{pluralize this.fileData.length 'member'}}{{/if}}</span>
+            </button>
+        {{/if}}
     {{else}}
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
             <span>Close</span>
