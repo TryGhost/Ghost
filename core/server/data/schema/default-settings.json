@@ -280,7 +280,7 @@
             "type": "boolean"
         },
         "portal_button": {
-            "defaultValue": "false",
+            "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
