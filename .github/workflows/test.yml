@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 3.*
       - 2.x
       - 'renovate/*'
 env:
