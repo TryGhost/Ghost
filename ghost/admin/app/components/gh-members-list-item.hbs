@@ -45,7 +45,7 @@
 
         <LinkTo @route="member" @model={{@member}} @disabled={{@isEditing}} @disabledClass="default-cursor" title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
             {{#if @member.createdAtUTC}}
-                {{moment-format @member.createdAtUTC "MMM DD, YYYY"}}
+                {{moment-format @member.createdAtUTC "D MMM YYYY"}}
                 <span class="midlightgrey">({{moment-from-now @member.createdAtUTC}})</span>
             {{/if}}
         </LinkTo>
