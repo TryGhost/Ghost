@@ -15,5 +15,8 @@ module.exports = {
         SettingsCache.shutdown();
         const settingsCollection = await models.Settings.populateDefaults();
         SettingsCache.init(settingsCollection);
+        for (const model of settingsCollection.models) {
+            model.emitChange(model.attributes.key + '.' + 'edited', {});
+        }
     }
 };
