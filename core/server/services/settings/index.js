@@ -6,18 +6,14 @@ const models = require('../../models');
 const SettingsCache = require('./cache');
 
 module.exports = {
-    init: function init() {
-        // Update the defaults
-        return models.Settings.populateDefaults()
-            .then((settingsCollection) => {
-                // Initialise the cache with the result
-                // This will bind to events for further updates
-                SettingsCache.init(settingsCollection);
-            });
+    async init() {
+        const settingsCollection = await models.Settings.populateDefaults();
+        SettingsCache.init(settingsCollection);
     },
 
-    reinit: function reinit() {
+    async reinit() {
         SettingsCache.shutdown();
-        return this.init();
+        const settingsCollection = await models.Settings.populateDefaults();
+        SettingsCache.init(settingsCollection);
     }
 };
