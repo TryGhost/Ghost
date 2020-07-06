@@ -17,7 +17,7 @@
   ],
   "devDependencies": {
     "@types/cookies": "0.7.4",
-    "@types/node": "12.12.47",
+    "@types/node": "12.12.48",
     "keypair": "1.0.1",
     "mocha": "6.2.2",
     "should": "13.2.3",
