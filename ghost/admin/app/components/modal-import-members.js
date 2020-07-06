@@ -28,39 +28,12 @@ class MembersFieldMapping {
 
     @tracked _mapping = {};
 
-    constructor(sampleRecord) {
-        let importedKeys = Object.keys(sampleRecord);
-
-        this._supportedImportFields.forEach((destinaitonField) => {
-            let matchedImportedKey = importedKeys.find(key => (key === destinaitonField));
-
-            if (!matchedImportedKey) {
-                if (destinaitonField === 'email') {
-                    // scan sample record for any occurances of '@' symbol to autodetect email
-                    for (const [key, value] of Object.entries(sampleRecord)) {
-                        if (value && value.includes('@')) {
-                            matchedImportedKey = key;
-                            break;
-                        }
-                    }
-                }
-
-                if (destinaitonField === 'stripe_customer_id') {
-                    // scan sample record for any occurances of 'cus_' as that's conventional Stripe customer id prefix
-                    for (const [key, value] of Object.entries(sampleRecord)) {
-                        if (value && value.startsWith('cus_')) {
-                            matchedImportedKey = key;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (matchedImportedKey) {
-                this.set(matchedImportedKey, destinaitonField);
-                importedKeys = importedKeys.filter(key => (key !== matchedImportedKey));
-            }
-        });
+    constructor(mapping) {
+        // NOTE: there are only 2 distinguishable fields that could be automatically matched, which is the reason why code is just simple assignments
+        if (mapping) {
+            this.set(mapping.email, 'email');
+            this.set(mapping.stripe_customer_id, 'stripe_customer_id');
+        }
     }
 
     set(key, value) {
@@ -103,6 +76,7 @@ export default ModalComponent.extend({
     fileData: null,
     mapping: null,
     paramName: 'membersfile',
+    validating: false,
     uploading: false,
     uploadPercentage: 0,
     importResponse: null,
@@ -186,18 +160,21 @@ export default ModalComponent.extend({
 
                 // TODO: remove "if" below once import validations are production ready
                 if (this.config.get('enableDeveloperExperiments')) {
+                    this.set('validating', true);
                     papaparse.parse(file, {
                         header: true,
                         skipEmptyLines: true,
                         worker: true, // NOTE: compare speed and file sizes with/without this flag
                         complete: async (results) => {
                             this.set('fileData', results.data);
-                            this.set('mapping', new MembersFieldMapping(results.data[0]));
 
-                            let result = await this.memberImportValidator.check(results.data);
+                            let {validationErrors, mapping} = await this.memberImportValidator.check(results.data);
+                            this.set('mapping', new MembersFieldMapping(mapping));
 
-                            if (result !== true) {
-                                this._importValidationFailed(result);
+                            if (validationErrors.length) {
+                                this._importValidationFailed(validationErrors);
+                            } else {
+                                this.set('validating', false);
                             }
                         },
                         error: (error) => {
@@ -221,6 +198,10 @@ export default ModalComponent.extend({
             if (this.file) {
                 this.generateRequest();
             }
+        },
+
+        continueImport() {
+            this.set('validating', false);
         },
 
         confirm() {
