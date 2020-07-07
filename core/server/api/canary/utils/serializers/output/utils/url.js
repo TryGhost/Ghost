@@ -93,7 +93,7 @@ const forSettings = (attrs) => {
     // @NOTE: Admin & Content API return a different format, need to mappers
     if (_.isArray(attrs)) {
         attrs.forEach((obj) => {
-            if (['cover_image', 'logo', 'icon'].includes(obj.key) && obj.value) {
+            if (['cover_image', 'logo', 'icon', 'portal_button_icon'].includes(obj.key) && obj.value) {
                 obj.value = urlUtils.urlFor('image', {image: obj.value}, true);
             }
         });

@@ -91,7 +91,7 @@ module.exports = {
                 setting.key = 'lang';
             }
 
-            if (['cover_image', 'icon', 'logo'].includes(setting.key)) {
+            if (['cover_image', 'icon', 'logo', 'portal_button_icon'].includes(setting.key)) {
                 setting = url.forSetting(setting);
             }
         });
