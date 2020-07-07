@@ -435,6 +435,10 @@ textarea.gh-member-details-textarea {
 /* Import modal
 /* ---------------------------------------------------------- */
 
+.fullscreen-modal-import-members {
+    max-width: 640px;
+}
+
 .gh-members-import-uploader {
     width: 100%;
     min-height: 180px;
@@ -516,7 +520,7 @@ p.gh-members-import-errordetailtext {
 
 .gh-members-import-table {
     position: relative;
-    border: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    margin-bottom: 1px;
 }
 
 .gh-members-import-table::before {
@@ -546,6 +550,13 @@ p.gh-members-import-errordetailtext {
 .gh-members-import-table th {
     padding: 3px 8px;
     background: color-mod(var(--darkgrey) a(5%) s(+50%));
+    border-left: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-top: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+}
+
+.gh-members-import-table tr th:last-of-type {
+    border-right: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
 .gh-members-import-table td.empty-cell {
@@ -554,16 +565,18 @@ p.gh-members-import-errordetailtext {
 
 .gh-members-import-table td {
     padding: 6px 8px;
+    border-left: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
 .gh-members-import-table tr td:first-of-type,
 .gh-members-import-table tr th:first-of-type {
     width: 170px;
-    border-right: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
-.gh-members-import-table tr:not(:last-of-type) td {
-    border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+.gh-members-import-table tr td:last-of-type {
+    padding: 0;
+    border-right: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
 .gh-members-import-datanav {
@@ -580,4 +593,49 @@ p.gh-members-import-errordetail:first-of-type {
     border-top: 1px solid var(--whitegrey);
     padding-top: 8px;
     margin-top: 8px;
+}
+
+.gh-import-member-select {
+    height: auto;
+    border: none;
+    background: none;
+    border-radius: 0;
+}
+
+.gh-import-member-select select {
+    height: 36px;
+    border: none;
+    font-size: 1.3rem;
+    line-height: 1em;
+    padding: 4px 4px 4px 8px;
+    background: none;
+    color: var(--middarkgrey);
+    font-weight: 600;
+    border-radius: 0;
+}
+
+.gh-import-member-select select option {
+    font-weight: 400;
+}
+
+.gh-import-member-select select:focus {
+    background: none;
+    color: var(--middarkgrey);
+}
+
+.gh-import-member-select.unmapped select,
+.gh-import-member-select.unmapped select:focus {
+    color: var(--midlightgrey);
+    font-weight: 400;
+}
+
+.gh-import-member-select svg {
+    right: 8px;
+}
+
+/* Fixing Firefox's select padding */
+@-moz-document url-prefix() {
+    .gh-import-member-select select {
+        padding: 4px;
+    }
 }
