@@ -52,3 +52,25 @@
     display: flex;
     flex-direction: column;
 }
+
+.gh-portal-button-icon {
+    cursor: pointer;
+    height: 44px;
+    padding: 5px 5px;
+    width: 44px;
+    margin-right: 3px;
+}
+
+.gh-portal-button-icon:hover {
+    border: 1px solid skyblue;
+}
+
+.gh-portal-button-icon.selected-icon {
+    border: 1px solid lightblue;
+}
+
+.gh-show-modal-link-form .gh-input {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
