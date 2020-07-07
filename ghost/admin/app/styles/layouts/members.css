@@ -551,12 +551,17 @@ p.gh-members-import-errordetailtext {
     padding: 3px 8px;
     background: color-mod(var(--darkgrey) a(5%) s(+50%));
     border-left: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
-    border-top: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-top: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
     border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
+.gh-members-import-table tr th:first-of-type {
+    border-left: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    width: 180px;
+}
+
 .gh-members-import-table tr th:last-of-type {
-    border-right: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-right: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
 }
 
 .gh-members-import-table td.empty-cell {
@@ -570,14 +575,18 @@ p.gh-members-import-errordetailtext {
     vertical-align: top;
 }
 
-.gh-members-import-table tr td:first-of-type,
-.gh-members-import-table tr th:first-of-type {
-    width: 170px;
+.gh-members-import-table tr td:first-of-type {
+    border-left: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    width: 180px;
 }
 
 .gh-members-import-table tr td:last-of-type {
     padding: 0;
-    border-right: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-right: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+}
+
+.gh-members-import-table tr:last-of-type td {
+    border-bottom: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
 }
 
 .gh-members-import-datanav {
