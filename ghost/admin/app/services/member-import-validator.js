@@ -25,35 +25,6 @@ export default Service.extend({
         const hasStripeIds = !!mapping.stripe_customer_id;
         const hasEmails = !!mapping.email;
 
-        if (!hasEmails) {
-            validationErrors.push(new MemberImportError({
-                message: 'No email addresses found in provided data.'
-            }));
-        } else {
-            // check can be done on whole set as it won't be too slow
-            const {invalidCount, emptyCount, duplicateCount} = this._checkEmails(data, mapping);
-            if (invalidCount) {
-                validationErrors.push(new MemberImportError({
-                    message: `Invalid email address (${invalidCount})`,
-                    type: 'warning'
-                }));
-            }
-
-            if (emptyCount) {
-                validationErrors.push(new MemberImportError({
-                    message: `Missing email address (${emptyCount})`,
-                    type: 'warning'
-                }));
-            }
-
-            if (duplicateCount) {
-                validationErrors.push(new MemberImportError({
-                    message: `Duplicate email address (${duplicateCount})`,
-                    type: 'warning'
-                }));
-            }
-        }
-
         if (hasStripeIds) {
             // check can be done on whole set as it won't be too slow
             const {totalCount, duplicateCount} = this._checkStripeIds(data, mapping);
@@ -78,6 +49,35 @@ export default Service.extend({
             if (duplicateCount) {
                 validationErrors.push(new MemberImportError({
                     message: `Duplicate Stripe ID (${duplicateCount})`,
+                    type: 'warning'
+                }));
+            }
+        }
+
+        if (!hasEmails) {
+            validationErrors.push(new MemberImportError({
+                message: 'No email addresses found in the uploaded CSV.'
+            }));
+        } else {
+            // check can be done on whole set as it won't be too slow
+            const {invalidCount, emptyCount, duplicateCount} = this._checkEmails(data, mapping);
+            if (invalidCount) {
+                validationErrors.push(new MemberImportError({
+                    message: `Invalid email address (${invalidCount})`,
+                    type: 'warning'
+                }));
+            }
+
+            if (emptyCount) {
+                validationErrors.push(new MemberImportError({
+                    message: `Missing email address (${emptyCount})`,
+                    type: 'warning'
+                }));
+            }
+
+            if (duplicateCount) {
+                validationErrors.push(new MemberImportError({
+                    message: `Duplicate email address (${duplicateCount})`,
                     type: 'warning'
                 }));
             }
@@ -192,11 +192,13 @@ export default Service.extend({
             }
 
             if (emailValue && !validator.isEmail(emailValue)) {
-                invalidCount += 1;
+                // Temporarily not returning this error
+                // invalidCount += 1;
             } else if (emailValue) {
                 if (emailMap[emailValue]) {
                     emailMap[emailValue] += 1;
-                    duplicateCount += 1;
+                    // Temporarily not returning this error
+                    // duplicateCount += 1;
                 } else {
                     emailMap[emailValue] = 1;
                 }

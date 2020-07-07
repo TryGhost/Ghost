@@ -1,5 +1,9 @@
 /* Global
 /* ----------------------------------------- */
+:root {
+    --member-import-table-outline: color-mod(var(--darkgrey) a(12%) s(+40%));
+    --member-import-table-border: color-mod(var(--darkgrey) a(7%) s(+40%));
+}
 
 /* Members avatar
 /* ----------------------------------------- */
@@ -448,25 +452,60 @@ textarea.gh-member-details-textarea {
     min-height: 180px;
 }
 
+.gh-members-import-spinner {
+    position: relative;
+    display: flex;
+    min-height: 182px;
+    justify-content: center;
+    align-items: center;
+}
+
+.gh-members-import-spinner .gh-loading-content {
+    padding-bottom: 40px;
+}
+
+.gh-members-import-spinner .description {
+    padding-top: 46px;
+}
+
 .gh-members-upload-errorcontainer {
     border: 1px solid var(--whitegrey);
     border-radius: 4px;
-    padding: 8px;
-    margin-bottom: 20px;
+    padding: 12px;
+    margin-bottom: 24px;
     color: var(--middarkgrey);
 }
 
-.gh-members-upload-warningmessage {
+.gh-members-upload-errorcontainer.warning {
     border-left: 4px solid var(--yellow);
 }
 
-.gh-members-upload-warningmessage p a {
+
+.gh-members-upload-errorcontainer.warning p a {
     color: color-mod(var(--yellow) l(-12%));
     text-decoration: underline;
 }
 
-.gh-members-upload-errormessage {
+.gh-members-upload-errorcontainer.error {
     border-left: 4px solid var(--red);
+}
+
+.gh-members-upload-errorcontainer.error p a {
+    color: var(--red);
+    text-decoration: underline;
+}
+
+.gh-members-import-errormessage {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 12px 0 0;
+}
+
+p.gh-members-import-errorcontext {
+    font-size: 1.25rem;
+    line-height: 1.3em;
+    margin: 0;
+    font-weight: 400;
 }
 
 .gh-members-import-scrollarea {
@@ -550,18 +589,18 @@ p.gh-members-import-errordetailtext {
 .gh-members-import-table th {
     padding: 3px 8px;
     background: color-mod(var(--darkgrey) a(5%) s(+50%));
-    border-left: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
-    border-top: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
-    border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-left: 1px solid var(--member-import-table-border);
+    border-top: 1px solid var(--member-import-table-outline);
+    border-bottom: 1px solid var(--member-import-table-border);
 }
 
 .gh-members-import-table tr th:first-of-type {
-    border-left: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    border-left: 1px solid var(--member-import-table-outline);
     width: 180px;
 }
 
 .gh-members-import-table tr th:last-of-type {
-    border-right: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    border-right: 1px solid var(--member-import-table-outline);
 }
 
 .gh-members-import-table td.empty-cell {
@@ -570,23 +609,23 @@ p.gh-members-import-errordetailtext {
 
 .gh-members-import-table td {
     padding: 7px 8px 6px;
-    border-left: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
-    border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+    border-left: 1px solid var(--member-import-table-border);
+    border-bottom: 1px solid var(--member-import-table-border);
     vertical-align: top;
 }
 
 .gh-members-import-table tr td:first-of-type {
-    border-left: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    border-left: 1px solid var(--member-import-table-outline);
     width: 180px;
 }
 
 .gh-members-import-table tr td:last-of-type {
     padding: 0;
-    border-right: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    border-right: 1px solid var(--member-import-table-outline);
 }
 
 .gh-members-import-table tr:last-of-type td {
-    border-bottom: 1px solid color-mod(var(--darkgrey) a(12%) s(+40%));
+    border-bottom: 1px solid var(--member-import-table-outline);
 }
 
 .gh-members-import-datanav {
@@ -649,6 +688,23 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-import-table td.table-cell-data {
     max-width: 180px;
     overflow-wrap: break-word;
+}
+
+.gh-member-import-result-summary {
+    padding: 20px;
+}
+
+.gh-member-import-result-summary h2 {
+    font-size: 3.6rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-member-import-result-summary p {
+    margin: -2px 0 0;
+    padding: 0;
+    color: var(--midlightgrey);
 }
 
 /* Fixing Firefox's select padding */
