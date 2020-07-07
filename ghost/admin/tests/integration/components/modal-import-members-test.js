@@ -55,7 +55,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         expect(find('h1').textContent.trim(), 'default header')
             .to.equal('Import members');
         expect(find('.description').textContent.trim(), 'upload label')
-            .to.equal('Select or drag-and-drop a CSV File');
+            .to.equal('Select or drag-and-drop a CSV file');
     });
 
     it('generates request to supplied endpoint', async function () {
