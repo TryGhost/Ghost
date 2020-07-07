@@ -62,6 +62,7 @@ export default Service.extend({
             // check can be done on whole set as it won't be too slow
             const {invalidCount, emptyCount, duplicateCount} = this._checkEmails(data, mapping);
             if (invalidCount) {
+                // @TODO: Remove error from displayed errors
                 validationErrors.push(new MemberImportError({
                     message: `Invalid email address (${invalidCount})`,
                     type: 'warning'
@@ -76,6 +77,7 @@ export default Service.extend({
             }
 
             if (duplicateCount) {
+                // @TODO: Remove error from displayed errors
                 validationErrors.push(new MemberImportError({
                     message: `Duplicate email address (${duplicateCount})`,
                     type: 'warning'
@@ -192,13 +194,11 @@ export default Service.extend({
             }
 
             if (emailValue && !validator.isEmail(emailValue)) {
-                // Temporarily not returning this error
-                // invalidCount += 1;
+                invalidCount += 1;
             } else if (emailValue) {
                 if (emailMap[emailValue]) {
                     emailMap[emailValue] += 1;
-                    // Temporarily not returning this error
-                    // duplicateCount += 1;
+                    duplicateCount += 1;
                 } else {
                     emailMap[emailValue] = 1;
                 }
