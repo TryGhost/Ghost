@@ -40,6 +40,49 @@
                     "type": ["string", "null"],
                     "maxLength": 500
                 },
+                "og_image": {
+                    "type": ["string", "null"],
+                    "format": "uri-reference",
+                    "maxLength": 2000
+                },
+                "og_title": {
+                    "type": ["string", "null"],
+                    "maxLength": 300
+                },
+                "og_description": {
+                    "type": ["string", "null"],
+                    "maxLength": 500
+                },
+                "twitter_image": {
+                    "type": ["string", "null"],
+                    "format": "uri-reference",
+                    "maxLength": 2000
+                },
+                "twitter_title": {
+                    "type": ["string", "null"],
+                    "maxLength": 300
+                },
+                "twitter_description": {
+                    "type": ["string", "null"],
+                    "maxLength": 500
+                },
+                "codeinjection_head": {
+                    "type": ["string", "null"],
+                    "maxLength": 65535
+                },
+                "codeinjection_foot": {
+                    "type": ["string", "null"],
+                    "maxLength": 65535
+                },
+                "canonical_url": {
+                    "type": ["string", "null"],
+                    "format": "uri-reference",
+                    "maxLength": 2000
+                },
+                "accent_color": {
+                    "type": ["string", "null"],
+                    "maxLength": 50
+                },
                 "id": {
                     "strip": true
                 },
