@@ -146,7 +146,10 @@ class PaidAccountHomePage extends React.Component {
     }
 
     getCardLabel({defaultCardLast4}) {
-        return `**** **** **** ${defaultCardLast4}`;
+        if (defaultCardLast4) {
+            return `**** **** **** ${defaultCardLast4}`;
+        }
+        return `Complimentary`;
     }
 
     openEditProfile() {
