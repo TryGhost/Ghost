@@ -98,7 +98,10 @@ const getMemberSiteData = async function (req, res) {
         is_stripe_configured: isStripeConfigured,
         portal_button: settingsCache.get('portal_button'),
         portal_name: settingsCache.get('portal_name'),
-        portal_plans: settingsCache.get('portal_plans')
+        portal_plans: settingsCache.get('portal_plans'),
+        portal_button_icon: settingsCache.get('portal_button_icon'),
+        portal_button_signup_text: settingsCache.get('portal_button_signup_text'),
+        portal_button_style: settingsCache.get('portal_button_style')
     };
 
     // accent_color is currently an experimental feature
