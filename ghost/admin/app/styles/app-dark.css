@@ -529,3 +529,7 @@ input:focus,
 .gh-members-import-table::after {
     background: #212A2E;
 }
+.gh-import-member-select,
+.gh-import-member-select select {
+    background: none !important;
+}
