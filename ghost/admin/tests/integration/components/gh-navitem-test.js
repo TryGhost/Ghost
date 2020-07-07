@@ -104,7 +104,7 @@ describe('Integration: Component: gh-navitem', function () {
         await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateLabel=(action update)}}`);
         await triggerEvent('.gh-blognav-label input', 'blur');
 
-        expect(updateActionCallCount).to.equal(1);
+        expect(updateActionCallCount).to.equal(2);
     });
 
     it('displays inline errors', async function () {

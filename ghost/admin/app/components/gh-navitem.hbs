@@ -17,7 +17,7 @@
             @shouldFocus={{this.navItem.last}}
             @placeholder="Label"
             @value={{readonly this.label}}
-            @input={{action (mut this.label) value="target.value"}}
+            @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
             @focus-out={{action "updateLabel" this.label}} data-test-input="label" />
         <GhErrorMessage
