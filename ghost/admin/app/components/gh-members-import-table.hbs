@@ -1,8 +1,8 @@
 <table class="f8 gh-members-import-table ma0">
     <thead>
         <tr>
-            <th><span class="f-small midgrey ttu fw5">Field</span></th>
-            <th>
+            <th class="table-cell-field"><span class="f-small midgrey ttu fw5">Field</span></th>
+            <th class="table-cell-data">
                 <div class="flex items-center justify-between">
                     <span class="f-small midgrey ttu fw5 nudge-top--1">Data</span>
                     <div class="flex items-center bg-white br2 ml1 nr1 gh-members-import-datanav">
@@ -17,8 +17,8 @@
     <tbody>
         {{#each currentlyDisplayedData as |row|}}
             <tr>
-                <td class="middarkgrey"><span>{{row.key}}</span></td>
-                <td class="middarkgrey {{unless row.value "empty-cell"}}"><span>{{row.value}}</span></td>
+                <td class="middarkgrey table-cell-field"><span>{{row.key}}</span></td>
+                <td class="middarkgrey table-cell-data {{unless row.value "empty-cell"}}"><span>{{row.value}}</span></td>
                 <td><span><GhMembersImportMappingInput @updateMapping={{this.updateMapping}} @mapFrom={{row.key}} @mapTo={{row.mapTo}} /></span></td>
             </tr>
         {{else}}
