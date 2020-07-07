@@ -62,7 +62,7 @@ class MembersConfigProvider {
         };
 
         try {
-            const plans = this._settingsCache.get('stripe_plans');
+            const plans = this._settingsCache.get('stripe_plans') || [];
 
             const priceData = plans.reduce((prices, plan) => {
                 const numberAmount = 0 + plan.amount;
@@ -177,7 +177,7 @@ class MembersConfigProvider {
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
-            plans: [COMPLIMENTARY_PLAN].concat(this._settingsCache.get('stripe_plans')),
+            plans: [COMPLIMENTARY_PLAN].concat(this._settingsCache.get('stripe_plans') || []),
             appInfo: {
                 name: 'Ghost',
                 partner_id: 'pp_partner_DKmRVtTs4j9pwZ',
