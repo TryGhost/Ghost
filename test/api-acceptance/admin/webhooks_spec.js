@@ -76,7 +76,7 @@ describe('Webhooks API', function () {
                             integration_id: createdIntegration.id
                         }]
                     })
-                    .expect(201)
+                    .expect(201);
             })
             .then(({body}) => {
                 [createdWebhook] = body.webhooks;
