@@ -61,7 +61,7 @@ export default class App extends React.Component {
         // Loads default page and popup state for local UI testing
         if (process.env.NODE_ENV === 'development') {
             return {
-                page: 'signup',
+                page: 'links',
                 showPopup: true
             };
         }
@@ -85,6 +85,7 @@ export default class App extends React.Component {
                 ...this.state.site,
                 ...(previewSite || {})
             },
+            member: this.getPreviewMember(),
             ...restPreview
         });
     }
@@ -105,7 +106,7 @@ export default class App extends React.Component {
             // Display the key/value pairs
             for (let pair of qsParams.entries()) {
                 const key = pair[0];
-                const value = pair[1];
+                const value = decodeURIComponent(pair[1]);
                 if (key === 'button') {
                     previewSettings.site.portal_button = JSON.parse(value);
                 } else if (key === 'name') {
@@ -118,6 +119,14 @@ export default class App extends React.Component {
                     allowedPlans.push('yearly');
                 } else if (key === 'page') {
                     previewSettings.page = value;
+                } else if (key === 'accentColor') {
+                    previewSettings.site.accent_color = value;
+                } else if (key === 'buttonIcon') {
+                    previewSettings.site.portal_button_icon = value;
+                } else if (key === 'signupButtonText') {
+                    previewSettings.site.portal_button_signup_text = value;
+                } else if (key === 'buttonStyle') {
+                    previewSettings.site.portal_button_style = value;
                 }
             }
             previewSettings.site.portal_plans = allowedPlans;
@@ -125,6 +134,17 @@ export default class App extends React.Component {
             return previewSettings;
         }
         return {};
+    }
+
+    getPreviewMember() {
+        if (this.isPreviewMode()) {
+            const {site: previewSite, ...restPreview} = this.getPreviewState();
+            if (restPreview.page.includes('account')) {
+                return Fixtures.member.free;
+            }
+            return null;
+        }
+        return null;
     }
 
     async initSetup() {
@@ -143,7 +163,7 @@ export default class App extends React.Component {
                     ...site,
                     ...(previewSite || {})
                 },
-                member: member || (this.isPreviewMode() ? Fixtures.member.free : null),
+                member: member || this.getPreviewMember(),
                 page,
                 showPopup,
                 action: 'init:success',
@@ -197,8 +217,9 @@ export default class App extends React.Component {
         return {type, status, reason};
     }
 
-    getBrandColor() {
-        return (this.state.site && this.state.site.brand && this.state.site.brand.primaryColor) || '#3db0ef';
+    getAccentColor() {
+        const {accent_color: accentColor = '#3db0ef'} = this.state.site || {};
+        return accentColor;
     }
 
     async onAction(action, data) {
@@ -334,7 +355,7 @@ export default class App extends React.Component {
                     site,
                     member,
                     action,
-                    brandColor: this.getBrandColor(),
+                    brandColor: this.getAccentColor(),
                     page,
                     lastPage,
                     onAction: (_action, data) => this.onAction(_action, data)

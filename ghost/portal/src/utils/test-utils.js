@@ -21,7 +21,7 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
         site,
         member: member.free,
         action: 'init:success',
-        brandColor: site.brand.primaryColor,
+        brandColor: site.accent_color,
         page: 'signup',
         onAction: mockOnActionFn,
         ...overrideContext

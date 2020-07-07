@@ -9,6 +9,7 @@ import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import AccountPlanPage from './pages/AccountPlanPage';
 import AccountProfilePage from './pages/AccountProfilePage';
+import LinkPage from './pages/LinkPage';
 
 const React = require('react');
 
@@ -80,7 +81,10 @@ const StylesWrapper = ({member}) => {
                 minHeight: '290px',
                 maxHeight: '290px'
             },
-            accountProfile
+            accountProfile,
+            links: {
+                width: '600px'
+            }
         },
         popup: {
             container: {
@@ -118,7 +122,8 @@ const Pages = {
     accountPlan: AccountPlanPage,
     accountProfile: AccountProfilePage,
     magiclink: MagicLinkPage,
-    loading: LoadingPage
+    loading: LoadingPage,
+    links: LinkPage
 };
 
 class PopupContent extends React.Component {

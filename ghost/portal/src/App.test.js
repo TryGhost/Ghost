@@ -8,7 +8,7 @@ const setup = (overrides) => {
         site,
         member: member.free,
         action: 'init:success',
-        brandColor: site.brand.primaryColor,
+        brandColor: site.accent_color,
         page: 'signup',
         initStatus: 'success',
         showPopup: true
