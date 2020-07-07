@@ -39,6 +39,7 @@ export default Component.extend(ValidationState, {
         },
 
         updateLabel(value) {
+            this.set('label', value);
             return this.updateLabel(value, this.navItem);
         },
 
