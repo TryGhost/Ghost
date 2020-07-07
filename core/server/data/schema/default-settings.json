@@ -290,6 +290,22 @@
         "portal_plans": {
             "defaultValue": "[\"free\", \"monthly\", \"yearly\"]",
             "type": "array"
+        },
+        "portal_button_style": {
+            "defaultValue": "icon-and-text",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["text-only", "icon-and-text", "icon-only"]]
+            },
+            "type": "string"
+        },
+        "portal_button_icon": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "portal_button_signup_text": {
+            "defaultValue": "Subscribe",
+            "type": "string"
         }
     },
     "email": {
