@@ -1,14 +1,16 @@
 import React from 'react';
+import getContrastColor from '../../utils/contrast-color';
 
 const Styles = ({brandColor, retry, disabled, style = {}}) => {
     let backgroundColor = (brandColor || '#3eb0ef');
     if (retry) {
-        backgroundColor = 'red';
+        backgroundColor = '#FF0000';
     }
 
     if (disabled) {
-        backgroundColor = 'grey';
+        backgroundColor = '#D3D3D3';
     }
+    const textColor = getContrastColor(backgroundColor);
     return {
         button: {
             display: 'inline-block',
@@ -24,7 +26,7 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
             borderRadius: '5px',
             cursor: 'pointer',
             transition: '.4s ease',
-            color: '#fff',
+            color: textColor,
             backgroundColor,
             boxShadow: 'none',
             userSelect: 'none',
