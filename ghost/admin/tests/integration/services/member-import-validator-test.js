@@ -74,7 +74,7 @@ describe('Integration: Service: member-import-validator', function () {
         }]);
 
         expect(validationErrors.length).to.equal(1);
-        expect(validationErrors[0].message).to.equal('No email addresses found in provided data.');
+        expect(validationErrors[0].message).to.equal('No email addresses found in the uploaded CSV.');
     });
 
     it('returns validation error for invalid email', async function () {
