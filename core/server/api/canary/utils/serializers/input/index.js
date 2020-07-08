@@ -29,5 +29,9 @@ module.exports = {
 
     get members() {
         return require('./members');
+    },
+
+    get webhooks() {
+        return require('./webhooks');
     }
 };

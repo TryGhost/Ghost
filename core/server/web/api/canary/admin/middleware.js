@@ -25,7 +25,7 @@ const notImplemented = function (req, res, next) {
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         config: ['GET'],
-        webhooks: ['POST', 'DELETE'],
+        webhooks: ['POST', 'PUT', 'DELETE'],
         schedules: ['PUT'],
         db: ['POST']
     };
