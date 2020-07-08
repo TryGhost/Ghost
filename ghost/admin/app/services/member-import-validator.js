@@ -1,8 +1,8 @@
 import MemberImportError from 'ghost-admin/errors/member-import-error';
 import Service, {inject as service} from '@ember/service';
 import validator from 'validator';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {isEmpty} from '@ember/utils';
-import {pluralize} from 'ember-inflector';
 
 export default Service.extend({
     ajax: service(),
@@ -32,8 +32,8 @@ export default Service.extend({
 
             if (!this.membersUtils.isStripeEnabled) {
                 validationErrors.push(new MemberImportError({
-                    message: 'Missing stripe connection',
-                    context: (pluralize(totalCount, 'Stripe customer')) + ` won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
+                    message: `Missing stripe connection (${formatNumber(totalCount)})`,
+                    context: `Stripe customers won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
                     type: 'warning'
                 }));
             } else {
@@ -49,7 +49,7 @@ export default Service.extend({
 
             if (duplicateCount) {
                 validationErrors.push(new MemberImportError({
-                    message: `Duplicate Stripe ID (${duplicateCount})`,
+                    message: `Duplicate Stripe ID (${formatNumber(duplicateCount)})`,
                     type: 'warning'
                 }));
             }
@@ -65,14 +65,14 @@ export default Service.extend({
             if (invalidCount) {
                 // @TODO: Remove error from displayed errors
                 validationErrors.push(new MemberImportError({
-                    message: `Invalid email address (${invalidCount})`,
+                    message: `Invalid email address (${formatNumber(invalidCount)})`,
                     type: 'warning'
                 }));
             }
 
             if (emptyCount) {
                 validationErrors.push(new MemberImportError({
-                    message: `Missing email address (${emptyCount})`,
+                    message: `Missing email address (${formatNumber(emptyCount)})`,
                     type: 'warning'
                 }));
             }
@@ -80,7 +80,7 @@ export default Service.extend({
             if (duplicateCount) {
                 // @TODO: Remove error from displayed errors
                 validationErrors.push(new MemberImportError({
-                    message: `Duplicate email address (${duplicateCount})`,
+                    message: `Duplicate email address (${formatNumber(duplicateCount)})`,
                     type: 'warning'
                 }));
             }
