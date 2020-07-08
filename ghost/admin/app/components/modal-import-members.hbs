@@ -19,11 +19,11 @@
             <div class="flex items-start">
                 <div class="w-50 gh-member-import-result-summary">
                     <h2>{{this.importResponse.imported.count}}</h2>
-                    <p>Members added</p>
+                    <p>{{pluralize this.importResponse.imported.count "Member" without-count=true}} added</p>
                 </div>
                 <div class="bl b--whitegrey w-50 gh-member-import-result-summary">
                     <h2>{{this.importResponse.invalid.count}}</h2>
-                    <p>Errors</p>
+                    <p>{{pluralize this.importResponse.invalid.count "Error" without-count=true}}</p>
                 </div>
             </div>
         </div>
@@ -33,7 +33,7 @@
                 <div class="flex items-start">
                     {{svg-jar "warning" class="w5 h5 fill-red nudge-top--3 mr3"}}
                     <div class="flex-grow w-100">
-                        <p class="ma0 pa0"><span class="fw5">{{this.importResponse.invalid.count}}</span> members were skipped due to the following errors:</p>
+                        <p class="ma0 pa0">{{pluralize this.importResponse.invalid.count "member"}} were skipped due to the following errors:</p>
                         {{#if this.config.enableDeveloperExperiments}}
                             <ul class="ma0 pa0 mt4 list bt b--whitegrey">
                             {{#each this.importResponse.invalid.errors as |error|}}
@@ -51,10 +51,16 @@
         {{#if (and this.filePresent (not this.failureMessage))}}
             {{#if this.validating}}
                 {{#if validationErrors}}
-                    <div class="failed flex items-start gh-members-upload-errorcontainer warning">
-                        <div class="mr3">{{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}</div>
+                    <div class="failed flex items-start gh-members-upload-errorcontainer {{if this.importDisabled "error" "warning"}}">
+                        <div class="mr3">
+                            {{#if this.importDisabled}}
+                                {{svg-jar "warning" class="nudge-top--2 w5 h5 fill-red"}}
+                            {{else}}
+                                {{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}
+                            {{/if}}
+                        </div>
                         <div class="ma0">
-                            <p class="ma0 pa0 flex-grow w-100">The CSV contains errors! Some members will not be imported.</p>
+                            <p class="ma0 pa0 flex-grow w-100">The CSV contains errors! {{unless this.importDisabled "Some members will not be imported."}}</p>
                             {{#if validationErrors}}
                                 <ul class="ma0 pa0 mt4 list bt b--whitegrey">
                                 {{#each validationErrors as |error|}}
@@ -106,7 +112,7 @@
             {{/if}}
         {{else}}
             {{#if this.failureMessage}}
-                <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-errormessage">
+                <div class="failed flex items-start gh-members-upload-errorcontainer error">
                     <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w4 h4 fill-red"}}</div>
                     <p class="ma0 pa0">{{this.failureMessage}}</p>
                 </div>
@@ -136,9 +142,11 @@
                 <button {{action "reset"}} class="gh-btn" data-test-button="close-import-members">
                     <span>Start over</span>
                 </button>
-                <button class="gh-btn gh-btn-blue" {{action "continueImport"}} disabled={{this.importDisabled}}>
-                    <span>Continue</span>
-                </button>
+                {{#unless this.importDisabled}}
+                    <button class="gh-btn gh-btn-blue" {{action "continueImport"}}>
+                        <span>Continue</span>
+                    </button>
+                {{/unless}}
             {{/if}}
         {{else}}
             <button {{action "reset"}} class="gh-btn" data-test-button="close-import-members">
