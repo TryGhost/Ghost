@@ -57,7 +57,9 @@ export default ModalComponent.extend({
         settingsParam.append('isMonthly', this.isMonthlyChecked);
         settingsParam.append('isYearly', this.isYearlyChecked);
         settingsParam.append('page', this.page);
-        settingsParam.append('buttonIcon', encodeURIComponent(this.buttonIcon));
+        if (this.buttonIcon) {
+            settingsParam.append('buttonIcon', encodeURIComponent(this.buttonIcon));
+        }
         settingsParam.append('signupButtonText', encodeURIComponent(this.signupButtonText));
         if (this.settings.get('accentColor')) {
             settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
@@ -107,7 +109,8 @@ export default ModalComponent.extend({
             'https://raw.githubusercontent.com/leungwensen/svg-icon/master/dist/trimmed-svg/evil/user.svg'
         ];
         this.iconExtensions = ICON_EXTENSIONS;
-        if (!this.settings.get('portalButtonIcon').includes('githubusercontent')) {
+        const portalButtonIcon = this.settings.get('portalButtonIcon') || '';
+        if (portalButtonIcon && !portalButtonIcon.includes('githubusercontent')) {
             return this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
     },
