@@ -24,7 +24,6 @@
     "sinon": "9.0.2"
   },
   "dependencies": {
-    "csv-parser": "2.3.3",
     "papaparse": "5.2.0"
   }
 }
