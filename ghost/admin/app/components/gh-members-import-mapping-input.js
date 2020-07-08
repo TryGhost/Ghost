@@ -3,14 +3,14 @@ import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 const FIELD_MAPPINGS = [
-    {label: 'email', value: 'email'},
-    {label: 'name', value: 'name'},
-    {label: 'note', value: 'note'},
-    {label: 'subscribed_to_emails', value: 'subscribed_to_emails'},
-    {label: 'stripe_customer_id', value: 'stripe_customer_id'},
-    {label: 'complimentary_plan', value: 'complimentary_plan'},
-    {label: 'labels', value: 'labels'},
-    {label: 'created_at', value: 'created_at'}
+    {label: 'Email', value: 'email'},
+    {label: 'Name', value: 'name'},
+    {label: 'Note', value: 'note'},
+    {label: 'Subscribed to emails', value: 'subscribed_to_emails'},
+    {label: 'Stripe Customer ID', value: 'stripe_customer_id'},
+    {label: 'Complimentary plan', value: 'complimentary_plan'},
+    {label: 'Labels', value: 'labels'},
+    {label: 'Created at', value: 'created_at'}
 ];
 
 export default class extends Component {
