@@ -202,14 +202,17 @@ module.exports = function MembersApi({
                     });
                 }
             }
+            let extraPayload = {};
             if (!allowSelfSignup) {
                 const member = await users.get({email});
                 if (member) {
-                    Object.assign(payload, _.pick(body, ['oldEmail']));
+                    extraPayload = _.pick(req.body, ['oldEmail']);
+                    Object.assign(payload, extraPayload);
                     await sendEmailWithMagicLink({email, requestedType: emailType, payload});
                 }
             } else {
-                Object.assign(payload, _.pick(body, ['labels', 'name', 'oldEmail']));
+                extraPayload = _.pick(req.body, ['labels', 'name', 'oldEmail']);
+                Object.assign(payload, extraPayload);
                 await sendEmailWithMagicLink({email, requestedType: emailType, payload});
             }
             res.writeHead(201);
