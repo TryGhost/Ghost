@@ -23,6 +23,30 @@ export default class GhMembersImportTable extends Component {
         return rows;
     }
 
+    get hasNextRecord() {
+        const nextValue = this.dataPreviewIndex + 1;
+        if (this.args.importData[nextValue]) {
+            return true;
+        }
+        return false;
+    }
+
+    get hasPrevRecord() {
+        const nextValue = this.dataPreviewIndex - 1;
+        if (this.args.importData[nextValue]) {
+            return true;
+        }
+        return false;
+    }
+
+    get currentRecord() {
+        return this.dataPreviewIndex + 1;
+    }
+
+    get allRecords() {
+        return this.args.importData.length;
+    }
+
     @action
     updateMapping(mapFrom, mapTo) {
         this.args.updateMapping(mapFrom, mapTo);

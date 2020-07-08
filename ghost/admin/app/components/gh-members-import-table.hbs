@@ -4,10 +4,10 @@
             <th class="table-cell-field"><span class="f-small midgrey ttu fw5">Field</span></th>
             <th class="table-cell-data">
                 <div class="flex items-center justify-between">
-                    <span class="f-small midgrey ttu fw5 nudge-top--1">Data</span>
+                    <span class="f-small midgrey ttu fw5 nudge-top--1">Data <span class="midlightgrey fw4">({{this.currentRecord}} of {{this.allRecords}})</span></span>
                     <div class="flex items-center bg-white br2 ml1 nr1 gh-members-import-datanav">
-                        <a href="#" {{action "prev"}} class="pa1 flex items-center justify-center br b--whitegrey" data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 fill-middarkgrey" }}</a>
-                        <a href="#" {{action "next"}} class="pa1 flex items-center justify-center" data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 fill-middarkgrey" }}</a>
+                        <a href="#" {{action "prev"}} class="pa1 flex items-center justify-center br b--whitegrey {{unless this.hasPrevRecord "o-30"}}" data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 fill-middarkgrey" }}</a>
+                        <a href="#" {{action "next"}} class="pa1 flex items-center justify-center {{unless this.hasNextRecord "o-30"}}" data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 fill-middarkgrey" }}</a>
                     </div>
                 </div>
             </th>
