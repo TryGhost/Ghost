@@ -32,7 +32,7 @@ export default Service.extend({
 
             if (!this.membersUtils.isStripeEnabled) {
                 validationErrors.push(new MemberImportError({
-                    message: `Missing stripe connection (${formatNumber(totalCount)})`,
+                    message: `Missing Stripe connection (${formatNumber(totalCount)})`,
                     context: `Stripe customers won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
                     type: 'warning'
                 }));
