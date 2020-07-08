@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const csvParser = require('csv-parser');
+const papaparse = require('papaparse');
 const _ = require('lodash');
 const fs = require('fs-extra');
 
@@ -63,7 +63,9 @@ const readCSV = ({path, columnsToExtract, mapping}) => {
         readFile.on('err', function (err) {
             reject(err);
         })
-            .pipe(csvParser())
+            .pipe(papaparse.parse(papaparse.NODE_STREAM_INPUT, {
+                header: true
+            }))
             .on('data', function (row) {
                 rows.push(row);
             })
