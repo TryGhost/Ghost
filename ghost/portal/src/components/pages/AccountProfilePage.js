@@ -11,11 +11,20 @@ export default class AccountProfilePage extends React.Component {
 
     constructor(props, context) {
         super(props, context);
-        const {name = '', email = ''} = context.member;
+        const {name = '', email = ''} = context.member || {};
         this.state = {
             name,
             email
         };
+    }
+
+    componentDidMount() {
+        const {member} = this.context;
+        if (!member) {
+            this.context.onAction('switchPage', {
+                page: 'signup'
+            });
+        }
     }
 
     handleSignout(e) {
@@ -181,6 +190,10 @@ export default class AccountProfilePage extends React.Component {
     }
 
     render() {
+        const {member} = this.context;
+        if (!member) {
+            return null;
+        }
         return (
             <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
                 {this.renderHeader()}

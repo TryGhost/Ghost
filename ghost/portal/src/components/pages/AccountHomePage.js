@@ -259,16 +259,27 @@ class PaidAccountHomePage extends React.Component {
 export default class AccountHomePage extends React.Component {
     static contextType = AppContext;
 
+    componentDidMount() {
+        const {member} = this.context;
+        if (!member) {
+            this.context.onAction('switchPage', {
+                page: 'signup'
+            });
+        }
+    }
+
     render() {
         const {member} = this.context;
-
-        if (member.paid) {
+        if (member) {
+            if (member.paid) {
+                return (
+                    <PaidAccountHomePage />
+                );
+            }
             return (
-                <PaidAccountHomePage />
+                <FreeAccountHomePage />
             );
         }
-        return (
-            <FreeAccountHomePage />
-        );
+        return null;
     }
 }
