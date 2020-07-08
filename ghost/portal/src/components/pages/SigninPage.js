@@ -14,6 +14,15 @@ export default class SigninPage extends React.Component {
         };
     }
 
+    componentDidMount() {
+        const {member} = this.context;
+        if (member) {
+            this.context.onAction('switchPage', {
+                page: 'accountHome'
+            });
+        }
+    }
+
     handleSignin(e) {
         e.preventDefault();
         const email = this.state.email;

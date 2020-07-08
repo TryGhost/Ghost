@@ -17,6 +17,15 @@ class SignupPage extends React.Component {
         };
     }
 
+    componentDidMount() {
+        const {member} = this.context;
+        if (member) {
+            this.context.onAction('switchPage', {
+                page: 'accountHome'
+            });
+        }
+    }
+
     handleSignup(e) {
         e.preventDefault();
         const {onAction} = this.context;
