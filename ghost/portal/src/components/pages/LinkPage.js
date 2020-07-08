@@ -4,17 +4,17 @@ const React = require('react');
 
 function getLinkOrAttribute({page, isLink, siteUrl}) {
     if (page === 'default') {
-        return (isLink ? `${siteUrl}/#/portal` : 'data-portal');
+        return (isLink ? `${siteUrl}#/portal` : 'data-portal');
     } else if (page === 'signup') {
-        return (isLink ? `${siteUrl}/#/portal/signup` : `data-portal="signup"`);
+        return (isLink ? `${siteUrl}#/portal/signup` : `data-portal="signup"`);
     } else if (page === 'signin') {
-        return (isLink ? `${siteUrl}/#/portal/signin` : `data-portal="signin"`);
+        return (isLink ? `${siteUrl}#/portal/signin` : `data-portal="signin"`);
     } else if (page === 'accountHome') {
-        return (isLink ? `${siteUrl}/#/portal/account` : `data-portal="account"`);
+        return (isLink ? `${siteUrl}#/portal/account` : `data-portal="account"`);
     } else if (page === 'accountPlan') {
-        return (isLink ? `${siteUrl}/#/portal/account/plans` : `data-portal="account/plans"`);
+        return (isLink ? `${siteUrl}#/portal/account/plans` : `data-portal="account/plans"`);
     } else if (page === 'accountProfile') {
-        return (isLink ? `${siteUrl}/#/portal/account/profile` : `data-portal="account/profile"`);
+        return (isLink ? `${siteUrl}#/portal/account/profile` : `data-portal="account/profile"`);
     }
 }
 
