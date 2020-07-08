@@ -254,7 +254,7 @@ export default class App extends React.Component {
 
     getAccentColor() {
         const {accent_color: accentColor = '#3db0ef'} = this.state.site || {};
-        return accentColor;
+        return accentColor || '#3db0ef';
     }
 
     async onAction(action, data) {

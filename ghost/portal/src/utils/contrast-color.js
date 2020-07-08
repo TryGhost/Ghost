@@ -4,8 +4,8 @@ function padZero(str, len) {
     return (zeros + str).slice(-len);
 }
 
-function invertColor(hex, bw = true) {
-    if (!hex.match(/#[0-9A-Fa-f]{6}$/)) {
+function invertColor(hex = '', bw = true) {
+    if (!hex || !hex.match(/#[0-9A-Fa-f]{6}$/)) {
         // Return white in case not a valid hex
         return '#000000';
     }
