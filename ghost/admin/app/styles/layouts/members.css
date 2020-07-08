@@ -665,6 +665,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-import-member-select select option {
     font-weight: 400;
+    color: var(--darkgrey);
 }
 
 .gh-import-member-select select:focus {
