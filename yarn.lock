@@ -510,10 +510,10 @@
   dependencies:
     papaparse "5.2.0"
 
-"@tryghost/members-ssr@0.8.1":
-  version "0.8.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.1.tgz#061cf38b902da9309e0a499fed80ea5d013e3f8c"
-  integrity sha512-VLeK8cWrkqrx+Ph+R5VSTFQZYuwmBAAFuOAjvwy5gWTOS5pqinDL2t0YoOOsDdZYKjGRjxuDEVO8nlUft/sQ1w==
+"@tryghost/members-ssr@0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.2.tgz#15b692b20bc17e380ce7a24cbda3becc56b18cfd"
+  integrity sha512-/OGY7xhJykMtjxeHzcvgDUOjxKNWZFjzesX5Ia7sKDJI+DM4kQ6nfGvHxXSROLlU5jHrQtzOA5x1qT9Xh52Akg==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
