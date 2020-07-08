@@ -18,11 +18,11 @@
         <div class="ba b--whitegrey br3 middarkgrey bg-whitegrey-l2">
             <div class="flex items-start">
                 <div class="w-50 gh-member-import-result-summary">
-                    <h2>{{this.importResponse.imported.count}}</h2>
+                    <h2>{{format-number this.importResponse.imported.count}}</h2>
                     <p>{{pluralize this.importResponse.imported.count "Member" without-count=true}} added</p>
                 </div>
                 <div class="bl b--whitegrey w-50 gh-member-import-result-summary">
-                    <h2>{{this.importResponse.invalid.count}}</h2>
+                    <h2>{{format-number this.importResponse.invalid.count}}</h2>
                     <p>{{pluralize this.importResponse.invalid.count "Error" without-count=true}}</p>
                 </div>
             </div>
@@ -33,11 +33,11 @@
                 <div class="flex items-start">
                     {{svg-jar "warning" class="w5 h5 fill-red nudge-top--3 mr3"}}
                     <div class="flex-grow w-100">
-                        <p class="ma0 pa0">{{pluralize this.importResponse.invalid.count "member"}} were skipped due to the following errors:</p>
+                        <p class="ma0 pa0">{{format-number this.importResponse.invalid.count}} {{pluralize this.importResponse.invalid.count "member" without-count=true}} were skipped due to the following errors:</p>
                         {{#if this.config.enableDeveloperExperiments}}
                             <ul class="ma0 pa0 mt4 list bt b--whitegrey">
                             {{#each this.importResponse.invalid.errors as |error|}}
-                                <li class="gh-members-import-errormessage">{{error.message}} <span class="fw6">({{error.count}})</span></li>
+                                <li class="gh-members-import-errormessage">{{error.message}} <span class="fw6">({{format-number error.count}})</span></li>
                             {{/each}}
                             </ul>
                         {{/if}}
@@ -153,7 +153,7 @@
                 <span>Start over</span>
             </button>
             <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}>
-                <span>Import{{#if this.fileData.length}} {{pluralize this.fileData.length 'member'}}{{/if}}</span>
+                <span>Import{{#if this.fileData.length}} {{format-number this.fileData.length}} {{pluralize this.fileData.length 'member' without-count=true}}{{/if}}</span>
             </button>
         {{/if}}
     {{else}}
