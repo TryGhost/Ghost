@@ -23,7 +23,7 @@ module.exports = {
                 requestProperty: 'member',
                 audience: siteOrigin,
                 issuer,
-                algorithm: 'RS512',
+                algorithms: ['RS512'],
                 secret(req, payload, done) {
                     membersService.api.getPublicConfig().then(({publicKey}) => {
                         done(null, publicKey);
