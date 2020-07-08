@@ -21,9 +21,9 @@ const mapTag = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
     url.forTag(model.id, jsonModel, frame.options);
-    clean.tag(jsonModel, frame);
+    const cleanedAttrs = clean.tag(jsonModel, frame);
 
-    return jsonModel;
+    return cleanedAttrs;
 };
 
 const mapPost = (model, frame) => {
