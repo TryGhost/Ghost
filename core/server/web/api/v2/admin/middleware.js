@@ -22,7 +22,7 @@ const notImplemented = function (req, res, next) {
         users: ['GET'],
         themes: ['POST', 'PUT'],
         config: ['GET'],
-        webhooks: ['POST', 'DELETE'],
+        webhooks: ['POST', 'PUT', 'DELETE'],
         schedules: ['PUT'],
         db: ['POST']
     };

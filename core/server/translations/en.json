@@ -448,6 +448,10 @@
                 "notAllowedToInvite": "Not allowed to invite this role."
             },
             "webhooks": {
+                "noPermissionToEdit": {
+                    "message": "You do not have permission to {method} this webhook.",
+                    "context": "You may only {method} webhooks that belong to the authenticated integration. Check the supplied Admin API Key."
+                },
                 "webhookAlreadyExists": "Target URL has already been used for this event."
             },
             "oembed": {
