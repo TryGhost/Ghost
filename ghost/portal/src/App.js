@@ -85,7 +85,7 @@ export default class App extends React.Component {
                 ...this.state.site,
                 ...(previewSite || {})
             },
-            member: this.getPreviewMember(),
+            member: this.state.member || this.getPreviewMember(),
             ...restPreview
         });
     }
@@ -95,49 +95,73 @@ export default class App extends React.Component {
         return (path === '/portal' && qs);
     }
 
+    getStateFromQueryString(qs = '') {
+        const previewState = {
+            site: {}
+        };
+        const allowedPlans = [];
+        const qsParams = new URLSearchParams(qs);
+        // Handle the key/value pairs
+        for (let pair of qsParams.entries()) {
+            const key = pair[0];
+            const value = decodeURIComponent(pair[1]);
+            if (key === 'button') {
+                previewState.site.portal_button = JSON.parse(value);
+            } else if (key === 'name') {
+                previewState.site.portal_name = JSON.parse(value);
+            } else if (key === 'isFree' && JSON.parse(value)) {
+                allowedPlans.push('free');
+            } else if (key === 'isMonthly' && JSON.parse(value)) {
+                allowedPlans.push('monthly');
+            } else if (key === 'isYearly' && JSON.parse(value)) {
+                allowedPlans.push('yearly');
+            } else if (key === 'page') {
+                previewState.page = value;
+            } else if (key === 'accentColor') {
+                previewState.site.accent_color = value;
+            } else if (key === 'buttonIcon') {
+                previewState.site.portal_button_icon = value;
+            } else if (key === 'signupButtonText') {
+                previewState.site.portal_button_signup_text = value;
+            } else if (key === 'buttonStyle') {
+                previewState.site.portal_button_style = value;
+            }
+        }
+        previewState.site.portal_plans = allowedPlans;
+        previewState.showPopup = true;
+        return previewState;
+    }
+
     getPreviewState() {
         const [path, qs] = window.location.hash.substr(1).split('?');
-        if (path === '/portal' && qs) {
-            const previewSettings = {
-                site: {}
-            };
-            const allowedPlans = [];
-            const qsParams = new URLSearchParams(qs);
-            // Display the key/value pairs
-            for (let pair of qsParams.entries()) {
-                const key = pair[0];
-                const value = decodeURIComponent(pair[1]);
-                if (key === 'button') {
-                    previewSettings.site.portal_button = JSON.parse(value);
-                } else if (key === 'name') {
-                    previewSettings.site.portal_name = JSON.parse(value);
-                } else if (key === 'isFree' && JSON.parse(value)) {
-                    allowedPlans.push('free');
-                } else if (key === 'isMonthly' && JSON.parse(value)) {
-                    allowedPlans.push('monthly');
-                } else if (key === 'isYearly' && JSON.parse(value)) {
-                    allowedPlans.push('yearly');
-                } else if (key === 'page') {
-                    previewSettings.page = value;
-                } else if (key === 'accentColor') {
-                    previewSettings.site.accent_color = value;
-                } else if (key === 'buttonIcon') {
-                    previewSettings.site.portal_button_icon = value;
-                } else if (key === 'signupButtonText') {
-                    previewSettings.site.portal_button_signup_text = value;
-                } else if (key === 'buttonStyle') {
-                    previewSettings.site.portal_button_style = value;
-                }
+        const previewState = {
+            site: {}
+        };
+        if (path.startsWith('/portal')) {
+            previewState.showPopup = true;
+            if (qs) {
+                return this.getStateFromQueryString(qs);
             }
-            previewSettings.site.portal_plans = allowedPlans;
-            previewSettings.showPopup = true;
-            return previewSettings;
+
+            if (path === '/portal/signup') {
+                previewState.page = 'signup';
+            } else if (path === '/portal/signin') {
+                previewState.page = 'signin';
+            } else if (path === '/portal/account') {
+                previewState.page = 'accountHome';
+            } else if (path === '/portal/account/plans') {
+                previewState.page = 'accountPlan';
+            } else if (path === '/portal/account/profile') {
+                previewState.page = 'accountProfile';
+            }
         }
-        return {};
+        return previewState;
     }
 
     getPreviewMember() {
-        if (this.isPreviewMode()) {
+        const [path, qs] = window.location.hash.substr(1).split('?');
+
+        if (path === '/portal' && qs) {
             const {site: previewSite, ...restPreview} = this.getPreviewState();
             if (restPreview.page.includes('account')) {
                 return Fixtures.member.free;

@@ -16,6 +16,15 @@ export default class AccountPlanPage extends React.Component {
         };
     }
 
+    componentDidMount() {
+        const {member} = this.context;
+        if (!member) {
+            this.context.onAction('switchPage', {
+                page: 'signup'
+            });
+        }
+    }
+
     handleSignout(e) {
         e.preventDefault();
         this.context.onAction('signout');
@@ -110,6 +119,10 @@ export default class AccountPlanPage extends React.Component {
     }
 
     render() {
+        const {member} = this.context;
+        if (!member) {
+            return null;
+        }
         return (
             <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
                 {this.renderHeader()}
