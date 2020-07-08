@@ -24,19 +24,11 @@ export default class GhMembersImportTable extends Component {
     }
 
     get hasNextRecord() {
-        const nextValue = this.dataPreviewIndex + 1;
-        if (this.args.importData[nextValue]) {
-            return true;
-        }
-        return false;
+        return this.args.importData && !!(this.args.importData[this.dataPreviewIndex + 1]);
     }
 
     get hasPrevRecord() {
-        const nextValue = this.dataPreviewIndex - 1;
-        if (this.args.importData[nextValue]) {
-            return true;
-        }
-        return false;
+        return this.args.importData && !!(this.args.importData[this.dataPreviewIndex - 1]);
     }
 
     get currentRecord() {
@@ -44,7 +36,11 @@ export default class GhMembersImportTable extends Component {
     }
 
     get allRecords() {
-        return this.args.importData.length;
+        if (this.args.importData) {
+            return this.args.importData.length;
+        } else {
+            return 0;
+        }
     }
 
     @action
