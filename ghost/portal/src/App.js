@@ -147,7 +147,7 @@ export default class App extends React.Component {
                 const pagePath = path.replace('/portal/', '');
                 const pageFromPath = this.getPageFromPath(pagePath);
                 if (pageFromPath) {
-                    previewState.page = 'signup';
+                    previewState.page = pageFromPath;
                 }
             }
         }
