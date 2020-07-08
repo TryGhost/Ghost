@@ -2,6 +2,7 @@ import MemberImportError from 'ghost-admin/errors/member-import-error';
 import Service, {inject as service} from '@ember/service';
 import validator from 'validator';
 import {isEmpty} from '@ember/utils';
+import {pluralize} from 'ember-inflector';
 
 export default Service.extend({
     ajax: service(),
@@ -32,7 +33,7 @@ export default Service.extend({
             if (!this.membersUtils.isStripeEnabled) {
                 validationErrors.push(new MemberImportError({
                     message: 'Missing stripe connection',
-                    context: `${totalCount} Stripe customers won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
+                    context: (pluralize(totalCount, 'Stripe customer')) + ` won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
                     type: 'warning'
                 }));
             } else {
