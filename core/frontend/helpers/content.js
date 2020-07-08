@@ -27,9 +27,9 @@ module.exports = function content(options = {}) {
 
     if (hash.lazy && (hash.lazy === 'true')) {
         this.html = this.html
-        .replace(/<img(.*?) srcset="/gi, '<img$1 data-srcset="')
-        .replace(/<img(.*?) src="/gi, '<img$1 data-src="')
-        .replace(/<img(.*?) class="/gi, '<img$1 loading="lazy" class="lazyload ')
+            .replace(/<img(.*?) srcset="/gi, '<img$1 data-srcset="')
+            .replace(/<img(.*?) src="/gi, '<img$1 data-src="')
+            .replace(/<img(.*?) class="/gi, '<img$1 loading="lazy" class="lazyload ');
     }
 
     if (runTruncate) {
