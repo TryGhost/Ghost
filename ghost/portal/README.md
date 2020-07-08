@@ -17,7 +17,7 @@ Add below script in your theme's `default.hbs` just before the end of body tag O
 
 By default, the script adds a default floating trigger button on the bottom right of your page which is used to trigger the popup on screen.
 
-Its possible to override the default trigger button with your own by adding data attribute `data-members-trigger-button` to any HTML tag on page, which will hide the default trigger and allow controlling the popup state by clicking on this element.
+Its possible to override the default trigger button with your own by adding data attribute `data-portal` to any HTML tag on page, which will hide the default trigger and allow controlling the popup state by clicking on this element.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-members-popup-open` and `gh-members-popup-close`, allowing devs to update its UI based on popup state.
 
