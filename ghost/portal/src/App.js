@@ -143,19 +143,29 @@ export default class App extends React.Component {
                 return this.getStateFromQueryString(qs);
             }
 
-            if (path === '/portal/signup') {
-                previewState.page = 'signup';
-            } else if (path === '/portal/signin') {
-                previewState.page = 'signin';
-            } else if (path === '/portal/account') {
-                previewState.page = 'accountHome';
-            } else if (path === '/portal/account/plans') {
-                previewState.page = 'accountPlan';
-            } else if (path === '/portal/account/profile') {
-                previewState.page = 'accountProfile';
+            if (path.startsWith('/portal/')) {
+                const pagePath = path.replace('/portal/', '');
+                const pageFromPath = this.getPageFromPath(pagePath);
+                if (pageFromPath) {
+                    previewState.page = 'signup';
+                }
             }
         }
         return previewState;
+    }
+
+    getPageFromPath(path) {
+        if (path === 'signup') {
+            return 'signup';
+        } else if (path === 'signin') {
+            return 'signin';
+        } else if (path === 'account') {
+            return 'accountHome';
+        } else if (path === 'account/plans') {
+            return 'accountPlan';
+        } else if (path === 'account/profile') {
+            return 'accountProfile';
+        }
     }
 
     getPreviewMember() {
@@ -222,12 +232,13 @@ export default class App extends React.Component {
         this.clickHandler = (event) => {
             const target = event.currentTarget;
             const {page: defaultPage} = this.getDefaultPage();
-            const page = (target && target.dataset.membersTriggerButton) || defaultPage;
+            const pagePath = (target && target.dataset.portal);
+            const pageFromPath = this.getPageFromPath(pagePath) || defaultPage;
 
             event.preventDefault();
-            this.onAction('openPopup', {page});
+            this.onAction('openPopup', {page: pageFromPath});
         };
-        const customTriggerSelector = '[data-members-trigger-button]';
+        const customTriggerSelector = '[data-portal]';
         const popupCloseClass = 'gh-members-popup-close';
         this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
         this.customTriggerButtons.forEach((customTriggerButton) => {
@@ -373,7 +384,6 @@ export default class App extends React.Component {
     render() {
         if (this.state.initStatus === 'success') {
             const {site, member, action, page, lastPage} = this.state;
-
             return (
                 <AppContext.Provider value={{
                     site,
