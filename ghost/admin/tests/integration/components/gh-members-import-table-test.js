@@ -21,7 +21,7 @@ describe('Integration: Component: gh-members-import-table', function () {
         expect(find('table')).to.exist;
         expect(findAll('table thead th').length).to.equal(3);
         expect(findAll('table tbody tr').length).to.equal(1);
-        expect(find('table tbody tr').textContent).to.match(/No data/);
+        expect(find('table tbody').textContent).to.match(/No data/);
     });
 
     it('renders members data with all the properties', async function () {
