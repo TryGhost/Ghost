@@ -107,7 +107,7 @@
             "type": "string"
         },
         "twitter": {
-            "defaultValue": "tryghost",
+            "defaultValue": "ghost",
             "type": "string"
         },
         "navigation": {
