@@ -3,7 +3,17 @@ const path = require('path');
 const {readCSV} = require('../lib/parse');
 const csvPath = path.join(__dirname, '/fixtures/');
 
-describe('read csv', function () {
+describe('parse', function () {
+    it('read csv: empty file', async function () {
+        const result = await readCSV({
+            path: csvPath + 'empty.csv',
+            columnsToExtract: [{name: 'email', lookup: /email/i}]
+        });
+
+        should.exist(result);
+        result.length.should.eql(0);
+    });
+
     it('read csv: one column', async function () {
         const result = await readCSV({
             path: csvPath + 'single-column-with-header.csv',
@@ -85,6 +95,7 @@ describe('read csv', function () {
         result[1].nombre.should.eql('test');
         result[1].id.should.eql('2');
     });
+
     it('read csv: two columns with empty mapping', async function () {
         const result = await readCSV({
             path: csvPath + 'two-columns-mapping-header.csv',
