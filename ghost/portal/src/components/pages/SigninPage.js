@@ -1,6 +1,7 @@
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
 import AppContext from '../../AppContext';
+import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
@@ -16,7 +17,7 @@ export default class SigninPage extends React.Component {
 
     componentDidMount() {
         const {member} = this.context;
-        if (member) {
+        if (member && !isPreviewMode()) {
             this.context.onAction('switchPage', {
                 page: 'accountHome'
             });

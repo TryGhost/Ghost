@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
+import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
@@ -18,7 +19,7 @@ export default class AccountPlanPage extends React.Component {
 
     componentDidMount() {
         const {member} = this.context;
-        if (!member) {
+        if (!member && !isPreviewMode()) {
             this.context.onAction('switchPage', {
                 page: 'signup'
             });
