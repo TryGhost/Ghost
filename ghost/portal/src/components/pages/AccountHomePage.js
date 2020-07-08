@@ -2,6 +2,7 @@ import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
+import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
@@ -261,7 +262,7 @@ export default class AccountHomePage extends React.Component {
 
     componentDidMount() {
         const {member} = this.context;
-        if (!member) {
+        if (!member && !isPreviewMode()) {
             this.context.onAction('switchPage', {
                 page: 'signup'
             });
