@@ -300,9 +300,9 @@ export default ModalComponent.extend({
         if (importResponse.meta.stats.invalid && importResponse.meta.stats.invalid.errors) {
             importResponse.meta.stats.invalid.errors.forEach((error) => {
                 if (error.message === 'Value in [members.email] cannot be blank.') {
-                    error.message = 'Missing email address.';
-                } else if (error.message === 'Validation (isEmail) failed for email ') {
-                    error.message = 'Invalid email address.';
+                    error.message = 'Missing email address';
+                } else if (error.message === 'Validation (isEmail) failed for email') {
+                    error.message = 'Invalid email address';
                 }
             });
         }
