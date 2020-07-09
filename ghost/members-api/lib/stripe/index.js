@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('stripe');
 const _ = require('lodash');
-const {retrieve, list, create, update, del} = require('./api/stripeRequests');
+const {retrieve, create, update, del} = require('./api/stripeRequests');
 const api = require('./api');
 
 const STRIPE_API_VERSION = '2019-09-09';
@@ -39,49 +39,109 @@ module.exports = class StripePaymentProcessor {
         this._checkoutCancelUrl = config.checkoutCancelUrl;
         this._billingSuccessUrl = config.billingSuccessUrl;
         this._billingCancelUrl = config.billingCancelUrl;
-        this._webhookHandlerUrl = config.webhookHandlerUrl;
 
         try {
             this._product = await api.products.ensure(this._stripe, config.product);
+        } catch (err) {
+            this.logging.error('There was an error creating the Stripe Product');
+            this.logging.error(err);
+            return this._rejectReady(err);
+        }
 
-            this._plans = [];
-            for (const planSpec of config.plans) {
+        /**
+         * @type Array<import('stripe').plans.IPlan>
+         */
+        this._plans = [];
+        for (const planSpec of config.plans) {
+            try {
                 const plan = await api.plans.ensure(this._stripe, planSpec, this._product);
                 this._plans.push(plan);
-            }
-
-            const webhooks = await list(this._stripe, 'webhookEndpoints', {
-                limit: 100
-            });
-
-            const webhookToDelete = webhooks.data.find((webhook) => {
-                return webhook.url === this._webhookHandlerUrl;
-            });
-
-            if (webhookToDelete) {
-                await del(this._stripe, 'webhookEndpoints', webhookToDelete.id);
-            }
-
-            try {
-                const webhook = await create(this._stripe, 'webhookEndpoints', {
-                    url: this._webhookHandlerUrl,
-                    api_version: STRIPE_API_VERSION,
-                    enabled_events: [
-                        'checkout.session.completed',
-                        'customer.subscription.deleted',
-                        'customer.subscription.updated',
-                        'invoice.payment_succeeded',
-                        'invoice.payment_failed'
-                    ]
-                });
-                this._webhookSecret = process.env.WEBHOOK_SECRET || webhook.secret;
             } catch (err) {
-                this._webhookSecret = process.env.WEBHOOK_SECRET;
-                this.logging.warn(err);
+                this.logging.error('There was an error creating the Stripe Plan');
+                this.logging.error(err);
+                return this._rejectReady(err);
             }
-            debug(`Webhook secret set to ${this._webhookSecret}`);
+        }
+
+        if (process.env.WEBHOOK_SECRET) {
+            this.logging.warn(`Skipping Stripe webhook creation and validation, using WEBHOOK_SECRET environment variable`);
+            this._webhookSecret = process.env.WEBHOOK_SECRET;
+            return this._resolveReady({
+                product: this._product,
+                plans: this._plans
+            });
+        }
+
+        const webhookConfig = {
+            url: config.webhookHandlerUrl,
+            enabled_events: [
+                'checkout.session.completed',
+                'customer.subscription.deleted',
+                'customer.subscription.updated',
+                'invoice.payment_succeeded',
+                'invoice.payment_failed'
+            ]
+        };
+
+        const setupWebhook = async (id, secret, opts = {}) => {
+            if (!id || !secret || opts.forceCreate) {
+                if (id && !opts.skipDelete) {
+                    try {
+                        this.logging.info(`Deleting Stripe webhook ${id}`);
+                        await del(this._stripe, 'webhookEndpoints', id);
+                    } catch (err) {
+                        this.logging.error(`Unable to delete Stripe webhook with id: ${id}`);
+                        this.logging.error(err);
+                    }
+                }
+                try {
+                    this.logging.info(`Creating Stripe webhook with url: ${webhookConfig.url}, version: ${STRIPE_API_VERSION}, events: ${webhookConfig.enabled_events.join(', ')}`);
+                    const webhook = await create(this._stripe, 'webhookEndpoints', Object.assign({}, webhookConfig, {
+                        api_version: STRIPE_API_VERSION
+                    }));
+                    return {
+                        id: webhook.id,
+                        secret: webhook.secret
+                    };
+                } catch (err) {
+                    this.logging.error('Failed to create Stripe webhook. For local development please see https://ghost.org/docs/members/webhooks/#stripe-webhooks');
+                    this.logging.error(err);
+                    throw err;
+                }
+            } else {
+                try {
+                    this.logging.info(`Updating Stripe webhook ${id} with url: ${webhookConfig.url}, events: ${webhookConfig.enabled_events.join(', ')}`);
+                    const updatedWebhook = await update(this._stripe, 'webhookEndpoints', id, webhookConfig);
+
+                    if (updatedWebhook.api_version !== STRIPE_API_VERSION) {
+                        throw new Error(`Webhook ${id} has api_version ${updatedWebhook.api_version}, expected ${STRIPE_API_VERSION}`);
+                    }
+
+                    return {
+                        id,
+                        secret
+                    };
+                } catch (err) {
+                    this.logging.error(`Unable to update Stripe webhook ${id}`);
+                    this.logging.error(err);
+                    if (err.code === 'resource_missing') {
+                        return setupWebhook(id, secret, {skipDelete: true, forceCreate: true});
+                    }
+                    return setupWebhook(id, secret, {skipDelete: false, forceCreate: true});
+                }
+            }
+        };
+
+        try {
+            const webhook = await setupWebhook(config.webhook.id, config.webhook.secret);
+            await this.storage.set({
+                webhook: {
+                    webhook_id: webhook.id,
+                    secret: webhook.secret
+                }
+            });
+            this._webhookSecret = webhook.secret;
         } catch (err) {
-            debug(`Error configuring ${err.message}`);
             return this._rejectReady(err);
         }
 
