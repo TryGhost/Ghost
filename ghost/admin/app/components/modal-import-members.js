@@ -71,13 +71,17 @@ export default ModalComponent.extend({
 
     labelText: 'Select or drag-and-drop a CSV file',
 
+    // import stages, default is "CSV file selection"
+    validating: false,
+    customizing: false,
+    uploading: false,
+    summary: false,
+
     dragClass: null,
     file: null,
     fileData: null,
     mapping: null,
     paramName: 'membersfile',
-    validating: false,
-    uploading: false,
     uploadPercentage: 0,
     importResponse: null,
     failureMessage: null,
@@ -161,6 +165,7 @@ export default ModalComponent.extend({
                 // TODO: remove "if" below once import validations are production ready
                 if (this.config.get('enableDeveloperExperiments')) {
                     this.set('validating', true);
+
                     papaparse.parse(file, {
                         header: true,
                         skipEmptyLines: true,
@@ -175,12 +180,15 @@ export default ModalComponent.extend({
                                 this._importValidationFailed(validationErrors);
                             } else {
                                 this.set('validating', false);
+                                this.set('customizing', true);
                             }
                         },
                         error: (error) => {
                             this._validationFailed(error);
                         }
                     });
+                } else {
+                    this.set('customizing', true);
                 }
             }
         },
@@ -192,6 +200,11 @@ export default ModalComponent.extend({
             this.set('fileData', null);
             this.set('mapping', null);
             this.set('validationErrors', null);
+
+            this.set('validating', false);
+            this.set('customizing', false);
+            this.set('uploading', false);
+            this.set('summary', false);
         },
 
         upload() {
@@ -202,6 +215,7 @@ export default ModalComponent.extend({
 
         continueImport() {
             this.set('validating', false);
+            this.set('customizing', true);
         },
 
         confirm() {
@@ -280,6 +294,7 @@ export default ModalComponent.extend({
     },
 
     _uploadStarted() {
+        this.set('customizing', false);
         this.set('uploading', true);
     },
 
@@ -300,6 +315,7 @@ export default ModalComponent.extend({
 
     _uploadFinished() {
         this.set('uploading', false);
+        this.set('summary', true);
     },
 
     _importValidationFailed(errors) {
