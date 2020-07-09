@@ -126,7 +126,7 @@ export default Service.extend({
     },
 
     /**
-     * Detects validated data types:
+     * Detects supported data types and auto-detects following two needed for validation:
      *  1. email
      *  2. stripe_customer_id
      *
@@ -135,6 +135,22 @@ export default Service.extend({
      * @param {Array} data sampled data containing non empty values
      */
     _detectDataTypes(data) {
+        const supportedTypes = [
+            'email',
+            'name',
+            'note',
+            'subscribed_to_emails',
+            'stripe_customer_id',
+            'complimentary_plan',
+            'labels',
+            'created_at'
+        ];
+
+        const autoDetectedTypes = [
+            'email',
+            'stripe_customer_id'
+        ];
+
         let mapping = {};
         let i = 0;
         // loopping through all sampled data until needed data types are detected
@@ -153,6 +169,10 @@ export default Service.extend({
                 if (!mapping.stripe_customer_id && value && value.startsWith && value.startsWith('cus_')) {
                     mapping.stripe_customer_id = key;
                     continue;
+                }
+
+                if (!mapping[key] && supportedTypes.includes(key) && !(autoDetectedTypes.includes(key))) {
+                    mapping[key] = key;
                 }
             }
 
