@@ -308,6 +308,16 @@ export default ModalComponent.extend({
     },
 
     _uploadSuccess(importResponse) {
+        if (importResponse.meta.stats.invalid && importResponse.meta.stats.invalid.errors) {
+            importResponse.meta.stats.invalid.errors.forEach((error) => {
+                if (error.message === 'Value in [members.email] cannot be blank.') {
+                    error.message = 'Missing email address.';
+                } else if (error.message === 'Validation (isEmail) failed for email ') {
+                    error.message = 'Invalid email address.';
+                }
+            });
+        }
+
         this.set('importResponse', importResponse.meta.stats);
         // invoke the passed in confirm action to refresh member data
         this.confirm();
