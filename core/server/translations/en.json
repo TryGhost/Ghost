@@ -369,7 +369,7 @@
             "members": {
                 "memberNotFound": "Member not found.",
                 "memberAlreadyExists": {
-                    "message": "Duplicate email address",
+                    "message": "Member already exists",
                     "context": "Attempting to add member with existing email address."
                 },
                 "stripeNotConnected": {
