@@ -174,6 +174,10 @@ class MembersConfigProvider {
             billingSuccessUrl: urls.billingSuccess,
             billingCancelUrl: urls.billingCancel,
             webhookHandlerUrl: urls.webhookHandler,
+            webhook: {
+                id: this._settingsCache.get('members_stripe_webhook_id'),
+                secret: this._settingsCache.get('members_stripe_webhook_secret')
+            },
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
