@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 function handleDataAttributes({siteUrl}) {
+    siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
