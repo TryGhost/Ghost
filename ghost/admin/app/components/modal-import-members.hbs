@@ -46,7 +46,6 @@
                     <div class="gh-loading-content">
                         <div class="gh-loading-spinner"></div>
                     </div>
-                    <div class="description midgrey">Validating...</div>
                 </div>
             {{/if}}
         {{/if}}
@@ -54,14 +53,12 @@
         {{#if this.customizing}}
             <GhFormGroup>
                 {{#if this.config.enableDeveloperExperiments}}
-                    <h4 class="fw6 f8 dib mb1">Mapping</h4>
                     <div class="gh-members-import-scrollarea">
                         <GhMembersImportTable
                             @importData={{this.fileData}}
                             @mapping={{this.mapping}}
                             @updateMapping={{action "updateMapping"}}/>
                     </div>
-                    <p>Match the fields in your uploaded file to Ghost members.</p>
                 {{else}}
                     <div class="bg-whitegrey-l2 ba b--whitegrey br3">
                         <div class="flex flex-column items-center justify-center gh-members-import-file">
@@ -72,9 +69,8 @@
                 {{/if}}
 
                 <div class="mt4">
-                    <label for="label-input"><span class="fw6 f8 dib mb1">Labels</span></label>
+                    <label for="label-input"><span class="fw6 f8 dib mb1">Label these members</span></label>
                     <GhMemberLabelInput @member={{this.labels}} @triggerId="label-input" />
-                    <p>Will be applied to all newly imported members</p>
                 </div>
             </GhFormGroup>
         {{/if}}
