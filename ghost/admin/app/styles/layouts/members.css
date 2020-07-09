@@ -461,7 +461,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-members-import-spinner .gh-loading-content {
-    padding-bottom: 40px;
+    padding-bottom: 0px;
 }
 
 .gh-members-import-spinner .description {
@@ -706,6 +706,14 @@ p.gh-members-import-errordetail:first-of-type {
     margin: -2px 0 0;
     padding: 0;
     color: var(--midlightgrey);
+}
+
+.gh-member-import-nodata span {
+    display: flex;
+    min-height: 144px;
+    align-items: center;
+    justify-content: center;
+    color: var(--midgrey);
 }
 
 /* Fixing Firefox's select padding */
