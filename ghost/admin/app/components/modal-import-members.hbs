@@ -76,7 +76,7 @@
         {{/if}}
 
         {{#if this.uploading}}
-            <div class="progress-container">
+            <div class="progress-container pt20 pb20">
                 <div class="gh-progress-container-progress">
                     <div class="gh-progress-bar {{if this.failureMessage "-error"}}" style={{this.progressStyle}}></div>
                 </div>
@@ -135,7 +135,7 @@
     {{/if}}
 </div>
 
-<div class="modal-footer {{if (and this.filePresent (not this.failureMessage) (not this.importResponse)) "modal-footer-spread"}}">
+<div class="modal-footer {{unless this.importResponse "modal-footer-spread"}}">
     {{#if this.importResponse}}
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn gh-btn-blue" data-test-button="close-import-members">
             <span>{{if this.importResponse.invalid.count "Done" "Awesome"}}</span>
@@ -166,5 +166,8 @@
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
             <span>Close</span>
         </button>
+        <a class="gh-btn" href="https://static.ghost.org/v3.0.0/files/member-import-template.csv" target="_blank">
+            <span>Download sample CSV file</span>
+        </a>
     {{/if}}
 </div>

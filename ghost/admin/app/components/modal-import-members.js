@@ -58,7 +58,7 @@ export default ModalComponent.extend({
     notifications: service(),
     memberImportValidator: service(),
 
-    labelText: 'Select or drag-and-drop a CSV file',
+    labelText: 'Select or drop a CSV file',
 
     // import stages, default is "CSV file selection"
     validating: false,
