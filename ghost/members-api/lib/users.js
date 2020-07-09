@@ -2,60 +2,56 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('users');
 const common = require('./common');
 
-let Member;
-
-async function createMember({email, name, note, labels, geolocation}) {
-    const model = await Member.add({
-        email,
-        name,
-        note,
-        labels,
-        geolocation
-    });
-    const member = model.toJSON();
-    return member;
-}
-
-async function getMember(data, options = {}) {
-    if (!data.email && !data.id && !data.uuid) {
-        return null;
-    }
-    const model = await Member.findOne(data, options);
-    if (!model) {
-        return null;
-    }
-    const member = model.toJSON(options);
-    return member;
-}
-
-async function updateMember(data, options = {}) {
-    const attrs = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation']);
-
-    const model = await Member.edit(attrs, options);
-
-    const member = model.toJSON(options);
-    return member;
-}
-
-function deleteMember(options) {
-    options = options || {};
-    return Member.destroy(options);
-}
-
-function listMembers(options) {
-    return Member.findPage(options).then((models) => {
-        return {
-            members: models.data.map(model => model.toJSON(options)),
-            meta: models.meta
-        };
-    });
-}
-
 module.exports = function ({
     stripe,
-    memberModel
+    Member
 }) {
-    Member = memberModel;
+    async function createMember({email, name, note, labels, geolocation}) {
+        const model = await Member.add({
+            email,
+            name,
+            note,
+            labels,
+            geolocation
+        });
+        const member = model.toJSON();
+        return member;
+    }
+
+    async function getMember(data, options = {}) {
+        if (!data.email && !data.id && !data.uuid) {
+            return null;
+        }
+        const model = await Member.findOne(data, options);
+        if (!model) {
+            return null;
+        }
+        const member = model.toJSON(options);
+        return member;
+    }
+
+    async function updateMember(data, options = {}) {
+        const attrs = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation']);
+
+        const model = await Member.edit(attrs, options);
+
+        const member = model.toJSON(options);
+        return member;
+    }
+
+    function deleteMember(options) {
+        options = options || {};
+        return Member.destroy(options);
+    }
+
+    function listMembers(options) {
+        return Member.findPage(options).then((models) => {
+            return {
+                members: models.data.map(model => model.toJSON(options)),
+                meta: models.meta
+            };
+        });
+    }
 
     async function getStripeSubscriptions(member) {
         if (!stripe) {

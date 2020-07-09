@@ -27,9 +27,12 @@ module.exports = function MembersApi({
         getHTML,
         getSubject
     },
-    memberStripeCustomerModel,
-    stripeCustomerSubscriptionModel,
-    memberModel,
+    models: {
+        StripeWebhook,
+        StripeCustomer,
+        StripeCustomerSubscription,
+        Member
+    },
     logger
 }) {
     if (logger) {
@@ -37,10 +40,14 @@ module.exports = function MembersApi({
     }
 
     const {encodeIdentityToken, decodeToken} = Tokens({privateKey, publicKey, issuer});
-    const metadata = Metadata({memberStripeCustomerModel, stripeCustomerSubscriptionModel});
+    const metadata = Metadata({
+        StripeWebhook,
+        StripeCustomer,
+        StripeCustomerSubscription
+    });
 
     async function hasActiveStripeSubscriptions() {
-        const firstActiveSubscription = await stripeCustomerSubscriptionModel.findOne({
+        const firstActiveSubscription = await StripeCustomerSubscription.findOne({
             status: 'active'
         });
 
@@ -48,7 +55,7 @@ module.exports = function MembersApi({
             return true;
         }
 
-        const firstTrialingSubscription = await stripeCustomerSubscriptionModel.findOne({
+        const firstTrialingSubscription = await StripeCustomerSubscription.findOne({
             status: 'trialing'
         });
 
@@ -92,7 +99,7 @@ module.exports = function MembersApi({
         getSubject
     });
 
-    async function sendEmailWithMagicLink({email, requestedType, payload, options = {forceEmailType: false}}){
+    async function sendEmailWithMagicLink({email, requestedType, payload, options = {forceEmailType: false}}) {
         if (options.forceEmailType) {
             return magicLinkService.sendMagicLink({email, payload, subject: email, type: requestedType});
         }
@@ -111,7 +118,7 @@ module.exports = function MembersApi({
 
     const users = Users({
         stripe,
-        memberModel
+        Member
     });
 
     async function getMemberDataFromMagicLinkToken(token) {
@@ -139,11 +146,11 @@ module.exports = function MembersApi({
         return getMemberIdentityData(email);
     }
 
-    async function getMemberIdentityData(email){
+    async function getMemberIdentityData(email) {
         return users.get({email});
     }
 
-    async function getMemberIdentityToken(email){
+    async function getMemberIdentityToken(email) {
         const member = await getMemberIdentityData(email);
         if (!member) {
             return null;
