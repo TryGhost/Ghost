@@ -15,24 +15,13 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 class MembersFieldMapping {
-    _supportedImportFields = [
-        'email',
-        'name',
-        'note',
-        'subscribed_to_emails',
-        'stripe_customer_id',
-        'complimentary_plan',
-        'labels',
-        'created_at'
-    ];
-
     @tracked _mapping = {};
 
     constructor(mapping) {
-        // NOTE: there are only 2 distinguishable fields that could be automatically matched, which is the reason why code is just simple assignments
         if (mapping) {
-            this.set(mapping.email, 'email');
-            this.set(mapping.stripe_customer_id, 'stripe_customer_id');
+            for (const [key, value] of Object.entries(mapping)) {
+                this.set(value, key);
+            }
         }
     }
 
