@@ -77,7 +77,7 @@ describe('Integration: Service: member-import-validator', function () {
         expect(validationErrors[0].message).to.equal('No email addresses found in the uploaded CSV.');
     });
 
-    it('returns validation error for invalid email', async function () {
+    it('ignores validation for invalid email', async function () {
         this.owner.register('service:membersUtils', Service.extend({
             isStripeEnabled: false
         }));
@@ -90,8 +90,7 @@ describe('Integration: Service: member-import-validator', function () {
             email: 'email@example.com'
         }]);
 
-        expect(validationErrors.length).to.equal(1);
-        expect(validationErrors[0].message).to.equal('Invalid email address (1)');
+        expect(validationErrors.length).to.equal(0);
     });
 
     describe('data sampling method', function () {

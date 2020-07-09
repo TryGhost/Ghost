@@ -61,26 +61,11 @@ export default Service.extend({
             }));
         } else {
             // check can be done on whole set as it won't be too slow
-            const {invalidCount, emptyCount, duplicateCount} = this._checkEmails(data, mapping);
-            if (invalidCount) {
-                // @TODO: Remove error from displayed errors
-                validationErrors.push(new MemberImportError({
-                    message: `Invalid email address (${formatNumber(invalidCount)})`,
-                    type: 'warning'
-                }));
-            }
+            const {emptyCount} = this._checkEmails(data, mapping);
 
             if (emptyCount) {
                 validationErrors.push(new MemberImportError({
                     message: `Missing email address (${formatNumber(emptyCount)})`,
-                    type: 'warning'
-                }));
-            }
-
-            if (duplicateCount) {
-                // @TODO: Remove error from displayed errors
-                validationErrors.push(new MemberImportError({
-                    message: `Duplicate email address (${formatNumber(duplicateCount)})`,
                     type: 'warning'
                 }));
             }
@@ -184,29 +169,15 @@ export default Service.extend({
 
     _checkEmails(validatedSet, mapping) {
         let emptyCount = 0;
-        let invalidCount = 0;
-        let duplicateCount = 0;
-        let emailMap = {};
 
         validatedSet.forEach((member) => {
             let emailValue = member[mapping.email];
             if (!emailValue) {
                 emptyCount += 1;
             }
-
-            if (emailValue && !validator.isEmail(emailValue)) {
-                invalidCount += 1;
-            } else if (emailValue) {
-                if (emailMap[emailValue]) {
-                    emailMap[emailValue] += 1;
-                    duplicateCount += 1;
-                } else {
-                    emailMap[emailValue] = 1;
-                }
-            }
         });
 
-        return {invalidCount, emptyCount, duplicateCount};
+        return {emptyCount};
     },
 
     _countStripeRecors(validatedSet, mapping) {
