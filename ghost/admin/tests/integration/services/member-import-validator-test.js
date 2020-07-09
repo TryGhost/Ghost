@@ -57,7 +57,7 @@ describe('Integration: Service: member-import-validator', function () {
         }]);
 
         expect(validationErrors.length).to.equal(1);
-        expect(validationErrors[0].message).to.equal('Missing Stripe connection (1)');
+        expect(validationErrors[0].message).to.equal('Missing Stripe connection');
         expect(mapping.email).to.equal('email');
         expect(mapping.stripe_customer_id).to.equal('stripe_customer_id');
     });

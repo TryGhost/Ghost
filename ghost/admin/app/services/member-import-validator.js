@@ -3,6 +3,7 @@ import Service, {inject as service} from '@ember/service';
 import validator from 'validator';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {isEmpty} from '@ember/utils';
+import {pluralize} from 'ember-inflector';
 
 export default Service.extend({
     ajax: service(),
@@ -32,8 +33,8 @@ export default Service.extend({
 
             if (!this.membersUtils.isStripeEnabled) {
                 validationErrors.push(new MemberImportError({
-                    message: `Missing Stripe connection (${formatNumber(totalCount)})`,
-                    context: `Stripe customers won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
+                    message: `Missing Stripe connection`,
+                    context: `${formatNumber(totalCount)} ${pluralize(totalCount, 'Stripe customer', {withoutCount: true})} won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`,
                     type: 'warning'
                 }));
             } else {
@@ -49,7 +50,7 @@ export default Service.extend({
 
             if (duplicateCount) {
                 validationErrors.push(new MemberImportError({
-                    message: `Duplicate Stripe ID (${formatNumber(duplicateCount)})`,
+                    message: `Duplicate Stripe ID <span class="fw4">(${formatNumber(duplicateCount)})</span>`,
                     type: 'warning'
                 }));
             }
@@ -65,7 +66,7 @@ export default Service.extend({
 
             if (emptyCount) {
                 validationErrors.push(new MemberImportError({
-                    message: `Missing email address (${formatNumber(emptyCount)})`,
+                    message: `Missing email address <span class="fw4">(${formatNumber(emptyCount)})</span>`,
                     type: 'warning'
                 }));
             }

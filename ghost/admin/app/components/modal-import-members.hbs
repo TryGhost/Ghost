@@ -2,12 +2,12 @@
     <h1>
         {{#if this.summary}}
             Import complete{{unless this.importResponse.invalid.count "!"}}
-        {{/if}}
-
-        {{#if this.uploading}}
-            Importing members
         {{else}}
-            Import members
+            {{#if this.uploading}}
+                Importing members
+            {{else}}
+                Import members
+            {{/if}}
         {{/if}}
     </h1>
 </header>
@@ -110,7 +110,7 @@
                             {{#if this.config.enableDeveloperExperiments}}
                                 <ul class="ma0 pa0 mt4 list bt b--whitegrey">
                                 {{#each this.importResponse.invalid.errors as |error|}}
-                                    <li class="gh-members-import-errormessage">{{error.message}} <span class="fw6">({{format-number error.count}})</span></li>
+                                    <li class="gh-members-import-errormessage">{{error.message}} <span class="fw4">({{format-number error.count}})</span></li>
                                 {{/each}}
                                 </ul>
                             {{/if}}
