@@ -99,6 +99,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
     const context = dataRoot._locals.context ? dataRoot._locals.context : null;
     const safeVersion = dataRoot._locals.safeVersion;
     const postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null;
+    const tagCodeInjection = dataRoot && dataRoot.tag ? dataRoot.tag.codeinjection_head : null;
     const globalCodeinjection = settingsCache.get('codeinjection_head');
     const useStructuredData = !config.isPrivacyDisabled('useStructuredData');
     const referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade';
@@ -188,6 +189,10 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
 
                 if (!_.isEmpty(postCodeInjection)) {
                     head.push(postCodeInjection);
+                }
+
+                if (!_.isEmpty(tagCodeInjection)) {
+                    head.push(tagCodeInjection);
                 }
             }
             debug('end');
