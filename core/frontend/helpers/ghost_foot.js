@@ -11,6 +11,7 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
 
     const globalCodeinjection = settingsCache.get('codeinjection_foot');
     const postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
+    const tagCodeinjection = options.data.root && options.data.root.tag ? options.data.root.tag.codeinjection_foot : null;
 
     if (!_.isEmpty(globalCodeinjection)) {
         foot.push(globalCodeinjection);
@@ -18,6 +19,10 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
 
     if (!_.isEmpty(postCodeinjection)) {
         foot.push(postCodeinjection);
+    }
+
+    if (!_.isEmpty(tagCodeinjection)) {
+        foot.push(tagCodeinjection);
     }
 
     return new SafeString(foot.join(' ').trim());
