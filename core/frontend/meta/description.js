@@ -36,7 +36,8 @@ function getDescription(data, root, options = {}) {
         if (!options.property && _.includes(context, 'paged')) {
             description = '';
         } else {
-            description = data.tag.meta_description
+            description = data.tag[`${options.property}_description`]
+                || data.tag.meta_description
                 || data.tag.description
                 || (options.property ? settingsCache.get('meta_description') : '')
                 || '';
