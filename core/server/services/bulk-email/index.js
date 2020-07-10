@@ -25,10 +25,18 @@ class SuccessfulBatch extends BatchResultBase {
 class FailedBatch extends BatchResultBase {
     constructor(error, data) {
         super();
+        error.originalMessage = error.message;
 
-        // give a better error message for the invalid credentials state
-        if (error.message === 'Forbidden') {
-            error.message = 'Invalid Mailgun credentials';
+        if (error.statusCode >= 500) {
+            error.message = 'Email service is currently unavailable - please try again';
+        } else if (error.statusCode === 401) {
+            error.message = 'Email failed to send - please verify your credentials';
+        } else if (error.message && error.message.toLowerCase().includes('dmarc')) {
+            error.message = 'Unable to send email from domains implementing strict DMARC policies';
+        } else if (error.message.includes(`'to' parameter is not a valid address`)) {
+            error.message = 'Recipient is not a valid address';
+        } else {
+            error.message = 'Email failed to send - please verify your email settings';
         }
 
         this.error = error;

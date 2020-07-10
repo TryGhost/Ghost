@@ -71,7 +71,9 @@ module.exports = {
             const response = await mega.mega.sendTestEmail(model, emails);
             if (response && response[0] && response[0].error) {
                 throw new errors.EmailError({
-                    message: response[0].error.message
+                    statusCode: response[0].error.statusCode,
+                    message: response[0].error.message,
+                    context: response[0].error.originalMessage
                 });
             }
             return response;
