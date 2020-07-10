@@ -53,6 +53,7 @@ const defaultSettingsKeyTypes = [
     {key: 'mailgun_domain', type: 'bulk_email'},
     {key: 'mailgun_base_url', type: 'bulk_email'},
     {key: 'amp', type: 'blog'},
+    {key: 'amp_gtag_id', type: 'blog'},
     {key: 'labs', type: 'blog'},
     {key: 'slack', type: 'blog'},
     {key: 'unsplash', type: 'blog'},

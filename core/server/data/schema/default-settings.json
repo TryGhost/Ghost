@@ -337,6 +337,10 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "amp_gtag_id": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "labs": {
