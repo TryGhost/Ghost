@@ -37,7 +37,7 @@ function getTitle(data, root, options = {}) {
         title = data.tag.meta_title || data.tag.name + ' - ' + siteTitle + pageString;
     // Tag title, index
     } else if (_.includes(context, 'tag') && data.tag) {
-        title = data.tag.meta_title || data.tag.name + ' - ' + siteTitle;
+        title = data.tag[optionsPropertyName] || data.tag.meta_title || data.tag.name + ' - ' + siteTitle;
     // Post title
     } else if (_.includes(context, 'post') && data.post) {
         title = data.post[optionsPropertyName] || data.post.meta_title || data.post.title;

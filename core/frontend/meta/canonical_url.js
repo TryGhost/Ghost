@@ -8,6 +8,10 @@ function getCanonicalUrl(data) {
         return data.post.canonical_url;
     }
 
+    if (_.includes(data.context, 'tag') && data.tag && data.tag.canonical_url) {
+        return data.tag.canonical_url;
+    }
+
     let url = urlUtils.urlJoin(urlUtils.urlFor('home', true), getUrl(data, false));
 
     if (url.indexOf('/amp/')) {
