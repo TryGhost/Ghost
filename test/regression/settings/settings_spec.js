@@ -26,7 +26,9 @@ describe('Settings', function () {
         'ghost_private_key',
         'members_public_key',
         'members_private_key',
-        'members_email_auth_secret'
+        'members_email_auth_secret',
+        'members_stripe_webhook_id',
+        'members_stripe_webhook_secret'
     ];
     // If this test is failing, then it is likely a new setting has been added without group migration
     // In case of `core` setting modifications, whitelist above needs to be updated
