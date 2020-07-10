@@ -133,7 +133,7 @@ class MembersConfigProvider {
     getStripeUrlConfig() {
         const siteUrl = this._urlUtils.getSiteUrl();
 
-        const webhookHandlerUrl = new URL('/members/webhooks/stripe', siteUrl);
+        const webhookHandlerUrl = new URL('members/webhooks/stripe/', siteUrl);
 
         const checkoutSuccessUrl = new URL(siteUrl);
         checkoutSuccessUrl.searchParams.set('stripe', 'success');
