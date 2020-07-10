@@ -56,6 +56,7 @@ const defaultSettingsKeys = [
     'mailgun_domain',
     'mailgun_base_url',
     'amp',
+    'amp_gtag_id',
     'labs',
     'slack',
     'unsplash',
