@@ -23,6 +23,10 @@ module.exports = {
         return require('./users');
     },
 
+    get authors() {
+        return require('./authors');
+    },
+
     get tags() {
         return require('./tags');
     },
