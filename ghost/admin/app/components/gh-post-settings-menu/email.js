@@ -4,6 +4,7 @@ import validator from 'validator';
 import {action} from '@ember/object';
 import {alias, not, oneWay, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -91,7 +92,16 @@ export default Component.extend({
             return yield this.ajax.post(url, options);
         } catch (error) {
             if (error) {
-                this.set('sendTestEmailError', 'Email could not be sent, verify mail settings');
+                let message = 'Email could not be sent, verify mail settings';
+
+                // grab custom error message if present
+                if (
+                    error.payload && error.payload.errors
+                    && error.payload.errors[0] && error.payload.errors[0].message) {
+                    message = htmlSafe(error.payload.errors[0].message);
+                }
+
+                this.set('sendTestEmailError', message);
             }
         }
     }).drop(),
