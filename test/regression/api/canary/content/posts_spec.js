@@ -179,6 +179,36 @@ describe('api/canary/content/posts', function () {
             });
     });
 
+    it('browse posts with slug filter, should order in slug order', function () {
+        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=slug:[themes,ghostly-kitchen-sink,the-editor]`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                const jsonResponse = res.body;
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
+                jsonResponse.posts[0].slug.should.equal('themes');
+                jsonResponse.posts[1].slug.should.equal('ghostly-kitchen-sink');
+                jsonResponse.posts[2].slug.should.equal('the-editor');
+            });
+    });
+
+    it('browse posts with slug filter should order taking order parameter into account', function () {
+        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&order=slug%20DESC&filter=slug:[themes,ghostly-kitchen-sink,the-editor]`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                const jsonResponse = res.body;
+
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
+                jsonResponse.posts[0].slug.should.equal('themes');
+                jsonResponse.posts[1].slug.should.equal('the-editor');
+                jsonResponse.posts[2].slug.should.equal('ghostly-kitchen-sink');
+            });
+    });
+
     it('ensure origin header on redirect is not getting lost', function (done) {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');

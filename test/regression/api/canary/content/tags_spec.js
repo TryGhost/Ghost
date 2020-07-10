@@ -9,6 +9,8 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('api/canary/content/tags', function () {
+    const validKey = localUtils.getValidKey();
+
     before(function () {
         return ghost()
             .then(function () {
@@ -23,8 +25,6 @@ describe('api/canary/content/tags', function () {
         configUtils.restore();
     });
 
-    const validKey = localUtils.getValidKey();
-
     it('can read tags with fields', function () {
         return request
             .get(localUtils.API.getApiQuery(`tags/${testUtils.DataGenerator.Content.tags[0].id}/?key=${validKey}&fields=name,slug`))
@@ -34,6 +34,21 @@ describe('api/canary/content/tags', function () {
             .expect(200)
             .then((res) => {
                 localUtils.API.checkResponse(res.body.tags[0], 'tag', null, null, ['id', 'name', 'slug']);
+            });
+    });
+
+    it('browse tags with slug filter, should order in slug order', function () {
+        return request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&filter=slug:[kitchen-sink,bacon,chorizo]`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                const jsonResponse = res.body;
+
+                jsonResponse.tags.should.be.an.Array().with.lengthOf(3);
+                jsonResponse.tags[0].slug.should.equal('kitchen-sink');
+                jsonResponse.tags[1].slug.should.equal('bacon');
+                jsonResponse.tags[2].slug.should.equal('chorizo');
             });
     });
 });

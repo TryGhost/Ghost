@@ -38,4 +38,19 @@ describe('Authors Content API', function () {
                 localUtils.API.checkResponse(res.body.authors[0], 'author', null, null, ['id', 'name']);
             });
     });
+
+    it('browse authors with slug filter, should order in slug order', function () {
+        return request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=slug:[joe-bloggs,ghost,slimer-mcectoplasm]`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                const jsonResponse = res.body;
+
+                jsonResponse.authors.should.be.an.Array().with.lengthOf(3);
+                jsonResponse.authors[0].slug.should.equal('joe-bloggs');
+                jsonResponse.authors[1].slug.should.equal('ghost');
+                jsonResponse.authors[2].slug.should.equal('slimer-mcectoplasm');
+            });
+    });
 });

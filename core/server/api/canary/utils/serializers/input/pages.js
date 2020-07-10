@@ -3,6 +3,7 @@ const debug = require('ghost-ignition').debug('api:canary:utils:serializers:inpu
 const mapNQLKeyValues = require('@nexes/nql').utils.mapKeyValues;
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const url = require('./utils/url');
+const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 
@@ -48,7 +49,11 @@ function setDefaultOrder(frame) {
         includesOrderedRelations = _.intersection(orderedRelations, frame.options.withRelated).length > 0;
     }
 
-    if (!frame.options.order && !includesOrderedRelations) {
+    if (!frame.options.order && !includesOrderedRelations && frame.options.filter) {
+        frame.options.autoOrder = slugFilterOrder('posts', frame.options.filter);
+    }
+
+    if (!frame.options.order && !frame.options.autoOrder && !includesOrderedRelations) {
         frame.options.order = 'title asc';
     }
 }
