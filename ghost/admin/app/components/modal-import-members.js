@@ -209,13 +209,17 @@ export default ModalComponent.extend({
         },
 
         upload() {
-            if (this.file && this.mapping.getKeyByValue('email')) {
-                this.generateRequest();
+            if (this.config.get('enableDeveloperExperiments')) {
+                if (this.file && this.mapping.getKeyByValue('email')) {
+                    this.generateRequest();
+                } else {
+                    this.set('uploadErrors', [{
+                        message: 'Import as "Email" value is missing.',
+                        context: 'The CSV import has to have selected import as "Email" field.'
+                    }]);
+                }
             } else {
-                this.set('uploadErrors', [{
-                    message: 'Import as "Email" value is missing.',
-                    context: 'The CSV import has to have selected import as "Email" field.'
-                }]);
+                this.generateRequest();
             }
         },
 
