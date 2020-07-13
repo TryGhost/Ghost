@@ -41,6 +41,16 @@ class MembersFieldMapping {
         return this._mapping;
     }
 
+    getKeyByValue(searchedValue) {
+        for (const [key, value] of Object.entries(this._mapping)) {
+            if (value === searchedValue) {
+                return key;
+            }
+        }
+
+        return null;
+    }
+
     updateMapping(from, to) {
         for (const key in this._mapping) {
             if (this.get(key) === to) {
@@ -75,6 +85,7 @@ export default ModalComponent.extend({
     importResponse: null,
     failureMessage: null,
     validationErrors: null,
+    uploadErrors: null,
     labels: null,
 
     // Allowed actions
@@ -189,6 +200,7 @@ export default ModalComponent.extend({
             this.set('fileData', null);
             this.set('mapping', null);
             this.set('validationErrors', null);
+            this.set('uploadErrors', null);
 
             this.set('validating', false);
             this.set('customizing', false);
@@ -197,8 +209,13 @@ export default ModalComponent.extend({
         },
 
         upload() {
-            if (this.file) {
+            if (this.file && this.mapping.getKeyByValue('email')) {
                 this.generateRequest();
+            } else {
+                this.set('uploadErrors', [{
+                    message: 'Import as "Email" value is missing.',
+                    context: 'The CSV has to contain import as "Email" field.'
+                }]);
             }
         },
 
