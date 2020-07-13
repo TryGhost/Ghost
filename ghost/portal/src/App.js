@@ -85,7 +85,7 @@ export default class App extends React.Component {
                 ...this.state.site,
                 ...(previewSite || {})
             },
-            member: this.state.member || this.getPreviewMember(),
+            member: this.getPreviewMember(this.state.member),
             ...restPreview
         });
     }
@@ -168,13 +168,13 @@ export default class App extends React.Component {
         }
     }
 
-    getPreviewMember() {
+    getPreviewMember(member) {
         const [path, qs] = window.location.hash.substr(1).split('?');
 
         if (path === '/portal' && qs) {
             const {site: previewSite, ...restPreview} = this.getPreviewState();
             if (restPreview.page.includes('account')) {
-                return Fixtures.member.free;
+                return member || Fixtures.member.free;
             }
             return null;
         }
@@ -197,7 +197,7 @@ export default class App extends React.Component {
                     ...site,
                     ...(previewSite || {})
                 },
-                member: member || this.getPreviewMember(),
+                member: this.getPreviewMember(member),
                 page,
                 showPopup,
                 action: 'init:success',
