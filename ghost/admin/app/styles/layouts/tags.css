@@ -139,3 +139,38 @@ textarea.gh-tag-details-textarea {
     border: 1px solid var(--lightgrey);
     min-height: 147px;
 }
+
+.gh-tag-setting-codeinjection .CodeMirror {
+    padding: 0 !important;
+    min-height: 240px;
+}
+
+.gh-tag-setting-codeinjection .CodeMirror-scroll {
+    min-height: 240px;
+}
+
+label.gh-tag-setting-codeheader {
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+}
+
+.gh-tag-settings-multiprop {
+    display: flex;
+    max-width: 620px;
+    width: 100%;
+}
+
+.gh-tag-settings-colorcontainer {
+    flex-basis: 112px;
+}
+
+@media (max-width: 1080px) {
+    .gh-tag-settings-multiprop {
+        flex-direction: column;
+    }
+
+    .gh-tag-settings-colorcontainer {
+        flex-basis: unset;
+    }
+}
