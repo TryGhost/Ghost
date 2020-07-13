@@ -51,6 +51,27 @@
         {{/if}}
 
         {{#if this.customizing}}
+            {{#if this.uploadErrors}}
+                <div class="failed flex items-start gh-members-upload-errorcontainer {{if this.importDisabled "error" "warning"}}">
+                    <div class="mr3">
+                        {{svg-jar "warning" class="nudge-top--2 w5 h5 fill-red"}}
+                    </div>
+                    <div class="ma0">
+                        <p class="ma0 pa0 flex-grow w-100">The import contains errors!</p>
+                        <ul class="ma0 pa0 mt4 list bt b--whitegrey">
+                            {{#each this.uploadErrors as |error|}}
+                                <li class="gh-members-import-errormessage">
+                                    <span>{{{error.message}}}</span>
+                                    {{#if error.context}}
+                                        <p class="gh-members-import-errorcontext">{{{error.context}}}</p>
+                                    {{/if}}
+                                </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
+            {{/if}}
+
             <GhFormGroup>
                 {{#if this.config.enableDeveloperExperiments}}
                     <div class="gh-members-import-scrollarea">
