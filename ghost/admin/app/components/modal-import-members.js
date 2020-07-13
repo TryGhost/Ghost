@@ -116,14 +116,11 @@ export default ModalComponent.extend({
             });
         }
 
-        // TODO: remove "if" below once import validations are production ready
-        if (this.config.get('enableDeveloperExperiments')) {
-            if (this.mapping) {
-                for (const key in this.mapping.mapping) {
-                    if (this.mapping.get(key)){
-                        // reversing mapping direction to match the structure accepted in the API
-                        formData.append(`mapping[${this.mapping.get(key)}]`, key);
-                    }
+        if (this.mapping) {
+            for (const key in this.mapping.mapping) {
+                if (this.mapping.get(key)){
+                    // reversing mapping direction to match the structure accepted in the API
+                    formData.append(`mapping[${this.mapping.get(key)}]`, key);
                 }
             }
         }
@@ -162,34 +159,29 @@ export default ModalComponent.extend({
                 this.set('file', file);
                 this.set('failureMessage', null);
 
-                // TODO: remove "if" below once import validations are production ready
-                if (this.config.get('enableDeveloperExperiments')) {
-                    this.set('validating', true);
+                this.set('validating', true);
 
-                    papaparse.parse(file, {
-                        header: true,
-                        skipEmptyLines: true,
-                        worker: true, // NOTE: compare speed and file sizes with/without this flag
-                        complete: async (results) => {
-                            this.set('fileData', results.data);
+                papaparse.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    worker: true, // NOTE: compare speed and file sizes with/without this flag
+                    complete: async (results) => {
+                        this.set('fileData', results.data);
 
-                            let {validationErrors, mapping} = await this.memberImportValidator.check(results.data);
-                            this.set('mapping', new MembersFieldMapping(mapping));
+                        let {validationErrors, mapping} = await this.memberImportValidator.check(results.data);
+                        this.set('mapping', new MembersFieldMapping(mapping));
 
-                            if (validationErrors.length) {
-                                this._importValidationFailed(validationErrors);
-                            } else {
-                                this.set('validating', false);
-                                this.set('customizing', true);
-                            }
-                        },
-                        error: (error) => {
-                            this._validationFailed(error);
+                        if (validationErrors.length) {
+                            this._importValidationFailed(validationErrors);
+                        } else {
+                            this.set('validating', false);
+                            this.set('customizing', true);
                         }
-                    });
-                } else {
-                    this.set('customizing', true);
-                }
+                    },
+                    error: (error) => {
+                        this._validationFailed(error);
+                    }
+                });
             }
         },
 
@@ -209,17 +201,13 @@ export default ModalComponent.extend({
         },
 
         upload() {
-            if (this.config.get('enableDeveloperExperiments')) {
-                if (this.file && this.mapping.getKeyByValue('email')) {
-                    this.generateRequest();
-                } else {
-                    this.set('uploadErrors', [{
-                        message: 'Import as "Email" value is missing.',
-                        context: 'The CSV import has to have selected import as "Email" field.'
-                    }]);
-                }
-            } else {
+            if (this.file && this.mapping.getKeyByValue('email')) {
                 this.generateRequest();
+            } else {
+                this.set('uploadErrors', [{
+                    message: 'Import as "Email" value is missing.',
+                    context: 'The CSV import has to have selected import as "Email" field.'
+                }]);
             }
         },
 
