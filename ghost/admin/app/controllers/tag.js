@@ -88,6 +88,9 @@ export default Controller.extend({
         tag.setProperties(scratchProps);
 
         try {
+            if (tag.get('errors').length !== 0) {
+                return;
+            }
             yield tag.save();
 
             // replace 'new' route with 'tag' route
