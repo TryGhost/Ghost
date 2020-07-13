@@ -2,6 +2,8 @@ import Component from '@ember/component';
 import Ember from 'ember';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
+import {or} from '@ember/object/computed';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 const {Handlebars} = Ember;
@@ -16,6 +18,27 @@ export default Component.extend({
     // Allowed actions
     setProperty: () => {},
 
+    twitterTitle: or('scratchTag.twitterTitle', 'seoTitle'),
+    twitterDescription: or('scratchTag.twitterDescription', 'seoDescription'),
+    twitterImage: or('tag.twitterImage', 'tag.featureImage'),
+
+    facebookTitle: or('scratchTag.ogTitle', 'seoTitle'),
+    facebookDescription: or('scratchTag.ogDescription', 'seoDescription'),
+    facebookImage: or('tag.ogImage', 'tag.featureImage'),
+
+    accentColor: computed('tag.accentColor', function () {
+        let color = this.get('tag.accentColor');
+        if (color && color[0] === '#') {
+            return color.slice(1);
+        }
+        return color;
+    }),
+
+    accentColorBackgroundStyle: computed('tag.accentColor', function () {
+        let color = this.get('tag.accentColor') || '#ffffff';
+        return htmlSafe(`background-color: ${color}`);
+    }),
+
     title: computed('tag.isNew', function () {
         if (this.get('tag.isNew')) {
             return 'New tag';
@@ -24,10 +47,8 @@ export default Component.extend({
         }
     }),
 
-    seoTitle: computed('scratchTag.{title,metaTitle}', function () {
-        let metaTitle = this.scratchTag.metaTitle || '';
-
-        metaTitle = metaTitle.length > 0 ? metaTitle : this.scratchTag.title;
+    seoTitle: computed('scratchTag.{name,metaTitle}', function () {
+        let metaTitle = this.scratchTag.metaTitle || this.scratchTag.name;
 
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
@@ -38,14 +59,15 @@ export default Component.extend({
         return metaTitle;
     }),
 
-    seoURL: computed('scratchTag.slug', function () {
+    seoURL: computed('scratchTag.{canonicalUrl,slug}', function () {
         let blogUrl = this.get('config.blogUrl');
         let seoSlug = this.scratchTag.slug || '';
 
-        let seoURL = `${blogUrl}/tag/${seoSlug}`;
+        let seoURL = this.scratchTag.canonicalUrl || `${blogUrl}/tag/${seoSlug}`;
 
         // only append a slash to the URL if the slug exists
-        if (seoSlug) {
+
+        if (!seoURL.endsWith('/')) {
             seoURL += '/';
         }
 
@@ -77,12 +99,91 @@ export default Component.extend({
             this.setProperty(property, value);
         },
 
+        setTwitterImage(image) {
+            this.setProperty('twitterImage', image);
+        },
+
+        clearTwitterImage() {
+            this.setProperty('twitterImage', '');
+        },
+
+        setOgImage(image) {
+            this.setProperty('ogImage', image);
+        },
+
+        clearOgImage() {
+            this.setProperty('ogImage', '');
+        },
+
         setCoverImage(image) {
             this.setProperty('featureImage', image);
         },
 
         clearCoverImage() {
             this.setProperty('featureImage', '');
+        },
+
+        validateCanonicalUrl() {
+            let newUrl = this.get('scratchTag.canonicalUrl');
+            let oldUrl = this.get('tag.canonicalUrl');
+            let errMessage = '';
+
+            this.get('tag.errors').remove('canonicalUrl');
+            this.get('tag.hasValidated').removeObject('canonicalUrl');
+
+            if (newUrl === '') {
+                this.setProperty('canonicalUrl', '');
+                return;
+            }
+
+            if (!newUrl) {
+                newUrl = oldUrl;
+            }
+
+            try {
+                new URL(newUrl);
+                this.setProperty('canonicalUrl', '');
+                run.schedule('afterRender', this, function () {
+                    this.setProperty('canonicalUrl', newUrl);
+                });
+            } catch (err) {
+                errMessage = 'The url should be a valid url';
+                this.get('tag.errors').add('canonicalUrl', errMessage);
+                this.get('tag.hasValidated').pushObject('canonicalUrl');
+            }
+        },
+
+        validateAccentColor() {
+            let newColor = this.get('accentColor');
+            let oldColor = this.get('tag.accentColor');
+            let errMessage = '';
+
+            this.get('tag.errors').remove('accentColor');
+            this.get('tag.hasValidated').removeObject('accentColor');
+
+            if (newColor === '') {
+                this.setProperty('accentColor', '');
+                return;
+            }
+
+            if (!newColor) {
+                newColor = oldColor;
+            }
+
+            if (newColor[0] !== '#') {
+                newColor = `#${newColor}`;
+            }
+
+            if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
+                this.setProperty('accentColor', '');
+                run.schedule('afterRender', this, function () {
+                    this.setProperty('accentColor', newColor);
+                });
+            } else {
+                errMessage = 'The color should be in valid hex format';
+                this.get('tag.errors').add('accentColor', errMessage);
+                this.get('tag.hasValidated').pushObject('accentColor');
+            }
         }
     }
 });

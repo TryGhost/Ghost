@@ -813,8 +813,8 @@ p.theme-validation-details {
 .input-color:after {
     content: "#";
     position: absolute;
-    top: 6px;
-    left: 40px;
+    top: 9px;
+    left: 43px;
     color: var(--midlightgrey);
     font-family: "Consolas", monaco, monospace;
     font-size: 13px;
@@ -825,9 +825,9 @@ p.theme-validation-details {
 }
 
 .input-color input {
-    padding-left: 48px;
-    width: 110px;
-    height: 33px;
+    padding-left: 52px;
+    width: 112px;
+    height: 38px;
     padding-right: 8px;
     font-family: "Consolas", monaco, monospace;
     font-size: 13px;
@@ -837,8 +837,8 @@ p.theme-validation-details {
     position: absolute;
     top: 1px;
     left: 1px;
-    width: 31px;
-    height: 31px;
+    width: 36px;
+    height: 36px;
     display: inline-block;
     background-color: var(--lightgrey);
     border-top-left-radius: 4px;
@@ -850,8 +850,8 @@ p.theme-validation-details {
 .input-color input:focus + .color-box {
     top: 2px;
     left: 2px;
-    width: 30px;
-    height: 29px;
+    width: 35px;
+    height: 34px;
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
 }
