@@ -214,7 +214,7 @@ export default ModalComponent.extend({
             } else {
                 this.set('uploadErrors', [{
                     message: 'Import as "Email" value is missing.',
-                    context: 'The CSV has to contain import as "Email" field.'
+                    context: 'The CSV import has to have selected import as "Email" field.'
                 }]);
             }
         },
