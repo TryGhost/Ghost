@@ -73,7 +73,7 @@
     "ember-cli-uglify": "3.0.0",
     "ember-composable-helpers": "4.2.2",
     "ember-concurrency": "1.2.1",
-    "ember-concurrency-decorators": "2.0.0",
+    "ember-concurrency-decorators": "2.0.1",
     "ember-data": "3.19.0",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",
