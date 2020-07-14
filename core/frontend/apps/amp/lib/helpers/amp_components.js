@@ -39,6 +39,10 @@ function ampComponents() {
         components.push('<script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>');
     }
 
+    if (proxy.settingsCache.get('amp_gtag_id')) {
+        components.push('<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>');
+    }
+
     return new SafeString(components.join('\n'));
 }
 
