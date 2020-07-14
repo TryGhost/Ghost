@@ -34,7 +34,7 @@ describe('Settings API', function () {
 
         localUtils.API.checkResponse(jsonResponse, 'settings');
 
-        JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
+        JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).should.eql(true);
         JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
         should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
         should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_head'}));
@@ -149,6 +149,10 @@ describe('Settings API', function () {
                 {
                     key: 'timezone',
                     value: 'Pacific/Auckland'
+                },
+                {
+                    key: 'unsplash',
+                    value: false
                 }
             ]
         };
@@ -218,8 +222,11 @@ describe('Settings API', function () {
         putBody.settings[14].key.should.eql('timezone');
         should.equal(putBody.settings[14].value, 'Pacific/Auckland');
 
-        putBody.settings[15].key.should.eql('slack');
-        should.equal(putBody.settings[15].value, JSON.stringify([{
+        putBody.settings[15].key.should.eql('unsplash');
+        should.equal(putBody.settings[15].value, false);
+
+        putBody.settings[16].key.should.eql('slack');
+        should.equal(putBody.settings[16].value, JSON.stringify([{
             url: 'https://overrides.tld',
             username: 'New Slack Username'
         }]));

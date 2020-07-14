@@ -158,6 +158,11 @@ module.exports = {
 
         // Ignore all deprecated settings
         frame.data.settings = frame.data.settings.filter((setting) => {
+            // NOTE: ignore old unsplash object notation
+            if (setting.key === 'unsplash' && _.isObject(setting.value)) {
+                return true;
+            }
+
             return DEPRECATED_SETTINGS.includes(setting.key) === false;
         });
     }

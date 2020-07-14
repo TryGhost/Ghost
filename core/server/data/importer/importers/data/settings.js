@@ -25,6 +25,14 @@ const deprecatedSupportedSettingsOneToManyMap = {
             group: 'slack',
             type: 'string'
         }
+    }],
+    unsplash: [{
+        from: 'isActive',
+        to: {
+            key: 'unsplash',
+            group: 'unsplash',
+            type: 'boolean'
+        }
     }]
 };
 
@@ -103,6 +111,9 @@ class SettingsImporter extends BaseImporter {
         for (const key in deprecatedSupportedSettingsOneToManyMap) {
             const deprecatedSetting = this.dataToImport.find(setting => setting.key === key);
 
+            // NOTE: filtering before mapping in case the key name is the same
+            this.dataToImport = _.filter(this.dataToImport, data => (key !== data.key));
+
             if (deprecatedSetting) {
                 let deprecatedSettingValue;
 
@@ -118,24 +129,25 @@ class SettingsImporter extends BaseImporter {
 
                 if (deprecatedSettingValue) {
                     deprecatedSupportedSettingsOneToManyMap[key].forEach(({from, to}) => {
-                        const value = _.get(deprecatedSettingValue, from);
+                        let value = _.isObject(deprecatedSettingValue)
+                            ? _.get(deprecatedSettingValue, from)
+                            : deprecatedSetting.value;
+
                         this.dataToImport.push({
                             id: ObjectId.generate(),
                             key: to.key,
                             value: value,
                             group: to.group,
                             type: to.type,
-                            flags: null,
-                            created_by: deprecatedSetting.created_by,
+                            flags: to.flags || null,
+                            created_by: deprecatedSetting.created_by || 1,
                             created_at: deprecatedSetting.created_at,
-                            updated_by: deprecatedSetting.updated_by,
+                            updated_by: deprecatedSetting.updated_by || 1,
                             updated_at: deprecatedSetting.updated_at
                         });
                     });
                 }
             }
-
-            this.dataToImport = _.filter(this.dataToImport, data => (key !== data.key));
         }
 
         // NOTE: keep back compatibility with settings object structure present before migration

@@ -151,6 +151,10 @@ module.exports = {
                 setting.key = 'lang';
             }
 
+            if (setting.key === 'unsplash') {
+                setting.value = JSON.parse(setting.value).isActive;
+            }
+
             if (['cover_image', 'icon', 'logo', 'portal_button_icon'].includes(setting.key)) {
                 setting = url.forSetting(setting);
             }

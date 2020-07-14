@@ -135,6 +135,10 @@ module.exports = {
                 setting.key = 'timezone';
             }
 
+            if (setting.key === 'unsplash') {
+                setting.value = JSON.parse(setting.value).isActive;
+            }
+
             if (['cover_image', 'icon', 'logo'].includes(setting.key)) {
                 setting = url.forSetting(setting);
             }

@@ -113,6 +113,10 @@ describe('Settings API (v2)', function () {
                         }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
                     }
 
+                    const unsplash = settings.find(s => s.key === 'unsplash');
+                    should.exist(unsplash);
+                    unsplash.value.should.equal(JSON.stringify({isActive: true}));
+
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
         });
@@ -379,6 +383,7 @@ describe('Settings API (v2)', function () {
                     }
 
                     should.not.exist(res.headers['x-cache-invalidate']);
+
                     const jsonResponse = res.body;
 
                     should.exist(jsonResponse);
@@ -388,7 +393,68 @@ describe('Settings API (v2)', function () {
 
                     testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('slack');
+
                     done();
+                });
+        });
+
+        it('Format of unsplash stays same as pre v4 migration when reading', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/unsplash/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('unsplash');
+                    JSON.parse(jsonResponse.settings[0].value).should.eql({
+                        isActive: true
+                    });
+
+                    done();
+                });
+        });
+
+        it('Format of unsplash stays same as pre v4 migration when editing', function () {
+            const setting = {
+                settings: [{
+                    key: 'unsplash',
+                    value: JSON.stringify({
+                        isActive: false
+                    })
+                }]
+            };
+
+            return request.put(localUtils.API.getApiQuery('settings/'))
+                .send(setting)
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then(function (res) {
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('unsplash');
+                    JSON.parse(jsonResponse.settings[0].value).should.eql({
+                        isActive: false
+                    });
                 });
         });
 
@@ -545,7 +611,7 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it('Can edit a setting deprecated in v4', async function () {
+        it('Can edit multiple setting along with a deprecated one from v4', async function () {
             const settingToChange = {
                 settings: [
                     {
@@ -554,7 +620,16 @@ describe('Settings API (v2)', function () {
                             url: 'https://newurl.tld/slack',
                             username: 'New Slack Username'
                         }])
+                    }, {
+                        key: 'unsplash',
+                        value: JSON.stringify({
+                            isActive: true
+                        })
+                    }, {
+                        key: 'title',
+                        value: 'New Value'
                     }
+
                 ]
             };
 
@@ -569,9 +644,18 @@ describe('Settings API (v2)', function () {
             headers['x-cache-invalidate'].should.eql('/*');
             should.exist(putBody);
 
-            putBody.settings.length.should.equal(1);
-            putBody.settings[0].key.should.eql('slack');
-            should.equal(putBody.settings[0].value, JSON.stringify([{
+            putBody.settings.length.should.equal(3);
+
+            putBody.settings[0].key.should.eql('unsplash');
+            should.equal(putBody.settings[0].value, JSON.stringify({
+                isActive: true
+            }));
+
+            putBody.settings[1].key.should.eql('title');
+            should.equal(putBody.settings[1].value, 'New Value');
+
+            putBody.settings[2].key.should.eql('slack');
+            should.equal(putBody.settings[2].value, JSON.stringify([{
                 url: 'https://newurl.tld/slack',
                 username: 'New Slack Username'
             }]));
