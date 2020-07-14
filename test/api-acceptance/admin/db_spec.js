@@ -50,7 +50,7 @@ describe('DB API', function () {
         Object.keys(jsonResponse.db[0].data).length.should.eql(34);
     });
 
-    it('Can import a JSON database', async function () {
+    it('Can import a JSON database exported from Ghost v2', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -60,7 +60,61 @@ describe('DB API', function () {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/default_export.json'))
+            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/v2_export.json'))
+            .expect(200);
+
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.db);
+        should.exist(jsonResponse.problems);
+        jsonResponse.problems.should.have.length(3);
+
+        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        res2.body.posts.should.have.length(7);
+    });
+
+    it('Can import a JSON database exported from Ghost v3', async function () {
+        await request.delete(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect(204);
+
+        const res = await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/v3_export.json'))
+            .expect(200);
+
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.db);
+        should.exist(jsonResponse.problems);
+        jsonResponse.problems.should.have.length(3);
+
+        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        res2.body.posts.should.have.length(7);
+    });
+
+    it('Can import a JSON database exported from Ghost v4', async function () {
+        await request.delete(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect(204);
+
+        const res = await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/v4_export.json'))
             .expect(200);
 
         const jsonResponse = res.body;

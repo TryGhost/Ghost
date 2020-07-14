@@ -1,5 +1,6 @@
 const debug = require('ghost-ignition').debug('importer:settings');
 const Promise = require('bluebird');
+const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
@@ -8,13 +9,25 @@ const keyGroupMapper = require('../../../../api/shared/serializers/input/utils/s
 const keyTypeMapper = require('../../../../api/shared/serializers/input/utils/settings-key-type-mapper');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
-const ignoredSettings = ['members_from_address', 'members_support_address'];
+const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address'];
+
 // NOTE: drop support in Ghost 5.0
 const deprecatedSupportedSettingsMap = {
     default_locale: 'lang',
     active_timezone: 'timezone',
     ghost_head: 'codeinjection_head',
     ghost_foot: 'codeinjection_foot'
+};
+const deprecatedSupportedSettingsOneToManyMap = {
+    // NOTE: intentionally ignoring slack_url setting
+    slack: [{
+        from: '[0].username',
+        to: {
+            key: 'slack_username',
+            group: 'slack',
+            type: 'string'
+        }
+    }]
 };
 
 const isFalse = (value) => {
@@ -90,6 +103,44 @@ class SettingsImporter extends BaseImporter {
             return data;
         });
 
+        for (const key in deprecatedSupportedSettingsOneToManyMap) {
+            const deprecatedSetting = this.dataToImport.find(setting => setting.key === key);
+
+            if (deprecatedSetting) {
+                let deprecatedSettingValue;
+
+                try {
+                    deprecatedSettingValue = JSON.parse(deprecatedSetting.value);
+                } catch (err) {
+                    this.problems.push({
+                        message: `Failed to parse the value of ${deprecatedSetting.key} setting value`,
+                        help: this.modelName,
+                        context: deprecatedSetting
+                    });
+                }
+
+                if (deprecatedSettingValue) {
+                    deprecatedSupportedSettingsOneToManyMap[key].forEach(({from, to}) => {
+                        const value = _.get(deprecatedSettingValue, from);
+                        this.dataToImport.push({
+                            id: ObjectId.generate(),
+                            key: to.key,
+                            value: value,
+                            group: to.group,
+                            type: to.type,
+                            flags: null,
+                            created_by: deprecatedSetting.created_by,
+                            created_at: deprecatedSetting.created_at,
+                            updated_by: deprecatedSetting.updated_by,
+                            updated_at: deprecatedSetting.updated_at
+                        });
+                    });
+                }
+            }
+
+            this.dataToImport = _.filter(this.dataToImport, data => (key !== data.key));
+        }
+
         // NOTE: keep back compatibility with settings object structure present before migration
         //       ref. https://github.com/TryGhost/Ghost/issues/10318
         this.dataToImport = this.dataToImport.map((data) => {
@@ -136,11 +187,6 @@ class SettingsImporter extends BaseImporter {
                 // Overwrite the labs setting with our current defaults
                 // Ensures things that are enabled in new versions, are turned on
                 obj.value = JSON.stringify(_.assign({}, JSON.parse(obj.value), labsDefaults));
-            }
-
-            // CASE: we do not import slack hooks, otherwise it can happen very fast that you are pinging someone's slack channel
-            if (obj.key === 'slack') {
-                obj.value = JSON.stringify([{url: ''}]);
             }
 
             // CASE: we do not import "from address" for members settings as that needs to go via validation with magic link

@@ -15,9 +15,7 @@ const schema = require('../../../core/server/data/schema').checks;
 const settingsCache = require('../../../core/server/services/settings/cache');
 
 // Test data
-const slackObjNoUrl = [{url: ''}];
-
-const slackObjWithUrl = [{url: 'https://hooks.slack.com/services/a-b-c-d'}];
+const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
 
 describe('Slack', function () {
     let eventStub;
@@ -130,7 +128,7 @@ describe('Slack', function () {
             urlService.getUrlByResourceId.withArgs(post.id, {absolute: true}).returns('http://myblog.com/' + post.slug + '/');
 
             isPostStub.returns(true);
-            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+            settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
             ping(post);
@@ -139,12 +137,12 @@ describe('Slack', function () {
             makeRequestStub.calledOnce.should.be.true();
             isPostStub.calledTwice.should.be.true();
             urlService.getUrlByResourceId.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack').should.be.true();
+            settingsCacheStub.calledWith('slack_url').should.be.true();
 
             requestUrl = makeRequestStub.firstCall.args[0];
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            requestUrl.should.equal(slackObjWithUrl[0].url);
+            requestUrl.should.equal(slackURL);
             requestData.attachments[0].title.should.equal(post.title);
             requestData.attachments[0].title_link.should.equal('http://myblog.com/webhook-test/');
             requestData.attachments[0].fields[0].value.should.equal('## markdown.');
@@ -160,7 +158,7 @@ describe('Slack', function () {
             let requestData;
 
             isPostStub.returns(false);
-            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+            settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
             ping({message: 'Hi!'});
@@ -169,12 +167,12 @@ describe('Slack', function () {
             makeRequestStub.calledOnce.should.be.true();
             isPostStub.calledTwice.should.be.true();
             urlService.getUrlByResourceId.called.should.be.false();
-            settingsCacheStub.calledWith('slack').should.be.true();
+            settingsCacheStub.calledWith('slack_url').should.be.true();
 
             requestUrl = makeRequestStub.firstCall.args[0];
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            requestUrl.should.equal(slackObjWithUrl[0].url);
+            requestUrl.should.equal(slackURL);
             requestData.text.should.equal('Hi!');
             requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
@@ -183,7 +181,7 @@ describe('Slack', function () {
 
         it('makes a request and errors', function (done) {
             makeRequestStub.rejects();
-            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+            settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
             ping({});
@@ -201,7 +199,7 @@ describe('Slack', function () {
         it('does not make a request if post is a page', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({type: 'page'});
             isPostStub.returns(true);
-            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+            settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
             ping(post);
@@ -210,13 +208,13 @@ describe('Slack', function () {
             makeRequestStub.calledOnce.should.be.false();
             isPostStub.calledOnce.should.be.true();
             urlService.getUrlByResourceId.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack').should.be.true();
+            settingsCacheStub.calledWith('slack_url').should.be.true();
         });
 
         it('does not send webhook for \'welcome\' post', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({slug: 'welcome'});
             isPostStub.returns(true);
-            settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
+            settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
             ping(post);
@@ -225,12 +223,12 @@ describe('Slack', function () {
             makeRequestStub.calledOnce.should.be.false();
             isPostStub.calledOnce.should.be.true();
             urlService.getUrlByResourceId.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack').should.be.true();
+            settingsCacheStub.calledWith('slack_url').should.be.true();
         });
 
         it('handles broken slack settings', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({slug: 'any'});
-            settingsCacheStub.withArgs('slack').returns();
+            settingsCacheStub.withArgs('slack_url').returns();
 
             // execute code
             ping(post);
@@ -239,7 +237,7 @@ describe('Slack', function () {
             makeRequestStub.calledOnce.should.be.false();
             isPostStub.calledOnce.should.be.true();
             urlService.getUrlByResourceId.called.should.be.false();
-            settingsCacheStub.calledWith('slack').should.be.true();
+            settingsCacheStub.calledWith('slack_url').should.be.true();
         });
     });
 });
