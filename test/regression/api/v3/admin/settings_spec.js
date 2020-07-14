@@ -117,6 +117,10 @@ describe('Settings API (v3)', function () {
                         }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
                     }
 
+                    const unsplash = settings.find(s => s.key === 'unsplash');
+                    should.exist(unsplash);
+                    unsplash.value.should.equal(JSON.stringify({isActive: true}));
+
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
         });
@@ -610,8 +614,13 @@ describe('Settings API (v3)', function () {
                             username: 'New Slack Username'
                         }])
                     }, {
+                        key: 'unsplash',
+                        value: JSON.stringify({
+                            isActive: true
+                        })
+                    }, {
                         key: 'title',
-                        value: 'Test site title'
+                        value: 'New Value'
                     }
                 ]
             };
@@ -627,12 +636,18 @@ describe('Settings API (v3)', function () {
             headers['x-cache-invalidate'].should.eql('/*');
             should.exist(putBody);
 
-            putBody.settings.length.should.equal(2);
-            putBody.settings[0].key.should.eql('title');
-            should.equal(putBody.settings[0].value, 'Test site title');
+            putBody.settings.length.should.equal(3);
 
-            putBody.settings[1].key.should.eql('slack');
-            should.equal(putBody.settings[1].value, JSON.stringify([{
+            putBody.settings[0].key.should.eql('unsplash');
+            should.equal(putBody.settings[0].value, JSON.stringify({
+                isActive: true
+            }));
+
+            putBody.settings[1].key.should.eql('title');
+            should.equal(putBody.settings[1].value, 'New Value');
+
+            putBody.settings[2].key.should.eql('slack');
+            should.equal(putBody.settings[2].value, JSON.stringify([{
                 url: 'https://newurl.tld/slack',
                 username: 'New Slack Username'
             }]));
