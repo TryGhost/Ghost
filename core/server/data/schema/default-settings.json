@@ -406,8 +406,12 @@
     },
     "unsplash": {
         "unsplash": {
-            "defaultValue": "{\"isActive\": true}",
-            "type": "object"
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "views": {
