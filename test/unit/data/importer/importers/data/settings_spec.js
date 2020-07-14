@@ -95,5 +95,52 @@ describe('SettingsImporter', function () {
 
             should.exist(problem);
         });
+
+        it('Adds a problem if unable to parse data from slack configuration', function () {
+            const fakeSettings = [{
+                key: 'slack',
+                value: 'invalid JSON here'
+            }];
+
+            const fakeExistingSettings = [{
+                key: 'slack_username',
+                value: 'Ghost'
+            }];
+
+            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
+
+            importer.existingData = fakeExistingSettings;
+            importer.beforeImport();
+
+            const problem = find(importer.problems, {
+                message: 'Failed to parse the value of slack setting value'
+            });
+
+            should.exist(problem);
+        });
+
+        it('Ignores slack URL from import files in all forms', function () {
+            const fakeSettings = [{
+                key: 'slack',
+                value: `[{"url":"https://slack.url","username":"Test Name"}]`,
+                created_at: '2021-02-10T01:26:08.452Z',
+                updated_at: '2021-02-10T01:26:08.452Z'
+            }, {
+                key: 'slack_url',
+                value: 'https://second-slack.url',
+                created_at: '2021-02-10T01:26:08.452Z',
+                updated_at: '2021-02-10T01:26:08.452Z'
+            }];
+
+            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
+
+            importer.beforeImport();
+
+            importer.problems.length.should.equal(0);
+
+            importer.dataToImport.length.should.equal(1);
+            importer.dataToImport[0].key.should.equal('slack_username');
+            importer.dataToImport[0].value.should.equal('Test Name');
+        });
     });
 });
