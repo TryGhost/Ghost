@@ -119,6 +119,10 @@ class SettingsImporter extends BaseImporter {
         });
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
+            return data.key !== 'slackUrl';
+        });
+
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
             return !(['members_subscription_settings', 'stripe_connect_integration', 'bulk_email_settings'].includes(data.key));
         });
 
@@ -136,11 +140,6 @@ class SettingsImporter extends BaseImporter {
                 // Overwrite the labs setting with our current defaults
                 // Ensures things that are enabled in new versions, are turned on
                 obj.value = JSON.stringify(_.assign({}, JSON.parse(obj.value), labsDefaults));
-            }
-
-            // CASE: we do not import slack hooks, otherwise it can happen very fast that you are pinging someone's slack channel
-            if (obj.key === 'slack') {
-                obj.value = JSON.stringify([{url: ''}]);
             }
 
             // CASE: we do not import "from address" for members settings as that needs to go via validation with magic link

@@ -3,6 +3,11 @@ const url = require('./utils/url');
 const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
 const settingsCache = require('../../../../../services/settings/cache');
 
+const DEPRECATED_SETTINGS = [
+    'bulk_email_settings',
+    'slack'
+];
+
 module.exports = {
     browse(apiConfig, frame) {
         if (frame.options.type) {
@@ -45,8 +50,9 @@ module.exports = {
             return !settingFlagsArr.includes('RO');
         });
 
+        // Ignore all deprecated settings
         frame.data.settings = frame.data.settings.filter((setting) => {
-            return setting.key !== 'bulk_email_settings';
+            return DEPRECATED_SETTINGS.includes(setting.key) === false;
         });
 
         frame.data.settings.forEach((setting) => {
