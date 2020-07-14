@@ -117,6 +117,10 @@ describe('Settings API (canary)', function () {
                         }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
                     }
 
+                    const unsplash = settings.find(s => s.key === 'unsplash');
+                    should.exist(unsplash);
+                    unsplash.value.should.equal(true);
+
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
         });
@@ -424,6 +428,32 @@ describe('Settings API (canary)', function () {
                 });
         });
 
+        it('Format of unsplash is boolean as introduced with v4', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/unsplash/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('unsplash');
+                    JSON.parse(jsonResponse.settings[0].value).should.eql(true);
+
+                    done();
+                });
+        });
+
         it('Can\'t read non existent setting', function (done) {
             request.get(localUtils.API.getApiQuery('settings/testsetting/'))
                 .set('Origin', config.get('url'))
@@ -587,8 +617,11 @@ describe('Settings API (canary)', function () {
                             username: 'New Slack Username'
                         }])
                     }, {
+                        key: 'unsplash',
+                        value: true
+                    }, {
                         key: 'title',
-                        value: 'Test site title'
+                        value: 'New Value'
                     }
                 ]
             };
@@ -604,12 +637,16 @@ describe('Settings API (canary)', function () {
             headers['x-cache-invalidate'].should.eql('/*');
             should.exist(putBody);
 
-            putBody.settings.length.should.equal(2);
-            putBody.settings[0].key.should.eql('title');
-            should.equal(putBody.settings[0].value, 'Test site title');
+            putBody.settings.length.should.equal(3);
 
-            putBody.settings[1].key.should.eql('slack');
-            should.equal(putBody.settings[1].value, JSON.stringify([{
+            putBody.settings[0].key.should.eql('unsplash');
+            should.equal(putBody.settings[0].value, true);
+
+            putBody.settings[1].key.should.eql('title');
+            should.equal(putBody.settings[1].value, 'New Value');
+
+            putBody.settings[2].key.should.eql('slack');
+            should.equal(putBody.settings[2].value, JSON.stringify([{
                 url: 'https://newurl.tld/slack',
                 username: 'New Slack Username'
             }]));
