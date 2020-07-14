@@ -912,21 +912,39 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it('does not import settings: slack hook, permalinks', function () {
+        it('does not import settings: slack_url', function () {
             const exportData = exportedLatestBody().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'slack',
-                value: '[{\\"url\\":\\"https://hook.slack.com\\"}]'
+                key: 'slack_url',
+                value: 'https://ignoreme.tld'
             });
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     imported.problems.length.should.eql(0);
-                    return models.Settings.findOne(_.merge({key: 'slack'}, testUtils.context.internal));
+                    return models.Settings.findOne(_.merge({key: 'slack_url'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('[{"url":""}]');
+                    result.attributes.value.should.eql('');
+                });
+        });
+
+        it('does not import settings: slack_url from slack object', function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'slack',
+                value: '[{"url":"https://hook.slack.com"}]'
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (imported) {
+                    imported.problems.length.should.eql(0);
+                    return models.Settings.findOne(_.merge({key: 'slack_url'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    result.attributes.value.should.eql('');
                 });
         });
 

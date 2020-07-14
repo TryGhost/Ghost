@@ -51,7 +51,22 @@ module.exports = {
             }
         },
         query(frame) {
-            let setting = settingsCache.get(frame.options.key, {resolve: false});
+            let setting;
+            if (frame.options.key === 'slack') {
+                const slackURL = settingsCache.get('slack_url', {resolve: false});
+                const slackUsername = settingsCache.get('slack_username', {resolve: false});
+
+                setting = slackURL || slackUsername;
+                setting.key = 'slack';
+                setting.value = [{
+                    url: slackURL && slackURL.value,
+                    username: slackUsername && slackUsername.value
+                }];
+            } else if (frame.options.key === 'slack_url' || frame.options.key === 'slack_username') {
+                // leave the value empty returning 404 for unknown in current API keys
+            } else {
+                setting = settingsCache.get(frame.options.key, {resolve: false});
+            }
 
             if (!setting) {
                 return Promise.reject(new NotFoundError({
