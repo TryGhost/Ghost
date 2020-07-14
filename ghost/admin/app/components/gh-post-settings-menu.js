@@ -40,10 +40,10 @@ export default Component.extend(SettingsMenuMixin, {
     twitterTitleScratch: alias('post.twitterTitleScratch'),
     slugValue: boundOneWay('post.slug'),
 
-    facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
+    facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),
     facebookImage: or('post.ogImage', 'post.featureImage'),
     facebookTitle: or('ogTitleScratch', 'seoTitle'),
-    twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
+    twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 

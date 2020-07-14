@@ -11,6 +11,7 @@ const {Handlebars} = Ember;
 export default Component.extend({
     feature: service(),
     config: service(),
+    settings: service(),
 
     tag: null,
     scratchTag: null,
@@ -19,11 +20,11 @@ export default Component.extend({
     setProperty: () => {},
 
     twitterTitle: or('scratchTag.twitterTitle', 'seoTitle'),
-    twitterDescription: or('scratchTag.twitterDescription', 'seoDescription'),
+    twitterDescription: or('scratchTag.twitterDescription', 'seoDescription', 'settings.metaDescription', ''),
     twitterImage: or('tag.twitterImage', 'tag.featureImage'),
 
     facebookTitle: or('scratchTag.ogTitle', 'seoTitle'),
-    facebookDescription: or('scratchTag.ogDescription', 'seoDescription'),
+    facebookDescription: or('scratchTag.ogDescription', 'seoDescription', 'settings.metaDescription', ''),
     facebookImage: or('tag.ogImage', 'tag.featureImage'),
 
     accentColor: computed('tag.accentColor', function () {
@@ -48,7 +49,9 @@ export default Component.extend({
     }),
 
     seoTitle: computed('scratchTag.{name,metaTitle}', function () {
-        let metaTitle = this.scratchTag.metaTitle || this.scratchTag.name;
+        const settingsTitle = this.get('settings.title') || '';
+        const tagName = settingsTitle ? `${this.scratchTag.name} - ${settingsTitle}` : this.scratchTag.name;
+        let metaTitle = this.scratchTag.metaTitle || tagName;
 
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
