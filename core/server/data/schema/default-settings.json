@@ -411,9 +411,9 @@
         }
     },
     "unsplash": {
-        "unsplash": {
-            "defaultValue": "{\"isActive\": true}",
-            "type": "object"
+        "unsplash_is_active": {
+            "defaultValue": "true",
+            "type": "boolean"
         }
     },
     "views": {
