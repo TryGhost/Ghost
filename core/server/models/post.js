@@ -683,9 +683,26 @@ Post = ghostBookshelf.Model.extend({
 
         return attrs;
     },
+
+    // NOTE: overloads models base method to take `post_meta` changes into account
+    wasChanged() {
+        if (!this._changed) {
+            return true;
+        }
+
+        const postMetaChanged = this.relations.posts_meta && this.relations.posts_meta._changed && Object.keys(this.relations.posts_meta._changed).length;
+
+        if (!Object.keys(this._changed).length && !postMetaChanged) {
+            return false;
+        }
+
+        return true;
+    },
+
     enforcedFilters: function enforcedFilters(options) {
         return options.context && options.context.public ? 'status:published' : null;
     },
+
     defaultFilters: function defaultFilters(options) {
         if (options.context && options.context.internal) {
             return null;
@@ -885,6 +902,13 @@ Post = ghostBookshelf.Model.extend({
                                 // Pass along the updated attributes for checking status changes
                                 found._previousAttributes = post._previousAttributes;
                                 found._changed = post._changed;
+
+                                // NOTE: `posts_meta` fields are equivalent in terms of "wasChanged" logic to the rest of posts's table fields.
+                                //       Keeping track of them is needed to check if anything was changed in post's resource.
+                                if (found.relations.posts_meta) {
+                                    found.relations.posts_meta._changed = post.relations.posts_meta._changed;
+                                }
+
                                 return found;
                             }
                         });
