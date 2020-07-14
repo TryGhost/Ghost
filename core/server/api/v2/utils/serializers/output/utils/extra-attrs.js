@@ -58,6 +58,13 @@ module.exports.forSettings = (attrs, frame) => {
                 attrs[0].key = 'default_locale';
                 return;
             }
+
+            if (frame.original.params.key === 'unsplash') {
+                attrs[0].value = JSON.stringify({
+                    isActive: attrs[0].value
+                });
+                return;
+            }
         }
 
         // CASE: edit
@@ -89,6 +96,11 @@ module.exports.forSettings = (attrs, frame) => {
 
                         attrs.push(slack);
                     }
+                } else if (setting.key === 'unsplash') {
+                    const target = _.find(attrs, {key: 'unsplash'});
+                    target.value = JSON.stringify({
+                        isActive: target.value
+                    });
                 }
             });
 
@@ -102,6 +114,7 @@ module.exports.forSettings = (attrs, frame) => {
         const lang = _.cloneDeep(_.find(attrs, {key: 'lang'}));
         const slackURL = _.cloneDeep(_.find(attrs, {key: 'slack_url'}));
         const slackUsername = _.cloneDeep(_.find(attrs, {key: 'slack_username'}));
+        const unsplash = _.find(attrs, {key: 'unsplash'});
 
         if (ghostHead) {
             ghostHead.key = 'ghost_head';
@@ -132,6 +145,12 @@ module.exports.forSettings = (attrs, frame) => {
             }]);
 
             attrs.push(slack);
+        }
+
+        if (unsplash) {
+            unsplash.value = JSON.stringify({
+                isActive: unsplash.value
+            });
         }
     } else {
         attrs.ghost_head = attrs.codeinjection_head;
