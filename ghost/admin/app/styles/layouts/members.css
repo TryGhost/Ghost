@@ -725,10 +725,12 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Portal settings
 /* ----------------------------------------- */
-.gh-portal-settings-modal {
-    /* display: flex;
-    flex-grow: 1;
-    padding: 20px 0; */
+.gh-portal-settings-sidebar {
+    padding: 28px;
+}
+
+.gh-portal-settings-form {
+    min-width: 290px;
 }
 
 .gh-portal-setting-title {
@@ -752,12 +754,12 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-portal-setting-section {
-    margin: 12px -20px;
-    padding: 0 20px;
+    margin: 12px -28px;
+    padding: 0 28px;
 }
 
 .gh-portal-setting-section.divider-top {
-    border-top: 1px solid var(--lightgrey);
+    border-top: 1px solid var(--whitegrey);
     padding-top: 16px;
 }
 
@@ -785,7 +787,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-portal-settings .gh-select select,
 .gh-portal-settings .gh-input {
-    padding: 3px 10px 3px 11px;
+    padding: 3px 10px 3px 8px;
     height: 36px;
     font-size: 1.4rem;
 }
@@ -797,4 +799,40 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-portal-settings .gh-select svg {
     top: 19px;
     right: 9px;
+}
+
+.gh-portal-settings-main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 28px;
+    border-left: 1px solid var(--whitegrey);
+}
+
+.gh-portal-settings .modal-footer {
+    margin-top: 28px;
+}
+
+.gh-portal-settings-maintabs {
+    list-style: none;
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin: 4px 0 16px;
+}
+
+.gh-portal-settings-maintabs li {
+    padding: 0;
+    margin: 0;
+}
+
+.gh-portal-settings-maintabs li a {
+    display: inline-block;
+    padding: 4px 12px;
+    margin: -4px 0;
+}
+
+.gh-portal-settings-maintabs li:first-of-type a {
+    margin-left: -12px;
 }
