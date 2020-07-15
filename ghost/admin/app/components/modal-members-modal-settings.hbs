@@ -1,101 +1,102 @@
 <div class="modal-body gh-ps-modal-body">
-    <div class="flex pa0 flex-grow-1">
-        <div class="pa5">
+    <div class="flex pa0 flex-grow-1 gh-portal-settings">
+        <div class="gh-portal-settings-sidebar">
             <h2 class="f4 fw6">Portal settings</h2>
-            <fieldset>
-                <div class="gh-portal-settings">
-                    <div class="gh-portal-setting-section">
-                        <GhFormGroup @classNames="gh-members-subscribed-checkbox pb4 mb0">
-                            <div class="flex justify-between items-center">
-                                <div class="mr3">
-                                    <h4 class="gh-portal-setting-title">Display name in signup form</h4>
-                                </div>
-                                <div class="for-switch small">
-                                    <label
-                                        class="switch"
-                                        for="signup-name-checkbox"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={{this.settings.portalName}}
-                                            id="signup-name-checkbox"
-                                            name="signup-name-checkbox"
-                                            onclick={{action "togglePortalName" value="target.checked"}}
-                                        >
-                                        <span class="input-toggle-component"></span>
-                                    </label>
-                                </div>
+            <fieldset class="gh-portal-settings-form">
+                <div class="gh-portal-setting-section divider-top">
+                    <h3 class="gh-portal-setting-sectionheading">Singup</h3>
+                    <GhFormGroup @classNames="gh-members-subscribed-checkbox pb4 mb0">
+                        <div class="flex justify-between items-center">
+                            <div class="mr3">
+                                <h4 class="gh-portal-setting-title">Display name in signup form</h4>
                             </div>
-                        </GhFormGroup>
-                        <div>
-                            <div class="mb3">
-                                <h4 class="gh-portal-setting-title">Plans available at signup</h4>
-                            </div>
-                            <div class="form-group mb0 for-checkbox">
+                            <div class="for-switch small">
                                 <label
-                                    class="checkbox"
-                                    for="free-plan"
+                                    class="switch"
+                                    for="signup-name-checkbox"
                                 >
                                     <input
                                         type="checkbox"
-                                        checked={{this.isFreeChecked}}
-                                        id="free-plan"
-                                        name="free-plan"
-                                        disabled={{not this.allowSelfSignup}}
-                                        class="gh-input post-settings-featured"
-                                        onclick={{action "toggleFreePlan" value="target.checked"}}
-                                        data-test-checkbox="featured"
+                                        checked={{this.settings.portalName}}
+                                        id="signup-name-checkbox"
+                                        name="signup-name-checkbox"
+                                        onclick={{action "togglePortalName" value="target.checked"}}
                                     >
                                     <span class="input-toggle-component"></span>
-                                    <p>Free</p>
-                                </label>
-                            </div>
-                            <div class="form-group mb0 for-checkbox">
-                                <label
-                                    class="checkbox"
-                                    for="monthly-plan"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="monthly-plan"
-                                        name="monthly-plan"
-                                        checked={{this.isMonthlyChecked}}
-                                        disabled={{not this.isStripeConfigured}}
-                                        class="gh-input post-settings-featured"
-                                        onclick={{action "toggleMonthlyPlan" value="target.checked"}}
-                                        data-test-checkbox="featured"
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                    <p>Monthly</p>
-                                </label>
-                            </div>
-                            <div class="form-group mb0 for-checkbox">
-                                <label
-                                    class="checkbox"
-                                    for="yearly-plan"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="yearly-plan"
-                                        name="yearly-plan"
-                                        checked={{this.isYearlyChecked}}
-                                        disabled={{not this.isStripeConfigured}}
-                                        class="gh-input post-settings-featured"
-                                        onclick={{action "toggleYearlyPlan" value="target.checked"}}
-                                        data-test-checkbox="featured"
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                    <p>Yearly</p>
                                 </label>
                             </div>
                         </div>
+                    </GhFormGroup>
+                    {{#if this.isStripeConfigured}}
+                    <div>
+                        <div class="mb3">
+                            <h4 class="gh-portal-setting-title">Plans available at signup</h4>
+                        </div>
+                        <div class="form-group mb0 for-checkbox">
+                            <label
+                                class="checkbox"
+                                for="free-plan"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={{this.isFreeChecked}}
+                                    id="free-plan"
+                                    name="free-plan"
+                                    disabled={{not this.subscriptionSettings.allowSelfSignup}}
+                                    class="gh-input post-settings-featured"
+                                    onclick={{action "toggleFreePlan" value="target.checked"}}
+                                    data-test-checkbox="featured"
+                                >
+                                <span class="input-toggle-component"></span>
+                                <p>Free</p>
+                            </label>
+                        </div>
+                        <div class="form-group mb0 for-checkbox">
+                            <label
+                                class="checkbox"
+                                for="monthly-plan"
+                            >
+                                <input
+                                    type="checkbox"
+                                    id="monthly-plan"
+                                    name="monthly-plan"
+                                    checked={{this.isMonthlyChecked}}
+                                    disabled={{not this.isStripeConfigured}}
+                                    class="gh-input post-settings-featured"
+                                    onclick={{action "toggleMonthlyPlan" value="target.checked"}}
+                                    data-test-checkbox="featured"
+                                >
+                                <span class="input-toggle-component"></span>
+                                <p>Monthly</p>
+                            </label>
+                        </div>
+                        <div class="form-group mb0 for-checkbox">
+                            <label
+                                class="checkbox"
+                                for="yearly-plan"
+                            >
+                                <input
+                                    type="checkbox"
+                                    id="yearly-plan"
+                                    name="yearly-plan"
+                                    checked={{this.isYearlyChecked}}
+                                    disabled={{not this.isStripeConfigured}}
+                                    class="gh-input post-settings-featured"
+                                    onclick={{action "toggleYearlyPlan" value="target.checked"}}
+                                    data-test-checkbox="featured"
+                                >
+                                <span class="input-toggle-component"></span>
+                                <p>Yearly</p>
+                            </label>
+                        </div>
                     </div>
-                    <div class="gh-portal-setting-section divider-top">
-                        <h3 class="gh-portal-setting-sectionheading"> Look &amp; Feel </h3>
-                        <GhFormGroup @classNames="flex">
-                            <div class="gh-setting-content flex items-center">
-                                <div class="gh-portal-setting-title">Accent Color</div>
-                            </div>
+                    {{/if}}
+                </div>
+                <div class="gh-portal-setting-section divider-top">
+                    <h3 class="gh-portal-setting-sectionheading"> Look &amp; Feel </h3>
+                    <GhFormGroup @classNames="flex">
+                        <div class="flex w-100 items-center justify-between">
+                            <h4 class="gh-portal-setting-title">Accent Color</h4>
                             <div class="gh-setting-action">
                                 <GhFormGroup
                                     @errors={{settings.errors}}
@@ -125,30 +126,30 @@
                                     />
                                 </GhFormGroup>
                             </div>
-                        </GhFormGroup>
-                        <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0pt3 b--whitegrey">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h4 class="gh-portal-setting-title">Show Portal button</h4>
-                                </div>
-                                <div class="for-switch small">
-                                    <label
-                                        class="switch"
-                                        for="portal-button-checkbox"
+                        </div>
+                    </GhFormGroup>
+                    <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0pt3 b--whitegrey">
+                        <div class="flex justify-between items-center nt2">
+                            <h4 class="gh-portal-setting-title">Show Portal button</h4>
+                            <div class="for-switch small">
+                                <label
+                                    class="switch"
+                                    for="portal-button-checkbox"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.settings.portalButton}}
+                                        id="portal-button-checkbox"
+                                        name="portal-button-checkbox"
+                                        onclick={{action "togglePortalButton" value="target.checked"}}
                                     >
-                                        <input
-                                            type="checkbox"
-                                            checked={{this.settings.portalButton}}
-                                            id="portal-button-checkbox"
-                                            name="portal-button-checkbox"
-                                            onclick={{action "togglePortalButton" value="target.checked"}}
-                                        >
-                                        <span class="input-toggle-component"></span>
-                                    </label>
-                                </div>
+                                    <span class="input-toggle-component"></span>
+                                </label>
                             </div>
-                        </GhFormGroup>
-                        {{#if this.settings.portalButton}}
+                        </div>
+                    </GhFormGroup>
+                    {{#if this.settings.portalButton}}
+                        <div class="mt5">
                             <GhFormGroup>
                                 <h4 class="gh-portal-setting-title mb1">Portal button style</h4>
                                 <span
@@ -226,57 +227,55 @@
 
                                 </GhFormGroup>
                             {{/if}}
-                            <GhFormGroup>
-                                <h4 class="gh-portal-setting-title">Signup button text</h4>
-
-                                <div class="flex items-center mt2">
-                                    <GhTextInput
-                                        @value={{readonly this.signupButtonText}}
-                                        @type="text"
-                                        @input={{action "setSignupButtonText"}}
-                                    />
-                                </div>
-                                <p class="gh-setting-desc pa0 ma0">Visible to logged out members only</p>
-                            </GhFormGroup>
-                        {{/if}}
-                    </div>
-                    <div class="gh-portal-setting-section divider-top">
-                        <h4 class="gh-portal-setting-sectionheading"> Links </h4>
+                        </div>
                         <GhFormGroup>
-                            <div class="flex w-100 justify-between items-center">
-                                <h4 class="gh-portal-setting-title">Show modal</h4>
-                                <div {{action (toggle "isShowModalLink" this)}} class="blue pointer f8"> {{if this.isShowModalLink "Data Attribute" "Link"}} </div>
-                            </div>
-                            <div class="flex items-center justify-center mt1 gh-show-modal-link-form">
+                            <h4 class="gh-portal-setting-title">Signup button text</h4>
+
+                            <div class="flex items-center mt2">
                                 <GhTextInput
-                                    @value={{this.showModalLinkOrAttribute}}
+                                    @value={{readonly this.signupButtonText}}
                                     @type="text"
-                                    @disabled={{true}}
+                                    @input={{action "setSignupButtonText"}}
                                 />
-                                <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
-                                    {{#if this.copyLinkOrAttribute.isRunning}}
-                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                    {{else}}
-                                        Copy
-                                    {{/if}}
-                                </button>
                             </div>
-                            <div class="mt1">
-                                <span onclick={{action "switchPreviewPage" "links"}} class="blue pointer f8">Show more...</span>
-                            </div>
+                            <p class="gh-setting-desc pa0 ma0">Visible to logged out members only</p>
                         </GhFormGroup>
-                    </div>
+                    {{/if}}
+                </div>
+                <div class="gh-portal-setting-section divider-top">
+                    <h4 class="gh-portal-setting-sectionheading"> Links </h4>
+                    <GhFormGroup>
+                        <div class="flex w-100 justify-between items-center">
+                            <h4 class="gh-portal-setting-title">Show modal</h4>
+                            <div {{action (toggle "isShowModalLink" this)}} class="blue pointer f8"> {{if this.isShowModalLink "Data Attribute" "Link"}} </div>
+                        </div>
+                        <div class="flex items-center justify-center mt1 gh-show-modal-link-form">
+                            <GhTextInput
+                                @value={{this.showModalLinkOrAttribute}}
+                                @type="text"
+                                @disabled={{true}}
+                            />
+                            <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                                {{#if this.copyLinkOrAttribute.isRunning}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                {{else}}
+                                    Copy
+                                {{/if}}
+                            </button>
+                        </div>
+                        <div class="mt1">
+                            <span onclick={{action "switchPreviewPage" "links"}} class="blue pointer f8">Show more...</span>
+                        </div>
+                    </GhFormGroup>
                 </div>
             </fieldset>
         </div>
-        <div style="border-left: 1px solid #e5eff5;">
-        </div>
-        <div class="flex flex-column flex-grow-1 pa5">
-            <div style="padding-bottom: 12px;display: flex;justify-content: center;">
-                <span style="padding: 0 20px 0 20px; font-weight: bold"><a href="#" {{action "switchPreviewPage" "signup"}} data-test-link="switch-portal-preview-page">Signup</a></span>
-                <span style="padding: 0 20px 0 20px; font-weight: bold"><a href="#" {{action "switchPreviewPage" "accountHome"}} data-test-link="switch-portal-preview-page">Account</a></span>
-                <span style="padding: 0 20px 0 20px; font-weight: bold"><a href="#" {{action "switchPreviewPage" "links"}} data-test-link="switch-portal-preview-page">Links</a></span>
-            </div>
+        <div class="gh-portal-settings-main">
+            <ul class="gh-portal-settings-maintabs">
+                <li><a href="#" {{action "switchPreviewPage" "signup"}} data-test-link="switch-portal-preview-page">Signup</a></li>
+                <li><a href="#" {{action "switchPreviewPage" "accountHome"}} data-test-link="switch-portal-preview-page">Account</a></li>
+                <li><a href="#" {{action "switchPreviewPage" "links"}} data-test-link="switch-portal-preview-page">Links</a></li>
+            </ul>
             <div style="position: relative;flex-grow: 1">
                 <GhSiteIframe
                     @guid="test-site-portal"
@@ -298,7 +297,7 @@
                     @buttonText="Save and close"
                     @successText="Saved"
                     @task={{this.saveTask}}
-                    @idleClass="gh-btn-green"
+                    @idleClass="gh-btn-blue"
                     @class="gh-btn gh-btn-icon"
                     data-test-button="save-members-modal-setting"
                 />
