@@ -722,3 +722,79 @@ p.gh-members-import-errordetail:first-of-type {
         padding: 4px;
     }
 }
+
+/* Portal settings
+/* ----------------------------------------- */
+.gh-portal-settings-modal {
+    /* display: flex;
+    flex-grow: 1;
+    padding: 20px 0; */
+}
+
+.gh-portal-setting-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.gh-portal-settings .for-switch.small {
+    width: 36px !important;
+    height: 22px !important;
+}
+
+.gh-portal-setting-sectionheading {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--midgrey-l2);
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+}
+
+.gh-portal-setting-section {
+    margin: 12px -20px;
+    padding: 0 20px;
+}
+
+.gh-portal-setting-section.divider-top {
+    border-top: 1px solid var(--lightgrey);
+    padding-top: 16px;
+}
+
+.gh-portal-settings .input-color input {
+    height: 30px;
+    width: 102px;
+    padding: 3px 4px 3px 44px;
+    font-size: 1.3rem;
+}
+
+.gh-portal-settings .input-color .color-box {
+    height: 28px;
+    width: 28px;
+}
+
+.gh-portal-settings .input-color::after {
+    top: 5px;
+    left: 34px;
+}
+
+.gh-portal-settings .input-color input:focus + .color-box {
+    height: 26px;
+    width: 28px;
+}
+
+.gh-portal-settings .gh-select select,
+.gh-portal-settings .gh-input {
+    padding: 3px 10px 3px 11px;
+    height: 36px;
+    font-size: 1.4rem;
+}
+
+.gh-portal-settings .gh-select select option {
+    height: unset;
+}
+
+.gh-portal-settings .gh-select svg {
+    top: 19px;
+    right: 9px;
+}
