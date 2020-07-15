@@ -269,37 +269,6 @@ function validateSchema(tableName, model, options) {
     return Promise.resolve();
 }
 
-// Validation for settings
-// settings are checked against the validation objects
-// form default-settings.json
-async function validateSettings(defaultSettings, model) {
-    const setting = model.toJSON();
-    let validationErrors = [];
-    const matchingDefault = defaultSettings[setting.key];
-
-    if (matchingDefault && matchingDefault.validations) {
-        validationErrors = validationErrors.concat(validate(setting.value, setting.key, matchingDefault.validations, 'settings'));
-    }
-
-    if (validationErrors.length !== 0) {
-        return Promise.reject(validationErrors);
-    }
-
-    if (setting.key === 'stripe_plans') {
-        const plans = JSON.parse(setting.value);
-        for (const plan of plans) {
-            // We check 100, not 1, because amounts are in fractional units
-            if (plan.amount < 100 && plan.name !== 'Complimentary') {
-                throw new errors.ValidationError({
-                    message: 'Plans cannot have an amount less than 1'
-                });
-            }
-        }
-    }
-
-    return Promise.resolve();
-}
-
 /**
  * Validate keys using the validator module.
  * Each validation's key is a method name and its value is an array of options
@@ -370,6 +339,5 @@ module.exports = {
     validate,
     validator,
     validatePassword,
-    validateSchema,
-    validateSettings
+    validateSchema
 };

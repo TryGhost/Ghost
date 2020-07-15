@@ -5,6 +5,7 @@ const models = require('../../../core/server/models');
 const {knex} = require('../../../core/server/data/db');
 const {events} = require('../../../core/server/lib/common');
 const defaultSettings = require('../../../core/server/data/schema/default-settings');
+const errors = require('@tryghost/errors');
 
 describe('Unit: models/settings', function () {
     before(function () {
@@ -209,6 +210,195 @@ describe('Unit: models/settings', function () {
 
             returns = setting.parse({key: 'something', value: 'null'});
             should.equal(returns.value, 'null');
+        });
+    });
+
+    describe('validation', function () {
+        async function testInvalidSetting({key, value, type, group}) {
+            const setting = models.Settings.forge({key, value, type, group});
+
+            let error;
+            try {
+                await setting.save();
+                error = null;
+            } catch (err) {
+                error = err;
+            } finally {
+                should.exist(error, `Setting Model should throw when saving invalid ${key}`);
+                should.ok(error instanceof errors.ValidationError, 'Setting Model should throw ValidationError');
+            }
+        }
+
+        async function testValidSetting({key, value, type, group}) {
+            mockDb.mock(knex);
+            const tracker = mockDb.getTracker();
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                query.response();
+            });
+
+            const setting = models.Settings.forge({key, value, type, group});
+
+            let error;
+            try {
+                await setting.save();
+                error = null;
+            } catch (err) {
+                error = err;
+            } finally {
+                tracker.uninstall();
+                mockDb.unmock(knex);
+                should.not.exist(error, `Setting Model should not throw when saving valid ${key}`);
+            }
+        }
+
+        it('throws when stripe_secret_key is invalid', async function () {
+            await testInvalidSetting({
+                key: 'stripe_secret_key',
+                value: 'INVALID STRIPE SECRET KEY',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_publishable_key is invalid', async function () {
+            await testInvalidSetting({
+                key: 'stripe_publishable_key',
+                value: 'INVALID STRIPE PUBLISHABLE KEY',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('does not throw when stripe_secret_key is valid', async function () {
+            await testValidSetting({
+                key: 'stripe_secret_key',
+                value: 'rk_live_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                type: 'string',
+                group: 'members'
+            });
+            await testValidSetting({
+                key: 'stripe_secret_key',
+                value: 'sk_live_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('does not throw when stripe_publishable_key is valid', async function () {
+            await testValidSetting({
+                key: 'stripe_publishable_key',
+                value: 'pk_live_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_connect_secret_key is invalid', async function () {
+            await testInvalidSetting({
+                key: 'stripe_connect_secret_key',
+                value: 'INVALID STRIPE CONNECT SECRET KEY',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_connect_publishable_key is invalid', async function () {
+            await testInvalidSetting({
+                key: 'stripe_connect_publishable_key',
+                value: 'INVALID STRIPE CONNECT PUBLISHABLE KEY',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('does not throw when stripe_connect_secret_key is valid', async function () {
+            await testValidSetting({
+                key: 'stripe_connect_secret_key',
+                value: 'sk_live_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('does not throw when stripe_connect_publishable_key is valid', async function () {
+            await testValidSetting({
+                key: 'stripe_connect_publishable_key',
+                value: 'pk_live_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_plans has invalid name', async function () {
+            await testInvalidSetting({
+                key: 'stripe_plans',
+                value: JSON.stringify([{
+                    name: null,
+                    amount: 500,
+                    interval: 'month',
+                    currency: 'usd'
+                }]),
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_plans has invalid amount', async function () {
+            await testInvalidSetting({
+                key: 'stripe_plans',
+                value: JSON.stringify([{
+                    name: 'Monthly',
+                    amount: 0,
+                    interval: 'month',
+                    currency: 'usd'
+                }]),
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_plans has invalid interval', async function () {
+            await testInvalidSetting({
+                key: 'stripe_plans',
+                value: JSON.stringify([{
+                    name: 'Monthly',
+                    amount: 500,
+                    interval: 'monthly', // should be 'month'
+                    currency: 'usd'
+                }]),
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('throws when stripe_plans has invalid currency', async function () {
+            await testInvalidSetting({
+                key: 'stripe_plans',
+                value: JSON.stringify([{
+                    name: 'Monthly',
+                    amount: 500,
+                    interval: 'month',
+                    currency: null
+                }]),
+                type: 'string',
+                group: 'members'
+            });
+        });
+
+        it('does not throw when stripe_plans is valid', async function () {
+            await testValidSetting({
+                key: 'stripe_plans',
+                value: JSON.stringify([{
+                    name: 'Monthly',
+                    amount: 500,
+                    interval: 'month',
+                    currency: 'usd'
+                }]),
+                type: 'string',
+                group: 'members'
+            });
         });
     });
 });
