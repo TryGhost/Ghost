@@ -362,6 +362,24 @@ Settings = ghostBookshelf.Model.extend({
                         message: 'Plans cannot have an amount less than 1'
                     });
                 }
+
+                if (typeof plan.name !== 'string') {
+                    throw new errors.ValidationError({
+                        message: 'Plan must have a name'
+                    });
+                }
+
+                if (typeof plan.currency !== 'string') {
+                    throw new errors.ValidationError({
+                        message: 'Plan must have a currency'
+                    });
+                }
+
+                if (!['year', 'month', 'week', 'day'].includes(plan.interval)) {
+                    throw new errors.ValidationError({
+                        message: 'Plan interval must be one of: year, month, week or day'
+                    });
+                }
             }
         }
     }
