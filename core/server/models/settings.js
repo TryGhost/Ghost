@@ -124,7 +124,12 @@ Settings = ghostBookshelf.Model.extend({
 
     async onValidate(model, attr, options) {
         await ghostBookshelf.Model.prototype.onValidate.call(this, model, attr, options);
-        await validation.validateSettings(getDefaultSettings(), model);
+
+        await Settings.validators.all(model);
+
+        if (typeof Settings.validators[model.get('key')] === 'function') {
+            await Settings.validators[model.get('key')](model);
+        }
     },
 
     format() {
@@ -325,6 +330,40 @@ Settings = ghostBookshelf.Model.extend({
         return Promise.reject(new errors.NoPermissionError({
             message: i18n.t('errors.models.post.notEnoughPermission')
         }));
+    },
+
+    validators: {
+        async all(model) {
+            const settingName = model.get('key');
+            const settingDefault = getDefaultSettings()[settingName];
+
+            if (!settingDefault) {
+                return;
+            }
+
+            // Basic validations from default-settings.json
+            const validationErrors = validation.validate(
+                model.get('value'),
+                model.get('key'),
+                settingDefault.validations,
+                'settings'
+            );
+
+            if (validationErrors.length) {
+                throw new errors.ValidationError(validationErrors.join('\n'));
+            }
+        },
+        async stripe_plans(model) {
+            const plans = JSON.parse(model.get('value'));
+            for (const plan of plans) {
+                // We check 100, not 1, because amounts are in fractional units
+                if (plan.amount < 100 && plan.name !== 'Complimentary') {
+                    throw new errors.ValidationError({
+                        message: 'Plans cannot have an amount less than 1'
+                    });
+                }
+            }
+        }
     }
 });
 
