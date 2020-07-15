@@ -25,6 +25,7 @@ export default Model.extend(ValidationEngine, {
     password: attr('string'),
     slack: attr('slack-settings'),
     amp: attr('boolean'),
+    ampGtagId: attr('string'),
     unsplash: attr('unsplash-settings', {
         defaultValue() {
             return {isActive: true};
