@@ -32,7 +32,7 @@
 
         <div class="gh-setting-header gh-first-header">AMP configuration</div>
         <div class="flex flex-column br4 shadow-1 bg-grouped-table pa8 mt2">
-            <div class="gh-setting-first gh-setting-last">
+            <div class="gh-setting-first">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Enable AMP</div>
                     <div class="gh-setting-desc">Enable <a href="https://ampproject.org" target="_blank">Google Accelerated Mobile Pages</a> for your posts</div>
@@ -42,7 +42,7 @@
                         <label for="amp" class="checkbox">
                             <input
                                 type="checkbox"
-                                checked={{this.ampSettings}}
+                                checked={{this.settings.amp}}
                                 id="amp"
                                 name="amp"
                                 onclick={{action "update" value="target.checked"}}
@@ -53,6 +53,27 @@
                     </div>
                 </div>
             </div>
+            {{#liquid-if this.settings.amp}}
+            <div class="gh-setting-last">
+                <div class="gh-setting-content gh-setting-content--no-action">
+                    <div class="gh-setting-title">Google Analytics Tracking ID</div>
+                    <div class="gh-setting-desc">Tracks AMP traffic in Google Analytics, find your ID <a href="https://ghost.org/faq/how-to-find-your-google-analytics-tracking-id/">here</a></div>
+                    <div class="gh-setting-content-extended">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ampGtagId">
+                            <GhTextInput
+                                @placeholder="UA-XXXXXXX-X"
+                                @name="amp_gtag_id"
+                                @value={{this.settings.ampGtagId}}
+                                @keyEvents={{hash
+                                    Enter=(action "save")
+                                }}
+                            />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="ampGtagId"/>
+                        </GhFormGroup>
+                    </div>
+                </div>
+            </div>
+            {{/liquid-if}}
         </div>
     </section>
 </section>
