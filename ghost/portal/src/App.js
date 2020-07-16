@@ -90,11 +90,6 @@ export default class App extends React.Component {
         });
     }
 
-    isPreviewMode() {
-        const [path, qs] = window.location.hash.substr(1).split('?');
-        return (path === '/portal' && qs);
-    }
-
     getStateFromQueryString(qs = '') {
         const previewState = {
             site: {}
@@ -180,7 +175,7 @@ export default class App extends React.Component {
         } else if (process.env.NODE_ENV === 'development') {
             return member || Fixtures.member.free;
         }
-        return null;
+        return member;
     }
 
     async initSetup() {
