@@ -75,6 +75,11 @@ export default ModalComponent.extend({
         return selectedButtonStyle.includes('icon');
     }),
 
+    showButtonTextSetting: computed('selectedButtonStyle', function () {
+        const selectedButtonStyle = this.get('selectedButtonStyle.name') || '';
+        return selectedButtonStyle.includes('text');
+    }),
+
     isFreeChecked: computed('settings.portalPlans.[]', 'allowSelfSignup', function () {
         const allowedPlans = this.settings.get('portalPlans') || [];
         return (this.allowSelfSignup && allowedPlans.includes('free'));
@@ -104,9 +109,11 @@ export default ModalComponent.extend({
             {name: 'text-only', label: 'Text only'}
         ];
         this.defaultButtonIcons = [
-            'https://raw.githubusercontent.com/leungwensen/svg-icon/master/dist/trimmed-svg/metro/user.svg',
-            'https://raw.githubusercontent.com/leungwensen/svg-icon/master/dist/svg/icomoon/user-tie.svg',
-            'https://raw.githubusercontent.com/leungwensen/svg-icon/master/dist/trimmed-svg/evil/user.svg'
+            'user-circle',
+            'ambulance',
+            'book-open',
+            'store',
+            'gift'
         ];
         this.iconExtensions = ICON_EXTENSIONS;
         const portalButtonIcon = this.settings.get('portalButtonIcon') || '';
