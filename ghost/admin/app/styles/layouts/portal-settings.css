@@ -60,7 +60,7 @@
 }
 
 .gh-portal-settings-sidebar {
-    padding: 28px;
+    padding: 22px 28px 28px;
 }
 
 .gh-portal-settings-form {
@@ -132,7 +132,7 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    padding: 28px;
+    padding: 17px 28px 28px;
     border-left: 1px solid var(--whitegrey);
 }
 
@@ -146,7 +146,7 @@
     display: flex;
     align-items: center;
     padding: 0;
-    margin: 4px 0 16px;
+    margin: 4px 0 20px;
 }
 
 .gh-portal-settings-maintabs li {
@@ -158,6 +158,12 @@
     display: inline-block;
     padding: 4px 12px;
     margin: -4px 0;
+    font-weight: 500;
+    color: var(--midgrey);
+}
+
+.gh-portal-settings-maintabs li.active a {
+    color: var(--blue);
 }
 
 .gh-portal-settings-maintabs li:first-of-type a {
@@ -228,6 +234,8 @@
 
 .gh-portal-setting-copy {
     position: absolute;
+    display: flex;
+    align-items: center;
     top: 2px;
     right: 2px;
     height: 34px;
