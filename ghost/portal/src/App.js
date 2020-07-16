@@ -61,7 +61,7 @@ export default class App extends React.Component {
         // Loads default page and popup state for local UI testing
         if (process.env.NODE_ENV === 'development') {
             return {
-                page: 'links',
+                page: 'accountHome',
                 showPopup: true
             };
         }
@@ -177,6 +177,8 @@ export default class App extends React.Component {
                 return member || Fixtures.member.free;
             }
             return null;
+        } else if (process.env.NODE_ENV === 'development') {
+            return member || Fixtures.member.free;
         }
         return null;
     }
