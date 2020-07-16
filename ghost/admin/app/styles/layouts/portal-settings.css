@@ -225,3 +225,14 @@
 .gh-portal-button-uploadicon:hover span svg {
     fill: var(--darkgrey);
 }
+
+.gh-portal-setting-copy {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    height: 34px;
+    padding: 3px 8px 5px 9px;
+    border-radius: 2px;
+    background: var(--white);
+    border: 1px solid var(--whitegrey);
+}

@@ -231,28 +231,28 @@
                     {{/if}}
                 </div>
                 <div class="gh-portal-setting-section divider-top">
-                    <h4 class="gh-portal-setting-sectionheading"> Links </h4>
+                    <h4 class="gh-portal-setting-sectionheading">Links</h4>
                     <GhFormGroup>
                         <div class="flex w-100 justify-between items-center">
                             <h4 class="gh-portal-setting-title">Show modal</h4>
                             <div {{action (toggle "isShowModalLink" this)}} class="blue pointer f8"> {{if this.isShowModalLink "Data Attribute" "Link"}} </div>
                         </div>
-                        <div class="flex items-center justify-center mt1 gh-show-modal-link-form">
+                        <div class="flex items-center justify-center mt1 gh-show-modal-link-form relative">
                             <GhTextInput
                                 @value={{this.showModalLinkOrAttribute}}
                                 @type="text"
                                 @disabled={{true}}
                             />
-                            <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                            <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="gh-portal-setting-copy">
                                 {{#if this.copyLinkOrAttribute.isRunning}}
-                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                    {{svg-jar "check-circle" class="w4 v-mid mr1 stroke-darkgrey"}} Copied
                                 {{else}}
-                                    Copy
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
                                 {{/if}}
                             </button>
                         </div>
-                        <div class="mt1">
-                            <span onclick={{action "switchPreviewPage" "links"}} class="blue pointer f8">Show more...</span>
+                        <div>
+                            <span onclick={{action "switchPreviewPage" "links"}} class="blue pointer f7">Show more</span>
                         </div>
                     </GhFormGroup>
                 </div>
