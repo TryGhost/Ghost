@@ -19,7 +19,9 @@
                             <div class="gh-setting-desc pl5 pb5">Create registered members and take subscription payments — <a href="https://ghost.org/docs/members/" target="_blank" rel="noopener">Find out more</a></div>
                         </div>
                         <div class="gh-setting-action">
-                            <div class="for-switch pa5"><GhFeatureFlag @flag="members" /></div>
+                            <div class="for-switch pa5">
+                                <GhFeatureFlag @flag="members" @testKey="enable-members"/>
+                            </div>
                         </div>
                     </div>
                     {{#liquid-if this.feature.labs.members}}
@@ -36,6 +38,7 @@
                             @successText="Saved"
                             @runningText="Saving"
                             @class="gh-btn gh-btn-blue gh-btn-icon"
+                            data-test-button="save-members-settings"
                         />
                     </div>
                     {{/liquid-if}}
