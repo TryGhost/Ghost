@@ -14,7 +14,7 @@ class SignupPage extends React.Component {
         this.state = {
             name: '',
             email: '',
-            plan: 'FREE'
+            plan: 'Free'
         };
     }
 
@@ -23,6 +23,28 @@ class SignupPage extends React.Component {
         if (member && !isPreviewMode()) {
             this.context.onAction('switchPage', {
                 page: 'accountHome'
+            });
+        }
+
+        // Handle the default plan if not set
+        const plans = this.getPlans();
+        const selectedPlan = this.state.plan;
+        const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
+        if (defaultSelectedPlan !== selectedPlan) {
+            this.setState({
+                plan: defaultSelectedPlan
+            });
+        }
+    }
+
+    componentDidUpdate() {
+        // Handle the default plan if not set
+        const plans = this.getPlans();
+        const selectedPlan = this.state.plan;
+        const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
+        if (defaultSelectedPlan !== selectedPlan) {
+            this.setState({
+                plan: defaultSelectedPlan
             });
         }
     }
@@ -75,7 +97,23 @@ class SignupPage extends React.Component {
         }, 5);
     }
 
-    renderPlans() {
+    getDefaultSelectedPlan(plans = [], selectedPlan) {
+        if (!plans || plans.length === 0) {
+            return 'Free';
+        }
+
+        const hasSelectedPlan = plans.some((p) => {
+            return p.name === selectedPlan;
+        });
+
+        if (!hasSelectedPlan) {
+            return plans[0].name || 'Free';
+        }
+
+        return selectedPlan;
+    }
+
+    getPlans() {
         const {
             plans,
             allow_self_signup: allowSelfSignup,
@@ -100,6 +138,12 @@ class SignupPage extends React.Component {
                 }
             });
         }
+
+        return plansData;
+    }
+
+    renderPlans() {
+        const plansData = this.getPlans();
 
         return (
             <PlansSection plans={plansData} selectedPlan={this.state.plan} onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}/>
