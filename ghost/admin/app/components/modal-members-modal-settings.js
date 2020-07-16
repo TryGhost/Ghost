@@ -23,7 +23,7 @@ export default ModalComponent.extend({
 
     signupButtonText: boundOneWay('settings.portalButtonSignupText'),
     buttonIcon: boundOneWay('settings.portalButtonIcon'),
-    allowSelfSignup: alias('model.allowSelfSignup'),
+    allowSelfSignup: alias('settings.membersAllowFreeSignup'),
 
     isStripeConfigured: reads('membersUtils.isStripeEnabled'),
 

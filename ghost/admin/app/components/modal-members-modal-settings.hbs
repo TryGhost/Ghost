@@ -41,7 +41,7 @@
                                         checked={{this.isFreeChecked}}
                                         id="free-plan"
                                         name="free-plan"
-                                        disabled={{not this.subscriptionSettings.allowSelfSignup}}
+                                        disabled={{not this.allowSelfSignup}}
                                         class="gh-input post-settings-featured"
                                         onclick={{action "toggleFreePlan" value="target.checked"}}
                                         data-test-checkbox="featured"
