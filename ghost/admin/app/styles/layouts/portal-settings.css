@@ -244,3 +244,11 @@
     background: var(--white);
     border: 1px solid var(--whitegrey);
 }
+
+.gh-portal-siteiframe {
+    border-radius: 5px;
+    transform: scale(0.9) !important;
+    transform-origin: 0 0;
+    width: calc((1 / 0.9) * 100%) !important;
+    height: calc((1 / 0.9) * 100%) !important;
+}
