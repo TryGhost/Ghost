@@ -25,6 +25,7 @@ const Styles = ({brandColor, hasText}) => {
             backgroundColor: brandColor,
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
+            overflow: 'hidden',
             ...frame
         },
         launcher: {
@@ -52,7 +53,8 @@ const Styles = ({brandColor, hasText}) => {
             opacity: '1',
             transform: 'rotate(0deg) scale(1)',
             height: '100%',
-            transition: 'transform 0.16s linear 0s, opacity 0.08s linear 0s'
+            transition: 'transform 0.16s linear 0s, opacity 0.08s linear 0s',
+            overflow: 'hidden'
         },
         userIcon: {
             width: '20px',
