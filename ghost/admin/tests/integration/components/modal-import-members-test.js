@@ -3,7 +3,7 @@ import Pretender from 'pretender';
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import {click, find, findAll, render, settled, triggerEvent} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, triggerEvent, waitFor} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
@@ -58,11 +58,13 @@ describe('Integration: Component: modal-import-members-test', function () {
             .to.equal('Select or drop a CSV file');
     });
 
-    xit('generates request to supplied endpoint', async function () {
+    it('generates request to supplied endpoint', async function () {
         stubSuccessfulUpload(server);
 
         await render(hbs`{{modal-import-members}}`);
         await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        await waitFor('table', {timeout: 50});
 
         expect(find('label').textContent.trim(), 'labels label')
             .to.equal('Label these members');
@@ -74,61 +76,76 @@ describe('Integration: Component: modal-import-members-test', function () {
         expect(server.handledRequests[0].url).to.equal('/ghost/api/v3/admin/members/upload/');
     });
 
-    xit('displays server error', async function () {
+    it('displays server error', async function () {
         stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file type you uploaded is not supported/);
     });
 
-    xit('displays file too large for server error', async function () {
+    it('displays file too large for server error', async function () {
         stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file you uploaded was larger/);
     });
 
-    xit('handles file too large error directly from the web server', async function () {
+    it('handles file too large error directly from the web server', async function () {
         server.post('/ghost/api/v3/admin/members/upload/', function () {
             return [413, {}, ''];
         });
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file you uploaded was larger/);
     });
 
-    xit('displays other server-side error with message', async function () {
+    it('displays other server-side error with message', async function () {
         stubFailedUpload(server, 400, 'UnknownError');
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/Error: UnknownError/);
     });
 
-    xit('handles unknown failure', async function () {
+    it('handles unknown failure', async function () {
         server.post('/ghost/api/v3/admin/members/upload/', function () {
             return [500, {'Content-Type': 'application/json'}, ''];
         });
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/Something went wrong/);
     });
 
-    xit('triggers notifications.showAPIError for VersionMismatchError', async function () {
+    it('triggers notifications.showAPIError for VersionMismatchError', async function () {
         let showAPIError = sinon.spy();
         let notifications = this.owner.lookup('service:notifications');
         notifications.set('showAPIError', showAPIError);
@@ -136,20 +153,26 @@ describe('Integration: Component: modal-import-members-test', function () {
         stubFailedUpload(server, 400, 'VersionMismatchError');
 
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(showAPIError.calledOnce).to.be.true;
     });
 
-    xit('doesn\'t trigger notifications.showAPIError for other errors', async function () {
+    it('doesn\'t trigger notifications.showAPIError for other errors', async function () {
         let showAPIError = sinon.spy();
         let notifications = this.owner.lookup('service:notifications');
         notifications.set('showAPIError', showAPIError);
 
         stubFailedUpload(server, 400, 'UnknownError');
         await render(hbs`{{modal-import-members}}`);
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
         await click('.gh-btn-green');
 
         expect(showAPIError.called).to.be.false;
