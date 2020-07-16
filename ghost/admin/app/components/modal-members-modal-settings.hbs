@@ -4,7 +4,7 @@
             <h2 class="f4 fw6">Portal settings</h2>
             <fieldset class="gh-portal-settings-form">
                 <div class="gh-portal-setting-section divider-top">
-                    <h3 class="gh-portal-setting-sectionheading">Singup</h3>
+                    <h3 class="gh-portal-setting-sectionheading">Singup options</h3>
                     <GhFormGroup @classNames="gh-members-subscribed-checkbox pb4 mb0">
                         <div class="flex justify-between items-center">
                             <div class="mr3">
@@ -150,7 +150,7 @@
                     </GhFormGroup>
                     {{#if this.settings.portalButton}}
                         <div class="mt5">
-                            <GhFormGroup>
+                            <GhFormGroup class="space-l">
                                 <h4 class="gh-portal-setting-title mb1">Portal button style</h4>
                                 <span
                                     class="gh-select mt2"
@@ -170,7 +170,7 @@
                                 </span>
                             </GhFormGroup>
                             {{#if showIconSetting}}
-                                <GhFormGroup>
+                                <GhFormGroup class="space-l">
                                     <h4 class="gh-portal-setting-title">Icon</h4>
                                     <GhUploader
                                         @extensions={{this.iconExtensions}}
@@ -179,15 +179,10 @@
                                         as
                                         |uploader|
                                     >
-                                        <div class="flex items-center mt2">
-                                            <div
-                                                class="flex flex-grow-1 justify-center"
-                                                style="border: 1px solid #d6e3eb;border-radius: 4px;padding: 5px 5px;"
-                                            >
+                                        <div class="flex items-center justify-between mt2 br3 ba b--whitegrey">
+                                            <div class="gh-portal-settings-icons">
                                                 {{#each this.defaultButtonIcons as |imgIcon| }}
-                                                    <img
-                                                        src={{imgIcon}}
-                                                        alt="icon" class="gh-portal-button-icon {{if (eq this.buttonIcon imgIcon) "selected-icon"}}" onclick={{action "selectDefaultIcon" imgIcon}} />
+                                                    <span class="gh-portal-button-icon {{if (eq this.buttonIcon imgIcon) "selected-icon"}}" onclick={{action "selectDefaultIcon" imgIcon}}>{{svg-jar imgIcon}}</span>
                                                 {{/each}}
                                                 {{#if uploader.isUploading}}
                                                     {{uploader.progressBar}}
@@ -201,17 +196,9 @@
                                                     >
                                                 {{/if}}
                                             </div>
-                                            <div
-                                                class="flex gh-setting-action"
-                                                style="border: 1px solid #d6e3eb;border-radius: 4px;padding: 9px 12px;"
-                                            >
-                                                <button
-                                                    type="button"
-                                                    class="gh-btn"
-                                                    onclick={{action "triggerFileDialog"}}
-                                                    data-test-image-upload-btn="icon"
-                                                >
-                                                    <span style="font-size:24px">+</span>
+                                            <div class="flex gh-setting-action">
+                                                <button type="button" class="gh-btn gh-portal-button-uploadicon" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="icon">
+                                                    <span>{{svg-jar "add" class="w5 h5"}}</span>
                                                 </button>
                                                 <div style="display:none">
                                                     <GhFileInput
@@ -228,7 +215,8 @@
                                 </GhFormGroup>
                             {{/if}}
                         </div>
-                        <GhFormGroup>
+                        {{#if showButtonTextSetting}}
+                        <GhFormGroup class="space-l">
                             <h4 class="gh-portal-setting-title">Signup button text</h4>
 
                             <div class="flex items-center mt2">
@@ -238,8 +226,8 @@
                                     @input={{action "setSignupButtonText"}}
                                 />
                             </div>
-                            <p class="gh-setting-desc pa0 ma0">Visible to logged out members only</p>
                         </GhFormGroup>
+                        {{/if}}
                     {{/if}}
                 </div>
                 <div class="gh-portal-setting-section divider-top">
