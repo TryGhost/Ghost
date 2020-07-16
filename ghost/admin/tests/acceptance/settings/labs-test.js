@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {click, currentURL, find, findAll} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';
@@ -302,6 +302,33 @@ describe('Acceptance: Settings - Labs', function () {
 
             let iframe = document.querySelector('#iframeDownload');
             expect(iframe.getAttribute('src')).to.have.string('/settings/routes/yaml/');
+        });
+    });
+
+    describe('When logged in as Owner', function () {
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Owner'});
+            this.server.create('user', {roles: [role]});
+
+            return await authenticateSession();
+        });
+
+        it.only('sets the mailgunBaseUrl to the default', async function () {
+            await visit('/settings/labs');
+
+            await click('[data-test-toggle="enable-members"]');
+
+            await click('[data-test-toggle-membersemail]');
+
+            await fillIn('[data-test-mailgun-api-key-input]', 'i_am_an_api_key');
+            await fillIn('[data-test-mailgun-domain-input]', 'https://domain.tld');
+
+            await click('[data-test-button="save-members-settings"]');
+
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            let params = JSON.parse(lastRequest.requestBody);
+
+            expect(params.settings.findBy('key', 'mailgun_base_url').value).not.to.equal(null);
         });
     });
 });

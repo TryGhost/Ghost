@@ -136,10 +136,16 @@ export default Component.extend({
 
         setMailgunDomain(event) {
             this.set('settings.mailgunDomain', event.target.value);
+            if (!this.get('settings.mailgunBaseUrl')) {
+                this.set('settings.mailgunBaseUrl', this.mailgunRegion.baseUrl);
+            }
         },
 
         setMailgunApiKey(event) {
             this.set('settings.mailgunApiKey', event.target.value);
+            if (!this.get('settings.mailgunBaseUrl')) {
+                this.set('settings.mailgunBaseUrl', this.mailgunRegion.baseUrl);
+            }
         },
 
         setMailgunRegion(region) {

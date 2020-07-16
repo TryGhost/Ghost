@@ -356,6 +356,7 @@
                                 @value={{readonly this.mailgunSettings.domain}}
                                 @input={{action "setMailgunDomain"}}
                                 @class="mt1"
+                                data-test-mailgun-domain-input={{true}}
                             />
                         </GhFormGroup>
                     </div>
@@ -371,6 +372,7 @@
                             @value={{readonly this.mailgunSettings.apiKey}}
                             @input={{action "setMailgunApiKey"}}
                             @class="mt1 password" @autocomplete="new-password"
+                            data-test-mailgun-api-key-input={{true}}
                         />
                         <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
                             Find your Mailgun API keys here &raquo;
