@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const Ajv = require('ajv');
 const stripKeyword = require('./strip-keyword');
+const isLowercaseKeyword = require('./is-lowercase-keyword');
 const {i18n} = require('../../../../../lib/common');
 const errors = require('@tryghost/errors');
 
@@ -20,6 +21,7 @@ const ajv = new Ajv({
 });
 
 stripKeyword(ajv);
+isLowercaseKeyword(ajv);
 
 const getValidation = (schema, def) => {
     if (!ajv.getSchema(def.$id)) {
