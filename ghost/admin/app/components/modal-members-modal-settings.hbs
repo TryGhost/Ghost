@@ -1,9 +1,9 @@
 <div class="modal-body gh-ps-modal-body">
     <div class="flex pa0 flex-grow-1 gh-portal-settings">
         <div class="gh-portal-settings-sidebar">
-            <h2 class="f4 fw6">Portal settings</h2>
+            <h2 class="f4 fw6 pa0 ma0 flex bb b--whitegrey nl6 nr6 pl6 pr6 items-center gh-portal-settings-topbarheight">Portal settings</h2>
             <fieldset class="gh-portal-settings-form">
-                <div class="gh-portal-setting-section divider-top">
+                <div class="gh-portal-setting-section">
                     <h3 class="gh-portal-setting-sectionheading">Singup options</h3>
                     <GhFormGroup @classNames="gh-members-subscribed-checkbox pb5 mb0">
                         <div class="flex justify-between items-center">
@@ -259,37 +259,39 @@
             </fieldset>
         </div>
         <div class="gh-portal-settings-main">
-            <ul class="gh-portal-settings-maintabs">
-                <li class="{{if (eq this.page "signup") "active"}}"><a href="#" {{action "switchPreviewPage" "signup"}} data-test-link="switch-portal-preview-page">Signup</a></li>
-                <li class="{{if (eq this.page "accountHome") "active"}}"><a href="#" {{action "switchPreviewPage" "accountHome"}} data-test-link="switch-portal-preview-page">Account</a></li>
-                <li class="{{if (eq this.page "links") "active"}}"><a href="#" {{action "switchPreviewPage" "links"}} data-test-link="switch-portal-preview-page">Links</a></li>
-            </ul>
+            <div class="flex items-center justify-between w-100 gh-portal-settings-topbarheight">
+                <ul class="gh-portal-settings-maintabs">
+                    <li class="{{if (eq this.page "signup") "active"}}"><a href="#" {{action "switchPreviewPage" "signup"}} data-test-link="switch-portal-preview-page">Signup</a></li>
+                    <li class="{{if (eq this.page "accountHome") "active"}}"><a href="#" {{action "switchPreviewPage" "accountHome"}} data-test-link="switch-portal-preview-page">Account</a></li>
+                    <li class="{{if (eq this.page "links") "active"}}"><a href="#" {{action "switchPreviewPage" "links"}} data-test-link="switch-portal-preview-page">Links</a></li>
+                </ul>
+                <div class="flex items-center">
+                    <button
+                        class="gh-btn mr3"
+                        {{action "closeModal"}}
+                        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+                        {{on "mousedown" (optional this.noop)}}
+                        data-test-button="cancel-custom-view-form"
+                    >
+                        <span>Cancel</span>
+                    </button>
+
+                    <GhTaskButton
+                        @buttonText="Save and close"
+                        @successText="Saved"
+                        @task={{this.saveTask}}
+                        @idleClass="gh-btn-blue"
+                        @class="gh-btn gh-btn-icon"
+                        data-test-button="save-members-modal-setting"
+                    />
+                </div>
+            </div>
             <div class="relative flex-grow-1">
                 <GhSiteIframe
                     @guid="test-site-portal"
                     @src={{this.portalPreviewUrl}}
                     @classNames="gh-portal-siteiframe"
                 ></GhSiteIframe>
-            </div>
-            <div class="modal-footer">
-                <button
-                    class="gh-btn"
-                    {{action "closeModal"}}
-                    {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-                    {{on "mousedown" (optional this.noop)}}
-                    data-test-button="cancel-custom-view-form"
-                >
-                    <span>Cancel</span>
-                </button>
-
-                <GhTaskButton
-                    @buttonText="Save and close"
-                    @successText="Saved"
-                    @task={{this.saveTask}}
-                    @idleClass="gh-btn-blue"
-                    @class="gh-btn gh-btn-icon"
-                    data-test-button="save-members-modal-setting"
-                />
             </div>
         </div>
     </div>
