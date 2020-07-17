@@ -452,6 +452,9 @@
                     "message": "You do not have permission to {method} this webhook.",
                     "context": "You may only {method} webhooks that belong to the authenticated integration. Check the supplied Admin API Key."
                 },
+                "noIntegrationIdProvided": {
+                    "context": "You may only create webhooks with 'integration_id' when using session authentication."
+                },
                 "webhookAlreadyExists": "Target URL has already been used for this event."
             },
             "oembed": {
