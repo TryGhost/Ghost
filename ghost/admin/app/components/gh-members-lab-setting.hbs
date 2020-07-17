@@ -56,6 +56,11 @@
                 <div>
                     <h4 class="gh-setting-title">Connect to Stripe</h4>
                     {{#if this.stripeConnectAccountId}}
+                        {{#if this.hasActiveStripeSubscriptions}}
+                        <p class="red ma0 pa0 f8 nudge-bottom--2">
+                            Cannot disconnect while there are members with active Stripe subscriptions.
+                        </p>
+                        {{else}}
                         <p class="gh-setting-desc pa0 ma0">
                             {{#if this.stripeConnectSuccess}}
                                 {{svg-jar "check-circle" class="stroke-green w4 h4 nudge-top--3"}} <span class="green-d1">Successfully connected to {{this.stripeConnectAccountName}}</span>
@@ -66,10 +71,6 @@
                             {{#unless this.stripeConnectLivemode}}
                                 <span class="gh-members-connect-testmodelabel">Test mode</span>
                             {{/unless}}
-                        </p>
-                        {{#if this.hasActiveStripeSubscriptions}}
-                        <p class="red ma0 pa0 f8">
-                            Cannot disconnect while there are members with active Stripe subscriptions.
                         </p>
                         {{/if}}
                     {{else}}
