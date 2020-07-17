@@ -1,4 +1,4 @@
-/** By default, CRA's webpack bundle combines and appends the main css at root level, so they are not applied inside iframe
+/** By default, CRAs webpack bundle combines and appends the main css at root level, so they are not applied inside iframe
  * This uses a hack where we append `<style> </style>` tag with all CSS inside the head of iframe dynamically, thus making it available easily
  * We can create separate variables to keep styles grouped logically, and export them as one appeneded string
 */
@@ -92,7 +92,41 @@ export const SwitchStyle = `
 }
 `;
 
+export const ButtonStyles = `
+.gh-portal-btn {
+    position: relative;
+    display: inline-block;
+    padding: 0 1.8rem;
+    height: 44px;
+    border: 0;
+    font-size: 1.5rem;
+    line-height: 42px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: .4s ease;
+    box-shadow: none;
+    user-select: none;
+    width: 100%;
+}
+
+.gh-portal-btn:hover::before {
+    position: absolute;
+    content: "";
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+}
+`;
+
 // Append all styles as string which we want to pass to iframe
-const FrameStyle = SwitchStyle;
+const FrameStyle = SwitchStyle + ButtonStyles;
 
 export default FrameStyle;
