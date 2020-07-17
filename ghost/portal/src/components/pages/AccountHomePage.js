@@ -18,10 +18,9 @@ const UserAvatar = ({avatar}) => {
         display: 'flex',
         width: '64px',
         height: '64px',
-        marginBottom: '6px',
-        borderRadius: '100%',
+        marginBottom: '8px',
+        borderRadius: '999px',
         boxShadow: '0 0 0 3px #fff',
-        border: '1px solid gray',
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center'
@@ -29,21 +28,21 @@ const UserAvatar = ({avatar}) => {
 
     return (
         <div style={avatarContainerStyle}>
-            <MemberAvatar gravatar={avatar} style={{userIcon: {color: 'black', width: '45px', height: '45px'}}} />
+            <MemberAvatar gravatar={avatar} style={{userIcon: {color: '#525252', width: '45px', height: '45px'}}} />
         </div>
     );
 };
 
 const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     return (
-        <div style={{display: 'flex', padding: '0 24px', marginTop: '18px', color: brandColor, fontWeight: 'bold', fontSize: '13px'}}>
-            <div style={{color: 'grey'}} role='button'> Contact support </div>
+        <div style={{display: 'flex', padding: '0 32px', marginTop: '14px', color: brandColor, fontWeight: '500', fontSize: '14px'}}>
+            <div style={{color: '#484848', opacity: '0.35', fontWeight: 'normal'}} role='button'>Contact support</div>
             <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
                 {onSettings
-                    ? <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={onSettings} role='button'> Settings </div>
+                    ? <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={onSettings} role='button'>Settings</div>
                     : null
                 }
-                <div style={{cursor: 'pointer'}} onClick={onLogout} role='button'> Logout </div>
+                <div style={{cursor: 'pointer'}} onClick={onLogout} role='button'>Logout</div>
             </div>
         </div>
     );
@@ -52,9 +51,9 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
 const UserHeader = ({member}) => {
     const avatar = member.avatar_image;
     return (
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
+        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px'}}>
             <UserAvatar avatar={avatar} />
-            <div style={{fontSize: '21px', fontWeight: '500', marginTop: '6px'}}> Your Account </div>
+            <h2 style={{fontSize: '24px', fontWeight: '500', padding: '0', margin: '0', letterSpacing: '0.2px', color: '#333'}}>Your Account</h2>
         </div>
     );
 };
@@ -98,10 +97,10 @@ class FreeAccountHomePage extends React.Component {
         const {title: siteTitle} = this.context.site;
 
         return (
-            <div style={{padding: '0 24px'}}>
-                <div style={{textAlign: 'center', marginBottom: '12px', fontSize: '14px'}}>
-                    <span style={{fontWeight: 'bold'}}>Hey {firstname || name || email}! </span>
-                    You are subscribed to free updates from <span style={{fontWeight: 'bold'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
+            <div style={{padding: '0 32px'}}>
+                <div style={{textAlign: 'center', marginBottom: '24px', fontSize: '15px', lineHeight: '1.6em'}}>
+                    Hey <span style={{fontWeight: '600'}}>{firstname || name || email}! </span>
+                    You are subscribed to free updates from <span style={{fontWeight: '600'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
                 </div>
                 {this.renderSubscribeButton()}
             </div>
@@ -111,7 +110,7 @@ class FreeAccountHomePage extends React.Component {
     render() {
         const {member, brandColor} = this.context;
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
+            <div style={{display: 'flex', flexDirection: 'column', color: '#484848'}}>
                 <UserHeader member={member} />
                 {this.renderAccountDetail()}
                 <AccountFooter onLogout={e => this.handleSignout(e)} onSettings={e => this.openSettings(e)} brandColor={brandColor} />
@@ -133,10 +132,10 @@ class PaidAccountHomePage extends React.Component {
         const siteTitle = this.context.site.title;
 
         return (
-            <div style={{padding: '0 24px'}}>
-                <div style={{textAlign: 'center', marginBottom: '12px', fontSize: '14px'}}>
-                    <span style={{fontWeight: 'bold'}}>Hey {firstname || name || email}! </span>
-                    You have an active <span style={{fontWeight: 'bold'}}>{siteTitle}</span> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
+            <div style={{padding: '0 32px'}}>
+                <div style={{textAlign: 'center', marginBottom: '24px', fontSize: '15px'}}>
+                    Hey <span style={{fontWeight: '600'}}>{firstname || name || email}! </span>
+                    You have an active <span style={{fontWeight: '600'}}>{siteTitle}</span> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
                 </div>
             </div>
         );

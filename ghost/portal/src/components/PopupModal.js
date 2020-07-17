@@ -16,20 +16,20 @@ const React = require('react');
 const StylesWrapper = ({member}) => {
     const isPaidMember = (member && member.paid);
     const accountHome = isPaidMember ? {
-        width: '500px',
+        width: '532px',
         minHeight: '650px',
         maxHeight: '700px'
     } : {
-        width: '500px',
+        width: '532px',
         minHeight: '330px',
         maxHeight: '330px'
     };
     const accountProfile = isPaidMember ? {
-        width: '500px',
+        width: '532px',
         minHeight: '320px',
         maxHeight: '320px'
     } : {
-        width: '500px',
+        width: '532px',
         minHeight: '380px',
         maxHeight: '380px'
     };
@@ -44,7 +44,7 @@ const StylesWrapper = ({member}) => {
             height: '100%',
             overflow: 'auto',
             textAlign: 'center',
-            backgroundColor: 'rgba(128,128,128,0.5)'
+            backgroundColor: 'rgba(0,0,0,0.65)'
         },
         frame: {
             common: {
@@ -52,9 +52,9 @@ const StylesWrapper = ({member}) => {
                 position: 'relative',
                 padding: '0',
                 outline: '0',
-                width: '500px',
+                width: '532px',
                 borderRadius: '8px',
-                boxShadow: 'rgba(0, 0, 0, 0.16) 0px 5px 40px',
+                boxShadow: '0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.12)',
                 opacity: '1',
                 overflow: 'hidden',
                 height: '60%',
@@ -77,7 +77,7 @@ const StylesWrapper = ({member}) => {
                 minHeight: '130px'
             },
             accountPlan: {
-                width: '500px',
+                width: '532px',
                 minHeight: '290px',
                 maxHeight: '290px'
             },
@@ -100,16 +100,18 @@ const StylesWrapper = ({member}) => {
                 left: '0px',
                 right: '0px',
                 overflow: 'hidden',
-                paddingTop: '18px',
-                paddingBottom: '18px',
+                paddingTop: '32px',
+                paddingBottom: '32px',
                 textAlign: 'left',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                position: 'relative'
             },
             closeIcon: {
                 width: '16px',
                 height: '16px',
-                color: 'grey',
-                cursor: 'pointer'
+                color: '#999',
+                cursor: 'pointer',
+                padding: '12px'
             }
         }
     };
@@ -173,7 +175,7 @@ class PopupContent extends React.Component {
     renderPopupClose() {
         const Styles = StylesWrapper({});
         return (
-            <div style={{display: 'flex', justifyContent: 'flex-end', padding: '0 20px'}}>
+            <div style={{position: 'absolute', top: '8px', right: '8px'}}>
                 <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
@@ -216,7 +218,7 @@ export default class PopupModal extends React.Component {
     renderPopupClose() {
         const Styles = StylesWrapper({});
         return (
-            <div style={{display: 'flex', justifyContent: 'flex-end', padding: '0 20px'}}>
+            <div style={{position: 'absolute', top: '8px', right: '8px'}}>
                 <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
