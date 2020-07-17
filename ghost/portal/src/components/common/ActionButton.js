@@ -13,25 +13,8 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
     const textColor = getContrastColor(backgroundColor);
     return {
         button: {
-            display: 'inline-block',
-            padding: '0 1.8rem',
-            height: '44px',
-            border: '0',
-            fontSize: '1.5rem',
-            lineHeight: '42px',
-            fontWeight: '500',
-            letterSpacing: '0.2px',
-            textAlign: 'center',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: '.4s ease',
             color: textColor,
             backgroundColor,
-            boxShadow: 'none',
-            userSelect: 'none',
-            width: '100%',
             ...(style.button || {}) // Override any custom style
         }
     };
@@ -40,7 +23,7 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
 function ActionButton({label, onClick, disabled, retry, brandColor, style}) {
     let Style = Styles({disabled, retry, brandColor, style});
     return (
-        <button onClick={e => onClick(e)} style={Style.button} disabled={disabled}>
+        <button onClick={e => onClick(e)} style={Style.button} className="gh-portal-btn gh-portal-btn-primary" disabled={disabled}>
             {label}
         </button>
     );
