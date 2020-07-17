@@ -27,7 +27,8 @@ describe('Webhooks API', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2'
+            api_version: 'v2',
+            integration_id: '12345'
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -48,6 +49,7 @@ describe('Webhooks API', function () {
                 jsonResponse.webhooks[0].secret.should.equal(webhookData.secret);
                 jsonResponse.webhooks[0].name.should.equal(webhookData.name);
                 jsonResponse.webhooks[0].api_version.should.equal(webhookData.api_version);
+                jsonResponse.webhooks[0].integration_id.should.equal(webhookData.integration_id);
             });
     });
 
@@ -109,7 +111,8 @@ describe('Webhooks API', function () {
         const newWebhook = {
             event: 'test.create',
             // a different target_url from above is needed to avoid an "already exists" error
-            target_url: 'http://example.com/webhooks/test/2'
+            target_url: 'http://example.com/webhooks/test/2',
+            integration_id: '123423'
         };
 
         // create the webhook that is to be deleted
@@ -120,7 +123,6 @@ describe('Webhooks API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                const location = res.headers.location;
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse.webhooks);

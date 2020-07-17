@@ -10,16 +10,6 @@ module.exports = {
         headers: {},
         options: [],
         data: [],
-        validation: {
-            data: {
-                event: {
-                    required: true
-                },
-                target_url: {
-                    required: true
-                }
-            }
-        },
         permissions: true,
         query(frame) {
             return models.Webhook.getByEventAndTarget(
