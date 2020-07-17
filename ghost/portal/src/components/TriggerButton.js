@@ -8,7 +8,6 @@ const React = require('react');
 
 const Styles = ({brandColor, hasText}) => {
     const frame = {
-        ...(hasText ? {borderRadius: '12px'} : {}),
         ...(!hasText ? {width: '60px'} : {})
     };
     return {
@@ -21,7 +20,7 @@ const Styles = ({brandColor, hasText}) => {
             maxWidth: '500px',
             height: '60px',
             boxShadow: 'rgba(0, 0, 0, 0.06) 0px 1px 6px 0px, rgba(0, 0, 0, 0.16) 0px 2px 32px 0px',
-            borderRadius: '50%',
+            borderRadius: '999px',
             backgroundColor: brandColor,
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
@@ -38,7 +37,7 @@ const Styles = ({brandColor, hasText}) => {
             transformOrigin: 'center center',
             backfaceVisibility: 'hidden',
             WebkitFontSmoothing: 'antialiased',
-            borderRadius: '50%',
+            borderRadius: '999px',
             overflow: 'hidden'
         },
         button: {
