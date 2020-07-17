@@ -152,7 +152,7 @@
     padding: 0;
     margin: 0;
     border: 1px solid color-mod(var(--midgrey) l(+35%) s(+10%));
-    border-radius: 4px;
+    border-radius: 5px;
     letter-spacing: 0.2px;
     box-shadow: 0 2px 5px -3px rgba(0,0,0,.12);
 }
@@ -166,55 +166,22 @@
 .gh-portal-settings-maintabs li a {
     position: relative;
     display: inline-block;
-    padding: 8px 12px;
-    margin: 0;
+    padding: 3px 10px 4px;
+    margin: 4px;
     color: color-mod(var(--midgrey) l(-7%));
     background: var(--white);
     min-width: 56px;
     text-align: center;
-    border-right: 1px solid color-mod(var(--midgrey) l(+35%) s(+10%));
+    border-radius: 2px;
     outline: none;
     box-sizing: content-box;
     font-size: 1.3rem;
 }
 
-.gh-portal-settings-maintabs li:first-of-type a {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-}
-
-.gh-portal-settings-maintabs li:last-of-type a {
-    border-right: none;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-}
-
 .gh-portal-settings-maintabs li.active a {
     color: var(--blue);
     font-weight: 500;
-}
-
-.gh-portal-settings-maintabs li.active a::before {
-    display: block;
-    position: absolute;
-    content: "";
-    top: 1px;
-    left: 0px;
-    right: 0px;
-    bottom: 1px;
-    pointer-events: none;
     box-shadow: 0 0 0 2px var(--blue);
-    z-index: 999;
-}
-
-.gh-portal-settings-maintabs li.active:first-of-type a::before {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-}
-
-.gh-portal-settings-maintabs li.active:last-of-type a::before {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
 }
 
 .gh-portal-settings-icons {
