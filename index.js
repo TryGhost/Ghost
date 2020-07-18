@@ -18,27 +18,22 @@ const urlService = require('./core/frontend/services/url');
 // This is what listen gets called on, it needs to be a full Express App
 const ghostApp = express('ghost');
 
-const contentMiddleware = (req, res, next) => {
-    const func = (d) => {
-        console.log(d)
-        return d
-    }  
+const contentMiddleware = (req, res, next) => {  
     const lazyImage = (d) => {
-        if ( !d.post ) {
-            console.log('no post')
-            return d
+        if (!d.post) {
+            return d;
         }
         d.post.html = d.post.html.replace(/<img(.*?) srcset="/gi, '<img$1 data-srcset="')
-        .replace(/<img(.*?) src="/gi, '<img$1 data-src="')
-        .replace(/<img(.*?) class="/gi, '<img$1 loading="lazy" class="lazyload ');
+            .replace(/<img(.*?) src="/gi, '<img$1 data-src="')
+            .replace(/<img(.*?) class="/gi, '<img$1 loading="lazy" class="lazyload ');
 
-        return d
-    }
-    req.contentFilters = [func, lazyImage]
-    next()
-}
+        return d;
+    };
+    req.contentFilters = [lazyImage];
+    next();
+};
 
-ghostApp.use(contentMiddleware)
+ghostApp.use(contentMiddleware);
 
 // Use the request handler at the top level
 // @TODO: decide if this should be here or in parent App - should it come after request id mw?

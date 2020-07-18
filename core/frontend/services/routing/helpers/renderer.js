@@ -10,13 +10,13 @@ const templates = require('./templates');
  */
 
 const applyFilters = (filters, data) => {
-    const result = filters.reduce((data, item) => {
-        console.log(item)
-        return item(data)
-    }, data)
+    const result = filters.reduce((data, filterFunc) => {
+        return filterFunc(data);
+    }, data);
 
-    return result
-}
+    return result;
+};
+
 module.exports = function renderer(req, res, data) {
     // Set response context
     setContext(req, res, data);
@@ -33,8 +33,9 @@ module.exports = function renderer(req, res, data) {
             res.type(res.routerOptions.contentType);
         }
     }
-
-    data = applyFilters(req.contentFilters, data)
+    if (req.contentFilters) {
+        data = applyFilters(req.contentFilters, data);
+    }
 
     // Render Call
     res.render(res._template, data);
