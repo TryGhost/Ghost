@@ -5,6 +5,7 @@
 
 import {ActionButtonStyles} from './common/ActionButton';
 import {SwitchStyles} from './common/Switch';
+import {AccountHomePageStyles} from './pages/AccountHomePage';
 
 // Global styles
 export const GlobalStyles = `
@@ -78,7 +79,30 @@ export const GlobalStyles = `
     .fixed  { position: fixed; }
     .sticky  { position: sticky; }
 
-    /* Global styles
+    /* Typography
+    /* ----------------------------------------------------- */
+    h1, h2, h3, h4, h5, h6 {
+        padding: 0;
+        margin: 0;
+    }
+
+    h1 {
+        font-size: 31px;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+
+    h2 {
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+
+    .ghp-main-title {
+        color: #333;
+    }
+
+    /* Global layout styles
     /* ----------------------------------------------------- */
     .ghp-popup-container {
         width: 100%;
@@ -93,7 +117,7 @@ export const GlobalStyles = `
         left: 0px;
         right: 0px;
         overflow: hidden;
-        padding-top: 32px;
+        padding: 32px;
         padding-bottom: 32px;
         text-align: left;
         box-sizing: border-box;
@@ -113,10 +137,15 @@ export const GlobalStyles = `
         cursor: pointer;
         padding: 12px;
     }
+
+    .ghp-section {
+        margin-bottom: 32px;
+    }
 `;
 
 // Append all styles as string which we want to pass to iframe
 const FrameStyle = 
+    AccountHomePageStyles +
     GlobalStyles +
     SwitchStyles + 
     ActionButtonStyles;
