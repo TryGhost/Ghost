@@ -50,11 +50,7 @@
 
 {{!-- all component cards wormholed into the editor canvas --}}
 {{#each this.componentCards as |card|}}
-    {{!--
-        TODO: move to the public {{in-element}} API when it's available
-        https://github.com/cibernox/rfcs/blob/make-in-element-public/text/0000-promote-in-element-to-public-api.md
-    --}}
-    {{#-in-element card.destinationElement}}
+    {{#in-element card.destinationElement}}
         {{component card.componentName
             editor=this.editor
             postModel=card.postModel
@@ -77,5 +73,5 @@
             addParagraphAfterCard=(action "addParagraphAfterCard" card)
             registerComponent=(action (mut card.component))
         }}
-    {{/-in-element}}
+    {{/in-element}}
 {{/each}}

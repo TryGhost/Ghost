@@ -332,7 +332,7 @@ export default Component.extend({
                 });
 
                 // the desination element is the container that gets rendered
-                // inside the editor, once rendered we use {{-in-element}} to
+                // inside the editor, once rendered we use {{in-element}} to
                 // wormhole in the actual ember component
                 let cardId = guidFor(card);
                 let destinationElementId = `koenig-editor-card-${cardId}`;
@@ -344,7 +344,7 @@ export default Component.extend({
                     destinationElement
                 });
 
-                // after render we render the full ember card via {{-in-element}}
+                // after render we render the full ember card via {{in-element}}
                 run.schedule('afterRender', () => {
                     this.componentCards.pushObject(card);
                 });
