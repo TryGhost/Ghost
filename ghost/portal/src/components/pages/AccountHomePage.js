@@ -7,7 +7,7 @@ import isPreviewMode from '../../utils/is-preview-mode';
 const React = require('react');
 
 export const AccountHomePageStyles = `
-    .ghp-account-header {
+    .gh-portal-account-header {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -61,9 +61,9 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
 const UserHeader = ({member}) => {
     const avatar = member.avatar_image;
     return (
-        <div className='ghp-account-header'>
+        <div className='gh-portal-account-header'>
             <UserAvatar avatar={avatar} />
-            <h2 className="ghp-main-title">Your Account</h2>
+            <h2 className="gh-portal-main-title">Your Account</h2>
         </div>
     );
 };
@@ -107,7 +107,7 @@ class FreeAccountHomePage extends React.Component {
         const {title: siteTitle} = this.context.site;
 
         return (
-            <div className='ghp-section'>
+            <div className='gh-portal-section'>
                 <div style={{textAlign: 'center', marginBottom: '24px', fontSize: '15px', lineHeight: '1.6em'}}>
                     Hey <span style={{fontWeight: '600'}}>{firstname || name || email}! </span>
                     You are subscribed to free updates from <span style={{fontWeight: '600'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
@@ -142,7 +142,7 @@ class PaidAccountHomePage extends React.Component {
         const siteTitle = this.context.site.title;
 
         return (
-            <div className='ghp-section'>
+            <div className='gh-portal-section'>
                 <div style={{textAlign: 'center', marginBottom: '24px', fontSize: '15px'}}>
                     Hey <span style={{fontWeight: '600'}}>{firstname || name || email}! </span>
                     You have an active <span style={{fontWeight: '600'}}>{siteTitle}</span> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
