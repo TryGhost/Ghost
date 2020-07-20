@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('stripe');
 const _ = require('lodash');
-const {retrieve, create, update, del} = require('./api/stripeRequests');
+const {retrieve, list, create, update, del} = require('./api/stripeRequests');
 const api = require('./api');
 
 const STRIPE_API_VERSION = '2019-09-09';
@@ -82,6 +82,24 @@ module.exports = class StripePaymentProcessor {
                 'invoice.payment_failed'
             ]
         };
+
+        // @TODO Delete this next time you're here
+        // This is a fix for the previous release of Ghost (3.25.0)
+        try {
+            const webhooks = await list(this._stripe, 'webhookEndpoints', {
+                limit: 100
+            });
+
+            const webhookToCleanup = webhooks.data.find((webhook) => {
+                return webhook.url === config.webhookHandlerUrl.slice(0, -1);
+            });
+
+            if (webhookToCleanup) {
+                await del(this._stripe, 'webhookEndpoints', webhookToCleanup.id);
+            }
+        } catch (err) {
+            this.logging.warn(`There was an error cleaning up the old webhooks`);
+        }
 
         const setupWebhook = async (id, secret, opts = {}) => {
             if (!id || !secret || opts.forceCreate) {
