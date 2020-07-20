@@ -1185,6 +1185,33 @@ describe('Integration: Importer', function () {
                     posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
+
+        it('Can import stripe plans with an "amount" of 0', async function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.settings.push({
+                id: 'blahblah',
+                group: 'members',
+                type: 'array',
+                flags: null,
+                created_at: '2020-04-20 16:20:00',
+                updated_at: '2020-04-20 16:20:00',
+                key: 'stripe_plans',
+                value: JSON.stringify([{
+                    name: 'Monthly',
+                    interval: 'month',
+                    currency: 'usd',
+                    amount: 0
+                }, {
+                    name: 'Yearly',
+                    interval: 'year',
+                    currency: 'usd',
+                    amount: 0
+                }])
+            });
+
+            await dataImporter.doImport(exportData, importOptions);
+        });
     });
 
     describe('Existing database', function () {
