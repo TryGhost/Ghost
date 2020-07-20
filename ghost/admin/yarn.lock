@@ -3968,7 +3968,7 @@ charm@^1.0.0:
   dependencies:
     inherits "^2.0.1"
 
-chart.js@^2.8.0:
+chart.js@^2.9.0:
   version "2.9.3"
   resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-2.9.3.tgz#ae3884114dafd381bc600f5b35a189138aac1ef7"
   integrity sha512-+2jlOobSk52c1VU6fzkh3UwqHMdSlgH1xFv9FKMqHiNCpXsGPQa/+81AFa+i3jZ253Mq9aAycPwDjnn1XbRNNw==
@@ -5260,7 +5260,7 @@ ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0:
   resolved "https://registry.yarnpkg.com/ember-cli-babel-plugin-helpers/-/ember-cli-babel-plugin-helpers-1.1.0.tgz#de3baedd093163b6c2461f95964888c1676325ac"
   integrity sha512-Zr4my8Xn+CzO0gIuFNXji0eTRml5AxZUTDQz/wsNJ5AJAtyFWCY4QtKdoELNNbiCVGt1lq5yLiwTm4scGKu6xA==
 
-ember-cli-babel@7.21.0, ember-cli-babel@^7.1.0, ember-cli-babel@^7.1.2, ember-cli-babel@^7.1.3, ember-cli-babel@^7.10.0, ember-cli-babel@^7.11.0, ember-cli-babel@^7.11.1, ember-cli-babel@^7.12.0, ember-cli-babel@^7.13.0, ember-cli-babel@^7.13.2, ember-cli-babel@^7.17.2, ember-cli-babel@^7.18.0, ember-cli-babel@^7.19.0, ember-cli-babel@^7.21.0, ember-cli-babel@^7.5.0, ember-cli-babel@^7.7.3:
+ember-cli-babel@7.21.0, ember-cli-babel@^7.1.0, ember-cli-babel@^7.1.2, ember-cli-babel@^7.1.3, ember-cli-babel@^7.10.0, ember-cli-babel@^7.11.0, ember-cli-babel@^7.11.1, ember-cli-babel@^7.12.0, ember-cli-babel@^7.13.0, ember-cli-babel@^7.13.2, ember-cli-babel@^7.17.2, ember-cli-babel@^7.18.0, ember-cli-babel@^7.19.0, ember-cli-babel@^7.20.5, ember-cli-babel@^7.21.0, ember-cli-babel@^7.5.0, ember-cli-babel@^7.7.3:
   version "7.21.0"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.21.0.tgz#c79e888876aee87dfc3260aee7cb580b74264bbc"
   integrity sha512-jHVi9melAibo0DrAG3GAxid+29xEyjBoU53652B4qcu3Xp58feZGTH/JGXovH7TjvbeNn65zgNyoV3bk1onULw==
@@ -5338,14 +5338,14 @@ ember-cli-babel@~7.11.0:
     ensure-posix-path "^1.0.2"
     semver "^5.5.0"
 
-ember-cli-chart@3.6.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.6.0.tgz#adb48132809090c2e1bb948e9faa2f02940cd41f"
-  integrity sha512-56eIlWybo0wifDbUeQCxH9M22Zwz61ua5FwUqR5nKdA16q+2kAyz6tfYbYvdBjc0lIRFmSZ3FD67YIpUe5P8jg==
+ember-cli-chart@3.7.1:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.7.1.tgz#96f7efb7bd0a0e0fd8554ce7c4991b5558d00051"
+  integrity sha512-SH5fCqi9kQiv0Hu0WJrAwOdgZwYAtExJinDYoZpksPk8BtfY3rou0zYodT9TgsIzO30fDX7N7nVaXnh2FkoTPA==
   dependencies:
-    chart.js "^2.8.0"
-    ember-cli-babel "^7.11.1"
-    ember-cli-htmlbars "^4.0.0"
+    chart.js "^2.9.0"
+    ember-cli-babel "^7.20.5"
+    ember-cli-htmlbars "^5.1.2"
     ember-cli-node-assets "^0.2.2"
     fastboot-transform "^0.1.2"
 
@@ -5407,7 +5407,7 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@5.2.0, ember-cli-htmlbars@^5.2.0:
+ember-cli-htmlbars@5.2.0, ember-cli-htmlbars@^5.1.2, ember-cli-htmlbars@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-5.2.0.tgz#5ceccd0d18163dd810dea29f6fd777d0baa01e23"
   integrity sha512-EdjuUc7sq9ve6sgsG59qIzOj4svWjgYhO/QEhuV1UbOQ3ATeqNPiD++bFeAGjUhravw9HPhQPPoHnMlAikqLIw==
@@ -5448,7 +5448,7 @@ ember-cli-htmlbars@^3.0.0, ember-cli-htmlbars@^3.0.1:
     json-stable-stringify "^1.0.1"
     strip-bom "^3.0.0"
 
-ember-cli-htmlbars@^4.0.0, ember-cli-htmlbars@^4.2.0, ember-cli-htmlbars@^4.2.3, ember-cli-htmlbars@^4.3.1:
+ember-cli-htmlbars@^4.2.0, ember-cli-htmlbars@^4.2.3, ember-cli-htmlbars@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-4.3.1.tgz#4af8adc21ab3c4953f768956b7f7d207782cb175"
   integrity sha512-CW6AY/yzjeVqoRtItOKj3hcYzc5dWPRETmeCzr2Iqjt5vxiVtpl0z5VTqHqIlT5fsFx6sGWBQXNHIe+ivYsxXQ==
