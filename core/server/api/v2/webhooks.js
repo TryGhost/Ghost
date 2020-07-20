@@ -108,7 +108,7 @@ module.exports = {
                             if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
                                 throw new errors.NoPermissionError({
                                     message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
-                                        method: 'destory'
+                                        method: 'destroy'
                                     }),
                                     context: i18n.t('errors.api.webhooks.noPermissionToEdit.context', {
                                         method: 'destroy'
