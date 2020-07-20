@@ -19,6 +19,10 @@ export const AccountHomePageStyles = `
         margin-top: -16px;
     }
 
+    .gh-portal-account-footer.paid {
+        margin-top: 12px;
+    }
+
     .gh-portal-account-footermenu {
         display: flex;
         list-style: none;
@@ -32,6 +36,44 @@ export const AccountHomePageStyles = `
 
     .gh-portal-account-footermenu li:last-of-type {
         margin-right: 0;
+    }
+
+    .gh-portal-accountdetail-section {
+        display: flex;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .gh-portal-accountdetail-section:first-of-type {
+        margin-top: 24px;
+        margin-bottom: 26px;
+    }
+
+    .gh-portal-account-divider {
+        margin: 12px -32px;
+        border: none;
+        border-bottom: 1px solid #EDEDED;
+    }
+
+    .gh-portal-account-divider:last-of-type {
+        margin-bottom: 40px;
+    }
+
+    .gh-portal-btn-accountdetail {
+        height: 36px;
+        font-size: 1.3rem;
+        width: 88px;
+        padding: 0 12px;
+    }
+
+    .gh-portal-accountdetail-data {
+        color: #656565;
+        line-height: 1em;
+        margin-top: 4px;
+    }
+
+    .gh-portal-accountdetail-data.small {
+        font-size: 1.3rem;
     }
 
     /* Avatar styles */
@@ -51,7 +93,7 @@ export const AccountHomePageStyles = `
 
 const Divider = () => {
     return (
-        <div style={{borderBottom: '1px solid grey'}}>  </div>
+        <hr className='gh-portal-account-divider' />
     );
 };
 
@@ -167,7 +209,7 @@ class PaidAccountHomePage extends React.Component {
 
         return (
             <div className='gh-portal-section'>
-                <p className='gh-portal-text-center'>
+                <p className='gh-portal-text-center mb0'>
                     Hey <strong>{firstname || name || email}! </strong>
                     You have an active <strong>{siteTitle}</strong> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
                 </p>
@@ -212,10 +254,6 @@ class PaidAccountHomePage extends React.Component {
     }
 
     renderAccountDetails() {
-        const buttonStyle = {
-            padding: '6px 9px', border: '1px solid black', width: '60px', display: 'flex', justifyContent: 'center',
-            borderRadius: '5px', cursor: 'pointer'
-        };
         const {name, email, subscriptions, subscribed} = this.context.member;
 
         const {
@@ -224,46 +262,43 @@ class PaidAccountHomePage extends React.Component {
         } = subscriptions[0];
 
         return (
-            <div style={{padding: '0 24px', marginTop: '24px', marginBottom: '24px'}}>
-                <div style={{display: 'flex', alignItems: 'center'}}>
-                    <div style={{display: 'flex', flexDirection: 'column', flexGrow: 1}}>
-                        <div style={{fontWeight: 'bold', fontSize: '13px'}}> Profile </div>
-                        <div style={{lineHeight: '18px'}}>
-                            <div style={{color: '#666666'}}> {name} </div>
-                            <div style={{color: '#666666', fontSize: '11px'}}> {email} </div>
+            <div>
+                <section className='gh-portal-accountdetail-section'>
+                    <div className='flex flex-column flex-grow-1'>
+                        <h3 className='gh-portal-setting-heading'>Profile</h3>
+                        <div>
+                            <div className='gh-portal-accountdetail-data'>{name}</div>
+                            <div className='gh-portal-accountdetail-data small'>{email}</div>
                         </div>
                     </div>
-                    <div style={buttonStyle} onClick={e => this.openEditProfile(e)}>
-                        Edit
-                    </div>
-                </div>
-                <div style={{display: 'flex', alignItems: 'center', marginTop: '24px'}}>
-                    <div style={{display: 'flex', flexDirection: 'column', flexGrow: 1}}>
-                        <div style={{fontWeight: 'bold', fontSize: '13px'}}> Plan </div>
-                        <div style={{lineHeight: '18px'}}>
-                            <div style={{color: '#666666'}}> {this.getPlanLabel(plan)} </div>
+                    <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.openEditProfile(e)}>Edit</button>
+                </section>
+
+                <section className='gh-portal-accountdetail-section'>
+                    <div className='flex flex-column flex-grow-1'>
+                        <h3 className='gh-portal-setting-heading'>Plan</h3>
+                        <div>
+                            <div className='gh-portal-accountdetail-data'>{this.getPlanLabel(plan)}</div>
                         </div>
                     </div>
-                    <div style={buttonStyle} onClick={e => this.openUpdatePlan(e)}>
-                        Change
-                    </div>
-                </div>
-                <div style={{display: 'flex', alignItems: 'center', marginTop: '24px'}}>
-                    <div style={{display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '5px'}}>
-                        <div style={{fontWeight: 'bold', fontSize: '13px'}}> Billing Info </div>
-                        <div style={{lineHeight: '18px'}}>
-                            <div style={{color: '#666666'}}> {this.getCardLabel({defaultCardLast4})} </div>
+                    <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.openUpdatePlan(e)}>Change</button>
+                </section>
+                
+                <section className='gh-portal-accountdetail-section'>
+                    <div className='flex flex-column flex-grow-1'>
+                        <h3 className='gh-portal-setting-heading'>Billing Info</h3>
+                        <div>
+                            <div className='gh-portal-accountdetail-data'>{this.getCardLabel({defaultCardLast4})}</div>
                         </div>
                     </div>
-                    <div style={buttonStyle} onClick={e => this.onEditBilling(e)}>
-                        Update
-                    </div>
-                </div>
-                <div style={{display: 'flex', alignItems: 'center', marginTop: '24px'}}>
-                    <div style={{display: 'flex', flexDirection: 'column', flexGrow: 1, marginTop: '5px'}}>
-                        <div style={{fontWeight: 'bold', fontSize: '13px'}}> Newsletter </div>
-                        <div style={{lineHeight: '18px'}}>
-                            <div style={{color: '#666666'}}> You are subscribed to email newsletters </div>
+                    <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.onEditBilling(e)}>Update</button>
+                </section>
+                
+                <section className='gh-portal-accountdetail-section'>
+                    <div className='flex flex-column flex-grow-1'>
+                        <h3 className='gh-portal-setting-heading'>Newsletter</h3>
+                        <div>
+                            <div className='gh-portal-accountdetail-data'>You are subscribed to email newsletters</div>
                         </div>
                     </div>
                     <div>
@@ -271,7 +306,7 @@ class PaidAccountHomePage extends React.Component {
                             this.onToggleSubscription(e, subscribed);
                         }} checked={subscribed} />
                     </div>
-                </div>
+                </section>
             </div>
         );
     }
@@ -279,7 +314,7 @@ class PaidAccountHomePage extends React.Component {
     render() {
         const {member, brandColor} = this.context;
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
+            <div>
                 <UserHeader member={member} />
                 {this.renderAccountWelcome()}
                 <Divider />
