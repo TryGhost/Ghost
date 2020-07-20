@@ -48,9 +48,11 @@ function createMessage(message) {
 
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
     const fullErrorMessage = defaultErrorMessage + message;
+    let statusCode = err.name === 'RecipientError' ? 400 : 500;
     return new errors.EmailError({
         message: ignoreDefaultMessage ? message : fullErrorMessage,
         err: err,
+        statusCode,
         help: helpMessage
     });
 }
