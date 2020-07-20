@@ -7,6 +7,8 @@ import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
+export const AccountProfilePageStyles = ``;
+
 export default class AccountProfilePage extends React.Component {
     static contextType = AppContext;
 
@@ -75,7 +77,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderAccountFooter() {
         return (
-            <div style={{display: 'flex', padding: '0 24px', marginTop: '12px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px', alignItems: 'center'}}>
+            <div>
                 <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
                     {this.renderSaveButton()}
                 </div>
@@ -85,9 +87,9 @@ export default class AccountProfilePage extends React.Component {
 
     renderHeader() {
         return (
-            <div style={{display: 'flex', padding: '0 24px'}}>
-                <div style={{color: this.context.brandColor, cursor: 'pointer'}} role="button" onClick={e => this.onBack(e)}> &lt; Back </div>
-                <div style={{flexGrow: 1, fontWeight: 'bold', display: 'flex', justifyContent: 'center'}}> Account Settings </div>
+            <div className='gh-portal-detail-header'>
+                <button className='gh-portal-btn gh-portal-btn-back' style={{color: this.context.brandColor}} onClick={e => this.onBack(e)}>Back</button>
+                <h3 className='gh-portal-maiin-title'>Account settings</h3>
             </div>
         );
     }
@@ -150,7 +152,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderProfileData() {
         return (
-            <div style={{padding: '0 24px', marginTop: '24px'}}>
+            <div className='gh-portal-section form'>
                 {this.renderInputField('name')}
                 {this.renderInputField('email')}
             </div>
@@ -168,7 +170,7 @@ export default class AccountProfilePage extends React.Component {
         }
         const label = subscribed ? 'You are subscribed to email newsletters' : 'You are not subscribed to email newsletters';
         return (
-            <div style={{padding: '0 24px', display: 'flex', alignItems: 'center', marginBottom: '20px'}}>
+            <div>
                 <div style={{flexGrow: 1}}>
                     <div style={{
                         marginBottom: '3px',

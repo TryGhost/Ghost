@@ -6,6 +6,8 @@
 import {ActionButtonStyles} from './common/ActionButton';
 import {SwitchStyles} from './common/Switch';
 import {AccountHomePageStyles} from './pages/AccountHomePage';
+import {AccountProfilePageStyles} from './pages/AccountProfilePage';
+import {InputFieldStyles} from './common/InputField';
 
 // Global styles
 export const GlobalStyles = `
@@ -115,6 +117,12 @@ export const GlobalStyles = `
         letter-spacing: 0.2px;
     }
 
+    h3 {
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+
     p {
         font-size: 15px;
         line-height: 1.55em;
@@ -146,6 +154,8 @@ export const GlobalStyles = `
 
     .gh-portal-setting-heading {
         font-size: 13px;
+        margin-bottom: 4px;
+        font-weight: 500;
     }
 
     /* Buttons
@@ -216,12 +226,37 @@ export const GlobalStyles = `
     .gh-portal-section {
         margin-bottom: 32px;
     }
+
+    .gh-portal-section.form {
+        margin-bottom: 20px;
+    }
+
+    .gh-portal-detail-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0 20px;
+    }
+
+    .gh-portal-detail-header .gh-portal-btn-back,
+    .gh-portal-detail-header .gh-portal-btn-back:hover {        
+        position: absolute;
+        top: -8px;
+        left: 0;
+        background: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+    }
 `;
 
 // Append all styles as string which we want to pass to iframe
 const FrameStyle = 
     GlobalStyles +
     AccountHomePageStyles +
+    AccountProfilePageStyles +
+    InputFieldStyles +
     SwitchStyles + 
     ActionButtonStyles;
 

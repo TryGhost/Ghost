@@ -61,7 +61,7 @@ export default class App extends React.Component {
         // Loads default page and popup state for local UI testing
         if (process.env.NODE_ENV === 'development') {
             return {
-                page: 'accountHome',
+                page: 'accountProfile',
                 showPopup: true
             };
         }
