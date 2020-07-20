@@ -81,7 +81,7 @@ export const GlobalStyles = `
 
     /* Typography
     /* ----------------------------------------------------- */
-    h1, h2, h3, h4, h5, h6 {
+    h1, h2, h3, h4, h5, h6, p {
         padding: 0;
         margin: 0;
     }
@@ -98,8 +98,33 @@ export const GlobalStyles = `
         letter-spacing: 0.2px;
     }
 
+    p {
+        font-size: 15px;
+        line-height: 1.55em;
+        margin-bottom: 24px;
+    }
+
+    strong {
+        font-weight: 600;
+    }
+    
+    a,
+    .gh-portal-link {
+        cursor: pointer;
+    }
+
     .gh-portal-main-title {
         color: #333;
+    }
+
+    .gh-portal-text-disabled {
+        color: #484848;
+        opacity: 0.35;
+        font-weight: normal;
+    }
+
+    .gh-portal-text-center {
+        text-align: center;
     }
 
     /* Global layout styles
