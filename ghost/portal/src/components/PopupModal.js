@@ -146,8 +146,8 @@ class PopupContent extends React.Component {
 
     renderPopupClose() {
         return (
-            <div className='ghp-closeicon-container'>
-                <CloseIcon className='ghp-closeicon' onClick = {() => this.context.onAction('closePopup')} />
+            <div className='gh-portal-closeicon-container'>
+                <CloseIcon className='gh-portal-closeicon' onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
     }
@@ -155,7 +155,7 @@ class PopupContent extends React.Component {
     render() {
         const page = this.getCurrentPage();
         return (
-            <div className='ghp-popup-container' ref={this.container}>
+            <div className='gh-portal-popup-container' ref={this.container}>
                 {this.renderPopupClose()}
                 {this.renderCurrentPage(page)}
             </div>
@@ -187,8 +187,8 @@ export default class PopupModal extends React.Component {
 
     renderPopupClose() {
         return (
-            <div className='ghp-closeicon-container'>
-                <CloseIcon className='ghp-closeicon' onClick = {() => this.context.onAction('closePopup')} />
+            <div className='gh-portal-closeicon-container'>
+                <CloseIcon className='gh-portal-closeicon' onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
     }
@@ -196,7 +196,7 @@ export default class PopupModal extends React.Component {
     renderPopupContent() {
         const page = this.getCurrentPage();
         return (
-            <div className='ghp-popup-container'>
+            <div className='gh-portal-popup-container'>
                 {this.renderPopupClose()}
                 {this.renderCurrentPage(page)}
             </div>

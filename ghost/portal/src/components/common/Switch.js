@@ -1,8 +1,8 @@
 import React from 'react';
 
 export const SwitchStyles = `
-    .ghp-for-switch label,
-    .ghp-for-switch .container {
+    .gh-portal-for-switch label,
+    .gh-portal-for-switch .container {
         cursor: pointer;
         position: relative;
         display: inline-block;
@@ -10,20 +10,20 @@ export const SwitchStyles = `
         height: 28px !important;
     }
 
-    .ghp-for-switch label p,
-    .ghp-for-switch .container p {
+    .gh-portal-for-switch label p,
+    .gh-portal-for-switch .container p {
         overflow: auto;
         color: #15171A;
         font-weight: normal;
     }
 
-    .ghp-for-switch input {
+    .gh-portal-for-switch input {
         opacity: 0;
         width: 0;
         height: 0;
     }
 
-    .ghp-for-switch .input-toggle-component {
+    .gh-portal-for-switch .input-toggle-component {
         position: absolute;
         cursor: pointer;
         top: 0;
@@ -39,12 +39,12 @@ export const SwitchStyles = `
         transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
     }
 
-    .ghp-for-switch label:hover input:not(:checked) + .input-toggle-component,
-    .ghp-for-switch .container:hover input:not(:checked) + .input-toggle-component {
+    .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component,
+    .gh-portal-for-switch .container:hover input:not(:checked) + .input-toggle-component {
         border-color: #c5d7e2;
     }
 
-    .ghp-for-switch .input-toggle-component:before {
+    .gh-portal-for-switch .input-toggle-component:before {
         position: absolute;
         content: "";
         height: 22px !important;
@@ -57,39 +57,39 @@ export const SwitchStyles = `
         border-radius: 999px;
     }
 
-    .ghp-for-switch input:checked + .input-toggle-component {
+    .gh-portal-for-switch input:checked + .input-toggle-component {
         background: #a4d037;
         border-color: transparent;
     }
 
-    .ghp-for-switch input:checked + .input-toggle-component:before {
+    .gh-portal-for-switch input:checked + .input-toggle-component:before {
         transform: translateX(22px);
     }
 
-    .ghp-for-switch .container {
+    .gh-portal-for-switch .container {
         width: 38px !important;
         height: 22px !important;
     }
 
-    .ghp-for-switch.small .input-toggle-component {
+    .gh-portal-for-switch.small .input-toggle-component {
         width: 38px !important;
         height: 22px !important;
     }
 
-    .ghp-for-switch.small .input-toggle-component:before {
+    .gh-portal-for-switch.small .input-toggle-component:before {
         height: 16px !important;
         width: 16px !important;
         box-shadow: 0 0 1px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.1);
     }
 
-    .ghp-for-switch.small input:checked + .input-toggle-component:before {
+    .gh-portal-for-switch.small input:checked + .input-toggle-component:before {
         transform: translateX(16px);
     }
 `;
 
 function Switch({id, label, onToggle, checked = false}) {
     return (
-        <div className="ghp-for-switch">
+        <div className="gh-portal-for-switch">
             <label className="switch" htmlFor={id}>
                 <input
                     type="checkbox"

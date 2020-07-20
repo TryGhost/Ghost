@@ -98,13 +98,13 @@ export const GlobalStyles = `
         letter-spacing: 0.2px;
     }
 
-    .ghp-main-title {
+    .gh-portal-main-title {
         color: #333;
     }
 
     /* Global layout styles
     /* ----------------------------------------------------- */
-    .ghp-popup-container {
+    .gh-portal-popup-container {
         width: 100%;
         letter-spacing: 0;
         text-rendering: optimizeLegibility;
@@ -124,13 +124,13 @@ export const GlobalStyles = `
         position: relative;
     }
 
-    .ghp-closeicon-container {
+    .gh-portal-closeicon-container {
         position: absolute;
         top: 8px;
         right: 8px;
     }
 
-    .ghp-closeicon {
+    .gh-portal-closeicon {
         width: 16px;
         height: 16px;
         color: #999;
@@ -138,7 +138,7 @@ export const GlobalStyles = `
         padding: 12px;
     }
 
-    .ghp-section {
+    .gh-portal-section {
         margin-bottom: 32px;
     }
 `;

@@ -2,7 +2,7 @@ import React from 'react';
 import getContrastColor from '../../utils/contrast-color';
 
 export const ActionButtonStyles = `
-.ghp-btn {
+.gh-portal-btn {
     position: relative;
     display: inline-block;
     padding: 0 1.8rem;
@@ -23,7 +23,7 @@ export const ActionButtonStyles = `
     width: 100%;
 }
 
-.ghp-btn:hover::before {
+.gh-portal-btn:hover::before {
     position: absolute;
     content: "";
     top: 0;
@@ -57,7 +57,7 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
 function ActionButton({label, onClick, disabled, retry, brandColor, style}) {
     let Style = Styles({disabled, retry, brandColor, style});
     return (
-        <button onClick={e => onClick(e)} style={Style.button} className="ghp-btn ghp-btn-primary" disabled={disabled}>
+        <button onClick={e => onClick(e)} style={Style.button} className="gh-portal-btn gh-portal-btn-primary" disabled={disabled}>
             {label}
         </button>
     );
