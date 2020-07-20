@@ -57,7 +57,7 @@
     "ember-cli": "3.19.0",
     "ember-cli-app-version": "3.2.0",
     "ember-cli-babel": "7.21.0",
-    "ember-cli-chart": "3.6.0",
+    "ember-cli-chart": "3.7.1",
     "ember-cli-dependency-checker": "3.2.0",
     "ember-cli-deprecation-workflow": "1.0.1",
     "ember-cli-eslint": "5.1.0",
