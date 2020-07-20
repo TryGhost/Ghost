@@ -1,47 +1,36 @@
 import React from 'react';
 
-const Styles = ({disabled, style = {}} = {}) => {
-    return {
-        input: {
-            display: 'block',
-            padding: '0 .6em',
-            width: '100%',
-            height: '44px',
-            outline: '0',
-            border: '1px solid #c5d2d9',
-            color: 'inherit',
-            textDecoration: 'none',
-            background: disabled ? '#ececec' : '#fff',
-            borderRadius: '9px',
-            fontSize: '14px',
-            marginBottom: '12px',
-            boxSizing: 'border-box',
-            ...(style.input || {}) // Override any custom style
-        },
-        label: {
-            marginBottom: '3px',
-            fontSize: '12px',
-            fontWeight: '700',
-            ...(style.label || {}) // Override any custom style
-        }
-    };
-};
+export const InputFieldStyles = `
+    .gh-portal-input {
+        display: block;
+        padding: 0 12px;
+        width: 100%;
+        height: 40px;
+        outline: none;
+        border: 1px solid #ddd;
+        color: inherit;
+        background: #fff;
+        border-radius: 5px;
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+        box-sizing: border-box;
+    }
+`;
 
 function InputField({name, id, label, type, value, placeholder, disabled, onChange, style}) {
-    const Style = Styles({disabled, style});
     id = id || `input-${name}`;
     return (
         <>
-            <label htmlFor={id} style={Style.label}> {label} </label>
+            <label htmlFor={id} className='gh-portal-setting-heading'> {label} </label>
             <input
                 id={id}
                 type={type}
                 name={name}
                 placeholder={placeholder}
                 value={value}
+                className='gh-portal-input'
                 disabled={disabled}
                 onChange={e => onChange(e, name)}
-                style={Style.input}
                 aria-label={label}
             />
         </>

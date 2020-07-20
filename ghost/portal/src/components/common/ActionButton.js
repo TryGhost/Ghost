@@ -6,6 +6,11 @@ export const ActionButtonStyles = `
         width: 100%;
         box-shadow: none;
     }
+
+    .gh-portal-btn-main:hover {
+        box-shadow: none;
+    }
+
     .gh-portal-btn-primary:hover::before {
         position: absolute;
         content: "";
