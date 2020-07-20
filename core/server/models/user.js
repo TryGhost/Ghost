@@ -801,6 +801,7 @@ User = ghostBookshelf.Model.extend({
             .then((user) => {
                 if (!user) {
                     throw new errors.NotFoundError({
+                        context: i18n.t('errors.models.user.invalidCredentials'),
                         message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
                     });
                 }
@@ -827,6 +828,7 @@ User = ghostBookshelf.Model.extend({
             .catch((err) => {
                 if (err.message === 'NotFound' || err.message === 'EmptyResponse') {
                     throw new errors.NotFoundError({
+                        context: i18n.t('errors.models.user.invalidCredentials'),
                         message: i18n.t('errors.models.user.noUserWithEnteredEmailAddr')
                     });
                 }
@@ -852,7 +854,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 return Promise.reject(new errors.ValidationError({
-                    context: i18n.t('errors.models.user.incorrectPassword'),
+                    context: i18n.t('errors.models.user.invalidCredentials'),
                     message: i18n.t('errors.models.user.incorrectPassword'),
                     help: i18n.t('errors.models.user.userUpdateError.help'),
                     code: 'PASSWORD_INCORRECT'
