@@ -125,10 +125,10 @@ Settings = ghostBookshelf.Model.extend({
     async onValidate(model, attr, options) {
         await ghostBookshelf.Model.prototype.onValidate.call(this, model, attr, options);
 
-        await Settings.validators.all(model);
+        await Settings.validators.all(model, options);
 
         if (typeof Settings.validators[model.get('key')] === 'function') {
-            await Settings.validators[model.get('key')](model);
+            await Settings.validators[model.get('key')](model, options);
         }
     },
 
@@ -353,14 +353,20 @@ Settings = ghostBookshelf.Model.extend({
                 throw new errors.ValidationError(validationErrors.join('\n'));
             }
         },
-        async stripe_plans(model) {
+        async stripe_plans(model, options) {
             const plans = JSON.parse(model.get('value'));
             for (const plan of plans) {
-                // We check 100, not 1, because amounts are in fractional units
-                if (plan.amount < 100 && plan.name !== 'Complimentary') {
-                    throw new errors.ValidationError({
-                        message: 'Plans cannot have an amount less than 1'
-                    });
+                // Stripe plans used to be allowed (and defaulted to!) 0 amount plans
+                // this causes issues to people importing from older versions of Ghost
+                // even if they don't use Members/Stripe
+                // issue: https://github.com/TryGhost/Ghost/issues/12049
+                if (!options.importing) {
+                    // We check 100, not 1, because amounts are in fractional units
+                    if (plan.amount < 100 && plan.name !== 'Complimentary') {
+                        throw new errors.ValidationError({
+                            message: 'Plans cannot have an amount less than 1'
+                        });
+                    }
                 }
 
                 if (typeof plan.name !== 'string') {
