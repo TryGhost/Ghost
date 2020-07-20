@@ -13,6 +13,40 @@ export const AccountHomePageStyles = `
         align-items: center;
         margin-bottom: 20px;
     }
+
+    .gh-portal-account-footer {
+        display: flex;
+        margin-top: -16px;
+    }
+
+    .gh-portal-account-footermenu {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .gh-portal-account-footermenu li {
+        margin-right: 16px;
+    }
+
+    .gh-portal-account-footermenu li:last-of-type {
+        margin-right: 0;
+    }
+
+    /* Avatar styles */
+    .gh-portal-avatar-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 8px;
+        border-radius: 999px;
+        box-shadow: 0 0 0 3px #fff;
+    }
 `;
 
 const Divider = () => {
@@ -22,21 +56,8 @@ const Divider = () => {
 };
 
 const UserAvatar = ({avatar}) => {
-    const avatarContainerStyle = {
-        position: 'relative',
-        display: 'flex',
-        width: '64px',
-        height: '64px',
-        marginBottom: '8px',
-        borderRadius: '999px',
-        boxShadow: '0 0 0 3px #fff',
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center'
-    };
-
     return (
-        <div style={avatarContainerStyle}>
+        <div className='gh-portal-avatar-container'>
             <MemberAvatar gravatar={avatar} style={{userIcon: {color: '#525252', width: '45px', height: '45px'}}} />
         </div>
     );
@@ -44,15 +65,18 @@ const UserAvatar = ({avatar}) => {
 
 const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     return (
-        // <div style={{display: 'flex', padding: '0 32px', marginTop: '14px', color: brandColor, fontWeight: '500', fontSize: '14px'}}>
-        <div className='flex' style={{marginTop: '-18px'}}>
-            <div style={{color: '#484848', opacity: '0.35', fontWeight: 'normal'}} role='button'>Contact support</div>
-            <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
-                {onSettings
-                    ? <div style={{marginRight: '16px', cursor: 'pointer', color: brandColor}} onClick={onSettings} role='button'>Settings</div>
-                    : null
-                }
-                <div style={{cursor: 'pointer', color: brandColor}} onClick={onLogout} role='button'>Logout</div>
+        <div className='gh-portal-account-footer'>
+            <ul className='gh-portal-account-footermenu'>
+                <li><div className='gh-portal-text-disabled' role='button'>Contact support</div></li>
+            </ul>
+            <div className='flex flex-grow-1 justify-end'>
+                <ul className='gh-portal-account-footermenu'>
+                    {onSettings
+                        ? <li><div className='gh-portal-link' style={{color: brandColor}} onClick={onSettings} role='button'>Settings</div></li>
+                        : null
+                    }
+                    <li><div className='gh-portal-link' style={{color: brandColor}} onClick={onLogout} role='button'>Logout</div></li>
+                </ul>
             </div>
         </div>
     );
@@ -108,10 +132,10 @@ class FreeAccountHomePage extends React.Component {
 
         return (
             <div className='gh-portal-section'>
-                <div style={{textAlign: 'center', marginBottom: '24px', fontSize: '15px', lineHeight: '1.6em'}}>
-                    Hey <span style={{fontWeight: '600'}}>{firstname || name || email}! </span>
-                    You are subscribed to free updates from <span style={{fontWeight: '600'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
-                </div>
+                <p className='gh-portal-text-center'>
+                    Hey <strong>{firstname || name || email}! </strong>
+                    You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
+                </p>
                 {this.renderSubscribeButton()}
             </div>
         );
@@ -143,10 +167,10 @@ class PaidAccountHomePage extends React.Component {
 
         return (
             <div className='gh-portal-section'>
-                <div style={{textAlign: 'center', marginBottom: '24px', fontSize: '15px'}}>
-                    Hey <span style={{fontWeight: '600'}}>{firstname || name || email}! </span>
-                    You have an active <span style={{fontWeight: '600'}}>{siteTitle}</span> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
-                </div>
+                <p className='gh-portal-text-center'>
+                    Hey <strong>{firstname || name || email}! </strong>
+                    You have an active <strong>{siteTitle}</strong> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
+                </p>
             </div>
         );
     }
