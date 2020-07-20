@@ -7,8 +7,6 @@ import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
-export const AccountProfilePageStyles = ``;
-
 export default class AccountProfilePage extends React.Component {
     static contextType = AppContext;
 

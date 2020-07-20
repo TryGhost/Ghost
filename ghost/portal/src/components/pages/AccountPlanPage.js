@@ -37,9 +37,9 @@ export default class AccountPlanPage extends React.Component {
 
     renderHeader() {
         return (
-            <div style={{display: 'flex', padding: '0 24px'}}>
-                <div style={{color: this.context.brandColor, cursor: 'pointer'}} role="button" onClick={e => this.onBack(e)}> &lt; Back </div>
-                <div style={{flexGrow: 1, display: 'flex', justifyContent: 'center', fontWeight: 'bold'}}> Choose Plan </div>
+            <div className='gh-portal-detail-header'>
+                <button className='gh-portal-btn gh-portal-btn-back' style={{color: this.context.brandColor}} onClick={e => this.onBack(e)}>Back</button>
+                <h3 className='gh-portal-maiin-title'>Choose plan</h3>
             </div>
         );
     }
@@ -92,7 +92,7 @@ export default class AccountPlanPage extends React.Component {
             }
         ];
         return (
-            <div style={{padding: '0 24px', marginTop: '12px'}}>
+            <div>
                 <PlansSection
                     showLabel={false}
                     plans={plansData}
