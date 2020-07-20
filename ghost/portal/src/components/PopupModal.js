@@ -85,34 +85,6 @@ const StylesWrapper = ({member}) => {
             links: {
                 width: '600px'
             }
-        },
-        popup: {
-            container: {
-                width: '100%',
-                letterSpacing: '0',
-                textRendering: 'optimizeLegibility',
-                fontSize: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                top: '0px',
-                bottom: '0px',
-                left: '0px',
-                right: '0px',
-                overflow: 'hidden',
-                paddingTop: '32px',
-                paddingBottom: '32px',
-                textAlign: 'left',
-                boxSizing: 'border-box',
-                position: 'relative'
-            },
-            closeIcon: {
-                width: '16px',
-                height: '16px',
-                color: '#999',
-                cursor: 'pointer',
-                padding: '12px'
-            }
         }
     };
 };
@@ -173,19 +145,17 @@ class PopupContent extends React.Component {
     }
 
     renderPopupClose() {
-        const Styles = StylesWrapper({});
         return (
-            <div style={{position: 'absolute', top: '8px', right: '8px'}}>
-                <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.context.onAction('closePopup')} />
+            <div className='ghp-closeicon-container'>
+                <CloseIcon className='ghp-closeicon' onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
     }
 
     render() {
         const page = this.getCurrentPage();
-        const Styles = StylesWrapper({});
         return (
-            <div style={Styles.popup.container} ref={this.container}>
+            <div className='ghp-popup-container' ref={this.container}>
                 {this.renderPopupClose()}
                 {this.renderCurrentPage(page)}
             </div>
@@ -216,19 +186,17 @@ export default class PopupModal extends React.Component {
     }
 
     renderPopupClose() {
-        const Styles = StylesWrapper({});
         return (
-            <div style={{position: 'absolute', top: '8px', right: '8px'}}>
-                <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.context.onAction('closePopup')} />
+            <div className='ghp-closeicon-container'>
+                <CloseIcon className='ghp-closeicon' onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
     }
 
     renderPopupContent() {
         const page = this.getCurrentPage();
-        const Styles = StylesWrapper({});
         return (
-            <div style={Styles.popup.container}>
+            <div className='ghp-popup-container'>
                 {this.renderPopupClose()}
                 {this.renderCurrentPage(page)}
             </div>
