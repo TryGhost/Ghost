@@ -79,11 +79,28 @@ export const GlobalStyles = `
     .fixed  { position: fixed; }
     .sticky  { position: sticky; }
 
+    .ma0 { margin: 0; }
+    .mt0 { margin-top: 0; }
+    .mr0 { margin-right: 0; }
+    .mb0 { margin-bottom: 0; }
+    .ml0 { margin-left: 0; }
+    .mh0 { margin-left: 0; margin-right: 0; }
+    .mv0 { margin-top: 0; margin-bottom: 0; }
+
+    .pa0 { padding: 0; }
+    .pt0 { padding-top: 0; }
+    .pr0 { padding-right: 0; }
+    .pb0 { padding-bottom: 0; }
+    .pl0 { padding-left: 0; }
+    .ph0 { padding-left: 0; padding-right: 0; }
+    .pv0 { padding-top: 0; padding-bottom: 0; }
+
     /* Typography
     /* ----------------------------------------------------- */
     h1, h2, h3, h4, h5, h6, p {
         padding: 0;
         margin: 0;
+        line-height: 1.15em;
     }
 
     h1 {
@@ -125,6 +142,39 @@ export const GlobalStyles = `
 
     .gh-portal-text-center {
         text-align: center;
+    }
+
+    .gh-portal-setting-heading {
+        font-size: 13px;
+    }
+
+    /* Buttons
+    /* ----------------------------------------------------- */
+    .gh-portal-btn {
+        position: relative;
+        display: inline-block;
+        padding: 0 1.8rem;
+        height: 44px;
+        border: none;
+        font-size: 1.5rem;
+        line-height: 1em;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+        text-align: center;
+        text-decoration: none;
+        white-space: nowrap;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: .4s ease;
+        box-shadow: none;
+        user-select: none;
+        background: #fff;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 6px -3px rgba(0,0,0,0.19);
+        color: #212121;
+    }
+
+    .gh-portal-btn:hover {
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.18), 0 2px 6px -3px rgba(0,0,0,0.19);
     }
 
     /* Global layout styles
@@ -170,8 +220,8 @@ export const GlobalStyles = `
 
 // Append all styles as string which we want to pass to iframe
 const FrameStyle = 
-    AccountHomePageStyles +
     GlobalStyles +
+    AccountHomePageStyles +
     SwitchStyles + 
     ActionButtonStyles;
 

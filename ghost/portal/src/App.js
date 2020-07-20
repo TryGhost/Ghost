@@ -173,7 +173,7 @@ export default class App extends React.Component {
             }
             return null;
         } else if (process.env.NODE_ENV === 'development') {
-            return member || Fixtures.member.free;
+            return member || Fixtures.member.paid;
         }
         return member;
     }
