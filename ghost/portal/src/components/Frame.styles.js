@@ -6,7 +6,6 @@
 import {ActionButtonStyles} from './common/ActionButton';
 import {SwitchStyles} from './common/Switch';
 import {AccountHomePageStyles} from './pages/AccountHomePage';
-import {AccountProfilePageStyles} from './pages/AccountProfilePage';
 import {InputFieldStyles} from './common/InputField';
 
 // Global styles
@@ -242,7 +241,7 @@ export const GlobalStyles = `
     .gh-portal-detail-header .gh-portal-btn-back,
     .gh-portal-detail-header .gh-portal-btn-back:hover {        
         position: absolute;
-        top: -8px;
+        top: -10px;
         left: 0;
         background: none;
         box-shadow: none;
@@ -255,7 +254,6 @@ export const GlobalStyles = `
 const FrameStyle = 
     GlobalStyles +
     AccountHomePageStyles +
-    AccountProfilePageStyles +
     InputFieldStyles +
     SwitchStyles + 
     ActionButtonStyles;
