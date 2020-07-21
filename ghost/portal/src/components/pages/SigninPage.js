@@ -78,25 +78,21 @@ export default class SigninPage extends React.Component {
     renderSignupMessage() {
         const brandColor = this.context.brandColor;
         return (
-            <div style={{display: 'flex', justifyContent: 'center', marginTop: '12px'}}>
-                <div style={{marginRight: '6px', color: '#929292'}}> Don't have an account ? </div>
-                <div
-                    style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}}
-                    role="button"
-                    onClick={() => this.context.onAction('switchPage', {page: 'signup'})}
-                >
-                    Subscribe
-                </div>
+            <div className='flex justify-center gh-portal-signup-footer'>
+                <div>Don't have an account?</div>
+                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}>Subscribe</button>
             </div>
         );
     }
 
     renderForm() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', marginBottom: '12px', padding: '0 18px'}}>
-                {this.renderInputField('email')}
-                {this.renderSubmitButton()}
-                {this.renderSignupMessage()}
+            <div>
+                <div className='gh-portal-section form'>{this.renderInputField('email')}</div>
+                <div> 
+                    {this.renderSubmitButton()}
+                    {this.renderSignupMessage()}
+                </div>
             </div>
         );
     }
@@ -104,22 +100,12 @@ export default class SigninPage extends React.Component {
     renderSiteLogo() {
         const siteLogo = this.context.site.logo;
 
-        const logoStyle = {
-            position: 'relative',
-            display: 'block',
-            width: '48px',
-            height: '48px',
-            marginBottom: '12px',
-            backgroundPosition: '50%',
-            backgroundSize: 'cover',
-            borderRadius: '100%',
-            boxShadow: '0 0 0 3px #fff'
-        };
+        const logoStyle = {};
 
         if (siteLogo) {
             logoStyle.backgroundImage = `url(${siteLogo})`;
             return (
-                <span style={logoStyle}> </span>
+                <span className='gh-portal-signup-logo' style={logoStyle}></span>
             );
         }
         return null;
@@ -129,20 +115,18 @@ export default class SigninPage extends React.Component {
         const siteTitle = this.context.site.title || 'Site Title';
 
         return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>
+            <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <div style={{fontSize: '21px', fontWeight: '400'}}> Sign in to {siteTitle}</div>
+                <h2 className="gh-portal-main-title">Sign in to {siteTitle}</h2>
             </div>
         );
     }
 
     render() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
-                <div style={{paddingLeft: '16px', paddingRight: '16px'}}>
-                    {this.renderFormHeader()}
-                    {this.renderForm()}
-                </div>
+            <div className='flex flex-column'>
+                {this.renderFormHeader()}
+                {this.renderForm()}
             </div>
         );
     }
