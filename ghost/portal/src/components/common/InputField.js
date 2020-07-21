@@ -20,6 +20,10 @@ export const InputFieldStyles = `
         border: 1px solid transparent;
         box-shadow: 0 0 0 2px var(--brandcolor);
     }
+
+    .gh-portal-input::placeholder {
+        color: #929292;
+    }
 `;
 
 function InputField({name, id, label, type, value, placeholder, disabled, onChange, brandColor}) {
