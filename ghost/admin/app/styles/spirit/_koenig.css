@@ -505,7 +505,7 @@
 .koenig-editor__editor code {
     border-radius: 2px;
     color: var(--darkgrey-d2);
-    font-size: 1.65rem;
+    font-size: .8em;
     line-height: 1em;
     padding: .4rem .4rem .2rem;
     vertical-align: middle;
