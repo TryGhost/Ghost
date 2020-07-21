@@ -102,10 +102,10 @@ const Divider = () => {
     );
 };
 
-const UserAvatar = ({avatar}) => {
+const UserAvatar = ({avatar, brandColor}) => {
     return (
         <div className='gh-portal-avatar-container'>
-            <MemberAvatar gravatar={avatar} style={{userIcon: {color: '#525252', width: '45px', height: '45px'}}} />
+            <MemberAvatar gravatar={avatar} style={{userIcon: {color: brandColor, width: '45px', height: '45px'}}} />
         </div>
     );
 };
@@ -129,11 +129,11 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     );
 };
 
-const UserHeader = ({member}) => {
+const UserHeader = ({member, brandColor}) => {
     const avatar = member.avatar_image;
     return (
         <div className='gh-portal-account-header'>
-            <UserAvatar avatar={avatar} />
+            <UserAvatar avatar={avatar} brandColor={brandColor} />
             <h2 className="gh-portal-main-title">Your Account</h2>
         </div>
     );
@@ -192,7 +192,7 @@ class FreeAccountHomePage extends React.Component {
         const {member, brandColor} = this.context;
         return (
             <div>
-                <UserHeader member={member} />
+                <UserHeader member={member} brandColor={brandColor} />
                 {this.renderAccountDetail()}
                 <AccountFooter onLogout={e => this.handleSignout(e)} onSettings={e => this.openSettings(e)} brandColor={brandColor} />
             </div>
@@ -320,7 +320,7 @@ class PaidAccountHomePage extends React.Component {
         const {member, brandColor} = this.context;
         return (
             <div>
-                <UserHeader member={member} />
+                <UserHeader member={member} brandColor={brandColor} />
                 {this.renderAccountWelcome()}
                 <Divider />
                 {this.renderAccountDetails()}
