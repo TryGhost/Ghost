@@ -336,7 +336,7 @@ describe('lib/image: image size', function () {
 
             const requestMock = nock('https://static.wixstatic.com')
                 .get('/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256')
-                .socketDelay(11)
+                .delayConnection(11)
                 .reply(408);
 
             configUtils.set('times:getImageSizeTimeoutInMS', 10);
