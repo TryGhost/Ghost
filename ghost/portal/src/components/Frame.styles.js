@@ -8,6 +8,7 @@ import {SwitchStyles} from './common/Switch';
 import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
+import {PlanSectionStyles} from './common/PlansSection';
 
 // Global styles
 export const GlobalStyles = `
@@ -284,6 +285,7 @@ const FrameStyle =
     GlobalStyles +
     AccountHomePageStyles +
     InputFieldStyles +
+    PlanSectionStyles +
     SwitchStyles + 
     ActionButtonStyles +
     SignupPageStyles;
