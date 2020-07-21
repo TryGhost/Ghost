@@ -143,7 +143,7 @@ export default class App extends React.Component {
                 showPopup: true,
                 site: Fixtures.site,
                 member: Fixtures.member.free,
-                page: 'magiclink'
+                page: 'signup'
             };
         }
         return {};
