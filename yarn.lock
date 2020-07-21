@@ -520,15 +520,15 @@
   dependencies:
     papaparse "5.2.0"
 
-"@tryghost/members-ssr@0.8.2":
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.2.tgz#15b692b20bc17e380ce7a24cbda3becc56b18cfd"
-  integrity sha512-/OGY7xhJykMtjxeHzcvgDUOjxKNWZFjzesX5Ia7sKDJI+DM4kQ6nfGvHxXSROLlU5jHrQtzOA5x1qT9Xh52Akg==
+"@tryghost/members-ssr@0.8.3":
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.3.tgz#c633992b3206ff3fc892a1797ab6883ac22cb6f8"
+  integrity sha512-43DAw3K09x4/tM4gzCAIee/duSoRRuzzA/e8az1+LRF/TBpevopGo9OLqOXmJWprv+9xNCin39YY2E2jcOlBaw==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
     cookies "^0.8.0"
-    ghost-ignition "^3.0.4"
+    ghost-ignition "^4.0.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
@@ -3941,7 +3941,7 @@ ghost-ignition@^2.9.6:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
+ghost-ignition@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
   integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
