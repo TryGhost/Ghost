@@ -20,7 +20,7 @@
     "sinon": "9.0.2"
   },
   "dependencies": {
-    "@tryghost/kg-parser-plugins": "0.10.1",
+    "@tryghost/kg-parser-plugins": "1.0.6",
     "@tryghost/mobiledoc-kit": "^0.12.4-ghost.1",
     "jsdom": "16.3.0"
   }
