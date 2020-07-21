@@ -97,7 +97,7 @@
     "js-yaml": "3.14.0",
     "jsonpath": "1.0.2",
     "jsonwebtoken": "8.5.1",
-    "juice": "6.0.0",
+    "juice": "7.0.0",
     "keypair": "1.0.1",
     "knex": "0.21.2",
     "knex-migrator": "3.4.6",
