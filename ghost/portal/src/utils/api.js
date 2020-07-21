@@ -213,10 +213,6 @@ function setupGhostApi({siteUrl = window.location.origin}) {
     };
 
     api.init = async () => {
-        // // Load site data from fixtures for dev/test modes
-        // if (hasMode(['dev', 'test'])) {
-        //     return {site: Fixtures.site, member: null};
-        // }
         const {site} = await api.site.read();
         const member = await api.member.sessionData();
         return {site, member};
