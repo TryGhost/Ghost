@@ -174,15 +174,17 @@
                                     <h4 class="gh-portal-setting-title">Icon</h4>
                                     <GhUploader
                                         @extensions={{this.iconExtensions}}
-                                        @paramsHash={{hash purpose="icon"}}
-                                        @onComplete={{action "imageUploaded" "icon"}}
+                                        @paramsHash={{hash purpose="image"}}
+                                        @onComplete={{action "imageUploaded" "buttonIcon"}}
                                         as
                                         |uploader|
                                     >
                                         <div class="flex items-center justify-between mt2 br3 ba b--whitegrey bg-white">
                                             <div class="gh-portal-settings-icons">
                                                 {{#each this.defaultButtonIcons as |imgIcon| }}
-                                                    <span class="gh-portal-button-icon {{if (eq this.buttonIcon imgIcon) "selected-icon"}}" onclick={{action "selectDefaultIcon" imgIcon}}>{{svg-jar imgIcon}}</span>
+                                                    <span class="gh-portal-button-icon {{if (eq this.buttonIcon imgIcon.value) "selected-icon"}}" onclick={{action "selectDefaultIcon" imgIcon.value}}>
+                                                        {{svg-jar imgIcon.icon}}
+                                                    </span>
                                                 {{/each}}
                                                 {{#if uploader.isUploading}}
                                                     {{uploader.progressBar}}
