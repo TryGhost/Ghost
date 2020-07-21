@@ -476,7 +476,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.8"
 
-"@tryghost/magic-link@0.4.11":
+"@tryghost/magic-link@0.4.11", "@tryghost/magic-link@^0.4.11":
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.11.tgz#25746a435456939c22026188b37e27b177289e85"
   integrity sha512-+Iqe0uQL9TqL6AbuWbUO8OznMe5Mdgo4YXoxW9FjCYrbwLYCGq9Y9B21DjMR/hiQA4B40Zvk8Kdui8Iyu+LLrA==
@@ -486,27 +486,17 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^0.4.10":
-  version "0.4.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.10.tgz#e772d5cb6461baa89b2abcb5325dbb869ae03615"
-  integrity sha512-5DKuXdgAmEVkh4iD6pz1gGkU8iLhvniaLSY7yuoZRaQtmnryvM7jWJouJCmJr66aRh5Eys4vkE8sqTY6f4mjog==
+"@tryghost/members-api@0.24.3":
+  version "0.24.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.24.3.tgz#8660425984e6f1cbae3b22789f8d73b84df9d11c"
+  integrity sha512-kK7lKs5H5ssBKvUMYXhZTkuB9U7R5HHJh+QkK5S/C8/HI4nzfkcNQEAG2EN7zenRbCbpHhpsVPgo0rAMdjIHMg==
   dependencies:
-    bluebird "^3.5.5"
-    ghost-ignition "^3.1.0"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/members-api@0.24.0":
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.24.0.tgz#d4f07ec52e6a93f5563e26e1c2d083fb69fb2da1"
-  integrity sha512-2jIl02vDdT9iphsTiQB2mmLANZ7UVmZB50xPuGIL9b8YEE4vddHHR8yPoW97TdSqHOMFIQ7CZPyOJjxQ5gFqUA==
-  dependencies:
-    "@tryghost/magic-link" "^0.4.10"
+    "@tryghost/magic-link" "^0.4.11"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "^3.1.0"
+    ghost-ignition "^4.0.0"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
@@ -3941,7 +3931,7 @@ ghost-ignition@^2.9.6:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
+ghost-ignition@^3.0.4:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
   integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
