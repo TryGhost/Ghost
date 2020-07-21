@@ -2,7 +2,6 @@ import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
-import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
@@ -288,7 +287,7 @@ class PaidAccountHomePage extends React.Component {
                     </div>
                     <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.openUpdatePlan(e)}>Change</button>
                 </section>
-                
+
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
                         <h3 className='gh-portal-setting-heading paid-home'>Billing Info</h3>
@@ -298,7 +297,7 @@ class PaidAccountHomePage extends React.Component {
                     </div>
                     <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.onEditBilling(e)}>Update</button>
                 </section>
-                
+
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
                         <h3 className='gh-portal-setting-heading paid-home'>Newsletter</h3>
@@ -335,7 +334,7 @@ export default class AccountHomePage extends React.Component {
 
     componentDidMount() {
         const {member} = this.context;
-        if (!member && !isPreviewMode()) {
+        if (!member) {
             this.context.onAction('switchPage', {
                 page: 'signup'
             });

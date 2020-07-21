@@ -2,7 +2,6 @@ import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
 import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
-import isPreviewMode from '../../utils/is-preview-mode';
 
 const React = require('react');
 
@@ -20,7 +19,7 @@ class SignupPage extends React.Component {
 
     componentDidMount() {
         const {member} = this.context;
-        if (member && !isPreviewMode()) {
+        if (member) {
             this.context.onAction('switchPage', {
                 page: 'accountHome'
             });

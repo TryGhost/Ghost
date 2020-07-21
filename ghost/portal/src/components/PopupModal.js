@@ -1,15 +1,8 @@
 import Frame from './Frame';
-import SigninPage from './pages/SigninPage';
-import SignupPage from './pages/SignupPage';
-import AccountHomePage from './pages/AccountHomePage';
-import MagicLinkPage from './pages/MagicLinkPage';
-import LoadingPage from './pages/LoadingPage';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
-import AccountPlanPage from './pages/AccountPlanPage';
-import AccountProfilePage from './pages/AccountProfilePage';
-import LinkPage from './pages/LinkPage';
+import Pages, {getActivePage} from '../pages';
 
 const React = require('react');
 
@@ -89,17 +82,6 @@ const StylesWrapper = ({member}) => {
     };
 };
 
-const Pages = {
-    signin: SigninPage,
-    signup: SignupPage,
-    accountHome: AccountHomePage,
-    accountPlan: AccountPlanPage,
-    accountProfile: AccountProfilePage,
-    magiclink: MagicLinkPage,
-    loading: LoadingPage,
-    links: LinkPage
-};
-
 class PopupContent extends React.Component {
     static contextType = AppContext;
 
@@ -127,16 +109,9 @@ class PopupContent extends React.Component {
         }
     }
 
-    getCurrentPage() {
+    renderActivePage() {
         const {page} = this.context;
-        if (Object.keys(Pages).includes(page)) {
-            return page;
-        }
-        return 'signup';
-    }
-
-    renderCurrentPage() {
-        const {page} = this.context;
+        getActivePage({page});
         const PageComponent = Pages[page];
 
         return (
@@ -153,11 +128,10 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const page = this.getCurrentPage();
         return (
             <div className='gh-portal-popup-container' ref={this.container}>
                 {this.renderPopupClose()}
-                {this.renderCurrentPage(page)}
+                {this.renderActivePage()}
             </div>
         );
     }
@@ -193,16 +167,6 @@ export default class PopupModal extends React.Component {
         );
     }
 
-    renderPopupContent() {
-        const page = this.getCurrentPage();
-        return (
-            <div className='gh-portal-popup-container'>
-                {this.renderPopupClose()}
-                {this.renderCurrentPage(page)}
-            </div>
-        );
-    }
-
     handlePopupClose(e) {
         e.preventDefault();
         if (e.target === e.currentTarget) {
@@ -221,18 +185,10 @@ export default class PopupModal extends React.Component {
         );
     }
 
-    getCurrentPage() {
-        const {page} = this.context;
-        if (Object.keys(Pages).includes(page)) {
-            return page;
-        }
-        return 'signup';
-    }
-
     renderFrameContainer() {
         const {member} = this.context;
         const Styles = StylesWrapper({member});
-        const page = this.getCurrentPage();
+        const page = getActivePage({page: this.context.page});
         const frameStyle = {
             ...Styles.frame.common,
             ...Styles.frame[page]
@@ -252,6 +208,10 @@ export default class PopupModal extends React.Component {
     }
 
     render() {
-        return this.renderFrameContainer();
+        const {showPopup} = this.context;
+        if (showPopup) {
+            return this.renderFrameContainer();
+        }
+        return null;
     }
 }

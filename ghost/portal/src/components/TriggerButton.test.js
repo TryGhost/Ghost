@@ -1,13 +1,22 @@
 import React from 'react';
-import {render} from '@testing-library/react';
+import {render} from 'test-utils';
 import TriggerButton from './TriggerButton';
+
+const setup = (overrides) => {
+    const {mockOnActionFn, ...utils} = render(
+        <TriggerButton />
+    );
+
+    const triggerFrame = utils.getByTitle('membersjs-trigger');
+    return {
+        triggerFrame,
+        ...utils
+    };
+};
 
 describe('Trigger Button', () => {
     test('renders', () => {
-        const {getByTitle} = render(
-            <TriggerButton />
-        );
-        const triggerFrame = getByTitle('membersjs-trigger');
+        const {triggerFrame} = setup();
 
         expect(triggerFrame).toBeInTheDocument();
     });

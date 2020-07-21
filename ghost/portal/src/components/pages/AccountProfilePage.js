@@ -3,7 +3,6 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
 import Switch from '../common/Switch';
-import isPreviewMode from '../../utils/is-preview-mode';
 import {ReactComponent as ArrowLeftIcon} from '../../images/icons/arrow-left.svg';
 
 const React = require('react');
@@ -22,7 +21,7 @@ export default class AccountProfilePage extends React.Component {
 
     componentDidMount() {
         const {member} = this.context;
-        if (!member && !isPreviewMode()) {
+        if (!member) {
             this.context.onAction('switchPage', {
                 page: 'signup'
             });
