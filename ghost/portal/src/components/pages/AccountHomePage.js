@@ -40,13 +40,13 @@ export const AccountHomePageStyles = `
 
     .gh-portal-accountdetail-section {
         display: flex;
-        align-items: center;
-        margin-bottom: 32px;
+        align-items: flex-start;
+        margin-bottom: 40px;
     }
 
     .gh-portal-accountdetail-section:first-of-type {
-        margin-top: 24px;
-        margin-bottom: 26px;
+        margin-top: 32px;
+        margin-bottom: 22px;
     }
 
     .gh-portal-account-divider {
@@ -67,13 +67,18 @@ export const AccountHomePageStyles = `
     }
 
     .gh-portal-accountdetail-data {
-        color: #656565;
         line-height: 1em;
         margin-top: 4px;
+        color: #777;
     }
 
     .gh-portal-accountdetail-data.small {
         font-size: 1.3rem;
+        margin-top: 5px;
+    }
+
+    .gh-portal-setting-heading.paid-home {
+        font-weight: 600;
     }
 
     /* Avatar styles */
@@ -265,7 +270,7 @@ class PaidAccountHomePage extends React.Component {
             <div>
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading'>Profile</h3>
+                        <h3 className='gh-portal-setting-heading paid-home'>Profile</h3>
                         <div>
                             <div className='gh-portal-accountdetail-data'>{name}</div>
                             <div className='gh-portal-accountdetail-data small'>{email}</div>
@@ -276,7 +281,7 @@ class PaidAccountHomePage extends React.Component {
 
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading'>Plan</h3>
+                        <h3 className='gh-portal-setting-heading paid-home'>Plan</h3>
                         <div>
                             <div className='gh-portal-accountdetail-data'>{this.getPlanLabel(plan)}</div>
                         </div>
@@ -286,7 +291,7 @@ class PaidAccountHomePage extends React.Component {
                 
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading'>Billing Info</h3>
+                        <h3 className='gh-portal-setting-heading paid-home'>Billing Info</h3>
                         <div>
                             <div className='gh-portal-accountdetail-data'>{this.getCardLabel({defaultCardLast4})}</div>
                         </div>
@@ -296,7 +301,7 @@ class PaidAccountHomePage extends React.Component {
                 
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading'>Newsletter</h3>
+                        <h3 className='gh-portal-setting-heading paid-home'>Newsletter</h3>
                         <div>
                             <div className='gh-portal-accountdetail-data'>You are subscribed to email newsletters</div>
                         </div>
