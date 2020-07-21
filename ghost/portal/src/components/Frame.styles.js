@@ -153,7 +153,7 @@ export const GlobalStyles = `
 
     .gh-portal-setting-heading {
         font-size: 13px;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         font-weight: 500;
     }
 
