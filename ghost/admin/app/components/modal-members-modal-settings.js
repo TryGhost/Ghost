@@ -8,7 +8,30 @@ import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
-const ICON_EXTENSIONS = ['ico', 'png', 'svg', 'jpg', 'jpeg'];
+const ICON_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
+
+const ICON_MAPPING = [
+    {
+        icon: 'user-circle',
+        value: 'icon-1'
+    },
+    {
+        icon: 'ambulance',
+        value: 'icon-2'
+    },
+    {
+        icon: 'book-open',
+        value: 'icon-3'
+    },
+    {
+        icon: 'store',
+        value: 'icon-4'
+    },
+    {
+        icon: 'gift',
+        value: 'icon-5'
+    }
+];
 
 export default ModalComponent.extend({
     settings: service(),
@@ -108,17 +131,12 @@ export default ModalComponent.extend({
             {name: 'icon-only', label: 'Icon only'},
             {name: 'text-only', label: 'Text only'}
         ];
-        this.defaultButtonIcons = [
-            'user-circle',
-            'ambulance',
-            'book-open',
-            'store',
-            'gift'
-        ];
+        this.defaultButtonIcons = ICON_MAPPING;
         this.iconExtensions = ICON_EXTENSIONS;
         const portalButtonIcon = this.settings.get('portalButtonIcon') || '';
-        if (portalButtonIcon && !portalButtonIcon.includes('githubusercontent')) {
-            return this.set('customIcon', this.settings.get('portalButtonIcon'));
+        const defaultIconKeys = this.defaultButtonIcons.map(buttonIcon => buttonIcon.value);
+        if (portalButtonIcon && !defaultIconKeys.includes(portalButtonIcon)) {
+            this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
     },
 
