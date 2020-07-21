@@ -230,7 +230,7 @@ class SignupPage extends React.Component {
     renderForm() {
         return (
             <div>
-                <div className='gh-portal-section form'>
+                <div className='gh-portal-section'>
                     {this.renderNameField()}
                     {this.renderInputField('email')}
                     {this.renderPlans()}
