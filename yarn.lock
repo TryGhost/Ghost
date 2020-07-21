@@ -476,7 +476,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.8"
 
-"@tryghost/magic-link@0.4.11":
+"@tryghost/magic-link@0.4.11", "@tryghost/magic-link@^0.4.11":
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.11.tgz#25746a435456939c22026188b37e27b177289e85"
   integrity sha512-+Iqe0uQL9TqL6AbuWbUO8OznMe5Mdgo4YXoxW9FjCYrbwLYCGq9Y9B21DjMR/hiQA4B40Zvk8Kdui8Iyu+LLrA==
@@ -486,27 +486,17 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^0.4.10":
-  version "0.4.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.10.tgz#e772d5cb6461baa89b2abcb5325dbb869ae03615"
-  integrity sha512-5DKuXdgAmEVkh4iD6pz1gGkU8iLhvniaLSY7yuoZRaQtmnryvM7jWJouJCmJr66aRh5Eys4vkE8sqTY6f4mjog==
+"@tryghost/members-api@0.24.1":
+  version "0.24.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.24.1.tgz#76e10da50184b7508246d17febe8aff0af7d4cf7"
+  integrity sha512-ilKZwlQK94fW1gS2Uii1ay6GUK99gfrUJLdKsOsulqsIWD4yRY2e2gz21cCsBJx3ep3DoGV9KYT1ZGkIxSKBgA==
   dependencies:
-    bluebird "^3.5.5"
-    ghost-ignition "^3.1.0"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/members-api@0.24.0":
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.24.0.tgz#d4f07ec52e6a93f5563e26e1c2d083fb69fb2da1"
-  integrity sha512-2jIl02vDdT9iphsTiQB2mmLANZ7UVmZB50xPuGIL9b8YEE4vddHHR8yPoW97TdSqHOMFIQ7CZPyOJjxQ5gFqUA==
-  dependencies:
-    "@tryghost/magic-link" "^0.4.10"
+    "@tryghost/magic-link" "^0.4.11"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "^3.1.0"
+    ghost-ignition "^4.0.0"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
@@ -3934,25 +3924,6 @@ ghost-ignition@^2.9.6:
     debug "^2.6.9"
     find-root "1.1.0"
     fs-extra "^3.0.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "^0.10.0"
-    prettyjson "^1.1.3"
-    uuid "^3.0.0"
-
-ghost-ignition@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
-  integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "^1.3.1"
-    caller "1.0.1"
-    debug "^4.0.0"
-    find-root "1.1.0"
-    fs-extra "^3.0.1"
-    gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.16.4"
     moment "^2.15.2"
