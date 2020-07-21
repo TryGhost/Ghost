@@ -7,6 +7,7 @@ import {ActionButtonStyles} from './common/ActionButton';
 import {SwitchStyles} from './common/Switch';
 import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {InputFieldStyles} from './common/InputField';
+import {SignupPageStyles} from './pages/SignupPage';
 
 // Global styles
 export const GlobalStyles = `
@@ -155,6 +156,7 @@ export const GlobalStyles = `
         font-size: 13px;
         margin-bottom: 2px;
         font-weight: 500;
+        color: #333;
     }
 
     /* Buttons
@@ -197,6 +199,20 @@ export const GlobalStyles = `
 
     .gh-portal-btn-icon svg path {
         stroke: currentColor;
+    }
+
+    .gh-portal-btn-link {
+        background: none;
+        padding: 0;
+        line-height: 1;
+        height: unset;
+        box-shadow: none;
+        border: none;
+    }
+
+    .gh-portal-btn-link:hover {
+        box-shadow: none;
+        opacity: 0.85;
     }
 
     /* Global layout styles
@@ -269,6 +285,7 @@ const FrameStyle =
     AccountHomePageStyles +
     InputFieldStyles +
     SwitchStyles + 
-    ActionButtonStyles;
+    ActionButtonStyles +
+    SignupPageStyles;
 
 export default FrameStyle;

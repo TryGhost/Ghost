@@ -5,6 +5,36 @@ import PlansSection from '../common/PlansSection';
 
 const React = require('react');
 
+export const SignupPageStyles = `
+    .gh-portal-signup-logo {
+        position: relative;
+        display: block;
+        width: 68px;
+        height: 68px;
+        margin-bottom: 16px;
+        background-position: 50%;
+        background-size: cover;
+        border-radius: 999px;
+        box-shadow: 0 0 0 3px #fff
+    }
+
+    .gh-portal-signup-header {
+        margin-top: 24px;
+    }
+
+    .gh-portal-signup-footer {
+        font-size: 1.3rem;
+        margin-top: 8px;
+        color: #929292;
+    }
+
+    .gh-portal-signup-footer button {
+        font-size: 1.3rem;
+        font-weight: 400;
+        margin-left: 4px;
+    }
+`;
+
 class SignupPage extends React.Component {
     static contextType = AppContext;
 
@@ -154,14 +184,14 @@ class SignupPage extends React.Component {
             name: {
                 type: 'text',
                 value: this.state.name,
-                placeholder: 'Name...',
+                placeholder: 'Jamie Larson',
                 label: 'Name',
                 name: 'name'
             },
             email: {
                 type: 'email',
                 value: this.state.email,
-                placeholder: 'Email...',
+                placeholder: 'jamie@example.com',
                 label: 'Email',
                 name: 'email'
             }
@@ -182,9 +212,9 @@ class SignupPage extends React.Component {
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
         return (
-            <div style={{display: 'flex', justifyContent: 'center', marginTop: '12px'}}>
-                <div style={{marginRight: '6px', color: '#929292'}}> Already a member ? </div>
-                <div style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => onAction('switchPage', {page: 'signin'})}> Log in </div>
+            <div className='flex justify-center gh-portal-signup-footer'>
+                <div>Already a member?</div>
+                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => onAction('switchPage', {page: 'signin'})}>Log in</button>
             </div>
         );
     }
@@ -199,7 +229,7 @@ class SignupPage extends React.Component {
 
     renderForm() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', marginBottom: '12px', padding: '0 18px'}}>
+            <div className='flex flex-column'>
                 {this.renderNameField()}
                 {this.renderInputField('email')}
                 {this.renderPlans()}
@@ -213,22 +243,12 @@ class SignupPage extends React.Component {
         const {site} = this.context;
         const siteLogo = site.logo;
 
-        const logoStyle = {
-            position: 'relative',
-            display: 'block',
-            width: '48px',
-            height: '48px',
-            marginBottom: '12px',
-            backgroundPosition: '50%',
-            backgroundSize: 'cover',
-            borderRadius: '100%',
-            boxShadow: '0 0 0 3px #fff'
-        };
+        const logoStyle = {};
 
         if (siteLogo) {
             logoStyle.backgroundImage = `url(${siteLogo})`;
             return (
-                <span style={logoStyle}> </span>
+                <span className='gh-portal-signup-logo' style={logoStyle}> </span>
             );
         }
         return null;
@@ -239,20 +259,18 @@ class SignupPage extends React.Component {
         const siteTitle = site.title || 'Site Title';
 
         return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>
+            <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <div style={{fontSize: '21px', fontWeight: '400'}}> Subscribe to {siteTitle}</div>
+                <h2 className="gh-portal-main-title">Subscribe to {siteTitle}</h2>
             </div>
         );
     }
 
     render() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
-                <div style={{paddingLeft: '16px', paddingRight: '16px'}}>
-                    {this.renderFormHeader()}
-                    {this.renderForm()}
-                </div>
+            <div className='flex flex-column'>
+                {this.renderFormHeader()}
+                {this.renderForm()}
             </div>
         );
     }
