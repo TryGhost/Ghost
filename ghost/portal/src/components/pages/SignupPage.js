@@ -229,12 +229,16 @@ class SignupPage extends React.Component {
 
     renderForm() {
         return (
-            <div className='flex flex-column'>
-                {this.renderNameField()}
-                {this.renderInputField('email')}
-                {this.renderPlans()}
-                {this.renderSubmitButton()}
-                {this.renderLoginMessage()}
+            <div>
+                <div className='gh-portal-section form'>
+                    {this.renderNameField()}
+                    {this.renderInputField('email')}
+                    {this.renderPlans()}
+                </div>
+                <div>
+                    {this.renderSubmitButton()}
+                    {this.renderLoginMessage()}
+                </div>
             </div>
         );
     }
