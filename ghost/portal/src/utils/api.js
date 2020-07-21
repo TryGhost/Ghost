@@ -1,6 +1,3 @@
-import * as Fixtures from './fixtures';
-import {hasMode} from './check-mode';
-
 function setupGhostApi({siteUrl = window.location.origin}) {
     const apiPath = 'members/api';
 
