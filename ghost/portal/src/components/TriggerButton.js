@@ -3,13 +3,27 @@ import Frame from './Frame';
 import MemberGravatar from './common/MemberGravatar';
 import AppContext from '../AppContext';
 import {ReactComponent as UserIcon} from '../images/icons/user.svg';
+import {ReactComponent as ButtonIcon1} from '../images/icons/button-icon-1.svg';
+import {ReactComponent as ButtonIcon2} from '../images/icons/button-icon-2.svg';
+import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
+import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
+import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import getContrastColor from '../utils/contrast-color';
 const React = require('react');
+
+const ICON_MAPPING = {
+    'icon-1': ButtonIcon1,
+    'icon-2': ButtonIcon2,
+    'icon-3': ButtonIcon3,
+    'icon-4': ButtonIcon4,
+    'icon-5': ButtonIcon5
+};
 
 const Styles = ({brandColor, hasText}) => {
     const frame = {
         ...(!hasText ? {width: '60px'} : {})
     };
+    const invertColor = getContrastColor(brandColor);
     return {
         frame: {
             zIndex: '2147483000',
@@ -58,7 +72,7 @@ const Styles = ({brandColor, hasText}) => {
         userIcon: {
             width: '20px',
             height: '20px',
-            color: '#fff'
+            color: invertColor
         },
         closeIcon: {
             width: '20px',
@@ -127,7 +141,12 @@ class TriggerButtonContent extends React.Component {
             );
         }
 
-        if (buttonIcon) {
+        if (Object.keys(ICON_MAPPING).includes(buttonIcon)) {
+            const ButtonIcon = ICON_MAPPING[buttonIcon];
+            return (
+                <ButtonIcon style={Style.userIcon} />
+            );
+        } else if (buttonIcon) {
             return (
                 <img style={{width: '26px', height: '26px'}} src={buttonIcon} alt="Icon" />
             );
@@ -170,7 +189,7 @@ class TriggerButtonContent extends React.Component {
         if (hasText) {
             return (
                 <div style={Style.button} onClick={e => this.onToggle(e)}>
-                    <div style={{padding: '0 24px', display: 'flex'}} ref={this.container}>
+                    <div style={{padding: '0 24px', display: 'flex', alignItems: 'center'}} ref={this.container}>
                         {this.renderTriggerIcon()}
                         {this.renderText()}
                     </div>
