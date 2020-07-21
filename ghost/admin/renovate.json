@@ -1,8 +1,7 @@
 {
   "extends": [
-    "@tryghost:base",
-    "@tryghost:automergeSilentTestLintNonMajor",
-    "@tryghost:automergePatchBranch"
+    "@tryghost:quietJS",
+    "@tryghost:groupCSS"
   ],
   "ignoreDeps": [
     "ember-drag-drop",
@@ -24,10 +23,6 @@
     {
       "groupName": "ember testing",
       "packageNames": ["ember-mocha", "ember-exam", "testem"]
-    },
-    {
-      "groupName": "css processors",
-      "packagePatterns": ["^postcss", "^css", "autoprefixer"]
     }
   ]
 }
