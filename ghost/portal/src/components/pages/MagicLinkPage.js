@@ -7,16 +7,18 @@ export default class MagicLinkPage extends React.Component {
 
     renderFormHeader() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>
-                <div style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '18px'}}> Check your inbox! </div>
-                <div> Check your inbox and click on the login link to complete the signin. </div>
+            <div className='flex flex-column items-center'>
+                <div className='gh-portal-account-header'>
+                    <h2 className='gh-portal-main-title'>Check your inbox!</h2>
+                </div>
+                <p className='gh-portal-section gh-portal-text-center'>Check your inbox and click on the login link to complete the signin.</p>
             </div>
         );
     }
 
     renderLoginMessage() {
         return (
-            <div style={{display: 'flex', justifyContent: 'center'}}>
+            <div className='flex justify-center'>
                 <div
                     style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}}
                     onClick={() => this.context.onAction('switchPage', {page: 'signin'})}
@@ -44,11 +46,9 @@ export default class MagicLinkPage extends React.Component {
 
     render() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131', padding: '0 24px'}}>
-                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px'}}>
-                    {this.renderFormHeader()}
-                    {this.renderCloseButton()}
-                </div>
+            <div>
+                {this.renderFormHeader()}
+                {this.renderCloseButton()}
             </div>
         );
     }
