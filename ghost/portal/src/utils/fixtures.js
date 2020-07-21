@@ -15,7 +15,7 @@ export const site = {
     portal_button: true,
     portal_name: true,
     portal_plans: ['free', 'monthly', 'yearly'],
-    portal_button_icon: 'https://raw.githubusercontent.com/TryGhost/members.js/master/src/images/icons/user.svg',
+    portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe Now for free access to everything',
     portal_button_style: 'icon-and-text'
 };
