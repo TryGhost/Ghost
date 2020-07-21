@@ -554,7 +554,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/team/ghost-owner/')
+                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/staff/ghost-owner/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
