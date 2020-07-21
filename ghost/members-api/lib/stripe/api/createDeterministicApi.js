@@ -43,7 +43,12 @@ function createCreator(resource, getAttrs) {
             stripe,
             resource,
             Object.assign(getAttrs(object, ...rest), {id})
-        );
+        ).catch((err) => {
+            if (err.code !== 'resource_already_exists') {
+                throw err;
+            }
+            return stripeRetrieve(stripe, resource, id);
+        });
     };
 }
 
