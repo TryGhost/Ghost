@@ -13,6 +13,7 @@ export const PlanSectionStyles = `
         border-right: 1px solid #ddd;
         font-size: 1.4rem;
         line-height: 1.35em;
+        cursor: pointer;
     }
 
     .gh-portal-plan-section.checked::before {
@@ -77,6 +78,7 @@ export const PlanSectionStyles = `
         height: 20px;
         margin: 0;
         padding: 0;
+        cursor: pointer;
     }
 `;
 
