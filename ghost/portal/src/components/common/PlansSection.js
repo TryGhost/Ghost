@@ -1,20 +1,94 @@
 import React from 'react';
 
-function Checkbox({name, onPlanSelect, isChecked}) {
-    const style = {
-        width: '20px',
-        height: '20px',
-        border: 'solid 1px #cccccc'
-    };
+export const PlanSectionStyles = `
+    .gh-portal-plans-container {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
 
+    .gh-portal-plan-section {
+        position: relative;
+        padding: 16px;
+        flex: 1;
+        border-right: 1px solid #ddd;
+        font-size: 1.4rem;
+        line-height: 1.35em;
+    }
+
+    .gh-portal-plan-section.checked::before {
+        position: absolute;
+        display: block;
+        pointer-events: none;
+        content: "";
+        top: -1px;
+        right: -1px;
+        bottom: -1px;
+        left: -1px;
+        border: 2px solid var(--brandcolor);
+        z-index: 999;
+    }
+
+    .gh-portal-plan-section:first-of-type.checked::before {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    .gh-portal-plan-section:last-of-type.checked::before {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    .gh-portal-plan-section:last-of-type {
+        border-right: none;
+    }
+
+    .gh-portal-plan-details {
+        margin-top: 12px;
+    }
+
+    .gh-portal-plan-name {
+        text-transform: uppercase;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        font-size: 1.35rem;
+        margin-top: 8px;
+    }
+
+    .gh-portal-plan-currency {
+        font-size: 2.2rem;
+    }
+
+    .gh-portal-plan-price {
+        font-size: 2.8rem;
+        font-weight: 500;
+    }
+
+    .gh-portal-plan-type {
+        color: #999;
+    }
+
+    .gh-portal-plan-note {
+        margin-top: 10px;
+        color: #999;
+    }
+
+    .gh-portal-plan-checkbox {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        padding: 0;
+    }
+`;
+
+function Checkbox({name, onPlanSelect, isChecked}) {
     return (
         <input
             name={name}
             key={name}
             type="checkbox"
             checked={isChecked}
+            className='gh-portal-plan-checkbox'
             aria-label={name}
-            style={style}
             onChange={e => onPlanSelect(e, name)}
         />
     );
@@ -23,69 +97,30 @@ function Checkbox({name, onPlanSelect, isChecked}) {
 function PriceLabel({name, currency, price}) {
     if (name === 'Free') {
         return (
-            <strong style={{
-                fontSize: '11px',
-                textAlign: 'center',
-                lineHeight: '18px',
-                color: '#929292',
-                fontWeight: 'normal'
-            }}> Access free members-only posts </strong>
+            <div className='gh-portal-plan-note'>Access free members-only posts</div>
         );
     }
     const type = name === 'Monthly' ? 'month' : 'year';
     return (
-        <div style={{
-            display: 'inline',
-            verticalAlign: 'baseline'
-        }}>
-            <span style={{fontSize: '14px', color: '#929292', fontWeight: 'normal'}}> {currency} </span>
-            <strong style={{fontSize: '21px'}}> {price} </strong>
-            <span style={{fontSize: '12px', color: '#929292', fontWeight: 'normal'}}> {` / ${type}`}</span>
+        <div className='gh-portal-plan-details'>
+            <span className='gh-portal-plan-currency'>{currency}</span>
+            <span className='gh-portal-plan-price'>{price}</span>
+            <span className='gh-portal-plan-type'>{` / ${type}`}</span>
         </div>
     );
 }
 
 function PlanOptions({plans, selectedPlan, onPlanSelect}) {
-    const nameStyle = {
-        fontSize: '13px',
-        fontWeight: '500',
-        display: 'flex',
-        color: '#343F44',
-        justifyContent: 'center'
-    };
-
-    const priceStyle = {
-        fontSize: '12px',
-        fontWeight: 'bold',
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: '9px'
-    };
-    const checkboxStyle = {
-        display: 'flex',
-        justifyContent: 'center'
-    };
-    const boxStyle = ({isLast = false}) => {
-        const style = {
-            padding: '12px 12px',
-            flexBasis: '100%'
-        };
-        if (!isLast) {
-            style.borderRight = '1px solid #c5d2d9';
-        }
-        return style;
-    };
-
     return plans.map(({name, currency, price}, i) => {
-        const isLast = i === plans.length - 1;
         const isChecked = selectedPlan === name;
+        const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         return (
-            <div style={boxStyle({isLast})} key={name} onClick={e => onPlanSelect(e, name)}>
-                <div style={checkboxStyle}>
+            <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
+                <div className='gh-portal-plan-checkbox'>
                     <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 </div>
-                <div style={nameStyle}> {name.toUpperCase()} </div>
-                <div style={priceStyle}>
+                <h4 className='gh-portal-plan-name'>{name}</h4>
+                <div>
                     <PriceLabel name={name} currency={currency} price={price} />
                 </div>
             </div>
@@ -98,25 +133,18 @@ function PlanLabel({showLabel}) {
         return null;
     }
     return (
-        <label style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}>  Plan </label>
+        <label className='gh-portal-setting-heading'>Plan</label>
     );
 }
 
 function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, style}) {
-    const containerStyle = {
-        display: 'flex',
-        border: '1px solid #c5d2d9',
-        borderRadius: '9px',
-        marginBottom: '12px'
-    };
-
     if (!plans || plans.length === 0) {
         return null;
     }
     return (
-        <div style={{width: '100%'}}>
+        <div>
             <PlanLabel showLabel={showLabel} />
-            <div style={containerStyle}>
+            <div className='flex items-stretch gh-portal-plans-container'>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
             </div>
         </div>

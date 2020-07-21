@@ -18,7 +18,7 @@ export const InputFieldStyles = `
 
     .gh-portal-input:focus {
         border: 1px solid transparent;
-        box-shadow: 0 0 0 2px var(--brandcolor);
+        box-shadow: 0 0 0 1px #AAA;
     }
 
     .gh-portal-input::placeholder {
