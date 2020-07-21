@@ -139,7 +139,7 @@ export const GlobalStyles = `
     }
 
     .gh-portal-main-title {
-        color: #333;
+        color: #212121;
     }
 
     .gh-portal-text-disabled {
