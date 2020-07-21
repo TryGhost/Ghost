@@ -161,7 +161,9 @@ export const GlobalStyles = `
     /* ----------------------------------------------------- */
     .gh-portal-btn {
         position: relative;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         padding: 0 1.8rem;
         height: 44px;
         border: none;
@@ -184,6 +186,17 @@ export const GlobalStyles = `
 
     .gh-portal-btn:hover {
         box-shadow: 0 0 0 1px rgba(0,0,0,0.18), 0 2px 6px -3px rgba(0,0,0,0.19);
+    }
+
+    .gh-portal-btn-icon svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+        stroke: currentColor;
+    }
+
+    .gh-portal-btn-icon svg path {
+        stroke: currentColor;
     }
 
     /* Global layout styles

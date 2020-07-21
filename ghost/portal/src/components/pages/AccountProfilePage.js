@@ -4,6 +4,7 @@ import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
 import Switch from '../common/Switch';
 import isPreviewMode from '../../utils/is-preview-mode';
+import {ReactComponent as ArrowLeftIcon} from '../../images/icons/arrow-left.svg';
 
 const React = require('react');
 
@@ -86,7 +87,7 @@ export default class AccountProfilePage extends React.Component {
     renderHeader() {
         return (
             <div className='gh-portal-detail-header'>
-                <button className='gh-portal-btn gh-portal-btn-back' style={{color: this.context.brandColor}} onClick={e => this.onBack(e)}>Back</button>
+                <button className='gh-portal-btn gh-portal-btn-icon gh-portal-btn-back' style={{color: this.context.brandColor}} onClick={e => this.onBack(e)}><ArrowLeftIcon /> Back</button>
                 <h3 className='gh-portal-maiin-title'>Account settings</h3>
             </div>
         );
