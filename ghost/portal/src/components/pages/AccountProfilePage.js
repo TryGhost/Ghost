@@ -129,14 +129,16 @@ export default class AccountProfilePage extends React.Component {
                 value: this.state.name,
                 placeholder: 'Name...',
                 label: 'Name',
-                name: 'name'
+                name: 'name',
+                brandColor: this.context.brandColor
             },
             email: {
                 type: 'email',
                 value: this.state.email,
                 placeholder: 'Email...',
                 label: 'Email',
-                name: 'email'
+                name: 'email',
+                brandColor: this.context.brandColor
             }
         };
         const field = fields[fieldName];

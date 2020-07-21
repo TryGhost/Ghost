@@ -211,8 +211,13 @@ export default class PopupModal extends React.Component {
     }
 
     renderFrameStyles() {
+        const styles = `
+            :root {
+                --brandcolor: ${this.context.brandColor}
+            }
+        ` + FrameStyle;
         return (
-            <style dangerouslySetInnerHTML={{__html: FrameStyle}} />
+            <style dangerouslySetInnerHTML={{__html: styles}} />
         );
     }
 
