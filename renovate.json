@@ -1,11 +1,9 @@
 {
   "extends": [
-    "@tryghost:base",
+    "@tryghost:quietJS",
     "@tryghost:groupTestLint",
     "@tryghost:groupCSS",
-    "@tryghost:groupBuildTools",
-    "@tryghost:automergeSilentTestLintNonMajor",
-    "@tryghost:automergePatchBranch"
+    "@tryghost:groupBuildTools"
   ],
   "ignoreDeps": [
       "got",
