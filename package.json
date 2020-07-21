@@ -146,7 +146,7 @@
     "grunt-contrib-compress": "1.6.0",
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-symlink": "1.0.0",
-    "grunt-contrib-uglify": "4.0.1",
+    "grunt-contrib-uglify": "5.0.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-express-server": "0.5.4",
     "grunt-mocha-cli": "6.0.0",
