@@ -2,9 +2,11 @@ import TriggerButton from './components/TriggerButton';
 import PopupModal from './components/PopupModal';
 import setupGhostApi from './utils/api';
 import AppContext from './AppContext';
+import {hasMode} from './utils/check-mode';
+import {getActivePage, isAccountPage} from './pages';
 import * as Fixtures from './utils/fixtures';
+import ActionHandler from './actions';
 import './App.css';
-
 const React = require('react');
 
 export default class App extends React.Component {
@@ -41,6 +43,27 @@ export default class App extends React.Component {
         });
     }
 
+    /** Setup custom trigger buttons handling on page */
+    setupCustomTriggerButton() {
+        // Handler for custom buttons
+        this.clickHandler = (event) => {
+            const target = event.currentTarget;
+            const pagePath = (target && target.dataset.portal);
+            const pageFromPath = this.getPageFromPath(pagePath);
+
+            event.preventDefault();
+            this.onAction('openPopup', {page: pageFromPath});
+        };
+        const customTriggerSelector = '[data-portal]';
+        const popupCloseClass = 'gh-members-popup-close';
+        this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
+        this.customTriggerButtons.forEach((customTriggerButton) => {
+            customTriggerButton.classList.add(popupCloseClass);
+            customTriggerButton.addEventListener('click', this.clickHandler);
+        });
+    }
+
+    /** Handle portal class set on custom trigger buttons */
     handleCustomTriggerClassUpdate() {
         const popupOpenClass = 'gh-members-popup-open';
         const popupCloseClass = 'gh-members-popup-close';
@@ -52,103 +75,202 @@ export default class App extends React.Component {
         });
     }
 
-    getStripeUrlParam() {
-        const url = new URL(window.location);
-        return url.searchParams.get('stripe');
+    /** Initialize portal setup on load, fetch data and setup state*/
+    async initSetup() {
+        try {
+            // Fetch data from API, links, preview, dev sources
+            const {site, member, page, showPopup} = await this.fetchData();
+            this.setState({
+                site,
+                member,
+                page,
+                showPopup,
+                action: 'init:success',
+                initStatus: 'success'
+            });
+
+            // Listen to preview mode changes
+            this.hashHandler = () => {
+                this.updateStateForPreview();
+            };
+            window.addEventListener('hashchange', this.hashHandler, false);
+        } catch (e) {
+            /* eslint-disable no-console */
+            console.error(`[Portal] Failed to initialize:`, e);
+            /* eslint-enable no-console */
+            this.setState({
+                action: 'init:failed',
+                initStatus: 'failed'
+            });
+        }
     }
 
-    getDefaultPage({member = this.state.member, stripeParam} = {}) {
-        // Loads default page and popup state for local UI testing
-        if (process.env.NODE_ENV === 'development') {
-            return {
-                page: 'accountHome',
-                showPopup: true
-            };
-        }
+    /** Fetch data from all available sources */
+    async fetchData() {
+        const {site: apiSiteData, member} = await this.fetchApiData();
+        const {site: devSiteData, ...restDevData} = this.fetchDevData();
+        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData();
+        const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
+
+        const stripeParam = this.getStripeUrlParam();
+        let page = '';
+
+        /** Set page for magic link popup on stripe success*/
         if (!member && stripeParam === 'success') {
-            return {page: 'magiclink', showPopup: true};
+            page = 'magiclink';
         }
-        if (member) {
+
+        return {
+            member,
+            page,
+            site: {
+                ...apiSiteData,
+                ...linkSiteData,
+                ...previewSiteData,
+                ...devSiteData
+            },
+            ...restDevData,
+            ...restLinkData,
+            ...restPreviewData
+        };
+    }
+
+    /** Fetch state for Dev mode */
+    fetchDevData() {
+        // Setup custom dev mode data from fixtures
+        if (hasMode(['dev'])) {
             return {
+                showPopup: true,
+                site: Fixtures.site,
+                member: Fixtures.member.free,
                 page: 'accountHome'
             };
         }
-        return {
-            page: 'signup'
-        };
+        return {};
     }
 
-    updateStateForPreview() {
-        const {site: previewSite, ...restPreview} = this.getPreviewState();
-        this.setState({
-            site: {
-                ...this.state.site,
-                ...(previewSite || {})
-            },
-            member: this.getPreviewMember(this.state.member),
-            ...restPreview
-        });
-    }
-
-    getStateFromQueryString(qs = '') {
-        const previewState = {
+    /** Fetch state from Query String */
+    fetchQueryStrData(qs = '') {
+        const qsParams = new URLSearchParams(qs);
+        const data = {
             site: {}
         };
         const allowedPlans = [];
-        const qsParams = new URLSearchParams(qs);
-        // Handle the key/value pairs
+
+        // Handle the query params key/value pairs
         for (let pair of qsParams.entries()) {
             const key = pair[0];
             const value = decodeURIComponent(pair[1]);
             if (key === 'button') {
-                previewState.site.portal_button = JSON.parse(value);
+                data.site.portal_button = JSON.parse(value);
             } else if (key === 'name') {
-                previewState.site.portal_name = JSON.parse(value);
+                data.site.portal_name = JSON.parse(value);
             } else if (key === 'isFree' && JSON.parse(value)) {
                 allowedPlans.push('free');
             } else if (key === 'isMonthly' && JSON.parse(value)) {
                 allowedPlans.push('monthly');
             } else if (key === 'isYearly' && JSON.parse(value)) {
                 allowedPlans.push('yearly');
-            } else if (key === 'page') {
-                previewState.page = value;
-            } else if (key === 'accentColor') {
-                previewState.site.accent_color = value;
-            } else if (key === 'buttonIcon') {
-                previewState.site.portal_button_icon = value;
+            } else if (key === 'plans') {
+                data.site.portal_plans = value ? value.split(',') : [];
+            } else if (key === 'page' && value) {
+                data.page = value;
+            } else if (key === 'accentColor' && value) {
+                data.site.accent_color = value;
+            } else if (key === 'buttonIcon' && value) {
+                data.site.portal_button_icon = value;
             } else if (key === 'signupButtonText') {
-                previewState.site.portal_button_signup_text = value;
-            } else if (key === 'buttonStyle') {
-                previewState.site.portal_button_style = value;
+                data.site.portal_button_signup_text = value || '';
+            } else if (key === 'buttonStyle' && value) {
+                data.site.portal_button_style = value;
             }
         }
-        previewState.site.portal_plans = allowedPlans;
-        previewState.showPopup = true;
-        return previewState;
+        data.site.portal_plans = allowedPlans;
+        return data;
     }
 
-    getPreviewState() {
-        const [path, qs] = window.location.hash.substr(1).split('?');
-        const previewState = {
-            site: {}
-        };
-        if (path.startsWith('/portal')) {
-            previewState.showPopup = true;
-            if (qs) {
-                return this.getStateFromQueryString(qs);
-            }
-
-            if (path.startsWith('/portal/')) {
-                const pagePath = path.replace('/portal/', '');
-                const pageFromPath = this.getPageFromPath(pagePath);
-                if (pageFromPath) {
-                    previewState.page = pageFromPath;
-                }
-            }
+    /** Fetch state from Portal Links */
+    fetchLinkData() {
+        const [path] = window.location.hash.substr(1).split('?');
+        const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
+        if (path && linkRegex.test(path)) {
+            const [,pagePath] = path.match(linkRegex);
+            const page = this.getPageFromPath(pagePath);
+            return {
+                showPopup: true,
+                ...(page ? {page} : {})
+            };
         }
-        return previewState;
+        return {};
     }
 
+    /** Fetch state from Preview mode */
+    fetchPreviewData() {
+        const [, qs] = window.location.hash.substr(1).split('?');
+        if (hasMode(['preview'])) {
+            const data = this.fetchQueryStrData(qs);
+            data.showPopup = true;
+            return data;
+        }
+        return {};
+    }
+
+    /** Fetch site and member session data with Ghost Apis  */
+    async fetchApiData() {
+        try {
+            const {siteUrl} = this.props;
+            this.GhostApi = setupGhostApi({siteUrl});
+            const {site, member} = await this.GhostApi.init();
+            return {site, member};
+        } catch (e) {
+            if (hasMode(['dev', 'test'])) {
+                return {};
+            }
+            throw e;
+        }
+    }
+
+    /** Handle actions from across App and update state */
+    async onAction(action, data) {
+        this.setState({
+            action: `${action}:running`
+        });
+        try {
+            const updatedState = await ActionHandler({action, data, state: this.state, api: this.GhostApi});
+            this.setState(updatedState);
+
+            /** Reset action state after short timeout */
+            setTimeout(() => {
+                this.setState({
+                    action: ''
+                });
+            }, 5000);
+        } catch (e) {
+            this.setState({
+                action: `${action}:failed`
+            });
+        }
+    }
+
+    /**Handle state update for preview url changes */
+    updateStateForPreview() {
+        const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
+        this.setState({
+            site: {
+                ...this.state.site,
+                ...(previewSite || {})
+            },
+            ...restPreviewData
+        });
+    }
+
+    /**Fetch Stripe param from site url after redirect from Stripe page*/
+    getStripeUrlParam() {
+        const url = new URL(window.location);
+        return url.searchParams.get('stripe');
+    }
+
+    /**Get Portal page from Link/Data-attribute path*/
     getPageFromPath(path) {
         if (path === 'signup') {
             return 'signup';
@@ -163,236 +285,59 @@ export default class App extends React.Component {
         }
     }
 
-    getPreviewMember(member) {
-        const [path, qs] = window.location.hash.substr(1).split('?');
-
-        if (path === '/portal' && qs) {
-            const {site: previewSite, ...restPreview} = this.getPreviewState();
-            if (restPreview.page.includes('account')) {
-                return member || Fixtures.member.free;
-            }
-            return null;
-        } else if (process.env.NODE_ENV === 'development') {
-            return member || Fixtures.member.paid;
-        }
-        return member;
-    }
-
-    async initSetup() {
-        const {site, member} = await this.fetchData() || {};
-        if (!site) {
-            this.setState({
-                action: 'init:failed',
-                initStatus: 'failed'
-            });
-        } else {
-            const stripeParam = this.getStripeUrlParam();
-            const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
-            const {site: previewSite, ...restPreview} = this.getPreviewState();
-            const initState = {
-                site: {
-                    ...site,
-                    ...(previewSite || {})
-                },
-                member: this.getPreviewMember(member),
-                page,
-                showPopup,
-                action: 'init:success',
-                initStatus: 'success',
-                ...restPreview
-            };
-            this.setState(initState);
-            this.hashHandler = () => {
-                this.updateStateForPreview();
-            };
-            window.addEventListener('hashchange', this.hashHandler, false);
-        }
-    }
-
-    // Fetch site and member session data with Ghost Apis
-    async fetchData() {
-        const {siteUrl} = this.props;
-        try {
-            this.GhostApi = setupGhostApi({siteUrl});
-            const {site, member} = await this.GhostApi.init();
-            return {site, member};
-        } catch (e) {
-            /* eslint-disable no-console */
-            console.error(`[Members.js] Failed to initialize`);
-            /* eslint-enable no-console */
-            return null;
-        }
-    }
-
-    setupCustomTriggerButton() {
-        // Handler for custom buttons
-        this.clickHandler = (event) => {
-            const target = event.currentTarget;
-            const {page: defaultPage} = this.getDefaultPage();
-            const pagePath = (target && target.dataset.portal);
-            const pageFromPath = this.getPageFromPath(pagePath) || defaultPage;
-
-            event.preventDefault();
-            this.onAction('openPopup', {page: pageFromPath});
-        };
-        const customTriggerSelector = '[data-portal]';
-        const popupCloseClass = 'gh-members-popup-close';
-        this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
-        this.customTriggerButtons.forEach((customTriggerButton) => {
-            customTriggerButton.classList.add(popupCloseClass);
-            customTriggerButton.addEventListener('click', this.clickHandler);
-        });
-    }
-
-    getActionData(action) {
-        const [type, status, reason] = action.split(':');
-        return {type, status, reason};
-    }
-
+    /**Get Accent color from site data, fallback to default*/
     getAccentColor() {
         const {accent_color: accentColor = '#3db0ef'} = this.state.site || {};
         return accentColor || '#3db0ef';
     }
 
-    async onAction(action, data) {
-        this.setState({
-            action: `${action}:running`
-        });
-        try {
-            if (action === 'switchPage') {
-                this.setState({
-                    page: data.page,
-                    lastPage: data.lastPage || null
-                });
-            } else if (action === 'togglePopup') {
-                this.setState({
-                    showPopup: !this.state.showPopup
-                });
-            } else if (action === 'openPopup') {
-                this.setState({
-                    showPopup: true,
-                    page: data.page
-                });
-            } else if (action === 'back') {
-                if (this.state.lastPage) {
-                    this.setState({
-                        page: this.state.lastPage
-                    });
-                }
-            } else if (action === 'closePopup') {
-                const {page: defaultPage} = this.getDefaultPage();
-                this.setState({
-                    showPopup: false,
-                    page: this.state.page === 'magiclink' ? defaultPage : this.state.page
-                });
-            } else if (action === 'signout') {
-                await this.GhostApi.member.signout();
-                this.setState({
-                    action: 'signout:success'
-                });
-            } else if (action === 'signin') {
-                await this.GhostApi.member.sendMagicLink(data);
-                this.setState({
-                    action: 'signin:success',
-                    page: 'magiclink'
-                });
-            } else if (action === 'signup') {
-                const {plan, email, name} = data;
-                if (plan.toLowerCase() === 'free') {
-                    await this.GhostApi.member.sendMagicLink(data);
-                } else {
-                    await this.GhostApi.member.checkoutPlan({plan, email, name});
-                }
-                this.setState({
-                    action: 'signup:success',
-                    page: 'magiclink'
-                });
-            } else if (action === 'updateEmail') {
-                await this.GhostApi.member.sendMagicLink(data);
-                this.setState({
-                    action: 'updateEmail:success'
-                });
-            } else if (action === 'checkoutPlan') {
-                const {plan} = data;
-                await this.GhostApi.member.checkoutPlan({
-                    plan
-                });
-            } else if (action === 'updateSubscription') {
-                const {plan, subscriptionId, cancelAtPeriodEnd} = data;
-                await this.GhostApi.member.updateSubscription({
-                    planName: plan, subscriptionId, cancelAtPeriodEnd
-                });
-                const member = await this.GhostApi.member.sessionData();
-                this.setState({
-                    action: 'updateSubscription:success',
-                    page: 'accountHome',
-                    member: member
-                });
-            } else if (action === 'editBilling') {
-                await this.GhostApi.member.editBilling();
-            } else if (action === 'updateMember') {
-                const {name, subscribed} = data;
-                const member = await this.GhostApi.member.update({name, subscribed});
-                if (!member) {
-                    this.setState({
-                        action: 'updateMember:failed'
-                    });
-                } else {
-                    this.setState({
-                        action: 'updateMember:success',
-                        member: member
-                    });
-                }
+    /**Get final page set in App context from state data*/
+    getContextPage({page, member}) {
+        /**Set default page based on logged-in status */
+        if (!page) {
+            page = member ? 'accountHome' : 'signup';
+        }
+
+        return getActivePage({page});
+    }
+
+    /**Get final member set in App context from state data*/
+    getContextMember({page, member}) {
+        if (hasMode(['dev', 'preview'])) {
+            /** Use dummy member(free or paid) for account pages in dev/preview mode*/
+            if (isAccountPage({page})) {
+                return member || Fixtures.member.free;
             }
-            setTimeout(() => {
-                this.setState({
-                    action: ''
-                });
-            }, 5000);
-        } catch (e) {
-            this.setState({
-                action: `${action}:failed`
-            });
+
+            /** Ignore member for non-account pages in dev/preview mode*/
+            return null;
         }
+        return member;
     }
 
-    renderPopup() {
-        if (this.state.showPopup) {
-            return (
-                <PopupModal />
-            );
-        }
-        return null;
-    }
-
-    renderTriggerButton() {
-        const {portal_button: portalButton} = this.state.site;
-        if (portalButton === undefined || portalButton) {
-            return (
-                <TriggerButton
-                    isPopupOpen={this.state.showPopup}
-                />
-            );
-        }
-
-        return null;
+    /**Get final App level context from data/state*/
+    getContextFromState() {
+        const {site, member, action, page, lastPage, showPopup} = this.state;
+        const contextPage = this.getContextPage({page, member});
+        const contextMember = this.getContextMember({page: contextPage, member});
+        return {
+            site,
+            action,
+            brandColor: this.getAccentColor(),
+            page: contextPage,
+            member: contextMember,
+            lastPage,
+            showPopup,
+            onAction: (_action, data) => this.onAction(_action, data)
+        };
     }
 
     render() {
         if (this.state.initStatus === 'success') {
-            const {site, member, action, page, lastPage} = this.state;
             return (
-                <AppContext.Provider value={{
-                    site,
-                    member,
-                    action,
-                    brandColor: this.getAccentColor(),
-                    page,
-                    lastPage,
-                    onAction: (_action, data) => this.onAction(_action, data)
-                }}>
-                    {this.renderPopup()}
-                    {this.renderTriggerButton()}
+                <AppContext.Provider value={this.getContextFromState()}>
+                    <PopupModal />
+                    <TriggerButton />
                 </AppContext.Provider>
             );
         }

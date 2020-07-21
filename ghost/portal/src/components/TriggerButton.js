@@ -210,6 +210,13 @@ export default class TriggerButton extends React.Component {
     }
 
     render() {
+        const {portal_button: portalButton} = this.context.site;
+        const {showPopup} = this.context;
+
+        if (!portalButton) {
+            return null;
+        }
+
         const hasText = this.hasText();
         const Style = Styles({brandColor: this.context.brandColor, hasText});
 
@@ -223,7 +230,7 @@ export default class TriggerButton extends React.Component {
 
         return (
             <Frame style={frameStyle} title="membersjs-trigger">
-                <TriggerButtonContent isPopupOpen={this.props.isPopupOpen} updateWidth={width => this.onWidthChange(width)} />
+                <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );
     }

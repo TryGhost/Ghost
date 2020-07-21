@@ -1,4 +1,5 @@
 import * as Fixtures from './fixtures';
+import {hasMode} from './check-mode';
 
 function setupGhostApi({siteUrl = window.location.origin}) {
     const apiPath = 'members/api';
@@ -215,11 +216,10 @@ function setupGhostApi({siteUrl = window.location.origin}) {
     };
 
     api.init = async () => {
-        // Load member from fixtures for local development
-        if (process.env.NODE_ENV === 'development') {
-            return {site: Fixtures.site, member: null};
-        }
-
+        // // Load site data from fixtures for dev/test modes
+        // if (hasMode(['dev', 'test'])) {
+        //     return {site: Fixtures.site, member: null};
+        // }
         const {site} = await api.site.read();
         const member = await api.member.sessionData();
         return {site, member};
