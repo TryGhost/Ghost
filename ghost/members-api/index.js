@@ -331,7 +331,6 @@ module.exports = function MembersApi({
             res.writeHead(401);
             return res.end();
         }
-        common.logging.info(`Handling webhook ${event.type}`);
         try {
             if (event.type === 'customer.subscription.deleted') {
                 await stripe.handleCustomerSubscriptionDeletedWebhook(event.data.object);
@@ -350,15 +349,13 @@ module.exports = function MembersApi({
             }
 
             if (event.type === 'checkout.session.completed') {
-                if (event.data.object.mode === 'setup') {
-                    common.logging.info('Handling "setup" mode Checkout Session');
+                if (event.data.object.setup_intent) {
                     const setupIntent = await stripe.getSetupIntent(event.data.object.setup_intent);
                     const customer = await stripe.getCustomer(setupIntent.metadata.customer_id);
                     const member = await users.get({email: customer.email});
 
                     await stripe.handleCheckoutSetupSessionCompletedWebhook(setupIntent, member);
-                } else if (event.data.object.mode === 'subscription') {
-                    common.logging.info('Handling "subscription" mode Checkout Session');
+                } else {
                     const customer = await stripe.getCustomer(event.data.object.customer, {
                         expand: ['subscriptions.data.default_payment_method']
                     });
@@ -378,8 +375,6 @@ module.exports = function MembersApi({
 
                     const emailType = 'signup';
                     await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, options: {forceEmailType: true}});
-                } else if (event.data.object.mode === 'payment') {
-                    common.logging.info('Ignoring "payment" mode Checkout Session');
                 }
             }
 
