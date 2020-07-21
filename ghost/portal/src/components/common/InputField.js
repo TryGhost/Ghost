@@ -15,9 +15,14 @@ export const InputFieldStyles = `
         margin-bottom: 12px;
         box-sizing: border-box;
     }
+
+    .gh-portal-input:focus {
+        border: 1px solid transparent;
+        box-shadow: 0 0 0 2px var(--brandcolor);
+    }
 `;
 
-function InputField({name, id, label, type, value, placeholder, disabled, onChange, style}) {
+function InputField({name, id, label, type, value, placeholder, disabled, onChange, brandColor}) {
     id = id || `input-${name}`;
     return (
         <>
