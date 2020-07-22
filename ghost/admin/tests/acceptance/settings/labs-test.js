@@ -313,7 +313,7 @@ describe('Acceptance: Settings - Labs', function () {
             return await authenticateSession();
         });
 
-        it.only('sets the mailgunBaseUrl to the default', async function () {
+        it('sets the mailgunBaseUrl to the default', async function () {
             await visit('/settings/labs');
 
             await click('[data-test-toggle="enable-members"]');
