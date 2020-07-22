@@ -3,7 +3,6 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
 import Switch from '../common/Switch';
-import {ReactComponent as ArrowLeftIcon} from '../../images/icons/arrow-left.svg';
 
 const React = require('react');
 
@@ -58,7 +57,7 @@ export default class AccountProfilePage extends React.Component {
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
-                style={{button: {width: '120px'}}}
+                style={{button: {width: 'unset'}}}
                 onClick={e => this.onProfileSave(e)}
                 disabled={disabled}
                 brandColor={this.context.brandColor}
@@ -75,10 +74,9 @@ export default class AccountProfilePage extends React.Component {
 
     renderAccountFooter() {
         return (
-            <div>
-                <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
-                    {this.renderSaveButton()}
-                </div>
+            <div className='flex flex-grow-1 justify-between gh-portal-detail-footer'>
+                <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
+                {this.renderSaveButton()}
             </div>
         );
     }
@@ -86,8 +84,7 @@ export default class AccountProfilePage extends React.Component {
     renderHeader() {
         return (
             <div className='gh-portal-detail-header'>
-                <button className='gh-portal-btn gh-portal-btn-icon gh-portal-btn-back' style={{color: this.context.brandColor}} onClick={e => this.onBack(e)}><ArrowLeftIcon /> Back</button>
-                <h3 className='gh-portal-maiin-title'>Account settings</h3>
+                <h3 className='gh-portal-main-title'>Account settings</h3>
             </div>
         );
     }
@@ -152,7 +149,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderProfileData() {
         return (
-            <div>
+            <div className='gh-portal-section'>
                 {this.renderInputField('name')}
                 {this.renderInputField('email')}
             </div>

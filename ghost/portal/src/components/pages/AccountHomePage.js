@@ -59,9 +59,9 @@ export const AccountHomePageStyles = `
     }
 
     .gh-portal-btn-accountdetail {
-        height: 36px;
+        height: 38px;
         font-size: 1.3rem;
-        width: 88px;
+        width: 78px;
         padding: 0 12px;
     }
 
@@ -314,7 +314,7 @@ class PaidAccountHomePage extends React.Component {
         return (
             <div>
                 <UserHeader member={member} brandColor={brandColor} />
-                {this.renderAccountWelcome()}
+                {/* {this.renderAccountWelcome()} */}
                 <Divider />
                 {this.renderAccountDetails()}
                 <Divider />
