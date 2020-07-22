@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/stripe": "7.13.24",
     "jsdom": "15.2.1",
-    "mocha": "6.2.2",
+    "mocha": "6.2.3",
     "nock": "12.0.3",
     "should": "13.2.3",
     "sinon": "7.5.0"
