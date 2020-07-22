@@ -47,7 +47,7 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-details {
-        margin-top: 12px;
+        margin-top: 15px;
     }
 
     .gh-portal-plan-name {
@@ -72,9 +72,11 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-note {
-        margin-top: 8px;
+        margin-top: 6px;
         color: #999;
         text-align: center;
+        font-size: 1.25rem;
+        line-height: 1.25em;
     }
 
     .gh-portal-plan-checkbox {
