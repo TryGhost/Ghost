@@ -127,7 +127,6 @@ const configureGrunt = function (grunt) {
                 reporter: grunt.option('reporter') || 'spec',
                 timeout: '60000',
                 require: ['core/server/overrides'],
-                retries: '3',
                 exit: true
             },
 
