@@ -225,8 +225,9 @@ module.exports = function MembersApi({
             res.writeHead(201);
             return res.end('Created.');
         } catch (err) {
+            const statusCode = (err && err.statusCode) || 500;
             common.logging.error(err);
-            res.writeHead(500);
+            res.writeHead(statusCode);
             return res.end('Internal Server Error.');
         }
     });
