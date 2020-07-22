@@ -28,6 +28,7 @@ describe('Oembed API', function () {
 
     afterEach(function () {
         sinon.restore();
+        nock.cleanAll();
     });
 
     it('can fetch an embed', function (done) {
