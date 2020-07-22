@@ -7,6 +7,9 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         position: relative;
         padding: 16px;
         flex: 1;
@@ -69,8 +72,9 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-note {
-        margin-top: 10px;
+        margin-top: 8px;
         color: #999;
+        text-align: center;
     }
 
     .gh-portal-plan-checkbox {
