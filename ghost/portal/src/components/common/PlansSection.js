@@ -80,7 +80,7 @@ export const PlanSectionStyles = `
     .gh-portal-plan-checkbox {
         display: block;
         position: relative;
-        height: 24px;
+        height: 22px;
         cursor: pointer;
         font-size: 22px;
         -webkit-user-select: none;
@@ -100,9 +100,9 @@ export const PlanSectionStyles = `
     .gh-portal-plan-checkbox .checkmark {
         position: absolute;
         top: 0;
-        left: -12px;
-        height: 24px;
-        width: 24px;
+        left: -11px;
+        height: 22px;
+        width: 22px;
         background-color: #eee;
         border-radius: 999px;
     }
@@ -122,8 +122,8 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-checkbox .checkmark:after {
-        left: 9px;
-        top: 5px;
+        left: 8px;
+        top: 4px;
         width: 4px;
         height: 10px;
         border: solid white;
