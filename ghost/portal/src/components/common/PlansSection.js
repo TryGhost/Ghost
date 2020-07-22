@@ -155,7 +155,7 @@ function Checkbox({name, onPlanSelect, isChecked}) {
 function PriceLabel({name, currency, price}) {
     if (name === 'Free') {
         return (
-            <div className='gh-portal-plan-note'>Access free members-only posts</div>
+            <div className='gh-portal-plan-note'>Access free<br/>members-only posts</div>
         );
     }
     const type = name === 'Monthly' ? 'month' : 'year';
