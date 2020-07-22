@@ -47,42 +47,51 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-details {
-        margin-top: 15px;
+        margin-top: 8px;
     }
 
     .gh-portal-plan-name {
         text-transform: uppercase;
         font-weight: 500;
-        letter-spacing: 0.3px;
-        font-size: 1.35rem;
+        letter-spacing: 0.5px;
+        font-size: 1.2rem;
         margin-top: 8px;
     }
 
     .gh-portal-plan-currency {
-        font-size: 2.2rem;
+        position: relative;
+        bottom: 5px;
+        font-size: 1.4rem;
+        letter-spacing: 0.4px;
+        font-weight: 500;
     }
 
     .gh-portal-plan-price {
-        font-size: 2.8rem;
+        font-size: 2.2rem;
         font-weight: 500;
+        letter-spacing: 0.1px;
     }
 
     .gh-portal-plan-type {
         color: #999;
     }
 
-    .gh-portal-plan-note {
-        margin-top: 6px;
-        color: #999;
+    .gh-portal-plan-feature {
+        margin-top: 12px;
+        padding-top: 12px;
         text-align: center;
         font-size: 1.25rem;
         line-height: 1.25em;
+        border-top: 1px solid #eaeaea;
+        width: 100%;
+        letter-spacing: 0.2px;
+        font-weight: 500;
     }
 
     .gh-portal-plan-checkbox {
         display: block;
         position: relative;
-        height: 22px;
+        height: 18px;
         cursor: pointer;
         font-size: 22px;
         -webkit-user-select: none;
@@ -102,9 +111,9 @@ export const PlanSectionStyles = `
     .gh-portal-plan-checkbox .checkmark {
         position: absolute;
         top: 0;
-        left: -11px;
-        height: 22px;
-        width: 22px;
+        left: -9px;
+        height: 18px;
+        width: 18px;
         background-color: #eee;
         border-radius: 999px;
     }
@@ -124,10 +133,10 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-checkbox .checkmark:after {
-        left: 8px;
-        top: 4px;
-        width: 4px;
-        height: 10px;
+        left: 6.5px;
+        top: 3px;
+        width: 3px;
+        height: 9px;
         border: solid white;
         border-width: 0 2px 2px 0;
         -webkit-transform: rotate(45deg);
@@ -152,32 +161,43 @@ function Checkbox({name, onPlanSelect, isChecked}) {
     );
 }
 
-function PriceLabel({name, currency, price}) {
-    if (name === 'Free') {
-        return (
-            <div className='gh-portal-plan-note'>Access free<br/>members-only posts</div>
-        );
-    }
-    const type = name === 'Monthly' ? 'month' : 'year';
+function PriceLabel({currency, price}) {
     return (
         <div className='gh-portal-plan-details'>
             <span className='gh-portal-plan-currency'>{currency}</span>
             <span className='gh-portal-plan-price'>{price}</span>
-            <span className='gh-portal-plan-type'>{` / ${type}`}</span>
         </div>
     );
 }
 
 function PlanOptions({plans, selectedPlan, onPlanSelect}) {
-    return plans.map(({name, currency, price}, i) => {
+    return plans.map(({name, currency, price, discount}, i) => {
         const isChecked = selectedPlan === name;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
+        const planDetails = {};
+        switch (name) {
+        case 'Free':
+            planDetails.feature = 'Free preview';
+            break;
+        case 'Monthly':
+            planDetails.feature = 'Full access';
+            break;
+        case 'Yearly':
+            planDetails.feature = (discount ? discount + '% discount' : 'Full access');
+            break;
+    
+        default:
+            break;
+        }
         return (
             <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
                 <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className='gh-portal-plan-name'>{name}</h4>
                 <div>
                     <PriceLabel name={name} currency={currency} price={price} />
+                </div>
+                <div className='gh-portal-plan-feature'>
+                    {planDetails.feature}
                 </div>
             </div>
         );

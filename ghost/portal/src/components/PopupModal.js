@@ -9,20 +9,20 @@ const React = require('react');
 const StylesWrapper = ({member}) => {
     const isPaidMember = (member && member.paid);
     const accountHome = isPaidMember ? {
-        width: '532px',
+        width: '418px',
         minHeight: '650px',
         maxHeight: '700px'
     } : {
-        width: '532px',
+        width: '418px',
         minHeight: '330px',
         maxHeight: '330px'
     };
     const accountProfile = isPaidMember ? {
-        width: '532px',
+        width: '418px',
         minHeight: '320px',
         maxHeight: '320px'
     } : {
-        width: '532px',
+        width: '418px',
         minHeight: '380px',
         maxHeight: '380px'
     };
@@ -45,8 +45,8 @@ const StylesWrapper = ({member}) => {
                 position: 'relative',
                 padding: '0',
                 outline: '0',
-                width: '532px',
-                borderRadius: '8px',
+                width: '418px',
+                borderRadius: '5px',
                 boxShadow: '0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.12)',
                 opacity: '1',
                 overflow: 'hidden',
@@ -70,7 +70,7 @@ const StylesWrapper = ({member}) => {
                 minHeight: '130px'
             },
             accountPlan: {
-                width: '532px',
+                width: '418px',
                 minHeight: '290px',
                 maxHeight: '290px'
             },
