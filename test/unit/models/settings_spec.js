@@ -20,17 +20,12 @@ describe('Unit: models/settings', function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
             tracker.install();
-        });
-
-        afterEach(function () {
-            mockDb.unmock(knex);
-        });
-
-        beforeEach(function () {
             eventSpy = sinon.spy(events, 'emit');
         });
 
         afterEach(function () {
+            tracker.uninstall();
+            mockDb.unmock(knex);
             sinon.restore();
         });
 
@@ -63,15 +58,15 @@ describe('Unit: models/settings', function () {
 
         it('emits edit events', function () {
             tracker.on('query', (query, step) => {
-                return [
-                    function fetchEditQuery() {
-                        query.response([{
-                            id: 1, // NOTE: `id` imitates existing value for 'edit' event
-                            key: 'description',
-                            value: 'db value'
-                        }]);
-                    }
-                ][step - 1]();
+                if (query.method === 'select') {
+                    return query.response([{
+                        id: 1, // NOTE: `id` imitates existing value for 'edit' event
+                        key: 'description',
+                        value: 'db value'
+                    }]);
+                }
+
+                return query.response([{}]);
             });
 
             return models.Settings.edit({
