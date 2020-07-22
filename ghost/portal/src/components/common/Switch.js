@@ -41,7 +41,7 @@ export const SwitchStyles = `
 
     .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component,
     .gh-portal-for-switch .container:hover input:not(:checked) + .input-toggle-component {
-        border-color: #c5d7e2;
+        border-color: #ccc;
     }
 
     .gh-portal-for-switch .input-toggle-component:before {
