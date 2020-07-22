@@ -67,7 +67,7 @@ export const AccountHomePageStyles = `
 
     .gh-portal-accountdetail-data {
         line-height: 1em;
-        margin-top: 4px;
+        margin-top: 2px;
         color: #777;
     }
 
@@ -281,9 +281,7 @@ class PaidAccountHomePage extends React.Component {
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
                         <h3 className='gh-portal-setting-heading paid-home'>Plan</h3>
-                        <div>
-                            <div className='gh-portal-accountdetail-data'>{this.getPlanLabel(plan)}</div>
-                        </div>
+                        <div className='gh-portal-accountdetail-data'>{this.getPlanLabel(plan)}</div>
                     </div>
                     <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.openUpdatePlan(e)}>Change</button>
                 </section>
@@ -291,9 +289,7 @@ class PaidAccountHomePage extends React.Component {
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
                         <h3 className='gh-portal-setting-heading paid-home'>Billing Info</h3>
-                        <div>
-                            <div className='gh-portal-accountdetail-data'>{this.getCardLabel({defaultCardLast4})}</div>
-                        </div>
+                        <div className='gh-portal-accountdetail-data'>{this.getCardLabel({defaultCardLast4})}</div>
                     </div>
                     <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.onEditBilling(e)}>Update</button>
                 </section>
@@ -301,9 +297,7 @@ class PaidAccountHomePage extends React.Component {
                 <section className='gh-portal-accountdetail-section'>
                     <div className='flex flex-column flex-grow-1'>
                         <h3 className='gh-portal-setting-heading paid-home'>Newsletter</h3>
-                        <div>
-                            <div className='gh-portal-accountdetail-data'>You are subscribed to email newsletters</div>
-                        </div>
+                        <div className='gh-portal-accountdetail-data'>You are subscribed to email newsletters</div>
                     </div>
                     <div>
                         <Switch onToggle={(e) => {

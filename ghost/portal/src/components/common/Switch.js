@@ -30,8 +30,8 @@ export const SwitchStyles = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: #e5eff5;
-        border: 1px solid #dae8f1;
+        background: #f4f4f4;
+        border: 1px solid #e4e4e4;
         transition: .3s;
         width: 50px !important;
         height: 28px !important;
@@ -47,23 +47,24 @@ export const SwitchStyles = `
     .gh-portal-for-switch .input-toggle-component:before {
         position: absolute;
         content: "";
-        height: 22px !important;
-        width: 22px !important;
+        height: 24px !important;
+        width: 24px !important;
         left: 2px !important;
         top: 2px !important;
         background-color: white;
         transition: .3s;
-        box-shadow: 0 0 1px rgba(0,0,0,.6), 0 2px 3px rgba(0,0,0,.2);
+        box-shadow: 0 0 1px rgba(0,0,0,.3), 0 4px 6px rgba(0,0,0,.1);
         border-radius: 999px;
     }
 
     .gh-portal-for-switch input:checked + .input-toggle-component {
-        background: #a4d037;
+        background: var(--brandcolor);
         border-color: transparent;
     }
 
     .gh-portal-for-switch input:checked + .input-toggle-component:before {
         transform: translateX(22px);
+        box-shadow: none;
     }
 
     .gh-portal-for-switch .container {

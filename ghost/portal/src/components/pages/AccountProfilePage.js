@@ -152,7 +152,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderProfileData() {
         return (
-            <div className='gh-portal-section form'>
+            <div>
                 {this.renderInputField('name')}
                 {this.renderInputField('email')}
             </div>
@@ -170,18 +170,10 @@ export default class AccountProfilePage extends React.Component {
         }
         const label = subscribed ? 'You are subscribed to email newsletters' : 'You are not subscribed to email newsletters';
         return (
-            <div>
-                <div style={{flexGrow: 1}}>
-                    <div style={{
-                        marginBottom: '3px',
-                        fontSize: '12px',
-                        fontWeight: '700'
-                    }}> Newsletter </div>
-                    <div style={{
-                        color: '#666666',
-                        fontSize: '13px',
-                        lineHeight: '6px'
-                    }}> {label} </div>
+            <div className='flex items-center justify-between' style={{marginTop: '24px'}}>
+                <div className='flex flex-column flex-grow-1'>
+                    <h3 className='gh-portal-setting-heading paid-home'>Newsletter</h3>
+                    <div className='gh-portal-accountdetail-data'>{label}</div>
                 </div>
                 <div>
                     <Switch onToggle={(e) => {
@@ -198,10 +190,12 @@ export default class AccountProfilePage extends React.Component {
             return null;
         }
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
+            <div>
                 {this.renderHeader()}
-                {this.renderProfileData()}
-                {this.renderNewsletterOption()}
+                <div className='gh-portal-section form'>
+                    {this.renderProfileData()}
+                    {this.renderNewsletterOption()}
+                </div>
                 {this.renderAccountFooter()}
             </div>
         );
