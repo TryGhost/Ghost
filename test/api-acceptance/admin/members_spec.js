@@ -338,6 +338,7 @@ describe('Members API', function () {
 
                 jsonResponse.meta.stats.imported.count.should.equal(2);
                 jsonResponse.meta.stats.invalid.count.should.equal(0);
+                jsonResponse.meta.import_label.name.should.match(/^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
             });
     });
 
