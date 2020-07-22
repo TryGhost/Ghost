@@ -9,9 +9,9 @@ export const SignupPageStyles = `
     .gh-portal-signup-logo {
         position: relative;
         display: block;
-        width: 68px;
-        height: 68px;
-        margin-bottom: 16px;
+        width: 56px;
+        height: 56px;
+        margin-bottom: 12px;
         background-position: 50%;
         background-size: cover;
         border-radius: 999px;
@@ -19,13 +19,16 @@ export const SignupPageStyles = `
     }
 
     .gh-portal-signup-header {
-        margin-top: 24px;
+        margin: 18px -32px 18px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #eaeaea;
     }
 
     .gh-portal-signup-footer {
         font-size: 1.3rem;
         margin-top: 8px;
-        color: #929292;
+        color: #515151;
+        letter-spacing: 0.2px;
     }
 
     .gh-portal-signup-footer button {
@@ -152,12 +155,19 @@ class SignupPage extends React.Component {
 
         const plansData = [];
         const stripePlans = [
-            {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
-            {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
+            {type: 'month', 
+                price: plans.monthly, 
+                currency: plans.currency_symbol, 
+                name: 'Monthly'},
+            {type: 'year', 
+                price: plans.yearly, 
+                currency: plans.currency_symbol, 
+                name: 'Yearly', 
+                discount: 100 - Math.round((plans.yearly / 12 * 100) / plans.monthly)}
         ];
 
         if (allowSelfSignup && (portalPlans === undefined || portalPlans.includes('free'))) {
-            plansData.push({type: 'free', price: 'Decide later', name: 'Free'});
+            plansData.push({type: 'free', price: 0, currency: plans.currency_symbol, name: 'Free'});
         }
 
         if (isStripeConfigured) {
@@ -265,7 +275,7 @@ class SignupPage extends React.Component {
         return (
             <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <h2 className="gh-portal-main-title">Subscribe to {siteTitle}</h2>
+                <h2 className="gh-portal-main-title">{siteTitle}</h2>
             </div>
         );
     }

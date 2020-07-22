@@ -28,6 +28,7 @@ export default class Frame extends Component {
         this.iframeRoot.style.lineHeight = '1.6em';
         this.iframeRoot.style.fontWeight = '400';
         this.iframeRoot.style.fontStyle = 'normal';
+        this.iframeRoot.style.color = '#333';
         this.forceUpdate();
     }
 
