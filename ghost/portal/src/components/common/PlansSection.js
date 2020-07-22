@@ -78,25 +78,75 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-checkbox {
-        width: 20px;
-        height: 20px;
-        margin: 0;
-        padding: 0;
+        display: block;
+        position: relative;
+        height: 24px;
         cursor: pointer;
+        font-size: 22px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .gh-portal-plan-checkbox input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .gh-portal-plan-checkbox .checkmark {
+        position: absolute;
+        top: 0;
+        left: -12px;
+        height: 24px;
+        width: 24px;
+        background-color: #eee;
+        border-radius: 999px;
+    }
+
+    .gh-portal-plan-checkbox input:checked ~ .checkmark {
+        background-color: var(--brandcolor);
+    }
+
+    .gh-portal-plan-checkbox .checkmark::after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    .gh-portal-plan-checkbox input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    .gh-portal-plan-checkbox .checkmark:after {
+        left: 9px;
+        top: 5px;
+        width: 4px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
     }
 `;
 
 function Checkbox({name, onPlanSelect, isChecked}) {
     return (
-        <input
-            name={name}
-            key={name}
-            type="checkbox"
-            checked={isChecked}
-            className='gh-portal-plan-checkbox'
-            aria-label={name}
-            onChange={e => onPlanSelect(e, name)}
-        />
+        <div className='gh-portal-plan-checkbox'>
+            <input
+                name={name}
+                key={name}
+                type="checkbox"
+                checked={isChecked}
+                aria-label={name}
+                onChange={e => onPlanSelect(e, name)}
+            />
+            <span className='checkmark'></span>
+        </div>
     );
 }
 
@@ -122,9 +172,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         return (
             <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
-                <div className='gh-portal-plan-checkbox'>
-                    <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
-                </div>
+                <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className='gh-portal-plan-name'>{name}</h4>
                 <div>
                     <PriceLabel name={name} currency={currency} price={price} />
