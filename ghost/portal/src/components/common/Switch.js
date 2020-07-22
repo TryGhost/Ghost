@@ -6,8 +6,8 @@ export const SwitchStyles = `
         cursor: pointer;
         position: relative;
         display: inline-block;
-        width: 50px !important;
-        height: 28px !important;
+        width: 36px !important;
+        height: 22px !important;
     }
 
     .gh-portal-for-switch label p,
@@ -33,8 +33,8 @@ export const SwitchStyles = `
         background: #f4f4f4;
         border: 1px solid #e4e4e4;
         transition: .3s;
-        width: 50px !important;
-        height: 28px !important;
+        width: 36px !important;
+        height: 22px !important;
         border-radius: 999px;
         transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
     }
@@ -47,8 +47,8 @@ export const SwitchStyles = `
     .gh-portal-for-switch .input-toggle-component:before {
         position: absolute;
         content: "";
-        height: 24px !important;
-        width: 24px !important;
+        height: 18px !important;
+        width: 18px !important;
         left: 2px !important;
         top: 2px !important;
         background-color: white;

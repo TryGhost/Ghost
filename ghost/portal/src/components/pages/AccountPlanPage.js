@@ -1,7 +1,6 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
-import {ReactComponent as ArrowLeftIcon} from '../../images/icons/arrow-left.svg';
 
 const React = require('react');
 
@@ -38,7 +37,6 @@ export default class AccountPlanPage extends React.Component {
     renderHeader() {
         return (
             <div className='gh-portal-detail-header'>
-                <button className='gh-portal-btn gh-portal-btn-icon gh-portal-btn-back' style={{color: this.context.brandColor}} onClick={e => this.onBack(e)}><ArrowLeftIcon /> Back</button>
                 <h3 className='gh-portal-maiin-title'>Choose plan</h3>
             </div>
         );
@@ -93,13 +91,18 @@ export default class AccountPlanPage extends React.Component {
         ];
         return (
             <div>
-                <PlansSection
-                    showLabel={false}
-                    plans={plansData}
-                    selectedPlan={this.state.plan}
-                    onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
-                />
-                {this.renderActionButton()}
+                <div className='gh-portal-section'>
+                    <PlansSection
+                        showLabel={false}
+                        plans={plansData}
+                        selectedPlan={this.state.plan}
+                        onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
+                    />
+                </div>
+                <div className='flex items-center justify-between flex-grow-1'>
+                    <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
+                    {this.renderActionButton()}
+                </div>
             </div>
         );
     }
@@ -110,7 +113,7 @@ export default class AccountPlanPage extends React.Component {
         const disabled = (isRunning || !this.state.plan) ? true : false;
         return (
             <ActionButton
-                style={{button: {marginTop: '12px'}}}
+                style={{button: {width: 'unset'}}}
                 onClick={e => this.onPlanCheckout(e)}
                 disabled={disabled}
                 brandColor={this.context.brandColor}

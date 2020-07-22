@@ -158,7 +158,7 @@ export const GlobalStyles = `
         margin-bottom: 2px;
         font-weight: 500;
         color: #333;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.35px;
     }
 
     /* Buttons
@@ -169,16 +169,16 @@ export const GlobalStyles = `
         align-items: center;
         justify-content: center;
         padding: 0 1.8rem;
-        height: 44px;
+        height: 42px;
         border: none;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         line-height: 1em;
         font-weight: 500;
         letter-spacing: 0.2px;
         text-align: center;
         text-decoration: none;
         white-space: nowrap;
-        border-radius: 5px;
+        border-radius: 4px;
         cursor: pointer;
         transition: .4s ease;
         box-shadow: none;
@@ -265,7 +265,7 @@ export const GlobalStyles = `
         position: relative;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         margin: 0 0 20px;
     }
 
@@ -278,6 +278,10 @@ export const GlobalStyles = `
         box-shadow: none;
         padding: 0;
         margin: 0;
+    }
+
+    .gh-portal-detail-footer .gh-portal-btn {
+        min-width: 90px;
     }
 `;
 
