@@ -113,7 +113,7 @@ export const GlobalStyles = `
     }
 
     h2 {
-        font-size: 24px;
+        font-size: 23px;
         font-weight: 500;
         letter-spacing: 0.2px;
     }
@@ -140,7 +140,7 @@ export const GlobalStyles = `
     }
 
     .gh-portal-main-title {
-        color: #212121;
+        color: #333;
     }
 
     .gh-portal-text-disabled {
@@ -154,10 +154,11 @@ export const GlobalStyles = `
     }
 
     .gh-portal-setting-heading {
-        font-size: 13px;
+        font-size: 1.3rem;
         margin-bottom: 2px;
         font-weight: 500;
         color: #333;
+        letter-spacing: 0.5px;
     }
 
     /* Buttons
@@ -247,7 +248,7 @@ export const GlobalStyles = `
     .gh-portal-closeicon {
         width: 16px;
         height: 16px;
-        color: #999;
+        color: #dcdcdc;
         cursor: pointer;
         padding: 12px;
     }
