@@ -90,11 +90,11 @@ module.exports = class StripePaymentProcessor {
                 limit: 100
             });
 
-            const webhookToCleanup = webhooks.data.find((webhook) => {
-                return webhook.url === config.webhookHandlerUrl.slice(0, -1);
+            const webhooksToCleanup = webhooks.data.filter((webhook) => {
+                return webhook.url === config.webhookHandlerUrl.slice(0, -1) || webhook.url === config.webhookHandlerUrl;
             });
 
-            if (webhookToCleanup) {
+            for (const webhookToCleanup of webhooksToCleanup) {
                 await del(this._stripe, 'webhookEndpoints', webhookToCleanup.id);
             }
         } catch (err) {
