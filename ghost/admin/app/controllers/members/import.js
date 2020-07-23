@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {inject as controller} from '@ember/controller';
+import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 
 export default class ImportController extends Controller {
@@ -8,7 +9,11 @@ export default class ImportController extends Controller {
     @controller members;
 
     @action
-    refreshMembers() {
+    refreshMembers({label} = {}) {
+        if (label) {
+            let queryParams = Object.assign(resetQueryParams('members.index'), {label: label.slug});
+            this.router.transitionTo({queryParams});
+        }
         this.members.refreshData();
     }
 

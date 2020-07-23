@@ -67,6 +67,7 @@ export default ModalComponent.extend({
     ajax: service(),
     notifications: service(),
     memberImportValidator: service(),
+    store: service(),
 
     labelText: 'Select or drop a CSV file',
 
@@ -317,8 +318,17 @@ export default ModalComponent.extend({
         }
 
         this.set('importResponse', importResponse.meta.stats);
+
+        // insert auto-created import label into store immediately if present
+        // ready for filtering the members list
+        if (importResponse.meta.import_label) {
+            this.store.pushPayload({
+                labels: [importResponse.meta.import_label]
+            });
+        }
+
         // invoke the passed in confirm action to refresh member data
-        this.confirm();
+        this.confirm({label: importResponse.meta.import_label});
     },
 
     _uploadFinished() {
@@ -344,6 +354,7 @@ export default ModalComponent.extend({
         } else if (error.payload && error.payload.errors && !isBlank(error.payload.errors[0].message)) {
             message = htmlSafe(error.payload.errors[0].message);
         } else {
+            console.error(error); // eslint-disable-line
             message = 'Something went wrong :(';
         }
 
