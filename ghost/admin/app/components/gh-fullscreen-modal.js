@@ -39,11 +39,11 @@ const FullScreenModalComponent = Component.extend({
 
     actions: {
         close() {
-            return this.close();
+            return this.close(...arguments);
         },
 
         confirm() {
-            return this.confirm();
+            return this.confirm(...arguments);
         },
 
         clickOverlay() {
