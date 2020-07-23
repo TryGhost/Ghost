@@ -37,13 +37,11 @@ export default class MembersController extends Controller {
     ];
 
     @tracked members = A([]);
-    @tracked allSelected = false;
     @tracked searchText = '';
     @tracked searchParam = '';
     @tracked paidParam = null;
     @tracked label = null;
     @tracked modalLabel = null;
-    @tracked isEditing = false;
     @tracked showLabelModal = false;
     @tracked showDeleteMembersModal = false;
 
@@ -117,20 +115,6 @@ export default class MembersController extends Controller {
         return this.paidParams.findBy('value', this.paidParam) || {value: '!unknown'};
     }
 
-    get selectedCount() {
-        return this.allSelected ? this.members.length : 0;
-    }
-
-    get selectAllLabel() {
-        let {members} = this;
-
-        if (this.allSelected) {
-            return `All items selected (${formatNumber(members.length)})`;
-        } else {
-            return `Select all (${formatNumber(members.length)})`;
-        }
-    }
-
     // Actions -----------------------------------------------------------------
 
     @action
@@ -139,23 +123,6 @@ export default class MembersController extends Controller {
         this.fetchLabelsTask.perform();
         this.membersStats.invalidate();
         this.membersStats.fetch();
-    }
-
-    @action
-    toggleEditMode() {
-        if (this.isEditing) {
-            this.resetSelection();
-        } else {
-            this.isEditing = true;
-        }
-    }
-
-    @action
-    toggleSelectAll() {
-        if (this.members.length === 0) {
-            return this.allSelected = false;
-        }
-        this.allSelected = !this.allSelected;
     }
 
     @action
@@ -247,8 +214,6 @@ export default class MembersController extends Controller {
         // params is undefined when called as a "refresh" of the model
         let {label, paidParam, searchParam} = typeof params === 'undefined' ? this : params;
 
-        this.resetSelection();
-
         if (!searchParam) {
             this.resetSearch();
         }
@@ -313,7 +278,6 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.resetSelection();
         this.reload();
 
         return response.meta.stats;
@@ -323,11 +287,6 @@ export default class MembersController extends Controller {
 
     resetSearch() {
         this.searchText = '';
-    }
-
-    resetSelection() {
-        this.isEditing = false;
-        this.allSelected = false;
     }
 
     reload() {
