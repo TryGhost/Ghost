@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const debug = require('ghost-ignition').debug('mega');
 const url = require('url');
 const moment = require('moment');
 const errors = require('@tryghost/errors');
@@ -8,7 +9,6 @@ const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
-const config = require('../../../shared/config');
 
 const getEmailData = async (postModel, members = []) => {
     const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel);
@@ -81,10 +81,13 @@ const sendTestEmail = async (postModel, toEmails) => {
 const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
+    // @TODO: improve performance of this members.list call
+    debug('addEmail: retrieving members list');
     const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
     const membersToSendTo = members.filter((member) => {
         return membersService.contentGating.checkPostAccess(postModel.toJSON(), member);
     });
+    debug('addEmail: retrieved members list');
 
     // NOTE: don't create email object when there's nobody to send the email to
     if (!membersToSendTo.length) {
@@ -180,24 +183,6 @@ async function handleUnsubscribeRequest(req) {
     }
 }
 
-function checkHostLimitForMembers(members = []) {
-    const membersHostLimit = config.get('host_settings:limits:members');
-    if (membersHostLimit) {
-        const allowedMembersLimit = membersHostLimit.max;
-        const hostUpgradeLink = config.get('host_settings:limits').upgrade_url;
-        if (members.length > allowedMembersLimit) {
-            throw new errors.HostLimitError({
-                message: `Your current plan allows you to send email to up to ${allowedMembersLimit} members, but you currently have ${members.length} members`,
-                help: hostUpgradeLink,
-                errorDetails: {
-                    limit: allowedMembersLimit,
-                    total: members.length
-                }
-            });
-        }
-    }
-}
-
 async function pendingEmailHandler(emailModel, options) {
     // CASE: do not send email if we import a database
     // TODO: refactor post.published events to never fire on importing
@@ -210,24 +195,29 @@ async function pendingEmailHandler(emailModel, options) {
         return;
     }
 
-    const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
-
-    if (!members.length) {
-        return;
-    }
-
-    await models.Email.edit({
-        status: 'submitting'
-    }, {
-        id: emailModel.id
-    });
-
     let meta = [];
     let error = null;
 
     try {
         // Check host limit for allowed member count and throw error if over limit
-        checkHostLimitForMembers(members);
+        await membersService.checkHostLimit();
+
+        // No need to fetch list until after we've passed the check
+        // @TODO: improve performance of this members.list call
+        debug('pendingEmailHandler: retrieving members list');
+        const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
+        debug('pendingEmailHandler: retrieved members list');
+
+        if (!members.length) {
+            return;
+        }
+
+        await models.Email.edit({
+            status: 'submitting'
+        }, {
+            id: emailModel.id
+        });
+
         // NOTE: meta can contains an array which can be a mix of successful and error responses
         //       needs filtering and saving objects of {error, batchData} form to separate property
         meta = await sendEmail(postModel, members);
