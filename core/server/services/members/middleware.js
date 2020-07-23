@@ -90,6 +90,7 @@ const getMemberSiteData = async function (req, res) {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
         logo: settingsCache.get('logo'),
+        icon: settingsCache.get('icon'),
         accent_color: settingsCache.get('accent_color'),
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
