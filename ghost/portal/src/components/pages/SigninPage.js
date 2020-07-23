@@ -65,7 +65,7 @@ export default class SigninPage extends React.Component {
         const field = fields[fieldName];
         return (
             <InputField
-                label = {field.label}
+                // label = {field.label}
                 type={field.type}
                 name={field.name}
                 placeholder={field.placeholder}
@@ -115,7 +115,7 @@ export default class SigninPage extends React.Component {
         const siteTitle = this.context.site.title || 'Site Title';
 
         return (
-            <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header'>
+            <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header nodivider'>
                 {this.renderSiteLogo()}
                 <h2 className="gh-portal-main-title">Sign in to {siteTitle}</h2>
             </div>
