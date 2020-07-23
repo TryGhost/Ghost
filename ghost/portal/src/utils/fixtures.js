@@ -2,6 +2,7 @@ export const site = {
     title: 'Ghost Site',
     description: 'Thoughts, stories and ideas.',
     logo: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
+    icon: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
     accent_color: '#AB19E4',
     url: 'http://localhost:2368/',
     plans: {
