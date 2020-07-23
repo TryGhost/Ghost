@@ -9,6 +9,7 @@ import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
 import {PlanSectionStyles} from './common/PlansSection';
+import {AvatarStyles} from './common/MemberGravatar';
 
 // Global styles
 export const GlobalStyles = `
@@ -161,6 +162,12 @@ export const GlobalStyles = `
         letter-spacing: 0.35px;
     }
 
+    .gh-portal-setting-data {
+        font-size: 1.3rem;
+        color: #7f7f7f;
+        line-height: 1.15em;
+    }
+
     /* Buttons
     /* ----------------------------------------------------- */
     .gh-portal-btn {
@@ -215,6 +222,10 @@ export const GlobalStyles = `
     .gh-portal-btn-link:hover {
         box-shadow: none;
         opacity: 0.85;
+    }
+
+    .gh-portal-btn-branded {
+        color: var(--brandcolor);
     }
 
     /* Global layout styles
@@ -283,6 +294,61 @@ export const GlobalStyles = `
     .gh-portal-detail-footer .gh-portal-btn {
         min-width: 90px;
     }
+
+    /* Lists */
+    .gh-portal-list {
+        background: #fff;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+        padding: 20px;
+    }
+
+    .gh-portal-list section {
+        display: flex;
+        align-items: center;
+        margin: 0 -20px 20px;
+        padding: 0 20px 20px;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .gh-portal-list section:last-of-type {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border: none;
+    }
+
+    .gh-portal-list-detail {
+        flex-grow: 1;
+    }
+
+    .gh-portal-list-detail h3 {
+        font-size: 1.5rem;
+        font-weight: 500;
+    }
+
+    .gh-portal-list-detail p {
+        font-size: 1.3rem;
+        letter-spacing: 0.3px;
+        line-height: 1.15em;
+        padding: 0;
+        margin: 2px 0 0;
+        color: #7f7f7f;
+    }
+
+    .gh-portal-btn-list {
+        height: 38px;
+        font-size: 1.4rem;
+        width: unset;
+        padding: 0 4px;
+        margin: 0 -4px;
+        box-shadow: none;
+        color: var(--brandcolor);
+    }
+
+    .gh-portal-btn-list:hover {
+        box-shadow: none;
+        opacity: 0.75;
+    }
 `;
 
 // Append all styles as string which we want to pass to iframe
@@ -293,6 +359,7 @@ const FrameStyle =
     PlanSectionStyles +
     SwitchStyles + 
     ActionButtonStyles +
+    AvatarStyles +
     SignupPageStyles;
 
 export default FrameStyle;
