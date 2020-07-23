@@ -15,16 +15,21 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['labels'],
+    relationships: ['labels', 'stripeCustomers'],
 
     relationshipBelongsTo: {
-        labels: 'labels'
+        labels: 'labels',
+        stripeCustomers: 'members_stripe_customers'
     },
 
     labels: function labels() {
         return this.belongsToMany('Label', 'members_labels', 'member_id', 'label_id')
             .withPivot('sort_order')
             .query('orderBy', 'sort_order', 'ASC');
+    },
+
+    stripeCustomers() {
+        return this.hasMany('MemberStripeCustomer', 'member_id', 'id');
     },
 
     emitChange: function emitChange(event, options) {
@@ -223,6 +228,33 @@ const Member = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+    add(data, unfilteredOptions) {
+        if (!unfilteredOptions.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                return this.add(data, Object.assign({transacting}, unfilteredOptions));
+            });
+        }
+        return ghostBookshelf.Model.add.call(this, data, unfilteredOptions);
+    },
+
+    edit(data, unfilteredOptions) {
+        if (!unfilteredOptions.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                return this.edit(data, Object.assign({transacting}, unfilteredOptions));
+            });
+        }
+        return ghostBookshelf.Model.edit.call(this, data, unfilteredOptions);
+    },
+
+    destroy(unfilteredOptions) {
+        if (!unfilteredOptions.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                return this.destroy(Object.assign({transacting}, unfilteredOptions));
+            });
+        }
+        return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
     }
 });
 
