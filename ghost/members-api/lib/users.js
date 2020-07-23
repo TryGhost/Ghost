@@ -61,7 +61,7 @@ module.exports = function ({
         return await stripe.getActiveSubscriptions(member);
     }
 
-    async function destroyStripeSubscriptions(member) {
+    async function cancelStripeSubscriptions(member) {
         if (stripe) {
             await stripe.cancelAllSubscriptions(member);
         }
@@ -119,7 +119,7 @@ module.exports = function ({
             return;
         }
 
-        await destroyStripeSubscriptions(member);
+        await cancelStripeSubscriptions(member);
 
         return deleteMember(data);
     }
@@ -190,7 +190,7 @@ module.exports = function ({
         getStripeSubscriptions,
         setComplimentarySubscription,
         cancelComplimentarySubscription,
-        destroyStripeSubscriptions,
+        cancelStripeSubscriptions,
         getStripeCustomer,
         linkStripeCustomer
     };
