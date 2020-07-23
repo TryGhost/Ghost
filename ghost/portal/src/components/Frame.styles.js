@@ -10,6 +10,7 @@ import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
 import {PlanSectionStyles} from './common/PlansSection';
 import {AvatarStyles} from './common/MemberGravatar';
+import {MagicLinkStyles} from './pages/MagicLinkPage';
 
 // Global styles
 export const GlobalStyles = `
@@ -259,9 +260,16 @@ export const GlobalStyles = `
     .gh-portal-closeicon {
         width: 16px;
         height: 16px;
-        color: #dcdcdc;
+        color: #c5c5c5;
         cursor: pointer;
         padding: 12px;
+    }
+
+    .gh-portal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 24px;
     }
 
     .gh-portal-section {
@@ -295,7 +303,8 @@ export const GlobalStyles = `
         min-width: 90px;
     }
 
-    /* Lists */
+    /* Buttons
+    /* ----------------------------------------------------- */
     .gh-portal-list {
         background: #fff;
         box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
@@ -349,6 +358,12 @@ export const GlobalStyles = `
         box-shadow: none;
         opacity: 0.75;
     }
+
+    /* Icons
+    /* ----------------------------------------------------- */
+    .gh-portal-icon {
+        color: var(--brandcolor);
+    }
 `;
 
 // Append all styles as string which we want to pass to iframe
@@ -360,6 +375,7 @@ const FrameStyle =
     SwitchStyles + 
     ActionButtonStyles +
     AvatarStyles +
+    MagicLinkStyles +
     SignupPageStyles;
 
 export default FrameStyle;

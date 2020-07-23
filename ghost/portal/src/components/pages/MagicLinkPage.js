@@ -1,6 +1,15 @@
 import ActionButton from '../common/ActionButton';
 import AppContext from '../../AppContext';
+import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+
 const React = require('react');
+
+export const MagicLinkStyles = `
+    .gh-portal-envelope {
+        width: 44px;
+        margin: 12px 0 2px;
+    }
+`;
 
 export default class MagicLinkPage extends React.Component {
     static contextType = AppContext;
@@ -8,9 +17,10 @@ export default class MagicLinkPage extends React.Component {
     renderFormHeader() {
         return (
             <div className='flex flex-column items-center'>
-                <div className='gh-portal-account-header'>
-                    <h2 className='gh-portal-main-title'>Check your inbox!</h2>
-                </div>
+                <header className='gh-portal-header'>
+                    <EnvelopeIcon className='gh-portal-icon gh-portal-envelope' />
+                    <h2>Check your inbox!</h2>
+                </header>
                 <p className='gh-portal-section gh-portal-text-center'>Check your inbox and click on the login link to complete the signin.</p>
             </div>
         );
