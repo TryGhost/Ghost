@@ -6,16 +6,23 @@ import Switch from '../common/Switch';
 const React = require('react');
 
 export const AccountHomePageStyles = `
+    .gh-portal-account-main {
+        background: #f8f8f8;
+        margin: -32px -32px 0;
+        padding: 32px;
+        border-bottom: 1px solid #eaeaea;
+    }
+
     .gh-portal-account-header {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 20px;
+        margin: 0 0 32px;
     }
 
     .gh-portal-account-footer {
         display: flex;
-        margin-top: -16px;
+        margin-top: 32px;
     }
 
     .gh-portal-account-footer.paid {
@@ -36,75 +43,12 @@ export const AccountHomePageStyles = `
     .gh-portal-account-footermenu li:last-of-type {
         margin-right: 0;
     }
-
-    .gh-portal-accountdetail-section {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 40px;
-    }
-
-    .gh-portal-accountdetail-section:first-of-type {
-        margin-top: 32px;
-        margin-bottom: 22px;
-    }
-
-    .gh-portal-account-divider {
-        margin: 12px -32px;
-        border: none;
-        border-bottom: 1px solid #EDEDED;
-    }
-
-    .gh-portal-account-divider:last-of-type {
-        margin-bottom: 40px;
-    }
-
-    .gh-portal-btn-accountdetail {
-        height: 38px;
-        font-size: 1.3rem;
-        width: 78px;
-        padding: 0 12px;
-    }
-
-    .gh-portal-accountdetail-data {
-        line-height: 1em;
-        margin-top: 2px;
-        color: #777;
-    }
-
-    .gh-portal-accountdetail-data.small {
-        font-size: 1.3rem;
-        margin-top: 5px;
-    }
-
-    .gh-portal-setting-heading.paid-home {
-        font-weight: 600;
-    }
-
-    /* Avatar styles */
-    .gh-portal-avatar-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        width: 64px;
-        height: 64px;
-        margin-bottom: 8px;
-        border-radius: 999px;
-        box-shadow: 0 0 0 3px #fff;
-    }
 `;
-
-const Divider = () => {
-    return (
-        <hr className='gh-portal-account-divider' />
-    );
-};
 
 const UserAvatar = ({avatar, brandColor}) => {
     return (
-        <div className='gh-portal-avatar-container'>
-            <MemberAvatar gravatar={avatar} style={{userIcon: {color: brandColor, width: '45px', height: '45px'}}} />
+        <div>
+            <MemberAvatar gravatar={avatar} style={{userIcon: {color: brandColor, width: '56px', height: '56px'}}} />
         </div>
     );
 };
@@ -113,15 +57,19 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     return (
         <div className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                <li><div className='gh-portal-text-disabled' role='button'>Contact support</div></li>
+                {onSettings ? null : 
+                    <li><button className='gh-portal-btn gh-portal-btn-branded'>Contact support</button></li>
+                }
+                {onSettings
+                    ? <li><button className='gh-portal-btn gh-portal-btn-branded' onClick={onSettings}>Settings</button></li>
+                    : null
+                }
             </ul>
             <div className='flex flex-grow-1 justify-end'>
                 <ul className='gh-portal-account-footermenu'>
-                    {onSettings
-                        ? <li><div className='gh-portal-link' style={{color: brandColor}} onClick={onSettings} role='button'>Settings</div></li>
-                        : null
-                    }
-                    <li><div className='gh-portal-link' style={{color: brandColor}} onClick={onLogout} role='button'>Logout</div></li>
+                    <li>
+                        <button className='gh-portal-btn' onClick={onLogout}>Logout</button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -133,7 +81,7 @@ const UserHeader = ({member, brandColor}) => {
     return (
         <div className='gh-portal-account-header'>
             <UserAvatar avatar={avatar} brandColor={brandColor} />
-            <h2 className="gh-portal-main-title">Your Account</h2>
+            <h2 className="gh-portal-main-title">Your account</h2>
         </div>
     );
 };
@@ -177,7 +125,7 @@ class FreeAccountHomePage extends React.Component {
         const {title: siteTitle} = this.context.site;
 
         return (
-            <div className='gh-portal-section'>
+            <div>
                 <p className='gh-portal-text-center'>
                     Hey <strong>{firstname || name || email}! </strong>
                     You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
@@ -191,8 +139,10 @@ class FreeAccountHomePage extends React.Component {
         const {member, brandColor} = this.context;
         return (
             <div>
-                <UserHeader member={member} brandColor={brandColor} />
-                {this.renderAccountDetail()}
+                <div className='gh-portal-account-main'>
+                    <UserHeader member={member} brandColor={brandColor} />
+                    {this.renderAccountDetail()}
+                </div>
                 <AccountFooter onLogout={e => this.handleSignout(e)} onSettings={e => this.openSettings(e)} brandColor={brandColor} />
             </div>
         );
@@ -266,38 +216,35 @@ class PaidAccountHomePage extends React.Component {
         } = subscriptions[0];
 
         return (
-            <div>
-                <section className='gh-portal-accountdetail-section'>
-                    <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading paid-home'>Profile</h3>
-                        <div>
-                            <div className='gh-portal-accountdetail-data'>{name}</div>
-                            <div className='gh-portal-accountdetail-data small'>{email}</div>
-                        </div>
+            <div className='gh-portal-list'>
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>{name}</h3>
+                        <p>{email}</p>
                     </div>
-                    <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.openEditProfile(e)}>Edit</button>
+                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.openEditProfile(e)}>Edit</button>
                 </section>
 
-                <section className='gh-portal-accountdetail-section'>
-                    <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading paid-home'>Plan</h3>
-                        <div className='gh-portal-accountdetail-data'>{this.getPlanLabel(plan)}</div>
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>Plan</h3>
+                        <p>{this.getPlanLabel(plan)}</p>
                     </div>
-                    <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.openUpdatePlan(e)}>Change</button>
+                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.openUpdatePlan(e)}>Change</button>
                 </section>
 
-                <section className='gh-portal-accountdetail-section'>
-                    <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading paid-home'>Billing Info</h3>
-                        <div className='gh-portal-accountdetail-data'>{this.getCardLabel({defaultCardLast4})}</div>
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>Billing Info</h3>
+                        <p>{this.getCardLabel({defaultCardLast4})}</p>
                     </div>
-                    <button className='gh-portal-btn gh-portal-btn-accountdetail' onClick={e => this.onEditBilling(e)}>Update</button>
+                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.onEditBilling(e)}>Update</button>
                 </section>
 
-                <section className='gh-portal-accountdetail-section'>
-                    <div className='flex flex-column flex-grow-1'>
-                        <h3 className='gh-portal-setting-heading paid-home'>Newsletter</h3>
-                        <div className='gh-portal-accountdetail-data'>You are subscribed to email newsletters</div>
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>Newsletter</h3>
+                        <p>Not subscribed to email newsletters</p>
                     </div>
                     <div>
                         <Switch onToggle={(e) => {
@@ -313,11 +260,10 @@ class PaidAccountHomePage extends React.Component {
         const {member, brandColor} = this.context;
         return (
             <div>
-                <UserHeader member={member} brandColor={brandColor} />
-                {/* {this.renderAccountWelcome()} */}
-                <Divider />
-                {this.renderAccountDetails()}
-                <Divider />
+                <div className='gh-portal-account-main'>
+                    <UserHeader member={member} brandColor={brandColor} />
+                    {this.renderAccountDetails()}
+                </div>
                 <AccountFooter onLogout={e => this.handleSignout(e)} brandColor={brandColor} />
             </div>
         );
