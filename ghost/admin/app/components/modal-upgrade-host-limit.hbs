@@ -1,12 +1,12 @@
 
 <header class="modal-header" data-test-modal="delete-user">
-    <h1>Upgrade your plan to continue</h1>
+    <h1>Upgrade your plan to enable newsletter delivery</h1>
 </header>
 <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
 <div class="modal-body">
     <p>
-        Your current plan allows you to send posts by email to up to <strong>{{upgradeMessage.limit}}</strong> members, but you currently have <strong>{{upgradeMessage.total}}</strong> members.
+        Your current plan allows you to have up to <strong>{{upgradeMessage.limit}}</strong> members, but you currently have <strong>{{upgradeMessage.total}}</strong> members.
     </p>
 </div>
 
