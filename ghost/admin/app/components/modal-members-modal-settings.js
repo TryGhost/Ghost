@@ -72,7 +72,7 @@ export default ModalComponent.extend({
 
     portalPreviewUrl: computed('selectedButtonStyle', 'buttonIcon', 'signupButtonText', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked', 'settings.{portalName,portalButton,accentColor}', function () {
         const baseUrl = this.config.get('blogUrl');
-        const portalBase = '/#/portal';
+        const portalBase = '/#/portal/preview';
         const settingsParam = new URLSearchParams();
         settingsParam.append('button', this.settings.get('portalButton'));
         settingsParam.append('name', this.settings.get('portalName'));
