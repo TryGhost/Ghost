@@ -11,6 +11,10 @@ const MemberStripeCustomer = ghostBookshelf.Model.extend({
 
     subscriptions() {
         return this.hasMany('StripeCustomerSubscription', 'customer_id', 'customer_id');
+    },
+
+    member() {
+        return this.belongsTo('Member', 'member_id', 'id');
     }
 }, {
     async upsert(data, unfilteredOptions) {
