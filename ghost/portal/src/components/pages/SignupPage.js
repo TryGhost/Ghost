@@ -271,7 +271,7 @@ class SignupPage extends React.Component {
 
     renderSiteLogo() {
         const {site} = this.context;
-        const siteLogo = site.logo;
+        const siteLogo = site.icon;
 
         const logoStyle = {};
 
