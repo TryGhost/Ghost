@@ -11,16 +11,27 @@ export const SignupPageStyles = `
         display: block;
         width: 56px;
         height: 56px;
-        margin-bottom: 12px;
+        margin: 18px 0;
         background-position: 50%;
         background-size: cover;
-        border-radius: 999px;
-        box-shadow: 0 0 0 3px #fff
+        border-radius: 2px;
     }
 
     .gh-portal-signup-header {
-        margin: 18px -32px 18px;
-        padding-bottom: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 32px 32px;
+        margin: 0 -32px 18px;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .gh-portal-signin-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 32px 32px;
+        margin: 0 -32px 32px;
         border-bottom: 1px solid #eaeaea;
     }
 
@@ -277,8 +288,10 @@ class SignupPage extends React.Component {
         const {site} = this.context;
         const siteTitle = site.title || 'Site Title';
 
+        const headerClass = site.logo ? 'gh-portal-signup-header' : 'gh-portal-signup-header';
+
         return (
-            <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header'>
+            <div className={headerClass}>
                 {this.renderSiteLogo()}
                 <h2 className="gh-portal-main-title">{siteTitle}</h2>
             </div>

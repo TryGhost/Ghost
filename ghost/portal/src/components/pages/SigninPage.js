@@ -116,7 +116,7 @@ export default class SigninPage extends React.Component {
         const siteTitle = this.context.site.title || 'Site Title';
 
         return (
-            <div className='flex flex-column items-center gh-portal-section gh-portal-signup-header nodivider'>
+            <div className='gh-portal-signin-header'>
                 {this.renderSiteLogo()}
                 <h2 className="gh-portal-main-title">Sign in to {siteTitle}</h2>
             </div>
