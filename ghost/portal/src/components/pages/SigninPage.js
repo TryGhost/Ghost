@@ -99,7 +99,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSiteLogo() {
-        const siteLogo = this.context.site.logo;
+        const siteLogo = this.context.site.icon;
 
         const logoStyle = {};
 
