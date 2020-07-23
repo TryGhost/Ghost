@@ -20,7 +20,7 @@ module.exports = async () => {
 
         if (totalMembers > allowedMembersLimit) {
             throw new errors.HostLimitError({
-                message: `Your current plan allows you to send email to up to ${allowedMembersLimit} members, but you currently have ${totalMembers} members`,
+                message: `Your current plan allows you to have up to ${allowedMembersLimit} members, but you currently have ${totalMembers} members`,
                 help: hostUpgradeLink,
                 errorDetails: {
                     limit: allowedMembersLimit,
