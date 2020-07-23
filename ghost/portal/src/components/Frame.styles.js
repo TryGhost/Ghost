@@ -231,24 +231,56 @@ export const GlobalStyles = `
 
     /* Global layout styles
     /* ----------------------------------------------------- */
+    .gh-portal-popup-background {
+        position: absolute;
+        display: block;
+        content: "aaa";
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0,0,0,0.2);
+        padding-top: 100px;
+        animation: fadein 0.2s;
+    }
+
+    @keyframes fadein {
+        0% { opacity: 0; }
+        100%{ opacity: 1.0; }
+    }
+
     .gh-portal-popup-container {
-        width: 100%;
+        position: relative;
         letter-spacing: 0;
         text-rendering: optimizeLegibility;
         font-size: 1.5rem;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        top: 0px;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
+        top: 100px;
         overflow: hidden;
         padding: 32px;
-        padding-bottom: 32px;
         text-align: left;
         box-sizing: border-box;
-        position: relative;
+        background: #fff;
+        width: 440px;
+        border-radius: 5px;
+        margin: 0 auto;
+        box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
+        animation: popup 0.25s;
+    }
+
+    @keyframes popup {
+        0% { 
+            transform: scale(0.9) translateY(20px); 
+            opacity: 0;
+        }
+        75% {
+            opacity: 1.0;
+        }
+        100%{ 
+            transform: scale(1) translateY(0);
+        }
     }
 
     .gh-portal-closeicon-container {
