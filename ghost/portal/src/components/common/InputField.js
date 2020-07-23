@@ -23,7 +23,7 @@ export const InputFieldStyles = `
         display: none;
     }
 
-    .gh-portal-input-label:focus {
+    .gh-portal-input:focus {
         border: none;
         box-shadow: 0px 0px 0px 1px #c5c5c5 , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
     }
