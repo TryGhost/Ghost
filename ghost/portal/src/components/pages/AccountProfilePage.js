@@ -169,7 +169,7 @@ export default class AccountProfilePage extends React.Component {
         return (
             <div className='flex items-center justify-between' style={{marginTop: '24px'}}>
                 <div className='flex flex-column flex-grow-1'>
-                    <h3 className='gh-portal-setting-heading'>Newsletter</h3>
+                    <h3 className='gh-portal-input-label'>Newsletter</h3>
                     <div className='gh-portal-setting-data'>{label}</div>
                 </div>
                 <div>

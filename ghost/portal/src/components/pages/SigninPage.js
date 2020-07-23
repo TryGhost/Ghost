@@ -65,7 +65,8 @@ export default class SigninPage extends React.Component {
         const field = fields[fieldName];
         return (
             <InputField
-                // label = {field.label}
+                label = {field.label}
+                hideLabel = {true}
                 type={field.type}
                 name={field.name}
                 placeholder={field.placeholder}

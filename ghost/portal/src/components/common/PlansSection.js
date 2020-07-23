@@ -209,7 +209,7 @@ function PlanLabel({showLabel}) {
         return null;
     }
     return (
-        <label className='gh-portal-setting-heading'>Plan</label>
+        <label className='gh-portal-input-label'>Plan</label>
     );
 }
 

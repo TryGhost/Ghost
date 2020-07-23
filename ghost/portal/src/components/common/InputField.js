@@ -19,7 +19,11 @@ export const InputFieldStyles = `
         transition: all 0.25s ease-in-out;
     }
 
-    .gh-portal-input:focus {
+    .gh-portal-input-label.hidden {
+        display: none;
+    }
+
+    .gh-portal-input-label:focus {
         border: none;
         box-shadow: 0px 0px 0px 1px #c5c5c5 , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
     }
@@ -29,11 +33,12 @@ export const InputFieldStyles = `
     }
 `;
 
-function InputField({name, id, label, type, value, placeholder, disabled, onChange, brandColor}) {
+function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, brandColor}) {
     id = id || `input-${name}`;
+    const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     return (
         <>
-            <label htmlFor={id} className='gh-portal-setting-heading'> {label} </label>
+            <label htmlFor={id} className={labelClasses}> {label} </label>
             <input
                 id={id}
                 type={type}

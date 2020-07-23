@@ -155,7 +155,7 @@ export const GlobalStyles = `
         text-align: center;
     }
 
-    .gh-portal-setting-heading {
+    .gh-portal-input-label {
         font-size: 1.3rem;
         margin-bottom: 2px;
         font-weight: 500;
