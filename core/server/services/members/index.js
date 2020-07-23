@@ -58,6 +58,8 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
 const membersService = {
     contentGating: require('./content-gating'),
 
+    checkHostLimit: require('./limit'),
+
     config: membersConfig,
 
     get api() {

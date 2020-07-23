@@ -6,8 +6,6 @@ const {mega} = require('../../services/mega');
 const membersService = require('../../services/members');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
-const _ = require('lodash');
-const config = require('../../../shared/config');
 
 module.exports = {
     docName: 'posts',
@@ -150,23 +148,9 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         async query(frame) {
-            /**Check host limits for members when send email is true*/
-            const membersHostLimit = config.get('host_settings:limits:members');
-            if (frame.options.send_email_when_published && membersHostLimit) {
-                const allowedMembersLimit = membersHostLimit.max;
-                const hostUpgradeLink = config.get('host_settings:limits').upgrade_url;
-                const knexOptions = _.pick(frame.options, ['transacting', 'forUpdate']);
-                const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
-                if (members.length > allowedMembersLimit) {
-                    throw new errors.HostLimitError({
-                        message: `Your current plan allows you to send email to up to ${allowedMembersLimit} members, but you currently have ${members.length} members`,
-                        help: hostUpgradeLink,
-                        errorDetails: {
-                            limit: allowedMembersLimit,
-                            total: members.length
-                        }
-                    });
-                }
+            /**Check host limits for members when send email is true**/
+            if (frame.options.send_email_when_published) {
+                await membersService.checkHostLimit();
             }
 
             let model = await models.Post.edit(frame.data.posts[0], frame.options);
