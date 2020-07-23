@@ -260,6 +260,7 @@
 }
 
 .gh-portal-siteiframe {
+    pointer-events: none;
     border-radius: 5px;
     border: 1px solid var(--whitegrey);
     transform: scale(0.9) !important;
