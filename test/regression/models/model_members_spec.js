@@ -12,6 +12,44 @@ describe('Member Model', function run() {
     beforeEach(testUtils.setup('roles'));
     afterEach(testUtils.teardownDb);
 
+    describe('stripeCustomers', function () {
+        it('Is correctly mapped to the stripe customers', async function () {
+            const context = testUtils.context.admin;
+            await Member.add({
+                email: 'test@test.member',
+                stripeCustomers: [{
+                    customer_id: 'fake_customer_id1'
+                }]
+            }, context);
+
+            const customer1 = await MemberStripeCustomer.findOne({
+                customer_id: 'fake_customer_id1'
+            }, context);
+
+            should.exist(customer1, 'MemberStripeCustomer should have been created');
+
+            await MemberStripeCustomer.add({
+                member_id: customer1.get('member_id'),
+                customer_id: 'fake_customer_id2'
+            }, context);
+
+            const member = await Member.findOne({
+                email: 'test@test.member'
+            }, Object.assign({}, context, {
+                withRelated: ['stripeCustomers']
+            }));
+
+            should.exist(member.related('stripeCustomers'), 'Member should have been fetched with stripeCustomers');
+
+            const stripeCustomers = member.related('stripeCustomers');
+
+            should.equal(stripeCustomers.length, 2, 'Should  be two stripeCustomers');
+
+            should.equal(stripeCustomers.models[0].get('customer_id'), 'fake_customer_id1');
+            should.equal(stripeCustomers.models[1].get('customer_id'), 'fake_customer_id2');
+        });
+    });
+
     describe('destroy', function () {
         it('Cascades to members_labels, members_stripe_customers & members_stripe_customers_subscriptions', async function () {
             const context = testUtils.context.admin;

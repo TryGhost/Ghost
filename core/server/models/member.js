@@ -4,8 +4,6 @@ const _ = require('lodash');
 const sequence = require('../lib/promise/sequence');
 const config = require('../../shared/config');
 const crypto = require('crypto');
-const {MemberStripeCustomer} = require('./member-stripe-customer');
-const {StripeCustomerSubscription} = require('./stripe-customer-subscription');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -17,16 +15,21 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['labels'],
+    relationships: ['labels', 'stripeCustomers'],
 
     relationshipBelongsTo: {
-        labels: 'labels'
+        labels: 'labels',
+        stripeCustomers: 'members_stripe_customers'
     },
 
     labels: function labels() {
         return this.belongsToMany('Label', 'members_labels', 'member_id', 'label_id')
             .withPivot('sort_order')
             .query('orderBy', 'sort_order', 'ASC');
+    },
+
+    stripeCustomers() {
+        return this.hasMany('MemberStripeCustomer', 'member_id', 'id');
     },
 
     emitChange: function emitChange(event, options) {
@@ -225,51 +228,6 @@ const Member = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
-
-    async destroy(unfilteredOptions) {
-        const options = this.filterOptions(unfilteredOptions, 'destroy');
-        if (!options.destroyBy) {
-            options.destroyBy = {
-                id: options.id
-            };
-        }
-
-        // Fetch the object before destroying it, so that the changed data is available to events
-        const member = await this.forge(options.destroyBy).fetch(options);
-        await this.destroyRelatedStripeModels(member, options);
-        await member.destroy(options);
-    },
-
-    async destroyRelatedStripeModels(member, options) {
-        const customers = await MemberStripeCustomer.findAll({
-            filter: `member_id:${member.get('id')}`,
-            transacting: options.transacting
-        });
-
-        const subscriptions = await customers.models.reduce(async (subscriptionsPromise, customer) => {
-            const allSubscriptions = await subscriptionsPromise;
-            const customerSubscriptions = await StripeCustomerSubscription.findAll({
-                filter: `customer_id:${customer.get('customer_id')}`,
-                transacting: options.transacting
-            });
-
-            return allSubscriptions.concat(customerSubscriptions.models);
-        }, []);
-
-        for (const customer of customers.models) {
-            await MemberStripeCustomer.destroy({
-                id: customer.get('id'),
-                transacting: options.transacting
-            });
-        }
-
-        for (const subscription of subscriptions) {
-            await StripeCustomerSubscription.destroy({
-                id: subscription.get('id'),
-                transacting: options.transacting
-            });
-        }
     }
 });
 

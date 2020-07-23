@@ -1,7 +1,17 @@
 const ghostBookshelf = require('./base');
 
 const MemberStripeCustomer = ghostBookshelf.Model.extend({
-    tableName: 'members_stripe_customers'
+    tableName: 'members_stripe_customers',
+
+    relationships: ['subscriptions'],
+
+    relationshipBelongsTo: {
+        subscriptions: 'members_stripe_customers_subscriptions'
+    },
+
+    subscriptions() {
+        return this.hasMany('StripeCustomerSubscription', 'customer_id', 'customer_id');
+    }
 }, {
     async upsert(data, unfilteredOptions) {
         const customerId = data.customer_id;
