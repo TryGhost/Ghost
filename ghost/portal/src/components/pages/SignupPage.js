@@ -24,6 +24,11 @@ export const SignupPageStyles = `
         border-bottom: 1px solid #eaeaea;
     }
 
+    .gh-portal-signup-header.nodivider {
+        border: none;
+        margin-bottom: 0;
+    }
+
     .gh-portal-signup-footer {
         font-size: 1.3rem;
         margin-top: 8px;

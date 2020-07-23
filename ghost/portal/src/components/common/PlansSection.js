@@ -183,7 +183,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
             planDetails.feature = 'Full access';
             break;
         case 'Yearly':
-            planDetails.feature = (discount ? discount + '% discount' : 'Full access');
+            planDetails.feature = (discount > 0 ? discount + '% discount' : 'Full access');
             break;
     
         default:
