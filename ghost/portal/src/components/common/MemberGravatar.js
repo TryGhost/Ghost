@@ -1,6 +1,18 @@
 import React from 'react';
 import {ReactComponent as UserIcon} from '../../images/icons/user.svg';
 
+export const AvatarStyles = `
+    .gh-portal-avatar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 12px;
+        border-radius: 999px;
+    }
+`;
+
 const Styles = ({style = {}}) => {
     return {
         userIcon: {
@@ -28,7 +40,7 @@ const Styles = ({style = {}}) => {
 function MemberGravatar({gravatar, style}) {
     let Style = Styles({style});
     return (
-        <figure>
+        <figure className='gh-portal-avatar'>
             <UserIcon style={Style.userIcon} />
             {gravatar ? <img src={gravatar} alt="Gravatar" style={Style.gravatar} /> : null}
         </figure>

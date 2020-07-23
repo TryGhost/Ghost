@@ -165,12 +165,12 @@ export default class AccountProfilePage extends React.Component {
         if (paid) {
             return null;
         }
-        const label = subscribed ? 'You are subscribed to email newsletters' : 'You are not subscribed to email newsletters';
+        const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
         return (
             <div className='flex items-center justify-between' style={{marginTop: '24px'}}>
                 <div className='flex flex-column flex-grow-1'>
-                    <h3 className='gh-portal-setting-heading paid-home'>Newsletter</h3>
-                    <div className='gh-portal-accountdetail-data'>{label}</div>
+                    <h3 className='gh-portal-setting-heading'>Newsletter</h3>
+                    <div className='gh-portal-setting-data'>{label}</div>
                 </div>
                 <div>
                     <Switch onToggle={(e) => {
@@ -189,7 +189,7 @@ export default class AccountProfilePage extends React.Component {
         return (
             <div>
                 {this.renderHeader()}
-                <div className='gh-portal-section form'>
+                <div className='gh-portal-section'>
                     {this.renderProfileData()}
                     {this.renderNewsletterOption()}
                 </div>

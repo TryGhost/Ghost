@@ -30,8 +30,8 @@ export const SwitchStyles = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: #f4f4f4;
-        border: 1px solid #e4e4e4;
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
         transition: .3s;
         width: 36px !important;
         height: 22px !important;
@@ -63,28 +63,13 @@ export const SwitchStyles = `
     }
 
     .gh-portal-for-switch input:checked + .input-toggle-component:before {
-        transform: translateX(22px);
+        transform: translateX(14px);
         box-shadow: none;
     }
 
     .gh-portal-for-switch .container {
         width: 38px !important;
         height: 22px !important;
-    }
-
-    .gh-portal-for-switch.small .input-toggle-component {
-        width: 38px !important;
-        height: 22px !important;
-    }
-
-    .gh-portal-for-switch.small .input-toggle-component:before {
-        height: 16px !important;
-        width: 16px !important;
-        box-shadow: 0 0 1px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.1);
-    }
-
-    .gh-portal-for-switch.small input:checked + .input-toggle-component:before {
-        transform: translateX(16px);
     }
 `;
 
