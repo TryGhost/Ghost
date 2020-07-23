@@ -131,12 +131,9 @@ describe('MemberStripeCustomer Model', function run() {
 
             should.exist(subscription, 'Subscription should have been created');
 
-            await BaseModel.transaction(async (transacting) => {
-                return await MemberStripeCustomer.destroy(Object.assign({
-                    transacting,
-                    id: customer.get('id')
-                }, context));
-            });
+            await MemberStripeCustomer.destroy(Object.assign({
+                id: customer.get('id')
+            }, context));
 
             const customerAfterDestroy = await MemberStripeCustomer.findOne({
                 member_id: 'fake_member_id'

@@ -110,12 +110,9 @@ describe('Member Model', function run() {
 
             should.exist(subscription, 'Subscription should have been created');
 
-            await BaseModel.transaction(async (transacting) => {
-                return await Member.destroy(Object.assign({
-                    transacting,
-                    id: member.get('id')
-                }, context));
-            });
+            await Member.destroy(Object.assign({
+                id: member.get('id')
+            }, context));
 
             const memberAfterDestroy = await Member.findOne({
                 email: 'test@test.member'
