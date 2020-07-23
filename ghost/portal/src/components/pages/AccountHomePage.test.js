@@ -8,11 +8,9 @@ const setup = (overrides) => {
     );
     const logoutBtn = utils.queryByRole('button', {name: 'Logout'});
     const settingsBtn = utils.queryByRole('button', {name: 'Settings'});
-    const supportBtn = utils.queryByRole('button', {name: 'Contact support'});
     return {
         logoutBtn,
         settingsBtn,
-        supportBtn,
         mockOnActionFn,
         ...utils
     };
@@ -20,11 +18,10 @@ const setup = (overrides) => {
 
 describe('Account Home Page', () => {
     test('renders', () => {
-        const {settingsBtn, supportBtn, logoutBtn} = setup();
+        const {settingsBtn, logoutBtn} = setup();
 
         expect(settingsBtn).toBeInTheDocument();
         expect(logoutBtn).toBeInTheDocument();
-        expect(supportBtn).toBeInTheDocument();
     });
 
     test('can call signout', () => {
