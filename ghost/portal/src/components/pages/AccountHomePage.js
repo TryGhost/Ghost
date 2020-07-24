@@ -8,9 +8,9 @@ const React = require('react');
 export const AccountHomePageStyles = `
     .gh-portal-account-main {
         background: var(--grey13);
+        border-bottom: 1px solid #eaeaea;
         margin: -32px -32px 0;
         padding: 32px;
-        border-bottom: 1px solid #eaeaea;
     }
 
     .gh-portal-account-header {

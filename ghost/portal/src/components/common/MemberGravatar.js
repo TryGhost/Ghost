@@ -13,8 +13,8 @@ export const AvatarStyles = `
     }
 
     .gh-portal-avatar img {
-        display: block;
         position: absolute;
+        display: block;
         top: -1px;
         right: -1px;
         bottom: -1px;

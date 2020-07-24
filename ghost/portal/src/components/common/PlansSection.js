@@ -9,29 +9,29 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-section {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
-        position: relative;
-        padding: 16px;
         flex: 1;
-        border-right: 1px solid var(--grey10);
         font-size: 1.4rem;
         line-height: 1.35em;
+        border-right: 1px solid var(--grey10);
+        padding: 16px;
         cursor: pointer;
     }
 
     .gh-portal-plan-section.checked::before {
         position: absolute;
         display: block;
-        pointer-events: none;
-        content: "";
         top: -1px;
         right: -1px;
         bottom: -1px;
         left: -1px;
-        border: 2px solid var(--brandcolor);
+        content: "";
         z-index: 999;
+        border: 2px solid var(--brandcolor);
+        pointer-events: none;
     }
 
     .gh-portal-plan-section:first-of-type.checked::before {
@@ -53,10 +53,10 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-name {
-        text-transform: uppercase;
+        font-size: 1.2rem;
         font-weight: 500;
         letter-spacing: 0.5px;
-        font-size: 1.2rem;
+        text-transform: uppercase;
         margin-top: 8px;
     }
 
@@ -64,8 +64,8 @@ export const PlanSectionStyles = `
         position: relative;
         bottom: 5px;
         font-size: 1.4rem;
-        letter-spacing: 0.4px;
         font-weight: 500;
+        letter-spacing: 0.4px;
     }
 
     .gh-portal-plan-price {
@@ -79,23 +79,23 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-feature {
-        margin-top: 12px;
-        padding-top: 12px;
-        text-align: center;
         font-size: 1.25rem;
+        font-weight: 500;
         line-height: 1.25em;
+        text-align: center;
+        letter-spacing: 0.2px;
         border-top: 1px solid var(--grey12);
         width: 100%;
-        letter-spacing: 0.2px;
-        font-weight: 500;
+        margin-top: 12px;
+        padding-top: 12px;
     }
 
     .gh-portal-plan-checkbox {
-        display: block;
         position: relative;
+        display: block;
+        font-size: 22px;
         height: 18px;
         cursor: pointer;
-        font-size: 22px;
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
@@ -104,20 +104,20 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-checkbox input {
         position: absolute;
-        opacity: 0;
-        cursor: pointer;
         height: 0;
         width: 0;
+        opacity: 0;
+        cursor: pointer;
     }
 
     .gh-portal-plan-checkbox .checkmark {
         position: absolute;
         top: 0;
         left: -9px;
-        height: 18px;
-        width: 18px;
         background-color: var(--grey12);
         border-radius: 999px;
+        height: 18px;
+        width: 18px;
     }
 
     .gh-portal-plan-checkbox input:checked ~ .checkmark {
@@ -125,9 +125,9 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-checkbox .checkmark::after {
-        content: "";
         position: absolute;
         display: none;
+        content: "";
     }
 
     .gh-portal-plan-checkbox input:checked ~ .checkmark:after {

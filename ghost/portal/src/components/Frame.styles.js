@@ -35,14 +35,13 @@ export const GlobalStyles = `
         --grey13: #f8f8f8;
         --white: #fff;
     }
-
     
     /* Globals
     /* ----------------------------------------------------- */
     h1, h2, h3, h4, h5, h6, p {
+        line-height: 1.15em;
         padding: 0;
         margin: 0;
-        line-height: 1.15em;
     }
 
     h1 {
@@ -84,8 +83,8 @@ export const GlobalStyles = `
 
     .gh-portal-text-disabled {
         color: var(--grey3);
-        opacity: 0.35;
         font-weight: normal;
+        opacity: 0.35;
     }
 
     .gh-portal-text-center {
@@ -93,16 +92,16 @@ export const GlobalStyles = `
     }
 
     .gh-portal-input-label {
-        font-size: 1.3rem;
-        margin-bottom: 2px;
-        font-weight: 500;
         color: var(--grey1);
+        font-size: 1.3rem;
+        font-weight: 500;
+        margin-bottom: 2px;
         letter-spacing: 0.35px;
     }
 
     .gh-portal-setting-data {
-        font-size: 1.3rem;
         color: var(--grey6);
+        font-size: 1.3rem;
         line-height: 1.15em;
     }
 
@@ -113,24 +112,24 @@ export const GlobalStyles = `
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 1.8rem;
-        height: 42px;
-        border: none;
         font-size: 1.4rem;
-        line-height: 1em;
         font-weight: 500;
+        line-height: 1em;
         letter-spacing: 0.2px;
         text-align: center;
-        text-decoration: none;
         white-space: nowrap;
+        text-decoration: none;
+        color: var(--grey0);
+        background: var(--white);
+        border: none;
+        height: 42px;
+        padding: 0 1.8rem;
         border-radius: 4px;
         cursor: pointer;
         transition: .4s ease;
         box-shadow: none;
-        user-select: none;
-        background: var(--white);
         box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 6px -3px rgba(0,0,0,0.19);
-        color: var(--grey0);
+        user-select: none;
     }
 
     .gh-portal-btn:hover {
@@ -149,9 +148,9 @@ export const GlobalStyles = `
     }
 
     .gh-portal-btn-link {
+        line-height: 1;
         background: none;
         padding: 0;
-        line-height: 1;
         height: unset;
         box-shadow: none;
         border: none;
@@ -188,21 +187,21 @@ export const GlobalStyles = `
 
     .gh-portal-popup-container {
         position: relative;
-        letter-spacing: 0;
-        text-rendering: optimizeLegibility;
-        font-size: 1.5rem;
         display: flex;
+        box-sizing: border-box;
+        top: 100px;
         flex-direction: column;
         justify-content: flex-start;
-        top: 100px;
         overflow: hidden;
-        padding: 32px;
+        font-size: 1.5rem;
         text-align: left;
-        box-sizing: border-box;
+        letter-spacing: 0;
+        text-rendering: optimizeLegibility;
         background: var(--white);
         width: 440px;
-        border-radius: 5px;
+        padding: 32px;
         margin: 0 auto;
+        border-radius: 5px;
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
         animation: popup 0.25s;
     }
@@ -227,10 +226,10 @@ export const GlobalStyles = `
     }
 
     .gh-portal-closeicon {
-        width: 16px;
-        height: 16px;
         color: var(--grey9);
         cursor: pointer;
+        width: 16px;
+        height: 16px;
         padding: 12px;
     }
 
@@ -263,9 +262,9 @@ export const GlobalStyles = `
         top: -10px;
         left: 0;
         background: none;
-        box-shadow: none;
         padding: 0;
         margin: 0;
+        box-shadow: none;
     }
 
     .gh-portal-detail-footer .gh-portal-btn {
@@ -283,9 +282,9 @@ export const GlobalStyles = `
     /* ----------------------------------------------------- */
     .gh-portal-list {
         background: var(--white);
-        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
-        border-radius: 3px;
         padding: 20px;
+        border-radius: 3px;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
     }
 
     .gh-portal-list section {
@@ -321,13 +320,13 @@ export const GlobalStyles = `
     }
 
     .gh-portal-btn-list {
-        height: 38px;
         font-size: 1.4rem;
+        color: var(--brandcolor);
+        height: 38px;
         width: unset;
         padding: 0 4px;
         margin: 0 -4px;
         box-shadow: none;
-        color: var(--brandcolor);
     }
 
     .gh-portal-btn-list:hover {
