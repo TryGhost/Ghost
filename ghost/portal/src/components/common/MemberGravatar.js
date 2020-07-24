@@ -8,7 +8,7 @@ export const AvatarStyles = `
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         border-radius: 999px;
     }
 `;
@@ -42,7 +42,7 @@ function MemberGravatar({gravatar, style}) {
     return (
         <figure className='gh-portal-avatar'>
             <UserIcon style={Style.userIcon} />
-            {gravatar ? <img src={gravatar} alt="Gravatar" style={Style.gravatar} /> : null}
+            {gravatar ? <img style={Style.gravatar} src={gravatar} alt="Gravatar" /> : null}
         </figure>
     );
 }
