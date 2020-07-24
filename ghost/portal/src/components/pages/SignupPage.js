@@ -11,7 +11,7 @@ export const SignupPageStyles = `
         display: block;
         width: 56px;
         height: 56px;
-        margin: 18px 0;
+        margin: 10px 0 12px;
         background-position: 50%;
         background-size: cover;
         border-radius: 2px;
