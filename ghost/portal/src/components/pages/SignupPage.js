@@ -9,30 +9,30 @@ export const SignupPageStyles = `
     .gh-portal-signup-logo {
         position: relative;
         display: block;
-        width: 56px;
-        height: 56px;
-        margin: 10px 0 12px;
         background-position: 50%;
         background-size: cover;
         border-radius: 2px;
+        width: 56px;
+        height: 56px;
+        margin: 10px 0 12px;
     }
 
     .gh-portal-signup-header {
         display: flex;
         flex-direction: column;
         align-items: center;
+        border-bottom: 1px solid var(--grey12);
         padding: 0 32px 32px;
         margin: 0 -32px 18px;
-        border-bottom: 1px solid var(--grey12);
     }
 
     .gh-portal-signin-header {
         display: flex;
         flex-direction: column;
         align-items: center;
+        border-bottom: 1px solid var(--grey12);
         padding: 0 32px 32px;
         margin: 0 -32px 32px;
-        border-bottom: 1px solid var(--grey12);
     }
 
     .gh-portal-signup-header.nodivider {
@@ -43,10 +43,10 @@ export const SignupPageStyles = `
     .gh-portal-signup-footer {
         display: flex;
         justify-content: center;
-        font-size: 1.3rem;
-        margin-top: 8px;
         color: var(--grey4);
+        font-size: 1.3rem;
         letter-spacing: 0.2px;
+        margin-top: 8px;
     }
 
     .gh-portal-signup-footer button {
