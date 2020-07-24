@@ -104,6 +104,12 @@ module.exports = {
                 });
             }
 
+            if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.testmode) {
+                Object.assign(batchData, {
+                    'o:testmode': true
+                });
+            }
+
             const messageData = Object.assign({}, message, batchData);
 
             // Rename plaintext field to text for Mailgun
