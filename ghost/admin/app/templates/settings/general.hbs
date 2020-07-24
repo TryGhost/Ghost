@@ -99,32 +99,7 @@
 
         <div class="gh-setting-header">Publication identity</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
-            {{#if this.config.enableDeveloperExperiments}}
-                <div class="gh-setting-first" data-test-setting="accent-color">
-                    <div class="gh-setting-content">
-                        <div class="gh-setting-title">Accent Color</div>
-                        <div class="gh-setting-desc">Primary color used in your publication theme</div>
-                    </div>
-                    <div class="gh-setting-action">
-                        <GhFormGroup @errors={{settings.errors}} @hasValidated={{settings.hasValidated}} @property="accentColor" @class="input-color-form-group">
-                            <div class="input-color">
-                                <GhTextInput
-                                    @name="accent-color"
-                                    @placeholder="abcdef"
-                                    @autocorrect="off"
-                                    @maxlength="6"
-                                    @focus-out={{action "validateAccentColor"}}
-                                    @value={{accentColor}}
-                                    data-test-input="accentColor"
-                                />
-                                <div class="color-box" style={{this.backgroundStyle}}></div>
-                            </div>
-                            <GhErrorMessage @errors={{settings.errors}} @property="accentColor" data-test-error="accentColor" />
-                        </GhFormGroup>
-                    </div>
-                </div>
-            {{/if}}
-            <div class="{{if this.config.enableDeveloperExperiments "gh-setting" "gh-setting-first"}}" data-test-setting="icon">
+            <div class="gh-setting-first" data-test-setting="icon">
                 <GhUploader
                     @extensions={{this.iconExtensions}}
                     @paramsHash={{hash purpose="icon"}}
