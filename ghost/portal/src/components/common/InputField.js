@@ -8,7 +8,7 @@ export const InputFieldStyles = `
         height: 40px;
         outline: none;
         color: inherit;
-        background: #fff;
+        background: var(--white);
         border: none;
         border-radius: 3px;
         font-size: 1.5rem;
@@ -29,7 +29,7 @@ export const InputFieldStyles = `
     }
 
     .gh-portal-input::placeholder {
-        color: #929292;
+        color: var(--grey7);
     }
 `;
 
