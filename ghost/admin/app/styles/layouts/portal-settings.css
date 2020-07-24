@@ -215,11 +215,11 @@
 }
 
 .gh-portal-button-icon svg {
-    fill: var(--midlightgrey-d1);
+    color: var(--midlightgrey-d1);
 }
 
 .gh-portal-button-icon.selected-icon svg {
-    fill: var(--blue);
+    color: var(--blue);
 }
 
 .gh-portal-button-uploadicon,
