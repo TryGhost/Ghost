@@ -13,7 +13,7 @@ export const SwitchStyles = `
     .gh-portal-for-switch label p,
     .gh-portal-for-switch .container p {
         overflow: auto;
-        color: #15171A;
+        color: var(--grey0);
         font-weight: normal;
     }
 
@@ -30,8 +30,8 @@ export const SwitchStyles = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: #f8f8f8;
-        border: 1px solid #e0e0e0;
+        background: var(--grey13);
+        border: 1px solid var(--grey11);
         transition: .3s;
         width: 36px !important;
         height: 22px !important;
@@ -41,7 +41,7 @@ export const SwitchStyles = `
 
     .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component,
     .gh-portal-for-switch .container:hover input:not(:checked) + .input-toggle-component {
-        border-color: #ccc;
+        border-color: var(--grey9);
     }
 
     .gh-portal-for-switch .input-toggle-component:before {

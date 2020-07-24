@@ -14,6 +14,28 @@ import {MagicLinkStyles} from './pages/MagicLinkPage';
 
 // Global styles
 export const GlobalStyles = `
+
+    /* Colors
+    /* ----------------------------------------------------- */
+    :root {
+        --black: #000;
+        --grey0: #1d1d1d;
+        --grey1: #333;
+        --grey2: #3d3d3d;
+        --grey3: #474747;
+        --grey4: #515151;
+        --grey5: #686868;
+        --grey6: #7f7f7f;
+        --grey7: #979797;
+        --grey8: #aeaeae;
+        --grey9: #c5c5c5;
+        --grey10: #dcdcdc;
+        --grey11: #e1e1e1;
+        --grey12: #eaeaea;
+        --grey13: #f8f8f8;
+        --white: #fff;
+    }
+
     
     /* Globals
     /* ----------------------------------------------------- */
@@ -57,11 +79,11 @@ export const GlobalStyles = `
     }
 
     .gh-portal-main-title {
-        color: #333;
+        color: var(--grey1);
     }
 
     .gh-portal-text-disabled {
-        color: #484848;
+        color: var(--grey3);
         opacity: 0.35;
         font-weight: normal;
     }
@@ -74,13 +96,13 @@ export const GlobalStyles = `
         font-size: 1.3rem;
         margin-bottom: 2px;
         font-weight: 500;
-        color: #333;
+        color: var(--grey1);
         letter-spacing: 0.35px;
     }
 
     .gh-portal-setting-data {
         font-size: 1.3rem;
-        color: #7f7f7f;
+        color: var(--grey6);
         line-height: 1.15em;
     }
 
@@ -106,9 +128,9 @@ export const GlobalStyles = `
         transition: .4s ease;
         box-shadow: none;
         user-select: none;
-        background: #fff;
+        background: var(--white);
         box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 6px -3px rgba(0,0,0,0.19);
-        color: #212121;
+        color: var(--grey0);
     }
 
     .gh-portal-btn:hover {
@@ -149,7 +171,7 @@ export const GlobalStyles = `
     .gh-portal-popup-background {
         position: absolute;
         display: block;
-        content: "aaa";
+        content: "";
         top: 0;
         right: 0;
         bottom: 0;
@@ -177,7 +199,7 @@ export const GlobalStyles = `
         padding: 32px;
         text-align: left;
         box-sizing: border-box;
-        background: #fff;
+        background: var(--white);
         width: 440px;
         border-radius: 5px;
         margin: 0 auto;
@@ -207,7 +229,7 @@ export const GlobalStyles = `
     .gh-portal-closeicon {
         width: 16px;
         height: 16px;
-        color: #c5c5c5;
+        color: var(--grey9);
         cursor: pointer;
         padding: 12px;
     }
@@ -260,7 +282,7 @@ export const GlobalStyles = `
     /* Buttons
     /* ----------------------------------------------------- */
     .gh-portal-list {
-        background: #fff;
+        background: var(--white);
         box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
         border-radius: 3px;
         padding: 20px;
@@ -271,7 +293,7 @@ export const GlobalStyles = `
         align-items: center;
         margin: 0 -20px 20px;
         padding: 0 20px 20px;
-        border-bottom: 1px solid #eaeaea;
+        border-bottom: 1px solid var(--grey12);
     }
 
     .gh-portal-list section:last-of-type {
@@ -295,7 +317,7 @@ export const GlobalStyles = `
         line-height: 1.15em;
         padding: 0;
         margin: 2px 0 0;
-        color: #7f7f7f;
+        color: var(--grey6);
     }
 
     .gh-portal-btn-list {

@@ -37,7 +37,7 @@ export default class AccountPlanPage extends React.Component {
     renderHeader() {
         return (
             <header className='gh-portal-detail-header'>
-                <h3 className='gh-portal-maiin-title'>Choose plan</h3>
+                <h3 className='gh-portal-main-title'>Choose plan</h3>
             </header>
         );
     }

@@ -7,7 +7,7 @@ const React = require('react');
 
 export const AccountHomePageStyles = `
     .gh-portal-account-main {
-        background: #f8f8f8;
+        background: var(--grey13);
         margin: -32px -32px 0;
         padding: 32px;
         border-bottom: 1px solid #eaeaea;

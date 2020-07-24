@@ -23,7 +23,7 @@ export const SignupPageStyles = `
         align-items: center;
         padding: 0 32px 32px;
         margin: 0 -32px 18px;
-        border-bottom: 1px solid #eaeaea;
+        border-bottom: 1px solid var(--grey12);
     }
 
     .gh-portal-signin-header {
@@ -32,7 +32,7 @@ export const SignupPageStyles = `
         align-items: center;
         padding: 0 32px 32px;
         margin: 0 -32px 32px;
-        border-bottom: 1px solid #eaeaea;
+        border-bottom: 1px solid var(--grey12);
     }
 
     .gh-portal-signup-header.nodivider {
@@ -45,7 +45,7 @@ export const SignupPageStyles = `
         justify-content: center;
         font-size: 1.3rem;
         margin-top: 8px;
-        color: #515151;
+        color: var(--grey4);
         letter-spacing: 0.2px;
     }
 
