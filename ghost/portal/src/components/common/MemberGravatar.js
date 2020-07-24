@@ -33,7 +33,7 @@ const Styles = ({style = {}}) => {
             height: '56px',
             color: '#fff',
             ...(style.userIcon || {}) // Override any custom style
-        },
+        }
     };
 };
 

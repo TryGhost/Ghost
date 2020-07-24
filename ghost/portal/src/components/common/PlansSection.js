@@ -4,7 +4,7 @@ export const PlanSectionStyles = `
     .gh-portal-plans-container {
         display: flex;
         align-items: stretch;
-        border: 1px solid #ddd;
+        border: 1px solid var(--grey10);
         border-radius: 5px;
     }
 
@@ -15,7 +15,7 @@ export const PlanSectionStyles = `
         position: relative;
         padding: 16px;
         flex: 1;
-        border-right: 1px solid #ddd;
+        border-right: 1px solid var(--grey10);
         font-size: 1.4rem;
         line-height: 1.35em;
         cursor: pointer;
@@ -75,7 +75,7 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-type {
-        color: #999;
+        color: var(--grey7);
     }
 
     .gh-portal-plan-feature {
@@ -84,7 +84,7 @@ export const PlanSectionStyles = `
         text-align: center;
         font-size: 1.25rem;
         line-height: 1.25em;
-        border-top: 1px solid #eaeaea;
+        border-top: 1px solid var(--grey12);
         width: 100%;
         letter-spacing: 0.2px;
         font-weight: 500;
@@ -116,7 +116,7 @@ export const PlanSectionStyles = `
         left: -9px;
         height: 18px;
         width: 18px;
-        background-color: #eee;
+        background-color: var(--grey12);
         border-radius: 999px;
     }
 
@@ -139,7 +139,7 @@ export const PlanSectionStyles = `
         top: 3px;
         width: 3px;
         height: 9px;
-        border: solid white;
+        border: solid var(--white);
         border-width: 0 2px 2px 0;
         -webkit-transform: rotate(45deg);
         -ms-transform: rotate(45deg);
