@@ -128,7 +128,7 @@ export default class AccountPlanPage extends React.Component {
             return null;
         }
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
+            <div>
                 {this.renderHeader()}
                 {this.renderPlanChooser()}
             </div>

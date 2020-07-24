@@ -55,6 +55,7 @@ export const AccountHomePageStyles = `
         display: flex;
         align-items: center;
         justify-content: space-between;
+        margin-top: 24px;
     }
 
     .gh-portal-freeaccount-newsletter .label {

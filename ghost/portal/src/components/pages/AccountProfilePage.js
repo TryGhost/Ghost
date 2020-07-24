@@ -68,7 +68,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderDeleteAccountButton() {
         return (
-            <div style={{cursor: 'pointer', color: 'red'}} role='button'> Delete Account </div>
+            <div style={{cursor: 'pointer', color: 'red'}} role='button'>Delete account</div>
         );
     }
 
@@ -108,7 +108,7 @@ export default class AccountProfilePage extends React.Component {
 
         return (
             <div style={avatarContainerStyle}>
-                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '45px', height: '45px'}}} />
+                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '56px', height: '56px'}}} />
             </div>
         );
     }
@@ -167,7 +167,7 @@ export default class AccountProfilePage extends React.Component {
         }
         const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
         return (
-            <div className='gh-portal-freeaccount-newsletter' style={{marginTop: '24px'}}>
+            <div className='gh-portal-freeaccount-newsletter'>
                 <div className='label'>
                     <h3 className='gh-portal-input-label'>Newsletter</h3>
                     <div className='gh-portal-setting-data'>{label}</div>
