@@ -45,7 +45,7 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
 function ActionButton({label, onClick, disabled, retry, brandColor, style}) {
     let Style = Styles({disabled, retry, brandColor, style});
     return (
-        <button onClick={e => onClick(e)} style={Style.button} className="gh-portal-btn gh-portal-btn-main gh-portal-btn-primary" disabled={disabled}>
+        <button className="gh-portal-btn gh-portal-btn-main gh-portal-btn-primary" style={Style.button} onClick={e => onClick(e)} disabled={disabled}>
             {label}
         </button>
     );

@@ -41,13 +41,13 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
             <label htmlFor={id} className={labelClasses}> {label} </label>
             <input
                 id={id}
+                className='gh-portal-input'
                 type={type}
                 name={name}
-                placeholder={placeholder}
                 value={value}
-                className='gh-portal-input'
-                disabled={disabled}
+                placeholder={placeholder}
                 onChange={e => onChange(e, name)}
+                disabled={disabled}
                 aria-label={label}
             />
         </>
