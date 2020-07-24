@@ -54,7 +54,7 @@
     "@tryghost/magic-link": "0.4.12",
     "@tryghost/members-api": "0.25.1",
     "@tryghost/members-csv": "0.2.1",
-    "@tryghost/members-ssr": "0.8.3",
+    "@tryghost/members-ssr": "0.8.4",
     "@tryghost/mw-session-from-token": "0.1.5",
     "@tryghost/session-service": "0.1.5",
     "@tryghost/social-urls": "0.1.9",
