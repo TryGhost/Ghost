@@ -36,9 +36,9 @@ export default class AccountPlanPage extends React.Component {
 
     renderHeader() {
         return (
-            <div className='gh-portal-detail-header'>
+            <header className='gh-portal-detail-header'>
                 <h3 className='gh-portal-maiin-title'>Choose plan</h3>
-            </div>
+            </header>
         );
     }
 
@@ -90,7 +90,7 @@ export default class AccountPlanPage extends React.Component {
             }
         ];
         return (
-            <div>
+            <section>
                 <div className='gh-portal-section'>
                     <PlansSection
                         showLabel={false}
@@ -99,11 +99,11 @@ export default class AccountPlanPage extends React.Component {
                         onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
                     />
                 </div>
-                <div className='gh-portal-action-footer'>
+                <footer className='gh-portal-action-footer'>
                     <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
                     {this.renderActionButton()}
-                </div>
-            </div>
+                </footer>
+            </section>
         );
     }
 

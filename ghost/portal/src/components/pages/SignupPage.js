@@ -240,10 +240,10 @@ class SignupPage extends React.Component {
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
         return (
-            <div className='gh-portal-signup-footer'>
+            <footer className='gh-portal-signup-footer'>
                 <div>Already a member?</div>
                 <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => onAction('switchPage', {page: 'signin'})}>Log in</button>
-            </div>
+            </footer>
         );
     }
 
@@ -257,7 +257,7 @@ class SignupPage extends React.Component {
 
     renderForm() {
         return (
-            <div>
+            <section>
                 <div className='gh-portal-section'>
                     {this.renderNameField()}
                     {this.renderInputField('email')}
@@ -267,7 +267,7 @@ class SignupPage extends React.Component {
                     {this.renderSubmitButton()}
                     {this.renderLoginMessage()}
                 </div>
-            </div>
+            </section>
         );
     }
 
@@ -290,13 +290,11 @@ class SignupPage extends React.Component {
         const {site} = this.context;
         const siteTitle = site.title || 'Site Title';
 
-        const headerClass = site.logo ? 'gh-portal-signup-header' : 'gh-portal-signup-header';
-
         return (
-            <div className={headerClass}>
+            <header className='gh-portal-signup-header'>
                 {this.renderSiteLogo()}
                 <h2 className="gh-portal-main-title">{siteTitle}</h2>
-            </div>
+            </header>
         );
     }
 
