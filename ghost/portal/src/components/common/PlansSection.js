@@ -2,6 +2,8 @@ import React from 'react';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
+        display: flex;
+        align-items: stretch;
         border: 1px solid #ddd;
         border-radius: 5px;
     }
@@ -220,7 +222,7 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, styl
     return (
         <div>
             <PlanLabel showLabel={showLabel} />
-            <div className='flex items-stretch gh-portal-plans-container'>
+            <div className='gh-portal-plans-container'>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
             </div>
         </div>
