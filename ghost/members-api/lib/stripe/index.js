@@ -266,8 +266,13 @@ module.exports = class StripePaymentProcessor {
         });
 
         for (const subscription of activeSubscriptions) {
-            const updatedSubscription = await del(this._stripe, 'subscriptions', subscription.id);
-            await this._updateSubscription(updatedSubscription);
+            try {
+                const updatedSubscription = await del(this._stripe, 'subscriptions', subscription.id);
+                await this._updateSubscription(updatedSubscription);
+            } catch (err) {
+                this.logging.error(`There was an error cancelling subscription ${subscription.id}`);
+                this.logging.error(err);
+            }
         }
 
         return true;
