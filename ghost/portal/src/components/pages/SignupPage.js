@@ -41,6 +41,8 @@ export const SignupPageStyles = `
     }
 
     .gh-portal-signup-footer {
+        display: flex;
+        justify-content: center;
         font-size: 1.3rem;
         margin-top: 8px;
         color: #515151;
@@ -238,7 +240,7 @@ class SignupPage extends React.Component {
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
         return (
-            <div className='flex justify-center gh-portal-signup-footer'>
+            <div className='gh-portal-signup-footer'>
                 <div>Already a member?</div>
                 <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => onAction('switchPage', {page: 'signin'})}>Log in</button>
             </div>
@@ -300,7 +302,7 @@ class SignupPage extends React.Component {
 
     render() {
         return (
-            <div className='flex flex-column'>
+            <div>
                 {this.renderFormHeader()}
                 {this.renderForm()}
             </div>

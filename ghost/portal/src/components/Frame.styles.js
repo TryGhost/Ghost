@@ -15,92 +15,7 @@ import {MagicLinkStyles} from './pages/MagicLinkPage';
 // Global styles
 export const GlobalStyles = `
     
-    /* Layout utilities
-    /* ----------------------------------------------------- */
-    .flex { display: flex; }
-    .inline-flex { display: inline-flex; }
-    
-    .flex-auto {
-        flex: 1 1 auto;
-        min-width: 0; /* 1 */
-        min-height: 0; /* 1 */
-    }
-    
-    .flex-none { flex: none; }
-    
-    .flex-column  { flex-direction: column; }
-    .flex-row     { flex-direction: row; }
-    .flex-wrap    { flex-wrap: wrap; }
-    .flex-nowrap    { flex-wrap: nowrap; }
-    .flex-wrap-reverse    { flex-wrap: wrap-reverse; }
-    .flex-column-reverse  { flex-direction: column-reverse; }
-    .flex-row-reverse     { flex-direction: row-reverse; }
-    
-    .items-start    { align-items: flex-start; }
-    .items-end      { align-items: flex-end; }
-    .items-center   { align-items: center; }
-    .items-baseline { align-items: baseline; }
-    .items-stretch  { align-items: stretch; }
-    
-    .self-start    { align-self: flex-start; }
-    .self-end      { align-self: flex-end; }
-    .self-center   { align-self: center; }
-    .self-baseline { align-self: baseline; }
-    .self-stretch  { align-self: stretch; }
-    
-    .justify-start   { justify-content: flex-start; }
-    .justify-end     { justify-content: flex-end; }
-    .justify-center  { justify-content: center; }
-    .justify-between { justify-content: space-between; }
-    .justify-around  { justify-content: space-around; }
-    
-    .content-start   { align-content: flex-start; }
-    .content-end     { align-content: flex-end; }
-    .content-center  { align-content: center; }
-    .content-between { align-content: space-between; }
-    .content-around  { align-content: space-around; }
-    .content-stretch { align-content: stretch; }
-    
-    .order-0 { order: 0; }
-    .order-1 { order: 1; }
-    .order-2 { order: 2; }
-    .order-3 { order: 3; }
-    .order-4 { order: 4; }
-    .order-5 { order: 5; }
-    .order-6 { order: 6; }
-    .order-7 { order: 7; }
-    .order-8 { order: 8; }
-    .order-last { order: 99999; }
-    
-    .flex-grow-0 { flex-grow: 0; }
-    .flex-grow-1 { flex-grow: 1; }
-    
-    .flex-shrink-0 { flex-shrink: 0; }
-    .flex-shrink-1 { flex-shrink: 1; }
-
-    .static { position: static; }
-    .relative  { position: relative; }
-    .absolute  { position: absolute; }
-    .fixed  { position: fixed; }
-    .sticky  { position: sticky; }
-
-    .ma0 { margin: 0; }
-    .mt0 { margin-top: 0; }
-    .mr0 { margin-right: 0; }
-    .mb0 { margin-bottom: 0; }
-    .ml0 { margin-left: 0; }
-    .mh0 { margin-left: 0; margin-right: 0; }
-    .mv0 { margin-top: 0; margin-bottom: 0; }
-
-    .pa0 { padding: 0; }
-    .pt0 { padding-top: 0; }
-    .pr0 { padding-right: 0; }
-    .pb0 { padding-bottom: 0; }
-    .pl0 { padding-left: 0; }
-    .ph0 { padding-left: 0; padding-right: 0; }
-    .pv0 { padding-top: 0; padding-bottom: 0; }
-
-    /* Typography
+    /* Globals
     /* ----------------------------------------------------- */
     h1, h2, h3, h4, h5, h6, p {
         padding: 0;
@@ -333,6 +248,13 @@ export const GlobalStyles = `
 
     .gh-portal-detail-footer .gh-portal-btn {
         min-width: 90px;
+    }
+
+    .gh-portal-action-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-grow: 1;
     }
 
     /* Buttons

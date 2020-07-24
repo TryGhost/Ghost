@@ -9,6 +9,12 @@ export const MagicLinkStyles = `
         width: 44px;
         margin: 12px 0 2px;
     }
+
+    .gh-portal-inbox-notification {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 `;
 
 export default class MagicLinkPage extends React.Component {
@@ -16,7 +22,7 @@ export default class MagicLinkPage extends React.Component {
 
     renderFormHeader() {
         return (
-            <div className='flex flex-column items-center'>
+            <div className='gh-portal-inbox-notification'>
                 <header className='gh-portal-header'>
                     <EnvelopeIcon className='gh-portal-icon gh-portal-envelope' />
                     <h2>Check your inbox!</h2>
@@ -28,7 +34,7 @@ export default class MagicLinkPage extends React.Component {
 
     renderLoginMessage() {
         return (
-            <div className='flex justify-center'>
+            <div>
                 <div
                     style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}}
                     onClick={() => this.context.onAction('switchPage', {page: 'signin'})}

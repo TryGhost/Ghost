@@ -79,7 +79,7 @@ export default class SigninPage extends React.Component {
     renderSignupMessage() {
         const brandColor = this.context.brandColor;
         return (
-            <div className='flex justify-center gh-portal-signup-footer'>
+            <div className='gh-portal-signup-footer'>
                 <div>Don't have an account?</div>
                 <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}>Subscribe</button>
             </div>
@@ -125,7 +125,7 @@ export default class SigninPage extends React.Component {
 
     render() {
         return (
-            <div className='flex flex-column'>
+            <div>
                 {this.renderFormHeader()}
                 {this.renderForm()}
             </div>

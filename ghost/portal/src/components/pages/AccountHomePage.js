@@ -36,12 +36,31 @@ export const AccountHomePageStyles = `
         margin: 0;
     }
 
+    .gh-portal-account-footerright {
+        display: flex;
+        flex-grow: 1;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
     .gh-portal-account-footermenu li {
         margin-right: 16px;
     }
 
     .gh-portal-account-footermenu li:last-of-type {
         margin-right: 0;
+    }
+
+    .gh-portal-freeaccount-newsletter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .gh-portal-freeaccount-newsletter .label {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
     }
 `;
 
@@ -65,7 +84,7 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
                     : null
                 }
             </ul>
-            <div className='flex flex-grow-1 justify-end'>
+            <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
                     <li>
                         <button className='gh-portal-btn' onClick={onLogout}>Logout</button>
@@ -163,7 +182,7 @@ class PaidAccountHomePage extends React.Component {
 
         return (
             <div className='gh-portal-section'>
-                <p className='gh-portal-text-center mb0'>
+                <p className='gh-portal-text-center'>
                     Hey <strong>{firstname || name || email}! </strong>
                     You have an active <strong>{siteTitle}</strong> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
                 </p>

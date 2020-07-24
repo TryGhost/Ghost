@@ -74,7 +74,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderAccountFooter() {
         return (
-            <div className='flex flex-grow-1 justify-between gh-portal-detail-footer'>
+            <div className='gh-portal-action-footer'>
                 <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
                 {this.renderSaveButton()}
             </div>
@@ -167,8 +167,8 @@ export default class AccountProfilePage extends React.Component {
         }
         const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
         return (
-            <div className='flex items-center justify-between' style={{marginTop: '24px'}}>
-                <div className='flex flex-column flex-grow-1'>
+            <div className='gh-portal-freeaccount-newsletter' style={{marginTop: '24px'}}>
+                <div className='label'>
                     <h3 className='gh-portal-input-label'>Newsletter</h3>
                     <div className='gh-portal-setting-data'>{label}</div>
                 </div>
