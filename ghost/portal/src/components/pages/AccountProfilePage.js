@@ -74,18 +74,18 @@ export default class AccountProfilePage extends React.Component {
 
     renderAccountFooter() {
         return (
-            <div className='gh-portal-action-footer'>
+            <footer className='gh-portal-action-footer'>
                 <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
                 {this.renderSaveButton()}
-            </div>
+            </footer>
         );
     }
 
     renderHeader() {
         return (
-            <div className='gh-portal-detail-header'>
+            <header className='gh-portal-detail-header'>
                 <h3 className='gh-portal-main-title'>Account settings</h3>
-            </div>
+            </header>
         );
     }
 

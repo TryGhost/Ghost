@@ -79,22 +79,22 @@ export default class SigninPage extends React.Component {
     renderSignupMessage() {
         const brandColor = this.context.brandColor;
         return (
-            <div className='gh-portal-signup-footer'>
+            <footer className='gh-portal-signup-footer'>
                 <div>Don't have an account?</div>
                 <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}>Subscribe</button>
-            </div>
+            </footer>
         );
     }
 
     renderForm() {
         return (
-            <div>
+            <section>
                 <div className='gh-portal-section form'>{this.renderInputField('email')}</div>
                 <div> 
                     {this.renderSubmitButton()}
                     {this.renderSignupMessage()}
                 </div>
-            </div>
+            </section>
         );
     }
 
@@ -116,10 +116,10 @@ export default class SigninPage extends React.Component {
         const siteTitle = this.context.site.title || 'Site Title';
 
         return (
-            <div className='gh-portal-signin-header'>
+            <header className='gh-portal-signin-header'>
                 {this.renderSiteLogo()}
                 <h2 className="gh-portal-main-title">Sign in to {siteTitle}</h2>
-            </div>
+            </header>
         );
     }
 

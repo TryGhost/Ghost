@@ -7,13 +7,18 @@ const React = require('react');
 export const MagicLinkStyles = `
     .gh-portal-envelope {
         width: 44px;
-        margin: 12px 0 2px;
+        margin: 0 0 2px;
     }
 
     .gh-portal-inbox-notification {
         display: flex;
         flex-direction: column;
         align-items: center;
+    }
+
+    .gh-portal-inbox-notification p {
+        text-align: center;
+        margin-bottom: 30px;
     }
 `;
 
@@ -22,13 +27,13 @@ export default class MagicLinkPage extends React.Component {
 
     renderFormHeader() {
         return (
-            <div className='gh-portal-inbox-notification'>
+            <section className='gh-portal-inbox-notification'>
                 <header className='gh-portal-header'>
                     <EnvelopeIcon className='gh-portal-icon gh-portal-envelope' />
                     <h2>Check your inbox!</h2>
                 </header>
-                <p className='gh-portal-section gh-portal-text-center'>Check your inbox and click on the login link to complete the signin.</p>
-            </div>
+                <p>Check your inbox and click on the login link to complete the signin.</p>
+            </section>
         );
     }
 

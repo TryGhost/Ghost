@@ -220,12 +220,12 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, styl
         return null;
     }
     return (
-        <div>
+        <section>
             <PlanLabel showLabel={showLabel} />
             <div className='gh-portal-plans-container'>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
             </div>
-        </div>
+        </section>
     );
 }
 

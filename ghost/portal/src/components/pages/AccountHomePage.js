@@ -74,7 +74,7 @@ const UserAvatar = ({avatar, brandColor}) => {
 
 const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     return (
-        <div className='gh-portal-account-footer'>
+        <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
                 {onSettings ? null : 
                     <li><button className='gh-portal-btn gh-portal-btn-branded'>Contact support</button></li>
@@ -91,17 +91,17 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
                     </li>
                 </ul>
             </div>
-        </div>
+        </footer>
     );
 };
 
 const UserHeader = ({member, brandColor}) => {
     const avatar = member.avatar_image;
     return (
-        <div className='gh-portal-account-header'>
+        <header className='gh-portal-account-header'>
             <UserAvatar avatar={avatar} brandColor={brandColor} />
             <h2 className="gh-portal-main-title">Your account</h2>
-        </div>
+        </header>
     );
 };
 
@@ -144,13 +144,13 @@ class FreeAccountHomePage extends React.Component {
         const {title: siteTitle} = this.context.site;
 
         return (
-            <div>
+            <section>
                 <p className='gh-portal-text-center'>
                     Hey <strong>{firstname || name || email}! </strong>
                     You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
                 </p>
                 {this.renderSubscribeButton()}
-            </div>
+            </section>
         );
     }
 
@@ -181,12 +181,12 @@ class PaidAccountHomePage extends React.Component {
         const siteTitle = this.context.site.title;
 
         return (
-            <div className='gh-portal-section'>
+            <section className='gh-portal-section'>
                 <p className='gh-portal-text-center'>
                     Hey <strong>{firstname || name || email}! </strong>
                     You have an active <strong>{siteTitle}</strong> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
                 </p>
-            </div>
+            </section>
         );
     }
 
