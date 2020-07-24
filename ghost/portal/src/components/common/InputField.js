@@ -37,7 +37,7 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
     id = id || `input-${name}`;
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     return (
-        <>
+        <section className='gh-portal-input-section'>
             <label htmlFor={id} className={labelClasses}> {label} </label>
             <input
                 id={id}
@@ -50,7 +50,7 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 disabled={disabled}
                 aria-label={label}
             />
-        </>
+        </section>
     );
 }
 
