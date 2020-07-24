@@ -8,7 +8,6 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -48,19 +47,6 @@ export default Controller.extend({
         let publicHash = this.get('settings.publicHash');
 
         return `${blogUrl}/${publicHash}/rss`;
-    }),
-
-    backgroundStyle: computed('settings.accentColor', function () {
-        let color = this.get('settings.accentColor') || '#ffffff';
-        return htmlSafe(`background-color: ${color}`);
-    }),
-
-    accentColor: computed('settings.accentColor', function () {
-        let color = this.get('settings.accentColor');
-        if (color && color[0] === '#') {
-            return color.slice(1);
-        }
-        return color;
     }),
 
     actions: {
@@ -268,43 +254,6 @@ export default Controller.extend({
                            + 'https://twitter.com/yourUsername';
                 this.get('settings.errors').add('twitter', errMessage);
                 this.get('settings.hasValidated').pushObject('twitter');
-                return;
-            }
-        },
-
-        validateAccentColor() {
-            let newColor = this.get('accentColor');
-            let oldColor = this.get('settings.accentColor');
-            let errMessage = '';
-
-            // reset errors and validation
-            this.get('settings.errors').remove('accentColor');
-            this.get('settings.hasValidated').removeObject('accentColor');
-
-            if (newColor === '') {
-                // Clear out the accent color
-                this.set('settings.accentColor', '');
-                return;
-            }
-
-            // accentColor will be null unless the user has input something
-            if (!newColor) {
-                newColor = oldColor;
-            }
-
-            if (newColor[0] !== '#') {
-                newColor = `#${newColor}`;
-            }
-
-            if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
-                this.set('settings.accentColor', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('settings.accentColor', newColor);
-                });
-            } else {
-                errMessage = 'The color should be in valid hex format';
-                this.get('settings.errors').add('accentColor', errMessage);
-                this.get('settings.hasValidated').pushObject('accentColor');
                 return;
             }
         }
