@@ -1,4 +1,5 @@
 module.exports = function ({
+    Member,
     StripeWebhook,
     StripeCustomer,
     StripeCustomerSubscription
@@ -9,15 +10,26 @@ module.exports = function ({
         }
 
         if (metadata.customer) {
-            await StripeCustomer.upsert(metadata.customer, {
-                customer_id: metadata.customer.customer_id
+            const member = await Member.findOne({
+                id: metadata.customer.member_id
             });
+
+            if (member) {
+                await StripeCustomer.upsert(metadata.customer, {
+                    customer_id: metadata.customer.customer_id
+                });
+            }
         }
 
         if (metadata.subscription) {
-            await StripeCustomerSubscription.upsert(metadata.subscription, {
-                subscription_id: metadata.subscription.subscription_id
+            const customer = await StripeCustomer.findOne({
+                customer_id: metadata.subscription.customer_id
             });
+            if (customer) {
+                await StripeCustomerSubscription.upsert(metadata.subscription, {
+                    subscription_id: metadata.subscription.subscription_id
+                });
+            }
         }
 
         if (metadata.webhook) {
