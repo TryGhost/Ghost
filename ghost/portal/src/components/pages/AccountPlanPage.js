@@ -99,7 +99,7 @@ export default class AccountPlanPage extends React.Component {
                         onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
                     />
                 </div>
-                <div className='flex items-center justify-between flex-grow-1'>
+                <div className='gh-portal-action-footer'>
                     <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
                     {this.renderActionButton()}
                 </div>
