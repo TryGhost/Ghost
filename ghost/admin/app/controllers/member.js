@@ -65,8 +65,13 @@ export default class MemberController extends Controller {
     }
 
     @action
-    deleteMember() {
-        return this.member.destroyRecord().then(() => {
+    deleteMember(cancelSubscriptions = false) {
+        let options = {
+            adapterOptions: {
+                cancel: cancelSubscriptions
+            }
+        };
+        return this.member.destroyRecord(options).then(() => {
             this.members.refreshData();
             return this.transitionToRoute('members');
         }, (error) => {

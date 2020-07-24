@@ -28,11 +28,12 @@ export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
     buildURL() {
         // Ensure trailing slashes
         let url = this._super(...arguments);
+        let parsedUrl = new URL(url);
 
-        if (url.slice(-1) !== '/') {
-            url += '/';
+        if (!parsedUrl.pathname.endsWith('/')) {
+            parsedUrl.pathname += '/';
         }
 
-        return url;
+        return parsedUrl.toString();
     }
 });
