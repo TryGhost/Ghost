@@ -303,7 +303,8 @@ const members = {
         statusCode: 204,
         headers: {},
         options: [
-            'id'
+            'id',
+            'cancel'
         ],
         validation: {
             options: {
@@ -326,10 +327,12 @@ const members = {
                 });
             }
 
-            // NOTE: move to a model layer once Members/MemberStripeCustomer relations are in place
-            await membersService.api.members.destroyStripeSubscriptions(member);
+            if (frame.options.cancel === true) {
+                await membersService.api.members.cancelStripeSubscriptions(member);
+            }
 
-            await models.Member.destroy(frame.options)
+            // Wrapped in bluebird promise to allow "filtered catch"
+            await Promise.resolve(models.Member.destroy(frame.options))
                 .catch(models.Member.NotFoundError, () => {
                     throw new errors.NotFoundError({
                         message: i18n.t('errors.api.resource.resourceNotFound', {
