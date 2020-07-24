@@ -235,6 +235,7 @@ class PaidAccountHomePage extends React.Component {
             default_payment_card_last4: defaultCardLast4
         } = subscriptions[0];
 
+        const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
         return (
             <div className='gh-portal-list'>
                 <section>
@@ -264,7 +265,7 @@ class PaidAccountHomePage extends React.Component {
                 <section>
                     <div className='gh-portal-list-detail'>
                         <h3>Newsletter</h3>
-                        <p>Not subscribed to email newsletters</p>
+                        <p>{label}</p>
                     </div>
                     <div>
                         <Switch onToggle={(e) => {
