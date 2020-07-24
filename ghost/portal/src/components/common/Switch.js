@@ -3,11 +3,11 @@ import React from 'react';
 export const SwitchStyles = `
     .gh-portal-for-switch label,
     .gh-portal-for-switch .container {
-        cursor: pointer;
         position: relative;
         display: inline-block;
         width: 36px !important;
         height: 22px !important;
+        cursor: pointer;
     }
 
     .gh-portal-for-switch label p,
@@ -25,7 +25,6 @@ export const SwitchStyles = `
 
     .gh-portal-for-switch .input-toggle-component {
         position: absolute;
-        cursor: pointer;
         top: 0;
         left: 0;
         right: 0;
@@ -37,6 +36,7 @@ export const SwitchStyles = `
         height: 22px !important;
         border-radius: 999px;
         transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        cursor: pointer;
     }
 
     .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component,
@@ -47,10 +47,10 @@ export const SwitchStyles = `
     .gh-portal-for-switch .input-toggle-component:before {
         position: absolute;
         content: "";
+        top: 2px !important;
+        left: 2px !important;
         height: 18px !important;
         width: 18px !important;
-        left: 2px !important;
-        top: 2px !important;
         background-color: white;
         transition: .3s;
         box-shadow: 0 0 1px rgba(0,0,0,.3), 0 4px 6px rgba(0,0,0,.1);
