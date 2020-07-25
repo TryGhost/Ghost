@@ -4,7 +4,8 @@ function getModifiedDate(data) {
     let context = data.context ? data.context : null;
     let modDate;
 
-    context = _.includes(context, 'amp') ? 'post' : context;
+    //Since page is an extension of post
+    context = _.includes(context, 'amp') || _.includes(context, 'page') ? 'post' : context;
 
     if (data[context]) {
         modDate = data[context].updated_at || null;
