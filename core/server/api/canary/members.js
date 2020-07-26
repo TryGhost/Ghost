@@ -434,6 +434,8 @@ const members = {
                 const name = `Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
                 const result = await findOrCreateLabels([{name}], frame.options);
                 importLabel = result[0] && result[0].toJSON();
+
+                importSetLabels.push(importLabel);
             }
 
             return Promise.resolve().then(() => {
