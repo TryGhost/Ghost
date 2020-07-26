@@ -309,7 +309,8 @@ describe('Members API', function () {
                 importedMember1.comped.should.equal(false);
                 importedMember1.stripe.should.not.be.undefined();
                 importedMember1.stripe.subscriptions.length.should.equal(0);
-                importedMember1.labels.length.should.equal(2);
+                // 2 specified labels plus auto-generated import label
+                importedMember1.labels.length.should.equal(3);
             });
     });
 
@@ -358,7 +359,7 @@ describe('Members API', function () {
                 importedMember1.comped.should.equal(false);
                 importedMember1.stripe.should.not.be.undefined();
                 importedMember1.stripe.subscriptions.length.should.equal(0);
-                importedMember1.labels.length.should.equal(0);
+                importedMember1.labels.length.should.equal(1); // auto-generated import label
             });
     });
 
@@ -404,7 +405,7 @@ describe('Members API', function () {
                 defaultMember1.comped.should.equal(false);
                 defaultMember1.stripe.should.not.be.undefined();
                 defaultMember1.stripe.subscriptions.length.should.equal(0);
-                defaultMember1.labels.length.should.equal(0);
+                defaultMember1.labels.length.should.equal(1); // auto-generated import label
 
                 const defaultMember2 = jsonResponse.members.find(member => (member.email === 'member+defaults_2@example.com'));
                 should(defaultMember2).not.be.undefined();
