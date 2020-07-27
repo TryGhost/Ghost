@@ -1,6 +1,7 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -13,6 +14,8 @@ export default ModalComponent.extend({
     confirm: () => {},
 
     member: alias('model'),
+
+    cancelSubscriptions: reads('shouldCancelSubscriptions'),
 
     hasActiveStripeSubscriptions: computed('member', function () {
         let subscriptions = this.member.get('stripe');
@@ -34,7 +37,7 @@ export default ModalComponent.extend({
         },
 
         toggleShouldCancelSubscriptions() {
-            this.shouldCancelSubscriptions = !this.shouldCancelSubscriptions;
+            this.set('shouldCancelSubscriptions', !this.shouldCancelSubscriptions);
         }
     },
 
