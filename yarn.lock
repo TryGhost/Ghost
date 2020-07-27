@@ -9140,6 +9140,11 @@ uuid@8.2.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.2.0.tgz#cb10dd6b118e2dada7d0cd9730ba7417c93d920e"
   integrity sha512-CYpGiFTUrmI6OBMkAdjSDM0k5h8SkkiTP4WAjQgDgNB1S3Ou9VBEvr6q0Kv2H1mMk7IWfxYGpMH5sd5AvcIV2Q==
 
+uuid@8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.0.tgz#ab738085ca22dc9a8c92725e459b1d507df5d6ea"
+  integrity sha512-fX6Z5o4m6XsXBdli9g7DtWgAx+osMsRRZFKma1mIUsLCz6vRvv+pz5VNbyu9UEDzpMWulZfvpgb/cmDXVulYFQ==
+
 uuid@^3.0.0, uuid@^3.2.1, uuid@^3.3.2, uuid@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
