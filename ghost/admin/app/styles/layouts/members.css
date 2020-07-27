@@ -436,6 +436,31 @@ textarea.gh-member-details-textarea {
     flex-basis: 408px;
 }
 
+.gh-member-cancelstripe-checkbox {
+    margin-bottom: 4px;
+}
+
+.gh-member-cancelstripe-checkbox label {
+    display: flex;
+}
+
+.gh-member-cancelstripe-checkbox h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.15em;
+    margin-top: 2px;
+}
+
+.gh-member-cancelstripe-checkbox label p {
+    margin-top: -2px;
+    color: var(--middarkgrey);
+}
+
+.gh-member-cancelstripe-checkbox input:checked + .input-toggle-component {
+    border-color: color-mod(var(--red) l(-5%));
+    background: var(--red);
+}
+
 /* Import modal
 /* ---------------------------------------------------------- */
 
