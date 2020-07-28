@@ -284,6 +284,20 @@ const Member = ghostBookshelf.Model.extend({
             });
         }
         return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
+    },
+
+    async bulkDestroy(options) {
+        // 2^15 is the max variables for sqlite3 3.32+
+        // 2^16 is the max variables for mysql
+        // Using the lower for now, but could be optimised to switch
+        const chunks = _.chunk(options.idsToDestroy, 2 ** 15);
+        return ghostBookshelf.transaction(async (transacting) => {
+            for (const chunk of chunks) {
+                await transacting('members')
+                    .whereIn('id', chunk)
+                    .del();
+            }
+        });
     }
 });
 
