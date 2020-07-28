@@ -126,6 +126,20 @@ const findOrCreateLabels = async (labels, options) => {
     }));
 };
 
+const getUniqueMemberLabels = (members) => {
+    const allLabels = [];
+
+    members.forEach((member) => {
+        const labels = (member.labels && member.labels.split(',')) || [];
+
+        if (labels.length) {
+            allLabels.push(...labels);
+        }
+    });
+
+    return _.uniq(allLabels);
+};
+
 const members = {
     docName: 'members',
 
@@ -437,6 +451,11 @@ const members = {
 
                 importSetLabels.push(importLabel);
             }
+
+            // NOTE: member-specific labels have to be pre-created as they cause conflicts when processed
+            //       in parallel
+            const memberLabels = serializeMemberLabels(getUniqueMemberLabels(frame.data.members));
+            await findOrCreateLabels(memberLabels, frame.options);
 
             return Promise.resolve().then(() => {
                 const sanitized = sanitizeInput(frame.data.members);
