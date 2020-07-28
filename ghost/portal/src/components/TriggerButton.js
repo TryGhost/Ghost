@@ -9,6 +9,8 @@ import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
 import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import getContrastColor from '../utils/contrast-color';
+import TriggerButtonStyle from './TriggerButton.styles';
+
 const React = require('react');
 
 const ICON_MAPPING = {
@@ -33,45 +35,16 @@ const Styles = ({brandColor, hasText}) => {
             width: '500px',
             maxWidth: '500px',
             height: '60px',
-            boxShadow: 'rgba(0, 0, 0, 0.06) 0px 1px 6px 0px, rgba(0, 0, 0, 0.16) 0px 2px 32px 0px',
+            boxShadow: '0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px rgba(0, 0, 0, 0.035), 0 21.1px 24.1px rgba(0, 0, 0, 0.046), 0 70px 80px rgba(0, 0, 0, 0.07)',
             borderRadius: '999px',
-            backgroundColor: brandColor,
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
             overflow: 'hidden',
             ...frame
         },
-        launcher: {
-            position: 'absolute',
-            top: '0px',
-            left: '0px',
-            width: '60px',
-            height: '60px',
-            cursor: 'pointer',
-            transformOrigin: 'center center',
-            backfaceVisibility: 'hidden',
-            WebkitFontSmoothing: 'antialiased',
-            borderRadius: '999px',
-            overflow: 'hidden'
-        },
-        button: {
-            userSelect: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            WebkitBoxAlign: 'center',
-            alignItems: 'center',
-            WebkitBoxPack: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            opacity: '1',
-            transform: 'rotate(0deg) scale(1)',
-            height: '100%',
-            transition: 'transform 0.16s linear 0s, opacity 0.08s linear 0s',
-            overflow: 'hidden'
-        },
         userIcon: {
-            width: '26px',
-            height: '26px',
+            width: '34px',
+            height: '34px',
             color: invertColor
         },
         closeIcon: {
@@ -141,19 +114,25 @@ class TriggerButtonContent extends React.Component {
             );
         }
 
-        if (Object.keys(ICON_MAPPING).includes(buttonIcon)) {
-            const ButtonIcon = ICON_MAPPING[buttonIcon];
-            return (
-                <ButtonIcon style={Style.userIcon} />
-            );
-        } else if (buttonIcon) {
-            return (
-                <img style={{width: '26px', height: '26px'}} src={buttonIcon} alt="Icon" />
-            );
-        } else {
+        if (this.context.member) {
             return (
                 <UserIcon style={Style.userIcon} />
             );
+        } else {
+            if (Object.keys(ICON_MAPPING).includes(buttonIcon)) {
+                const ButtonIcon = ICON_MAPPING[buttonIcon];
+                return (
+                    <ButtonIcon style={Style.userIcon} />
+                );
+            } else if (buttonIcon) {
+                return (
+                    <img style={{width: '26px', height: '26px'}} src={buttonIcon} alt="Icon" />
+                );
+            } else {
+                return (
+                    <UserIcon style={Style.userIcon} />
+                );
+            }
         }
     }
 
@@ -185,11 +164,10 @@ class TriggerButtonContent extends React.Component {
 
     render() {
         const hasText = this.hasText();
-        const Style = Styles({brandColor: this.context.brandColor});
         if (hasText) {
             return (
-                <div style={Style.button} onClick={e => this.onToggle(e)}>
-                    <div style={{padding: '0 16px 0 20px', display: 'flex', alignItems: 'center'}} ref={this.container}>
+                <div className='gh-portal-triggerbtn-wrapper' onClick={e => this.onToggle(e)}>
+                    <div className='gh-portal-triggerbtn-container' ref={this.container}>
                         {this.renderTriggerIcon()}
                         {this.renderText()}
                     </div>
@@ -197,8 +175,8 @@ class TriggerButtonContent extends React.Component {
             );
         }
         return (
-            <div style={Style.button} onClick={e => this.onToggle(e)}>
-                <div style={{padding: '0 24px', display: 'flex'}}>
+            <div className='gh-portal-triggerbtn-wrapper' onClick={e => this.onToggle(e)}>
+                <div className='gh-portal-triggerbtn-container'>
                     {this.renderTriggerIcon()}
                 </div>
             </div>
@@ -228,6 +206,17 @@ export default class TriggerButton extends React.Component {
         return ['icon-and-text', 'text-only'].includes(buttonStyle) && !this.context.member && buttonText;
     }
 
+    renderFrameStyles() {
+        const styles = `
+            :root {
+                --brandcolor: ${this.context.brandColor}
+            }
+        ` + TriggerButtonStyle;
+        return (
+            <style dangerouslySetInnerHTML={{__html: styles}} />
+        );
+    }
+
     render() {
         const {portal_button: portalButton} = this.context.site;
         const {showPopup} = this.context;
@@ -248,7 +237,7 @@ export default class TriggerButton extends React.Component {
         }
 
         return (
-            <Frame style={frameStyle} title="membersjs-trigger">
+            <Frame style={frameStyle} title="membersjs-trigger" head={this.renderFrameStyles()}>
                 <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );
