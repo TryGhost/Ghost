@@ -4,6 +4,22 @@ import PlansSection from '../common/PlansSection';
 
 const React = require('react');
 
+const GlobalError = ({message, style}) => {
+    if (!message) {
+        return null;
+    }
+    return (
+        <p style={{
+            color: '#f05230',
+            width: '100%',
+            lineHeight: '0',
+            ...(style || {})
+        }}>
+            {message}
+        </p>
+    );
+};
+
 export default class AccountPlanPage extends React.Component {
     static contextType = AppContext;
 
@@ -46,12 +62,22 @@ export default class AccountPlanPage extends React.Component {
         e.preventDefault();
         const {onAction, member} = this.context;
         const plan = this.state.plan;
-        if (member.paid) {
-            const {subscriptions} = member;
-            const subscriptionId = subscriptions[0].id;
-            onAction('updateSubscription', {plan, subscriptionId});
+        const errors = this.validateForm();
+        if (errors && Object.keys(errors).length > 0) {
+            this.setState({
+                errors
+            });
         } else {
-            onAction('checkoutPlan', {plan});
+            this.setState({
+                errors: {}
+            });
+            if (member.paid) {
+                const {subscriptions} = member;
+                const subscriptionId = subscriptions[0].id;
+                onAction('updateSubscription', {plan, subscriptionId});
+            } else {
+                onAction('checkoutPlan', {plan});
+            }
         }
     }
 
@@ -69,6 +95,27 @@ export default class AccountPlanPage extends React.Component {
         if (member && member.paid && member.subscriptions[0]) {
             const {plan} = member.subscriptions[0];
             return plan.nickname;
+        }
+        return null;
+    }
+
+    validateForm() {
+        const {member} = this.context;
+        const activePlan = this.getActivePlanName({member});
+        if (activePlan === this.state.plan) {
+            return {
+                global: 'Please select a different plan'
+            };
+        }
+        return {};
+    }
+
+    renderError() {
+        const {global} = this.state.errors || {};
+        if (global) {
+            return (
+                <GlobalError message={global} />
+            );
         }
         return null;
     }
@@ -99,15 +146,16 @@ export default class AccountPlanPage extends React.Component {
                         onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
                     />
                 </div>
+                {this.renderError()}
                 <footer className='gh-portal-action-footer'>
                     <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
-                    {this.renderActionButton()}
+                    {this.renderSubmitButton()}
                 </footer>
             </section>
         );
     }
 
-    renderActionButton() {
+    renderSubmitButton() {
         const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(this.context.action);
         const label = isRunning ? 'Updating...' : 'Continue';
         const disabled = (isRunning || !this.state.plan) ? true : false;
