@@ -22,15 +22,37 @@ export const AvatarStyles = `
         width: calc(100% + 2px);
         height: calc(100% + 2px);
         opacity: 1;
-        maxWidth: unset;
+        max-width: unset;
     }
 `;
 
 const Styles = ({style = {}}) => {
     return {
+        avatarContainer: {
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            borderRadius: '999px',
+            ...(style.avatarContainer || {}) // Override any custom style
+        },
+        gravatar: {
+            position: 'absolute',
+            display: 'block',
+            top: '-1px',
+            right: '-1px',
+            bottom: '-1px',
+            left: '-1px',
+            width: 'calc(100% + 2px)',
+            height: 'calc(100% + 2px)',
+            opacity: '1',
+            maxWidth: 'unset',
+            ...(style.avatarContainer || {}) // Override any custom style
+        },
         userIcon: {
-            width: '56px',
-            height: '56px',
+            width: '34px',
+            height: '34px',
             color: '#fff',
             ...(style.userIcon || {}) // Override any custom style
         }
@@ -40,9 +62,9 @@ const Styles = ({style = {}}) => {
 function MemberGravatar({gravatar, style}) {
     let Style = Styles({style});
     return (
-        <figure className='gh-portal-avatar'>
+        <figure className='gh-portal-avatar' style={Style.avatarContainer}>
             <UserIcon style={Style.userIcon} />
-            {gravatar ? <img src={gravatar} alt="Gravatar" /> : null}
+            {gravatar ? <img style={Style.gravatar} src={gravatar} alt="Gravatar" /> : null}
         </figure>
     );
 }

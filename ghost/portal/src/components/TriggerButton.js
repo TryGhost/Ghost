@@ -70,8 +70,8 @@ const Styles = ({brandColor, hasText}) => {
             overflow: 'hidden'
         },
         userIcon: {
-            width: '20px',
-            height: '20px',
+            width: '26px',
+            height: '26px',
             color: invertColor
         },
         closeIcon: {
@@ -173,7 +173,7 @@ class TriggerButtonContent extends React.Component {
         const textColor = getContrastColor(brandColor);
         if (this.hasText()) {
             return (
-                <span style={{padding: '0 12px', color: textColor}}> {buttonText} </span>
+                <span style={{padding: '0 8px', color: textColor}}> {buttonText} </span>
             );
         }
         return null;
@@ -189,7 +189,7 @@ class TriggerButtonContent extends React.Component {
         if (hasText) {
             return (
                 <div style={Style.button} onClick={e => this.onToggle(e)}>
-                    <div style={{padding: '0 24px', display: 'flex', alignItems: 'center'}} ref={this.container}>
+                    <div style={{padding: '0 16px 0 20px', display: 'flex', alignItems: 'center'}} ref={this.container}>
                         {this.renderTriggerIcon()}
                         {this.renderText()}
                     </div>
