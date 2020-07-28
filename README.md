@@ -45,7 +45,7 @@ If you prefer to run on your own infrastructure, we also offer official 1-off in
 If you want to run your own instance of Ghost, in most cases the best way is to use our **CLI tool**
 
 ```
-$ npm install ghost-cli -g
+npm install ghost-cli -g
 ```
 
 &nbsp;
@@ -53,7 +53,7 @@ $ npm install ghost-cli -g
 Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://ghost.org/docs/install/local/)
 
 ```
-$ ghost install local
+ghost install local
 ```
 
 &nbsp;
@@ -61,7 +61,7 @@ $ ghost install local
 or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://ghost.org/docs/install/ubuntu/)
 
 ```
-$ ghost install
+ghost install
 ```
 
 &nbsp;
