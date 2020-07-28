@@ -47,6 +47,11 @@ const Styles = ({brandColor, hasText}) => {
             height: '34px',
             color: invertColor
         },
+        buttonIcon: {
+            width: '26px',
+            height: '26px',
+            color: invertColor
+        },
         closeIcon: {
             width: '20px',
             height: '20px',
@@ -122,7 +127,7 @@ class TriggerButtonContent extends React.Component {
             if (Object.keys(ICON_MAPPING).includes(buttonIcon)) {
                 const ButtonIcon = ICON_MAPPING[buttonIcon];
                 return (
-                    <ButtonIcon style={Style.userIcon} />
+                    <ButtonIcon style={Style.buttonIcon} />
                 );
             } else if (buttonIcon) {
                 return (
@@ -167,7 +172,7 @@ class TriggerButtonContent extends React.Component {
         if (hasText) {
             return (
                 <div className='gh-portal-triggerbtn-wrapper' onClick={e => this.onToggle(e)}>
-                    <div className='gh-portal-triggerbtn-container' ref={this.container}>
+                    <div className='gh-portal-triggerbtn-container with-label' ref={this.container}>
                         {this.renderTriggerIcon()}
                         {this.renderText()}
                     </div>
