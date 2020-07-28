@@ -27,6 +27,7 @@ export const member = {
         email: 'member@example.com',
         name: 'Example Member',
         firstname: null,
+        // avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&',
         avatar_image: '',
         subscriptions: [],
         paid: false
@@ -36,7 +37,8 @@ export const member = {
         email: 'paidmember+@example.com',
         name: 'Paid Member',
         firstname: 'Member',
-        avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&',
+        // avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&',
+        avatar_image: '',
         subscriptions: [{
             id: 'sub_HCLyRzHcGciDWJ',
             customer: {
