@@ -60,33 +60,34 @@ export default class AccountPlanPage extends React.Component {
 
     onPlanCheckout(e) {
         e.preventDefault();
-        const {onAction, member} = this.context;
-        const plan = this.state.plan;
-        const errors = this.validateForm();
-        if (errors && Object.keys(errors).length > 0) {
-            this.setState({
+        this.setState((state) => {
+            const errors = this.validateForm({state});
+            return {
                 errors
-            });
-        } else {
-            this.setState({
-                errors: {}
-            });
-            if (member.paid) {
-                const {subscriptions} = member;
-                const subscriptionId = subscriptions[0].id;
-                onAction('updateSubscription', {plan, subscriptionId});
-            } else {
-                onAction('checkoutPlan', {plan});
+            };
+        }, () => {
+            const {onAction, member} = this.context;
+            const {plan, errors} = this.state;
+            if (!(errors && Object.keys(errors).length > 0)) {
+                if (member.paid) {
+                    const {subscriptions} = member;
+                    const subscriptionId = subscriptions[0].id;
+                    onAction('updateSubscription', {plan, subscriptionId});
+                } else {
+                    onAction('checkoutPlan', {plan});
+                }
             }
-        }
+        });
     }
 
     onPlanSelect(e, name) {
         e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
         setTimeout(() => {
-            this.setState({
-                plan: name
+            this.setState((state) => {
+                return {
+                    plan: name
+                };
             });
         }, 5);
     }
@@ -99,10 +100,10 @@ export default class AccountPlanPage extends React.Component {
         return null;
     }
 
-    validateForm() {
+    validateForm({state}) {
         const {member} = this.context;
         const activePlan = this.getActivePlanName({member});
-        if (activePlan === this.state.plan) {
+        if (activePlan === state.plan) {
             return {
                 global: 'Please select a different plan'
             };
