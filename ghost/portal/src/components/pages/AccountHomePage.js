@@ -68,7 +68,7 @@ export const AccountHomePageStyles = `
 const UserAvatar = ({avatar, brandColor}) => {
     return (
         <div>
-            <MemberAvatar gravatar={avatar} style={{userIcon: {color: brandColor, width: '56px', height: '56px'}}} />
+            <MemberAvatar gravatar={avatar} style={{userIcon: {color: brandColor, width: '56px', height: '56px', padding: '2px'}}} />
         </div>
     );
 };

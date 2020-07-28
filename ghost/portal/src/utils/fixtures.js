@@ -36,7 +36,7 @@ export const member = {
         email: 'paidmember+@example.com',
         name: 'Paid Member',
         firstname: 'Member',
-        avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&d=blank',
+        avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&',
         subscriptions: [{
             id: 'sub_HCLyRzHcGciDWJ',
             customer: {

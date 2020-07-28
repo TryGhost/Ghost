@@ -13,7 +13,7 @@ import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 
 // Global styles
-export const GlobalStyles = `
+const GlobalStyles = `
 
     /* Colors
     /* ----------------------------------------------------- */

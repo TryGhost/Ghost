@@ -29,25 +29,9 @@ export const AvatarStyles = `
 const Styles = ({style = {}}) => {
     return {
         avatarContainer: {
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            borderRadius: '999px',
             ...(style.avatarContainer || {}) // Override any custom style
         },
         gravatar: {
-            position: 'absolute',
-            display: 'block',
-            top: '-1px',
-            right: '-1px',
-            bottom: '-1px',
-            left: '-1px',
-            width: 'calc(100% + 2px)',
-            height: 'calc(100% + 2px)',
-            opacity: '1',
-            maxWidth: 'unset',
             ...(style.avatarContainer || {}) // Override any custom style
         },
         userIcon: {
@@ -64,7 +48,7 @@ function MemberGravatar({gravatar, style}) {
     return (
         <figure className='gh-portal-avatar' style={Style.avatarContainer}>
             <UserIcon style={Style.userIcon} />
-            {gravatar ? <img style={Style.gravatar} src={gravatar} alt="Gravatar" /> : null}
+            {gravatar ? <img style={Style.gravatar} src={gravatar} alt="" /> : null}
         </figure>
     );
 }
