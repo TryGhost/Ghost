@@ -32,11 +32,11 @@
 
 <a href="https://ghost.org/pricing"><img src="https://user-images.githubusercontent.com/120485/43995179-556d7620-9da1-11e8-8410-4b2ba48ea8d0.png" alt="Ghost(Pro)" width="165px" /></a>
 
-The easiest way to deploy Ghost is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. You can have a fresh instance up and running in a couple of clicks with a worldwide CDN, backups, security and maintenance all done for you.
+The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you. 
 
-Not only will it save you hours of maintenance per month, but all revenue goes to the Ghost Foundation, which funds the maintenance and further development of Ghost itself. So you’ll be supporting open source software *and* getting a great service! Alternatively if you'd like to support us, we're very grateful to all our [GitHub Sponsors](https://github.com/sponsors/TryGhost) :heart:
+For most people this ends up being the best value option cause of [how much time it saves](https://ghost.org/docs/concepts/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software *and* getting a great service!
 
-If you prefer to run on your own infrastructure, we also provide 1-off installs and managed support and maintenance plans via **[Ghost(Valet)](https://valet.ghost.org)** - which can save a substantial amount of developer time and resources.
+If you prefer to run on your own infrastructure, we also offer official 1-off installs and managed support and maintenance plans via **[Ghost(Valet)](https://valet.ghost.org)** - which can save a substantial amount of developer time and resources.
 
 &nbsp;
 
@@ -68,8 +68,19 @@ $ ghost install
 
 Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/concepts/hosting/) & properly [upgrading Ghost](https://ghost.org/faq/upgrade-to-ghost-2-0/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/api/handlebars-themes/) or work with [our API](https://ghost.org/docs/api/).
 
+### Contributors & Advanced Developers
+
+For anyone wishing to contribute to Ghost or to hack/customise core files we recommend following our full development setup guides: [Contributor Guide](https://ghost.org/docs/concepts/contributing/) | [Developer Setup](https://ghost.org/docs/install/source/) | [Admin Client Dev Guide](https://ghost.org/docs/install/source/#ghost-admin)
+
 &nbsp;
 
+# Ghost Sponsors
+
+We'd like to extend big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub Sponsors](https://github.com/sponsors/TryGhost) :heart:
+
+**[DigitalOcean](https://digitalocean.com)** | **[Cloudflare](https://cloudflare.com)** | **[Foo](https://www.foo.software)**
+
+&nbsp;
 
 # Getting Help
 
@@ -78,14 +89,6 @@ You can find answers to a huge variety of questions, along with a large communit
 To stay up to date with all the latest news and product updates, make sure you [subscribe to our blog](https://ghost.org/blog/) — or you can always follow us [on Twitter](https://twitter.com/Ghost), if you prefer your updates bite-sized and facetious. :saxophone::turtle:
 
 &nbsp;
-
-
-# Contributors & Advanced Developers
-
-For anyone wishing to contribute to Ghost or to hack/customise core files we recommend following our full development setup guides: [General Contributor Guide](https://ghost.org/docs/concepts/contributing/) | [Developer Setup](https://ghost.org/docs/install/source/) | [Admin Client Dev Guide](https://ghost.org/docs/install/source/#ghost-admin)
-
-&nbsp;
-
 
 # Copyright & License
 
