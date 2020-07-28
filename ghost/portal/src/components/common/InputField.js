@@ -33,8 +33,25 @@ export const InputFieldStyles = `
     }
 `;
 
-function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, brandColor}) {
+function InputError({message, style}) {
+    if (!message) {
+        return null;
+    }
+    return (
+        <p style={{
+            color: '#f05230',
+            width: '100%',
+            lineHeight: '0',
+            ...(style || {})
+        }}>
+            {message}
+        </p>
+    );
+}
+
+function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, onBlur, errorMessage, brandColor}) {
     id = id || `input-${name}`;
+    onBlur = onBlur || function (){};
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     return (
         <section className='gh-portal-input-section'>
@@ -47,9 +64,11 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 value={value}
                 placeholder={placeholder}
                 onChange={e => onChange(e, name)}
+                onBlur={e => onBlur(e, name)}
                 disabled={disabled}
                 aria-label={label}
             />
+            <InputError message={errorMessage} name={name} />
         </section>
     );
 }

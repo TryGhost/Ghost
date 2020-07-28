@@ -1,6 +1,7 @@
 import ActionButton from '../common/ActionButton';
-import InputField from '../common/InputField';
 import AppContext from '../../AppContext';
+import InputForm from '../common/InputForm';
+import {ValidateInputForm} from '../../utils/form';
 
 const React = require('react');
 
@@ -25,17 +26,47 @@ export default class SigninPage extends React.Component {
 
     handleSignin(e) {
         e.preventDefault();
-        const email = this.state.email;
-
-        this.context.onAction('signin', {email});
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        }, () => {
+            const {email, errors} = this.state;
+            if (!(errors && Object.keys(errors).length > 0)) {
+                this.context.onAction('signin', {email});
+            }
+        });
     }
 
-    handleInput(e, field) {
+    handleInputChange(e, field) {
+        const fieldName = field.name;
         this.setState({
-            [field]: e.target.value,
-            showSuccess: false,
-            isLoading: false
+            [fieldName]: e.target.value
         });
+    }
+
+    handleInputBlur(e) {
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        });
+    }
+
+    getInputFields({state}) {
+        const errors = state.errors || {};
+        const fields = [
+            {
+                type: 'email',
+                value: state.email,
+                placeholder: 'jamie@example.com',
+                label: 'Email',
+                name: 'email',
+                required: true,
+                errorMessage: errors.email || ''
+            }
+        ];
+        return fields;
     }
 
     renderSubmitButton() {
@@ -48,30 +79,6 @@ export default class SigninPage extends React.Component {
                 disabled={disabled}
                 brandColor={this.context.brandColor}
                 label={label}
-            />
-        );
-    }
-
-    renderInputField(fieldName) {
-        const fields = {
-            email: {
-                type: 'email',
-                value: this.state.email,
-                placeholder: 'Your email address',
-                label: 'Email',
-                name: 'email'
-            }
-        };
-        const field = fields[fieldName];
-        return (
-            <InputField
-                label = {field.label}
-                hideLabel = {true}
-                type={field.type}
-                name={field.name}
-                placeholder={field.placeholder}
-                value={field.value}
-                onChange={(e, name) => this.handleInput(e, name)}
             />
         );
     }
@@ -89,8 +96,14 @@ export default class SigninPage extends React.Component {
     renderForm() {
         return (
             <section>
-                <div className='gh-portal-section form'>{this.renderInputField('email')}</div>
-                <div> 
+                <div className='gh-portal-section form'>
+                    <InputForm
+                        fields={this.getInputFields({state: this.state})}
+                        onChange={(e, field) => this.handleInputChange(e, field)}
+                        onBlur={(e, field) => this.handleInputBlur(e, field)}
+                    />
+                </div>
+                <div>
                     {this.renderSubmitButton()}
                     {this.renderSignupMessage()}
                 </div>

@@ -1,7 +1,8 @@
 import ActionButton from '../common/ActionButton';
-import InputField from '../common/InputField';
 import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
+import InputForm from '../common/InputForm';
+import {ValidateInputForm} from '../../utils/form';
 
 const React = require('react');
 
@@ -101,38 +102,35 @@ class SignupPage extends React.Component {
 
     handleSignup(e) {
         e.preventDefault();
-        const {onAction} = this.context;
-        const email = this.state.email;
-        const name = this.state.name;
-        const plan = this.state.plan;
-        onAction('signup', {name, email, plan});
-    }
-
-    handleInput(e, field) {
-        this.setState({
-            [field]: e.target.value
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        }, () => {
+            const {onAction} = this.context;
+            const {name, email, plan, errors} = this.state;
+            if (!(errors && Object.keys(errors).length > 0)) {
+                onAction('signup', {name, email, plan});
+                this.setState({
+                    errors: {}
+                });
+            }
         });
     }
 
-    renderSubmitButton() {
-        const {action, brandColor} = this.context;
+    handleInputChange(e, field) {
+        const fieldName = field.name;
+        this.setState({
+            [fieldName]: e.target.value
+        });
+    }
 
-        let label = (action === 'signup:running') ? 'Sending...' : 'Continue';
-        let retry = false;
-        if (action === 'signup:failed') {
-            label = 'Retry';
-            retry = true;
-        }
-        const disabled = (action === 'signup:running') ? true : false;
-        return (
-            <ActionButton
-                retry={retry}
-                onClick={e => this.handleSignup(e)}
-                disabled={disabled}
-                brandColor={brandColor}
-                label={label}
-            />
-        );
+    handleInputBlur(e) {
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        });
     }
 
     handleSelectPlan(e, name) {
@@ -172,16 +170,21 @@ class SignupPage extends React.Component {
         } = this.context.site;
 
         const plansData = [];
+        const discount = plans.monthly ? 100 - Math.round((plans.yearly / 12 * 100) / plans.monthly) : 0;
         const stripePlans = [
-            {type: 'month', 
-                price: plans.monthly, 
-                currency: plans.currency_symbol, 
-                name: 'Monthly'},
-            {type: 'year', 
-                price: plans.yearly, 
-                currency: plans.currency_symbol, 
-                name: 'Yearly', 
-                discount: 100 - Math.round((plans.yearly / 12 * 100) / plans.monthly)}
+            {
+                type: 'month',
+                price: plans.monthly,
+                currency: plans.currency_symbol,
+                name: 'Monthly'
+            },
+            {
+                type: 'year',
+                price: plans.yearly,
+                currency: plans.currency_symbol,
+                name: 'Yearly',
+                discount
+            }
         ];
 
         if (allowSelfSignup && (portalPlans === undefined || portalPlans.includes('free'))) {
@@ -199,40 +202,67 @@ class SignupPage extends React.Component {
         return plansData;
     }
 
+    getInputFields({state}) {
+        const {portal_name: portalName} = this.context.site;
+
+        const errors = state.errors || {};
+        const fields = [
+            {
+                type: 'email',
+                value: state.email,
+                placeholder: 'jamie@example.com',
+                label: 'Email',
+                name: 'email',
+                required: true,
+                errorMessage: errors.email || ''
+            }
+        ];
+
+        /** Show Name field if portal option is set*/
+        if (portalName) {
+            fields.unshift({
+                type: 'text',
+                value: state.name,
+                placeholder: 'Jamie Larson',
+                label: 'Name',
+                name: 'name',
+                required: true,
+                errorMessage: errors.name || ''
+            });
+        }
+        return fields;
+    }
+
+    renderSubmitButton() {
+        const {action, brandColor} = this.context;
+
+        let label = (action === 'signup:running') ? 'Sending...' : 'Continue';
+        let retry = false;
+        if (action === 'signup:failed') {
+            label = 'Retry';
+            retry = true;
+        }
+
+        const disabled = (action === 'signup:running') ? true : false;
+        return (
+            <ActionButton
+                retry={retry}
+                onClick={e => this.handleSignup(e)}
+                disabled={disabled}
+                brandColor={brandColor}
+                label={label}
+            />
+        );
+    }
+
     renderPlans() {
         const plansData = this.getPlans();
 
         return (
-            <PlansSection plans={plansData} selectedPlan={this.state.plan} onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}/>
-        );
-    }
-
-    renderInputField(fieldName) {
-        const fields = {
-            name: {
-                type: 'text',
-                value: this.state.name,
-                placeholder: 'Jamie Larson',
-                label: 'Name',
-                name: 'name'
-            },
-            email: {
-                type: 'email',
-                value: this.state.email,
-                placeholder: 'jamie@example.com',
-                label: 'Email',
-                name: 'email'
-            }
-        };
-        const field = fields[fieldName];
-        return (
-            <InputField
-                label = {field.label}
-                type={field.type}
-                name={field.name}
-                placeholder={field.placeholder}
-                value={field.value}
-                onChange={(e, name) => this.handleInput(e, name)}
+            <PlansSection
+                plans={plansData}
+                selectedPlan={this.state.plan}
+                onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}
             />
         );
     }
@@ -242,25 +272,26 @@ class SignupPage extends React.Component {
         return (
             <footer className='gh-portal-signup-footer'>
                 <div>Already a member?</div>
-                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => onAction('switchPage', {page: 'signin'})}>Log in</button>
+                <button
+                    className='gh-portal-btn gh-portal-btn-link'
+                    style={{color: brandColor}}
+                    onClick={() => onAction('switchPage', {page: 'signin'})}
+                >
+                    Log in
+                </button>
             </footer>
         );
-    }
-
-    renderNameField() {
-        const {portal_name: portalName} = this.context.site;
-        if (portalName === undefined || portalName) {
-            return this.renderInputField('name');
-        }
-        return null;
     }
 
     renderForm() {
         return (
             <section>
                 <div className='gh-portal-section'>
-                    {this.renderNameField()}
-                    {this.renderInputField('email')}
+                    <InputForm
+                        fields={this.getInputFields({state: this.state})}
+                        onChange={(e, field) => this.handleInputChange(e, field)}
+                        onBlur={(e, field) => this.handleInputBlur(e, field)}
+                    />
                     {this.renderPlans()}
                 </div>
                 <div>
