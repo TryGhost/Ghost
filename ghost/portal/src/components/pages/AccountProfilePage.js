@@ -1,8 +1,9 @@
 import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
-import InputField from '../common/InputField';
+import InputForm from '../common/InputForm';
 import Switch from '../common/Switch';
+import {ValidateInputForm} from '../../utils/form';
 
 const React = require('react');
 
@@ -37,12 +38,22 @@ export default class AccountProfilePage extends React.Component {
     }
 
     onProfileSave(e) {
-        const {email, name} = this.state;
-        const originalEmail = this.context.member.email;
-        if (email !== originalEmail) {
-            this.context.onAction('updateEmail', {email, oldEmail: originalEmail, emailType: 'updateEmail'});
-        }
-        this.context.onAction('updateMember', {email, name});
+        e.preventDefault();
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        }, () => {
+            const {email, name, errors} = this.state;
+            const originalEmail = this.context.member.email;
+
+            if (!(errors && Object.keys(errors).length > 0)) {
+                if (email !== originalEmail) {
+                    this.context.onAction('updateEmail', {email, oldEmail: originalEmail, emailType: 'updateEmail'});
+                }
+                this.context.onAction('updateMember', {email, name});
+            }
+        });
     }
 
     renderSaveButton() {
@@ -113,45 +124,55 @@ export default class AccountProfilePage extends React.Component {
         );
     }
 
-    handleInput(e, field) {
+    handleInputChange(e, field) {
+        const fieldName = field.name;
         this.setState({
-            [field]: e.target.value
+            [fieldName]: e.target.value
         });
     }
 
-    renderInputField(fieldName) {
-        const fields = {
-            name: {
+    handleInputBlur(e) {
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        });
+    }
+
+    getInputFields({state}) {
+        const errors = state.errors || {};
+        const fields = [
+            {
                 type: 'text',
-                value: this.state.name,
-                placeholder: 'Name...',
+                value: state.name,
+                placeholder: 'Jamie Larson',
                 label: 'Name',
                 name: 'name',
-                brandColor: this.context.brandColor
+                required: true,
+                errorMessage: errors.name || ''
             },
-            email: {
+            {
                 type: 'email',
-                value: this.state.email,
-                placeholder: 'Email...',
+                value: state.email,
+                placeholder: 'jamie@example.com',
                 label: 'Email',
                 name: 'email',
-                brandColor: this.context.brandColor
+                required: true,
+                errorMessage: errors.email || ''
             }
-        };
-        const field = fields[fieldName];
-        return (
-            <InputField
-                {...field}
-                onChange={(e, name) => this.handleInput(e, name)}
-            />
-        );
+        ];
+
+        return fields;
     }
 
     renderProfileData() {
         return (
             <div className='gh-portal-section'>
-                {this.renderInputField('name')}
-                {this.renderInputField('email')}
+                <InputForm
+                    fields={this.getInputFields({state: this.state})}
+                    onChange={(e, field) => this.handleInputChange(e, field)}
+                    onBlur={(e, field) => this.handleInputBlur(e, field)}
+                />
             </div>
         );
     }
