@@ -2,6 +2,38 @@ import AppContext from '../../AppContext';
 import CopyToClipboard from '../../utils/copy-to-clipboard';
 const React = require('react');
 
+export const LinkPageStyles = `
+    .gh-portal-links-table {
+        width: 100%;
+    }
+
+    .gh-portal-links-table tr td {
+        white-space: nowrap;
+        padding: 4px 12px 4px 0;
+    }
+
+    .gh-portal-links-table tr.header td {
+        border-bottom: 1px solid var(--grey12);
+    }
+
+    .gh-portal-links-table tr.header h4.toggle {
+        font-weight: 400;
+        color: var(--brandcolor);
+        cursor: pointer;
+    }
+
+    .gh-portal-links-table tr td:last-of-type {
+        text-align: right;
+        padding-right: 0;
+    }
+
+    .gh-portal-links-table tr.header .toggle-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+`;
+
 function getLinkOrAttribute({page, isLink, siteUrl}) {
     if (page === 'default') {
         return (isLink ? `${siteUrl}#/portal` : 'data-portal');
@@ -18,52 +50,25 @@ function getLinkOrAttribute({page, isLink, siteUrl}) {
     }
 }
 
-const LinkAttributeValue = ({page, isLink, siteUrl}) => {
-    const rightItemStyle = {
-        paddingBottom: '24px',
-        display: 'flex'
-    };
-    const value = getLinkOrAttribute({page, isLink, siteUrl});
-    return (
-        <div style={rightItemStyle}>
-            <span style={{
-                flexGrow: 1,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                paddingRight: '12px'
-            }}> {value} </span>
-            <button type="button" onClick={(e) => {
-                CopyToClipboard(value);
-            }}> Copy </button>
-        </div>
-    );
-};
-
-const LinkAttributeSection = ({siteUrl, showLinks: isLink, toggleShowLinks}) => {
-    return (
-        <div style={{flexGrow: 1, minWidth: '350px'}}>
-            <div style={{display: 'flex', borderBottom: '1px solid black', marginBottom: '12px'}}>
-                <span style={{flexGrow: 1, fontWeight: 'bold'}}> {isLink ? 'Link' : 'Data Attribute'} </span>
-                <LinkAttributeToggle showLinks={isLink} toggleShowLinks={toggleShowLinks}/>
-            </div>
-            <LinkAttributeValue page="default" isLink={isLink} siteUrl={siteUrl} />
-            <LinkAttributeValue page="signup" isLink={isLink} siteUrl={siteUrl} />
-            <LinkAttributeValue page="signin" isLink={isLink} siteUrl={siteUrl} />
-            <LinkAttributeValue page="accountHome" isLink={isLink} siteUrl={siteUrl} />
-            <LinkAttributeValue page="accountPlan" isLink={isLink} siteUrl={siteUrl} />
-            <LinkAttributeValue page="accountProfile" isLink={isLink} siteUrl={siteUrl} />
-        </div>
-    );
-};
-
 const LinkAttributeToggle = ({showLinks, toggleShowLinks}) => {
     const text = showLinks ? 'Show Data Attributes' : 'Show Links';
     return (
-        <span
-            style={{cursor: 'pointer', color: '#3eb0ef'}}
-            onClick={() => toggleShowLinks({showLinks: !showLinks})}> {text}
-        </span>
+        <h4 className='gh-portal-links-cell toggle' onClick={() => toggleShowLinks({showLinks: !showLinks})}>{text}</h4>
+    );
+};
+
+const LinkAttributeRow = ({pageName, page, isLink, siteUrl}) => {
+    const value = getLinkOrAttribute({page, isLink, siteUrl});
+    return (
+        <tr>
+            <td className='pagename'>{pageName}</td>
+            <td className='page-url'><input value={value} disabled="disabled" /></td>
+            <td className='copy'>
+                <button type="button" onClick={(e) => {
+                    CopyToClipboard(value);
+                }}>Copy</button>
+            </td>
+        </tr>
     );
 };
 
@@ -78,30 +83,27 @@ export default class LinkPage extends React.Component {
     }
 
     render() {
-        const itemStyle = {
-            paddingRight: '32px',
-            paddingBottom: '24px'
-        };
         const {url: siteUrl = ''} = this.context.site;
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131', padding: '12px 24px'}}>
-                <div> Use these links or data attributes to show the various sections of members modal.</div>
-                <div style={{display: 'flex', marginTop: '12px'}}>
-                    <div style={{flexShrink: 0}}>
-                        <div style={{borderBottom: '1px solid black', marginBottom: '12px', fontWeight: 'bold'}}> Section </div>
-                        <div style={itemStyle}> Default </div>
-                        <div style={itemStyle}> Signup </div>
-                        <div style={itemStyle}> Signin </div>
-                        <div style={itemStyle}> Account home </div>
-                        <div style={itemStyle}> Account -&gt; Plans </div>
-                        <div style={itemStyle}> Account -&gt; Profile </div>
-                    </div>
-                    <LinkAttributeSection
-                        showLinks={this.state.showLinks}
-                        toggleShowLinks={({showLinks}) => this.setState({showLinks})}
-                        siteUrl={siteUrl}
-                    />
-                </div>
+            <div className='gh-portal-links-main'>
+                <p>Use these links or data attributes to show the various sections of members modal.</p>
+                <table className='gh-portal-links-table'>
+                    <tr className='header'>
+                        <td><h4>Section</h4></td>
+                        <td colspan='2'>
+                            <div className='toggle-header'>
+                                <h4>{this.state.showLinks ? 'Link' : 'Data Attribute'}</h4>
+                                <LinkAttributeToggle showLinks={this.state.showLinks} toggleShowLinks={({showLinks}) => this.setState({showLinks})}/>
+                            </div>
+                        </td>
+                    </tr>
+                    <LinkAttributeRow pageName="Default" page="default" isLink={this.state.showLinks} siteUrl={siteUrl} />
+                    <LinkAttributeRow pageName="Sign up" page="signup" isLink={this.state.showLinks} siteUrl={siteUrl} />
+                    <LinkAttributeRow pageName="Sign in" page="signin" isLink={this.state.showLinks} siteUrl={siteUrl} />
+                    <LinkAttributeRow pageName="Account home" page="accountHome" isLink={this.state.showLinks} siteUrl={siteUrl} />
+                    <LinkAttributeRow pageName="Account/Plans" page="accountPlan" isLink={this.state.showLinks} siteUrl={siteUrl} />
+                    <LinkAttributeRow pageName="Account/Profile" page="accountProfile" isLink={this.state.showLinks} siteUrl={siteUrl} />
+                </table>
             </div>
         );
     }
