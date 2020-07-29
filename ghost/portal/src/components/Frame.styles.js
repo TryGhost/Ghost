@@ -182,7 +182,7 @@ const GlobalStyles = `
     }
 
     .gh-portal-popup-background.preview {
-        background: #F8FAFC;
+        background: #EDF0F2;
         animation: none;
     }
 

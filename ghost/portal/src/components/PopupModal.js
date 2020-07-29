@@ -73,7 +73,7 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         return (
-            <div className={hasMode(['preview']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={this.container}>
+            <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={this.container}>
                 {this.renderPopupClose()}
                 {this.renderActivePage()}
             </div>
@@ -138,7 +138,7 @@ export default class PopupModal extends React.Component {
         return (
             <div style={Styles.modalContainer}>
                 <Frame style={frameStyle} title="membersjs-popup" head={this.renderFrameStyles()}>
-                    <div className={hasMode(['preview']) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background'} onClick = {e => this.handlePopupClose(e)}></div>
+                    <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background'} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
                 </Frame>
             </div>
