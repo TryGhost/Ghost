@@ -131,9 +131,13 @@ class TriggerButtonContent extends React.Component {
                 );
             } else if (buttonIcon) {
                 return (
-                    <img style={{width: '26px', height: '26px'}} src={buttonIcon} alt="Icon" />
+                    <img style={{width: '26px', height: '26px'}} src={buttonIcon} alt="" />
                 );
             } else {
+                if (this.hasText()) {
+                    Style.userIcon.width = '26px';
+                    Style.userIcon.height = '26px';
+                }
                 return (
                     <UserIcon style={Style.userIcon} />
                 );
