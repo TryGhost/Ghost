@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
+import CalculateDiscount from '../../utils/discount';
 
 const React = require('react');
 
@@ -123,6 +124,7 @@ export default class AccountPlanPage extends React.Component {
 
     renderPlanChooser() {
         const {plans} = this.context.site;
+        const discount = CalculateDiscount(plans.monthly, plans.yearly);
         const plansData = [
             {
                 type: 'month',
@@ -134,7 +136,8 @@ export default class AccountPlanPage extends React.Component {
                 type: 'year',
                 price: plans.yearly,
                 currency: plans.currency_symbol,
-                name: 'Yearly'
+                name: 'Yearly',
+                discount
             }
         ];
         return (
