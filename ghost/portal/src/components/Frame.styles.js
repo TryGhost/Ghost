@@ -251,6 +251,24 @@ const GlobalStyles = `
         padding: 12px;
     }
 
+    .gh-portal-logout-container {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+    }
+
+    .gh-portal-logouticon {
+        color: var(--grey9);
+        cursor: pointer;
+        width: 23px;
+        height: 23px;
+        padding: 12px;
+    }
+
+    .gh-portal-logouticon path {
+        stroke: var(--grey9);
+    }
+
     .gh-portal-header {
         display: flex;
         flex-direction: column;
