@@ -33,7 +33,7 @@ const GlobalStyles = `
         --grey10: #dcdcdc;
         --grey11: #e1e1e1;
         --grey12: #eaeaea;
-        --grey13: #f8f8f8;
+        --grey13: #f9f9f9;
         --white: #fff;
     }
     

@@ -8,7 +8,7 @@ export const AvatarStyles = `
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        margin: 6px 0 8px;
+        margin-bottom: 8px;
         border-radius: 999px;
     }
 

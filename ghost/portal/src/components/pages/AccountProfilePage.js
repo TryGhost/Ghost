@@ -2,7 +2,6 @@ import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import InputForm from '../common/InputForm';
-import Switch from '../common/Switch';
 import {ValidateInputForm} from '../../utils/form';
 
 const React = require('react');
@@ -181,27 +180,6 @@ export default class AccountProfilePage extends React.Component {
         this.context.onAction('updateMember', {subscribed: !subscribed});
     }
 
-    renderNewsletterOption() {
-        const {subscribed, paid} = this.context.member;
-        if (paid) {
-            return null;
-        }
-        const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
-        return (
-            <div className='gh-portal-freeaccount-newsletter'>
-                <div className='label'>
-                    <h3 className='gh-portal-input-label'>Newsletter</h3>
-                    <div className='gh-portal-setting-data'>{label}</div>
-                </div>
-                <div>
-                    <Switch onToggle={(e) => {
-                        this.onToggleSubscription(e, subscribed);
-                    }} checked={subscribed} />
-                </div>
-            </div>
-        );
-    }
-
     render() {
         const {member} = this.context;
         if (!member) {
@@ -212,7 +190,6 @@ export default class AccountProfilePage extends React.Component {
                 {this.renderHeader()}
                 <div className='gh-portal-section'>
                     {this.renderProfileData()}
-                    {this.renderNewsletterOption()}
                 </div>
                 {this.renderAccountFooter()}
             </div>
