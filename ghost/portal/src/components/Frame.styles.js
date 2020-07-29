@@ -11,6 +11,7 @@ import {SignupPageStyles} from './pages/SignupPage';
 import {PlanSectionStyles} from './common/PlansSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
+import {LinkPageStyles} from './pages/LinkPage';
 
 // Global styles
 const GlobalStyles = `
@@ -339,6 +340,10 @@ const GlobalStyles = `
     .gh-portal-icon {
         color: var(--brandcolor);
     }
+
+    /* Links
+    /* ----------------------------------------------------- */
+
 `;
 
 // Append all styles as string which we want to pass to iframe
@@ -351,6 +356,7 @@ const FrameStyle =
     ActionButtonStyles +
     AvatarStyles +
     MagicLinkStyles +
+    LinkPageStyles +
     SignupPageStyles;
 
 export default FrameStyle;
