@@ -192,7 +192,7 @@ class PaidAccountHomePage extends React.Component {
     }
 
     getPlanLabel({amount = 0, currency_symbol: currencySymbol = '$', interval}) {
-        return `${currencySymbol}${amount / 100} / ${interval}`;
+        return `${currencySymbol}${amount / 100}/${interval}`;
     }
 
     getCardLabel({defaultCardLast4}) {
