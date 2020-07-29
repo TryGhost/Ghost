@@ -8,7 +8,7 @@
     <a href="https://ghost.org/features">Features</a> |
     <a href="https://ghost.org/customers">Showcase</a> |
     <a href="https://forum.ghost.org">Forum</a> |
-    <a href="https://ghost.org/docs/">Documentation</a> |
+    <a href="https://ghost.org/docs/">Docs</a> |
     <a href="https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md">Contributing</a> |
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
@@ -25,6 +25,7 @@
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
     </a>
 </p>
+<p align="center">Love open source? We're hiring <a href="https://careers.ghost.org/product-engineer-node-js/">Node.js Engineers</a> to work on Ghost full-time</p>
 
 &nbsp;
 
