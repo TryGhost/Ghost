@@ -143,7 +143,7 @@ export default class App extends React.Component {
                 showPopup: true,
                 site: Fixtures.site,
                 member: Fixtures.member.paid,
-                page: 'accountHome'
+                page: 'signup'
             };
         }
         return {};
