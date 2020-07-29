@@ -1,5 +1,6 @@
 import Frame from './Frame';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
+import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
@@ -72,7 +73,7 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         return (
-            <div className='gh-portal-popup-container' style={pageStyle} ref={this.container}>
+            <div className={hasMode(['preview']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={this.container}>
                 {this.renderPopupClose()}
                 {this.renderActivePage()}
             </div>
@@ -137,7 +138,7 @@ export default class PopupModal extends React.Component {
         return (
             <div style={Styles.modalContainer}>
                 <Frame style={frameStyle} title="membersjs-popup" head={this.renderFrameStyles()}>
-                    <div className='gh-portal-popup-background' onClick = {e => this.handlePopupClose(e)}></div>
+                    <div className={hasMode(['preview']) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background'} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
                 </Frame>
             </div>

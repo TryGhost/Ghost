@@ -306,7 +306,11 @@ export default class App extends React.Component {
         if (hasMode(['dev', 'preview'])) {
             /** Use dummy member(free or paid) for account pages in dev/preview mode*/
             if (isAccountPage({page})) {
-                return member || Fixtures.member.free;
+                if (hasMode(['dev'])) {
+                    return member || Fixtures.member.free;
+                } else {
+                    return Fixtures.member.paid;
+                }
             }
 
             /** Ignore member for non-account pages in dev/preview mode*/
