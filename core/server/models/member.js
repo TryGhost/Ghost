@@ -25,7 +25,12 @@ const Member = ghostBookshelf.Model.extend({
     labels: function labels() {
         return this.belongsToMany('Label', 'members_labels', 'member_id', 'label_id')
             .withPivot('sort_order')
-            .query('orderBy', 'sort_order', 'ASC');
+            .query('orderBy', 'sort_order', 'ASC')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('labels.*');
+            });
     },
 
     stripeCustomers() {
