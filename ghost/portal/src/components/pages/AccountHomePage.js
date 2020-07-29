@@ -81,16 +81,16 @@ const UserAvatar = ({avatar, brandColor}) => {
     );
 };
 
-const AccountFooter = ({onLogout, onSettings, brandColor}) => {
+const AccountFooter = ({onClose}) => {
     return (
         <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                <li><button className='gh-portal-btn gh-portal-btn-branded'>Contact support</button></li>
+                <li><button className='gh-portal-btn'>Contact support</button></li>
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
                     <li>
-                        <button className='gh-portal-btn' onClick={onLogout}>Logout</button>
+                        <button className='gh-portal-btn gh-portal-btn-branded' onClick={onClose}>OK</button>
                     </li>
                 </ul>
             </div>
@@ -110,11 +110,6 @@ const UserHeader = ({member, brandColor}) => {
 
 class FreeAccountHomePage extends React.Component {
     static contextType = AppContext;
-
-    handleSignout(e) {
-        e.preventDefault();
-        this.context.onAction('signout');
-    }
 
     openSubscribe(e) {
         this.context.onAction('switchPage', {
@@ -192,7 +187,7 @@ class FreeAccountHomePage extends React.Component {
                     <UserHeader member={member} brandColor={brandColor} />
                     {this.renderAccountDetail()}
                 </div>
-                <AccountFooter onLogout={e => this.handleSignout(e)} onSettings={e => this.openSettings(e)} brandColor={brandColor} />
+                <AccountFooter onClose={() => this.context.onAction('closePopup')} />
             </div>
         );
     }
@@ -200,11 +195,6 @@ class FreeAccountHomePage extends React.Component {
 
 class PaidAccountHomePage extends React.Component {
     static contextType = AppContext;
-
-    handleSignout(e) {
-        e.preventDefault();
-        this.context.onAction('signout');
-    }
 
     renderAccountWelcome() {
         const {name, firstname, email} = this.context.member;
@@ -314,7 +304,7 @@ class PaidAccountHomePage extends React.Component {
                     <UserHeader member={member} brandColor={brandColor} />
                     {this.renderAccountDetails()}
                 </div>
-                <AccountFooter onLogout={e => this.handleSignout(e)} brandColor={brandColor} />
+                <AccountFooter onClose={() => this.context.onAction('closePopup')} />
             </div>
         );
     }
