@@ -181,6 +181,11 @@ const GlobalStyles = `
         animation: fadein 0.2s;
     }
 
+    .gh-portal-popup-background.preview {
+        background: #F8FAFC;
+        animation: none;
+    }
+
     @keyframes fadein {
         0% { opacity: 0; }
         100%{ opacity: 1.0; }
@@ -205,6 +210,18 @@ const GlobalStyles = `
         border-radius: 5px;
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
         animation: popup 0.25s;
+    }
+
+    .gh-portal-popup-container.preview {
+        box-shadow:
+            0 0 0 1px rgba(0,0,0,0.02),
+            0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+            0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+            0 12.5px 10px rgba(0, 0, 0, 0.035),
+            0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+            0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+            0 100px 80px rgba(0, 0, 0, 0.07);
+        animation: none;
     }
 
     @keyframes popup {
