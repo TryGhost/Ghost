@@ -3,6 +3,7 @@ import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
+import CalculateDiscount from '../../utils/discount';
 
 const React = require('react');
 
@@ -170,7 +171,7 @@ class SignupPage extends React.Component {
         } = this.context.site;
 
         const plansData = [];
-        const discount = plans.monthly ? 100 - Math.round((plans.yearly / 12 * 100) / plans.monthly) : 0;
+        const discount = CalculateDiscount(plans.monthly, plans.yearly);
         const stripePlans = [
             {
                 type: 'month',
