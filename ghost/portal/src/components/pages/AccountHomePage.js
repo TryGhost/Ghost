@@ -20,6 +20,10 @@ export const AccountHomePageStyles = `
         margin: 0 0 32px;
     }
 
+    .gh-portal-account-header .gh-portal-avatar {
+        margin: 6px 0 8px !important;
+    }
+
     .gh-portal-account-footer {
         display: flex;
         margin-top: 32px;
@@ -63,6 +67,10 @@ export const AccountHomePageStyles = `
         flex-direction: column;
         flex-grow: 1;
     }
+
+    .gh-portal-free-ctatext {
+        margin-top: -12px;
+    }
 `;
 
 const UserAvatar = ({avatar, brandColor}) => {
@@ -77,13 +85,7 @@ const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     return (
         <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                {onSettings ? null : 
-                    <li><button className='gh-portal-btn gh-portal-btn-branded'>Contact support</button></li>
-                }
-                {onSettings
-                    ? <li><button className='gh-portal-btn gh-portal-btn-branded' onClick={onSettings}>Settings</button></li>
-                    : null
-                }
+                <li><button className='gh-portal-btn gh-portal-btn-branded'>Contact support</button></li>
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
@@ -114,16 +116,16 @@ class FreeAccountHomePage extends React.Component {
         this.context.onAction('signout');
     }
 
-    openSettings(e) {
+    openSubscribe(e) {
         this.context.onAction('switchPage', {
-            page: 'accountProfile',
+            page: 'accountPlan',
             lastPage: 'accountHome'
         });
     }
 
-    openSubscribe(e) {
+    openEditProfile() {
         this.context.onAction('switchPage', {
-            page: 'accountPlan',
+            page: 'accountProfile',
             lastPage: 'accountHome'
         });
     }
@@ -140,17 +142,44 @@ class FreeAccountHomePage extends React.Component {
         return null;
     }
 
+    onToggleSubscription(e, subscribed) {
+        this.context.onAction('updateMember', {subscribed: !subscribed});
+    }
+
     renderAccountDetail(e) {
-        const {name, firstname, email} = this.context.member;
+        const {name, firstname, email, subscribed} = this.context.member;
         const {title: siteTitle} = this.context.site;
 
+        const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
         return (
             <section>
-                <p className='gh-portal-text-center'>
-                    Hey <strong>{firstname || name || email}! </strong>
-                    You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
-                </p>
-                {this.renderSubscribeButton()}
+                <div className='gh-portal-section'>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>
+                        Hey <strong>{firstname || name || email}! </strong>
+                        You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
+                    </p>
+                    {this.renderSubscribeButton()}
+                </div>
+                <div className='gh-portal-list'>
+                    <section>
+                        <div className='gh-portal-list-detail'>
+                            <h3>{name}</h3>
+                            <p>{email}</p>
+                        </div>
+                        <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.openEditProfile(e)}>Edit</button>
+                    </section>
+                    <section>
+                        <div className='gh-portal-list-detail'>
+                            <h3>Newsletter</h3>
+                            <p>{label}</p>
+                        </div>
+                        <div>
+                            <Switch onToggle={(e) => {
+                                this.onToggleSubscription(e, subscribed);
+                            }} checked={subscribed} />
+                        </div>
+                    </section>
+                </div>
             </section>
         );
     }
