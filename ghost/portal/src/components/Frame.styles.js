@@ -6,6 +6,7 @@
 import {ActionButtonStyles} from './common/ActionButton';
 import {SwitchStyles} from './common/Switch';
 import {AccountHomePageStyles} from './pages/AccountHomePage';
+import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
 import {PlanSectionStyles} from './common/PlansSection';
@@ -35,6 +36,7 @@ const GlobalStyles = `
         --grey12: #eaeaea;
         --grey13: #f9f9f9;
         --white: #fff;
+        --red: #f02525;
     }
     
     /* Globals
@@ -106,6 +108,13 @@ const GlobalStyles = `
         line-height: 1.15em;
     }
 
+    .gh-portal-error {
+        color: var(--red);
+        font-size: 1.4rem;
+        line-height: 1.6em;
+        margin: 12px 0;
+    }
+
     /* Buttons
     /* ----------------------------------------------------- */
     .gh-portal-btn {
@@ -154,6 +163,7 @@ const GlobalStyles = `
         background: none;
         padding: 0;
         height: unset;
+        min-width: unset;
         box-shadow: none;
         border: none;
     }
@@ -436,6 +446,7 @@ const GlobalStyles = `
 const FrameStyle = 
     GlobalStyles +
     AccountHomePageStyles +
+    AccountPlanPageStyles +
     InputFieldStyles +
     PlanSectionStyles +
     SwitchStyles + 
