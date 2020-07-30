@@ -190,6 +190,7 @@ const GlobalStyles = `
         background: none;
         border: none;
         height: unset;
+        color: var(--grey3);
         padding: 0;
         margin: 0;
         z-index: 999;
@@ -198,6 +199,8 @@ const GlobalStyles = `
 
     .gh-portal-btn-logout .label {
         opacity: 0;
+        transform: translateX(-6px);
+        transition: all 0.2s ease-in-out;
     }
 
     .gh-portal-btn-logout:hover {
@@ -207,6 +210,11 @@ const GlobalStyles = `
         border: none;
         height: unset;
         box-shadow: none;
+    }
+
+    .gh-portal-btn-logout:hover .label {
+        opacity: 1.0;
+        transform: translateX(-4px);
     }
 
     /* Global layout styles
@@ -293,6 +301,11 @@ const GlobalStyles = `
         width: 16px;
         height: 16px;
         padding: 12px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-closeicon:hover {
+        color: var(--grey5);
     }
 
     .gh-portal-logout-container {
@@ -306,11 +319,22 @@ const GlobalStyles = `
         cursor: pointer;
         width: 23px;
         height: 23px;
-        padding: 6px
+        padding: 6px;
+        transform: translateX(0);
+        transition: all 0.2s ease-in-out;
     }
 
     .gh-portal-logouticon path {
         stroke: var(--grey9);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-btn-logout:hover .gh-portal-logouticon {
+        transform: translateX(-2px);
+    }
+
+    .gh-portal-btn-logout:hover .gh-portal-logouticon path {
+        stroke: var(--grey3);
     }
 
     .gh-portal-header {
