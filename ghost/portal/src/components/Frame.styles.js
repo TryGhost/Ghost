@@ -241,6 +241,7 @@ const GlobalStyles = `
         position: absolute;
         top: 8px;
         right: 8px;
+        z-index: 999;
     }
 
     .gh-portal-closeicon {
@@ -262,7 +263,7 @@ const GlobalStyles = `
         cursor: pointer;
         width: 23px;
         height: 23px;
-        padding: 12px;
+        padding: 6px
     }
 
     .gh-portal-logouticon path {
@@ -368,6 +369,32 @@ const GlobalStyles = `
     .gh-portal-btn-list:hover {
         box-shadow: none;
         opacity: 0.75;
+    }
+
+    .gh-portal-btn-logout {
+        position: absolute;
+        top: 15px;
+        left: 16px;
+        background: none;
+        border: none;
+        height: unset;
+        padding: 0;
+        margin: 0;
+        z-index: 999;
+        box-shadow: none;
+    }
+
+    .gh-portal-btn-logout .label {
+        opacity: 0;
+    }
+
+    .gh-portal-btn-logout:hover {
+        padding: 0;
+        margin: 0;
+        background: none;
+        border: none;
+        height: unset;
+        box-shadow: none;
     }
 
     /* Icons
