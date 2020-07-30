@@ -130,15 +130,19 @@ export default class AccountProfilePage extends React.Component {
         });
     }
 
-    handleInputBlur(e) {
+    handleInputBlur(e, field) {
         this.setState((state) => {
+            const fieldErrors = ValidateInputForm({fields: this.getInputFields({state, fieldNames: [field.name]})}) || {};
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
+                errors: {
+                    ...(state.errors || {}),
+                    ...fieldErrors
+                }
             };
         });
     }
 
-    getInputFields({state}) {
+    getInputFields({state, fieldNames}) {
         const errors = state.errors || {};
         const fields = [
             {
@@ -160,7 +164,11 @@ export default class AccountProfilePage extends React.Component {
                 errorMessage: errors.email || ''
             }
         ];
-
+        if (fieldNames && fieldNames.length > 0) {
+            return fields.filter((f) => {
+                return fieldNames.includes(f.name);
+            });
+        }
         return fields;
     }
 

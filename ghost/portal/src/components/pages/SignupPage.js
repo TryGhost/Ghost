@@ -121,15 +121,20 @@ class SignupPage extends React.Component {
 
     handleInputChange(e, field) {
         const fieldName = field.name;
+        const value = e.target.value;
         this.setState({
-            [fieldName]: e.target.value
+            [fieldName]: value
         });
     }
 
-    handleInputBlur(e) {
+    handleInputBlur(e, field) {
         this.setState((state) => {
+            const fieldErrors = ValidateInputForm({fields: this.getInputFields({state, fieldNames: [field.name]})}) || {};
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
+                errors: {
+                    ...(state.errors || {}),
+                    ...fieldErrors
+                }
             };
         });
     }
@@ -203,7 +208,7 @@ class SignupPage extends React.Component {
         return plansData;
     }
 
-    getInputFields({state}) {
+    getInputFields({state, fieldNames}) {
         const {portal_name: portalName} = this.context.site;
 
         const errors = state.errors || {};
@@ -229,6 +234,11 @@ class SignupPage extends React.Component {
                 name: 'name',
                 required: true,
                 errorMessage: errors.name || ''
+            });
+        }
+        if (fieldNames && fieldNames.length > 0) {
+            return fields.filter((f) => {
+                return fieldNames.includes(f.name);
             });
         }
         return fields;
