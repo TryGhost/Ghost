@@ -2,7 +2,16 @@ import * as Validator from './validator';
 
 export const FormInputError = ({field}) => {
     if (field.required && !field.value) {
-        return `Please supply ${field.name}`;
+        switch (field.name) {
+        case 'name':
+            return `Please enter a name`;
+        
+        case 'email':
+            return `Please supply an email`;
+
+        default:
+            return `Please enter ${field.name}`;
+        }
     }
 
     if (field.type === 'email' && !Validator.isValidEmail(field.value)) {

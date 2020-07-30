@@ -3,6 +3,12 @@ import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
 import CalculateDiscount from '../../utils/discount';
 
+export const AccountPlanPageStyles = `
+    .gh-portal-accountplans-main {
+        margin-top: 32px;
+    }
+`;
+
 const React = require('react');
 
 const GlobalError = ({message, style}) => {
@@ -10,10 +16,7 @@ const GlobalError = ({message, style}) => {
         return null;
     }
     return (
-        <p style={{
-            color: '#f05230',
-            width: '100%',
-            lineHeight: '0',
+        <p className='gh-portal-error' style={{
             ...(style || {})
         }}>
             {message}
@@ -142,15 +145,15 @@ export default class AccountPlanPage extends React.Component {
         ];
         return (
             <section>
-                <div className='gh-portal-section'>
+                <div className='gh-portal-section gh-portal-accountplans-main'>
                     <PlansSection
                         showLabel={false}
                         plans={plansData}
                         selectedPlan={this.state.plan}
                         onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
                     />
+                    {this.renderError()}
                 </div>
-                {this.renderError()}
                 <footer className='gh-portal-action-footer'>
                     <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
                     {this.renderSubmitButton()}
