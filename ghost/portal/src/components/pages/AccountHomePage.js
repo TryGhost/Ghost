@@ -1,4 +1,5 @@
 import AppContext from '../../AppContext';
+import {ReactComponent as LogoutIcon} from '../../images/icons/logout.svg';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
@@ -6,6 +7,10 @@ import Switch from '../common/Switch';
 const React = require('react');
 
 export const AccountHomePageStyles = `
+    .gh-portal-account-wrapper {
+
+    }
+
     .gh-portal-account-main {
         background: var(--grey13);
         border-bottom: 1px solid #eaeaea;
@@ -141,6 +146,17 @@ class FreeAccountHomePage extends React.Component {
         this.context.onAction('updateMember', {subscribed: !subscribed});
     }
 
+    handleSignout(e) {
+        e.preventDefault();
+        this.context.onAction('signout');
+    }
+
+    renderLogout() {
+        return (
+            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
+        );
+    }
+
     renderAccountDetail(e) {
         const {name, firstname, email, subscribed} = this.context.member;
         const {title: siteTitle} = this.context.site;
@@ -182,7 +198,8 @@ class FreeAccountHomePage extends React.Component {
     render() {
         const {member, brandColor} = this.context;
         return (
-            <div>
+            <div className='gh-portal-account-wrapper'>
+                {this.renderLogout()}
                 <div className='gh-portal-account-main'>
                     <UserHeader member={member} brandColor={brandColor} />
                     {this.renderAccountDetail()}
@@ -246,6 +263,17 @@ class PaidAccountHomePage extends React.Component {
         this.context.onAction('updateMember', {subscribed: !subscribed});
     }
 
+    handleSignout(e) {
+        e.preventDefault();
+        this.context.onAction('signout');
+    }
+
+    renderLogout() {
+        return (
+            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
+        );
+    }
+
     renderAccountDetails() {
         const {name, email, subscriptions, subscribed} = this.context.member;
 
@@ -299,7 +327,8 @@ class PaidAccountHomePage extends React.Component {
     render() {
         const {member, brandColor} = this.context;
         return (
-            <div>
+            <div className='gh-portal-account-wrapper'>
+                {this.renderLogout()}
                 <div className='gh-portal-account-main'>
                     <UserHeader member={member} brandColor={brandColor} />
                     {this.renderAccountDetails()}
