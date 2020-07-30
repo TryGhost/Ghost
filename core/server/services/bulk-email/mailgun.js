@@ -11,7 +11,7 @@ function createMailgun(config) {
         apiKey: config.apiKey,
         domain: config.domain,
         protocol: baseUrl.protocol,
-        host: baseUrl.host,
+        host: baseUrl.hostname,
         port: baseUrl.port,
         endpoint: baseUrl.pathname,
         retry: 5
