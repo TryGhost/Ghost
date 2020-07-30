@@ -69,6 +69,10 @@ class ActiveTheme {
         return this._partials.length > 0 ? join(this.path, 'partials') : null;
     }
 
+    get helpersPath() {
+        return join(this.path, 'helpers');
+    }
+
     get mounted() {
         return this._mounted;
     }

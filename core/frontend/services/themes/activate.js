@@ -2,6 +2,7 @@ const {events, i18n} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const active = require('./active');
+const loadCustomHelpers = require('./handlebars/helpers').loadCustomHelpers;
 
 function activate(loadedTheme, checkedTheme, error) {
     // no need to check the score, activation should be used in combination with validate.check
@@ -17,6 +18,8 @@ function activate(loadedTheme, checkedTheme, error) {
         const currentGhostAPI = active.get().engine('ghost-api');
 
         events.emit('services.themes.activated');
+
+        loadCustomHelpers(active.get());
 
         if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
             events.emit('services.themes.api.changed');

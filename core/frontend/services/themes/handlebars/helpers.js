@@ -1,9 +1,11 @@
 const register = require('./register');
 const coreHelpers = require('../../../helpers');
+const glob = require('glob');
+const path = require('path');
 const registerThemeHelper = register.registerThemeHelper;
 const registerAsyncThemeHelper = register.registerAsyncThemeHelper;
 
-let registerAllCoreHelpers;
+let registerAllCoreHelpers, registerCustomHelpers;
 
 registerAllCoreHelpers = function registerAllCoreHelpers() {
     // Register theme helpers
@@ -49,5 +51,25 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerAsyncThemeHelper('get', coreHelpers.get);
 };
 
+registerCustomHelpers = function registerCustomHelpers(active) {
+    const helpersPath = active.helpersPath;
+    const themeRoot = active.path;
+
+    const helpers = {};
+
+    // We use glob here because it's already a dependency
+    // If we want to get rid of glob we could use E.g. requiredir
+    // Or require('fs').readdirSync(__dirname + '/')
+    let helperFiles = glob.sync('*.js', {cwd: helpersPath});
+    helperFiles.forEach((helper) => {
+        let name = helper.replace(/.js$/, '');
+        helpers[name] = require(path.join(helpersPath, helper));
+
+        registerThemeHelper(name, helpers[name]);
+    });
+
+}
+
 module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerAllCoreHelpers;
+module.exports.loadCustomHelpers = registerCustomHelpers;
