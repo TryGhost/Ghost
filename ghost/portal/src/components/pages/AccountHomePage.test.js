@@ -6,7 +6,7 @@ const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
         <AccountHomePage />
     );
-    const logoutBtn = utils.queryByRole('button', {name: 'Logout'});
+    const logoutBtn = utils.queryByRole('button', {name: 'logout'});
     return {
         logoutBtn,
         mockOnActionFn,

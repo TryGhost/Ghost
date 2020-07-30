@@ -153,7 +153,7 @@ class FreeAccountHomePage extends React.Component {
 
     renderLogout() {
         return (
-            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
+            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' aria-label='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
         );
     }
 
@@ -270,7 +270,7 @@ class PaidAccountHomePage extends React.Component {
 
     renderLogout() {
         return (
-            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
+            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' aria-label='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
         );
     }
 
