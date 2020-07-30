@@ -30,8 +30,8 @@ const Styles = ({brandColor, hasText}) => {
         frame: {
             zIndex: '2147483000',
             position: 'fixed',
-            bottom: '20px',
-            right: '20px',
+            bottom: '28px',
+            right: '28px',
             width: '500px',
             maxWidth: '500px',
             height: '60px',
