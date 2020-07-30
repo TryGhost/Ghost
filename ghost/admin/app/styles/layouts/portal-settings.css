@@ -64,7 +64,7 @@
 }
 
 .gh-portal-settings-form {
-    min-width: 290px;
+    min-width: 292px;
 }
 
 .gh-portal-settings .form-group.space-l {
@@ -196,8 +196,8 @@
 .gh-portal-button-icon {
     display: inline-block;
     cursor: pointer;
-    width: 41px;
-    height: 41px;
+    width: 40px;
+    height: 40px;
     padding: 10px;
     background-repeat: no-repeat;
     background-size: 22px 22px;
@@ -261,10 +261,16 @@
 
 .gh-portal-siteiframe {
     pointer-events: none;
-    border-radius: 5px;
-    border: 1px solid var(--whitegrey);
     transform: scale(0.95) !important;
     transform-origin: 0 0;
     width: calc((1 / 0.95) * 100%) !important;
     height: calc((1 / 0.95) * 100%) !important;
+}
+
+.gh-portal-preview-container {
+    position: relative;
+    flex-grow: 1;
+    border: 1px solid var(--whitegrey);
+    border-radius: 5px;
+    overflow: hidden;
 }
