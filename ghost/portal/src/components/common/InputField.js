@@ -19,13 +19,31 @@ export const InputFieldStyles = `
         transition: all 0.25s ease-in-out;
     }
 
+    .gh-portal-input-labelcontainer {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .gh-portal-input-labelcontainer p {
+        color: var(--red);
+        font-size: 1.3rem;
+        letter-spacing: 0.35px;
+        line-height: 1.6em;
+        margin-bottom: 0;
+    }
+
     .gh-portal-input-label.hidden {
         display: none;
     }
 
     .gh-portal-input:focus {
         border: none;
-        box-shadow: 0px 0px 0px 1px #c5c5c5 , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
+        box-shadow: 0px 0px 0px 1px var(--brandcolor) , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
+    }
+
+    .gh-portal-input.error {
+        box-shadow: 0px 0px 0px 1px var(--red) , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
     }
 
     .gh-portal-input::placeholder {
@@ -39,9 +57,6 @@ function InputError({message, style}) {
     }
     return (
         <p style={{
-            color: '#f05230',
-            width: '100%',
-            lineHeight: '0',
             ...(style || {})
         }}>
             {message}
@@ -53,12 +68,16 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
     id = id || `input-${name}`;
     onBlur = onBlur || function (){};
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
+    const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
     return (
         <section className='gh-portal-input-section'>
-            <label htmlFor={id} className={labelClasses}> {label} </label>
+            <div className='gh-portal-input-labelcontainer'>
+                <label htmlFor={id} className={labelClasses}> {label} </label>
+                <InputError message={errorMessage} name={name} />
+            </div>
             <input
                 id={id}
-                className='gh-portal-input'
+                className={inputClasses}
                 type={type}
                 name={name}
                 value={value}
@@ -68,7 +87,6 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 disabled={disabled}
                 aria-label={label}
             />
-            <InputError message={errorMessage} name={name} />
         </section>
     );
 }
