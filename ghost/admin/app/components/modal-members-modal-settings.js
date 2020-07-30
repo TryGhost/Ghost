@@ -42,6 +42,7 @@ export default ModalComponent.extend({
     defaultButtonIcons: null,
     isShowModalLink: true,
     customIcon: null,
+    showLinksPage: false,
     confirm() {},
 
     signupButtonText: boundOneWay('settings.portalButtonSignupText'),
@@ -168,7 +169,13 @@ export default ModalComponent.extend({
         },
 
         switchPreviewPage(page) {
-            this.set('page', page);
+            if (page === 'links') {
+                this.set('showLinksPage', true);
+                this.set('page', '');
+            } else {
+                this.set('showLinksPage', false);
+                this.set('page', page);
+            }
         },
 
         validateAccentColor() {

@@ -1,0 +1,94 @@
+<div class="gh-portal-links-container">
+    <div class="gh-portal-links-main">
+        <p>Use these links or data attributes to show the various sections of members modal.</p>
+        <table class="gh-portal-links-table">
+            <tr class="header">
+                <td><h4>Section</h4></td>
+                <td colspan="2">
+                    <div class='toggle-header'>
+                        <h4>{{sectionHeaderLabel}}</h4>
+                        <h4 className='gh-portal-links-cell toggle' onclick={{action "toggleShowLinks"}}>{{this.toggleValue}}</h4>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="pagename">Default</td>
+                <td class='page-url'><input value={{if isLink (concat this.siteUrl '/#/portal') 'data-portal'}} disabled="disabled" /></td>
+                <td class='copy'>
+                    <button type="button" {{action (perform this.copyDefault (if isLink (concat this.siteUrl '/#/portal') 'data-portal'))}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                        {{#if this.copyDefault.isRunning}}
+                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                        {{else}}
+                            Copy
+                        {{/if}}
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td class='pagename'>Sign up</td>
+                <td class='page-url'><input value={{if isLink (concat this.siteUrl '/#/portal/signup') 'data-portal="signup"'}} disabled="disabled" /></td>
+                <td class='copy'>
+                    <button type="button" {{action (perform this.copySignup (if isLink (concat this.siteUrl '/#/portal/signup') 'data-portal="signup"'))}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                        {{#if this.copySignup.isRunning}}
+                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                        {{else}}
+                            Copy
+                        {{/if}}
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td class='pagename'>Sign in</td>
+                <td class='page-url'><input value={{if isLink (concat this.siteUrl '/#/portal/signin') 'data-portal="signin"'}} disabled="disabled" /></td>
+                <td class='copy'>
+                    <button type="button" {{action (perform this.copySignin (if isLink (concat this.siteUrl '/#/portal/signin') 'data-portal="signin"'))}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                        {{#if this.copySignin.isRunning}}
+                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                        {{else}}
+                            Copy
+                        {{/if}}
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td class='pagename'>Account home</td>
+                <td class='page-url'><input value={{if isLink (concat this.siteUrl '/#/portal/account') 'data-portal="account"'}} disabled="disabled" /></td>
+                <td class='copy'>
+                    <button type="button" {{action (perform this.copyAccountHome (if isLink (concat this.siteUrl '/#/portal/account') 'data-portal="account"'))}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                        {{#if this.copyAccountHome.isRunning}}
+                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                        {{else}}
+                            Copy
+                        {{/if}}
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td class='pagename'>Account/Plans</td>
+                <td class='page-url'><input value={{if isLink (concat this.siteUrl '/#/portal/account/plans') 'data-portal="account/plans"'}} disabled="disabled" /></td>
+                <td class='copy'>
+                    <button type="button" {{action (perform this.copyAccountPlans (if isLink (concat this.siteUrl '/#/portal/account/plans') 'data-portal="account/plans"'))}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                        {{#if this.copyAccountPlans.isRunning}}
+                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                        {{else}}
+                            Copy
+                        {{/if}}
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td class='pagename'>Account/Profile</td>
+                <td class='page-url'><input value={{if isLink (concat this.siteUrl '/#/portal/account/profile') 'data-portal="account/profile"'}} disabled="disabled" /></td>
+                <td class='copy'>
+                    <button type="button" {{action (perform this.copyAccountProfile (if isLink (concat this.siteUrl '/#/portal/account/profile') 'data-portal="account/profile"'))}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                        {{#if this.copyAccountProfile.isRunning}}
+                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                        {{else}}
+                            Copy
+                        {{/if}}
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

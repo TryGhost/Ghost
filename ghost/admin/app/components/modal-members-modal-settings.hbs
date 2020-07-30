@@ -265,7 +265,7 @@
                 <ul class="gh-portal-settings-maintabs">
                     <li class="{{if (eq this.page "signup") "active"}}"><a href="#" {{action "switchPreviewPage" "signup"}} data-test-link="switch-portal-preview-page">Signup</a></li>
                     <li class="{{if (eq this.page "accountHome") "active"}}"><a href="#" {{action "switchPreviewPage" "accountHome"}} data-test-link="switch-portal-preview-page">Account</a></li>
-                    <li class="{{if (eq this.page "links") "active"}}"><a href="#" {{action "switchPreviewPage" "links"}} data-test-link="switch-portal-preview-page">Links</a></li>
+                    <li class="{{if this.showLinksPage "active"}}"><a href="#" {{action "switchPreviewPage" "links"}} data-test-link="switch-portal-preview-page">Links</a></li>
                 </ul>
                 <div class="flex items-center">
                     <button
@@ -288,13 +288,19 @@
                     />
                 </div>
             </div>
-            <div class="gh-portal-preview-container">
+
+            <div class="gh-portal-preview-container {{if (not this.showLinksPage) "hide"}}">
+                <GhPortalLinks />
+            </div>
+
+            <div class="gh-portal-preview-container {{if this.showLinksPage "hide"}}">
                 <GhSiteIframe
                     @guid="test-site-portal"
                     @src={{this.portalPreviewUrl}}
                     @classNames="gh-portal-siteiframe"
                 ></GhSiteIframe>
             </div>
+
         </div>
     </div>
 </div>
