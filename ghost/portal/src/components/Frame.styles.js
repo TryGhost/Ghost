@@ -123,6 +123,7 @@ const GlobalStyles = `
         color: var(--grey0);
         background: var(--white);
         border: none;
+        min-width: 80px;
         height: 42px;
         padding: 0 1.8rem;
         border-radius: 4px;
@@ -164,6 +165,48 @@ const GlobalStyles = `
 
     .gh-portal-btn-branded {
         color: var(--brandcolor);
+    }
+
+    .gh-portal-btn-list {
+        font-size: 1.4rem;
+        color: var(--brandcolor);
+        height: 38px;
+        width: unset;
+        min-width: unset;
+        padding: 0 4px;
+        margin: 0 -4px;
+        box-shadow: none;
+    }
+
+    .gh-portal-btn-list:hover {
+        box-shadow: none;
+        opacity: 0.75;
+    }
+
+    .gh-portal-btn-logout {
+        position: absolute;
+        top: 15px;
+        left: 16px;
+        background: none;
+        border: none;
+        height: unset;
+        padding: 0;
+        margin: 0;
+        z-index: 999;
+        box-shadow: none;
+    }
+
+    .gh-portal-btn-logout .label {
+        opacity: 0;
+    }
+
+    .gh-portal-btn-logout:hover {
+        padding: 0;
+        margin: 0;
+        background: none;
+        border: none;
+        height: unset;
+        box-shadow: none;
     }
 
     /* Global layout styles
@@ -315,8 +358,6 @@ const GlobalStyles = `
         flex-grow: 1;
     }
 
-    /* Buttons
-    /* ----------------------------------------------------- */
     .gh-portal-list {
         background: var(--white);
         padding: 20px;
@@ -354,47 +395,6 @@ const GlobalStyles = `
         padding: 0;
         margin: 2px 0 0;
         color: var(--grey6);
-    }
-
-    .gh-portal-btn-list {
-        font-size: 1.4rem;
-        color: var(--brandcolor);
-        height: 38px;
-        width: unset;
-        padding: 0 4px;
-        margin: 0 -4px;
-        box-shadow: none;
-    }
-
-    .gh-portal-btn-list:hover {
-        box-shadow: none;
-        opacity: 0.75;
-    }
-
-    .gh-portal-btn-logout {
-        position: absolute;
-        top: 15px;
-        left: 16px;
-        background: none;
-        border: none;
-        height: unset;
-        padding: 0;
-        margin: 0;
-        z-index: 999;
-        box-shadow: none;
-    }
-
-    .gh-portal-btn-logout .label {
-        opacity: 0;
-    }
-
-    .gh-portal-btn-logout:hover {
-        padding: 0;
-        margin: 0;
-        background: none;
-        border: none;
-        height: unset;
-        box-shadow: none;
     }
 
     /* Icons
