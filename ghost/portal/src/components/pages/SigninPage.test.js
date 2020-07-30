@@ -4,7 +4,12 @@ import SigninPage from './SigninPage';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
-        <SigninPage />
+        <SigninPage />,
+        {
+            overrideContext: {
+                member: null
+            }
+        }
     );
     const emailInput = utils.getByLabelText(/email/i);
     const submitButton = utils.queryByRole('button', {name: 'Send Login Link'});

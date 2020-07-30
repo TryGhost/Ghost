@@ -4,7 +4,12 @@ import {render, fireEvent} from 'test-utils';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
-        <SignupPage />
+        <SignupPage />,
+        {
+            overrideContext: {
+                member: null
+            }
+        }
     );
     const emailInput = utils.getByLabelText(/email/i);
     const nameInput = utils.getByLabelText(/name/i);
