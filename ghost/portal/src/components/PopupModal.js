@@ -1,6 +1,5 @@
 import Frame from './Frame';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
-import {ReactComponent as LogoutIcon} from '../images/icons/logout.svg';
 import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
@@ -48,11 +47,6 @@ class PopupContent extends React.Component {
         this.container = React.createRef();
     }
 
-    handleSignout(e) {
-        e.preventDefault();
-        this.context.onAction('signout');
-    }
-
     renderActivePage() {
         const {page} = this.context;
         getActivePage({page});
@@ -71,17 +65,6 @@ class PopupContent extends React.Component {
         );
     }
 
-    renderLogout() {
-        if (!this.context.member) {
-            return null;
-        }
-        return (
-            <div className='gh-portal-logout-container'>
-                <LogoutIcon className='gh-portal-logouticon' onClick = {e => this.handleSignout(e)} />
-            </div>
-        );
-    }
-
     render() {
         const {page} = this.context;
         getActivePage({page});
@@ -91,7 +74,6 @@ class PopupContent extends React.Component {
         };
         return (
             <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={this.container}>
-                {this.renderLogout()}
                 {this.renderPopupClose()}
                 {this.renderActivePage()}
             </div>
