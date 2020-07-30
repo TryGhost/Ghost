@@ -16,9 +16,7 @@ export const ValidateInputForm = ({fields}) => {
     fields.forEach((field) => {
         const name = field.name;
         const fieldError = FormInputError({field});
-        if (fieldError) {
-            errors[name] = fieldError;
-        }
+        errors[name] = fieldError;
     });
     return errors;
 };
