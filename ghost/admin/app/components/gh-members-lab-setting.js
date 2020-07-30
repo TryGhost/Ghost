@@ -42,6 +42,7 @@ export default Component.extend({
     stripePlanInvalidAmount: false,
     _scratchStripeYearlyAmount: null,
     _scratchStripeMonthlyAmount: null,
+    showLeaveSettingsModal: false,
 
     // passed in actions
     setStripeConnectIntegrationTokenSetting() {},
@@ -127,7 +128,12 @@ export default Component.extend({
         },
 
         closeMembersModalSettings() {
-            this.set('showMembersModalSettings', false);
+            const changedAttributes = this.settings.changedAttributes();
+            if (changedAttributes && Object.keys(changedAttributes).length > 0) {
+                this.set('showLeaveSettingsModal', true);
+            } else {
+                this.set('showMembersModalSettings', false);
+            }
         },
 
         setDefaultContentVisibility(value) {
@@ -254,6 +260,16 @@ export default Component.extend({
 
         disconnectStripeConnectIntegration() {
             this.disconnectStripeConnectIntegration.perform();
+        },
+
+        closeLeaveSettingsModal() {
+            this.set('showLeaveSettingsModal', false);
+        },
+
+        leavePortalSettings() {
+            this.settings.rollbackAttributes();
+            this.set('showMembersModalSettings', false);
+            this.set('showLeaveSettingsModal', false);
         }
     },
 
