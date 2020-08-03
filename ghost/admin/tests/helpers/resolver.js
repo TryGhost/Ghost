@@ -1,5 +1,5 @@
 import Resolver from '../../resolver';
-import config from '../../config/environment';
+import config from 'ghost-admin/config/environment';
 
 const resolver = Resolver.create();
 

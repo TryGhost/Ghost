@@ -1,5 +1,5 @@
-import Application from '../app';
-import config from '../config/environment';
+import Application from 'ghost-admin/app';
+import config from 'ghost-admin/config/environment';
 import registerWaiter from 'ember-raf-scheduler/test-support/register-waiter';
 import start from 'ember-exam/test-support/start';
 import {setApplication} from '@ember/test-helpers';
