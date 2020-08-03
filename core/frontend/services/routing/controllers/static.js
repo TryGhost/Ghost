@@ -19,7 +19,7 @@ function processQuery(query, locals) {
 
     Object.assign(query.options, {
         context: {
-            members: locals.member
+            member: locals.member
         }
     });
 
