@@ -158,7 +158,7 @@ const addFixturesForRelation = function addFixturesForRelation(relationFixture, 
                 toItems = _.reject(toItems, function (item) {
                     return fromItem
                         .related(relationFixture.from.relation)
-                        .findWhere(matchObj(relationFixture.to.match, item));
+                        .where(matchObj(relationFixture.to.match, item));
                 });
 
                 if (toItems && toItems.length > 0) {
