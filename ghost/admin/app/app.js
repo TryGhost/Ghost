@@ -2,7 +2,7 @@ import 'ghost-admin/utils/link-component';
 import 'ghost-admin/utils/route';
 import Application from '@ember/application';
 import Resolver from 'ember-resolver';
-import config from './config/environment';
+import config from 'ghost-admin/config/environment';
 import loadInitializers from 'ember-load-initializers';
 import {registerWarnHandler} from '@ember/debug';
 
