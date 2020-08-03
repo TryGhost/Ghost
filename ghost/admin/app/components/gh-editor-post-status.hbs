@@ -1,5 +1,5 @@
 <div data-test-editor-post-status ...attributes>
-    {{#if this._isSaving}}
+    {{#if this.isSaving}}
         Saving...
     {{else if (or @post.isPublished @post.pastScheduledTime)}}
         Published
