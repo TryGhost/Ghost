@@ -64,7 +64,7 @@ User = ghostBookshelf.Model.extend({
         model.emitChange('deleted', options);
     },
 
-    onCreated: function onCreated(model, attrs, options) {
+    onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
@@ -75,7 +75,7 @@ User = ghostBookshelf.Model.extend({
         }
     },
 
-    onUpdated: function onUpdated(model, response, options) {
+    onUpdated: function onUpdated(model, options) {
         ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');
