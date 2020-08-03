@@ -34,7 +34,7 @@ We have a handful of simple standards for commit messages which help us to gener
 - **1st line:** Max 80 character summary written in past tense
 - **2nd line:** [Always blank]
 - **3rd line:** `refs/closes #000` or `no issue`
-- **4th line:** Whatever you want. Any extra details can be included from here
+- **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
 
 If your change is **user-facing** please prepend the first line of your commit with **an emoji key**.
 We are following [gitmoji](https://gitmoji.carloscuesta.me/).
