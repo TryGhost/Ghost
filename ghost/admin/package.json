@@ -86,7 +86,7 @@
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.1",
     "ember-mocha": "0.16.2",
-    "ember-modifier": "1.0.3",
+    "ember-modifier": "2.1.0",
     "ember-moment": "8.0.0",
     "ember-one-way-select": "4.0.0",
     "ember-power-calendar-moment": "0.1.7",
