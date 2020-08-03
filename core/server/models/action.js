@@ -3,7 +3,7 @@ const ghostBookshelf = require('./base');
 
 const candidates = [];
 
-_.each(ghostBookshelf._models, (model) => {
+_.each(ghostBookshelf.registry.models, (model) => {
     candidates.push([model, model.prototype.tableName.replace(/s$/, '')]);
 });
 
