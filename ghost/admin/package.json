@@ -28,7 +28,7 @@
     "@ember/jquery": "1.1.0",
     "@ember/optional-features": "1.3.0",
     "@ember/render-modifiers": "1.0.2",
-    "@glimmer/component": "1.0.0",
+    "@glimmer/component": "1.0.1",
     "@html-next/vertical-collection": "1.0.0",
     "@tryghost/helpers": "1.1.27",
     "@tryghost/kg-clean-basic-html": "1.0.6",
