@@ -143,7 +143,7 @@ describe('Migration Fixture Utils', function () {
         it('should call attach for permissions-roles', function (done) {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
-                findWhere: sinon.stub().returns()
+                find: sinon.stub().returns()
             };
 
             const toItem = [{get: sinon.stub()}];
@@ -171,8 +171,7 @@ describe('Migration Fixture Utils', function () {
                 baseUtilAttachStub.callCount.should.eql(80);
 
                 fromItem.related.callCount.should.eql(80);
-                fromItem.findWhere.callCount.should.eql(80);
-                toItem[0].get.callCount.should.eql(160);
+                fromItem.find.callCount.should.eql(80);
 
                 done();
             }).catch(done);
@@ -181,7 +180,7 @@ describe('Migration Fixture Utils', function () {
         it('should call attach for posts-tags', function (done) {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
-                findWhere: sinon.stub().returns()
+                find: sinon.stub().returns()
             };
 
             const toItem = [{get: sinon.stub()}];
@@ -207,8 +206,7 @@ describe('Migration Fixture Utils', function () {
                 dataMethodStub.filter.callCount.should.eql(7);
                 dataMethodStub.find.callCount.should.eql(7);
                 fromItem.related.callCount.should.eql(7);
-                fromItem.findWhere.callCount.should.eql(7);
-                toItem[0].get.callCount.should.eql(7);
+                fromItem.find.callCount.should.eql(7);
                 baseUtilAttachStub.callCount.should.eql(7);
 
                 done();
@@ -218,7 +216,7 @@ describe('Migration Fixture Utils', function () {
         it('will not call attach for posts-tags if already present', function (done) {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
-                findWhere: sinon.stub().returns({}),
+                find: sinon.stub().returns({}),
                 tags: sinon.stub().returnsThis(),
                 attach: sinon.stub().returns(Promise.resolve({}))
             };
@@ -246,8 +244,7 @@ describe('Migration Fixture Utils', function () {
                 dataMethodStub.find.callCount.should.eql(7);
 
                 fromItem.related.callCount.should.eql(7);
-                fromItem.findWhere.callCount.should.eql(7);
-                toItem[0].get.callCount.should.eql(7);
+                fromItem.find.callCount.should.eql(7);
 
                 fromItem.tags.called.should.be.false();
                 fromItem.attach.called.should.be.false();
