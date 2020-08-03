@@ -11,12 +11,13 @@ const notImplemented = function (req, res, next) {
     }
 
     // @NOTE: integrations have limited access for now
-    const whitelisted = {
+    const allowlisted = {
         // @NOTE: stable
         site: ['GET'],
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
         pages: ['GET', 'PUT', 'DELETE', 'POST'],
         images: ['POST'],
+        webhooks: ['POST', 'PUT', 'DELETE'],
         // @NOTE: experimental
         actions: ['GET'],
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
@@ -25,7 +26,6 @@ const notImplemented = function (req, res, next) {
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         config: ['GET'],
-        webhooks: ['POST', 'PUT', 'DELETE'],
         schedules: ['PUT'],
         db: ['POST']
     };
@@ -35,7 +35,7 @@ const notImplemented = function (req, res, next) {
     if (match) {
         const entity = match[1];
 
-        if (whitelisted[entity] && whitelisted[entity].includes(req.method)) {
+        if (allowlisted[entity] && allowlisted[entity].includes(req.method)) {
             return next();
         }
     }
