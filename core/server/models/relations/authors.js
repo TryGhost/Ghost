@@ -353,7 +353,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     .then(function then(foundPostModel) {
                         if (!foundPostModel) {
                             throw new errors.NotFoundError({
-                                level: 'critical',
                                 message: i18n.t('errors.models.post.postNotFound')
                             });
                         }
