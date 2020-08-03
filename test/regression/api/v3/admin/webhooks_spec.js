@@ -103,6 +103,23 @@ describe('Webhooks API (v3)', function () {
             });
     });
 
+    it('Integration editing non-existing webhook returns 404', function () {
+        return request.put(localUtils.API.getApiQuery(`webhooks/5f27d0287c75da744d8615da/`))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v3/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+            .send({
+                webhooks: [{
+                    name: 'Edit Test'
+                }]
+            })
+            .expect(404);
+    });
+
+    it('Integration deleting non-existing webhook returns 404', function () {
+        return request.delete(localUtils.API.getApiQuery(`webhooks/5f27d0287c75da744d8615db/`))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v3/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+            .expect(404);
+    });
+
     it('Cannot edit webhooks using content api keys', function () {
         let webhookData = {
             event: 'post.create',
