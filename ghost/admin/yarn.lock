@@ -1331,10 +1331,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/string@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.9.tgz#e7519acf328840f1c549715685edabdb938d10ba"
-  integrity sha512-6asm+vTJuXLPFTil+Zh3X6AH6RBLghjc4HRXR8plJ1SF4rleg40qvTGzloTA+4eMbVzHYvVSpOQRwFkvejMlOw==
+"@tryghost/string@0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.10.tgz#6fb6a16cc628e6c22397c5889a7a85c29171374a"
+  integrity sha512-TqkuNTvM6zOHIugAc3lnok4U4e4kKLvZz/Oo5Kka1jMHe70SrJZ3X1ljZEn7RloV3PdHmLUE5zN3Zvj2aC1avg==
   dependencies:
     unidecode "^0.1.8"
 
