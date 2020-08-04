@@ -540,7 +540,19 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.18", "@tryghost/url-utils@^0.6.14":
+"@tryghost/url-utils@0.6.19":
+  version "0.6.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.19.tgz#84377166010e80141119840da1cbd0c5201978e5"
+  integrity sha512-XTTc9ZYc0VWjH9jJgF6a0ucztQxdo433dFggmVGedUmG+warVmy3Yv6uedceD97iT6tJ6tg448NEzS2JfPyzRw==
+  dependencies:
+    cheerio "0.22.0"
+    moment "2.27.0"
+    moment-timezone "0.5.31"
+    remark "^11.0.2"
+    remark-footnotes "^1.0.0"
+    unist-util-visit "^2.0.0"
+
+"@tryghost/url-utils@^0.6.14":
   version "0.6.18"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.18.tgz#e1c8ab1cbb4f97b2f04a12f6c55b7f41ccf5ca84"
   integrity sha512-nYx6qs8gaz1b6Rd9ntv9mQ35EvwR74YnHok1EF22Udm+VfMtQXTaOHviAQqPy4OuEizZqyqj5i8cHEwfH55CKg==
@@ -6077,14 +6089,14 @@ module-not-found-error@^1.0.1:
   resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
   integrity sha1-z4tP9PKWQGdNbN0CsOO8UjwrvcA=
 
-moment-timezone@0.5.23, moment-timezone@0.5.28:
+moment-timezone@0.5.23, moment-timezone@0.5.28, moment-timezone@0.5.31:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.25.1, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1:
+moment@2.24.0, moment@2.25.1, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
