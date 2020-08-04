@@ -405,7 +405,7 @@ module.exports = {
     members_stripe_customers_subscriptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},
-        subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         status: {type: 'string', maxlength: 50, nullable: false},
         cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
