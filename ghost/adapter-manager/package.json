@@ -27,7 +27,7 @@
     "mocha": "7.2.0",
     "should": "13.2.3",
     "sinon": "9.0.2",
-    "typescript": "3.9.5"
+    "typescript": "3.9.7"
   },
   "dependencies": {
     "@tryghost/errors": "^0.2.0"
