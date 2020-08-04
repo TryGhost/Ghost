@@ -46,7 +46,7 @@ describe('Webhooks API (canary)', function () {
 
                 jsonResponse.webhooks[0].event.should.eql('test.create');
                 jsonResponse.webhooks[0].target_url.should.eql('http://example.com/webhooks/test/extra/canary');
-                jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].id);
+                jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].integration_id);
                 jsonResponse.webhooks[0].name.should.eql('test');
                 jsonResponse.webhooks[0].secret.should.eql('thisissecret');
                 jsonResponse.webhooks[0].api_version.should.eql('v3');
