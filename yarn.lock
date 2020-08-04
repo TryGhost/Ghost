@@ -382,14 +382,14 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.0.tgz#318228591553bb9faca057096736caa78db38f8c"
-  integrity sha512-nS+xz791LlzVTzTX0zoBL630z1GN7fzlPWVZXIiNjcjjgsPqUGOVXTpnUi5WpOpo0x6JwQBe6H0PRSBhbnxcWA==
+"@tryghost/html-to-mobiledoc@0.7.1":
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.1.tgz#96dfb5e7d817ca5f67fba35d82beb1ea66a2cf8c"
+  integrity sha512-5ecakGIUNB707zYH8L9vXZF2SOTP7pM2qvKFggPxqOdaocFLki2mAn0S9qSbSY1C6kTLwMuUQIB6UJCo9skX/g==
   dependencies:
-    "@tryghost/kg-parser-plugins" "0.10.0"
+    "@tryghost/kg-parser-plugins" "1.0.6"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
-    jsdom "16.2.2"
+    jsdom "16.3.0"
 
 "@tryghost/image-transform@1.0.0":
   version "1.0.0"
@@ -407,10 +407,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-2.1.1.tgz#c157da23969bec651a021b79656c249420921e89"
   integrity sha512-BFdDQReNgpDewfGWU841MRDUWUb9Ci1rs/09voBzswvQYsR6pxb0yxUxLj9UjgZznWkk8rj2elnby0PevnJ9gA==
 
-"@tryghost/kg-clean-basic-html@^0.1.8":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.9.tgz#e260c272f0a739e20386a81963b6adf8f54f7d7e"
-  integrity sha512-LZhvhTHqeKBeAJVdCcn6FO4egxqFDE1awn1SXgUhL2Xs+jUMrW1OYhtoxg4Xrv1oFnSOcXC0Kz2UPYliLeudeg==
+"@tryghost/kg-clean-basic-html@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.6.tgz#8106cbde961163fc143728b89a3294b94a46ea22"
+  integrity sha512-aA/8+RzGF9SXr2todtuJFGtB29GmudsS0Eb2pNNSLJ5IkLndR2JUZ3mSYdeOjW3mLI8xbKykRC8AYyfMwziqWw==
 
 "@tryghost/kg-default-atoms@2.0.1":
   version "2.0.1"
@@ -443,12 +443,12 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.10.0.tgz#436e0a86a7722a18163da08b24679957bfcdd917"
-  integrity sha512-baXfkuoUA6+xkyov0P/2MtHgdlRJFu0AxJDCFtzboLFuf3zAcZj1zEsT2wTZB1WazWAGQk5MQXGim5MKOx2RGQ==
+"@tryghost/kg-parser-plugins@1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-1.0.6.tgz#8655a61255d7860ed02a43f6c48ff6e17be91d06"
+  integrity sha512-18x2ORsXj6A74EqpoT4C6C/JIAeuleN/LfBCQkEhwgMOBqerV5OeRXFwFreVNVoeYZ/LSZ7kgoP2RHzwSI80WQ==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^0.1.8"
+    "@tryghost/kg-clean-basic-html" "^1.0.6"
 
 "@tryghost/magic-link@0.4.12", "@tryghost/magic-link@^0.4.12":
   version "0.4.12"
@@ -4986,10 +4986,10 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
-jsdom@16.2.2:
-  version "16.2.2"
-  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-16.2.2.tgz#76f2f7541646beb46a938f5dc476b88705bedf2b"
-  integrity sha512-pDFQbcYtKBHxRaP55zGXCJWgFHkDAYbKcsXEK/3Icu9nKYZkutUXfLBwbD+09XDutkYSHcgfQLZ0qvpAAm9mvg==
+jsdom@16.3.0:
+  version "16.3.0"
+  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-16.3.0.tgz#75690b7dac36c67be49c336dcd7219bbbed0810c"
+  integrity sha512-zggeX5UuEknpdZzv15+MS1dPYG0J/TftiiNunOeNxSl3qr8Z6cIlQpN0IdJa44z9aFxZRIVqRncvEhQ7X5DtZg==
   dependencies:
     abab "^2.0.3"
     acorn "^7.1.1"
@@ -5011,7 +5011,7 @@ jsdom@16.2.2:
     tough-cookie "^3.0.1"
     w3c-hr-time "^1.0.2"
     w3c-xmlserializer "^2.0.0"
-    webidl-conversions "^6.0.0"
+    webidl-conversions "^6.1.0"
     whatwg-encoding "^1.0.5"
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
@@ -9277,7 +9277,7 @@ webidl-conversions@^5.0.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-5.0.0.tgz#ae59c8a00b121543a2acc65c0434f57b0fc11aff"
   integrity sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA==
 
-webidl-conversions@^6.0.0:
+webidl-conversions@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
