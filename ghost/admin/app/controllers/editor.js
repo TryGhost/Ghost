@@ -846,7 +846,7 @@ export default Controller.extend({
             }
         }
 
-        description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Mo')}</strong></span>`);
+        description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Do')}</strong></span>`);
 
         description.push(`at <span><strong>${publishedAtBlogTZ.format('HH:mm')}</strong>`);
         if (publishedAtBlogTZ.utcOffset() === 0) {
