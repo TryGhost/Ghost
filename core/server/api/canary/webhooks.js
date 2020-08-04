@@ -31,7 +31,7 @@ module.exports = {
     edit: {
         permissions: {
             before: (frame) => {
-                if (frame.options.context && frame.options.context.api_key && frame.options.context.api_key.id) {
+                if (frame.options.context && frame.options.context.integration && frame.options.context.integration.id) {
                     return models.Webhook.findOne({id: frame.options.id})
                         .then((webhook) => {
                             if (!webhook) {
@@ -42,7 +42,7 @@ module.exports = {
                                 });
                             }
 
-                            if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
+                            if (webhook.get('integration_id') !== frame.options.context.integration.id) {
                                 throw new errors.NoPermissionError({
                                     message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
                                         method: 'edit'
@@ -100,7 +100,7 @@ module.exports = {
         },
         permissions: {
             before: (frame) => {
-                if (frame.options.context && frame.options.context.api_key && frame.options.context.api_key.id) {
+                if (frame.options.context && frame.options.context.integration && frame.options.context.integration.id) {
                     return models.Webhook.findOne({id: frame.options.id})
                         .then((webhook) => {
                             if (!webhook) {
@@ -111,7 +111,7 @@ module.exports = {
                                 });
                             }
 
-                            if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
+                            if (webhook.get('integration_id') !== frame.options.context.integration.id) {
                                 throw new errors.NoPermissionError({
                                     message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
                                         method: 'destroy'
