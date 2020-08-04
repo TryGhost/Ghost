@@ -44,7 +44,7 @@ describe('Compress and Extract should be opposite functions', function () {
             .then((res) => {
                 res.should.be.an.Object().with.properties('path', 'size');
                 res.path.should.eql(zipDestination);
-                res.size.should.eql(323805);
+                res.size.should.be.below(619618);
 
                 return extract(zipDestination, unzipDestination);
             })
