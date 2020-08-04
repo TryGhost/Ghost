@@ -524,14 +524,14 @@
   dependencies:
     "@tryghost/errors" "^0.2.0"
 
-"@tryghost/social-urls@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.9.tgz#40e6f7b2bd3a037c93e6027ae1add6c4425675ba"
-  integrity sha512-mlaFhecMWvQYpeN/hCS8s2p1+hQmf0WcpYykB3mwoLf6lsypShQzheMvACeTX+S8hEwOZxFQSR8XYyMKRxQ+IA==
+"@tryghost/social-urls@0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.10.tgz#f4ca0dbf3a3aa8eaac7b186ad89f68539687da43"
+  integrity sha512-ZlzsAsyy7LbjB4Xq8/X+wOOZtarOB+WrwZtaNZo8L7UKmbfqcuvjNT9TZtdy6Xv/8sTlSx+m3A/M0xdD0s1Wyw==
   dependencies:
     bluebird "3.7.2"
-    ghost-ignition "4.1.0"
-    lodash "4.17.15"
+    ghost-ignition "4.2.1"
+    lodash "4.17.19"
 
 "@tryghost/string@0.1.9":
   version "0.1.9"
