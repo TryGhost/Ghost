@@ -26,7 +26,7 @@
     "bluebird": "3.7.2",
     "emoji-regex": "9.0.0",
     "execa": "1.0.0",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "request": "2.88.2",
     "request-promise": "4.2.5"
   }
