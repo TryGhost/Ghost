@@ -31,20 +31,20 @@ class Changelog {
         ];
 
         _.each(commands, (command) => {
-            execa.shellSync(command, {cwd: options.folder || this.folder});
+            execa.sync(command, {cwd: options.folder || this.folder, shell: true});
         });
 
         return this;
     }
 
     sort() {
-        execa.shellSync(`sort -r ${this.changelogPath} -o ${this.changelogPath}`, {cwd: this.folder});
+        execa.sync(`sort -r ${this.changelogPath} -o ${this.changelogPath}`, {cwd: this.folder, shell: true});
 
         return this;
     }
 
     clean() {
-        execa.shellSync(`sed -i.bk -E 's/^[0-9]{10} //g' ${this.changelogPath}`, {cwd: this.folder});
+        execa.sync(`sed -i.bk -E 's/^[0-9]{10} //g' ${this.changelogPath}`, {cwd: this.folder, shell: true});
 
         return this;
     }
