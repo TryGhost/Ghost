@@ -46,7 +46,7 @@ describe('Webhooks API (v3)', function () {
 
                 jsonResponse.webhooks[0].event.should.eql('test.create');
                 jsonResponse.webhooks[0].target_url.should.eql('http://example.com/webhooks/test/extra/v3');
-                jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].id);
+                jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].integration_id);
 
                 localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
             });
