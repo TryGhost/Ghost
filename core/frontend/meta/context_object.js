@@ -26,13 +26,6 @@ function getContextObject(data, context) {
         chosenContext = data.tag;
     } else if (_.includes(context, 'author') && data.author) {
         chosenContext = data.author;
-    } else if (_.includes(context, 'page') && data.post) {
-        // The page context object does not have it's own field, it's just an extension of post,
-        // hence using the post field from data for page context.
-        // Not changing it in the above else if statement so that it doesn't break stuff,
-        // in case in future it gets its own field or if it was present in some legacy system
-        // Page dependent on legacy post https://github.com/TryGhost/Ghost/issues/10042
-        chosenContext = data.post;
     } else if (data[context]) {
         // @NOTE: This is confusing as hell. It tries to get data[['author']], which works, but coincidence?
         chosenContext = data[context];
