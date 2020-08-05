@@ -40,6 +40,9 @@ function addTableColumn(tableName, table, columnName, columnSpec = schema[tableN
         // check if table exists?
         column.references(columnSpec.references);
     }
+    if (Object.prototype.hasOwnProperty.call(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
+        column.onDelete('CASCADE');
+    }
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'defaultTo')) {
         column.defaultTo(columnSpec.defaultTo);
     }

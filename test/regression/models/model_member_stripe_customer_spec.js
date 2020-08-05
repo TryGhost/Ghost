@@ -15,8 +15,13 @@ describe('MemberStripeCustomer Model', function run() {
         // For some reason the initial .add of MemberStripeCustomer is **not** adding a StripeCustomerSubscription :(
         it.skip('Is correctly mapped to the stripe subscriptions', async function () {
             const context = testUtils.context.admin;
+
+            const member = await Member.add({
+                email: 'test@test.test'
+            });
+
             await MemberStripeCustomer.add({
-                member_id: 'fake_member_id',
+                member_id: member.get('id'),
                 customer_id: 'fake_customer_id',
                 subscriptions: [{
                     subscription_id: 'fake_subscription_id1',
@@ -72,13 +77,12 @@ describe('MemberStripeCustomer Model', function run() {
     describe('member', function () {
         it('Is correctly mapped to the member', async function () {
             const context = testUtils.context.admin;
-            await Member.add({
-                id: 'fake_member_id',
+            const member = await Member.add({
                 email: 'test@test.member'
             }, context);
 
             await MemberStripeCustomer.add({
-                member_id: 'fake_member_id',
+                member_id: member.get('id'),
                 customer_id: 'fake_customer_id'
             }, context);
 
@@ -88,25 +92,29 @@ describe('MemberStripeCustomer Model', function run() {
                 withRelated: ['member']
             }));
 
-            const member = customer.related('member');
+            const memberFromRelation = customer.related('member');
 
-            should.exist(member, 'MemberStripeCustomer should have been fetched with member');
+            should.exist(memberFromRelation, 'MemberStripeCustomer should have been fetched with member');
 
-            should.equal(member.get('id'), 'fake_member_id');
-            should.equal(member.get('email'), 'test@test.member');
+            should.equal(memberFromRelation.get('id'), member.get('id'));
+            should.equal(memberFromRelation.get('email'), 'test@test.member');
         });
     });
 
     describe('destroy', function () {
         it('Cascades to members_stripe_customers_subscriptions', async function () {
             const context = testUtils.context.admin;
+            const member = await Member.add({
+                email: 'test@test.member'
+            }, context);
+
             await MemberStripeCustomer.add({
-                member_id: 'fake_member_id',
+                member_id: member.get('id'),
                 customer_id: 'fake_customer_id'
             }, context);
 
             const customer = await MemberStripeCustomer.findOne({
-                member_id: 'fake_member_id'
+                customer_id: 'fake_customer_id'
             }, context);
 
             should.exist(customer, 'Customer should have been created');
@@ -136,12 +144,12 @@ describe('MemberStripeCustomer Model', function run() {
             }, context));
 
             const customerAfterDestroy = await MemberStripeCustomer.findOne({
-                member_id: 'fake_member_id'
+                customer_id: 'fake_customer_id'
             });
             should.not.exist(customerAfterDestroy, 'MemberStripeCustomer should have been destroyed');
 
             const subscriptionAfterDestroy = await StripeCustomerSubscription.findOne({
-                customer_id: customer.get('customer_id')
+                customer_id: 'fake_customer_id'
             });
             should.not.exist(subscriptionAfterDestroy, 'StripeCustomerSubscription should have been destroyed');
         });
