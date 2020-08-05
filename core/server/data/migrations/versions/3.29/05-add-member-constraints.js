@@ -70,6 +70,15 @@ module.exports = {
             });
         }
 
+        if (membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_subscriptions_subscription_id_unique')) {
+            logging.warn('Skipping "members_stripe_customers_subscriptions_subscription_id_unique" index creation - already exists');
+        } else {
+            logging.info('Adding "members_stripe_customers_subscriptions_subscription_id_unique" index');
+            await knex.schema.alterTable('members_stripe_customers_subscriptions', (table) => {
+                table.unique('subscription_id');
+            });
+        }
+
         if (membersStripeCustomersSubscriptionsIndexes.find(index => index.Key_name === 'members_stripe_customers_subscriptions_customer_id_foreign')) {
             logging.warn('Skipping "members_stripe_customers_subscriptions_customer_id_foreign" foreign key constraint creation - already exists');
         } else {
@@ -99,6 +108,15 @@ module.exports = {
             });
         }
 
+        if (!membersStripeCustomersSubscriptionsIndexes.find(index => index.Key_name === 'members_stripe_customers_subscriptions_subscription_id_unique')) {
+            logging.warn('Skipping "members_stripe_customers_subscriptions_subscription_id_unique" index removal - does not exist');
+        } else {
+            logging.info('Dropping "members_stripe_customers_subscriptions_subscription_id_unique" index');
+            await knex.schema.alterTable('members_stripe_customers_subscriptions', (table) => {
+                table.dropUnique('subscription_id');
+            });
+        }
+
         if (!membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_customer_id_unique')) {
             logging.warn('Skipping "members_stripe_customers_customer_id_unique" index removal - does not exist');
         } else {
@@ -109,7 +127,7 @@ module.exports = {
         }
 
         if (!membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_member_id_foreign')) {
-            logging.warn('Skipping "members_stripe_customers_member_id_foreign" foreign key constraint removal - already exists');
+            logging.warn('Skipping "members_stripe_customers_member_id_foreign" foreign key constraint removal - does not exist');
         } else {
             logging.info('Dropping "members_stripe_customers_member_id_foreign" foreign key constraint');
             await knex.schema.alterTable('members_stripe_customers', (table) => {
