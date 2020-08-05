@@ -30,7 +30,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/core": "7.11.0",
+    "@babel/core": "7.11.1",
     "@babel/preset-env": "7.11.0",
     "jsdom": "16.3.0",
     "mocha": "8.1.1",
