@@ -50,14 +50,14 @@ export default class AccountProfilePage extends React.Component {
                 if (email !== originalEmail) {
                     this.context.onAction('updateEmail', {email, oldEmail: originalEmail, emailType: 'updateEmail'});
                 }
-                this.context.onAction('updateMember', {email, name});
+                this.context.onAction('updateProfile', {email, name});
             }
         });
     }
 
     renderSaveButton() {
-        const isRunning = (this.context.action === 'updateMember:running');
-        const isSaved = (this.context.action === 'updateMember:success');
+        const isRunning = (this.context.action === 'updateProfile:running');
+        const isSaved = (this.context.action === 'updateProfile:success');
         let label = 'Save';
         if (isRunning) {
             label = 'Saving';

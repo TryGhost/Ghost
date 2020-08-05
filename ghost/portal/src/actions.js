@@ -107,6 +107,22 @@ async function updateMember({data, updateState, state, api}) {
     }
 }
 
+async function updateProfile({data, updateState, state, api}) {
+    const {name, subscribed} = data;
+    const member = await api.member.update({name, subscribed});
+    if (!member) {
+        return {
+            action: 'updateProfile:failed'
+        };
+    } else {
+        return {
+            action: 'updateProfile:success',
+            member: member,
+            page: 'accountHome'
+        };
+    }
+}
+
 const Actions = {
     togglePopup,
     openPopup,
@@ -119,6 +135,7 @@ const Actions = {
     updateEmail,
     updateSubscription,
     updateMember,
+    updateProfile,
     editBilling,
     checkoutPlan
 };
