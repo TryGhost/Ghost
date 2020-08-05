@@ -1,4 +1,5 @@
 const should = require('should');
+const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
 const {StripeCustomerSubscription} = require('../../../core/server/models/stripe-customer-subscription');
 
@@ -12,8 +13,11 @@ describe('StripeCustomerSubscription Model', function run() {
     describe('customer', function () {
         it('Is correctly mapped to the stripe customer', async function () {
             const context = testUtils.context.admin;
+            const member = await Member.add({
+                email: 'test@test.member'
+            }, context);
             await MemberStripeCustomer.add({
-                member_id: 'fake_member_id',
+                member_id: member.get('id'),
                 customer_id: 'fake_customer_id'
             }, context);
 
