@@ -24,9 +24,9 @@ export const site = {
 export const member = {
     free: {
         uuid: 'd7d3b1a0-90f4-4b93-a51f-76b56213b535',
-        email: 'member@example.com',
-        name: 'Example Member',
-        firstname: null,
+        email: 'jamie@example.com',
+        name: 'Jamie Larson',
+        firstname: 'Jamie',
         // avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&',
         avatar_image: '',
         subscriptions: [],
@@ -48,8 +48,8 @@ export const member = {
             },
             plan: {
                 id: 'fd43b943666b97640188afb382cca39479de30f799985679dd7a71ad2925ac6c',
-                nickname: 'Monthly',
-                interval: 'month',
+                nickname: 'Yearly',
+                interval: 'year',
                 amount: 500,
                 currency: 'USD',
                 currency_symbol: '$'

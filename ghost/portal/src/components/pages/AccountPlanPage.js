@@ -30,7 +30,10 @@ export default class AccountPlanPage extends React.Component {
     constructor(props, context) {
         super(props, context);
         const {member} = this.context;
-        const activePlan = this.getActivePlanName({member});
+        const {plans} = this.context.site;
+        this.plans = this.getPlansData({plans});
+        const activePlan = this.getActivePlanName({member}) || this.plans[0].name;
+
         this.state = {
             plan: activePlan
         };
@@ -43,6 +46,25 @@ export default class AccountPlanPage extends React.Component {
                 page: 'signup'
             });
         }
+    }
+
+    getPlansData({plans}) {
+        const discount = CalculateDiscount(plans.monthly, plans.yearly);
+        return [
+            {
+                type: 'month',
+                price: plans.monthly,
+                currency: plans.currency_symbol,
+                name: 'Monthly'
+            },
+            {
+                type: 'year',
+                price: plans.yearly,
+                currency: plans.currency_symbol,
+                name: 'Yearly',
+                discount
+            }
+        ];
     }
 
     handleSignout(e) {
@@ -126,30 +148,15 @@ export default class AccountPlanPage extends React.Component {
     }
 
     renderPlanChooser() {
-        const {plans} = this.context.site;
-        const discount = CalculateDiscount(plans.monthly, plans.yearly);
-        const plansData = [
-            {
-                type: 'month',
-                price: plans.monthly,
-                currency: plans.currency_symbol,
-                name: 'Monthly'
-            },
-            {
-                type: 'year',
-                price: plans.yearly,
-                currency: plans.currency_symbol,
-                name: 'Yearly',
-                discount
-            }
-        ];
+        const plansData = this.plans;
+        const selectedPlan = this.state.plan;
         return (
             <section>
                 <div className='gh-portal-section gh-portal-accountplans-main'>
                     <PlansSection
                         showLabel={false}
                         plans={plansData}
-                        selectedPlan={this.state.plan}
+                        selectedPlan={selectedPlan}
                         onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
                     />
                     {this.renderError()}
