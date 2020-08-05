@@ -79,19 +79,19 @@ const sendTestEmail = async (postModel, toEmails) => {
 
 const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-    const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true', limit: 'all'});
+    const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true', limit: 1});
 
     if (postModel.get('visibility') === 'paid') {
         filterOptions.paid = true;
     }
 
     const startRetrieve = Date.now();
-    debug('addEmail: retrieving members list');
-    const {data: membersToSendTo} = await models.Member.findPage(Object.assign({}, knexOptions, filterOptions));
-    debug(`addEmail: retrieved members list - ${membersToSendTo.length} members (${Date.now() - startRetrieve}ms)`);
+    debug('addEmail: retrieving members count');
+    const {meta: {pagination: {total: membersCount}}} = await models.Member.findPage(Object.assign({}, knexOptions, filterOptions));
+    debug(`addEmail: retrieved members count - ${membersCount} members (${Date.now() - startRetrieve}ms)`);
 
     // NOTE: don't create email object when there's nobody to send the email to
-    if (!membersToSendTo.length) {
+    if (membersCount === 0) {
         return null;
     }
 
@@ -112,7 +112,7 @@ const addEmail = async (postModel, options) => {
         return models.Email.add({
             post_id: postId,
             status: 'pending',
-            email_count: membersToSendTo.length,
+            email_count: membersCount,
             subject: emailTmpl.subject,
             html: emailTmpl.html,
             plaintext: emailTmpl.plaintext,
