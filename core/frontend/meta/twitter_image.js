@@ -20,8 +20,8 @@ function getTwitterImage(data) {
         }
     }
 
-    if (_.includes(context, 'author') && contextObject.cover_image) {
-        return urlUtils.relativeToAbsolute(contextObject.cover_image);
+    if (_.includes(context, 'author') && contextObject.profile_image) {
+        return urlUtils.relativeToAbsolute(contextObject.profile_image);
     }
 
     if (_.includes(context, 'tag')) {
