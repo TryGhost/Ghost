@@ -168,7 +168,13 @@ class TriggerButtonContent extends React.Component {
     }
 
     onToggle() {
-        this.context.onAction('togglePopup');
+        const {showPopup, member} = this.context;
+        if (showPopup) {
+            this.context.onAction('closePopup');
+        } else {
+            const page = member ? 'accountHome' : 'signup';
+            this.context.onAction('openPopup', {page});
+        }
     }
 
     render() {
