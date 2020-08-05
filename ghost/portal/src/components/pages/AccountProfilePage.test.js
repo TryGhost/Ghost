@@ -33,6 +33,6 @@ describe('Account Profile Page', () => {
 
         fireEvent.click(saveBtn);
         const {email, name} = context.member;
-        expect(mockOnActionFn).toHaveBeenCalledWith('updateMember', {email, name});
+        expect(mockOnActionFn).toHaveBeenCalledWith('updateProfile', {email, name});
     });
 });
