@@ -387,15 +387,14 @@ module.exports = {
     },
     members_labels: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id'},
-        label_id: {type: 'string', maxlength: 24, nullable: false, references: 'labels.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        label_id: {type: 'string', maxlength: 24, nullable: false, references: 'labels.id', cascadeDelete: true},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     members_stripe_customers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false, unique: false},
-        // customer_id is unique: false because mysql with innodb utf8mb4 cannot have unqiue columns larger than 191 chars
-        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
+        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         name: {type: 'string', maxlength: 191, nullable: true},
         email: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -405,8 +404,8 @@ module.exports = {
     },
     members_stripe_customers_subscriptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
-        subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},
+        subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         status: {type: 'string', maxlength: 50, nullable: false},
         cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
