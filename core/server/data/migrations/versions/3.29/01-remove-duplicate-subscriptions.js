@@ -6,6 +6,11 @@ module.exports = {
     },
 
     async up({transacting: knex}) {
+        if (knex.client.config.client !== 'mysql') {
+            logging.warn('Skipping cleanup of duplicate subscriptions - database is not MySQL');
+            return;
+        }
+
         const duplicates = await knex('members_stripe_customers_subscriptions')
             .select('subscription_id')
             .count('subscription_id as count')
