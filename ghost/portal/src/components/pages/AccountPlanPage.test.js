@@ -29,13 +29,11 @@ describe('Account Plan Page', () => {
     });
 
     test('can choose plan and continue', async () => {
-        const {mockOnActionFn, monthlyCheckboxEl, continueBtn} = setup();
-        expect(monthlyCheckboxEl.checked).toEqual(false);
-        fireEvent.click(monthlyCheckboxEl);
+        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, continueBtn} = setup();
         expect(monthlyCheckboxEl.checked).toEqual(true);
-        await waitFor(() => {
-            expect(continueBtn).toBeEnabled();
-        });
+        fireEvent.click(yearlyCheckboxEl);
+        expect(yearlyCheckboxEl.checked).toEqual(true);
+        expect(continueBtn).toBeEnabled();
 
         fireEvent.click(continueBtn);
         expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: 'Monthly'});
