@@ -10,18 +10,47 @@ module.exports = {
             return logging.warn('Skipping member tables index creation - database is not MySQL');
         }
 
-        const [membersLabelsIndexes] = await knex.raw('SHOW INDEXES FROM members_labels');
-        const [membersStripeCustomersIndexes] = await knex.raw('SHOW INDEXES FROM members_stripe_customers');
-        const [membersStripeCustomersSubscriptionsIndexes] = await knex.raw('SHOW INDEXES from members_stripe_customers_subscriptions');
+        // member_labels already has a foreign key constraint, we want to add ON DELETE CASCADE
 
-        if (membersLabelsIndexes.find(index => index.Key_name === 'members_labels_member_id_foreign')) {
-            logging.warn('Skipping "members_labels_member_id_foreign" foreign key constraint creation - already exists');
-        } else {
-            logging.info('Adding "members_labels_member_id_foreign" foreign key constraint');
+        const dbName = knex.client.config.connection.database;
+        const [dbConstraints] = await knex.raw('SELECT * FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=?', [dbName]);
+
+        const memberIdConstraint = dbConstraints.find(constraint => constraint.CONSTRAINT_NAME === 'members_labels_member_id_foreign');
+        if (memberIdConstraint && memberIdConstraint.DELETE_RULE === 'CASCADE') {
+            logging.warn('Skipping ON DELETE CASCADE for "members_labels_member_id_foreign" constraint - already set');
+        } else if (memberIdConstraint) {
+            logging.info('Adding ON DELETE CASCADE to "members_labels_member_id_foreign" constraint');
+            // first drop the key
+            await knex.schema.alterTable('members_labels', (table) => {
+                table.dropForeign('member_id');
+                table.dropIndex('member_id', 'members_labels_member_id_foreign');
+            });
+            // then re-add with ON DELETE CASCADE
             await knex.schema.alterTable('members_labels', (table) => {
                 table.foreign('member_id').references('members.id').onDelete('CASCADE');
             });
         }
+
+        const labelIdConstraint = dbConstraints.find(constraint => constraint.CONSTRAINT_NAME === 'members_labels_label_id_foreign');
+        if (labelIdConstraint && labelIdConstraint.DELETE_RULE === 'CASCADE') {
+            logging.warn('Skipping ON DELETE CASCADE for "members_labels_label_id_foreign" constraint - already set');
+        } else if (labelIdConstraint) {
+            logging.info('Adding ON DELETE CASCADE to "members_labels_label_id_foreign" constraint');
+            // first drop the key
+            await knex.schema.alterTable('members_labels', (table) => {
+                table.dropForeign('label_id');
+                table.dropIndex('label_id', 'members_labels_label_id_foreign');
+            });
+            // then re-add with ON DELETE CASCADE
+            await knex.schema.alterTable('members_labels', (table) => {
+                table.foreign('label_id').references('labels.id').onDelete('CASCADE');
+            });
+        }
+
+        // stripe tables have not had any indexes/constraints in the past, add them now with ON DELETE CASCADE
+
+        const [membersStripeCustomersIndexes] = await knex.raw('SHOW INDEXES FROM members_stripe_customers');
+        const [membersStripeCustomersSubscriptionsIndexes] = await knex.raw('SHOW INDEXES from members_stripe_customers_subscriptions');
 
         if (membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_member_id_foreign')) {
             logging.warn('Skipping "members_stripe_customers_member_id_foreign" foreign key constraint creation - already exists');
@@ -56,7 +85,6 @@ module.exports = {
             return logging.warn('Skipping member tables index removal - database is not MySQL');
         }
 
-        const [membersLabelsIndexes] = await knex.raw('SHOW INDEXES FROM members_labels');
         const [membersStripeCustomersIndexes] = await knex.raw('SHOW INDEXES FROM members_stripe_customers');
         const [membersStripeCustomersSubscriptionsIndexes] = await knex.raw('SHOW INDEXES from members_stripe_customers_subscriptions');
 
@@ -90,13 +118,38 @@ module.exports = {
             });
         }
 
-        if (!membersLabelsIndexes.find(index => index.Key_name === 'members_labels_member_id_foreign')) {
-            logging.warn('Skipping "members_labels_member_id_foreign" foreign key constraint removal - already exists');
-        } else {
-            logging.info('Dropping "members_labels_member_id_foreign" foreign key constraint');
+        const dbName = knex.client.config.connection.database;
+        const [dbConstraints] = await knex.raw('SELECT * FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=?', [dbName]);
+
+        const memberIdConstraint = dbConstraints.find(constraint => constraint.CONSTRAINT_NAME === 'members_labels_member_id_foreign');
+        if (memberIdConstraint && memberIdConstraint.DELETE_RULE !== 'CASCADE') {
+            logging.warn('Skipping removal of ON DELETE CASCADE for "members_labels_member_id_foreign" constraint - not set');
+        } else if (memberIdConstraint) {
+            logging.info('Removing ON DELETE CASCADE from "members_labels_member_id_foreign" constraint');
+            // first drop the key
             await knex.schema.alterTable('members_labels', (table) => {
                 table.dropForeign('member_id');
                 table.dropIndex('member_id', 'members_labels_member_id_foreign');
+            });
+            // then re-add without ON DELETE CASCADE
+            await knex.schema.alterTable('members_labels', (table) => {
+                table.foreign('member_id').references('members.id');
+            });
+        }
+
+        const labelIdConstraint = dbConstraints.find(constraint => constraint.CONSTRAINT_NAME === 'members_labels_label_id_foreign');
+        if (labelIdConstraint && labelIdConstraint.DELETE_RULE !== 'CASCADE') {
+            logging.warn('Skipping removal of ON DELETE CASCADE for "members_labels_label_id_foreign" constraint - not set');
+        } else if (labelIdConstraint) {
+            logging.info('Removing ON DELETE CASCADE from "members_labels_label_id_foreign" constraint');
+            // first drop the key
+            await knex.schema.alterTable('members_labels', (table) => {
+                table.dropForeign('label_id');
+                table.dropIndex('label_id', 'members_labels_label_id_foreign');
+            });
+            // then re-add without ON DELETE CASCADE
+            await knex.schema.alterTable('members_labels', (table) => {
+                table.foreign('label_id').references('labels.id');
             });
         }
     }
