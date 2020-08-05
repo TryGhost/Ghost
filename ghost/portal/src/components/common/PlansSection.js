@@ -173,6 +173,9 @@ function PriceLabel({currency, price}) {
 }
 
 function PlanOptions({plans, selectedPlan, onPlanSelect}) {
+    const hasMonthlyPlan = plans.some(({name}) => {
+        return name === 'Monthly';
+    });
     return plans.map(({name, currency, price, discount}, i) => {
         const isChecked = selectedPlan === name;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
@@ -185,7 +188,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
             planDetails.feature = 'Full access';
             break;
         case 'Yearly':
-            planDetails.feature = (discount > 0 ? discount + '% discount' : 'Full access');
+            planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
             break;
     
         default:
