@@ -27,6 +27,6 @@
     "typescript": "3.9.7"
   },
   "dependencies": {
-    "moleculer": "0.14.8"
+    "moleculer": "0.14.9"
   }
 }
