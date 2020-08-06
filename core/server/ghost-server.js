@@ -233,7 +233,9 @@ GhostServer.prototype.logStartMessages = function () {
     }
 
     // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
-    process.removeAllListeners('SIGINT').on('SIGINT', shutdown).removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+    process
+        .removeAllListeners('SIGINT').on('SIGINT', shutdown)
+        .removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
 };
 
 /**
@@ -353,7 +355,8 @@ module.exports.announceServerStart = function announceServerStart() {
     // CASE: Ghost extension - bootstrap sockets
     if (config.get('bootstrap-socket')) {
         return connectToBootstrapSocket({
-            started: true
+            started: true,
+            debug: debugInfo
         });
     }
 
