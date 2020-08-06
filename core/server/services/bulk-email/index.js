@@ -6,6 +6,7 @@ const mailgunProvider = require('./mailgun');
 const configService = require('../../../shared/config');
 const settingsCache = require('../settings/cache');
 const sentry = require('../../../shared/sentry');
+const debug = require('ghost-ignition').debug('mega');
 
 /**
  * An object representing batch request result
@@ -84,7 +85,7 @@ module.exports = {
 
         const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
 
-        return Promise.mapSeries(chunkedRecipients, (toAddresses) => {
+        return Promise.map(chunkedRecipients, (toAddresses, chunkIndex) => {
             const recipientVariables = {};
             toAddresses.forEach((email) => {
                 recipientVariables[email] = recipientData[email];
@@ -117,6 +118,8 @@ module.exports = {
             delete messageData.plaintext;
 
             return new Promise((resolve) => {
+                const batchStartTime = Date.now();
+                debug(`sending message batch ${chunkIndex + 1} to ${toAddresses.length}`);
                 mailgunInstance.messages().send(messageData, (error, body) => {
                     if (error) {
                         // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
@@ -131,12 +134,14 @@ module.exports = {
 
                         // NOTE: these are generated variables, so can be regenerated when retry is done
                         const data = _.omit(batchData, ['recipient-variables']);
+                        debug(`failed message batch ${chunkIndex + 1} (${Date.now() - batchStartTime}ms)`);
                         resolve(new FailedBatch(error, data));
                     } else {
+                        debug(`sent message batch ${chunkIndex + 1} (${Date.now() - batchStartTime}ms)`);
                         resolve(new SuccessfulBatch(body));
                     }
                 });
             });
-        });
+        }, {concurrency: 10});
     }
 };
