@@ -124,7 +124,7 @@ GhostServer.prototype.stop = function () {
             self.httpServer.close(function () {
                 events.emit('server.stop');
                 self.httpServer = null;
-                self.logShutdownMessages();
+                self.logStopMessages();
                 resolve(self);
             });
         }
@@ -145,6 +145,8 @@ GhostServer.prototype.hammertime = function () {
  * ### Log Start Messages
  */
 GhostServer.prototype.logStartMessages = function () {
+    let self = this;
+
     // Startup & Shutdown messages
     if (config.get('env') === 'production') {
         logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
@@ -161,17 +163,8 @@ GhostServer.prototype.logStartMessages = function () {
     }
 
     function shutdown() {
-        logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
-
-        if (config.get('env') === 'production') {
-            logging.warn(i18n.t('notices.httpServer.yourBlogIsNowOffline'));
-        } else {
-            logging.warn(
-                i18n.t('notices.httpServer.ghostWasRunningFor'),
-                moment.duration(process.uptime(), 'seconds').humanize()
-            );
-        }
-
+        // @TODO: await self.stop() here for consistency - but first we need stop to behave correctly
+        self.logStopMessages();
         process.exit(0);
     }
 
@@ -182,10 +175,21 @@ GhostServer.prototype.logStartMessages = function () {
 };
 
 /**
- * ### Log Shutdown Messages
+ * ### Log Stop Messages
  */
-GhostServer.prototype.logShutdownMessages = function () {
-    logging.warn(i18n.t('notices.httpServer.ghostIsClosingConnections'));
+GhostServer.prototype.logStopMessages = function () {
+    logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
+
+    // Extra clear message for production mode
+    if (config.get('env') === 'production') {
+        logging.warn(i18n.t('notices.httpServer.yourBlogIsNowOffline'));
+    }
+
+    // Always output uptime
+    logging.warn(
+        i18n.t('notices.httpServer.ghostWasRunningFor'),
+        moment.duration(process.uptime(), 'seconds').humanize()
+    );
 };
 
 module.exports = GhostServer;
