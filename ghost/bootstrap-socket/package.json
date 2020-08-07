@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/bootstrap-socket",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/bootstrap-socket",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -22,6 +22,5 @@
     "mocha": "8.1.1",
     "should": "13.2.3",
     "sinon": "9.0.2"
-  },
-  "dependencies": {}
+  }
 }
