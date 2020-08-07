@@ -12,6 +12,7 @@ const errors = require('@tryghost/errors');
 const {events, i18n} = require('./lib/common');
 const logging = require('../shared/logging');
 const moment = require('moment');
+const connectToBootstrapSocket = require('./bootstrap-socket');
 
 /**
  * ## GhostServer
@@ -247,88 +248,6 @@ GhostServer.prototype.logShutdownMessages = function () {
 
 module.exports = GhostServer;
 
-const connectToBootstrapSocket = (message) => {
-    const socketAddress = config.get('bootstrap-socket');
-    const net = require('net');
-    const client = new net.Socket();
-
-    return new Promise((resolve) => {
-        const connect = (options = {}) => {
-            let wasResolved = false;
-
-            const waitTimeout = setTimeout(() => {
-                logging.info('Bootstrap socket timed out.');
-
-                if (!client.destroyed) {
-                    client.destroy();
-                }
-
-                if (wasResolved) {
-                    return;
-                }
-
-                wasResolved = true;
-                resolve();
-            }, 1000 * 5);
-
-            client.connect(socketAddress.port, socketAddress.host, () => {
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-
-                client.write(JSON.stringify(message));
-
-                if (wasResolved) {
-                    return;
-                }
-
-                wasResolved = true;
-                resolve();
-            });
-
-            client.on('close', () => {
-                logging.info('Bootstrap client was closed.');
-
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-            });
-
-            client.on('error', (err) => {
-                logging.warn(`Can't connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
-
-                client.removeAllListeners();
-
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-
-                if (options.tries < 3) {
-                    logging.warn(`Tries: ${options.tries}`);
-
-                    // retry
-                    logging.warn('Retrying...');
-
-                    options.tries = options.tries + 1;
-                    const retryTimeout = setTimeout(() => {
-                        clearTimeout(retryTimeout);
-                        connect(options);
-                    }, 150);
-                } else {
-                    if (wasResolved) {
-                        return;
-                    }
-
-                    wasResolved = true;
-                    resolve();
-                }
-            });
-        };
-
-        connect({tries: 0});
-    });
-};
-
 /**
  * @NOTE announceServerStartCalled:
  *
@@ -342,22 +261,22 @@ module.exports.announceServerStart = function announceServerStart() {
     }
     announceServerStartCalled = true;
 
+    let socketAddress = config.get('bootstrap-socket');
+    let message = {
+        started: true,
+        debug: debugInfo
+    };
+
     events.emit('server.start');
 
     // CASE: IPC communication to the CLI via child process.
     if (process.send) {
-        process.send({
-            started: true,
-            debug: debugInfo
-        });
+        process.send(message);
     }
 
     // CASE: Ghost extension - bootstrap sockets
-    if (config.get('bootstrap-socket')) {
-        return connectToBootstrapSocket({
-            started: true,
-            debug: debugInfo
-        });
+    if (socketAddress) {
+        return connectToBootstrapSocket(socketAddress, logging, message);
     }
 
     return Promise.resolve();
@@ -376,22 +295,21 @@ module.exports.announceServerStopped = function announceServerStopped(error) {
     }
     announceServerStopCalled = true;
 
+    let socketAddress = config.get('bootstrap-socket');
+    let message = {
+        started: false,
+        error: error,
+        debug: debugInfo
+    };
+
     // CASE: IPC communication to the CLI via child process.
     if (process.send) {
-        process.send({
-            started: false,
-            error: error,
-            debug: debugInfo
-        });
+        process.send(message);
     }
 
     // CASE: Ghost extension - bootstrap sockets
-    if (config.get('bootstrap-socket')) {
-        return connectToBootstrapSocket({
-            started: false,
-            error: error,
-            debug: debugInfo
-        });
+    if (socketAddress) {
+        return connectToBootstrapSocket(socketAddress, logging, message);
     }
 
     return Promise.resolve();
