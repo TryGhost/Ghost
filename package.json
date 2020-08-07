@@ -44,7 +44,7 @@
     "@sentry/node": "5.20.1",
     "@tryghost/adapter-manager": "0.1.8",
     "@tryghost/bootstrap-socket": "0.1.0",
-    "@tryghost/errors": "0.2.0",
+    "@tryghost/errors": "0.2.1",
     "@tryghost/helpers": "1.1.28",
     "@tryghost/image-transform": "1.0.0",
     "@tryghost/kg-card-factory": "2.1.1",
