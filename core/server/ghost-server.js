@@ -22,8 +22,6 @@ const bootstrapSocket = require('@tryghost/bootstrap-socket');
 function GhostServer(rootApp) {
     this.rootApp = rootApp;
     this.httpServer = null;
-    this.connections = {};
-    this.connectionId = 0;
 
     // Expose config module for use externally.
     this.config = config;
@@ -97,7 +95,7 @@ GhostServer.prototype.start = function (externalApp) {
 
             reject(ghostError);
         });
-        self.httpServer.on('connection', self.connection.bind(self));
+
         self.httpServer.on('listening', function () {
             debug('...Started');
             self.logStartMessages();
@@ -129,20 +127,7 @@ GhostServer.prototype.stop = function () {
                 self.logShutdownMessages();
                 resolve(self);
             });
-
-            self.closeConnections();
         }
-    });
-};
-
-/**
- * ### Restart
- * Restarts the ghost application
- * @returns {Promise} Resolves once Ghost has restarted
- */
-GhostServer.prototype.restart = function () {
-    return this.stop().then(function (ghostServer) {
-        return ghostServer.start();
     });
 };
 
@@ -154,42 +139,6 @@ GhostServer.prototype.hammertime = function () {
     logging.info(i18n.t('notices.httpServer.cantTouchThis'));
 
     return Promise.resolve(this);
-};
-
-/**
- * ## Private (internal) methods
- *
- * ### Connection
- * @param {Object} socket
- */
-GhostServer.prototype.connection = function (socket) {
-    const self = this;
-
-    self.connectionId += 1;
-    socket._ghostId = self.connectionId;
-
-    socket.on('close', function () {
-        delete self.connections[this._ghostId];
-    });
-
-    self.connections[socket._ghostId] = socket;
-};
-
-/**
- * ### Close Connections
- * Most browsers keep a persistent connection open to the server, which prevents the close callback of
- * httpServer from returning. We need to destroy all connections manually.
- */
-GhostServer.prototype.closeConnections = function () {
-    const self = this;
-
-    Object.keys(self.connections).forEach(function (socketId) {
-        const socket = self.connections[socketId];
-
-        if (socket) {
-            socket.destroy();
-        }
-    });
 };
 
 /**
