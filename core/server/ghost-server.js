@@ -105,6 +105,17 @@ GhostServer.prototype.start = function (externalApp) {
                     resolve(self);
                 });
         });
+
+        function shutdown() {
+            // @TODO: await self.stop() here for consistency - but first we need stop to behave correctly
+            self.logStopMessages();
+            process.exit(0);
+        }
+
+        // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
+        process
+            .removeAllListeners('SIGINT').on('SIGINT', shutdown)
+            .removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
     });
 };
 
@@ -145,33 +156,19 @@ GhostServer.prototype.hammertime = function () {
  * ### Log Start Messages
  */
 GhostServer.prototype.logStartMessages = function () {
-    let self = this;
+    logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
 
-    // Startup & Shutdown messages
     if (config.get('env') === 'production') {
-        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
         logging.info(i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlUtils.urlFor('home', true)}));
-        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     } else {
-        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
         logging.info(i18n.t('notices.httpServer.listeningOn', {
             host: config.get('server').socket || config.get('server').host,
             port: config.get('server').port
         }));
         logging.info(i18n.t('notices.httpServer.urlConfiguredAs', {url: urlUtils.urlFor('home', true)}));
-        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     }
 
-    function shutdown() {
-        // @TODO: await self.stop() here for consistency - but first we need stop to behave correctly
-        self.logStopMessages();
-        process.exit(0);
-    }
-
-    // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
-    process
-        .removeAllListeners('SIGINT').on('SIGINT', shutdown)
-        .removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+    logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
 };
 
 /**
