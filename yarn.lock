@@ -404,16 +404,16 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.3.0"
 
-"@tryghost/image-transform@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.0.tgz#0389adae9eae0feb879d884658150eec9b067038"
-  integrity sha512-4bIS8BcokyvjmOk2QGIzOToP+nhNRV98RtcMwajnL1O53Ko1R5fIw93U+6OyOgzDHpYy+NZDK37hkEamNkq5sQ==
+"@tryghost/image-transform@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.1.tgz#fb62673856311c1ec4f5cec51d55c21ec20071e1"
+  integrity sha512-MJTEmzgjiVP76B+vaQTpJ3QHJxA+QWFrO1acVBP4liP0UBdc9WmHXBTuRb1biBEBO21436Bt8OHXNts1iPEr0w==
   dependencies:
-    "@tryghost/errors" "^0.2.0"
+    "@tryghost/errors" "^0.2.1"
     bluebird "3.7.2"
-    fs-extra "9.0.0"
+    fs-extra "9.0.1"
   optionalDependencies:
-    sharp "0.25.3"
+    sharp "0.25.4"
 
 "@tryghost/kg-card-factory@2.1.1":
   version "2.1.1"
@@ -7229,7 +7229,7 @@ posthtml@^0.9.0:
     posthtml-parser "^0.2.0"
     posthtml-render "^1.0.5"
 
-prebuild-install@^5.3.3:
+prebuild-install@^5.3.3, prebuild-install@^5.3.4:
   version "5.3.5"
   resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-5.3.5.tgz#e7e71e425298785ea9d22d4f958dbaccf8bb0e1b"
   integrity sha512-YmMO7dph9CYKi5IR/BzjOJlRzpxGGVo1EsLSUZ0mt/Mq0HWZIHOKHHcHdT69yG54C9m6i45GpItwRHpk0Py7Uw==
@@ -8002,16 +8002,16 @@ setprototypeof@1.1.1:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.1.1.tgz#7e95acb24aa92f5885e0abef5ba131330d4ae683"
   integrity sha512-JvdAWfbXeIGaZ9cILp38HntZSFSo3mWg6xGcJJsd+d4aRMOqauag1C63dJfDw7OaMYwEbHMOxEZ1lqVRYP2OAw==
 
-sharp@0.25.3:
-  version "0.25.3"
-  resolved "https://registry.yarnpkg.com/sharp/-/sharp-0.25.3.tgz#fcb4f13fa9ce7d8a2d8273ebb40f375953cad937"
-  integrity sha512-qV3n30NaBEhAjBhFo+d8h5N4X3DHteFdwxXoWUiubk72G0VKT5fX50nlcawGYjPqfFV4Z2e/G9gDPeSGAdn/gg==
+sharp@0.25.4:
+  version "0.25.4"
+  resolved "https://registry.yarnpkg.com/sharp/-/sharp-0.25.4.tgz#1a8e542144a07ab7e9316ab89de80182b827c363"
+  integrity sha512-umSzJJ1oBwIOfwFFt/fJ7JgCva9FvrEU2cbbm7u/3hSDZhXvkME8WE5qpaJqLIe2Har5msF5UG4CzYlEg5o3BQ==
   dependencies:
     color "^3.1.2"
     detect-libc "^1.0.3"
     node-addon-api "^3.0.0"
     npmlog "^4.1.2"
-    prebuild-install "^5.3.3"
+    prebuild-install "^5.3.4"
     semver "^7.3.2"
     simple-get "^4.0.0"
     tar "^6.0.2"

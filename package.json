@@ -46,7 +46,7 @@
     "@tryghost/bootstrap-socket": "0.1.0",
     "@tryghost/errors": "0.2.1",
     "@tryghost/helpers": "1.1.28",
-    "@tryghost/image-transform": "1.0.0",
+    "@tryghost/image-transform": "1.0.1",
     "@tryghost/kg-card-factory": "2.1.1",
     "@tryghost/kg-default-atoms": "2.0.1",
     "@tryghost/kg-default-cards": "2.4.1",
