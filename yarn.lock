@@ -372,21 +372,21 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.1.0.tgz#bd92bb4fe084a9f3b1c6801d23631710f4534d4e"
   integrity sha512-/fibvaj34co1uxMONJIIHYLqLamE0ClN57Z1YiBd10YlKDavxpwKoX0Pg7+Trk/UKfc7Owq2O+ZrCs0M/I1A8A==
 
-"@tryghost/errors@0.2.0", "@tryghost/errors@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.0.tgz#850fe93db8aceadfe1f9e21b8c3a42599de17808"
-  integrity sha512-zYCsJMeNdmNBcJwsFJ4bILGuixGAFdIhzc/TpxFGmzWjordLKWDzL8mnIWvWb5EVeuk0BQnYDg0/V+soodCCBA==
-  dependencies:
-    ghost-ignition "4.2.1"
-    lodash "4.17.15"
-
-"@tryghost/errors@^0.2.1":
+"@tryghost/errors@0.2.1", "@tryghost/errors@^0.2.1":
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.1.tgz#c479af3694aec5401df237536e75a3c48f12c150"
   integrity sha512-Oh/iW7+nEAs+l1XHgu8SXU5sm0o59Rt9Defs2CwVlFKSwYwJZLT1q+39UZrjGhf2lc3f1xU/IuY6wEfbitdVEg==
   dependencies:
     ghost-ignition "4.2.1"
     lodash "4.17.19"
+
+"@tryghost/errors@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.0.tgz#850fe93db8aceadfe1f9e21b8c3a42599de17808"
+  integrity sha512-zYCsJMeNdmNBcJwsFJ4bILGuixGAFdIhzc/TpxFGmzWjordLKWDzL8mnIWvWb5EVeuk0BQnYDg0/V+soodCCBA==
+  dependencies:
+    ghost-ignition "4.2.1"
+    lodash "4.17.15"
 
 "@tryghost/helpers@1.1.28":
   version "1.1.28"
