@@ -367,6 +367,11 @@
   dependencies:
     "@tryghost/errors" "^0.2.1"
 
+"@tryghost/bootstrap-socket@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.1.0.tgz#bd92bb4fe084a9f3b1c6801d23631710f4534d4e"
+  integrity sha512-/fibvaj34co1uxMONJIIHYLqLamE0ClN57Z1YiBd10YlKDavxpwKoX0Pg7+Trk/UKfc7Owq2O+ZrCs0M/I1A8A==
+
 "@tryghost/errors@0.2.0", "@tryghost/errors@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.0.tgz#850fe93db8aceadfe1f9e21b8c3a42599de17808"

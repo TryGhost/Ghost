@@ -12,7 +12,7 @@ const errors = require('@tryghost/errors');
 const {events, i18n} = require('./lib/common');
 const logging = require('../shared/logging');
 const moment = require('moment');
-const connectToBootstrapSocket = require('./bootstrap-socket');
+const connectToBootstrapSocket = require('@tryghost/bootstrap-socket');
 
 /**
  * ## GhostServer
