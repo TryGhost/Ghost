@@ -652,8 +652,7 @@
             "urlConfiguredAs": "Url configured as: {url}",
             "ghostHasShutdown": "Ghost has shut down",
             "yourBlogIsNowOffline": "Your site is now offline",
-            "ghostWasRunningFor": "Ghost was running for",
-            "ghostIsClosingConnections": "Ghost is closing connections"
+            "ghostWasRunningFor": "Ghost was running for"
         },
         "mail": {
             "messageSent": "Message sent. Double check inbox and spam folder!"
