@@ -43,7 +43,7 @@
     "@nexes/nql": "0.4.0",
     "@sentry/node": "5.20.1",
     "@tryghost/adapter-manager": "0.1.8",
-    "@tryghost/bootstrap-socket": "0.1.0",
+    "@tryghost/bootstrap-socket": "0.2.0",
     "@tryghost/errors": "0.2.1",
     "@tryghost/helpers": "1.1.28",
     "@tryghost/image-transform": "1.0.1",
