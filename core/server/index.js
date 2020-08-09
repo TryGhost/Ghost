@@ -138,10 +138,10 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
                     .then(() => {
                         config.set('maintenance:enabled', false);
                         logging.info('Blog is out of maintenance mode.');
-                        return GhostServer.announceServerStart();
+                        return GhostServer.announceServerReadiness();
                     })
                     .catch((err) => {
-                        return GhostServer.announceServerStopped(err)
+                        return GhostServer.announceServerReadiness(err)
                             .finally(() => {
                                 logging.error(err);
                                 setTimeout(() => {
