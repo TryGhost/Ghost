@@ -113,13 +113,13 @@ describe('getTwitterImage', function () {
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const author = {
-            cover_image: '/content/images/author-cover.jpg'
+            profile_image: '/content/images/author-cover.jpg'
         };
 
         getTwitterImage({context: ['author'], author})
             .should.endWith('author-cover.jpg');
 
-        author.cover_image = '';
+        author.profile_image = '';
 
         should(
             getTwitterImage({context: ['author'], author})
@@ -131,13 +131,13 @@ describe('getTwitterImage', function () {
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const author = {
-            cover_image: '/content/images/author-cover.jpg'
+            profile_image: '/content/images/author-cover.jpg'
         };
 
         getTwitterImage({context: ['author', 'paged'], author})
             .should.endWith('author-cover.jpg');
 
-        author.cover_image = '';
+        author.profile_image = '';
 
         should(
             getTwitterImage({context: ['author', 'paged'], author})

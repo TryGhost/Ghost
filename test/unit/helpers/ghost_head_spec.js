@@ -1157,7 +1157,7 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
-        it('returns structured data and schema on first author page with cover image', function (done) {
+        it('returns structured data and schema on first author page with profile image', function (done) {
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: {author: users[0]},
                 locals: {

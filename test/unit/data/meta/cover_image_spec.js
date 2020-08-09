@@ -13,11 +13,11 @@ describe('getCoverImage', function () {
         coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
     });
 
-    it('should return absolute cover image url for author', function () {
+    it('should return absolute profile image url for author', function () {
         const coverImageUrl = getCoverImage({
             context: ['author'],
             author: {
-                cover_image: '/content/images/my-test-image.jpg'
+                profile_image: '/content/images/my-test-image.jpg'
             }
         });
         coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
