@@ -29,13 +29,6 @@ function GhostServer(rootApp) {
     this.config = config;
 }
 
-const debugInfo = {
-    versions: process.versions,
-    platform: process.platform,
-    arch: process.arch,
-    release: process.release
-};
-
 /**
  * ## Public API methods
  *
@@ -109,7 +102,7 @@ GhostServer.prototype.start = function (externalApp) {
             debug('...Started');
             self.logStartMessages();
 
-            return GhostServer.announceServerStart()
+            return GhostServer.announceServerReadiness()
                 .finally(() => {
                     resolve(self);
                 });
@@ -249,65 +242,50 @@ GhostServer.prototype.logShutdownMessages = function () {
 module.exports = GhostServer;
 
 /**
- * @NOTE announceServerStartCalled:
+ * We call announce server readiness when the server is ready
+ * When the server is started, but not ready, it is only able to serve 503s
  *
- * - backwards compatible logic, because people complained that not all themes were loaded when using Ghost as NPM module
- * - we told them to call `announceServerStart`, which is not required anymore, because we restructured the code
+ * If the server isn't able to reach readiness, announceServerReadiness is called with an error
+ * A status message, any error, and debug info are all passed to managing processes via IPC and the bootstrap socket
  */
-let announceServerStartCalled = false;
-module.exports.announceServerStart = function announceServerStart() {
-    if (announceServerStartCalled || config.get('maintenance:enabled')) {
+let announceServerReadinessCalled = false;
+
+const debugInfo = {
+    versions: process.versions,
+    platform: process.platform,
+    arch: process.arch,
+    release: process.release
+};
+
+module.exports.announceServerReadiness = function (error = null) {
+    // If we already announced readiness, we should not do it again
+    if (announceServerReadinessCalled) {
         return Promise.resolve();
     }
-    announceServerStartCalled = true;
 
-    let socketAddress = config.get('bootstrap-socket');
+    // Mark this function as called
+    announceServerReadinessCalled = true;
+
+    // Build our message
+    // - if there's no error then the server is ready
     let message = {
         started: true,
         debug: debugInfo
     };
 
-    events.emit('server.start');
+    // - if there's an error then the server is not ready, include the errors
+    if (error) {
+        message.started = false;
+        message.error = error;
+    }
 
-    // CASE: IPC communication to the CLI via child process.
+    // CASE: IPC communication to the CLI for local process manager
     if (process.send) {
         process.send(message);
     }
 
-    // CASE: Ghost extension - bootstrap sockets
-    if (socketAddress) {
-        return bootstrapSocket.connectAndSend(socketAddress, logging, message);
-    }
-
-    return Promise.resolve();
-};
-
-/**
- * @NOTE announceServerStopCalled:
- *
- * - backwards compatible logic, because people complained that not all themes were loaded when using Ghost as NPM module
- * - we told them to call `announceServerStart`, which is not required anymore, because we restructured code
- */
-let announceServerStopCalled = false;
-module.exports.announceServerStopped = function announceServerStopped(error) {
-    if (announceServerStopCalled) {
-        return Promise.resolve();
-    }
-    announceServerStopCalled = true;
-
+    // CASE: use bootstrap socket to communicate with CLI for systemd
     let socketAddress = config.get('bootstrap-socket');
-    let message = {
-        started: false,
-        error: error,
-        debug: debugInfo
-    };
-
-    // CASE: IPC communication to the CLI via child process.
-    if (process.send) {
-        process.send(message);
-    }
-
-    // CASE: Ghost extension - bootstrap sockets
     if (socketAddress) {
         return bootstrapSocket.connectAndSend(socketAddress, logging, message);
     }

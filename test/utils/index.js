@@ -946,7 +946,7 @@ startGhost = function startGhost(options) {
         .then(function () {
             let timeout;
 
-            GhostServer.announceServerStart();
+            GhostServer.announceServerReadiness();
 
             return new Promise(function (resolve) {
                 (function retry() {
