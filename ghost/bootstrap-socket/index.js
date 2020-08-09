@@ -1,1 +1,1 @@
-module.exports = require('./lib/connect-and-send');
+module.exports = require('./lib/bootstrap-socket');

@@ -1,4 +1,4 @@
-module.exports = (socketAddress, logging, message) => {
+module.exports.connectAndSend = (socketAddress, logging, message) => {
     // Very basic guard against bad calls
     if (!socketAddress || !socketAddress.host || !socketAddress.port || !logging || !logging.info || !logging.warn || !message) {
         return Promise.resolve();
