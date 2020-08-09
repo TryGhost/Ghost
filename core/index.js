@@ -16,7 +16,7 @@ function makeGhost(options) {
                 err = new errors.GhostError({message: err.message, err: err});
             }
 
-            return GhostServer.announceServerStopped(err)
+            return GhostServer.announceServerReadiness(err)
                 .finally(() => {
                     throw err;
                 });
