@@ -1174,14 +1174,14 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta property="og:type" content="profile" \/>/);
                 rendered.string.should.match(/<meta property="og:description" content="Author bio"/);
                 rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/author\/authorname\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-author-image.png.png" \/>/);
+                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-author-image.png" \/>/);
                 rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser\" \/>/);
                 rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
                 rendered.string.should.match(/<meta name="twitter:title" content="Author name - Ghost" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="Author bio"/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/author\/authorname\/" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-author-image.png.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-author-image.png" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
@@ -1189,7 +1189,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"sameAs": \[\n        "http:\/\/authorwebsite.com",\n        "https:\/\/www.facebook.com\/testuser",\n        "https:\/\/twitter.com\/testuser"\n    \]/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
                 rendered.string.should.match(/"name": "Author name"/);
 
                 done();
