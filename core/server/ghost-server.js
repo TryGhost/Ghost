@@ -12,7 +12,7 @@ const errors = require('@tryghost/errors');
 const {events, i18n} = require('./lib/common');
 const logging = require('../shared/logging');
 const moment = require('moment');
-const connectToBootstrapSocket = require('@tryghost/bootstrap-socket');
+const bootstrapSocket = require('@tryghost/bootstrap-socket');
 
 /**
  * ## GhostServer
@@ -276,7 +276,7 @@ module.exports.announceServerStart = function announceServerStart() {
 
     // CASE: Ghost extension - bootstrap sockets
     if (socketAddress) {
-        return connectToBootstrapSocket(socketAddress, logging, message);
+        return bootstrapSocket.connectAndSend(socketAddress, logging, message);
     }
 
     return Promise.resolve();
@@ -309,7 +309,7 @@ module.exports.announceServerStopped = function announceServerStopped(error) {
 
     // CASE: Ghost extension - bootstrap sockets
     if (socketAddress) {
-        return connectToBootstrapSocket(socketAddress, logging, message);
+        return bootstrapSocket.connectAndSend(socketAddress, logging, message);
     }
 
     return Promise.resolve();
