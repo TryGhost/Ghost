@@ -2,10 +2,10 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const connectAndSend = require('../lib/connect-and-send');
+const bootstrapSocket = require('../lib/bootstrap-socket');
 
 describe('Connect and send', function () {
     it('Resolves a promise for a bad call', function () {
-        connectAndSend().should.be.fulfilled();
+        bootstrapSocket.connectAndSend().should.be.fulfilled();
     });
 });
