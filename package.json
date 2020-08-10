@@ -57,7 +57,7 @@
     "@tryghost/members-csv": "0.2.1",
     "@tryghost/members-ssr": "0.8.4",
     "@tryghost/mw-session-from-token": "0.1.6",
-    "@tryghost/session-service": "0.1.6",
+    "@tryghost/session-service": "0.1.7",
     "@tryghost/social-urls": "0.1.10",
     "@tryghost/string": "0.1.10",
     "@tryghost/url-utils": "0.6.19",
