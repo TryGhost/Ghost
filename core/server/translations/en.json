@@ -650,6 +650,7 @@
             "ghostIsRunningIn": "Ghost is running in {env}...",
             "listeningOn": "Listening on: {host}:{port}",
             "urlConfiguredAs": "Url configured as: {url}",
+            "ghostIsShuttingDown": "Ghost is shutting down",
             "ghostHasShutdown": "Ghost has shut down",
             "yourBlogIsNowOffline": "Your site is now offline",
             "ghostWasRunningFor": "Ghost was running for"

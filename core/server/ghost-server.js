@@ -115,6 +115,7 @@ class GhostServer {
 
             async function shutdown() {
                 try {
+                    logging.warn(i18n.t('notices.httpServer.ghostIsShuttingDown'));
                     await self.stop();
                     process.exit(0);
                 } catch (error) {
