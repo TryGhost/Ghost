@@ -5274,10 +5274,10 @@ knex@0.21.1:
     uuid "^7.0.3"
     v8flags "^3.1.3"
 
-knex@0.21.2:
-  version "0.21.2"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.2.tgz#716e2f515aa55575eb812b4c7f58e532a3de6a12"
-  integrity sha512-hNp9f3yXCHtMrhV2pVsuCNYmPlgXhyqviMQGLBd9zdF03ZqCO9MPng0oYhNMgIs+vDr55VC6tjEbF1OQ1La7Kg==
+knex@0.21.3:
+  version "0.21.3"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.3.tgz#e9de972d290c96419ecaa792a0cd308aca9e4564"
+  integrity sha512-XENKsDdeKmn5yBENTRoik5AOlrxhjTUbDuML6iX7TtOtFHQ5rTfuUce7jk9UVKKmxgbzyA0wsSKWs6xfRgAwfA==
   dependencies:
     colorette "1.2.1"
     commander "^5.1.0"
