@@ -1,6 +1,7 @@
 import MemberImportError from 'ghost-admin/errors/member-import-error';
 import Service, {inject as service} from '@ember/service';
 import validator from 'validator';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {isEmpty} from '@ember/utils';
 
