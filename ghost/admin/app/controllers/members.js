@@ -3,7 +3,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
-import {ghPluralize} from 'ghost-admin/helpers/pluralize';
+import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
