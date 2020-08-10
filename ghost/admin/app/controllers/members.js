@@ -3,8 +3,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
-import {formatNumber} from 'ghost-admin/helpers/format-number';
-import {pluralize} from 'ember-inflector';
+import {ghPluralize} from 'ghost-admin/helpers/pluralize';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
@@ -67,7 +66,7 @@ export default class MembersController extends Controller {
             return 'Search result';
         }
 
-        let count = `${formatNumber(members.length)} ${pluralize(members.length, 'member', {withoutCount: true})}`;
+        let count = ghPluralize(members.length, 'member');
 
         if (selectedLabel && selectedLabel.slug) {
             if (members.length > 1) {
