@@ -1,31 +1,31 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
-import {computed} from '@ember/object';
-import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
     session: service(),
+    store: service(),
 
     errorMessage: null,
+    paidMemberCount: null,
 
     // Allowed actions
     confirm: () => {},
 
-    deliveredToMessage: computed('model.{paidOnly,memberCount}', function () {
-        const isEditor = this.get('session.user.isEditor');
-        if (this.get('model.paidOnly')) {
-            return 'all paid members';
+    countPaidMembers: action(function () {
+        // TODO: remove editor conditional once editors can query member counts
+        if (this.model.paidOnly && !this.session.get('user.isEditor')) {
+            this.countPaidMembersTask.perform();
         }
-
-        if (isEditor) {
-            return 'all members';
-        }
-
-        return ghPluralize(this.get('model.memberCount'), 'member');
     }),
 
-    confirmAndCheckError: task(function* () {
+    countPaidMembersTask: task(function* () {
+        const result = yield this.store.query('member', {filter: 'subscribed:true', paid: true, limit: 1, page: 1});
+        this.set('paidMemberCount', result.meta.pagination.total);
+    }),
+
+    confirmAndCheckErrorTask: task(function* () {
         try {
             yield this.confirm();
             this.closeModal();
