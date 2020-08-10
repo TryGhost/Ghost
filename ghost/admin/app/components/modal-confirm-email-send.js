@@ -1,6 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import {computed} from '@ember/object';
-import {pluralize} from 'ember-inflector';
+import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -22,7 +22,7 @@ export default ModalComponent.extend({
             return 'all members';
         }
 
-        return pluralize(this.get('model.memberCount'), 'member');
+        return ghPluralize(this.get('model.memberCount'), 'member');
     }),
 
     confirmAndCheckError: task(function* () {

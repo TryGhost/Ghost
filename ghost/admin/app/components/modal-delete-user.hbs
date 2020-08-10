@@ -6,7 +6,7 @@
 <div class="modal-body">
     {{#if this.user.count.posts}}
         <p>
-            <strong>{{this.user.name}}</strong> and their <strong data-test-text="user-post-count">{{pluralize this.user.count.posts 'post'}}</strong> will be permanently deleted. If you don’t want to lose these posts, you should assign them to a different author.
+            <strong>{{this.user.name}}</strong> and their <strong data-test-text="user-post-count">{{gh-pluralize this.user.count.posts 'post'}}</strong> will be permanently deleted. If you don’t want to lose these posts, you should assign them to a different author.
         </p>
         <p>
             A backup will be automatically downloaded to your device before deletion.
