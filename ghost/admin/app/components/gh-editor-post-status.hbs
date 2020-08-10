@@ -4,9 +4,9 @@
     {{else if (or @post.isPublished @post.pastScheduledTime)}}
         Published
         {{#if (or (eq @post.email.status "submitting") (eq @post.email.status "submitting"))}}
-            and sending to {{pluralize @post.email.emailCount "member"}}
+            and sending to {{gh-pluralize @post.email.emailCount "member"}}
         {{else if (eq @post.email.status "submitted")}}
-            and sent to {{pluralize @post.email.emailCount "member"}}
+            and sent to {{gh-pluralize @post.email.emailCount "member"}}
         {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>

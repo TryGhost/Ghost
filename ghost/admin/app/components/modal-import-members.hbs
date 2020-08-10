@@ -100,11 +100,11 @@
                 <div class="flex items-start">
                     <div class="w-50 gh-member-import-result-summary">
                         <h2>{{format-number this.importResponse.imported.count}}</h2>
-                        <p>{{pluralize this.importResponse.imported.count "Member" without-count=true}} added</p>
+                        <p>{{gh-pluralize this.importResponse.imported.count "Member" without-count=true}} added</p>
                     </div>
                     <div class="bl b--whitegrey w-50 gh-member-import-result-summary">
                         <h2>{{format-number this.importResponse.invalid.count}}</h2>
-                        <p>{{pluralize this.importResponse.invalid.count "Error" without-count=true}}</p>
+                        <p>{{gh-pluralize this.importResponse.invalid.count "Error" without-count=true}}</p>
                     </div>
                 </div>
             </div>
@@ -114,7 +114,7 @@
                     <div class="flex items-start">
                         {{svg-jar "warning" class="w5 h5 fill-red nudge-top--3 mr3"}}
                         <div class="flex-grow w-100">
-                            <p class="ma0 pa0">{{format-number this.importResponse.invalid.count}} {{pluralize this.importResponse.invalid.count "member" without-count=true}} were skipped due to the following errors:</p>
+                            <p class="ma0 pa0">{{format-number this.importResponse.invalid.count}} {{gh-pluralize this.importResponse.invalid.count "member" without-count=true}} were skipped due to the following errors:</p>
                             <ul class="ma0 pa0 mt4 list bt b--whitegrey">
                             {{#each this.importResponse.invalid.errors as |error|}}
                                 <li class="gh-members-import-errormessage">{{error.message}} <span class="fw4">({{format-number error.count}})</span></li>
@@ -169,7 +169,7 @@
                 <span>Start over</span>
             </button>
             <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}>
-                <span>Import{{#if this.fileData.length}} {{format-number this.fileData.length}} {{pluralize this.fileData.length 'member' without-count=true}}{{/if}}</span>
+                <span>Import{{#if this.fileData.length}} {{format-number this.fileData.length}} {{gh-pluralize this.fileData.length 'member' without-count=true}}{{/if}}</span>
             </button>
         {{/if}}
     {{else}}

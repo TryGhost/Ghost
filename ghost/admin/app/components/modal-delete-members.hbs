@@ -7,7 +7,7 @@
     <div class="modal-body" data-test-state="delete-unconfirmed">
         <p>
             You're about to delete
-            <strong data-test-text="delete-count">{{pluralize this.model.memberCount "member"}}</strong>.
+            <strong data-test-text="delete-count">{{gh-pluralize this.model.memberCount "member"}}</strong>.
             This is permanent! We warned you, k?
         </p>
     </div>
@@ -26,7 +26,7 @@
             <div class="flex items-center">
                 {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
                 <p class="ma0 pa0">
-                    <span class="fw6" data-test-text="deleted-count">{{pluralize this.response.deleted.count "member"}}</span>
+                    <span class="fw6" data-test-text="deleted-count">{{gh-pluralize this.response.deleted.count "member"}}</span>
                     deleted
                 </p>
             </div>
@@ -35,7 +35,7 @@
                     {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
                     <div>
                         <p class="ma0 pa0">
-                            <span class="fw5" data-test-text="invalid-count">{{pluralize this.response.invalid.count "member"}}</span>
+                            <span class="fw5" data-test-text="invalid-count">{{gh-pluralize this.response.invalid.count "member"}}</span>
                             skipped
                         </p>
                         {{#each this.response.invalid.errors as |error|}}
