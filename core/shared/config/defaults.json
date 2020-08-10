@@ -3,7 +3,7 @@
     "server": {
         "host": "127.0.0.1",
         "port": 2368,
-        "shutdownTimeout": 600000
+        "shutdownTimeout": 60000
     },
     "admin": {
         "redirects": true
