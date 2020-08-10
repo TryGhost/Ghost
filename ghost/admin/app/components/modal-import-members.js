@@ -333,7 +333,10 @@ export default ModalComponent.extend({
 
     _uploadFinished() {
         this.set('uploading', false);
-        this.set('summary', true);
+
+        if (!this.get('failureMessage')) {
+            this.set('summary', true);
+        }
     },
 
     _importValidationFailed(errors) {
