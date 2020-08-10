@@ -380,14 +380,6 @@
     ghost-ignition "4.2.1"
     lodash "4.17.19"
 
-"@tryghost/errors@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.0.tgz#850fe93db8aceadfe1f9e21b8c3a42599de17808"
-  integrity sha512-zYCsJMeNdmNBcJwsFJ4bILGuixGAFdIhzc/TpxFGmzWjordLKWDzL8mnIWvWb5EVeuk0BQnYDg0/V+soodCCBA==
-  dependencies:
-    ghost-ignition "4.2.1"
-    lodash "4.17.15"
-
 "@tryghost/helpers@1.1.28":
   version "1.1.28"
   resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.28.tgz#25e1a1d5948e2739cc0c27e29e1cab5e03f0b06a"
@@ -530,12 +522,12 @@
     chalk "4.0.0"
     sywac "1.3.0"
 
-"@tryghost/session-service@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.5.tgz#5182c02d2de0d1c68ba81ed9b9eb006fcbae8846"
-  integrity sha512-d6/frJWl8X2YriJpL5+yxjcReCq4n5KTF3z/yMVmDoliRoxLBqafpCdJYf0WaHn+czq/zABicqhwYfVcJDp6sw==
+"@tryghost/session-service@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.6.tgz#951644958276e7f38168654fba6079910c3598eb"
+  integrity sha512-0Qakv4m+/8xCBpiYXhMkKF1MBHndCMhlPZ2scCGMccsiRIzgWvJ0XcqxJ9LedV97125ulcGM3bVSd6tjjko8tg==
   dependencies:
-    "@tryghost/errors" "^0.2.0"
+    "@tryghost/errors" "^0.2.1"
 
 "@tryghost/social-urls@0.1.10":
   version "0.1.10"
