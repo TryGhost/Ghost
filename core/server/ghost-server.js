@@ -128,6 +128,13 @@ class GhostServer {
             process
                 .removeAllListeners('SIGINT').on('SIGINT', shutdown)
                 .removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+
+            if (config.get('server:testmode')) {
+                // Debug code
+                setInterval(() => self.httpServer.getConnections(
+                    (err, connections) => logging.warn(`${connections} connections currently open`)
+                ), 5000);
+            }
         });
     }
 
