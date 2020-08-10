@@ -2,7 +2,8 @@
     "url": "http://localhost:2368",
     "server": {
         "host": "127.0.0.1",
-        "port": 2368
+        "port": 2368,
+        "shutdownTimeout": 600000
     },
     "admin": {
         "redirects": true
