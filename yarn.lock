@@ -588,6 +588,16 @@
     extract-zip "2.0.0"
     fs-extra "9.0.0"
 
+"@tryghost/zip@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.2.tgz#80b715afb5ede282ff527083c217961b168f850f"
+  integrity sha512-PKWZN2Vj+vSDKhytiDdXr0yse3l/ba2W0c6ZIFQfs1D9P6SSpIPqBKKawPDyQKqRH15trz6WzUwVhFLNI25ESQ==
+  dependencies:
+    archiver "4.0.1"
+    bluebird "3.7.2"
+    extract-zip "2.0.0"
+    fs-extra "9.0.1"
+
 "@types/bluebird@^3.5.27":
   version "3.5.32"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.32.tgz#381e7b59e39f010d20bbf7e044e48f5caf1ab620"
