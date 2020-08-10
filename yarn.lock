@@ -1404,6 +1404,16 @@ bunyan@1.8.12:
     mv "~2"
     safe-json-stringify "~1"
 
+bunyan@1.8.14:
+  version "1.8.14"
+  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.14.tgz#3d8c1afea7de158a5238c7cb8a66ab6b38dd45b4"
+  integrity sha512-LlahJUxXzZLuw/hetUQJmRgZ1LF6+cr5TPpRj6jf327AsiIq2jhYEH4oqUUkVKTor+9w2BT3oxVwhzE5lw9tcg==
+  optionalDependencies:
+    dtrace-provider "~0.8"
+    moment "^2.19.3"
+    mv "~2"
+    safe-json-stringify "~1"
+
 busboy@^0.2.11:
   version "0.2.14"
   resolved "https://registry.yarnpkg.com/busboy/-/busboy-0.2.14.tgz#6c2a622efcf47c57bbbe1e2a9c37ad36c7925453"
@@ -3746,6 +3756,25 @@ ghost-ignition@4.2.1, ghost-ignition@^4.0.0:
     nconf "0.10.0"
     prettyjson "1.2.1"
     uuid "7.0.3"
+
+ghost-ignition@4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.2.2.tgz#7201d4756be6ebe6743495cf6c365ff8ee416b73"
+  integrity sha512-/ZqS1AOGjocR7h45PVObgT69cmDakvLPAnEu203mxtGwjnaSvuIdFA82cdoRh2Ehg/JQEi20FaSqgJSIzdMkGA==
+  dependencies:
+    bunyan "1.8.14"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.1.1"
+    find-root "1.1.0"
+    fs-extra "9.0.1"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.19"
+    moment "2.27.0"
+    nconf "0.10.0"
+    prettyjson "1.2.1"
+    uuid "8.3.0"
 
 ghost-ignition@^2.9.6:
   version "2.9.6"
@@ -6111,7 +6140,7 @@ moment-timezone@0.5.23, moment-timezone@0.5.28, moment-timezone@0.5.31:
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.25.1, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1:
+moment@2.24.0, moment@2.25.1, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1, moment@^2.19.3:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
