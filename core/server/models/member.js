@@ -37,6 +37,18 @@ const Member = ghostBookshelf.Model.extend({
         return this.hasMany('MemberStripeCustomer', 'member_id', 'id');
     },
 
+    stripeSubscriptions() {
+        // TODO need to filter for active/trialing
+        return this.belongsToMany(
+            'StripeCustomerSubscription',
+            'members_stripe_customers',
+            'member_id',
+            'customer_id',
+            'id',
+            'customer_id'
+        );
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'member' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
