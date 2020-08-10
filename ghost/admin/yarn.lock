@@ -5382,10 +5382,10 @@ ember-cli-babel@~7.11.0:
     ensure-posix-path "^1.0.2"
     semver "^5.5.0"
 
-ember-cli-chart@3.7.1:
-  version "3.7.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.7.1.tgz#96f7efb7bd0a0e0fd8554ce7c4991b5558d00051"
-  integrity sha512-SH5fCqi9kQiv0Hu0WJrAwOdgZwYAtExJinDYoZpksPk8BtfY3rou0zYodT9TgsIzO30fDX7N7nVaXnh2FkoTPA==
+ember-cli-chart@3.7.2:
+  version "3.7.2"
+  resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.7.2.tgz#f630590417fd6865f21b0be4594a5266e8485915"
+  integrity sha512-mtzJ6XYzoBwvEZUws5K5kFekVPOfcB6PE42O4/2I82k/+du9GidEOoOJ6ZXFCJPIdrxKZYo1F1IWE7pVa6m9Ig==
   dependencies:
     chart.js "^2.9.0"
     ember-cli-babel "^7.20.5"
