@@ -5990,10 +5990,10 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@8.0.1:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.1.tgz#dc57f3c3ba464e4a8722785f6b44265c46b38020"
-  integrity sha512-J+knuBFQJlMQUuij2tziMiVcJ+Ss0lCV2XiCQO2cHmG2PUsfvLlTGZ04uUyOXPqrJISxY2W3Et43fQBg4jy7SA==
+ember-fetch@8.0.2:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.2.tgz#9838b9f01e33fcd23550ccf38ae4f1f90cc47113"
+  integrity sha512-BMwm8jLP5LCeT8Jbgz0jA04RsRyt06ZGMaC3Tx2DbHgoWOPlLMfkEKlCFE0dZVW8ZhuICKuyRZTzt4e8GrnnNA==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
     broccoli-concat "^4.2.4"
@@ -6004,10 +6004,10 @@ ember-fetch@8.0.1:
     broccoli-templater "^2.0.1"
     calculate-cache-key-for-tree "^2.0.0"
     caniuse-api "^3.0.0"
-    ember-cli-babel "^7.13.2"
+    ember-cli-babel "^7.19.0"
     ember-cli-typescript "^3.1.3"
     node-fetch "^2.6.0"
-    whatwg-fetch "^3.0.0"
+    whatwg-fetch "^3.4.0"
 
 ember-get-config@, ember-get-config@^0.2.2:
   version "0.2.4"
@@ -13855,10 +13855,10 @@ whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.5:
   dependencies:
     iconv-lite "0.4.24"
 
-whatwg-fetch@^3.0.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-3.2.0.tgz#8e134f701f0a4ab5fda82626f113e2b647fd16dc"
-  integrity sha512-SdGPoQMMnzVYThUbSrEvqTlkvC1Ux27NehaJ/GUHBfNrh5Mjg+1/uRyFMwVnxO2MrikMWvWAqUGgQOfVU4hT7w==
+whatwg-fetch@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-3.4.0.tgz#e11de14f4878f773fbebcde8871b2c0699af8b30"
+  integrity sha512-rsum2ulz2iuZH08mJkT0Yi6JnKhwdw4oeyMjokgxd+mmqYSd9cPpOQf01TIWgjxG/U4+QR+AwKq6lSbXVxkyoQ==
 
 whatwg-mimetype@^2.2.0:
   version "2.3.0"
