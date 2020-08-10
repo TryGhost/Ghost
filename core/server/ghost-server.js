@@ -13,6 +13,8 @@ const {events, i18n} = require('./lib/common');
 const logging = require('../shared/logging');
 const moment = require('moment');
 const bootstrapSocket = require('@tryghost/bootstrap-socket');
+const stoppable = require('stoppable');
+const {reject} = require('bluebird');
 
 /**
  * ## GhostServer
@@ -109,10 +111,16 @@ class GhostServer {
                     });
             });
 
-            function shutdown() {
-                // @TODO: await self.stop() here for consistency - but first we need stop to behave correctly
-                self.logStopMessages();
-                process.exit(0);
+            stoppable(self.httpServer, config.get('server:shutdownTimeout'));
+
+            async function shutdown() {
+                try {
+                    await self.stop();
+                    process.exit(0);
+                } catch (error) {
+                    logging.error(error);
+                    process.exit(-1);
+                }
             }
 
             // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
@@ -135,7 +143,12 @@ class GhostServer {
             if (self.httpServer === null) {
                 resolve(self);
             } else {
-                self.httpServer.close(function () {
+                // The stop function comes from stoppable
+                self.httpServer.stop(function (err) {
+                    if (err) {
+                        reject(self);
+                    }
+
                     events.emit('server.stop');
                     self.httpServer = null;
                     self.logStopMessages();
