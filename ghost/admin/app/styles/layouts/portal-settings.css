@@ -267,6 +267,17 @@
     height: calc((1 / 0.95) * 100%) !important;
 }
 
+.gh-portal-site-frame-cover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #edf0f2;
+    overflow: hidden;
+    border: none;
+}
+
 .gh-portal-preview-container {
     position: relative;
     flex-grow: 1;
