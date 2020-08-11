@@ -1,4 +1,4 @@
-const constants = require('../../../lib/constants');
+const constants = require('@tryghost/constants');
 
 module.exports = function updateUserLastSeenMiddleware(req, res, next) {
     if (!req.user) {

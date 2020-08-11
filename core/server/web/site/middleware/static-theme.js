@@ -1,6 +1,6 @@
 const path = require('path');
 const config = require('../../../../shared/config');
-const constants = require('../../../lib/constants');
+const constants = require('@tryghost/constants');
 const themeUtils = require('../../../../frontend/services/themes');
 const express = require('../../../../shared/express');
 

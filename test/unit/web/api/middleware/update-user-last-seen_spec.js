@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const constants = require('../../../../../core/server/lib/constants');
+const constants = require('@tryghost/constants');
 const updateUserLastSeenMiddleware = require('../../../../../core/server/web/api/middleware/update-user-last-seen');
 
 describe('updateUserLastSeenMiddleware', function () {
