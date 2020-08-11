@@ -38,7 +38,6 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     stripeSubscriptions() {
-        // TODO need to filter for active/trialing
         return this.belongsToMany(
             'StripeCustomerSubscription',
             'members_stripe_customers',
@@ -46,7 +45,7 @@ const Member = ghostBookshelf.Model.extend({
             'customer_id',
             'id',
             'customer_id'
-        );
+        ).query('whereIn', 'status', ['active', 'trialing']);
     },
 
     serialize(options) {
