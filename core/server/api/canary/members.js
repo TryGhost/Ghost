@@ -148,7 +148,7 @@ module.exports = {
         permissions: true,
         validation: {},
         async query(frame) {
-            frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
+            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
             const page = await models.Member.findPage(frame.options);
             const members = page.data.map(model => model.toJSON(frame.options));
 
@@ -168,7 +168,7 @@ module.exports = {
         validation: {},
         permissions: true,
         async query(frame) {
-            frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
+            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
             let model = await models.Member.findOne(frame.data, frame.options);
 
             if (!model) {
