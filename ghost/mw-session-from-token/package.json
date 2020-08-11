@@ -26,7 +26,7 @@
     "express": "4.17.1",
     "mocha": "8.1.1",
     "should": "13.2.3",
-    "sinon": "9.0.2",
+    "sinon": "9.0.3",
     "typescript": "3.9.7"
   }
 }

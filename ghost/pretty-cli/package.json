@@ -22,7 +22,7 @@
   "devDependencies": {
     "mocha": "8.1.1",
     "should": "13.2.3",
-    "sinon": "9.0.2"
+    "sinon": "9.0.3"
   },
   "dependencies": {
     "chalk": "4.1.0",
