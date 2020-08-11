@@ -13,18 +13,6 @@ const logging = require('../../../shared/logging');
 const db = require('../../data/db');
 const _ = require('lodash');
 
-const decorateWithSubscriptions = async function (member) {
-    // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
-    //       are in place
-    const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
-
-    return Object.assign(member, {
-        stripe: {
-            subscriptions
-        }
-    });
-};
-
 /** NOTE: this method should not exist at all and needs to be cleaned up
     it was created due to a bug in how CSV is currently created for exports
     Export bug was fixed in 3.6 but method exists to handle older csv exports with undefined
@@ -90,20 +78,6 @@ function serializeMemberLabels(labels) {
     return [];
 }
 
-const listMembers = async function (options) {
-    const res = (await models.Member.findPage(options));
-    const memberModels = res.data.map(model => model.toJSON(options));
-
-    const members = await Promise.all(memberModels.map(async function (member) {
-        return decorateWithSubscriptions(member);
-    }));
-
-    return {
-        members: members,
-        meta: res.meta
-    };
-};
-
 const findOrCreateLabels = async (labels, options) => {
     const api = require('./index');
 
@@ -145,7 +119,7 @@ const getUniqueMemberLabels = (members) => {
     return _.uniq(allLabels);
 };
 
-const members = {
+module.exports = {
     docName: 'members',
 
     hasActiveStripeSubscriptions: {
@@ -174,7 +148,14 @@ const members = {
         permissions: true,
         validation: {},
         async query(frame) {
-            return listMembers(frame.options);
+            frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
+            const page = await models.Member.findPage(frame.options);
+            const members = page.data.map(model => model.toJSON(frame.options));
+
+            return {
+                members: members,
+                meta: page.meta
+            };
         }
     },
 
@@ -187,6 +168,7 @@ const members = {
         validation: {},
         permissions: true,
         async query(frame) {
+            frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
             let model = await models.Member.findOne(frame.data, frame.options);
 
             if (!model) {
@@ -195,9 +177,7 @@ const members = {
                 });
             }
 
-            const member = model.toJSON(frame.options);
-
-            return decorateWithSubscriptions(member);
+            return model.toJSON(frame.options);
         }
     },
 
@@ -220,12 +200,10 @@ const members = {
         },
         permissions: true,
         async query(frame) {
-            let model;
-
+            let member;
+            frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
             try {
-                model = await models.Member.add(frame.data.members[0], frame.options);
-
-                const member = model.toJSON(frame.options);
+                member = await models.Member.add(frame.data.members[0], frame.options);
 
                 if (frame.data.members[0].stripe_customer_id) {
                     if (!membersService.config.isStripeConnected()) {
@@ -244,10 +222,10 @@ const members = {
                 }
 
                 if (frame.options.send_email) {
-                    await membersService.api.sendEmailWithMagicLink({email: model.get('email'), requestedType: frame.options.email_type});
+                    await membersService.api.sendEmailWithMagicLink({email: member.get('email'), requestedType: frame.options.email_type});
                 }
 
-                return decorateWithSubscriptions(member);
+                return member.toJSON(frame.options);
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
@@ -260,7 +238,7 @@ const members = {
                 //       It's a bit ugly doing regex matching to detect errors, but it's the easiest way that works without
                 //       introducing additional logic/data format into current error handling
                 const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g) || error.context === i18n.t('errors.api.members.stripeNotConnected.context'));
-                if (model && isStripeLinkingError) {
+                if (member && isStripeLinkingError) {
                     if (error.message.indexOf('customer') && error.code === 'resource_missing') {
                         error.message = `Member not imported. ${error.message}`;
                         error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
@@ -272,7 +250,7 @@ const members = {
                     await api.members.destroy.query({
                         options: {
                             context: frame.options.context,
-                            id: model.id
+                            id: member.get('id')
                         }
                     });
                 }
@@ -297,24 +275,24 @@ const members = {
         },
         permissions: true,
         async query(frame) {
-            const model = await models.Member.edit(frame.data.members[0], frame.options);
+            frame.options.withRelated = ['stripeSubscriptions'];
+            const member = await models.Member.edit(frame.data.members[0], frame.options);
 
-            const member = model.toJSON(frame.options);
+            const hasCompedSubscription = !!member.related('stripeSubscriptions').find(subscription => subscription.get('plan_nickname') === 'Complimentary');
 
-            const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
-            const compedSubscriptions = subscriptions.filter(sub => (sub.plan.nickname === 'Complimentary'));
-
-            if (frame.data.members[0].comped !== undefined && (frame.data.members[0].comped !== compedSubscriptions)) {
-                const hasCompedSubscription = !!(compedSubscriptions.length);
-
+            if (typeof frame.data.members[0].comped === 'boolean') {
                 if (frame.data.members[0].comped && !hasCompedSubscription) {
                     await membersService.api.members.setComplimentarySubscription(member);
                 } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
                     await membersService.api.members.cancelComplimentarySubscription(member);
                 }
+
+                await member.load(['stripeSubscriptions']);
             }
 
-            return decorateWithSubscriptions(member);
+            await member.load(['stripeSubscriptions.customer']);
+
+            return member.toJSON(frame.options);
         }
     },
 
@@ -385,8 +363,14 @@ const members = {
         },
         validation: {},
         async query(frame) {
-            frame.options.withRelated = ['labels'];
-            return listMembers(frame.options);
+            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
+            const page = await models.Member.findPage(frame.options);
+            const members = page.data.map(model => model.toJSON(frame.options));
+
+            return {
+                members: members,
+                meta: page.meta
+            };
         }
     },
 
@@ -801,12 +785,9 @@ const members = {
         }
     }
 };
-
 // NOTE: remove below condition once batched import is production ready,
 //       remember to swap out current importCSV method when doing so
 if (config.get('enableDeveloperExperiments')) {
-    members.importCSV = members.importCSVBatched;
-    delete members.importCSVBatched;
+    module.exports.importCSV = module.exports.importCSVBatched;
+    delete module.exports.importCSVBatched;
 }
-
-module.exports = members;
