@@ -76,6 +76,7 @@ function initialiseServices() {
  */
 const minimalRequiredSetupToStartGhost = (dbState) => {
     const settings = require('./services/settings');
+    const jobService = require('./services/jobs');
     const models = require('./models');
     const GhostServer = require('./ghost-server');
 
@@ -111,6 +112,10 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
         })
         .then((_ghostServer) => {
             ghostServer = _ghostServer;
+
+            ghostServer.registerCleanupTask(async () => {
+                await jobService.shutdown();
+            });
 
             // CASE: all good or db was just initialised
             if (dbState === 1 || dbState === 2) {
