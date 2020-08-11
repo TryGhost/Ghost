@@ -20,7 +20,7 @@
   "devDependencies": {
     "mocha": "7.2.0",
     "should": "13.2.3",
-    "sinon": "9.0.2"
+    "sinon": "9.0.3"
   },
   "dependencies": {
     "bluebird": "^3.5.3",
