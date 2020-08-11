@@ -297,10 +297,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.3"
 
-"@tryghost/bootstrap-socket@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.0.tgz#efc7291b346b633117d8d5e0fca7e52c6913a9f2"
-  integrity sha512-Ao9REMMiorIdEtVDkS0xdCnnvwQU9zd3bsz7521RCeDBT3pi5AbrFrV9LwG+XnCgw9NvbmTv0aidxpiEQV1aSQ==
+"@tryghost/bootstrap-socket@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.1.tgz#be1fc6f6af52af11662669afeb3206fd107e4553"
+  integrity sha512-yTksabc/2z86qz5+Jf0DRLeu+NFnSPa52rT1jl9BRori00l0XIvzajq3ol8U6kMVzgKfcyT+Ds006tKruwQA/g==
 
 "@tryghost/constants@0.1.0":
   version "0.1.0"
