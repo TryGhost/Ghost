@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/vhost-middleware",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/vhost-middleware",
   "author": "Ghost Foundation",
   "license": "MIT",

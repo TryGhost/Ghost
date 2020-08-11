@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/bootstrap-socket",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/bootstrap-socket",
   "author": "Ghost Foundation",
   "license": "MIT",
