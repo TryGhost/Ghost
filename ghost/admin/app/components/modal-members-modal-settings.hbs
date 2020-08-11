@@ -294,10 +294,11 @@
             </div>
 
             <div class="gh-portal-preview-container {{if this.showLinksPage "hide"}}">
+                <div class="gh-portal-site-frame-cover"> </div>
                 <GhSiteIframe
-                    @guid="test-site-portal"
+                    @guid="portal-preview-site"
                     @src={{this.portalPreviewUrl}}
-                    @classNames="gh-portal-siteiframe"
+                    @classNames="gh-portal-siteiframe {{if this.hidePreviewFrame "invisible"}}"
                 ></GhSiteIframe>
             </div>
 

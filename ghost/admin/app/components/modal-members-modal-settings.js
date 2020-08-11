@@ -130,6 +130,7 @@ export default ModalComponent.extend({
 
     init() {
         this._super(...arguments);
+        this.set('hidePreviewFrame', true);
         this.buttonStyleOptions = [
             {name: 'icon-and-text', label: 'Icon and text'},
             {name: 'icon-only', label: 'Icon only'},
@@ -142,6 +143,13 @@ export default ModalComponent.extend({
         if (portalButtonIcon && !defaultIconKeys.includes(portalButtonIcon)) {
             this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
+    },
+
+    didInsertElement() {
+        this._super(...arguments);
+        run.later(this, function () {
+            this.set('hidePreviewFrame', false);
+        }, 1200);
     },
 
     actions: {
