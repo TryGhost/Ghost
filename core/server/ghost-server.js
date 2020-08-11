@@ -29,6 +29,9 @@ class GhostServer {
 
         // Expose config module for use externally.
         this.config = config;
+
+        // Tasks that should be run before the server exits
+        this.cleanupTasks = [];
     }
 
     /**
@@ -150,14 +153,22 @@ class GhostServer {
      * @returns {Promise} Resolves once Ghost has stopped
      */
     async stop() {
+        // If we never fully started, there's nothing to stop
         if (this.httpServer === null) {
             return;
         }
 
-        await this._stopServer();
-        events.emit('server.stop');
-        this.httpServer = null;
-        this._logStopMessages();
+        try {
+            // We stop the server first so that no new long running requests or processes can be started
+            await this._stopServer();
+            // Do all of the cleanup tasks
+            await this._cleanup();
+        } finally {
+            // Wrap up
+            events.emit('server.stop');
+            this.httpServer = null;
+            this._logStopMessages();
+        }
     }
 
     /**
@@ -166,6 +177,10 @@ class GhostServer {
      */
     async hammertime() {
         logging.info(i18n.t('notices.httpServer.cantTouchThis'));
+    }
+
+    registerCleanupTask(task) {
+        this.cleanupTasks.push(task);
     }
 
     /**
@@ -182,6 +197,19 @@ class GhostServer {
         return new Promise((resolve, reject) => {
             this.httpServer.stop((err, status) => (err ? reject(err) : resolve(status)));
         });
+    }
+
+    async _cleanup() {
+        // Wait for all cleanup tasks to finish
+        await Promise
+            .all(this.cleanupTasks.map(task => task()));
+    }
+
+    _onShutdownComplete() {
+        // Wrap up
+        events.emit('server.stop');
+        this.httpServer = null;
+        this._logStopMessages();
     }
 
     /**
