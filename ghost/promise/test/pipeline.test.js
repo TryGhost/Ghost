@@ -1,9 +1,9 @@
-const should = require('should');
+require('./utils');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 
 // Stuff we are testing
-const pipeline = require('../../../../core/server/lib/promise/pipeline');
+const {pipeline} = require('../');
 
 // These tests are based on the tests in https://github.com/cujojs/when/blob/3.7.4/test/pipeline-test.js
 function createTask(y) {
