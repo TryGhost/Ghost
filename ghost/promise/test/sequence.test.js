@@ -1,7 +1,7 @@
-const should = require('should');
+require('./utils');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const sequence = require('../../../../core/server/lib/promise/sequence');
+const {sequence} = require('../');
 
 describe('Unit: lib/promise/sequence', function () {
     afterEach(function () {
