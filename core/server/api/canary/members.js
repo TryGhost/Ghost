@@ -968,4 +968,11 @@ const members = {
     }
 };
 
+// NOTE: remove below condition once batched import is production ready,
+//       remember to swap out current importCSV method when doing so
+if (config.get('enableDeveloperExperiments')) {
+    members.importCSV = members.importCSVBatched;
+    delete members.importCSVBatched;
+}
+
 module.exports = members;
