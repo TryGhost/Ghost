@@ -149,7 +149,7 @@ module.exports = {
         validation: {},
         async query(frame) {
             frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
-            const page = await models.Member.findPage(frame.options);
+            const page = await membersService.api.members.list(frame.options);
             const members = page.data.map(model => model.toJSON(frame.options));
 
             return {
@@ -169,7 +169,7 @@ module.exports = {
         permissions: true,
         async query(frame) {
             frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
-            let model = await models.Member.findOne(frame.data, frame.options);
+            let model = await membersService.api.members.get(frame.data, frame.options);
 
             if (!model) {
                 throw new errors.NotFoundError({
@@ -203,7 +203,7 @@ module.exports = {
             let member;
             frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
             try {
-                member = await models.Member.add(frame.data.members[0], frame.options);
+                member = await membersService.api.members.create(frame.data.members[0], frame.options);
 
                 if (frame.data.members[0].stripe_customer_id) {
                     if (!membersService.config.isStripeConnected()) {
@@ -245,14 +245,9 @@ module.exports = {
                         error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
                     }
 
-                    const api = require('./index');
-
-                    await api.members.destroy.query({
-                        options: {
-                            context: frame.options.context,
-                            id: member.get('id')
-                        }
-                    });
+                    await membersService.api.members.destroy({
+                        id: member.get('id')
+                    }, frame.options);
                 }
 
                 throw error;
@@ -276,7 +271,7 @@ module.exports = {
         permissions: true,
         async query(frame) {
             frame.options.withRelated = ['stripeSubscriptions'];
-            const member = await models.Member.edit(frame.data.members[0], frame.options);
+            const member = await membersService.api.members.update(frame.data.members[0], frame.options);
 
             const hasCompedSubscription = !!member.related('stripeSubscriptions').find(subscription => subscription.get('plan_nickname') === 'Complimentary');
 
@@ -313,23 +308,9 @@ module.exports = {
         permissions: true,
         async query(frame) {
             frame.options.require = true;
+            frame.options.cancelStripeSubscriptions = frame.options.cancel;
 
-            let member = await models.Member.findOne(frame.options);
-
-            if (!member) {
-                throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.resource.resourceNotFound', {
-                        resource: 'Member'
-                    })
-                });
-            }
-
-            if (frame.options.cancel === true) {
-                await membersService.api.members.cancelStripeSubscriptions(member);
-            }
-
-            // Wrapped in bluebird promise to allow "filtered catch"
-            await Promise.resolve(models.Member.destroy(frame.options))
+            await Promise.resolve(membersService.api.members.destroy(frame.options))
                 .catch(models.Member.NotFoundError, () => {
                     throw new errors.NotFoundError({
                         message: i18n.t('errors.api.resource.resourceNotFound', {
@@ -364,7 +345,7 @@ module.exports = {
         validation: {},
         async query(frame) {
             frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
-            const page = await models.Member.findPage(frame.options);
+            const page = await membersService.api.members.list(frame.options);
             const members = page.data.map(model => model.toJSON(frame.options));
 
             return {
