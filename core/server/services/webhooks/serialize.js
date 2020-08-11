@@ -1,6 +1,6 @@
 module.exports = (event, model) => {
     const _ = require('lodash');
-    const sequence = require('../../lib/promise/sequence');
+    const {sequence} = require('@tryghost/promise');
     const api = require('../../api');
 
     const apiVersion = model.get('api_version') || 'v3';
