@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
-const sequence = require('../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const config = require('../../shared/config');
 const crypto = require('crypto');
 

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
-const sequence = require('../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 
 /**
  * Why and when do we have to fetch `authors` by default?

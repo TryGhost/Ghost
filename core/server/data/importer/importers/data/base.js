@@ -3,7 +3,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
 const errors = require('@tryghost/errors');
-const sequence = require('../../../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const models = require('../../../../models');
 
 class Base {

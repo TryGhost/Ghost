@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const shared = require('../shared');
 const errors = require('@tryghost/errors');
-const sequence = require('../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 
 const STAGES = {
     validation: {
