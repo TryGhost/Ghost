@@ -1,12 +1,15 @@
 require('./utils');
 
+const fs = require('fs');
 const path = require('path');
 const {Changelog} = require('../lib');
 
 describe('Changelog', function () {
     it('can generate changelog.md', function () {
+        const changelogPath = path.join(process.cwd(), 'changelog.md');
+
         const changelog = new Changelog({
-            changelogPath: path.join(process.cwd(), 'changelog.md'),
+            changelogPath: changelogPath,
             folder: process.cwd()
         });
 
@@ -17,5 +20,12 @@ describe('Changelog', function () {
             })
             .sort()
             .clean();
+
+        try {
+            fs.unlinkSync(changelogPath);
+            fs.unlinkSync(changelogPath + '.bk');
+        } catch (err) {
+            should.not.exist(err);
+        }
     });
 });
