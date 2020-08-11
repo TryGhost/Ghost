@@ -14,7 +14,6 @@ const logging = require('../shared/logging');
 const moment = require('moment');
 const bootstrapSocket = require('@tryghost/bootstrap-socket');
 const stoppable = require('stoppable');
-const {reject} = require('bluebird');
 
 /**
  * ## GhostServer
@@ -103,7 +102,7 @@ class GhostServer {
 
             self.httpServer.on('listening', function () {
                 debug('...Started');
-                self.logStartMessages();
+                self._logStartMessages();
 
                 return GhostServer.announceServerReadiness()
                     .finally(() => {
@@ -113,21 +112,10 @@ class GhostServer {
 
             stoppable(self.httpServer, config.get('server:shutdownTimeout'));
 
-            async function shutdown() {
-                try {
-                    logging.warn(i18n.t('notices.httpServer.ghostIsShuttingDown'));
-                    await self.stop();
-                    process.exit(0);
-                } catch (error) {
-                    logging.error(error);
-                    process.exit(-1);
-                }
-            }
-
             // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
             process
-                .removeAllListeners('SIGINT').on('SIGINT', shutdown)
-                .removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+                .removeAllListeners('SIGINT').on('SIGINT', self.shutdown.bind(self))
+                .removeAllListeners('SIGTERM').on('SIGTERM', self.shutdown.bind(self));
 
             if (config.get('server:testmode')) {
                 // Debug code
@@ -139,47 +127,67 @@ class GhostServer {
     }
 
     /**
+     * ### Shutdown
+     * Stops the server, handles cleanup and exits the process = a full shutdown
+     * Called on SIGINT or SIGTERM
+     */
+    async shutdown() {
+        try {
+            logging.warn(i18n.t('notices.httpServer.ghostIsShuttingDown'));
+            await this.stop();
+            process.exit(0);
+        } catch (error) {
+            logging.error(error);
+            process.exit(-1);
+        }
+    }
+
+    /**
      * ### Stop
-     * Returns a promise that will be fulfilled when the server stops. If the server has not been started,
-     * the promise will be fulfilled immediately
+     * Stops the server & handles cleanup, but does not exit the process
+     * Used in tests for quick start/stop actions
+     * Called by shutdown to handle server stop and cleanup before exiting
      * @returns {Promise} Resolves once Ghost has stopped
      */
-    stop() {
-        const self = this;
+    async stop() {
+        if (this.httpServer === null) {
+            return;
+        }
 
-        return new Promise(function (resolve) {
-            if (self.httpServer === null) {
-                resolve(self);
-            } else {
-                // The stop function comes from stoppable
-                self.httpServer.stop(function (err) {
-                    if (err) {
-                        reject(self);
-                    }
-
-                    events.emit('server.stop');
-                    self.httpServer = null;
-                    self.logStopMessages();
-                    resolve(self);
-                });
-            }
-        });
+        await this._stopServer();
+        events.emit('server.stop');
+        this.httpServer = null;
+        this._logStopMessages();
     }
 
     /**
      * ### Hammertime
      * To be called after `stop`
      */
-    hammertime() {
+    async hammertime() {
         logging.info(i18n.t('notices.httpServer.cantTouchThis'));
+    }
 
-        return Promise.resolve(this);
+    /**
+     * ### Stop Server
+     * Does the work of stopping the server using stoppable
+     * This handles closing connections:
+     * - New connections are rejected
+     * - Idle connections are closed immediately
+     * - Active connections are allowed to complete in-flight requests before being closed
+     *
+     * If server.shutdownTimeout is reached, requests are terminated in-flight
+     */
+    async _stopServer() {
+        return new Promise((resolve, reject) => {
+            this.httpServer.stop((err, status) => (err ? reject(err) : resolve(status)));
+        });
     }
 
     /**
      * ### Log Start Messages
      */
-    logStartMessages() {
+    _logStartMessages() {
         logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
 
         if (config.get('env') === 'production') {
@@ -197,8 +205,9 @@ class GhostServer {
 
     /**
      * ### Log Stop Messages
+     * Private / internal API
      */
-    logStopMessages() {
+    _logStopMessages() {
         logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
 
         // Extra clear message for production mode
