@@ -322,14 +322,14 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.1.tgz#96dfb5e7d817ca5f67fba35d82beb1ea66a2cf8c"
-  integrity sha512-5ecakGIUNB707zYH8L9vXZF2SOTP7pM2qvKFggPxqOdaocFLki2mAn0S9qSbSY1C6kTLwMuUQIB6UJCo9skX/g==
+"@tryghost/html-to-mobiledoc@0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.2.tgz#73c6ae0af170c482d6e6a6103e78519dd85665ed"
+  integrity sha512-8V5yRC16gxfqBYdsrlQYzgEkzN0ZGhjin8Htkd2izPG/RYwhr/RUjjnam+i6sYIf+ZgJpBDDDghGIgiG85NqcA==
   dependencies:
     "@tryghost/kg-parser-plugins" "1.0.6"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
-    jsdom "16.3.0"
+    jsdom "16.4.0"
 
 "@tryghost/image-transform@1.0.2":
   version "1.0.2"
@@ -4964,10 +4964,10 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
-jsdom@16.3.0:
-  version "16.3.0"
-  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-16.3.0.tgz#75690b7dac36c67be49c336dcd7219bbbed0810c"
-  integrity sha512-zggeX5UuEknpdZzv15+MS1dPYG0J/TftiiNunOeNxSl3qr8Z6cIlQpN0IdJa44z9aFxZRIVqRncvEhQ7X5DtZg==
+jsdom@16.4.0:
+  version "16.4.0"
+  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-16.4.0.tgz#36005bde2d136f73eee1a830c6d45e55408edddb"
+  integrity sha512-lYMm3wYdgPhrl7pDcRmvzPhhrGVBeVhPIqeHjzeiHN3DFmD1RBpbExbi8vU7BJdH8VAZYovR8DMt0PNNDM7k8w==
   dependencies:
     abab "^2.0.3"
     acorn "^7.1.1"
