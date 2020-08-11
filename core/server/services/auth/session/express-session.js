@@ -1,5 +1,5 @@
 const session = require('express-session');
-const constants = require('../../../lib/constants');
+const constants = require('@tryghost/constants');
 const config = require('../../../../shared/config');
 const settingsCache = require('../../settings/cache');
 const models = require('../../../models');
