@@ -74,7 +74,6 @@ describe('Member Model', function run() {
 
             const subscriptions = memberWithRelations.related('stripeSubscriptions').toJSON();
 
-
             const subscription1 = subscriptions.find(({id}) => id === 'fake_subscription_id1');
             const subscription2 = subscriptions.find(({id}) => id === 'fake_subscription_id2');
 
