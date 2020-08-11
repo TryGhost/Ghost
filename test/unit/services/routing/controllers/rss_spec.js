@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const security = require('../../../../../core/server/lib/security');
+const security = require('@tryghost/security');
 const settingsCache = require('../../../../../core/server/services/settings/cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
