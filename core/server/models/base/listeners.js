@@ -4,7 +4,7 @@ const models = require('../../models');
 const {events} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
-const sequence = require('../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 
 /**
  * WHEN timezone changes, we will:

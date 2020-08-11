@@ -1,7 +1,7 @@
 const debug = require('ghost-ignition').debug('api:shared:validators:handle');
 const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
-const sequence = require('../../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 
 /**
  * @description Shared input validation handler.

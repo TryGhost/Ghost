@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const logging = require('../../../../shared/logging');
 const models = require('../../../models');
 const baseUtils = require('../../../models/base/utils');
-const sequence = require('../../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const moment = require('moment');
 const fixtures = require('./fixtures');
 

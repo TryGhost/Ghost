@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('api:shared:serializers:handle');
 const Promise = require('bluebird');
-const sequence = require('../../../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const errors = require('@tryghost/errors');
 
 /**
