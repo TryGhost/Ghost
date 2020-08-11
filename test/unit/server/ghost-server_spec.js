@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 const configUtils = require('../../utils/configUtils');
+const {events} = require('../../../core/server/lib/common');
 
 const bootstrapSocket = require('@tryghost/bootstrap-socket');
 
@@ -9,6 +10,7 @@ describe('GhostServer', function () {
     describe('announceServerReadiness', function () {
         let GhostServer;
         let socketStub;
+        let eventSpy;
 
         beforeEach(function () {
             // Have to re-require each time to clear the internal flag
@@ -20,12 +22,16 @@ describe('GhostServer', function () {
 
             // stub socket connectAndSend method
             socketStub = sinon.stub(bootstrapSocket, 'connectAndSend');
+
+            // Spy for the events that get called
+            eventSpy = sinon.spy(events, 'emit');
         });
 
         afterEach(function () {
             process.send = undefined;
             configUtils.restore();
             socketStub.restore();
+            eventSpy.restore();
         });
 
         it('it resolves a promise', function () {
@@ -95,6 +101,19 @@ describe('GhostServer', function () {
 
             process.send.calledOnce.should.be.true();
             socketStub.calledOnce.should.be.true();
+        });
+
+        it('sends server.start event correctly on success', function () {
+            GhostServer.announceServerReadiness();
+
+            eventSpy.calledOnce.should.be.true();
+            eventSpy.firstCall.args[0].should.eql('server.start');
+        });
+
+        it('does not send server.start event on failure', function () {
+            GhostServer.announceServerReadiness(new Error('something went wrong'));
+
+            eventSpy.calledOnce.should.be.false();
         });
     });
 });

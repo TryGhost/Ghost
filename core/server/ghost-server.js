@@ -252,6 +252,8 @@ module.exports.announceServerReadiness = function (error = null) {
     if (error) {
         message.started = false;
         message.error = error;
+    } else {
+        events.emit('server.start');
     }
 
     // CASE: IPC communication to the CLI for local process manager
