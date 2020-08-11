@@ -68,7 +68,6 @@
     "ajv": "6.12.3",
     "amperize": "0.6.1",
     "analytics-node": "3.4.0-beta.2",
-    "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
     "body-parser": "1.19.0",
     "bookshelf": "0.15.2",
