@@ -57,7 +57,7 @@
     "@tryghost/members-api": "0.25.2",
     "@tryghost/members-csv": "0.2.1",
     "@tryghost/members-ssr": "0.8.5",
-    "@tryghost/mw-session-from-token": "0.1.6",
+    "@tryghost/mw-session-from-token": "0.1.7",
     "@tryghost/promise": "0.1.0",
     "@tryghost/security": "0.1.0",
     "@tryghost/session-service": "0.1.7",
