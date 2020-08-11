@@ -459,13 +459,13 @@
   dependencies:
     "@tryghost/errors" "^0.2.2"
 
-"@tryghost/social-urls@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.10.tgz#f4ca0dbf3a3aa8eaac7b186ad89f68539687da43"
-  integrity sha512-ZlzsAsyy7LbjB4Xq8/X+wOOZtarOB+WrwZtaNZo8L7UKmbfqcuvjNT9TZtdy6Xv/8sTlSx+m3A/M0xdD0s1Wyw==
+"@tryghost/social-urls@0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.11.tgz#5bbcf2225c81801508cb91afc954071204cb44d9"
+  integrity sha512-Xm7SsyjZNynwde1wm4puM6gsxvtP3BIiLS66BDtRhtZEjG+/twoAq9C5y7+R7xqMIA7PKq9EbuHsHXRRlTniRw==
   dependencies:
     bluebird "3.7.2"
-    ghost-ignition "4.2.1"
+    ghost-ignition "4.2.2"
     lodash "4.17.19"
 
 "@tryghost/string@0.1.10":
@@ -3645,25 +3645,6 @@ ghost-ignition@4.1.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@4.2.1, ghost-ignition@^4.0.0:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.2.1.tgz#6ee646b89d36791862e11c6de9922e638badd01d"
-  integrity sha512-o75AwIMLae7GBg8qM8m5kM7pg55JcoDqrbcOmuR2scjYwdlsBdJBIadyDO7IddNDVOPxYKU32u8O203Z+lgraw==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.1.1"
-    find-root "1.1.0"
-    fs-extra "9.0.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.15"
-    moment "2.25.1"
-    nconf "0.10.0"
-    prettyjson "1.2.1"
-    uuid "7.0.3"
-
 ghost-ignition@4.2.2:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.2.2.tgz#7201d4756be6ebe6743495cf6c365ff8ee416b73"
@@ -3700,6 +3681,25 @@ ghost-ignition@^2.9.6:
     nconf "^0.10.0"
     prettyjson "^1.1.3"
     uuid "^3.0.0"
+
+ghost-ignition@^4.0.0:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.2.1.tgz#6ee646b89d36791862e11c6de9922e638badd01d"
+  integrity sha512-o75AwIMLae7GBg8qM8m5kM7pg55JcoDqrbcOmuR2scjYwdlsBdJBIadyDO7IddNDVOPxYKU32u8O203Z+lgraw==
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.1.1"
+    find-root "1.1.0"
+    fs-extra "9.0.0"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.15"
+    moment "2.25.1"
+    nconf "0.10.0"
+    prettyjson "1.2.1"
+    uuid "7.0.3"
 
 ghost-storage-base@0.0.4:
   version "0.0.4"
