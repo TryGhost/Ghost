@@ -6,7 +6,7 @@ const ghostVersion = require('../../lib/ghost-version');
 const {i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
-const security = require('../../lib/security');
+const security = require('@tryghost/security');
 const models = require('../../models');
 const EXCLUDED_TABLES = ['sessions', 'mobiledoc_revisions'];
 

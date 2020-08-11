@@ -3,7 +3,7 @@ const _ = require('lodash');
 const {i18n} = require('../lib/common');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
-const security = require('../lib/security');
+const security = require('@tryghost/security');
 const settingsCache = require('../services/settings/cache');
 const ghostBookshelf = require('./base');
 

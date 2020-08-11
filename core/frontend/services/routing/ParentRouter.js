@@ -13,7 +13,7 @@ const EventEmitter = require('events').EventEmitter;
 const express = require('../../../shared/express');
 const _ = require('lodash');
 const url = require('url');
-const security = require('../../../server/lib/security');
+const security = require('@tryghost/security');
 const urlUtils = require('../../../shared/url-utils');
 const registry = require('./registry');
 

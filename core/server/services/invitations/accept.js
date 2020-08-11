@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../lib/common');
 const models = require('../../models');
-const security = require('../../lib/security');
+const security = require('@tryghost/security');
 
 async function accept(invitation) {
     const data = invitation.invitation[0];

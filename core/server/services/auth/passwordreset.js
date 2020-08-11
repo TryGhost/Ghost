@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const security = require('../../lib/security');
+const security = require('@tryghost/security');
 const constants = require('@tryghost/constants');
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../lib/common');

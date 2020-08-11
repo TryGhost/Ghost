@@ -6,7 +6,7 @@ const testUtils = require('../../utils');
 const knex = require('../../../core/server/data/db').knex;
 const urlService = require('../../../core/frontend/services/url');
 const models = require('../../../core/server/models');
-const security = require('../../../core/server/lib/security');
+const security = require('@tryghost/security');
 
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
