@@ -398,7 +398,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.6"
 
-"@tryghost/magic-link@0.4.13":
+"@tryghost/magic-link@0.4.13", "@tryghost/magic-link@^0.4.13":
   version "0.4.13"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.13.tgz#266940cec6f0fe837071621b43dfaa08f552d23c"
   integrity sha512-m5rz9rDEeRwrDePRiw/5t3D/yfDkqtvhjWNRUqL0NXhvD/m8f8soP1m1fY46JVaUd35xGDa4BQRnFhXerNId3w==
@@ -408,27 +408,17 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^0.4.12":
-  version "0.4.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.12.tgz#3a4c6eeb5bf5c8420e006928ccc02da716ea4662"
-  integrity sha512-sFwGd0x5FjBXfFBRLqLJSQCzluDf+dMsA2j2LUZV+iesPvT/P+fAcb3pwXQ6nohjl/aGYpR3N9/yj0AL3m2qrw==
+"@tryghost/members-api@0.25.2":
+  version "0.25.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.25.2.tgz#64fd5270f44620761e9f01d4f96925a0bdceb09d"
+  integrity sha512-oNfFZTSO2TA0BEuEk0mbGSZmSZCUq2wvdD63z2AGup+hiDTQHOVlXJGVwKPRqDP5+DJW2wIISh8UxMriXn+8Ow==
   dependencies:
-    bluebird "^3.5.5"
-    ghost-ignition "^4.0.0"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/members-api@0.25.1":
-  version "0.25.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.25.1.tgz#b921f2b87e46f9a23811ab6bc7cf32042d82c722"
-  integrity sha512-+Hu5ebp7JuLT+sNQ7mmajv1wpsseaw0kj38VABncAgChCrDl11tjs99FcV1IGZ1RCNaTS8OF8lOciEXB/MlKyw==
-  dependencies:
-    "@tryghost/magic-link" "^0.4.12"
+    "@tryghost/magic-link" "^0.4.13"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "^4.0.0"
+    ghost-ignition "4.2.2"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
@@ -3492,16 +3482,6 @@ fs-extra@8.1.0:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
-fs-extra@9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.0.0.tgz#b6afc31036e247b2466dc99c29ae797d5d4580a3"
-  integrity sha512-pmEYSk3vYsG/bF651KPUXZ+hvjpgWYw/Gc7W9NFUe3ZVLczKKWIij3IKpOrQcdw4TILtibFslZ0UmR8Vvzig4g==
-  dependencies:
-    at-least-node "^1.0.0"
-    graceful-fs "^4.2.0"
-    jsonfile "^6.0.1"
-    universalify "^1.0.0"
-
 fs-extra@9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.0.1.tgz#910da0062437ba4c39fedd863f1675ccfefcb9fc"
@@ -3714,25 +3694,6 @@ ghost-ignition@^2.9.6:
     nconf "^0.10.0"
     prettyjson "^1.1.3"
     uuid "^3.0.0"
-
-ghost-ignition@^4.0.0:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.2.1.tgz#6ee646b89d36791862e11c6de9922e638badd01d"
-  integrity sha512-o75AwIMLae7GBg8qM8m5kM7pg55JcoDqrbcOmuR2scjYwdlsBdJBIadyDO7IddNDVOPxYKU32u8O203Z+lgraw==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.1.1"
-    find-root "1.1.0"
-    fs-extra "9.0.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.15"
-    moment "2.25.1"
-    nconf "0.10.0"
-    prettyjson "1.2.1"
-    uuid "7.0.3"
 
 ghost-storage-base@0.0.4:
   version "0.0.4"
@@ -6080,7 +6041,7 @@ moment-timezone@0.5.23, moment-timezone@0.5.28, moment-timezone@0.5.31:
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.25.1, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1, moment@^2.19.3:
+moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1, moment@^2.19.3:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
@@ -9130,11 +9091,6 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
-uuid@7.0.3, uuid@^7.0.1, uuid@^7.0.3:
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
-  integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
-
 uuid@8.3.0:
   version "8.3.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.0.tgz#ab738085ca22dc9a8c92725e459b1d507df5d6ea"
@@ -9144,6 +9100,11 @@ uuid@^3.0.0, uuid@^3.2.1, uuid@^3.3.2, uuid@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
+
+uuid@^7.0.1, uuid@^7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
+  integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
 
 v8-compile-cache@^2.0.3:
   version "2.1.1"
