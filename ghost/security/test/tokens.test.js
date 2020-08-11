@@ -1,6 +1,7 @@
+require('./utils');
 const should = require('should');
 const uuid = require('uuid');
-const security = require('../../../../core/server/lib/security');
+const security = require('../');
 
 describe('Utils: tokens', function () {
     it('generate', function () {
@@ -87,7 +88,7 @@ describe('Utils: tokens', function () {
         should.not.exist(parts.dbHash);
     });
 
-    it('extract', function () {
+    it('extract - hashed password', function () {
         const expires = Date.now() + 60 * 1000;
         const dbHash = uuid.v4();
         let token;

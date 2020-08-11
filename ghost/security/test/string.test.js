@@ -1,5 +1,5 @@
-const should = require('should');
-const security = require('../../../../core/server/lib/security');
+require('./utils');
+const security = require('../');
 
 describe('Lib: Security - String', function () {
     describe('Safe String', function () {
