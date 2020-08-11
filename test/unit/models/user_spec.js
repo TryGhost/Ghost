@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const models = require('../../../core/server/models');
 const permissions = require('../../../core/server/services/permissions');
 const validation = require('../../../core/server/data/validation');
-const security = require('../../../core/server/lib/security');
+const security = require('@tryghost/security');
 const testUtils = require('../../utils');
 
 describe('Unit: models/user', function () {
