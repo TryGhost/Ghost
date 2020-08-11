@@ -45,7 +45,7 @@
     "@tryghost/adapter-manager": "0.1.9",
     "@tryghost/bootstrap-socket": "0.2.0",
     "@tryghost/errors": "0.2.2",
-    "@tryghost/helpers": "1.1.28",
+    "@tryghost/helpers": "1.1.29",
     "@tryghost/image-transform": "1.0.2",
     "@tryghost/kg-card-factory": "2.1.1",
     "@tryghost/kg-default-atoms": "2.0.1",
