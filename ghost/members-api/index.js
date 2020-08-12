@@ -100,6 +100,11 @@ module.exports = function MembersApi({
         getSubject
     });
 
+    const users = Users({
+        stripe,
+        Member
+    });
+
     async function sendEmailWithMagicLink({email, requestedType, payload, options = {forceEmailType: false}}) {
         if (options.forceEmailType) {
             return magicLinkService.sendMagicLink({email, payload, subject: email, type: requestedType});
@@ -116,11 +121,6 @@ module.exports = function MembersApi({
     function getMagicLink(email) {
         return magicLinkService.getMagicLink({email, subject: email, type: 'signin'});
     }
-
-    const users = Users({
-        stripe,
-        Member
-    });
 
     async function getMemberDataFromMagicLinkToken(token) {
         const email = await magicLinkService.getUserFromToken(token);
@@ -148,7 +148,11 @@ module.exports = function MembersApi({
     }
 
     async function getMemberIdentityData(email) {
-        return users.get({email});
+        const model = await users.get({email}, {withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer']});
+        if (!model) {
+            return null;
+        }
+        return model.toJSON();
     }
 
     async function getMemberIdentityToken(email) {
@@ -261,10 +265,10 @@ module.exports = function MembersApi({
             return res.end('Unauthorized');
         }
 
-        const member = email ? await users.get({email}) : null;
+        const member = email ? await users.get({email}, {withRelated: ['stripeSubscriptions']}) : null;
 
         // Do not allow members already with a subscription to initiate a new checkout session
-        if (member && member.stripe.subscriptions.length > 0) {
+        if (member && member.related('stripeSubscriptions').length > 0) {
             res.writeHead(403);
             return res.end('No permission');
         }
@@ -374,8 +378,8 @@ module.exports = function MembersApi({
 
                     const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
 
-                    if (payerName && !member.name) {
-                        await users.update({name: payerName}, {id: member.id});
+                    if (payerName && !member.get('name')) {
+                        await users.update({name: payerName}, {id: member.get('id')});
                     }
 
                     const emailType = 'signup';
@@ -411,7 +415,7 @@ module.exports = function MembersApi({
 
             const claims = await decodeToken(identity);
             const email = claims.sub;
-            member = email ? await users.get({email}) : null;
+            member = email ? await users.get({email}, {withRelated: ['stripeSubscriptions']}) : null;
 
             if (!member) {
                 throw new common.errors.BadRequestError({
@@ -429,7 +433,9 @@ module.exports = function MembersApi({
                 message: 'Updating subscription failed! Could not find plan'
             });
         }
-        const subscription = member.stripe.subscriptions.find(sub => sub.id === subscriptionId);
+        const subscription = member.related('stripeSubscriptions').models.find(
+            subscription => subscription.get('subscription_id') === subscriptionId
+        );
         if (!subscription) {
             res.writeHead(403);
             return res.end('No permission');
@@ -442,7 +448,7 @@ module.exports = function MembersApi({
             });
         }
         const subscriptionUpdate = {
-            id: subscription.id
+            id: subscription.get('subscription_id')
         };
         if (cancelAtPeriodEnd !== undefined) {
             subscriptionUpdate.cancel_at_period_end = !!(cancelAtPeriodEnd);
