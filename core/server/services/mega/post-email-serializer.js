@@ -105,6 +105,14 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
     }
+
+    // we use post.excerpt as a hidden piece of text that is picked up by some email
+    // clients as a "preview" when listing emails. Our current plaintext/excerpt
+    // generation outputs links as "Link [https://url/]" which isn't desired in the preview
+    if (!post.custom_excerpt) {
+        post.excerpt = post.excerpt.replace(/\s\[http(.*?)\]/g, '');
+    }
+
     post.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(post.mobiledoc), {target: 'email'});
     // same options as used in Post model for generating plaintext but without `wordwrap: 80`
     // to avoid replacement strings being split across lines and for mail clients to handle
