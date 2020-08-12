@@ -266,6 +266,8 @@ describe('Members API', function () {
     });
 
     it('Can import CSV with minimum one field and labels', function () {
+        let importLabel;
+
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['global-label-1', 'global-label-1'])
@@ -282,12 +284,14 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
+                should.exist(jsonResponse.meta.import_label);
+
                 jsonResponse.meta.stats.imported.count.should.equal(2);
                 jsonResponse.meta.stats.invalid.count.should.equal(0);
-            })
-            .then(() => {
+
+                importLabel = jsonResponse.meta.import_label.slug;
                 return request
-                    .get(localUtils.API.getApiQuery(`members/?search=${encodeURIComponent('member+labels_1@example.com')}`))
+                    .get(localUtils.API.getApiQuery(`members/?&filter=label:${importLabel}`))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -299,7 +303,7 @@ describe('Members API', function () {
 
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
-                should.exist(jsonResponse.members[0]);
+                should.equal(jsonResponse.members.length, 2);
 
                 const importedMember1 = jsonResponse.members[0];
                 should(importedMember1.email).equal('member+labels_1@example.com');
@@ -309,8 +313,21 @@ describe('Members API', function () {
                 importedMember1.comped.should.equal(false);
                 importedMember1.stripe.should.not.be.undefined();
                 importedMember1.stripe.subscriptions.length.should.equal(0);
-                // 2 specified labels plus auto-generated import label
+
+                // check label order
+                // 1 unique global + 1 record labels + auto-generated import label
                 importedMember1.labels.length.should.equal(3);
+                importedMember1.labels[0].slug.should.equal('label');
+                importedMember1.labels[1].slug.should.equal('global-label-1');
+                importedMember1.labels[2].slug.should.equal(importLabel);
+
+                const importedMember2 = jsonResponse.members[1];
+                // 1 unique global + 2 record labels + auto-generated import label
+                importedMember2.labels.length.should.equal(4);
+                importedMember2.labels[0].slug.should.equal('another-label');
+                importedMember2.labels[1].slug.should.equal('and-one-more');
+                importedMember2.labels[2].slug.should.equal('global-label-1');
+                importedMember2.labels[3].slug.should.equal(importLabel);
             });
     });
 
