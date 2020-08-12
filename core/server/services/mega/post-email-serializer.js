@@ -131,6 +131,9 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     _cheerio('a').attr('target','_blank');
     juicedHtml = _cheerio.html();
 
+    // Fix any unsupported chars in Outlook
+    juicedHtml = juicedHtml.replace(/&apos;/g, '&#39;');
+
     const emailTmpl = {
         subject: post.email_subject || post.title,
         html: juicedHtml,
