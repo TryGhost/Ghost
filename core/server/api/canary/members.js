@@ -686,14 +686,14 @@ const members = {
                         });
 
                         if (mergedLabels) {
-                            mergedLabels.forEach((label) => {
+                            mergedLabels.forEach((label, index) => {
                                 const matchedLabel = allLabelModels.find(labelModel => labelModel.get('name') === label.name);
 
                                 mappedMembersLabelsBatchAssociations.push({
                                     id: ObjectId.generate(),
                                     member_id: memberId,
                                     label_id: matchedLabel.id,
-                                    sort_order: 0 //TODO: implementme
+                                    sort_order: index
                                 });
                             });
                         }
