@@ -37,6 +37,30 @@ const Member = ghostBookshelf.Model.extend({
         return this.hasMany('MemberStripeCustomer', 'member_id', 'id');
     },
 
+    stripeSubscriptions() {
+        return this.belongsToMany(
+            'StripeCustomerSubscription',
+            'members_stripe_customers',
+            'member_id',
+            'customer_id',
+            'id',
+            'customer_id'
+        ).query('whereIn', 'status', ['active', 'trialing']);
+    },
+
+    serialize(options) {
+        const defaultSerializedObject = ghostBookshelf.Model.prototype.serialize.call(this, options);
+
+        if (defaultSerializedObject.stripeSubscriptions) {
+            defaultSerializedObject.stripe = {
+                subscriptions: defaultSerializedObject.stripeSubscriptions
+            };
+            delete defaultSerializedObject.stripeSubscriptions;
+        }
+
+        return defaultSerializedObject;
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'member' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
