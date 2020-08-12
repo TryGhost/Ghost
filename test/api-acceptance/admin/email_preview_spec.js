@@ -108,6 +108,38 @@ describe('Email Preview API', function () {
                     });
             });
         });
+
+        it('has custom content transformations for email compatibility', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost({
+                id: ObjectId.generate(),
+                title: 'Post with email-only card',
+                slug: 'email-only-card',
+                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"This is the actual post content... With an apostrophy: \'"]]],[1,"p",[]]]}',
+                html: '<p>This is the actual post content...</p>',
+                plaintext: 'This is the actual post content...',
+                status: 'draft',
+                uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c904'
+            });
+
+            return models.Post.add(post, {context: {internal: true}}).then(() => {
+                return request
+                    .get(localUtils.API.getApiQuery(`email_preview/posts/${post.id}/`))
+                    .set('Origin', config.get('url'))
+                    .set('Accept', 'application/json')
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        const jsonResponse = res.body;
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.email_previews);
+
+                        jsonResponse.email_previews[0].html.should.match(/&#39;/);
+                        jsonResponse.email_previews[0].html.should.not.match(/&apos;/);
+                    });
+            });
+        });
     });
 
     describe('As Owner', function () {
