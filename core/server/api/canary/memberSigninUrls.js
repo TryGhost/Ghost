@@ -1,4 +1,3 @@
-const models = require('../../models');
 const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const membersService = require('../../services/members');
@@ -12,7 +11,7 @@ module.exports = {
         ],
         permissions: true,
         async query(frame) {
-            let model = await models.Member.findOne(frame.data, frame.options);
+            let model = await membersService.api.members.get(frame.data, frame.options);
 
             if (!model) {
                 throw new errors.NotFoundError({

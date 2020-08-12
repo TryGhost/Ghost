@@ -60,7 +60,7 @@ const sendEmail = async (postModel, memberModels) => {
 
 const sendTestEmail = async (postModel, toEmails) => {
     const recipients = await Promise.all(toEmails.map(async (email) => {
-        const member = await models.Member.findOne({email});
+        const member = await membersService.api.members.get({email});
         return member || new models.Member({email});
     }));
     const {emailTmpl, emails, emailData} = await getEmailData(postModel, recipients);
@@ -87,7 +87,7 @@ const addEmail = async (postModel, options) => {
 
     const startRetrieve = Date.now();
     debug('addEmail: retrieving members count');
-    const {meta: {pagination: {total: membersCount}}} = await models.Member.findPage(Object.assign({}, knexOptions, filterOptions));
+    const {meta: {pagination: {total: membersCount}}} = await membersService.api.members.list(Object.assign({}, knexOptions, filterOptions));
     debug(`addEmail: retrieved members count - ${membersCount} members (${Date.now() - startRetrieve}ms)`);
 
     // NOTE: don't create email object when there's nobody to send the email to
@@ -214,7 +214,7 @@ async function pendingEmailHandler(emailModel, options) {
 
         const startRetrieve = Date.now();
         debug('pendingEmailHandler: retrieving members list');
-        const {data: members} = await models.Member.findPage(Object.assign({}, knexOptions, filterOptions));
+        const {data: members} = await membersService.api.members.list(Object.assign({}, knexOptions, filterOptions));
         debug(`pendingEmailHandler: retrieved members list - ${members.length} members (${Date.now() - startRetrieve}ms)`);
 
         if (!members.length) {
