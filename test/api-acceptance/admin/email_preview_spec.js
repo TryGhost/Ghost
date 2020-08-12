@@ -114,7 +114,7 @@ describe('Email Preview API', function () {
                 id: ObjectId.generate(),
                 title: 'Post with email-only card',
                 slug: 'email-only-card',
-                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"This is the actual post content... With an apostrophy: \'"]]],[1,"p",[]]]}',
+                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[["a",["href","https://ghost.org"]]],"sections":[[1,"p",[[0,[],0,"Testing "],[0,[0],1,"links"],[0,[],0," in email excerpt and apostrophes \'"]]]]}',
                 html: '<p>This is the actual post content...</p>',
                 plaintext: 'This is the actual post content...',
                 status: 'draft',
@@ -135,8 +135,12 @@ describe('Email Preview API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.email_previews);
 
-                        jsonResponse.email_previews[0].html.should.match(/&#39;/);
-                        jsonResponse.email_previews[0].html.should.not.match(/&apos;/);
+                        const [preview] = jsonResponse.email_previews;
+
+                        preview.html.should.containEql('Testing links in email excerpt');
+
+                        preview.html.should.match(/&#39;/);
+                        preview.html.should.not.match(/&apos;/);
                     });
             });
         });
