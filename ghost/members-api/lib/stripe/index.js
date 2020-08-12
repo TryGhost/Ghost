@@ -5,15 +5,6 @@ const api = require('./api');
 
 const STRIPE_API_VERSION = '2019-09-09';
 
-const CURRENCY_SYMBOLS = {
-    usd: '$',
-    aud: '$',
-    cad: '$',
-    gbp: '£',
-    eur: '€',
-    inr: '₹'
-};
-
 module.exports = class StripePaymentProcessor {
     constructor(config, storage, logging) {
         this.logging = logging;
@@ -244,7 +235,7 @@ module.exports = class StripePaymentProcessor {
             payment_method_types: ['card'],
             success_url: options.successUrl || this._billingSuccessUrl,
             cancel_url: options.cancelUrl || this._billingCancelUrl,
-            customer_email: member.email,
+            customer_email: member.get('email'),
             setup_intent_data: {
                 metadata: {
                     customer_id: customer.id
@@ -296,35 +287,7 @@ module.exports = class StripePaymentProcessor {
     async getSubscriptions(member) {
         const metadata = await this.storage.get(member);
 
-        const customers = metadata.customers.reduce((customers, customer) => {
-            return Object.assign(customers, {
-                [customer.customer_id]: {
-                    id: customer.customer_id,
-                    name: customer.name,
-                    email: customer.email
-                }
-            });
-        }, {});
-
-        return metadata.subscriptions.map((subscription) => {
-            return {
-                id: subscription.subscription_id,
-                customer: customers[subscription.customer_id],
-                plan: {
-                    id: subscription.plan_id,
-                    nickname: subscription.plan_nickname,
-                    interval: subscription.plan_interval,
-                    amount: subscription.plan_amount,
-                    currency: String.prototype.toUpperCase.call(subscription.plan_currency),
-                    currency_symbol: CURRENCY_SYMBOLS[subscription.plan_currency]
-                },
-                status: subscription.status,
-                start_date: subscription.start_date,
-                default_payment_card_last4: subscription.default_payment_card_last4,
-                cancel_at_period_end: subscription.cancel_at_period_end,
-                current_period_end: subscription.current_period_end
-            };
-        });
+        return metadata.subscriptions;
     }
 
     async setComplimentarySubscription(member) {
@@ -438,11 +401,11 @@ module.exports = class StripePaymentProcessor {
     }
 
     async _updateCustomer(member, customer) {
-        debug(`Attaching customer to member ${member.email} ${customer.id}`);
+        debug(`Attaching customer to member ${member.get('email')} ${customer.id}`);
         await this.storage.set({
             customer: {
                 customer_id: customer.id,
-                member_id: member.id,
+                member_id: member.get('id'),
                 name: customer.name,
                 email: customer.email
             }
@@ -500,9 +463,9 @@ module.exports = class StripePaymentProcessor {
             }
         }
 
-        debug(`Creating customer for member ${member.email}`);
+        debug(`Creating customer for member ${member.get('email')}`);
         const customer = await create(this._stripe, 'customers', {
-            email: member.email
+            email: member.get('email')
         });
 
         await this._updateCustomer(member, customer);

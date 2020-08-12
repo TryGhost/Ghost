@@ -46,16 +46,16 @@ module.exports = function ({
             return;
         }
 
-        const customers = (await StripeCustomer.findAll({
-            filter: `member_id:${member.id}`
-        })).toJSON();
+        if (!member.relations.stripeCustomers) {
+            await member.load(['stripeCustomers']);
+        }
 
-        const subscriptions = await customers.reduce(async (subscriptionsPromise, customer) => {
-            const customerSubscriptions = await StripeCustomerSubscription.findAll({
-                filter: `customer_id:${customer.customer_id}`
-            });
-            return (await subscriptionsPromise).concat(customerSubscriptions.toJSON());
-        }, []);
+        if (!member.relations.stripeSubscriptions) {
+            await member.load(['stripeSubscriptions', 'stripeSubscriptions.customer']);
+        }
+
+        const customers = member.related('stripeCustomers').toJSON();
+        const subscriptions = member.related('stripeSubscriptions').toJSON();
 
         return {
             customers: customers,
