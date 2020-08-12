@@ -184,7 +184,7 @@ const doImport = async ({membersBatch: members, allLabelModels, importSetLabels,
             if (membersWithStripeCustomers.length) {
                 await Promise.map(membersWithStripeCustomers, async (stripeMember) => {
                     try {
-                        await membersService.api.members.linkStripeCustomer(stripeMember.stripe_customer_id, stripeMember);
+                        await membersService.api.members.linkStripeCustomerById(stripeMember.stripe_customer_id, stripeMember.id);
                     } catch (error) {
                         if (error.message.indexOf('customer') && error.code === 'resource_missing') {
                             error.message = `Member not imported. ${error.message}`;
@@ -204,7 +204,7 @@ const doImport = async ({membersBatch: members, allLabelModels, importSetLabels,
             if (membersWithComplimentaryPlans.length) {
                 await Promise.map(membersWithComplimentaryPlans, async (complimentaryMember) => {
                     try {
-                        await membersService.api.members.setComplimentarySubscription(complimentaryMember);
+                        await membersService.api.members.setComplimentarySubscriptionById(complimentaryMember.id);
                     } catch (error) {
                         logging.error(error);
                         invalid.errors.push(error);
