@@ -63,7 +63,7 @@
     "@tryghost/security": "0.1.0",
     "@tryghost/session-service": "0.1.8",
     "@tryghost/social-urls": "0.1.12",
-    "@tryghost/string": "0.1.10",
+    "@tryghost/string": "0.1.11",
     "@tryghost/url-utils": "0.6.19",
     "@tryghost/vhost-middleware": "1.0.8",
     "@tryghost/zip": "1.1.3",
