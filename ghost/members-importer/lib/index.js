@@ -205,7 +205,7 @@ const doImport = async ({membersBatch: members, allLabelModels, importSetLabels,
                         await deleteMemberKnex(stripeMember.id);
                     }
                 }, {
-                    concurrency: 10
+                    concurrency: 9
                 });
             }
 
