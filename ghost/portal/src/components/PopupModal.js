@@ -41,12 +41,6 @@ const StylesWrapper = ({member}) => {
 class PopupContent extends React.Component {
     static contextType = AppContext;
 
-    constructor(props) {
-        super(props);
-        this.state = { };
-        this.container = React.createRef();
-    }
-
     renderActivePage() {
         const {page} = this.context;
         getActivePage({page});
@@ -73,7 +67,7 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         return (
-            <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={this.container}>
+            <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle}>
                 {this.renderPopupClose()}
                 {this.renderActivePage()}
             </div>
