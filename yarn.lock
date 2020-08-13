@@ -591,10 +591,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.19":
-  version "0.6.19"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.19.tgz#84377166010e80141119840da1cbd0c5201978e5"
-  integrity sha512-XTTc9ZYc0VWjH9jJgF6a0ucztQxdo433dFggmVGedUmG+warVmy3Yv6uedceD97iT6tJ6tg448NEzS2JfPyzRw==
+"@tryghost/url-utils@0.6.20":
+  version "0.6.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.20.tgz#cb04b922f2946164a54b1bd2b521f340b2baa88e"
+  integrity sha512-f3cwL4c5B4GGw6u00pga6LAzgw95xsKfW32mXuQj7+ZZnptC3OYTqIdpa42zqt+/vlDMiMku0QqZY2MzqvTeDg==
   dependencies:
     cheerio "0.22.0"
     moment "2.27.0"
