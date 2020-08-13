@@ -40,7 +40,7 @@ function serializeMemberLabels(labels) {
     return [];
 }
 
-const doImport = async ({membersBatch: members, allLabelModels, importSetLabels, imported, invalid, createdBy}) => {
+const doImport = async ({members, allLabelModels, importSetLabels, imported, invalid, createdBy}) => {
     const mappedMemberBatchData = [];
     const mappedMembersLabelsBatchAssociations = [];
     const membersWithStripeCustomers = [];
