@@ -57,6 +57,7 @@ const sanitizeInput = (members) => {
         sanitized,
         duplicateStripeCount
     };
+};
 
 function serializeMemberLabels(labels) {
     if (_.isString(labels)) {

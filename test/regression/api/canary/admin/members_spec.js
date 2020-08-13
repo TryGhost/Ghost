@@ -447,6 +447,33 @@ describe('Members API', function () {
 
                 jsonResponse.meta.stats.imported.count.should.equal(0);
                 jsonResponse.meta.stats.invalid.count.should.equal(2);
+
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Missing Stripe connection');
+            });
+    });
+
+    it('Fails to import memmber with invalid values', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/member-invalid-email.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.count.should.equal(0);
+                jsonResponse.meta.stats.invalid.count.should.equal(1);
+
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Validation (isEmail) failed for email');
             });
     });
 
