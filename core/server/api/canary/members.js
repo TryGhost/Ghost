@@ -51,8 +51,12 @@ const sanitizeInput = (members) => {
         return !(toRemove.includes(member.stripe_customer_id));
     });
 
-    return sanitized;
-};
+    const duplicateStripeCount = members.length - sanitized.length;
+
+    return {
+        sanitized,
+        duplicateStripeCount
+    };
 
 function serializeMemberLabels(labels) {
     if (_.isString(labels)) {
@@ -428,11 +432,10 @@ module.exports = {
             await findOrCreateLabels(memberLabels, frame.options);
 
             return Promise.resolve().then(() => {
-                const sanitized = sanitizeInput(frame.data.members);
-                duplicateStripeCustomerIdCount = frame.data.members.length - sanitized.length;
-                invalid.count += duplicateStripeCustomerIdCount;
+                const {sanitized, duplicateStripeCount} = sanitizeInput(frame.data.members);
+                invalid.count += duplicateStripeCount;
 
-                if (duplicateStripeCustomerIdCount) {
+                if (duplicateStripeCount) {
                     invalid.errors.push(new errors.ValidationError({
                         message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
                         context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
@@ -584,11 +587,10 @@ module.exports = {
             const allLabelModels = [...importSetLabelModels, ...memberLabelModels].filter(model => model !== undefined);
 
             return Promise.resolve().then(async () => {
-                const sanitized = sanitizeInput(frame.data.members);
-                duplicateStripeCustomerIdCount = frame.data.members.length - sanitized.length;
-                invalid.count += duplicateStripeCustomerIdCount;
+                const {sanitized, duplicateStripeCount} = sanitizeInput(frame.data.members);
+                invalid.count += duplicateStripeCount;
 
-                if (duplicateStripeCustomerIdCount) {
+                if (duplicateStripeCount) {
                     invalid.errors.push(new errors.ValidationError({
                         message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
                         context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
