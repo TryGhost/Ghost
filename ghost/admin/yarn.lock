@@ -3206,7 +3206,7 @@ broccoli-funnel@2.0.1:
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
 
-broccoli-funnel@3.0.3, broccoli-funnel@^3.0.0, broccoli-funnel@^3.0.2, broccoli-funnel@^3.0.3:
+broccoli-funnel@3.0.3, broccoli-funnel@^3.0.0, broccoli-funnel@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-3.0.3.tgz#26fd42632471f67a91f4770d1987118087219937"
   integrity sha512-LPzZ91BwStoHZXdXHQAJeYORl189OrRKM5NdIi86SDU9wZ4s/3lV1PRFOiobDT/jKM10voM7CDzfvicHbCYxAQ==
@@ -5561,14 +5561,14 @@ ember-cli-lodash-subset@^2.0.1:
   resolved "https://registry.yarnpkg.com/ember-cli-lodash-subset/-/ember-cli-lodash-subset-2.0.1.tgz#20cb68a790fe0fde2488ddfd8efbb7df6fe766f2"
   integrity sha1-IMtop5D+D94kiN39jvu332/nZvI=
 
-ember-cli-mirage@1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-1.1.7.tgz#846ec8e5199b15fa670da30dfa1708a8ee11e9dc"
-  integrity sha512-4kVLXXvgHYlv30ChM47U4xYnUtphIoEj+BQwXX0QT7pvD3KQxYnmfZSwlevSEVUy2UhbsBUPw6merENb+dIQ0A==
+ember-cli-mirage@1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-1.1.8.tgz#b3874a0f2eb83d8f341416d3a691ff82735c629c"
+  integrity sha512-i0/CNwdyza+o+0RW92i/dEhAqTcyoAJ9jGKKiOLK74RwDG0Bgt5w/CdqKfIFBf/lIGPXHPveneWsyckeSiVr4A==
   dependencies:
     broccoli-file-creator "^2.1.1"
-    broccoli-funnel "^3.0.2"
-    broccoli-merge-trees "^4.2.0"
+    broccoli-funnel "^2.0.2"
+    broccoli-merge-trees "^3.0.2"
     ember-auto-import "^1.2.19"
     ember-cli-babel "^7.5.0"
     ember-get-config "^0.2.2"
