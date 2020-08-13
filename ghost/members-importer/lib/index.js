@@ -124,11 +124,19 @@ const doImport = async ({membersBatch: members, allLabelModels, importSetLabels,
     try {
         // TODO: below inserts most likely need to be wrapped into transaction
         //       to avoid creating orphaned member_labels connections
-        await db.knex('members')
-            .insert(mappedMemberBatchData);
+        const CHUNK_SIZE = 5000;
+        const chunkedMembers = _.chunk(mappedMemberBatchData, CHUNK_SIZE);
+        for (const data of chunkedMembers) {
+            await db.knex('members')
+                .insert(data);
+        }
 
-        await db.knex('members_labels')
-            .insert(mappedMembersLabelsBatchAssociations);
+        const chunkedLebelAssociations = _.chunk(mappedMembersLabelsBatchAssociations, CHUNK_SIZE);
+
+        for (const data of chunkedLebelAssociations) {
+            await db.knex('members_labels')
+                .insert(data);
+        }
 
         imported.count += mappedMemberBatchData.length;
     } catch (error) {
