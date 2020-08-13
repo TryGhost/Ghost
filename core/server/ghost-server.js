@@ -169,6 +169,9 @@ class GhostServer {
             this.httpServer = null;
             this._logStopMessages();
         }
+
+        // TODO: investigate why this is required (see commit)
+        return Promise.resolve();
     }
 
     /**
@@ -203,6 +206,9 @@ class GhostServer {
         // Wait for all cleanup tasks to finish
         await Promise
             .all(this.cleanupTasks.map(task => task()));
+
+        // TODO: investigate why this is required (see commit)
+        return Promise.resolve();
     }
 
     _onShutdownComplete() {
