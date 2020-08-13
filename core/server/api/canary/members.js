@@ -596,18 +596,13 @@ module.exports = {
                     }));
                 }
 
-                const CHUNK_SIZE = 100;
-                const memberBatches = _.chunk(sanitized, CHUNK_SIZE);
-
-                return Promise.map(memberBatches, async (membersBatch) => {
-                    return doImport({
-                        membersBatch,
-                        allLabelModels,
-                        importSetLabels,
-                        imported,
-                        invalid,
-                        createdBy
-                    });
+                return doImport({
+                    members: sanitized,
+                    allLabelModels,
+                    importSetLabels,
+                    imported,
+                    invalid,
+                    createdBy
                 });
             }).then(() => {
                 // NOTE: grouping by context because messages can contain unique data like "customer_id"
