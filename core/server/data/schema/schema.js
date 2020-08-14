@@ -459,5 +459,16 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    email_recipients: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        email_id: {type: 'string', maxlength: 24, nullable: false, references: 'emails.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
+        batch: {type: 'integer', nullable: false, unsigned: true, index: true},
+        processed_at: {type: 'dateTime', nullable: true},
+        // TODO: should these be prefixed with `member_` to denote their origin?
+        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        name: {type: 'string', maxlength: 191, nullable: true}
     }
 };
