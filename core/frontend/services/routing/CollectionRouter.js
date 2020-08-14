@@ -52,7 +52,7 @@ class CollectionRouter extends ParentRouter {
             return this.permalinks.value;
         };
 
-        this.context = [this.routerName];
+        this.context = [this.routerName].concat(Object.keys(this.data.query));
 
         debug(this.name, this.route, this.permalinks);
 
