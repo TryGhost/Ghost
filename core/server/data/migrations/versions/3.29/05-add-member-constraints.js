@@ -50,7 +50,6 @@ module.exports = {
         // stripe tables have not had any indexes/constraints in the past, add them now with ON DELETE CASCADE
 
         const [membersStripeCustomersIndexes] = await knex.raw('SHOW INDEXES FROM members_stripe_customers');
-        const [membersStripeCustomersSubscriptionsIndexes] = await knex.raw('SHOW INDEXES from members_stripe_customers_subscriptions');
 
         if (membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_member_id_foreign')) {
             logging.warn('Skipping "members_stripe_customers_member_id_foreign" foreign key constraint creation - already exists');
@@ -70,7 +69,9 @@ module.exports = {
             });
         }
 
-        if (membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_subscriptions_subscription_id_unique')) {
+        const [membersStripeCustomersSubscriptionsIndexes] = await knex.raw('SHOW INDEXES from members_stripe_customers_subscriptions');
+
+        if (membersStripeCustomersSubscriptionsIndexes.find(index => index.Key_name === 'members_stripe_customers_subscriptions_subscription_id_unique')) {
             logging.warn('Skipping "members_stripe_customers_subscriptions_subscription_id_unique" index creation - already exists');
         } else {
             logging.info('Adding "members_stripe_customers_subscriptions_subscription_id_unique" index');
@@ -94,7 +95,6 @@ module.exports = {
             return logging.warn('Skipping member tables index removal - database is not MySQL');
         }
 
-        const [membersStripeCustomersIndexes] = await knex.raw('SHOW INDEXES FROM members_stripe_customers');
         const [membersStripeCustomersSubscriptionsIndexes] = await knex.raw('SHOW INDEXES from members_stripe_customers_subscriptions');
 
         if (!membersStripeCustomersSubscriptionsIndexes.find(index => index.Key_name === 'members_stripe_customers_subscriptions_customer_id_foreign')) {
@@ -116,6 +116,8 @@ module.exports = {
                 table.dropUnique('subscription_id');
             });
         }
+
+        const [membersStripeCustomersIndexes] = await knex.raw('SHOW INDEXES FROM members_stripe_customers');
 
         if (!membersStripeCustomersIndexes.find(index => index.Key_name === 'members_stripe_customers_customer_id_unique')) {
             logging.warn('Skipping "members_stripe_customers_customer_id_unique" index removal - does not exist');
