@@ -112,4 +112,18 @@ describe('parse', function () {
         result[1].nombre.should.eql('test');
         result[1].id.should.eql('2');
     });
+
+    it('read csv: transforms empty values to nulls', async function () {
+        const result = await readCSV({
+            path: csvPath + 'multiple-records-with-empty-values.csv'
+        });
+
+        should.exist(result);
+        result.length.should.eql(2);
+        result[0].email.should.eql('jbloggs@example.com');
+        result[0].name.should.eql('Bob');
+
+        result[1].email.should.eql('test@example.com');
+        should.equal(result[1].name, null);
+    });
 });

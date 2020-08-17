@@ -64,7 +64,14 @@ const readCSV = ({path, columnsToExtract, mapping}) => {
             reject(err);
         })
             .pipe(papaparse.parse(papaparse.NODE_STREAM_INPUT, {
-                header: true
+                header: true,
+                transform: function (value) {
+                    if (value === '') {
+                        return null;
+                    }
+
+                    return value;
+                }
             }))
             .on('data', function (row) {
                 rows.push(row);
