@@ -46,7 +46,7 @@ function getMembersHelper() {
         membersHelper = `<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js" data-ghost="${urlUtils.getSiteUrl()}"></script>`;
     }
     if ((!!stripeDirectSecretKey && !!stripeDirectPublishableKey) || !!stripeConnectAccountId) {
-        membersHelper += '<script src="https://js.stripe.com/v3/"></script>';
+        membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
     }
     return membersHelper;
 }
