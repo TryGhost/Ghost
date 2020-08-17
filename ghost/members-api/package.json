@@ -33,6 +33,7 @@
     "ghost-ignition": "4.2.2",
     "got": "^9.6.0",
     "jsonwebtoken": "^8.5.1",
+    "leaky-bucket": "2.2.0",
     "lodash": "^4.17.11",
     "node-jose": "^1.1.3",
     "stripe": "^7.4.0"
