@@ -13,6 +13,10 @@ module.exports = class StripePaymentProcessor {
             this._resolveReady = resolve;
             this._rejectReady = reject;
         });
+        /**
+         * @type Array<import('stripe').plans.IPlan>
+         */
+        this._plans = [];
         this._configure(config);
     }
 
@@ -39,10 +43,6 @@ module.exports = class StripePaymentProcessor {
             return this._rejectReady(err);
         }
 
-        /**
-         * @type Array<import('stripe').plans.IPlan>
-         */
-        this._plans = [];
         for (const planSpec of config.plans) {
             try {
                 const plan = await api.plans.ensure(this._stripe, planSpec, this._product);
@@ -223,10 +223,6 @@ module.exports = class StripePaymentProcessor {
         return customer;
     }
 
-    async getStripeCustomer(id) {
-        return await retrieve(this._stripe, 'customers', id);
-    }
-
     async createCheckoutSetupSession(member, options) {
         const customer = await this._customerForMemberCheckoutSession(member);
 
@@ -288,6 +284,26 @@ module.exports = class StripePaymentProcessor {
         const metadata = await this.storage.get(member);
 
         return metadata.subscriptions;
+    }
+
+    async createComplimentarySubscription(customer) {
+        const monthlyPlan = this._plans.find(plan => plan.interval === 'month');
+        if (!monthlyPlan) {
+            throw new Error('Could not find monthly plan');
+        }
+        const complimentaryCurrency = monthlyPlan.currency.toLowerCase();
+        const complimentaryPlan = this._plans.find(plan => plan.nickname === 'Complimentary' && plan.currency === complimentaryCurrency);
+
+        if (!complimentaryPlan) {
+            throw new Error('Could not find complimentaryPlan');
+        }
+
+        return create(this._stripe, 'subscriptions', {
+            customer: customer.id,
+            items: [{
+                plan: complimentaryPlan.id
+            }]
+        });
     }
 
     async setComplimentarySubscription(member) {
@@ -464,7 +480,7 @@ module.exports = class StripePaymentProcessor {
         }
 
         debug(`Creating customer for member ${member.get('email')}`);
-        const customer = await create(this._stripe, 'customers', {
+        const customer = await this.createCustomer({
             email: member.get('email')
         });
 
@@ -475,6 +491,10 @@ module.exports = class StripePaymentProcessor {
 
     async getSetupIntent(id, options) {
         return retrieve(this._stripe, 'setupIntents', id, options);
+    }
+
+    async createCustomer(options) {
+        return create(this._stripe, 'customers', options);
     }
 
     async getCustomer(id, options) {
