@@ -20,20 +20,6 @@ function getSiteUrl() {
     return '';
 }
 
-function loadStripe() {
-    // We don't want to load Stripe again if already loaded
-    if (!window.Stripe) {
-        // Get the first script element on the page
-        const ref = document.getElementsByTagName('script')[0];
-        // Create a new script element
-        const script = document.createElement('script');
-        // Set the script element `src`
-        script.src = 'https://js.stripe.com/v3/';
-        // Inject the script into the DOM
-        ref.parentNode.insertBefore(script, ref);
-    }
-}
-
 function handleTokenUrl() {
     const url = new URL(window.location);
     if (url.searchParams.get('token')) {
@@ -44,7 +30,6 @@ function handleTokenUrl() {
 
 function setup({siteUrl}) {
     const allowDataAttributeHandling = true;
-    loadStripe();
     addRootDiv();
     if (allowDataAttributeHandling) {
         handleDataAttributes({siteUrl});
