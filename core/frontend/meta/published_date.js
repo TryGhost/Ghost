@@ -1,10 +1,12 @@
+const getContextObject = require('./context_object.js');
+
 function getPublishedDate(data) {
     let context = data.context ? data.context[0] : null;
 
-    context = context === 'amp' ? 'post' : context;
+    const contextObject = getContextObject(data, context);
 
-    if (data[context] && data[context].published_at) {
-        return new Date(data[context].published_at).toISOString();
+    if (contextObject && contextObject.published_at) {
+        return new Date(contextObject.published_at).toISOString();
     }
     return null;
 }
