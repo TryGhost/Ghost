@@ -456,7 +456,7 @@ describe('Members API', function () {
     it('Fails to import memmber with invalid values', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/member-invalid-email.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-invalid-values.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -470,10 +470,20 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta.stats);
 
                 jsonResponse.meta.stats.imported.count.should.equal(0);
-                jsonResponse.meta.stats.invalid.count.should.equal(1);
+                jsonResponse.meta.stats.invalid.count.should.equal(2);
 
-                should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
-                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Validation (isEmail) failed for email');
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 4);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Validation failed for \'name\'');
+                jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
+
+                jsonResponse.meta.stats.invalid.errors[1].message.should.equal('Validation failed for \'email\'');
+                jsonResponse.meta.stats.invalid.errors[1].count.should.equal(2);
+
+                jsonResponse.meta.stats.invalid.errors[2].message.should.equal('Validation failed for \'created_at\'');
+                jsonResponse.meta.stats.invalid.errors[2].count.should.equal(1);
+
+                jsonResponse.meta.stats.invalid.errors[3].message.should.equal('Validation failed for \'complimentary_plan\'');
+                jsonResponse.meta.stats.invalid.errors[3].count.should.equal(1);
             });
     });
 

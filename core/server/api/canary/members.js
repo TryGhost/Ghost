@@ -26,8 +26,50 @@ const cleanupUndefined = (obj) => {
     }
 };
 
-// NOTE: this method can be removed once unique constraints are introduced ref.: https://github.com/TryGhost/Ghost/blob/e277c6b/core/server/data/schema/schema.js#L339
-const sanitizeInput = (members) => {
+const sanitizeInput = async (members) => {
+    const validationErrors = [];
+    let invalidCount = 0;
+
+    const jsonSchema = require('./utils/validators/utils/json-schema');
+    const schema = require('./utils/validators/input/schemas/members-upload');
+    const definitions = require('./utils/validators/input/schemas/members');
+
+    let invalidValidationCount = 0;
+    try {
+        await jsonSchema.validate(schema, definitions, members);
+    } catch (error) {
+        if (error.errorDetails && error.errorDetails.length) {
+            const jsonPointerIndexRegex = /\[(?<index>\d+)\]/;
+
+            let invalidRecordIndexes = error.errorDetails.map((errorDetail) => {
+                if (errorDetail.dataPath) {
+                    const key = errorDetail.dataPath.split('.').pop();
+                    const [, index] = errorDetail.dataPath.match(jsonPointerIndexRegex);
+                    validationErrors.push(new errors.ValidationError({
+                        message: i18n.t('notices.data.validation.index.schemaValidationFailed', {
+                            key
+                        }),
+                        context: `${key} ${errorDetail.message}`,
+                        errorDetails: `${errorDetail.dataPath} with value ${members[index][key]}`
+                    }));
+
+                    return Number(index);
+                }
+            });
+
+            invalidRecordIndexes = _.uniq(invalidRecordIndexes);
+            invalidRecordIndexes = invalidRecordIndexes.filter(index => (index !== undefined));
+
+            invalidRecordIndexes.forEach((index) => {
+                members[index] = undefined;
+            });
+            members = members.filter(record => (record !== undefined));
+            invalidValidationCount += invalidRecordIndexes.length;
+        }
+    }
+
+    invalidCount += invalidValidationCount;
+
     const customersMap = members.reduce((acc, member) => {
         if (member.stripe_customer_id && member.stripe_customer_id !== 'undefined') {
             if (acc[member.stripe_customer_id]) {
@@ -51,11 +93,21 @@ const sanitizeInput = (members) => {
         return !(toRemove.includes(member.stripe_customer_id));
     });
 
-    const duplicateStripeCount = members.length - sanitized.length;
+    const duplicateStripeCustomersCount = (members.length - sanitized.length);
+    if (duplicateStripeCustomersCount) {
+        validationErrors.push(new errors.ValidationError({
+            message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
+            context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
+            help: i18n.t('errors.api.members.duplicateStripeCustomerIds.help')
+        }));
+    }
+
+    invalidCount += duplicateStripeCustomersCount;
 
     return {
         sanitized,
-        duplicateStripeCount
+        invalidCount,
+        validationErrors
     };
 };
 
@@ -432,16 +484,12 @@ module.exports = {
             const memberLabels = serializeMemberLabels(getUniqueMemberLabels(frame.data.members));
             await findOrCreateLabels(memberLabels, frame.options);
 
-            return Promise.resolve().then(() => {
-                const {sanitized, duplicateStripeCount} = sanitizeInput(frame.data.members);
-                invalid.count += duplicateStripeCount;
+            return Promise.resolve().then(async () => {
+                const {sanitized, invalidCount, validationErrors} = await sanitizeInput(frame.data.members);
+                invalid.count += invalidCount;
 
-                if (duplicateStripeCount) {
-                    invalid.errors.push(new errors.ValidationError({
-                        message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
-                        context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
-                        help: i18n.t('errors.api.members.duplicateStripeCustomerIds.help')
-                    }));
+                if (validationErrors.length) {
+                    invalid.errors.push(...validationErrors);
                 }
 
                 return Promise.map(sanitized, ((entry) => {
@@ -588,15 +636,11 @@ module.exports = {
             const allLabelModels = [...importSetLabelModels, ...memberLabelModels].filter(model => model !== undefined);
 
             return Promise.resolve().then(async () => {
-                const {sanitized, duplicateStripeCount} = sanitizeInput(frame.data.members);
-                invalid.count += duplicateStripeCount;
+                const {sanitized, invalidCount, validationErrors} = await sanitizeInput(frame.data.members);
+                invalid.count += invalidCount;
 
-                if (duplicateStripeCount) {
-                    invalid.errors.push(new errors.ValidationError({
-                        message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
-                        context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
-                        help: i18n.t('errors.api.members.duplicateStripeCustomerIds.help')
-                    }));
+                if (validationErrors.length) {
+                    invalid.errors.push(...validationErrors);
                 }
 
                 return doImport({
