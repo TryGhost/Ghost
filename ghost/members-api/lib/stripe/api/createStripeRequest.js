@@ -1,7 +1,16 @@
 const debug = require('ghost-ignition').debug('stripe-request');
+const LeakyBucket = require('leaky-bucket');
+const EXPECTED_API_EFFICIENCY = 0.95;
+const liveBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 25, 1);
+const testBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
 
 module.exports = function createStripeRequest(makeRequest) {
-    return function stripeRequest(...args) {
+    return async function stripeRequest(stripe, ...args) {
+        if (stripe.__TEST_MODE__) {
+            await testBucket.throttle();
+        } else {
+            await liveBucket.throttle();
+        }
         const errorHandler = (err) => {
             switch (err.type) {
             case 'StripeCardError':
@@ -39,7 +48,7 @@ module.exports = function createStripeRequest(makeRequest) {
                 throw err;
             }
         };
-        return makeRequest(...args).catch(errorHandler);
+        return makeRequest(stripe, ...args).catch(errorHandler);
     };
 };
 
