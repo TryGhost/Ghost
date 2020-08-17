@@ -31,6 +31,14 @@
     core-js "^2.6.5"
     regenerator-runtime "^0.13.4"
 
+"@distributed-systems/callsite@^1.1.0", "@distributed-systems/callsite@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@distributed-systems/callsite/-/callsite-1.1.1.tgz#56a9e1a1d16ae6264ea3f51eea3782848fc27a88"
+  integrity sha512-YSA3kWjClnLmFKNpdQCZlMQoWI4N6KpR/T4MaREEQczaehcagsVorT3YDV17KR6zuJXDs7f+kkSt1o/D6SufAQ==
+  dependencies:
+    ee-log "^3.0.0"
+    section-tests "^1.3.0"
+
 "@ember-data/rfc395-data@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@ember-data/rfc395-data/-/rfc395-data-0.0.4.tgz#ecb86efdf5d7733a76ff14ea651a1b0ed1f8a843"
@@ -487,10 +495,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.26.0":
-  version "0.26.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.26.0.tgz#6a6fbb58a485da04217c9df0d6cf335003b3188f"
-  integrity sha512-jZ5Rxt3m7sMonIVbvxJnpElTTq+QPmBGS2bsOFp3cOVjIazD31fCKTWBaV3waGYQ9W5Lx4CrIJ0A4taJKKbKbA==
+"@tryghost/members-api@0.27.0":
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.27.0.tgz#43fb4cc464efbdc667e4ea1b81a6930c99216a32"
+  integrity sha512-+Uz6S+4WSpIIIdLEhzPjlULZmClvBU6WzSF6ONe/e6LlptaQNIJGGtIEB7KpJ/tWg6YR0MQbENXVcG+I1CGpUw==
   dependencies:
     "@tryghost/magic-link" "^0.4.13"
     bluebird "^3.5.4"
@@ -500,6 +508,7 @@
     ghost-ignition "4.2.2"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
+    leaky-bucket "2.2.0"
     lodash "^4.17.11"
     node-jose "^1.1.3"
     stripe "^7.4.0"
@@ -964,6 +973,11 @@ anymatch@~3.1.1:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
+
+app-root-path@^2.1.0:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-2.2.1.tgz#d0df4a682ee408273583d43f6f79e9892624bc9a"
+  integrity sha512-91IFKeKk7FjfmezPKkwtaRvSpnUc4gDwPAjA1YZ9Gn0q0PPeW+vbeUsZuyDwjI7+QTHhcLen2v25fi/AmhvbJA==
 
 append-field@^1.0.0:
   version "1.0.0"
@@ -1631,7 +1645,7 @@ chalk@4.1.0, chalk@^4.0.0, chalk@^4.1.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-chalk@^1.0.0, chalk@^1.1.1:
+chalk@^1.0.0, chalk@^1.1.1, chalk@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-1.1.3.tgz#a8115c55e4a702fe4d150abd3872822a7e09fc98"
   integrity sha1-qBFcVeSnAv5NFQq9OHKCKn4J/Jg=
@@ -2735,10 +2749,43 @@ editorconfig@^0.15.3:
     semver "^5.6.0"
     sigmund "^1.0.1"
 
+ee-argv@0.1.x:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/ee-argv/-/ee-argv-0.1.4.tgz#77f459daf980f11d2c6f8e28a21abb88020168ab"
+  integrity sha1-d/RZ2vmA8R0sb44oohq7iAIBaKs=
+
+ee-class@1.x, ee-class@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/ee-class/-/ee-class-1.4.0.tgz#2903f622ee1fe40cd8ba989d7ea239a31bd5e255"
+  integrity sha1-KQP2Iu4f5AzYupidfqI5oxvV4lU=
+
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
+
+ee-log@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/ee-log/-/ee-log-1.1.0.tgz#31b1ef1bda720ccec29523df05482428ceea3582"
+  integrity sha1-MbHvG9pyDM7ClSPfBUgkKM7qNYI=
+  dependencies:
+    ee-class "1.x"
+    ee-types "2.x"
+
+ee-log@^3.0.0, ee-log@^3.0.5:
+  version "3.0.9"
+  resolved "https://registry.yarnpkg.com/ee-log/-/ee-log-3.0.9.tgz#a9ab95414f3eaefab0573ea18fc8dfb1797e8670"
+  integrity sha512-SdIG4RfLPuv8N2cIJWgaW00V6xZsrEZJq/OcKl1SkyeNYYGeQKOUS0JzyvTAiPvy8bLCLSLYwtx37ZUQPe1xJg==
+  dependencies:
+    "@distributed-systems/callsite" "^1.1.1"
+    logd-console-output "^1.2.1"
+
+ee-types@2.x, ee-types@^2.1.4, ee-types@^2.2.0:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/ee-types/-/ee-types-2.2.1.tgz#1be9b6704ffa200cb0003ece72dca8037c1dd1de"
+  integrity sha512-ZgShE8RXsE+DFAddCmduKwUwoNLZd7Ik6yv6LFEUDfz/6k2s6rTvABQS8dO2EibJpYFWREOx/ealtwuTUXeeYg==
+  dependencies:
+    ee-class "^1.4.0"
 
 electron-to-chromium@^1.3.488:
   version "1.3.509"
@@ -3846,7 +3893,7 @@ glob@7.1.3:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@7.1.6, glob@^7.0.0, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@~7.1.1, glob@~7.1.6:
+glob@7.1.6, glob@^7.0.0, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@~7.1.1, glob@~7.1.6:
   version "7.1.6"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.6.tgz#141f33b81a7c2492e125594307480c46679278a6"
   integrity sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA==
@@ -5382,6 +5429,16 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
+leaky-bucket@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/leaky-bucket/-/leaky-bucket-2.2.0.tgz#d37da29a45f64528c86b6882d2b5e1594588e2de"
+  integrity sha512-87qsyt18gLVb+uB+zVz1zSi3yl6UJD5AoKINNOg3PBfqMis1FGgfOTi6hLkw7lJYZ3Gawf/BLj76WhDqsT0eZA==
+  dependencies:
+    ee-argv "0.1.x"
+    ee-class "1.x"
+    ee-log "^3.0.5"
+    ee-types "^2.1.4"
+
 levn@^0.3.0, levn@~0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.3.0.tgz#3b09924edf9f083c0490fdd4c0bc4421e04764ee"
@@ -5624,6 +5681,16 @@ log-symbols@3.0.0:
   integrity sha512-dSkNGuI7iG3mfvDzUuYZyvk5dD9ocYCYzNU6CYDE6+Xqd+gwme6Z00NS3dUh8mq/73HaEtT7m6W+yUPtU6BZnQ==
   dependencies:
     chalk "^2.4.2"
+
+logd-console-output@^1.2.1:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/logd-console-output/-/logd-console-output-1.3.0.tgz#a49eb7a2ca25ce3b3e726b6e49d6639304241bae"
+  integrity sha512-Aau5xxpDXWBRIwl6zgConqmyNRBFq8VoQbzpQJjp9QVfrEtMgWUMbP2CUF9lCmMg0d2TQ79tEJA83+uQY36WAA==
+  dependencies:
+    app-root-path "^2.1.0"
+    chalk "^2.4.1"
+    ee-types "^2.2.0"
+    glob "^7.1.2"
 
 long-timeout@~0.1.1:
   version "0.1.1"
@@ -7989,6 +8056,17 @@ saxes@^5.0.0:
   integrity sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==
   dependencies:
     xmlchars "^2.2.0"
+
+section-tests@^1.3.0:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/section-tests/-/section-tests-1.3.1.tgz#60c09cc881da75d2921cc5c3487558882461e2cb"
+  integrity sha512-cZFz5XcvYzdHUCOwwrrSFPA9KZdukGENO7ukOgxpcScZaM8zRMIyR6LRySdgoX0nD7NH+XY85F1pQ7n89CZliw==
+  dependencies:
+    "@distributed-systems/callsite" "^1.1.0"
+    chalk "^1.1.3"
+    ee-log "^1.1.0"
+    ee-types "^2.1.4"
+    glob "^7.1.2"
 
 secure-keys@^1.0.0:
   version "1.0.0"
