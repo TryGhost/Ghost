@@ -11,7 +11,7 @@
         "required": ["email"],
         "properties": {
             "name": {
-                "type": ["null", "string"],
+                "type": ["string", "null"],
                 "maxLength": 191,
                 "pattern": "^([^,]|$)"
             },
@@ -22,7 +22,7 @@
                 "format": "email"
             },
             "note": {
-                "type": ["null", "string"],
+                "type": ["string", "null"],
                 "minLength": 0,
                 "maxLength": 2000
             },
@@ -31,7 +31,7 @@
                 "enum": ["true", "false", "TRUE", "FALSE", ""]
             },
             "labels": {
-                "type": "string"
+                "type": ["string", "null"]
             },
             "created_at": {
                 "type": ["string", "null"],
