@@ -6,11 +6,14 @@ const testBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 25, 1);
 
 module.exports = function createStripeRequest(makeRequest) {
     return async function stripeRequest(stripe, ...args) {
-        if (stripe.__TEST_MODE__) {
-            await testBucket.throttle();
-        } else {
-            await liveBucket.throttle();
-        }
+        const throttledMakeRequest = async (stripe, ...args) => {
+            if (stripe.__TEST_MODE__) {
+                await testBucket.throttle();
+            } else {
+                await liveBucket.throttle();
+            }
+            return await makeRequest(stripe, ...args);
+        };
         const errorHandler = (err) => {
             switch (err.type) {
             case 'StripeCardError':
@@ -20,7 +23,7 @@ module.exports = function createStripeRequest(makeRequest) {
             case 'RateLimitError':
                 // Ronseal
                 debug('RateLimitError');
-                return exponentiallyBackoff(makeRequest, ...args).catch((err) => {
+                return exponentiallyBackoff(throttledMakeRequest, stripe, ...args).catch((err) => {
                     // We do not want to recurse further if we get RateLimitError
                     // after running the exponential backoff
                     if (err.type === 'RateLimitError') {
@@ -48,7 +51,7 @@ module.exports = function createStripeRequest(makeRequest) {
                 throw err;
             }
         };
-        return makeRequest(stripe, ...args).catch(errorHandler);
+        return throttledMakeRequest(stripe, ...args).catch(errorHandler);
     };
 };
 
