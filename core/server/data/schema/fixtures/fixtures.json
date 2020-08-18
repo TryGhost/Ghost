@@ -624,7 +624,8 @@
                     "member": "all",
                     "label": "all",
                     "email_preview": "all",
-                    "email": "all"
+                    "email": "all",
+                    "member_signin_url": "read"
                 },
                 "DB Backup Integration": {
                     "db": "all"
