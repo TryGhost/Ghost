@@ -132,7 +132,9 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
     }
 
-    let juicedHtml = juice(htmlTemplate);
+    // Inline css to style attributes, turn on support for pseudo classes.
+    const juiceOptions = {inlinePseudoElements: true};
+    let juicedHtml = juice(htmlTemplate, juiceOptions);
 
     // Force all links to open in new tab
     let _cheerio = cheerio.load(juicedHtml);
