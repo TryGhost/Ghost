@@ -242,6 +242,7 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
+                    canTransformImage: () => true,
                     contentImageSizes: {
                         w600: {width: 600},
                         w1000: {width: 1000},
@@ -252,7 +253,7 @@ describe('Gallery card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600" alt></div></div></div></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/size/w1600/2018/08/NatGeo01-9.jpg" width="600" height="300" alt></div></div></div></figure>');
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
@@ -445,6 +446,109 @@ describe('Gallery card', function () {
             const sizes = output.match(/sizes="(.*?)"/g);
 
             should.not.exist(sizes);
+        });
+    });
+
+    describe('email target', function () {
+        it('adds width/height and uses resized images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    images: [{
+                        row: 0,
+                        fileName: 'standard.jpg',
+                        src: '/content/images/2018/08/standard.jpg',
+                        width: 720,
+                        height: 1600
+                    }, {
+                        row: 0,
+                        fileName: 'small.jpg',
+                        src: '/subdir/support/content/images/2018/08/small.jpg',
+                        width: 300,
+                        height: 800
+                    }, {
+                        row: 1,
+                        fileName: 'photo.jpg',
+                        src: '/content/images/2018/08/photo.jpg',
+                        width: 2000,
+                        height: 1600
+                    }, {
+                        row: 1,
+                        fileName: 'unsplash.jpg',
+                        src: 'https://images.unsplash.com/unsplash.jpg?w=2000',
+                        width: 2000,
+                        height: 1600
+                    }]
+                },
+                options: {
+                    target: 'email',
+                    canTransformImage: () => true,
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            const output = serializer.serialize(card.render(opts));
+
+            // 3 images wider than 600px template width resized to fit
+            output.match(/width="600"/g).length.should.equal(3);
+            // 1 image smaller than template width
+            output.should.match(/width="300"/);
+
+            output.should.match(/height="1333"/);
+            output.should.match(/height="800"/);
+            output.should.match(/height="480"/);
+
+            // original because image is < 1600
+            output.should.match(/\/content\/images\/2018\/08\/standard\.jpg/);
+            // original because image is < 300
+            output.should.match(/\/subdir\/support\/content\/images\/2018\/08\/small\.jpg/);
+            // resized because image is > 1600
+            output.should.match(/\/content\/images\/size\/w1600\/2018\/08\/photo\.jpg/);
+            // resized unsplash image
+            output.should.match(/https:\/\/images\.unsplash\.com\/unsplash\.jpg\?w=1200/);
+        });
+
+        it('resizes width/height attributes but uses original image when local image can\'t be transformed', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    images: [{
+                        row: 0,
+                        fileName: 'image.png',
+                        src: '/content/images/2020/06/image.png',
+                        width: 3000,
+                        height: 2000
+                    }]
+                },
+                options: {
+                    target: 'email',
+                    canTransformImage: () => false,
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            const output = serializer.serialize(card.render(opts));
+
+            output.should.not.match(/width="3000"/);
+            output.should.match(/width="600"/);
+            output.should.not.match(/height="2000"/);
+            output.should.match(/height="400"/);
+            output.should.not.match(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
+            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
         });
     });
 

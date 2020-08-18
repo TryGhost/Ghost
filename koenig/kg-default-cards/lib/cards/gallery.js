@@ -1,4 +1,10 @@
-const {setSrcsetAttribute} = require('../utils');
+const {
+    isLocalContentImage,
+    isUnsplashImage,
+    getAvailableImageWidths,
+    setSrcsetAttribute,
+    resizeImage
+} = require('../utils');
 const {
     absoluteToRelative,
     relativeToAbsolute,
@@ -103,6 +109,37 @@ module.exports = {
                         } else {
                             img.setAttribute('sizes', '(min-width: 720px) 720px');
                         }
+                    }
+                }
+
+                // Outlook is unable to properly resize images without a width/height
+                // so we modify those to fit max width (600px) and use appropriately
+                // resized images if available
+                if (options.target === 'email') {
+                    // only resize if needed, width/height always exists for gallery image unline image cards
+                    if (image.width > 600) {
+                        const newImageDimensions = resizeImage(image, {width: 600});
+                        img.setAttribute('width', newImageDimensions.width);
+                        img.setAttribute('height', newImageDimensions.height);
+                    }
+
+                    if (isLocalContentImage(image.src) && options.canTransformImage && options.canTransformImage(image.src)) {
+                        // find available image size next up from 2x600 so we can use it for the "retina" src
+                        const availableImageWidths = getAvailableImageWidths(image, options.contentImageSizes);
+                        const srcWidth = availableImageWidths.find(width => width >= 1200);
+
+                        if (!srcWidth || srcWidth === image.width) {
+                            // do nothing, width is smaller than retina or matches the original payload src
+                        } else {
+                            const [, imagesPath, filename] = image.src.match(/(.*\/content\/images)\/(.*)/);
+                            img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
+                        }
+                    }
+
+                    if (isUnsplashImage(image.src)) {
+                        const unsplashUrl = new URL(image.src);
+                        unsplashUrl.searchParams.set('w', 1200);
+                        img.setAttribute('src', unsplashUrl.href);
                     }
                 }
 
