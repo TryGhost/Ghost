@@ -367,6 +367,7 @@ figure blockquote p {
 .kg-image-card img {
     display: block;
     margin: 0 auto;
+    height: auto !important;
 }
 
 .kg-bookmark-container {
