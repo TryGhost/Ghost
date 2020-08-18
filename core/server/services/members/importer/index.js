@@ -15,8 +15,6 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     const deleteMembers = createDeleter('members');
     const insertLabelAssociations = createInserter('members_labels');
-    const insertCustomers = createInserter('members_stripe_customers');
-    const insertSubscriptions = createInserter('members_stripe_customers_subscriptions');
 
     const {
         invalidMembers,
@@ -38,7 +36,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         createdStripeCustomersPromise,
         insertedMembersPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => insertCustomers(
+        ([fetchedStripeCustomers, createdStripeCustomers]) => models.MemberStripeCustomer.bulkAdd(
             fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
         )
     );
@@ -48,7 +46,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         createdStripeCustomersPromise,
         insertedCustomersPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => insertSubscriptions(
+        ([fetchedStripeCustomers, createdStripeCustomers]) => models.StripeCustomerSubscription.bulkAdd(
             fetchedStripeCustomers.subscriptionsToInsert.concat(createdStripeCustomers.subscriptionsToInsert)
         )
     );
