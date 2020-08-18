@@ -651,7 +651,10 @@ module.exports = {
                     invalid,
                     createdBy
                 });
-            }).then(() => {
+            }).then((result) => {
+                invalid.errors = invalid.errors.concat(result.invalid.errors);
+                invalid.count += result.invalid.count;
+                imported.count += result.imported.count;
                 // NOTE: grouping by context because messages can contain unique data like "customer_id"
                 const groupedErrors = _.groupBy(invalid.errors, 'context');
                 const uniqueErrors = _.uniqBy(invalid.errors, 'context');
