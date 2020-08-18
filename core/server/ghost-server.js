@@ -107,6 +107,26 @@ class GhostServer {
                 debug('...Started');
                 self._logStartMessages();
 
+                // Debug logs output in testmode only
+                if (config.get('server:testmode')) {
+                    // This is horrible and very temporary
+                    const jobService = require('./services/jobs');
+
+                    // Output how many connections are open every 5 seconds
+                    const connectionInterval = setInterval(() => self.httpServer.getConnections(
+                        (err, connections) => logging.warn(`${connections} connections currently open`)
+                    ), 5000);
+
+                    // Output a notice when the server closes
+                    self.httpServer.on('close', function () {
+                        clearInterval(connectionInterval);
+                        logging.warn('Server has fully closed');
+                    });
+
+                    // Output job queue length every 5 seconds
+                    setInterval(() => logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`), 5000);
+                }
+
                 return GhostServer.announceServerReadiness()
                     .finally(() => {
                         resolve(self);
@@ -119,13 +139,6 @@ class GhostServer {
             process
                 .removeAllListeners('SIGINT').on('SIGINT', self.shutdown.bind(self))
                 .removeAllListeners('SIGTERM').on('SIGTERM', self.shutdown.bind(self));
-
-            if (config.get('server:testmode')) {
-                // Debug code
-                setInterval(() => self.httpServer.getConnections(
-                    (err, connections) => logging.warn(`${connections} connections currently open`)
-                ), 5000);
-            }
         });
     }
 
