@@ -1,3 +1,7 @@
+const isLocalContentImage = require('./is-local-content-image');
+const getAvailableImageWidths = require('./get-available-image-widths');
+const isUnsplashImage = require('./is-unsplash-image');
+
 // default content sizes: [600, 1000, 1600, 2400]
 
 module.exports = function setSrcsetAttribute(elem, image, options) {
@@ -9,30 +13,14 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         return;
     }
 
-    const isLocalContentImage = /^\/.*\/?content\/images\//.test(image.src);
-    if (isLocalContentImage && options.canTransformImage && !options.canTransformImage(image.src)) {
+    if (isLocalContentImage(image.src) && options.canTransformImage && !options.canTransformImage(image.src)) {
         return;
     }
 
-    // get a sorted list of the available responsive widths
-    const responsiveWidths = Object.values(options.contentImageSizes)
-        .map(({width}) => width)
-        .sort((a, b) => a - b);
-
-    // select responsive widths that are usable based on the image width
-    const srcsetWidths = responsiveWidths
-        .filter(width => width <= image.width);
-
-    // add the original image size to the responsive list if it's not captured by largest responsive size
-    // - we can't know the width/height of the original `src` image because we don't know if it was resized
-    //   or not. Adding the original image to the responsive list ensures we're not showing smaller sized
-    //   images than we need to be
-    if (image.width > srcsetWidths[srcsetWidths.length - 1] && image.width < responsiveWidths[responsiveWidths.length - 1]) {
-        srcsetWidths.push(image.width);
-    }
+    const srcsetWidths = getAvailableImageWidths(image, options.contentImageSizes);
 
     // apply srcset if this is a relative image that matches Ghost's image url structure
-    if (isLocalContentImage) {
+    if (isLocalContentImage(image.src)) {
         const [, imagesPath, filename] = image.src.match(/(.*\/content\/images)\/(.*)/);
         const srcs = [];
 
@@ -52,7 +40,7 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
     }
 
     // apply srcset if this is an Unsplash image
-    if (/images\.unsplash\.com/.test(image.src)) {
+    if (isUnsplashImage(image.src)) {
         const unsplashUrl = new URL(image.src);
         const srcs = [];
 

@@ -1,4 +1,9 @@
-const setSrcsetAttribute = require('../utils/set-srcset-attribute');
+const {
+    isLocalContentImage,
+    isUnsplashImage,
+    getAvailableImageWidths,
+    setSrcsetAttribute
+} = require('../utils');
 const {
     absoluteToRelative,
     relativeToAbsolute,

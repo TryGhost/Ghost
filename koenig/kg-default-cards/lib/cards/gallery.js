@@ -1,4 +1,4 @@
-const setSrcsetAttribute = require('../utils/set-srcset-attribute');
+const {setSrcsetAttribute} = require('../utils');
 const {
     absoluteToRelative,
     relativeToAbsolute,
