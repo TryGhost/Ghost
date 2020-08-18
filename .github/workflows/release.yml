@@ -5,7 +5,7 @@ on:
       - '*'
 jobs:
   automate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
