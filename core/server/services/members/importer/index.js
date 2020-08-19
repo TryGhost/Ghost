@@ -29,7 +29,15 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
     const insertedMembersPromise = models.Member.bulkAdd(membersToInsert);
 
     const insertedLabelsPromise = insertedMembersPromise
-        .then(() => insertLabelAssociations(labelAssociationsToInsert));
+        .then((insertResult) => {
+            if (insertResult.unsuccessfulIds.length) {
+                return insertLabelAssociations(
+                    labelAssociationsToInsert.filter(la => !insertResult.unsuccessfulIds.includes(la.member_id))
+                );
+            } else {
+                return insertLabelAssociations(labelAssociationsToInsert);
+            }
+        });
 
     const insertedCustomersPromise = Promise.all([
         fetchedStripeCustomersPromise,

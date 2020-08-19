@@ -488,6 +488,31 @@ describe('Members API', function () {
             });
     });
 
+    it('Fails to import memmber duplicate emails', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-duplicate-emails.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.count.should.equal(1);
+                jsonResponse.meta.stats.invalid.count.should.equal(1);
+
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Member already exists');
+                jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
+            });
+    });
+
     it('Can fetch stats with no ?days param', function () {
         return request
             .get(localUtils.API.getApiQuery('members/stats/'))
@@ -507,8 +532,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(8);
+                // 3 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(9);
             });
     });
 
@@ -531,8 +556,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(8);
+                // 3 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(9);
             });
     });
 
@@ -555,8 +580,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(8);
+                // 3 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(9);
             });
     });
 
