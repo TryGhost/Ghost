@@ -176,8 +176,8 @@ function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
 
         let subscribed;
         if (_.isUndefined(member.subscribed_to_emails)) {
-            // model default
-            subscribed = 'true';
+            // Member's model default
+            subscribed = true;
         } else {
             subscribed = (String(member.subscribed_to_emails).toLowerCase() !== 'false');
         }
