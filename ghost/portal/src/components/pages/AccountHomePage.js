@@ -135,7 +135,7 @@ class FreeAccountHomePage extends React.Component {
 
         if (isStripeConfigured) {
             return (
-                <ActionButton label="Subscribe now" onClick={() => this.openSubscribe()} brandColor={this.context.brandColor} />
+                <ActionButton label="Subscribe now" onClick={() => this.openSubscribe()} brandColor={this.context.brandColor} style={{height: '44px'}} />
             );
         }
 
