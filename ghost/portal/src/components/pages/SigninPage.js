@@ -75,6 +75,7 @@ export default class SigninPage extends React.Component {
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
+                style={{width: '100%'}}
                 onClick={e => this.handleSignin(e)}
                 disabled={disabled}
                 brandColor={this.context.brandColor}

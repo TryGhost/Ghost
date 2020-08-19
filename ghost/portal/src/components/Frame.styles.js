@@ -195,8 +195,8 @@ const GlobalStyles = `
 
     .gh-portal-btn-logout {
         position: absolute;
-        top: 15px;
-        left: 16px;
+        top: 13px;
+        left: 14px;
         background: none;
         border: none;
         height: unset;
