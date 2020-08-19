@@ -136,9 +136,13 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     const juiceOptions = {inlinePseudoElements: true};
     let juicedHtml = juice(htmlTemplate, juiceOptions);
 
-    // Force all links to open in new tab
+    // convert juiced HTML to a DOM-like interface for further manipulation
+    // happens after inlining of CSS so we can change element types without worrying about styling
     let _cheerio = cheerio.load(juicedHtml);
+    // force all links to open in new tab
     _cheerio('a').attr('target','_blank');
+    // convert figure and figcaption to div so that Outlook applies margins
+    _cheerio('figure, figcaption').each((i, elem) => (elem.tagName = 'div'));
     juicedHtml = _cheerio.html();
 
     // Fix any unsupported chars in Outlook
