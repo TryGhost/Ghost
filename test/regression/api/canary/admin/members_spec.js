@@ -305,8 +305,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.members);
                 should.equal(jsonResponse.members.length, 2);
 
-                const importedMember1 = jsonResponse.members[0];
-                should(importedMember1.email).equal('member+labels_1@example.com');
+                const importedMember1 = jsonResponse.members.find(m => m.email === 'member+labels_1@example.com');
+                should.exist(importedMember1);
                 should(importedMember1.name).equal(null);
                 should(importedMember1.note).equal(null);
                 importedMember1.subscribed.should.equal(true);
@@ -321,7 +321,8 @@ describe('Members API', function () {
                 importedMember1.labels[1].slug.should.equal('global-label-1');
                 importedMember1.labels[2].slug.should.equal(importLabel);
 
-                const importedMember2 = jsonResponse.members[1];
+                const importedMember2 = jsonResponse.members.find(m => m.email === 'member+labels_2@example.com');
+                should.exist(importedMember2);
                 // 1 unique global + 2 record labels + auto-generated import label
                 importedMember2.labels.length.should.equal(4);
                 importedMember2.labels[0].slug.should.equal('another-label');
