@@ -647,8 +647,6 @@ module.exports = {
                     members: sanitized,
                     allLabelModels,
                     importSetLabels,
-                    imported,
-                    invalid,
                     createdBy
                 });
             }).then((result) => {
