@@ -186,30 +186,36 @@
                                                         {{svg-jar imgIcon.icon}}
                                                     </span>
                                                 {{/each}}
+                                            </div>
+                                            <div class="flex gh-setting-action gh-portal-custom-icon">
                                                 {{#if uploader.isUploading}}
-                                                    {{uploader.progressBar}}
+                                                    <div class="gh-portal-button-icon">
+                                                        <div class="gh-loading-spinner" style="zoom: 50%"> </div>
+                                                    </div>
                                                 {{else if this.customIcon}}
                                                     <img
-                                                        class="gh-portal-button-icon {{if (eq this.buttonIcon this.customIcon) "selected-icon"}}"
+                                                        class="gh-portal-button-icon gh-portal-button-custom {{if (eq this.buttonIcon this.customIcon) "selected-icon"}}"
                                                         src="{{this.customIcon}}"
                                                         onclick={{action "selectDefaultIcon" this.customIcon}}
                                                         alt="icon"
                                                         data-test-icon-img
                                                     >
+                                                    <button type="button" class="gh-btn gh-btn-hover-red gh-portal-button-deleteicon" {{action "deleteCustomIcon"}}>
+                                                        <span> {{svg-jar "trash" class="w5 h5"}} </span>
+                                                    </button>
+                                                {{else}}
+                                                    <button type="button" class="gh-btn gh-portal-button-uploadicon" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="icon">
+                                                        <span>{{svg-jar "add" class="w5 h5"}}</span>
+                                                    </button>
+                                                    <div style="display:none">
+                                                        <GhFileInput
+                                                            @multiple={{false}}
+                                                            @action={{uploader.setFiles}}
+                                                            @accept={{this.iconMimeTypes}}
+                                                            data-test-file-input="icon"
+                                                        />
+                                                    </div>
                                                 {{/if}}
-                                            </div>
-                                            <div class="flex gh-setting-action">
-                                                <button type="button" class="gh-btn gh-portal-button-uploadicon" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="icon">
-                                                    <span>{{svg-jar "add" class="w5 h5"}}</span>
-                                                </button>
-                                                <div style="display:none">
-                                                    <GhFileInput
-                                                        @multiple={{false}}
-                                                        @action={{uploader.setFiles}}
-                                                        @accept={{this.iconMimeTypes}}
-                                                        data-test-file-input="icon"
-                                                    />
-                                                </div>
                                             </div>
                                         </div>
                                     </GhUploader>
