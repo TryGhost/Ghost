@@ -67,7 +67,6 @@ export default class AccountProfilePage extends React.Component {
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
-                style={{button: {width: 'unset'}}}
                 onClick={e => this.onProfileSave(e)}
                 disabled={disabled}
                 brandColor={this.context.brandColor}

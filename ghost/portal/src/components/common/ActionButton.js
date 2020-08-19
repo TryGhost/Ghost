@@ -3,7 +3,6 @@ import getContrastColor from '../../utils/contrast-color';
 
 export const ActionButtonStyles = `
     .gh-portal-btn-main {
-        width: 100%;
         box-shadow: none;
     }
 

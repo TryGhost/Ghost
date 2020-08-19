@@ -175,7 +175,6 @@ export default class AccountPlanPage extends React.Component {
         const disabled = (isRunning || !this.state.plan) ? true : false;
         return (
             <ActionButton
-                style={{button: {width: 'unset'}}}
                 onClick={e => this.onPlanCheckout(e)}
                 disabled={disabled}
                 brandColor={this.context.brandColor}

@@ -257,6 +257,7 @@ class SignupPage extends React.Component {
         const disabled = (action === 'signup:running') ? true : false;
         return (
             <ActionButton
+                style={{width: '100%'}}
                 retry={retry}
                 onClick={e => this.handleSignup(e)}
                 disabled={disabled}
