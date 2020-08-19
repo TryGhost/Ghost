@@ -258,6 +258,12 @@ export default ModalComponent.extend({
                 .click();
         },
 
+        deleteCustomIcon() {
+            this.set('customIcon', null);
+            const defaultIconKeys = ICON_MAPPING.map(buttonIcon => buttonIcon.value);
+            this.settings.set('portalButtonIcon', defaultIconKeys[0]);
+        },
+
         selectDefaultIcon(icon) {
             this.settings.set('portalButtonIcon', icon);
         },
