@@ -133,7 +133,7 @@ const GlobalStyles = `
         background: var(--white);
         border: none;
         min-width: 80px;
-        height: 42px;
+        height: 40px;
         padding: 0 1.8rem;
         border-radius: 4px;
         cursor: pointer;

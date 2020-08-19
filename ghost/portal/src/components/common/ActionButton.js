@@ -33,11 +33,12 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
         backgroundColor = '#D3D3D3';
     }
     const textColor = getContrastColor(backgroundColor);
+
     return {
         button: {
             color: textColor,
             backgroundColor,
-            ...(style.button || {}) // Override any custom style
+            ...(style || {}) // Override any custom style
         }
     };
 };

@@ -142,7 +142,7 @@ export default class App extends React.Component {
             return {
                 showPopup: true,
                 site: Fixtures.site,
-                member: Fixtures.member.paid,
+                member: Fixtures.member.free,
                 page: 'accountHome'
             };
         }
