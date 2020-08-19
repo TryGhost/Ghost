@@ -24,12 +24,16 @@ export const ActionButtonStyles = `
 
 const Styles = ({brandColor, retry, disabled, style = {}}) => {
     let backgroundColor = (brandColor || '#3eb0ef');
+    let opacity = '1.0';
+    let pointerEvents = 'auto';
+
     if (retry) {
-        backgroundColor = '#FF0000';
+        backgroundColor = '#f02525';
     }
 
     if (disabled) {
-        backgroundColor = '#D3D3D3';
+        opacity = '0.5';
+        pointerEvents = 'none';
     }
     const textColor = getContrastColor(backgroundColor);
 
@@ -37,6 +41,8 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
         button: {
             color: textColor,
             backgroundColor,
+            opacity,
+            pointerEvents,
             ...(style || {}) // Override any custom style
         }
     };
