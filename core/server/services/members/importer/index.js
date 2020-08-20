@@ -16,7 +16,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
     const deleteMembers = createDeleter('members');
     const insertLabelAssociations = createInserter('members_labels');
 
-    const {
+    let {
         invalidMembers,
         membersToInsert,
         stripeCustomersToFetch,
@@ -24,21 +24,36 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         labelAssociationsToInsert
     } = getMemberData({members, allLabelModels, importSetLabels, createdBy});
 
+    // NOTE: member insertion has to happen before the rest of insertions to handle validation
+    //       errors - remove failed members from label/stripe sets
+    const insertedMembers = await models.Member.bulkAdd(membersToInsert).then((insertResult) => {
+        if (insertResult.unsuccessfulIds.length) {
+            labelAssociationsToInsert = labelAssociationsToInsert
+                .filter(la => !insertResult.unsuccessfulIds.includes(la.member_id));
+
+            stripeCustomersToFetch = stripeCustomersToFetch
+                .filter(sc => !insertResult.unsuccessfulIds.includes(sc.member_id));
+
+            stripeCustomersToCreate = stripeCustomersToCreate
+                .filter(sc => !insertResult.unsuccessfulIds.includes(sc.member_id));
+        }
+
+        return insertResult;
+    });
+
     const fetchedStripeCustomersPromise = fetchStripeCustomers(stripeCustomersToFetch);
     const createdStripeCustomersPromise = createStripeCustomers(stripeCustomersToCreate);
-    const insertedMembersPromise = models.Member.bulkAdd(membersToInsert);
-
-    const insertedLabelsPromise = insertedMembersPromise
-        .then(() => insertLabelAssociations(labelAssociationsToInsert));
+    const insertedLabelsPromise = insertLabelAssociations(labelAssociationsToInsert);
 
     const insertedCustomersPromise = Promise.all([
         fetchedStripeCustomersPromise,
-        createdStripeCustomersPromise,
-        insertedMembersPromise
+        createdStripeCustomersPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => models.MemberStripeCustomer.bulkAdd(
-            fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
-        )
+        ([fetchedStripeCustomers, createdStripeCustomers]) => {
+            return models.MemberStripeCustomer.bulkAdd(
+                fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
+            );
+        }
     );
 
     const insertedSubscriptionsPromise = Promise.all([
@@ -53,8 +68,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     const deletedMembersPromise = Promise.all([
         fetchedStripeCustomersPromise,
-        createdStripeCustomersPromise,
-        insertedMembersPromise
+        createdStripeCustomersPromise
     ]).then(
         ([fetchedStripeCustomers, createdStripeCustomers]) => deleteMembers(
             fetchedStripeCustomers.membersToDelete.concat(createdStripeCustomers.membersToDelete)
@@ -64,7 +78,6 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
     // This looks sequential, but at the point insertedCustomersPromise has resolved so have all the others
     const insertedSubscriptions = await insertedSubscriptionsPromise;
     const insertedCustomers = await insertedCustomersPromise;
-    const insertedMembers = await insertedMembersPromise;
     const deletedMembers = await deletedMembersPromise;
     const fetchedCustomers = await fetchedStripeCustomersPromise;
     const insertedLabels = await insertedLabelsPromise;
