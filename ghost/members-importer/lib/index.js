@@ -153,8 +153,6 @@ function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
 
     const importedLabels = importSetLabels.map(label => label.name);
 
-    const stripeIsConnected = membersService.config.isStripeConnected();
-
     const invalidMembers = [];
     const membersToInsert = [];
     const stripeCustomersToFetch = [];
@@ -162,11 +160,6 @@ function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
     const labelAssociationsToInsert = [];
 
     members.forEach(function (member) {
-        if ((member.stripe_customer_id || member.comped) && !stripeIsConnected) {
-            invalidMembers.push(member);
-            return;
-        }
-
         // @TODO This is expensive, maybe we can just error if we get shoddy data?
         for (let key in member) {
             if (member[key] === 'undefined') {
