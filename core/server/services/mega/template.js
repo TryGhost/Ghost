@@ -1,5 +1,5 @@
 /* eslint indent: warn, no-irregular-whitespace: warn */
-module.exports = ({post, site}) => {
+module.exports = ({post, site, templateConfig}) => {
     const date = new Date();
     return `<!doctype html>
 <html>
@@ -819,6 +819,22 @@ figure blockquote p {
         border-color: #34495e !important;
     }
 }
+
+
+${ templateConfig.showPoweredBy ? `
+.footer-powered {
+    text-align: center;
+    padding-bottom: 40px;
+}
+
+.gh-powered {
+    width: 142px;
+    height: 30px;
+}
+` : ''}
+
+/* ----- ENDIF THE BROWSER ----- */
+
 </style>
 </head>
 
@@ -846,6 +862,9 @@ figure blockquote p {
                         <tr>
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+
+
+                                    ${ templateConfig.showSiteHeader ? `
                                     <tr>
                                         <td class="site-info" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
@@ -860,6 +879,9 @@ figure blockquote p {
                                             </table>
                                         </td>
                                     </tr>
+                                    ` : ''}
+
+
                                     <tr>
                                         <td class="post-title"><a href="${post.url}" class="post-title-link">${post.title}</a></td>
                                     </tr>
@@ -901,6 +923,12 @@ figure blockquote p {
                                     <tr>
                                         <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
+
+                                    ${ templateConfig.showPoweredBy ? `
+                                    <tr>
+                                        <td class="footer-powered"><a href="https://ghost.org/"><img src="https://static.ghost.org/v3.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Publish with Ghost"></a></td>
+                                    </tr>
+                                    ` : '' }
                                 </table>
                             </td>
                         </tr>
