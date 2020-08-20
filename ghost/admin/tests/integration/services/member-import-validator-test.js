@@ -58,6 +58,7 @@ describe('Integration: Service: member-import-validator', function () {
 
         expect(validationErrors.length).to.equal(1);
         expect(validationErrors[0].message).to.equal('Missing Stripe connection');
+        expect(mapping.name).to.equal('name');
         expect(mapping.email).to.equal('email');
         expect(mapping.stripe_customer_id).to.equal('stripe_customer_id');
     });
@@ -205,6 +206,20 @@ describe('Integration: Service: member-import-validator', function () {
 
             expect(result.email).to.equal('correo_electronico');
             expect(result.stripe_customer_id).to.equal('stripe_id');
+        });
+
+        it('correctly detects variation of "name" mapping', async function () {
+            this.owner.register('service:membersUtils', Service.extend({
+                isStripeEnabled: false
+            }));
+
+            let service = this.owner.lookup('service:member-import-validator');
+
+            const result = service._detectDataTypes([{
+                first_name: 'Rish'
+            }]);
+
+            expect(result.name).to.equal('first_name');
         });
     });
 });

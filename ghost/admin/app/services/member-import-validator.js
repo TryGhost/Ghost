@@ -172,6 +172,11 @@ export default Service.extend({
                     continue;
                 }
 
+                if (!mapping.name && /name/.test(key)) {
+                    mapping.name = key;
+                    continue;
+                }
+
                 if (!mapping[key] && supportedTypes.includes(key) && !(autoDetectedTypes.includes(key))) {
                     mapping[key] = key;
                 }
