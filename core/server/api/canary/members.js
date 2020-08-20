@@ -70,6 +70,24 @@ const sanitizeInput = async (members) => {
 
     invalidCount += invalidValidationCount;
 
+    const stripeIsConnected = membersService.config.isStripeConnected();
+    const hasStripeConnectedMembers = members.find(member => (member.stripe_customer_id || member.comped));
+
+    if (!stripeIsConnected && hasStripeConnectedMembers) {
+        let nonFilteredMembersCount = members.length;
+        members = members.filter(member => !(member.stripe_customer_id || member.comped));
+
+        const stripeConnectedMembers = (nonFilteredMembersCount - members.length);
+        if (stripeConnectedMembers) {
+            invalidCount += stripeConnectedMembers;
+            validationErrors.push(new errors.ValidationError({
+                message: i18n.t('errors.api.members.stripeNotConnected.message'),
+                context: i18n.t('errors.api.members.stripeNotConnected.context'),
+                help: i18n.t('errors.api.members.stripeNotConnected.help')
+            }));
+        }
+    }
+
     const customersMap = members.reduce((acc, member) => {
         if (member.stripe_customer_id && member.stripe_customer_id !== 'undefined') {
             if (acc[member.stripe_customer_id]) {
