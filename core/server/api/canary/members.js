@@ -366,7 +366,7 @@ module.exports = {
         }
     },
 
-    updateSubscription: {
+    editSubscription: {
         statusCode: 200,
         headers: {},
         options: [
