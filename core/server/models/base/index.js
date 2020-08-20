@@ -22,6 +22,7 @@ const security = require('@tryghost/security');
 const schema = require('../../data/schema');
 const urlUtils = require('../../../shared/url-utils');
 const validation = require('../../data/validation');
+const bulkOperations = require('./bulk-operations');
 const plugins = require('../plugins');
 let ghostBookshelf;
 let proto;
@@ -1028,6 +1029,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return model.save(null, options);
     },
 
+    bulkAdd: function bulkAdd(data, tableName) {
+        tableName = tableName || this.prototype.tableName;
+
+        return bulkOperations.insert(tableName, data);
+    },
+
     /**
      * ### Destroy
      * Naive destroy
@@ -1049,6 +1056,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             .then(function then(obj) {
                 return obj.destroy(options);
             });
+    },
+
+    bulkDestroy: function bulkDestroy(data, tableName) {
+        tableName = tableName || this.prototype.tableName;
+
+        return bulkOperations.del(tableName, data);
     },
 
     /**

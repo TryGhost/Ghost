@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const ghostBookshelf = require('./base');
 
 const CURRENCY_SYMBOLS = {
@@ -54,32 +53,6 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
             }));
         }
         return this.add(data, unfilteredOptions);
-    },
-
-    async bulkAdd(data, unfilteredOptions = {}) {
-        if (!unfilteredOptions.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                return this.bulkAdd(data, Object.assign({transacting}, unfilteredOptions));
-            });
-        }
-        const result = {
-            successful: 0,
-            unsuccessful: 0,
-            errors: []
-        };
-
-        const CHUNK_SIZE = 100;
-
-        for (const chunk of _.chunk(data, CHUNK_SIZE)) {
-            try {
-                await ghostBookshelf.knex(this.prototype.tableName).insert(chunk);
-                result.successful += chunk.length;
-            } catch (err) {
-                result.unsuccessful += chunk.length;
-                result.errors.push(err);
-            }
-        }
-        return result;
     }
 });
 
