@@ -10,7 +10,7 @@ async function insertChunkSequential(table, chunk, result) {
             result.successful += 1;
         } catch (err) {
             result.errors.push(err);
-            result.unsuccessfulIds.push(record.id);
+            result.unsuccessfulRecords.push(record);
             result.unsuccessful += 1;
         }
     }
@@ -29,7 +29,7 @@ async function insert(table, data) {
     const result = {
         successful: 0,
         unsuccessful: 0,
-        unsuccessfulIds: [],
+        unsuccessfulRecords: [],
         errors: []
     };
 

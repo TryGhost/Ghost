@@ -15,6 +15,8 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     const deleteMembers = createDeleter('members');
     const insertLabelAssociations = createInserter('members_labels');
+    const insertMemberStripeCustomers = createInserter('members_stripe_customers');
+    const insertMemberStripeSubscriptions = createInserter('members_stripe_customers_subscriptions');
 
     let {
         invalidMembers,
@@ -50,7 +52,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         createdStripeCustomersPromise
     ]).then(
         ([fetchedStripeCustomers, createdStripeCustomers]) => {
-            return models.MemberStripeCustomer.bulkAdd(
+            return insertMemberStripeCustomers(
                 fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
             );
         }
@@ -61,18 +63,23 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         createdStripeCustomersPromise,
         insertedCustomersPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => models.StripeCustomerSubscription.bulkAdd(
+        ([fetchedStripeCustomers, createdStripeCustomers]) => insertMemberStripeSubscriptions(
             fetchedStripeCustomers.subscriptionsToInsert.concat(createdStripeCustomers.subscriptionsToInsert)
         )
     );
 
     const deletedMembersPromise = Promise.all([
         fetchedStripeCustomersPromise,
-        createdStripeCustomersPromise
+        createdStripeCustomersPromise,
+        insertedCustomersPromise,
+        insertedSubscriptionsPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => deleteMembers(
-            fetchedStripeCustomers.membersToDelete.concat(createdStripeCustomers.membersToDelete)
-        )
+        ([fetchedStripeCustomers, createdStripeCustomers, insertedStripeCustomers, insertedStripeSubscriptions]) => deleteMembers([
+            ...fetchedStripeCustomers.membersToDelete,
+            ...createdStripeCustomers.membersToDelete,
+            ...insertedStripeCustomers.unsuccessfulRecords.map(r => r.member_id),
+            ...insertedStripeSubscriptions.unsuccessfulRecords.map(r => r.member_id)
+        ])
     );
 
     // This looks sequential, but at the point insertedCustomersPromise has resolved so have all the others
