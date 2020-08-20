@@ -30,7 +30,11 @@
     },
     "members": {
         "contentApiAccess": [],
-        "paymentProcessors": []
+        "paymentProcessors": [],
+        "emailTemplate": {
+            "showSiteHeader": true,
+            "showPoweredBy": false
+        }
     },
     "logging": {
         "level": "info",
