@@ -40,21 +40,38 @@ async function insert(table, data) {
     return result;
 }
 
+async function delChunkSequential(table, chunk, result) {
+    for (const record of chunk) {
+        try {
+            await db.knex(table).where('id', record).del();
+            result.successful += 1;
+        } catch (err) {
+            result.errors.push(err);
+            result.unsuccessfulIds.push(record);
+            result.unsuccessful += 1;
+        }
+    }
+}
+
+async function delChunk(table, chunk, result) {
+    try {
+        await db.knex(table).whereIn('id', chunk).del();
+        result.successful += chunk.length;
+    } catch (err) {
+        await delChunkSequential(table, chunk, result);
+    }
+}
+
 async function del(table, ids) {
     const result = {
         successful: 0,
         unsuccessful: 0,
+        unsuccessfulIds: [],
         errors: []
     };
 
     for (const chunk of _.chunk(ids, CHUNK_SIZE)) {
-        try {
-            await db.knex(table).whereIn('id', chunk).del();
-            result.successful += chunk.length;
-        } catch (error) {
-            result.unsuccessful += chunk.length;
-            result.errors.push(error);
-        }
+        await delChunk(table, chunk, result);
     }
 
     return result;
