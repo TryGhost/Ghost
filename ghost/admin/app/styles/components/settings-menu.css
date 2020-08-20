@@ -114,7 +114,7 @@
 .settings-menu-pane .gh-date-time-picker-date,
 .settings-menu-pane .gh-date-time-picker-time {
     background: var(--white);
-    border: 1px solid var(--lightgrey);
+    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
 }
 
 .settings-menu-container .ember-power-select-multiple-trigger input,
