@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('users');
+const common = require('../lib/common');
 
 module.exports = function ({
     stripe,
@@ -86,12 +87,38 @@ module.exports = function ({
         return stripe.setComplimentarySubscription(member);
     }
 
+    async function updateSubscription(memberId, {cancelAtPeriodEnd, subscriptionId}) {
+        // Don't allow removing subscriptions that don't belong to the member
+        const member = await get({id: memberId});
+        const subscriptions = await stripe.getSubscriptions(member);
+        const subscription = subscriptions.find(sub => sub.id === subscriptionId);
+        if (!subscription) {
+            throw new common.errors.BadRequestError({
+                message: 'Updating subscription failed! Could not find subscription'
+            });
+        }
+
+        if (cancelAtPeriodEnd === undefined) {
+            throw new common.errors.BadRequestError({
+                message: 'Updating subscription failed!',
+                help: 'Request should contain "cancel" field.'
+            });
+        }
+        const subscriptionUpdate = {
+            id: subscription.id,
+            cancel_at_period_end: !!(cancelAtPeriodEnd)
+        };
+
+        await stripe.updateSubscriptionFromClient(subscriptionUpdate);
+    }
+
     return {
         create,
         update,
         list,
         get,
         destroy,
+        updateSubscription,
         setComplimentarySubscription: safeStripe('setComplimentarySubscription'),
         setComplimentarySubscriptionById,
         cancelComplimentarySubscription: safeStripe('cancelComplimentarySubscription'),
