@@ -1,5 +1,6 @@
 const juice = require('juice');
 const template = require('./template');
+const config = require('../../../shared/config');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
@@ -126,7 +127,8 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
         uppercaseHeadings: false
     });
 
-    let htmlTemplate = template({post, site: getSite()});
+    const templateConfig = config.get('members:emailTemplate');
+    let htmlTemplate = template({post, site: getSite(), templateConfig});
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl();
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
