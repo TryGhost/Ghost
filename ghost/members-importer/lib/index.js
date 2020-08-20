@@ -140,8 +140,8 @@ function serializeMemberLabels(labels) {
         if (typeof label !== 'string') {
             return labelsAcc.concat(label.name);
         }
-        return labelsAcc.concat(label);
-    });
+        return labelsAcc.concat(label.trim());
+    }, []);
 }
 
 function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
@@ -213,7 +213,9 @@ function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
         };
         membersToInsert.push(memberToInsert);
 
-        const memberLabels = serializeMemberLabels((member.labels || '').split(','));
+        const memberLabels = member.labels
+            ? serializeMemberLabels((member.labels || '').split(','))
+            : [];
         const allLabels = _.union(memberLabels, importedLabels);
 
         const memberLabelAssociationsToInsert = allLabels.map((label, index) => {
