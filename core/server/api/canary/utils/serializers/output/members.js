@@ -65,5 +65,12 @@ module.exports = {
     stats(data, apiConfig, frame) {
         debug('stats');
         frame.response = data;
+    },
+
+    editSubscription(data, apiConfig, frame) {
+        debug('editSubscription');
+        frame.response = {
+            members: [mapper.mapMember(data, frame)]
+        };
     }
 };
