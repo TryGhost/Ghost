@@ -4,14 +4,14 @@ const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const membersService = require('../index');
+const bulkOperations = require('./bulk-operations');
 const models = require('../../../models');
 const {i18n} = require('../../../lib/common');
-const db = require('../../../data/db');
 const logging = require('../../../../shared/logging');
 
 const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
-    const createInserter = table => data => insert(db.knex, table, data);
-    const createDeleter = table => data => del(db.knex, table, data);
+    const createInserter = table => data => bulkOperations.insert(table, data);
+    const createDeleter = table => data => bulkOperations.del(table, data);
 
     const deleteMembers = createDeleter('members');
     const insertLabelAssociations = createInserter('members_labels');
@@ -106,44 +106,6 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     return result;
 };
-
-const CHUNK_SIZE = 100;
-
-async function insert(knex, table, data) {
-    const result = {
-        successful: 0,
-        unsuccessful: 0,
-        errors: []
-    };
-    for (const chunk of _.chunk(data, CHUNK_SIZE)) {
-        try {
-            await knex(table).insert(chunk);
-            result.successful += chunk.length;
-        } catch (error) {
-            result.unsuccessful += chunk.length;
-            result.errors.push(error);
-        }
-    }
-    return result;
-}
-
-async function del(knex, table, ids) {
-    const result = {
-        successful: 0,
-        unsuccessful: 0,
-        errors: []
-    };
-    for (const chunk of _.chunk(ids, CHUNK_SIZE)) {
-        try {
-            await knex(table).whereIn('id', chunk).del();
-            result.successful += chunk.length;
-        } catch (error) {
-            result.unsuccessful += chunk.length;
-            result.errors.push(error);
-        }
-    }
-    return result;
-}
 
 function serializeMemberLabels(labels) {
     return labels.reduce((labelsAcc, label) => {
