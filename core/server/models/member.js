@@ -1,8 +1,6 @@
 const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
-const {i18n} = require('../lib/common');
-const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
 const config = require('../../shared/config');
 const crypto = require('crypto');
@@ -259,58 +257,6 @@ const Member = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
-
-    async insertChunkSequential(chunk, result, unfilteredOptions) {
-        for (const member of chunk) {
-            try {
-                await (unfilteredOptions.transacting || ghostBookshelf.knex)(this.prototype.tableName).insert(member);
-                result.successful += 1;
-            } catch (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    result.errors.push(new errors.ValidationError({
-                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context')
-                    }));
-                } else {
-                    result.errors.push(err);
-                }
-
-                result.unsuccessfulIds.push(member.id);
-                result.unsuccessful += 1;
-            }
-        }
-    },
-
-    async insertChunk(chunk, result, unfilteredOptions) {
-        try {
-            await (unfilteredOptions.transacting || ghostBookshelf.knex)(this.prototype.tableName).insert(chunk);
-            result.successful += chunk.length;
-        } catch (err) {
-            await this.insertChunkSequential(chunk, result, unfilteredOptions);
-        }
-    },
-
-    async bulkAdd(data, unfilteredOptions = {}) {
-        if (!unfilteredOptions.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                return this.bulkAdd(data, Object.assign({transacting}, unfilteredOptions));
-            });
-        }
-        const result = {
-            successful: 0,
-            unsuccessful: 0,
-            unsuccessfulIds: [],
-            errors: []
-        };
-
-        const CHUNK_SIZE = 100;
-
-        for (const chunk of _.chunk(data, CHUNK_SIZE)) {
-            await this.insertChunk(chunk, result, unfilteredOptions);
-        }
-
-        return result;
     },
 
     add(data, unfilteredOptions = {}) {
