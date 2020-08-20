@@ -154,6 +154,10 @@ class MembersConfigProvider {
         };
     }
 
+    getEnableStripePromoCodes() {
+        return this._config.get('enableStripePromoCodes');
+    }
+
     getStripePaymentConfig() {
         if (!this.isStripeConnected()) {
             return null;
