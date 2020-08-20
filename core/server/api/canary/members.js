@@ -366,6 +366,52 @@ module.exports = {
         }
     },
 
+    editSubscription: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'id',
+            'subscription_id'
+        ],
+        data: [
+            'cancel_at_period_end'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                },
+                subscription_id: {
+                    required: true
+                }
+            },
+            data: {
+                cancel_at_period_end: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            await membersService.api.members.updateSubscription(frame.options.id, {
+                subscriptionId: frame.options.subscription_id,
+                cancelAtPeriodEnd: frame.data.cancel_at_period_end
+            });
+            let model = await membersService.api.members.get({id: frame.options.id}, {
+                withRelated: ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer']
+            });
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.members.memberNotFound')
+                });
+            }
+
+            return model.toJSON(frame.options);
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {},
