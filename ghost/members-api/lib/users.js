@@ -19,7 +19,7 @@ module.exports = function ({
         }
 
         if (stripe && options.cancelStripeSubscriptions) {
-            await stripe.cancelStripeSubscriptions(member);
+            await stripe.cancelAllSubscriptions(member);
         }
 
         return Member.destroy({
