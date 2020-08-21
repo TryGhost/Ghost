@@ -207,11 +207,6 @@ p.gh-members-list-email {
     border-bottom-right-radius: 0px !important;
 }
 
-.gh-members-not-found-for-label {
-
-}
-
-/* .members-header .gh-member */
 
 @media (max-width: 1100px) {
     .gh-members-chart-summary-data {
@@ -379,6 +374,18 @@ textarea.gh-member-details-textarea {
     height: 18px;
 }
 
+.gh-member-header-stripeinfo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 24px;
+}
+
+.gh-member-header-stripeinfo h4 {
+    margin: 0 12px 0 0;
+    padding: 0;
+}
+
 .gh-member-stripe-info {
     border-bottom: 1px solid var(--whitegrey);
 }
@@ -389,7 +396,7 @@ textarea.gh-member-details-textarea {
 
 .gh-member-stripe-table {
     width: 100%;
-    margin: 10px 0 12px;
+    margin: 6px 0 12px;
 }
 
 .gh-member-stripe-table td {
@@ -417,15 +424,40 @@ textarea.gh-member-details-textarea {
     display: inline-block;
     background: var(--lightgrey-d1);
     border-radius: 4px;
-    padding: 1px 6px;
-    margin: -2px 0 -2px -6px;
+    padding: 0px 5px;
+    margin: -2px 0 -2px -5px;
     color: var(--darkgrey);
-    font-size: 1.4rem;
-    font-weight: 500;
+    font-size: 1.3rem;
+    font-weight: 400;
 }
 
 .gh-member-stripe-status {
+    display: inline-block;
     text-transform: capitalize;
+    margin-right: 6px;
+}
+
+.gh-member-btn-cancelsub span,
+.gh-member-btn-contsub span {
+    height: 25px;
+    line-height: 25px;
+}
+
+.gh-member-btn-contsub {
+    border-color: var(--blue);
+    box-shadow: none;
+}
+
+.gh-member-btn-contsub:hover {
+    border-color: color-mod(var(--blue) l(-7%) saturation(-10%));
+}
+
+.gh-member-btn-contsub span {
+    color: var(--blue);
+}
+
+.gh-member-btn-contsub:hover span {
+    color: color-mod(var(--blue) l(-7%) saturation(-10%));
 }
 
 .gh-member-settings-primary {
