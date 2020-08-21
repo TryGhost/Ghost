@@ -1,9 +1,12 @@
+const SimpleDom = require('simple-dom');
 const {
     absoluteToRelative,
     relativeToAbsolute,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute
 } = require('@tryghost/url-utils/lib/utils');
+
+const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
 /**
 <figure class="kg-card kg-bookmark-card">
@@ -24,18 +27,19 @@ const {
 </figure>
  */
 
-function createElement(dom, elem, classNames = '', attributes = [], text) {
-    let element = dom.createElement(elem);
-    if (classNames) {
-        element.setAttribute('class', classNames);
+function dedent(literals, ...values) {
+    // interweave strings with substitutions
+    let output = '';
+    for (let i = 0; i < values.length; i++) {
+        output += literals[i] + values[i];
     }
-    attributes.forEach((attr) => {
-        element.setAttribute(attr.key, attr.value);
-    });
-    if (text) {
-        element.appendChild(dom.createTextNode(text));
-    }
-    return element;
+    output += literals[values.length];
+
+    // split on newlines
+    let lines = output.split(/\n/);
+
+    // remove leading whitespace
+    return lines.map(line => line.replace(/^\s+/gm, '')).join('').trim();
 }
 
 module.exports = {
@@ -47,53 +51,47 @@ module.exports = {
             return dom.createTextNode('');
         }
 
-        let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
-        let linkTag = createElement(dom, 'a', 'kg-bookmark-container', [{
-            key: 'href',
-            value: payload.url
-        }]);
-        let contentDiv = createElement(dom, 'div', 'kg-bookmark-content');
-        let titleDiv = createElement(dom, 'div', 'kg-bookmark-title', [] , payload.metadata.title);
-        let descriptionDiv = createElement(dom, 'div', 'kg-bookmark-description', [] , payload.metadata.description);
-        let metadataDiv = createElement(dom, 'div', 'kg-bookmark-metadata');
-        let imgIcon = createElement(dom, 'img', 'kg-bookmark-icon', [{
-            key: 'src',
-            value: payload.metadata.icon
-        }]);
-        let authorSpan = createElement(dom, 'span', 'kg-bookmark-author', [] , payload.metadata.author);
-        let publisherSpan = createElement(dom, 'span', 'kg-bookmark-publisher', [] , payload.metadata.publisher);
-        let thumbnailDiv = createElement(dom, 'div', 'kg-bookmark-thumbnail');
-        let thumbnailImg = createElement(dom, 'img', '', [{
-            key: 'src',
-            value: payload.metadata.thumbnail
-        }]);
-        thumbnailDiv.appendChild(thumbnailImg);
-        if (payload.metadata.icon) {
-            metadataDiv.appendChild(imgIcon);
-        }
-        if (payload.metadata.author) {
-            metadataDiv.appendChild(authorSpan);
-        }
-        if (payload.metadata.publisher) {
-            metadataDiv.appendChild(publisherSpan);
-        }
-        contentDiv.appendChild(titleDiv);
-        contentDiv.appendChild(descriptionDiv);
-        contentDiv.appendChild(metadataDiv);
-        linkTag.appendChild(contentDiv);
-        if (payload.metadata.thumbnail) {
-            linkTag.appendChild(thumbnailDiv);
-        }
-        figure.appendChild(linkTag);
+        let markup = dedent`
+            <figure class="kg-card kg-bookmark-card${payload.caption ? ' kg-card-hascaption' : ''}">
+                <a class="kg-bookmark-container" href="${serializer.escapeAttrValue(payload.url || '')}">
+                    <div class="kg-bookmark-content">
+                        <div class="kg-bookmark-title">${serializer.escapeText(payload.metadata.title || '')}</div>
+                        <div class="kg-bookmark-description">${serializer.escapeText(payload.metadata.description || '')}</div>
+                        <div class="kg-bookmark-metadata">
+                            !!ICON!!
+                            !!AUTHOR!!
+                            !!PUBLISHER!!
+                        </div>
+                    </div>
+                    !!THUMBNAIL!!
+                </a>
+                !!FIGCAPTION!!
+            </figure>
+        `;
+        const iconMarkup = dedent`
+            <img class="kg-bookmark-icon" src="${serializer.escapeAttrValue(payload.metadata.icon || '')}">
+        `;
+        const authorMarkup = dedent`
+            <span class="kg-bookmark-author">${serializer.escapeText(payload.metadata.author || '')}</span>
+        `;
+        const publisherMarkup = dedent`
+            <span class="kg-bookmark-publisher">${serializer.escapeText(payload.metadata.publisher || '')}</span>
+        `;
+        const thumbnailMarkup = dedent`
+            <div class="kg-bookmark-thumbnail">
+                <img src="${serializer.escapeAttrValue(payload.metadata.thumbnail || '')}">
+            </div>
+        `;
+        const figcaptionMarkup = dedent`
+            <figcaption>${payload.caption}</figcaption>
+        `;
+        markup = markup.replace('!!ICON!!', payload.metadata.icon ? iconMarkup : '');
+        markup = markup.replace('!!AUTHOR!!', payload.metadata.author ? authorMarkup : '');
+        markup = markup.replace('!!PUBLISHER!!', payload.metadata.publisher ? publisherMarkup : '');
+        markup = markup.replace('!!THUMBNAIL!!', payload.metadata.thumbnail ? thumbnailMarkup : '');
+        markup = markup.replace('!!FIGCAPTION!!', payload.caption ? figcaptionMarkup : '');
 
-        if (payload.caption) {
-            let figcaption = dom.createElement('figcaption');
-            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
-            figure.appendChild(figcaption);
-            figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
-        }
-
-        return figure;
+        return dom.createRawHTMLSection(markup);
     },
 
     absoluteToRelative(payload, options) {
