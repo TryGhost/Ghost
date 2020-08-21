@@ -431,14 +431,15 @@ module.exports = {
             frame.options.require = true;
             frame.options.cancelStripeSubscriptions = frame.options.cancel;
 
-            await Promise.resolve(membersService.api.members.destroy(frame.options))
-                .catch(models.Member.NotFoundError, () => {
-                    throw new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
-                            resource: 'Member'
-                        })
-                    });
+            await Promise.resolve(membersService.api.members.destroy({
+                id: frame.options.id
+            }, frame.options)).catch(models.Member.NotFoundError, () => {
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.resource.resourceNotFound', {
+                        resource: 'Member'
+                    })
                 });
+            });
 
             return null;
         }
