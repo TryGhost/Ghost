@@ -972,19 +972,24 @@
     margin-right: 6px;
 }
 
-.kg-bookmark-author:after {
-    content: "•";
-    margin: 0 6px;
-}
-
 .kg-bookmark-publisher {
-    color: var(--blue);
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 240px;
     white-space: nowrap;
     display: block;
     line-height: 1.65em;
+}
+
+.kg-bookmark-author:before {
+    content: "•";
+    color: var(--darkgrey);
+    margin: 0 6px;
+}
+
+.kg-bookmark-author {
+    color: var(--middarkgrey);
+    font-weight: 400;
 }
 
 .kg-email-card p:first-of-type {
