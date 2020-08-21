@@ -1,12 +1,10 @@
-const SimpleDom = require('simple-dom');
+const Handlebars = require('handlebars');
 const {
     absoluteToRelative,
     relativeToAbsolute,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute
 } = require('@tryghost/url-utils/lib/utils');
-
-const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
 /**
 <figure class="kg-card kg-bookmark-card">
@@ -27,7 +25,7 @@ const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 </figure>
  */
 
-function dedent(literals, ...values) {
+function hbs(literals, ...values) {
     // interweave strings with substitutions
     let output = '';
     for (let i = 0; i < values.length; i++) {
@@ -35,12 +33,16 @@ function dedent(literals, ...values) {
     }
     output += literals[values.length];
 
-    // split on newlines
-    let lines = output.split(/\n/);
+    // return compiled handlebars template
+    return Handlebars.compile(output);
+}
 
-    // remove leading whitespace
+function dedent(str) {
+    let lines = str.split(/\n/);
     return lines.map(line => line.replace(/^\s+/gm, '')).join('').trim();
 }
+
+let template;
 
 module.exports = {
     name: 'bookmark',
@@ -51,47 +53,33 @@ module.exports = {
             return dom.createTextNode('');
         }
 
-        let markup = dedent`
-            <figure class="kg-card kg-bookmark-card${payload.caption ? ' kg-card-hascaption' : ''}">
-                <a class="kg-bookmark-container" href="${serializer.escapeAttrValue(payload.url || '')}">
-                    <div class="kg-bookmark-content">
-                        <div class="kg-bookmark-title">${serializer.escapeText(payload.metadata.title || '')}</div>
-                        <div class="kg-bookmark-description">${serializer.escapeText(payload.metadata.description || '')}</div>
-                        <div class="kg-bookmark-metadata">
-                            !!ICON!!
-                            !!AUTHOR!!
-                            !!PUBLISHER!!
+        if (!template) {
+            template = hbs`
+                <figure class="kg-card kg-bookmark-card{{#if caption}} kg-card-hascaption{{/if}}">
+                    <a class="kg-bookmark-container" href="{{url}}">
+                        <div class="kg-bookmark-content">
+                            <div class="kg-bookmark-title">{{metadata.title}}</div>
+                            <div class="kg-bookmark-description">{{metadata.description}}</div>
+                            <div class="kg-bookmark-metadata">
+                                {{#if metadata.icon}}<img class="kg-bookmark-icon" src="{{metadata.icon}}">{{/if}}
+                                {{#if metadata.author}}<span class="kg-bookmark-author">{{metadata.author}}</span>{{/if}}
+                                {{#if metadata.publisher}}<span class="kg-bookmark-publisher">{{metadata.publisher}}</span>{{/if}}
+                            </div>
                         </div>
-                    </div>
-                    !!THUMBNAIL!!
-                </a>
-                !!FIGCAPTION!!
-            </figure>
-        `;
-        const iconMarkup = dedent`
-            <img class="kg-bookmark-icon" src="${serializer.escapeAttrValue(payload.metadata.icon || '')}">
-        `;
-        const authorMarkup = dedent`
-            <span class="kg-bookmark-author">${serializer.escapeText(payload.metadata.author || '')}</span>
-        `;
-        const publisherMarkup = dedent`
-            <span class="kg-bookmark-publisher">${serializer.escapeText(payload.metadata.publisher || '')}</span>
-        `;
-        const thumbnailMarkup = dedent`
-            <div class="kg-bookmark-thumbnail">
-                <img src="${serializer.escapeAttrValue(payload.metadata.thumbnail || '')}">
-            </div>
-        `;
-        const figcaptionMarkup = dedent`
-            <figcaption>${payload.caption}</figcaption>
-        `;
-        markup = markup.replace('!!ICON!!', payload.metadata.icon ? iconMarkup : '');
-        markup = markup.replace('!!AUTHOR!!', payload.metadata.author ? authorMarkup : '');
-        markup = markup.replace('!!PUBLISHER!!', payload.metadata.publisher ? publisherMarkup : '');
-        markup = markup.replace('!!THUMBNAIL!!', payload.metadata.thumbnail ? thumbnailMarkup : '');
-        markup = markup.replace('!!FIGCAPTION!!', payload.caption ? figcaptionMarkup : '');
+                        {{#if metadata.thumbnail}}
+                            <div class="kg-bookmark-thumbnail">
+                                <img src="{{metadata.thumbnail}}">
+                            </div>
+                        {{/if}}
+                    </a>
+                    {{#if caption}}
+                        <figcaption>{{caption}}</figcaption>
+                    {{/if}}
+                </figure>
+            `;
+        }
 
-        return dom.createRawHTMLSection(markup);
+        return dom.createRawHTMLSection(dedent(template(payload)));
     },
 
     absoluteToRelative(payload, options) {
