@@ -1,4 +1,5 @@
 const Handlebars = require('handlebars');
+const juice = require('juice');
 const {
     absoluteToRelative,
     relativeToAbsolute,
@@ -54,7 +55,93 @@ module.exports = {
         }
 
         if (!template) {
+            // Outlook template has inline styles because it appears as a comment to
+            // DOM-based tools like `juice` meaning stylesheets don't get inlined
+            const outlookHtml = `
+                <style>
+                    .kg-bookmark-card--outlook {
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                        border: 1px solid #e5eff5;
+                        background: #ffffff;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+                    }
+                    .kg-bookmark-card--outlook a {
+                        text-decoration: none;
+                    }
+                    .kg-bookmark-title--outlook a {
+                        color: #15212A;
+                        font-size: 15px;
+                        line-height: 1.5em;
+                        font-weight: 600;
+                    }
+                    .kg-bookmark-description--outlook a {
+                        margin-top: 12px;
+                        color: #738a94;
+                        font-size: 13px;
+                        line-height: 1.5em;
+                        font-weight: 400;
+                    }
+                    .kg-bookmark-metadata--outlook {
+                        padding-top: 14px;
+                        color: #15212A;
+                        font-size: 13px;
+                        font-weight: 400;
+                        line-height: 1.5em;
+                    }
+                    .kg-bookmark-metadata--outlook a {
+                        color: #15212A;
+                    }
+                    .kg-bookmark-icon--outlook {
+                        padding-right: 8px;
+                        font-size: 0;
+                        line-height: 1.5em
+                    }
+                    .kg-bookmark-spacer--outlook {
+                        height: 1.5em;
+                    }
+                </style>
+                <table class="kg-card kg-bookmark-card--outlook" style="border-collapse: collapse; border-spacing: 0;">
+                    <tr>
+                        <td width="100%" style="padding: 20px;">
+                            <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                                <tr>
+                                    <td class="kg-bookmark-title--outlook"><a href="{{url}}">{{metadata.title}}</a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="kg-bookmark-description--outlook"><a href="{{url}}">{{metadata.description}}</a></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="kg-bookmark-metadata--outlook">
+                                        <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                                            <tr>
+                                                {{#if metadata.icon}}
+                                                    <td valign="middle" class="kg-bookmark-icon--outlook">
+                                                        <a href="{{url}}"><img src="{{metadata.icon}}" width="22" height="22"></a>
+                                                    </td>
+                                                {{/if}}
+                                                <td valign="middle" class="kg-bookmark-byline--outlook">
+                                                    <a href="{{url}}">
+                                                        {{metadata.author}}
+                                                        {{#if metadata.author}}&nbsp;&#x2022;&nbsp;{{/if}}
+                                                        {{metadata.publisher}}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <div class="kg-bookmark-spacer--outlook">&nbsp;</div>
+            `;
+            const juicedOutlookHtml = juice(outlookHtml);
+
             template = hbs`
+                <!--[if !mso !vml]-->
                 <figure class="kg-card kg-bookmark-card{{#if caption}} kg-card-hascaption{{/if}}">
                     <a class="kg-bookmark-container" href="{{url}}">
                         <div class="kg-bookmark-content">
@@ -76,6 +163,11 @@ module.exports = {
                         <figcaption>{{caption}}</figcaption>
                     {{/if}}
                 </figure>
+                <!--[endif]-->
+
+                <!--[if vml]>
+                ${juicedOutlookHtml}
+                <![endif]-->
             `;
         }
 
