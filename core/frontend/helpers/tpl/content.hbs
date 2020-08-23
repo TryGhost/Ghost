@@ -1,0 +1,16 @@
+<aside class="post-upgrade-cta">
+    <div class="post-upgrade-cta-content" {{#if @site.accent_color}} style="background-color: {{@site.accent_color}}" {{/if}}>
+        {{#has visibility="paid"}}
+            <h2>This post is for paying subscribers only</h2>
+        {{/has}}
+        {{#has visibility="members"}}
+            <h2>This post is for subscribers only</h2>
+        {{/has}}
+        {{#if @member}}
+            <a class="button large" data-portal="account/plans" {{#if @site.accent_color}} style="color:{{@site.accent_color}}" {{/if}}> Subscribe now</a>
+        {{else}}
+            <a class="button large" data-portal="signup" {{#if @site.accent_color}} style="color:{{@site.accent_color}}" {{/if}}> Signup now</a>
+            <p><small>Already have an account? <a data-portal="signin">Sign in</a></small></p>
+        {{/if}}
+    </div>
+</aside>
