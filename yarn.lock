@@ -5262,10 +5262,10 @@ jwa@^1.4.1:
     ecdsa-sig-formatter "1.0.11"
     safe-buffer "^5.0.1"
 
-jwks-rsa@1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.8.1.tgz#375c62a50c4ca805ad5bd682c12c8a695de13ddf"
-  integrity sha512-CcE8ypsATHwGmzELwzeFjLzPBXTXTrMmDYbn92LTQwYsZdOedp+ZIuYTofUdrWreu8CKRuXmhk17+6/li2sR6g==
+jwks-rsa@1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.9.0.tgz#efa0cd550c13b70397e27cd8764bd53c45a1ad91"
+  integrity sha512-UPCfQQg0s2kF2Ju6UFJrQH73f7MaVN/hKBnYBYOp+X9KN4y6TLChhLtaXS5nRKbZqshwVdrZ9OY63m/Q9CLqcg==
   dependencies:
     "@types/express-jwt" "0.0.42"
     axios "^0.19.2"
