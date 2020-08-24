@@ -109,7 +109,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     // we use post.excerpt as a hidden piece of text that is picked up by some email
     // clients as a "preview" when listing emails. Our current plaintext/excerpt
     // generation outputs links as "Link [https://url/]" which isn't desired in the preview
-    if (!post.custom_excerpt) {
+    if (!post.custom_excerpt && post.excerpt) {
         post.excerpt = post.excerpt.replace(/\s\[http(.*?)\]/g, '');
     }
 
