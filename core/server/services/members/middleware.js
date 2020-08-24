@@ -72,7 +72,7 @@ const updateMemberData = async function (req, res) {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
             const updatedMember = await membersService.api.members.update(data, {id: member.id});
-            res.json(formattedMemberResponse(updatedMember));
+            res.json(formattedMemberResponse(updatedMember.toJSON()));
         } else {
             res.json(null);
         }
