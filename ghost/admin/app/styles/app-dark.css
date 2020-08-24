@@ -359,6 +359,10 @@ input:focus,
     border-color: #fff;
 }
 
+.koenig-card-html--editor .CodeMirror-cursor {
+    border-color: #fff;
+}
+
 .gh-logo,
 .gh-unsplash-logo {
     filter: invert(100%) brightness(150%);
