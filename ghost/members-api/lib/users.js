@@ -33,6 +33,7 @@ module.exports = function ({
             'email',
             'name',
             'note',
+            'subscribed',
             'labels',
             'geolocation'
         ]), options);
@@ -42,7 +43,9 @@ module.exports = function ({
         return Member.findPage(options);
     }
 
-    async function create({email, name, note, labels, geolocation}, options) {
+    async function create(data, options) {
+        const {email, labels} = data;
+
         debug(`create email:${email}`);
 
         /** Member.add model method expects label object array*/
@@ -54,13 +57,17 @@ module.exports = function ({
             });
         }
 
-        return Member.add({
-            email,
-            name,
-            note,
-            labels,
-            geolocation
-        }, options);
+        return Member.add(Object.assign(
+            {},
+            {labels},
+            _.pick(data, [
+                'email',
+                'name',
+                'note',
+                'subscribed',
+                'geolocation',
+                'created_at'
+            ])), options);
     }
 
     function safeStripe(methodName) {
