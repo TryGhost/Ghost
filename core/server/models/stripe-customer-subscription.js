@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const ghostBookshelf = require('./base');
 
 const CURRENCY_SYMBOLS = {
