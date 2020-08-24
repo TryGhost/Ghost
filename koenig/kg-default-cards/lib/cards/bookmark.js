@@ -49,7 +49,7 @@ module.exports = {
     name: 'bookmark',
     type: 'dom',
 
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options = {}}) {
         if (!payload.metadata || !payload.url || !payload.metadata.title) {
             return dom.createTextNode('');
         }
@@ -141,7 +141,7 @@ module.exports = {
             const juicedOutlookHtml = juice(outlookHtml);
 
             template = hbs`
-                <!--[if !mso !vml]-->
+                {{#if isEmail}}<!--[if !mso !vml]-->{{/if}}
                 <figure class="kg-card kg-bookmark-card{{#if caption}} kg-card-hascaption{{/if}}">
                     <a class="kg-bookmark-container" href="{{url}}">
                         <div class="kg-bookmark-content">
@@ -163,15 +163,18 @@ module.exports = {
                         <figcaption>{{caption}}</figcaption>
                     {{/if}}
                 </figure>
-                <!--[endif]-->
-
-                <!--[if vml]>
-                ${juicedOutlookHtml}
-                <![endif]-->
+                {{#if isEmail}}
+                    <!--[endif]-->
+                    <!--[if vml]>
+                    ${juicedOutlookHtml}
+                    <![endif]-->
+                {{/if}}
             `;
         }
 
-        return dom.createRawHTMLSection(dedent(template(payload)));
+        const templateData = Object.assign({}, payload, {isEmail: options.target === 'email'});
+
+        return dom.createRawHTMLSection(dedent(template(templateData)));
     },
 
     absoluteToRelative(payload, options) {

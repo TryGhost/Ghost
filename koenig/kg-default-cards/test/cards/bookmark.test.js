@@ -26,6 +26,31 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
+            .should.equal(`<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>`);
+    });
+
+    it('renders email target', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                url: 'http://example.com',
+                metadata: {
+                    url: 'http://example.com',
+                    title: 'Title',
+                    description: 'Description',
+                    icon: 'http://example.com/icon.png',
+                    thumbnail: 'http://exampple.com/thumbnail.png',
+                    author: 'Author',
+                    publisher: 'Publisher'
+                },
+                caption: 'Caption'
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
             .should.equal(`<!--[if !mso !vml]--><figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure><!--[endif]--><!--[if vml]><table class="kg-card kg-bookmark-card--outlook" style="margin: 0; padding: 0; width: 100%; border: 1px solid #e5eff5; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; border-collapse: collapse; border-spacing: 0;" width="100%"><tr><td width="100%" style="padding: 20px;"><table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;"><tr><td class="kg-bookmark-title--outlook"><a href="http://example.com" style="text-decoration: none; color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600;">Title</a></td></tr><tr><td><div class="kg-bookmark-description--outlook"><a href="http://example.com" style="text-decoration: none; margin-top: 12px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400;">Description</a></div></td></tr><tr><td class="kg-bookmark-metadata--outlook" style="padding-top: 14px; color: #15212A; font-size: 13px; font-weight: 400; line-height: 1.5em;"><table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;"><tr><td valign="middle" class="kg-bookmark-icon--outlook" style="padding-right: 8px; font-size: 0; line-height: 1.5em;"><a href="http://example.com" style="text-decoration: none; color: #15212A;"><img src="http://example.com/icon.png" width="22" height="22"></a></td><td valign="middle" class="kg-bookmark-byline--outlook"><a href="http://example.com" style="text-decoration: none; color: #15212A;">Author&nbsp;&#x2022;&nbsp;Publisher</a></td></tr></table></td></tr></table></td></tr></table><div class="kg-bookmark-spacer--outlook" style="height: 1.5em;">&nbsp;</div><![endif]-->`);
     });
 
