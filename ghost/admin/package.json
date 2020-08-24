@@ -31,7 +31,7 @@
     "@glimmer/component": "1.0.1",
     "@html-next/vertical-collection": "1.0.0",
     "@tryghost/helpers": "1.1.30",
-    "@tryghost/kg-clean-basic-html": "1.0.7",
+    "@tryghost/kg-clean-basic-html": "1.0.8",
     "@tryghost/kg-parser-plugins": "1.0.7",
     "@tryghost/mobiledoc-kit": "0.12.4-ghost.1",
     "@tryghost/string": "0.1.11",
