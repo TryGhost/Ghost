@@ -5,7 +5,6 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const membersService = require('../index');
 const bulkOperations = require('./bulk-operations');
-const models = require('../../../models');
 const {i18n} = require('../../../lib/common');
 const logging = require('../../../../shared/logging');
 
@@ -14,6 +13,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
     const createDeleter = table => data => bulkOperations.del(table, data);
 
     const deleteMembers = createDeleter('members');
+    const insertMembers = createInserter('members');
     const insertLabelAssociations = createInserter('members_labels');
     const insertMemberStripeCustomers = createInserter('members_stripe_customers');
     const insertMemberStripeSubscriptions = createInserter('members_stripe_customers_subscriptions');
@@ -28,16 +28,31 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     // NOTE: member insertion has to happen before the rest of insertions to handle validation
     //       errors - remove failed members from label/stripe sets
-    const insertedMembers = await models.Member.bulkAdd(membersToInsert).then((insertResult) => {
-        if (insertResult.unsuccessfulIds.length) {
+    const insertedMembers = await insertMembers(membersToInsert).then((insertResult) => {
+        if (insertResult.unsuccessfulRecords.length) {
+            const unsuccessfulIds = insertResult.unsuccessfulRecords.map(r => r.id);
+
             labelAssociationsToInsert = labelAssociationsToInsert
-                .filter(la => !insertResult.unsuccessfulIds.includes(la.member_id));
+                .filter(la => !unsuccessfulIds.includes(la.member_id));
 
             stripeCustomersToFetch = stripeCustomersToFetch
-                .filter(sc => !insertResult.unsuccessfulIds.includes(sc.member_id));
+                .filter(sc => !unsuccessfulIds.includes(sc.member_id));
 
             stripeCustomersToCreate = stripeCustomersToCreate
-                .filter(sc => !insertResult.unsuccessfulIds.includes(sc.member_id));
+                .filter(sc => !unsuccessfulIds.includes(sc.member_id));
+        }
+
+        if (insertResult.errors.length) {
+            insertResult.errors = insertResult.errors.map((error) => {
+                if (error.code === 'ER_DUP_ENTRY') {
+                    return new errors.ValidationError({
+                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
+                        context: i18n.t('errors.models.member.memberAlreadyExists.context')
+                    });
+                } else {
+                    return error;
+                }
+            });
         }
 
         return insertResult;
