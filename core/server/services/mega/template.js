@@ -407,22 +407,16 @@ figure blockquote p {
 }
 
 .kg-bookmark-thumbnail {
-    position: relative;
     min-width: 140px;
     max-width: 180px;
-    max-height: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 2px 2px 0;
 }
 
 .kg-bookmark-thumbnail img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0 3px 3px 0;
-
-    object-fit: cover;
-    max-height: 100%;
+    display: none;
 }
 
 .kg-bookmark-metadata {
