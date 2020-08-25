@@ -185,8 +185,9 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     // Allow logging to happen outside of the request cycle
     process.nextTick(() => {
-        // @TODO wrap errors with validation errors (or whatever is reasonable)
         result.invalid.errors.forEach(err => logging.error(err));
+        deletedMembers.errors.forEach(err => logging.error(err));
+        insertedLabels.errors.forEach(err => logging.error(err));
     });
 
     return result;
