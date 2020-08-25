@@ -1058,6 +1058,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
     },
 
+    bulkDestroy: function bulkDestroy(data, tableName) {
+        tableName = tableName || this.prototype.tableName;
+
+        return bulkOperations.del(tableName, data);
+    },
+
     /**
      * ### Generate Slug
      * Create a string to act as the permalink for an object.

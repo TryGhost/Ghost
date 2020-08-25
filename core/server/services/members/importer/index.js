@@ -5,15 +5,10 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const membersService = require('../index');
 const models = require('../../../models');
-const bulkOperations = require('../../../models/base/bulk-operations');
 const {i18n} = require('../../../lib/common');
 const logging = require('../../../../shared/logging');
 
 const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
-    const createDeleter = table => data => bulkOperations.del(table, data);
-
-    const deleteMembers = createDeleter('members');
-
     let {
         invalidMembers,
         membersToInsert,
@@ -85,12 +80,16 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         insertedCustomersPromise,
         insertedSubscriptionsPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers, insertedStripeCustomers, insertedStripeSubscriptions]) => deleteMembers([
-            ...fetchedStripeCustomers.membersToDelete,
-            ...createdStripeCustomers.membersToDelete,
-            ...insertedStripeCustomers.unsuccessfulRecords.map(r => r.member_id),
-            ...insertedStripeSubscriptions.unsuccessfulRecords.map(r => r.member_id)
-        ])
+        ([fetchedStripeCustomers, createdStripeCustomers, insertedStripeCustomers, insertedStripeSubscriptions]) => {
+            const memberIds = [
+                ...fetchedStripeCustomers.membersToDelete,
+                ...createdStripeCustomers.membersToDelete,
+                ...insertedStripeCustomers.unsuccessfulRecords.map(r => r.member_id),
+                ...insertedStripeSubscriptions.unsuccessfulRecords.map(r => r.member_id)
+            ];
+
+            return models.Member.bulkDestroy(memberIds);
+        }
     );
 
     // This looks sequential, but at the point insertedCustomersPromise has resolved so have all the others
