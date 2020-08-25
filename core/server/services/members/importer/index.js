@@ -9,6 +9,18 @@ const models = require('../../../models');
 const {i18n} = require('../../../lib/common');
 const logging = require('../../../../shared/logging');
 
+const handleUnrecognizedError = (error) => {
+    if (!errors.utils.isIgnitionError(error)) {
+        return new errors.DataImportError({
+            message: error.message,
+            context: error.context,
+            err: error
+        });
+    } else {
+        return error;
+    }
+};
+
 const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
     debug('doImport', `members: ${members.length}, labels: ${allLabelModels.length}, import lables: ${importSetLabels.length}, createdBy: ${createdBy}`);
 
@@ -43,10 +55,11 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
                 if (error.code === 'ER_DUP_ENTRY') {
                     return new errors.ValidationError({
                         message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context')
+                        context: i18n.t('errors.models.member.memberAlreadyExists.context'),
+                        err: error
                     });
                 } else {
-                    return error;
+                    return handleUnrecognizedError(error);
                 }
             });
         }
