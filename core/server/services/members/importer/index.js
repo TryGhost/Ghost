@@ -161,19 +161,25 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
     const fetchedCustomers = await fetchedStripeCustomersPromise;
     const insertedLabels = await insertedLabelsPromise;
 
+    const allErrors = [
+        ...insertedMembers.errors,
+        ...insertedCustomers.errors,
+        ...insertedSubscriptions.errors,
+        ...insertedLabels.errors,
+        ...fetchedCustomers.errors
+    ];
+    const importedCount = insertedMembers.successful - deletedMembers.successful;
+    const invalidCount = insertedMembers.unsuccessful + invalidMembers.length + deletedMembers.successful + deletedMembers.unsuccessful;
+
+    debug('doImport', `Finished members import with ${importedCount} imported, ${invalidCount} invalid and ${allErrors.length} errors`);
+
     const result = {
         imported: {
-            count: insertedMembers.successful - deletedMembers.successful
+            count: importedCount
         },
         invalid: {
-            count: insertedMembers.unsuccessful + deletedMembers.unsuccessful + invalidMembers.length,
-            errors: [
-                ...insertedMembers.errors,
-                ...insertedCustomers.errors,
-                ...insertedSubscriptions.errors,
-                ...insertedLabels.errors,
-                ...fetchedCustomers.errors
-            ]
+            count: invalidCount,
+            errors: allErrors
         }
     };
 
