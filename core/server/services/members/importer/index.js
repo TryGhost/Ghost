@@ -4,19 +4,15 @@ const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const membersService = require('../index');
-const bulkOperations = require('./bulk-operations');
+const models = require('../../../models');
+const bulkOperations = require('../../../models/base/bulk-operations');
 const {i18n} = require('../../../lib/common');
 const logging = require('../../../../shared/logging');
 
 const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
-    const createInserter = table => data => bulkOperations.insert(table, data);
     const createDeleter = table => data => bulkOperations.del(table, data);
 
     const deleteMembers = createDeleter('members');
-    const insertMembers = createInserter('members');
-    const insertLabelAssociations = createInserter('members_labels');
-    const insertMemberStripeCustomers = createInserter('members_stripe_customers');
-    const insertMemberStripeSubscriptions = createInserter('members_stripe_customers_subscriptions');
 
     let {
         invalidMembers,
@@ -28,7 +24,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     // NOTE: member insertion has to happen before the rest of insertions to handle validation
     //       errors - remove failed members from label/stripe sets
-    const insertedMembers = await insertMembers(membersToInsert).then((insertResult) => {
+    const insertedMembers = await models.Member.bulkAdd(membersToInsert).then((insertResult) => {
         if (insertResult.unsuccessfulRecords.length) {
             const unsuccessfulIds = insertResult.unsuccessfulRecords.map(r => r.id);
 
@@ -60,14 +56,14 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     const fetchedStripeCustomersPromise = fetchStripeCustomers(stripeCustomersToFetch);
     const createdStripeCustomersPromise = createStripeCustomers(stripeCustomersToCreate);
-    const insertedLabelsPromise = insertLabelAssociations(labelAssociationsToInsert);
+    const insertedLabelsPromise = models.Base.Model.bulkAdd(labelAssociationsToInsert, 'members_labels');
 
     const insertedCustomersPromise = Promise.all([
         fetchedStripeCustomersPromise,
         createdStripeCustomersPromise
     ]).then(
         ([fetchedStripeCustomers, createdStripeCustomers]) => {
-            return insertMemberStripeCustomers(
+            return models.MemberStripeCustomer.bulkAdd(
                 fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
             );
         }
@@ -78,7 +74,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         createdStripeCustomersPromise,
         insertedCustomersPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => insertMemberStripeSubscriptions(
+        ([fetchedStripeCustomers, createdStripeCustomers]) => models.StripeCustomerSubscription.bulkAdd(
             fetchedStripeCustomers.subscriptionsToInsert.concat(createdStripeCustomers.subscriptionsToInsert)
         )
     );

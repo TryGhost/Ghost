@@ -22,6 +22,7 @@ const security = require('@tryghost/security');
 const schema = require('../../data/schema');
 const urlUtils = require('../../../shared/url-utils');
 const validation = require('../../data/validation');
+const bulkOperations = require('./bulk-operations');
 const plugins = require('../plugins');
 let ghostBookshelf;
 let proto;
@@ -1026,6 +1027,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Ghost auto-generates Object id's, so we need to tell Bookshelf here that we are inserting data
         options.method = 'insert';
         return model.save(null, options);
+    },
+
+    bulkAdd: function bulkAdd(data, tableName) {
+        tableName = tableName || this.prototype.tableName;
+
+        return bulkOperations.insert(tableName, data);
     },
 
     /**

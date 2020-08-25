@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const db = require('../../../data/db');
+const db = require('../../data/db');
 
 const CHUNK_SIZE = 100;
 
