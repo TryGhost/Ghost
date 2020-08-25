@@ -11,6 +11,7 @@ async function insertChunkSequential(table, chunk, result) {
             await db.knex(table).insert(record);
             result.successful += 1;
         } catch (err) {
+            err.errorDetails = record;
             result.errors.push(err);
             result.unsuccessfulRecords.push(record);
             result.unsuccessful += 1;
