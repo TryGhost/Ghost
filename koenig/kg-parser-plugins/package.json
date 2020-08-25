@@ -34,7 +34,7 @@
     "@babel/preset-env": "7.11.0",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "jsdom": "16.4.0",
-    "mocha": "8.1.1",
+    "mocha": "8.1.2",
     "rollup": "2.26.5",
     "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
