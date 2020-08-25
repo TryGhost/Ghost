@@ -28,9 +28,10 @@
                     <GhMembersLabSetting
                         @settings={{this.settings}}
                         @fromAddress={{this.fromAddress}}
+                        @supportAddress={{this.supportAddress}}
                         @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
                         @setStripeConnectIntegrationTokenSetting={{action "setStripeConnectIntegrationTokenSetting"}}
-                        @setFromAddress={{action "setFromAddress"}}
+                        @setEmailAddress={{action "setEmailAddress"}}
                     />
                     <div class="mt5 pl5 pr5 pb5">
                         <GhTaskButton @buttonText="Save members settings"
