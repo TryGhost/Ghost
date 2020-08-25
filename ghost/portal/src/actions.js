@@ -43,7 +43,6 @@ async function signout({api}) {
 async function signin({data, api}) {
     await api.member.sendMagicLink(data);
     return {
-        action: 'signin:success',
         page: 'magiclink'
     };
 }
@@ -56,7 +55,6 @@ async function signup({data, api}) {
         await api.member.checkoutPlan({plan, email, name});
     }
     return {
-        action: 'signup:success',
         page: 'magiclink'
     };
 }
