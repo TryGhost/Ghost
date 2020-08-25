@@ -23,6 +23,8 @@ function back({state}) {
         return {
             page: state.lastPage
         };
+    } else {
+        closePopup({state});
     }
 }
 
