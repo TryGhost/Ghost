@@ -110,7 +110,8 @@ class SignupPage extends React.Component {
         }, () => {
             const {onAction} = this.context;
             const {name, email, plan, errors} = this.state;
-            if (!(errors && Object.keys(errors).length > 0)) {
+            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+            if (!hasFormErrors) {
                 onAction('signup', {name, email, plan});
                 this.setState({
                     errors: {}
