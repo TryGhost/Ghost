@@ -78,7 +78,25 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         ([fetchedStripeCustomers, createdStripeCustomers]) => {
             return models.MemberStripeCustomer.bulkAdd(
                 fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
-            );
+            ).then((insertResult) => {
+                if (insertResult.errors.length) {
+                    debug('doImport', `Finished inserting stripe customers with ${insertResult.errors.length} errors`);
+
+                    insertResult.errors = insertResult.errors.map((error) => {
+                        if (error.code === 'ER_DUP_ENTRY') {
+                            return new errors.ValidationError({
+                                message: i18n.t('errors.models.member_stripe_customer.customerAlreadyExists.message'),
+                                context: i18n.t('errors.models.member_stripe_customer.customerAlreadyExists.context'),
+                                err: error
+                            });
+                        } else {
+                            return handleUnrecognizedError(error);
+                        }
+                    });
+                }
+
+                return insertResult;
+            });
         }
     );
 
@@ -87,9 +105,35 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         createdStripeCustomersPromise,
         insertedCustomersPromise
     ]).then(
-        ([fetchedStripeCustomers, createdStripeCustomers]) => models.StripeCustomerSubscription.bulkAdd(
-            fetchedStripeCustomers.subscriptionsToInsert.concat(createdStripeCustomers.subscriptionsToInsert)
-        )
+        ([fetchedStripeCustomers, createdStripeCustomers, insertedCustomersResult]) => {
+            let subscriptionsToInsert = fetchedStripeCustomers.subscriptionsToInsert.concat(createdStripeCustomers.subscriptionsToInsert);
+
+            if (insertedCustomersResult.unsuccessfulRecords.length) {
+                const unsuccessfulCustomerIds = insertedCustomersResult.unsuccessfulRecords.map(r => r.customer_id);
+                subscriptionsToInsert = subscriptionsToInsert.filter(s => !unsuccessfulCustomerIds.includes(s.customer_id));
+            }
+
+            return models.StripeCustomerSubscription.bulkAdd(subscriptionsToInsert)
+                .then((insertResult) => {
+                    if (insertResult.errors.length) {
+                        debug('doImport', `Finished inserting stripe customer subscriptions with ${insertResult.errors.length} errors`);
+
+                        insertResult.errors = insertResult.errors.map((error) => {
+                            if (error.code === 'ER_DUP_ENTRY') {
+                                return new errors.ValidationError({
+                                    message: i18n.t('errors.models.stripe_customer_subscription.subscriptionAlreadyExists.message'),
+                                    context: i18n.t('errors.models.stripe_customer_subscription.subscriptionAlreadyExists.context'),
+                                    err: error
+                                });
+                            } else {
+                                return handleUnrecognizedError(error);
+                            }
+                        });
+                    }
+
+                    return insertResult;
+                });
+        }
     );
 
     const deletedMembersPromise = Promise.all([

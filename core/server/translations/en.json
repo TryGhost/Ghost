@@ -253,6 +253,18 @@
                     "context": "Attempting to add member with existing email address."
                 }
             },
+            "member_stripe_customer": {
+                "customerAlreadyExists": {
+                    "message": "Stripe customer already exists",
+                    "context": "Attempting to add Stripe customer with existing Stripe customer id"
+                }
+            },
+            "stripe_customer_subscription": {
+                "subscriptionAlreadyExists": {
+                    "message": "Stripe customer subscription already exists",
+                    "context": "Attempting to add Stripe customer subscription with existing Stripe customer"
+                }
+            },
             "base": {
                 "index": {
                     "missingContext": "missing context"
