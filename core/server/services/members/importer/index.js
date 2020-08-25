@@ -359,11 +359,17 @@ async function createStripeCustomers(stripeCustomersToCreate) {
             });
         } catch (error) {
             if (error.message.indexOf('customer') && error.code === 'resource_missing') {
-                error.message = `Member not imported. ${error.message}`;
-                error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
-                error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+                result.errors.push(new errors.NotFoundError({
+                    message: `Member not imported. ${error.message}`,
+                    context: i18n.t('errors.api.members.stripeCustomerNotFound.context'),
+                    help: i18n.t('errors.api.members.stripeCustomerNotFound.help'),
+                    err: error,
+                    errorDetails: JSON.stringify(customerToCreate)
+                }));
+            } else {
+                result.errors.push(handleUnrecognizedError(error));
             }
-            result.errors.push(error);
+
             result.membersToDelete.push(customerToCreate.member_id);
         }
     }));
@@ -421,11 +427,17 @@ async function fetchStripeCustomers(stripeCustomersToInsert) {
             });
         } catch (error) {
             if (error.message.indexOf('customer') && error.code === 'resource_missing') {
-                error.message = `Member not imported. ${error.message}`;
-                error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
-                error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+                result.errors.push(new errors.NotFoundError({
+                    message: `Member not imported. ${error.message}`,
+                    context: i18n.t('errors.api.members.stripeCustomerNotFound.context'),
+                    help: i18n.t('errors.api.members.stripeCustomerNotFound.help'),
+                    err: error,
+                    errorDetails: JSON.stringify(customer)
+                }));
+            } else {
+                result.errors.push(handleUnrecognizedError(error));
             }
-            result.errors.push(error);
+
             result.membersToDelete.push(customer.member_id);
         }
     }));
