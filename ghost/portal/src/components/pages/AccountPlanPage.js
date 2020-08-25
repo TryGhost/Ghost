@@ -94,7 +94,8 @@ export default class AccountPlanPage extends React.Component {
         }, () => {
             const {onAction, member} = this.context;
             const {plan, errors} = this.state;
-            if (!(errors && Object.keys(errors).length > 0)) {
+            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+            if (!hasFormErrors) {
                 if (member.paid) {
                     const {subscriptions} = member;
                     const subscriptionId = subscriptions[0].id;
