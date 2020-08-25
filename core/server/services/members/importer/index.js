@@ -247,17 +247,6 @@ function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
         let createdAt = member.created_at === '' ? undefined : member.created_at;
 
         if (createdAt) {
-            const date = new Date(createdAt);
-
-            // CASE: client sends `0000-00-00 00:00:00`
-            if (isNaN(date)) {
-                // TODO: throw in validation stage for single record, not whole batch!
-                throw new errors.ValidationError({
-                    message: i18n.t('errors.models.base.invalidDate', {key: 'created_at'}),
-                    code: 'DATE_INVALID'
-                });
-            }
-
             createdAt = moment(createdAt).toDate();
         } else {
             createdAt = new Date();
