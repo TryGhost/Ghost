@@ -3,12 +3,15 @@ const uuid = require('uuid');
 const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
+const debug = require('ghost-ignition').debug('importer:members');
 const membersService = require('../index');
 const models = require('../../../models');
 const {i18n} = require('../../../lib/common');
 const logging = require('../../../../shared/logging');
 
 const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
+    debug('doImport', `members: ${members.length}, labels: ${allLabelModels.length}, import lables: ${importSetLabels.length}, createdBy: ${createdBy}`);
+
     let {
         invalidMembers,
         membersToInsert,
@@ -34,6 +37,8 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         }
 
         if (insertResult.errors.length) {
+            debug('doImport', `Finished inserting members with ${insertResult.errors.length} errors`);
+
             insertResult.errors = insertResult.errors.map((error) => {
                 if (error.code === 'ER_DUP_ENTRY') {
                     return new errors.ValidationError({
