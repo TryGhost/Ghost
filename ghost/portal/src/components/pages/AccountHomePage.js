@@ -157,7 +157,7 @@ class FreeAccountHomePage extends React.Component {
         );
     }
 
-    renderAccountDetail(e) {
+    renderAccountDetail() {
         const {name, firstname, email, subscribed} = this.context.member;
         const {title: siteTitle} = this.context.site;
 
