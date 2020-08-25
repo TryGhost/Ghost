@@ -451,6 +451,8 @@ describe('Members API', function () {
 
                 should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
                 jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Missing Stripe connection');
+
+                should.not.exist(jsonResponse.meta.import_label);
             });
     });
 
@@ -485,6 +487,8 @@ describe('Members API', function () {
 
                 jsonResponse.meta.stats.invalid.errors[3].message.should.equal('Validation failed for \'complimentary_plan\'');
                 jsonResponse.meta.stats.invalid.errors[3].count.should.equal(1);
+
+                should.not.exist(jsonResponse.meta.import_label);
             });
     });
 
@@ -510,6 +514,8 @@ describe('Members API', function () {
                 should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
                 jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Member already exists');
                 jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
+
+                should.exist(jsonResponse.meta.import_label);
             });
     });
 
