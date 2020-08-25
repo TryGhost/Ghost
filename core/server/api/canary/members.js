@@ -634,6 +634,11 @@ module.exports = {
 
                 invalid.errors = outputErrors;
 
+                if (imported.count === 0 && importLabel) {
+                    await models.Label.destroy(Object.assign({}, {id: importLabel.id}, frame.options));
+                    importLabel = null;
+                }
+
                 return {
                     meta: {
                         stats: {
@@ -740,6 +745,11 @@ module.exports = {
                 });
 
                 invalid.errors = outputErrors;
+
+                if (imported.count === 0 && importLabel) {
+                    await models.Label.destroy(Object.assign({}, {id: importLabel.id}, frame.options));
+                    importLabel = null;
+                }
 
                 return {
                     meta: {
