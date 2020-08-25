@@ -27,8 +27,8 @@
                 "maxLength": 2000
             },
             "subscribed": {
-                "type": ["string"],
-                "enum": ["true", "false", "TRUE", "FALSE", ""]
+                "type": ["string", "null"],
+                "enum": ["true", "false", "TRUE", "FALSE", "", null]
             },
             "labels": {
                 "type": ["string", "null"]
@@ -41,8 +41,8 @@
                 "type": ["string", "null"]
             },
             "complimentary_plan": {
-                "type": ["string"],
-                "enum": ["true", "false", "TRUE", "FALSE", ""]
+                "type": ["string", "null"],
+                "enum": ["true", "false", "TRUE", "FALSE", "", null]
             }
         }
     }
