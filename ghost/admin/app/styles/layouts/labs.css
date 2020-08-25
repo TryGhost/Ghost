@@ -47,7 +47,8 @@
     cursor: default;
 }
 
-/* Members */
+/* Members settings */
+/* ------------------------------------------------ */
 
 .gh-labs-members-radio {
     cursor: pointer;
@@ -169,6 +170,19 @@
     .gh-members-stripe-info {
         width: 100%;
     }
+}
+
+.gh-labs-members-emailinput {
+
+}
+
+.gh-labs-members-emaildropdown {
+    min-width: 192px;
+    margin-left: 8px;
+}
+
+.gh-labs-members-defaultemaildd {
+    padding-right: 200px;
 }
 
 .gh-labs-mailgun-region {

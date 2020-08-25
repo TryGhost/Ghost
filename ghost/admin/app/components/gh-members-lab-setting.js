@@ -28,6 +28,17 @@ const CURRENCIES = [
     }
 ];
 
+const REPLY_ADDRESSES = [
+    {
+        label: 'Newsletter email address',
+        value: 'newsletter'
+    },
+    {
+        label: 'Support email address',
+        value: 'support'
+    }
+];
+
 export default Component.extend({
     feature: service(),
     config: service(),
@@ -37,7 +48,9 @@ export default Component.extend({
     settings: service(),
 
     currencies: null,
+    replyAddresses: null,
     showFromAddressConfirmation: false,
+    showSupportAddressConfirmation: false,
     showMembersModalSettings: false,
     stripePlanInvalidAmount: false,
     _scratchStripeYearlyAmount: null,
@@ -63,6 +76,10 @@ export default Component.extend({
     stripeConnectAccountName: reads('settings.stripeConnectDisplayName'),
     stripeConnectLivemode: reads('settings.stripeConnectLivemode'),
 
+    selectedReplyAddress: computed('settings.membersReplyAddress', function () {
+        return REPLY_ADDRESSES.findBy('value', this.get('settings.membersReplyAddress'));
+    }),
+
     selectedCurrency: computed('stripePlans.monthly.currency', function () {
         return CURRENCIES.findBy('value', this.get('stripePlans.monthly.currency'));
     }),
@@ -70,9 +87,17 @@ export default Component.extend({
     disableUpdateFromAddressButton: computed('fromAddress', function () {
         const savedFromAddress = this.get('settings.membersFromAddress') || '';
         if (!savedFromAddress.includes('@') && this.blogDomain) {
-            return (this.fromAddress === `${savedFromAddress}@${this.blogDomain}`);
+            return !this.fromAddress || (this.fromAddress === `${savedFromAddress}@${this.blogDomain}`);
         }
-        return (this.fromAddress === savedFromAddress);
+        return !this.fromAddress || (this.fromAddress === savedFromAddress);
+    }),
+
+    disableUpdateSupportAddressButton: computed('supportAddress', function () {
+        const savedSupportAddress = this.get('settings.membersSupportAddress') || '';
+        if (!savedSupportAddress.includes('@') && this.blogDomain) {
+            return !this.supportAddress || (this.supportAddress === `${savedSupportAddress}@${this.blogDomain}`);
+        }
+        return !this.supportAddress || (this.supportAddress === savedSupportAddress);
     }),
 
     blogDomain: computed('config.blogDomain', function () {
@@ -120,6 +145,7 @@ export default Component.extend({
         this._super(...arguments);
         this.set('mailgunRegions', [US, EU]);
         this.set('currencies', CURRENCIES);
+        this.set('replyAddresses', REPLY_ADDRESSES);
     },
 
     actions: {
@@ -159,7 +185,11 @@ export default Component.extend({
         },
 
         setFromAddress(fromAddress) {
-            this.setFromAddress(fromAddress);
+            this.setEmailAddress('fromAddress', fromAddress);
+        },
+
+        setSupportAddress(supportAddress) {
+            this.setEmailAddress('supportAddress', supportAddress);
         },
 
         toggleSelfSignup() {
@@ -245,6 +275,12 @@ export default Component.extend({
             this.set('settings.stripePlans', updatedPlans);
         },
 
+        setReplyAddress(event) {
+            const newReplyAddress = event.value;
+
+            this.set('settings.membersReplyAddress', newReplyAddress);
+        },
+
         setStripeConnectIntegrationToken(event) {
             this.set('settings.stripeProductName', this.get('settings.title'));
             this.setStripeConnectIntegrationTokenSetting(event.target.value);
@@ -322,10 +358,28 @@ export default Component.extend({
         try {
             const response = yield this.ajax.post(url, {
                 data: {
-                    from_address: this.fromAddress
+                    email: this.fromAddress,
+                    type: 'fromAddressUpdate'
                 }
             });
             this.toggleProperty('showFromAddressConfirmation');
+            return response;
+        } catch (e) {
+            // Failed to send email, retry
+            return false;
+        }
+    }).drop(),
+
+    updateSupportAddress: task(function* () {
+        let url = this.get('ghostPaths.url').api('/settings/members/email');
+        try {
+            const response = yield this.ajax.post(url, {
+                data: {
+                    email: this.supportAddress,
+                    type: 'supportAddressUpdate'
+                }
+            });
+            this.toggleProperty('showSupportAddressConfirmation');
             return response;
         } catch (e) {
             // Failed to send email, retry

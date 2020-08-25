@@ -140,6 +140,20 @@
         {{/if}}
     </section>
 
+    {{#if this.config.enableDeveloperExperiments}}
+        <section class="bb b--whitegrey pa5">
+            <div class="flex justify-between">
+                <div>
+                    <h4 class="gh-setting-title">Portal settings</h4>
+                    <p class="gh-setting-desc pa0 ma0">Customize members modal signup flow</p>
+                </div>
+                <div>
+                    <button type="button" class="gh-btn" {{action (toggle "showMembersModalSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
+                </div>
+            </div>
+        </section>
+    {{/if}}
+
     <section class="bb b--whitegrey pa5">
         <div class="flex justify-between">
             <div>
@@ -270,8 +284,8 @@
     <section class="bb b--whitegrey pa5">
         <div class="flex justify-between">
             <div>
-                <h4 class="gh-setting-title">From address</h4>
-                <p class="gh-setting-desc pa0 ma0">The email address your members receive newsletters from</p>
+                <h4 class="gh-setting-title">Email addresses</h4>
+                <p class="gh-setting-desc pa0 ma0">Contact information used for newsletters and member login emails</p>
             </div>
             <div>
                 <button type="button" class="gh-btn" {{action (toggle "membersFromOpen" this)}} data-test-toggle-membersFrom><span>{{if this.membersFromOpen "Close" "Expand"}}</span></button>
@@ -279,46 +293,91 @@
         </div>
 
         {{#liquid-if this.membersFromOpen}}
-            <div class="flex flex-column w-100 w-50-l flex mt8">
+            <div class="mt8">
                 <GhFormGroup>
+                    <label class="fw6 f8">Support email address</label>
+                    <div class="flex items-center justify-center mt1">
+                        <GhTextInput
+                            @value={{readonly this.supportAddress}}
+                            @input={{action "setSupportAddress" value="target.value"}}
+                            @class="gh-labs-members-emailinput"
+                        />
+                        <GhTaskButton
+                            @buttonText="Update support address"
+                            @runningText="Sending..."
+                            @successText="Confirmation Email Sent"
+                            @disabled={{this.disableUpdateSupportAddressButton}}
+                            @task={{this.updateSupportAddress}}
+                            @class="gh-btn gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
+                            data-test-button="update-support-address"
+                        />
+                    </div>
+                </GhFormGroup>
+                <div class="nt5 mb5">
+                    <span class="mt1 fw4 f8 midgrey">
+                        How members can reach you for help with their account (public)
+                    </span>
+                </div>
+                {{#if this.showSupportAddressConfirmation}}
+                <div class="flex items-center green-d1 nt3 lh-1">
+                    {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
+                </div>
+                {{/if}}
+            </div>
+            <div class="mt8">
+                <GhFormGroup>
+                    <label class="fw6 f8">Newsletter email address</label>
                     <div class="flex items-center justify-center mt1">
                         <GhTextInput
                             @value={{readonly this.fromAddress}}
                             @input={{action "setFromAddress" value="target.value"}}
-                            @class="w20"
+                            @class="gh-labs-members-emailinput"
                         />
                         <GhTaskButton
-                            @buttonText="Update from address"
+                            @buttonText="Update newsletter address"
                             @runningText="Sending..."
                             @successText="Confirmation Email Sent"
                             @disabled={{this.disableUpdateFromAddressButton}}
                             @task={{this.updateFromAddress}}
-                            @class="gh-btn gh-btn-icon gh-btn-textfield-group ml2"
+                            @class="gh-btn gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
                             data-test-button="update-from-address"
                         />
                     </div>
                 </GhFormGroup>
+                <div class="nt5 mb5">
+                    <span class="mt1 fw4 f8 midgrey">
+                        The address your newsletter posts are sent from
+                    </span>
+                </div>
                 {{#if this.showFromAddressConfirmation}}
                 <div class="flex items-center green-d1 nt3 lh-1">
                     {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
                 </div>
                 {{/if}}
             </div>
-        {{/liquid-if}}
-    </section>
-    {{#if this.config.enableDeveloperExperiments}}
-        <section class="bb b--whitegrey pa5">
-            <div class="flex justify-between">
-                <div>
-                    <h4 class="gh-setting-title">Portal settings</h4>
-                    <p class="gh-setting-desc pa0 ma0">Customize members modal signup flow</p>
-                </div>
-                <div>
-                    <button type="button" class="gh-btn" {{action (toggle "showMembersModalSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
+            <div class="mt8">
+                <GhFormGroup @class="for-select gh-labs-members-defaultemaildd">
+                    <label class="fw6 f8" for="reply-address">Newsletter replies go to</label>
+                    <span class="gh-select mt1">
+                        {{one-way-select this.selectedReplyAddress
+                            id="reply-address"
+                            name="reply-address"
+                            options=(readonly this.replyAddresses)
+                            optionValuePath="value"
+                            optionLabelPath="label"
+                            update=(action "setReplyAddress")
+                        }}
+                        {{svg-jar "arrow-down-small"}}
+                    </span>
+                </GhFormGroup>
+                <div class="nt5 mb5">
+                    <span class="mt1 fw4 f8 midgrey">
+                        Where you receive responses to newsletters
+                    </span>
                 </div>
             </div>
-        </section>
-    {{/if}}
+        {{/liquid-if}}
+    </section>
     {{#unless this.mailgunIsConfigured}}
         <section class="bb b--whitegrey pa5">
             <div class="flex justify-between">
