@@ -1,5 +1,7 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
 const db = require('../../data/db');
+const logging = require('../../../shared/logging');
 
 const CHUNK_SIZE = 100;
 
@@ -41,13 +43,20 @@ async function insert(table, data) {
 }
 
 async function delChunkSequential(table, chunk, result) {
-    for (const record of chunk) {
+    for (const id of chunk) {
         try {
-            await db.knex(table).where('id', record).del();
+            await db.knex(table).where('id', id).del();
             result.successful += 1;
         } catch (err) {
-            result.errors.push(err);
-            result.unsuccessfulIds.push(record);
+            const importError = new errors.DataImportError({
+                message: `Failed to remove entry from ${table}`,
+                context: `Entry id: ${id}`,
+                err: err
+            });
+            logging.error(importError);
+
+            result.errors.push(importError);
+            result.unsuccessfulIds.push(id);
             result.unsuccessful += 1;
         }
     }
