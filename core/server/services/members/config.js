@@ -44,6 +44,11 @@ class MembersConfigProvider {
         return fromAddress;
     }
 
+    getAuthEmailFromAddress() {
+        const supportAddress = this._settingsCache.get('members_support_address');
+        return supportAddress || this.getEmailFromAddress();
+    }
+
     getPublicPlans() {
         const CURRENCY_SYMBOLS = {
             USD: '$',
