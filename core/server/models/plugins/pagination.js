@@ -150,21 +150,25 @@ pagination = function pagination(bookshelf) {
             const idAttribute = _.result(this.constructor.prototype, 'idAttribute');
             const self = this;
 
-            let countPromise;
-            if (options.transacting) {
-                countPromise = this.query().clone().transacting(options.transacting).select(
-                    bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
-                );
-            } else {
-                countPromise = this.query().clone().select(
-                    bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
-                );
-            }
             // #### Pre count clauses
             // Add any where or join clauses which need to be included with the aggregate query
 
             // Clone the base query & set up a promise to get the count of total items in the full set
-            // Due to lack of support for count distinct, this is pretty complex.
+            // Necessary due to lack of support for `count distinct` in bookshelf's count()
+            // Skipped if limit='all' as we can use the length of the fetched data set
+            let countPromise = Promise.resolve();
+            if (options.limit !== 'all') {
+                const countQuery = this.query().clone();
+
+                if (options.transacting) {
+                    countQuery.transacting(options.transacting);
+                }
+
+                countPromise = countQuery.select(
+                    bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
+                );
+            }
+
             return countPromise.then(function (countResult) {
                 // #### Post count clauses
                 // Add any where or join clauses which need to NOT be included with the aggregate query
@@ -197,6 +201,10 @@ pagination = function pagination(bookshelf) {
                 // @TODO: ensure option handling is done using an explicit pick elsewhere
                 return self.fetchAll(_.omit(options, ['page', 'limit']))
                     .then(function (fetchResult) {
+                        if (options.limit === 'all') {
+                            countResult = [{aggregate: fetchResult.length}];
+                        }
+
                         return {
                             collection: fetchResult,
                             pagination: paginationUtils.formatResponse(countResult[0] ? countResult[0].aggregate : 0, options)

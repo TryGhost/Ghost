@@ -46,14 +46,10 @@ describe('Unit: models/tag', function () {
                 limit: 'all',
                 withRelated: ['count.posts']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct tags.id) as aggregate from `tags` where `count`.`posts` >= ?');
-                queries[0].bindings.should.eql([
-                    1
-                ]);
+                queries.length.should.eql(1);
 
-                queries[1].sql.should.eql('select `tags`.*, (select count(`posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
-                queries[1].bindings.should.eql([
+                queries[0].sql.should.eql('select `tags`.*, (select count(`posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
+                queries[0].bindings.should.eql([
                     1
                 ]);
             });
