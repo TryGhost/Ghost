@@ -71,6 +71,20 @@ function createSettingsInstance(config) {
     });
 
     const sendEmailAddressUpdateMagicLink = ({email, payload = {}, type = 'fromAddressUpdate'}) => {
+        magicLinkService.transporter = {
+            sendMail(message) {
+                if (process.env.NODE_ENV !== 'production') {
+                    logging.warn(message.text);
+                }
+                let msg = Object.assign({
+                    from: email,
+                    subject: 'Update email address',
+                    forceTextContent: true
+                }, message);
+
+                return ghostMailer.send(msg);
+            }
+        };
         return magicLinkService.sendMagicLink({email, payload, subject: email, type});
     };
 
