@@ -492,7 +492,8 @@ textarea {
     top: 2px !important;
     background-color: white;
     transition: .3s;
-    box-shadow: 0 0 1px rgba(0,0,0,.6), 0 2px 3px rgba(0,0,0,.2);
+    box-shadow: 0 1px 2px rgba(0,0,0,.1);
+    border: 1px solid color-mod(var(--lightgrey) l(-3%));
     border-radius: 999px;
 }
 
@@ -503,6 +504,8 @@ textarea {
 
 .for-switch input:checked + .input-toggle-component:before {
     transform: translateX(22px);
+    box-shadow: 0 2px 3px rgba(0,0,0,.2);
+    border-color: transparent;
 }
 
 .for-switch .container {
@@ -518,7 +521,6 @@ textarea {
 .for-switch.small .input-toggle-component:before {
     height: 16px !important;
     width: 16px !important;
-    box-shadow: 0 0 1px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.1);
 }
 
 .for-switch.small input:checked + .input-toggle-component:before {
