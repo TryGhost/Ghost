@@ -26,7 +26,7 @@ function createApiInstance(config) {
                         logging.warn(message.text);
                     }
                     let msg = Object.assign({
-                        from: config.getEmailFromAddress(),
+                        from: config.getAuthEmailFromAddress(),
                         subject: 'Signin',
                         forceTextContent: true
                     }, message);

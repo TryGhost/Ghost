@@ -17,7 +17,7 @@ function createSettingsInstance(config) {
                     logging.warn(message.text);
                 }
                 let msg = Object.assign({
-                    from: config.getEmailFromAddress(),
+                    from: config.getAuthEmailFromAddress(),
                     subject: 'Update email address',
                     forceTextContent: true
                 }, message);
