@@ -345,35 +345,6 @@
     display: none
 }
 
-.gh-portal-links-table {
-    width: 100%;
-}
-
-.gh-portal-links-table tr td {
-    white-space: nowrap;
-    padding: 4px 12px 4px 0;
-}
-
-.gh-portal-links-table tr.header td {
-    border-bottom: 1px solid var(--lightgrey);
-}
-
-.gh-portal-links-table tr.header h4.toggle {
-    font-weight: 400;
-    cursor: pointer;
-}
-
-.gh-portal-links-table tr td:last-of-type {
-    text-align: right;
-    padding-right: 0;
-}
-
-.gh-portal-links-table tr.header .toggle-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
 .gh-portal-links-container {
     position: relative;
     display: flex;
@@ -392,6 +363,70 @@
     margin: 0 auto;
     border-radius: 5px;
     box-shadow: 0 0 0 1px rgba(0,0,0,0.02), 0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07);
+}
+
+.gh-portal-links-main h2 {
+    font-weight: 500;
+}
+
+.gh-portal-links-main p {
+    margin-bottom: 10px;
+}
+
+.gh-portal-links-table {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.gh-portal-links-table tr td {
+    white-space: nowrap;
+    padding: 10px 12px 0 0;
+}
+
+.gh-portal-links-table tr.header td {
+    border-bottom: 1px solid var(--lightgrey);
+}
+
+.gh-portal-links-table tr.header h4 {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    color: var(--midlightgrey-d2);
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.gh-portal-links-table tr.header .gh-portal-links-cell {
+    font-size: 1.3rem;
+    font-weight: 400;
+    cursor: pointer;
+    text-transform: none;
+    color: var(--blue);
+}
+
+.gh-portal-links-table tr td:last-of-type {
+    padding-right: 0;
+}
+
+.gh-portal-links-table tr.header .toggle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gh-portal-links-table tr td.pagename {
+    font-size: 1.4rem;
+    width: 130px;
+}
+
+.gh-portal-links-table .page-url-container {
+    position: relative;
+}
+
+.gh-portal-links-table .page-url-container .gh-portal-setting-copy {
+    position: absolute;
+    right: 2px;
+    top: 2px;
 }
 
 .gh-portal-custom-icon:hover .gh-portal-button-custom {
