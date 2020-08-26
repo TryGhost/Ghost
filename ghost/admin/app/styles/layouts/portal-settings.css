@@ -102,15 +102,11 @@
 }
 
 .gh-portal-settings .input-color input {
+    position: relative;
     height: 30px;
     width: 102px;
     padding: 3px 4px 3px 44px;
     font-size: 1.3rem;
-}
-
-.gh-portal-settings .input-color .color-box {
-    height: 28px;
-    width: 28px;
 }
 
 .gh-portal-settings .input-color::after {
@@ -118,9 +114,43 @@
     left: 34px;
 }
 
-.gh-portal-settings .input-color input:focus + .color-box {
+.gh-portal-settings .color-picker-horizontal-divider {
+    position: absolute;
+    display: block;
+    content: "";
+    width: 1px;
+    top: 0;
+    left: 29px;
+    bottom: 0;
+    background: color-mod(var(--lightgrey) l(-5%) s(-10%));
+}
+
+.gh-portal-settings .input-color input:focus + .color-picker-horizontal-divider {
+    top: 2px;
+    bottom: 2px;
+}
+
+.gh-portal-settings .color-box-container {
     height: 26px;
-    width: 28px;
+    width: 26px;
+    position: absolute;
+    overflow: hidden;
+    top: 2px;
+    left: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.gh-portal-settings .color-box-container .color-picker {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 34px;
+    height: 34px;
 }
 
 .gh-portal-settings .gh-select svg {
