@@ -81,6 +81,8 @@ module.exports = {
         }
 
         const blogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
+        const supportAddress = settingsCache.get('members_support_address');
+        const replyToAddress = (settingsCache.get('members_reply_address') === 'support') ? supportAddress : fromAddress;
         fromAddress = blogTitle ? `"${blogTitle}"<${fromAddress}>` : fromAddress;
 
         const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
@@ -94,6 +96,7 @@ module.exports = {
             const batchData = {
                 to: toAddresses,
                 from: fromAddress,
+                'h:Reply-To': replyToAddress || fromAddress,
                 'recipient-variables': recipientVariables
             };
 
