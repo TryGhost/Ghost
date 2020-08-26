@@ -143,7 +143,7 @@ class SettingsImporter extends BaseImporter {
             }
 
             // CASE: we do not import "from address" for members settings as that needs to go via validation with magic link
-            if (obj.key === 'members_from_address') {
+            if ((obj.key === 'members_from_address') || (obj.key === 'members_support_address')) {
                 obj.value = null;
             }
 
