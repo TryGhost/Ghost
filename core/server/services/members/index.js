@@ -39,6 +39,8 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
     if (![
         'members_allow_free_signup',
         'members_from_address',
+        'members_support_address',
+        'members_reply_address',
         'stripe_publishable_key',
         'stripe_secret_key',
         'stripe_product_name',
