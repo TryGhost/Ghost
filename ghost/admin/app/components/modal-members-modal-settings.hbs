@@ -119,7 +119,10 @@
                                             class="color-box-container"
                                             style={{this.backgroundStyle}}
                                         >
-                                            <input type="color" name="accent-color" class="color-picker" value="#ffffff" >
+                                            <input
+                                                type="color" name="accent-color" class="color-picker" value="{{this.colorPickerValue}}"
+                                                oninput={{action "updateAccentColor" value="target.value"}}
+                                            >
                                         </div>
                                     </div>
                                     <GhErrorMessage
