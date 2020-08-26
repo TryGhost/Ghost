@@ -206,5 +206,30 @@ describe('Member Model', function run() {
             should.not.exist(subscriptionAfterDestroy, 'StripeCustomerSubscription should have been destroyed');
         });
     });
+
+    describe('findAll', function () {
+        beforeEach(testUtils.setup('members'));
+
+        it('can use custom query', function (done) {
+            Member.findAll().then(function (allResult) {
+                allResult.length.should.equal(3);
+
+                return Member.findAll({paid: true});
+            }).then(function (queryResult) {
+                queryResult.length.should.equal(1);
+                queryResult.models[0].get('email').should.equal('paid@test.com');
+
+                done();
+            }).catch(done);
+        });
+
+        it('can use search query', function (done) {
+            Member.findAll({search: 'egg'}).then(function (queryResult) {
+                queryResult.length.should.equal(1);
+                queryResult.models[0].get('name').should.equal('Mr Egg');
+                done();
+            }).catch(done);
+        });
+    });
 });
 
