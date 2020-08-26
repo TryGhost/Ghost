@@ -22,7 +22,7 @@ const handleUnrecognizedError = (error) => {
 };
 
 const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
-    debug('doImport', `members: ${members.length}, labels: ${allLabelModels.length}, import lables: ${importSetLabels.length}, createdBy: ${createdBy}`);
+    debug(`Importing members: ${members.length}, labels: ${allLabelModels.length}, import lables: ${importSetLabels.length}, createdBy: ${createdBy}`);
 
     let {
         invalidMembers,
@@ -34,6 +34,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     // NOTE: member insertion has to happen before the rest of insertions to handle validation
     //       errors - remove failed members from label/stripe sets
+    debug(`Starting insert of ${membersToInsert.length} members`);
     const insertedMembers = await models.Member.bulkAdd(membersToInsert).then((insertResult) => {
         if (insertResult.unsuccessfulRecords.length) {
             const unsuccessfulIds = insertResult.unsuccessfulRecords.map(r => r.id);
@@ -48,9 +49,8 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
                 .filter(sc => !unsuccessfulIds.includes(sc.member_id));
         }
 
+        debug(`Finished inserting members with ${insertResult.errors.length} errors`);
         if (insertResult.errors.length) {
-            debug('doImport', `Finished inserting members with ${insertResult.errors.length} errors`);
-
             insertResult.errors = insertResult.errors.map((error) => {
                 if (error.code === 'ER_DUP_ENTRY') {
                     return new errors.ValidationError({
@@ -69,19 +69,26 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
 
     const fetchedStripeCustomersPromise = fetchStripeCustomers(stripeCustomersToFetch);
     const createdStripeCustomersPromise = createStripeCustomers(stripeCustomersToCreate);
-    const insertedLabelsPromise = models.Base.Model.bulkAdd(labelAssociationsToInsert, 'members_labels');
+
+    debug(`Starting insert of ${labelAssociationsToInsert.length} label associations`);
+    const insertedLabelsPromise = models.Base.Model.bulkAdd(labelAssociationsToInsert, 'members_labels')
+        .then((insertResult) => {
+            debug(`Finished inserting member label associations with ${insertResult.errors.length} errors`);
+            return insertResult;
+        });
 
     const insertedCustomersPromise = Promise.all([
         fetchedStripeCustomersPromise,
         createdStripeCustomersPromise
     ]).then(
         ([fetchedStripeCustomers, createdStripeCustomers]) => {
-            return models.MemberStripeCustomer.bulkAdd(
-                fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert)
-            ).then((insertResult) => {
-                if (insertResult.errors.length) {
-                    debug('doImport', `Finished inserting stripe customers with ${insertResult.errors.length} errors`);
+            const stripeCustomersToInsert = fetchedStripeCustomers.customersToInsert.concat(createdStripeCustomers.customersToInsert);
 
+            debug(`Starting insert of ${stripeCustomersToInsert.length} stripe customers`);
+            return models.MemberStripeCustomer.bulkAdd(stripeCustomersToInsert).then((insertResult) => {
+                debug(`Finished inserting stripe customers with ${insertResult.errors.length} errors`);
+
+                if (insertResult.errors.length) {
                     insertResult.errors = insertResult.errors.map((error) => {
                         if (error.code === 'ER_DUP_ENTRY') {
                             return new errors.ValidationError({
@@ -113,11 +120,12 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
                 subscriptionsToInsert = subscriptionsToInsert.filter(s => !unsuccessfulCustomerIds.includes(s.customer_id));
             }
 
+            debug(`Starting insert of ${subscriptionsToInsert.length} stripe customer subscriptions`);
             return models.StripeCustomerSubscription.bulkAdd(subscriptionsToInsert)
                 .then((insertResult) => {
-                    if (insertResult.errors.length) {
-                        debug('doImport', `Finished inserting stripe customer subscriptions with ${insertResult.errors.length} errors`);
+                    debug(`Finished inserting stripe customer subscriptions with ${insertResult.errors.length} errors`);
 
+                    if (insertResult.errors.length) {
                         insertResult.errors = insertResult.errors.map((error) => {
                             if (error.code === 'ER_DUP_ENTRY') {
                                 return new errors.ValidationError({
@@ -171,7 +179,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
     const importedCount = insertedMembers.successful - deletedMembers.successful;
     const invalidCount = insertedMembers.unsuccessful + invalidMembers.length + deletedMembers.successful + deletedMembers.unsuccessful;
 
-    debug('doImport', `Finished members import with ${importedCount} imported, ${invalidCount} invalid and ${allErrors.length} errors`);
+    debug(`Finished members import with ${importedCount} imported, ${invalidCount} invalid and ${allErrors.length} errors`);
 
     const result = {
         imported: {
@@ -317,6 +325,7 @@ async function createStripeCustomers(stripeCustomersToCreate) {
         membersToDelete: []
     };
 
+    debug(`Creating Stripe customers for ${stripeCustomersToCreate.length} records`);
     await Promise.all(stripeCustomersToCreate.map(async function createStripeCustomer(customerToCreate) {
         try {
             const customer = await membersService.api.members.createStripeCustomer({
@@ -375,6 +384,7 @@ async function createStripeCustomers(stripeCustomersToCreate) {
         }
     }));
 
+    debug(`Finished creating Stripe customers with ${result.errors.length} errors`);
     return result;
 }
 
@@ -385,6 +395,8 @@ async function fetchStripeCustomers(stripeCustomersToInsert) {
         subscriptionsToInsert: [],
         membersToDelete: []
     };
+
+    debug(`Fetching Stripe customers for ${stripeCustomersToInsert.length} records`);
 
     await Promise.all(stripeCustomersToInsert.map(async function fetchStripeCustomer(customer) {
         try {
@@ -443,6 +455,7 @@ async function fetchStripeCustomers(stripeCustomersToInsert) {
         }
     }));
 
+    debug(`Finished fetching Stripe customers with ${result.errors.length} errors`);
     return result;
 }
 
