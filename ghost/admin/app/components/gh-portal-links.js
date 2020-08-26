@@ -10,11 +10,11 @@ export default Component.extend({
     isLink: true,
 
     toggleValue: computed('isLink', function () {
-        return this.isLink ? 'Show Data Attributes' : 'Show Links';
+        return this.isLink ? 'Data attributes' : 'Links';
     }),
 
     sectionHeaderLabel: computed('isLink', function () {
-        return this.isLink ? 'Link' : 'Data Attribute';
+        return this.isLink ? 'Link' : 'Data attribute';
     }),
 
     init() {
