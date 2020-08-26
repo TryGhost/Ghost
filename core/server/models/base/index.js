@@ -829,6 +829,21 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // ## Model Data Functions
 
+    getFilteredCollection: function getFilteredCollection(options) {
+        const filteredCollection = this.forge();
+
+        // Apply model-specific query behaviour
+        filteredCollection.applyCustomQuery(options);
+
+        // Add Filter behaviour
+        filteredCollection.applyDefaultAndCustomFilters(options);
+
+        // Apply model-specific search behaviour
+        filteredCollection.applySearchQuery(options);
+
+        return filteredCollection;
+    },
+
     /**
      * ### Find All
      * Fetches all the data for a particular model
@@ -837,7 +852,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findAll: function findAll(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findAll');
-        const itemCollection = this.forge();
+        const itemCollection = this.getFilteredCollection(options);
 
         // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
         if (this.orderDefaultRaw && !options.migrating) {
@@ -846,7 +861,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
         }
 
-        itemCollection.applyDefaultAndCustomFilters(options);
         return itemCollection.fetchAll(options).then(function then(result) {
             if (options.withRelated) {
                 _.each(result.models, function each(item) {
@@ -884,20 +898,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findPage: function findPage(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findPage');
-        const itemCollection = this.forge();
+        const itemCollection = this.getFilteredCollection(options);
         const requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
-        itemCollection.debug = options.debug && config.get('env') !== 'production';
-
-        // Apply model-specific query behaviour
-        itemCollection.applyCustomQuery(options);
-
-        // Add Filter behaviour
-        itemCollection.applyDefaultAndCustomFilters(options);
-
-        // Apply model-specific search behaviour
-        itemCollection.applySearchQuery(options);
+        itemCollection.debug = unfilteredOptions.debug && config.get('env') !== 'production';
 
         // Ensure only valid fields/columns are added to query
         // and append default columns to fetch
