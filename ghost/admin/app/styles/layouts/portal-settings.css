@@ -211,7 +211,6 @@
 .gh-portal-settings-maintabs li.active a {
     color: var(--blue);
     font-weight: 500;
-    box-shadow: 0 0 0 2px var(--blue);
 }
 
 .gh-portal-settings-icons {
