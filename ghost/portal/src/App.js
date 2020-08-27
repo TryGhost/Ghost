@@ -142,8 +142,8 @@ export default class App extends React.Component {
             return {
                 showPopup: true,
                 site: Fixtures.site,
-                member: Fixtures.member.paid,
-                page: 'signup'
+                member: Fixtures.member.free,
+                page: 'accountProfile'
             };
         }
         return {};

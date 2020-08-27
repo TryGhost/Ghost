@@ -71,6 +71,7 @@ export default class AccountProfilePage extends React.Component {
                 disabled={disabled}
                 brandColor={this.context.brandColor}
                 label={label}
+                style={{height: '40px'}}
             />
         );
     }
