@@ -216,7 +216,7 @@ function serializeMemberLabels(labels) {
 function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
     const labelIdLookup = allLabelModels.reduce(function (labelIdLookupAcc, labelModel) {
         return Object.assign(labelIdLookupAcc, {
-            [labelModel.get('name')]: labelModel.id
+            [labelModel.name]: labelModel.id
         });
     }, {});
 
