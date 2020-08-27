@@ -285,7 +285,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta.stats);
 
                 should.exist(jsonResponse.meta.import_label);
-
+                jsonResponse.meta.import_label.slug.should.equal('global-label-1');
                 jsonResponse.meta.stats.imported.count.should.equal(2);
                 jsonResponse.meta.stats.invalid.count.should.equal(0);
 
@@ -315,20 +315,18 @@ describe('Members API', function () {
                 importedMember1.stripe.subscriptions.length.should.equal(0);
 
                 // check label order
-                // 1 unique global + 1 record labels + auto-generated import label
-                importedMember1.labels.length.should.equal(3);
+                // 1 unique global + 1 record labels
+                importedMember1.labels.length.should.equal(2);
                 importedMember1.labels[0].slug.should.equal('label');
                 importedMember1.labels[1].slug.should.equal('global-label-1');
-                importedMember1.labels[2].slug.should.equal(importLabel);
 
                 const importedMember2 = jsonResponse.members.find(m => m.email === 'member+labels_2@example.com');
                 should.exist(importedMember2);
-                // 1 unique global + 2 record labels + auto-generated import label
-                importedMember2.labels.length.should.equal(4);
+                // 1 unique global + 2 record labels
+                importedMember2.labels.length.should.equal(3);
                 importedMember2.labels[0].slug.should.equal('another-label');
                 importedMember2.labels[1].slug.should.equal('and-one-more');
                 importedMember2.labels[2].slug.should.equal('global-label-1');
-                importedMember2.labels[3].slug.should.equal(importLabel);
             });
     });
 
@@ -352,6 +350,9 @@ describe('Members API', function () {
 
                 jsonResponse.meta.stats.imported.count.should.equal(1);
                 jsonResponse.meta.stats.invalid.count.should.equal(0);
+
+                should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.match(/^import-/);
             })
             .then(() => {
                 return request
@@ -385,7 +386,6 @@ describe('Members API', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
-
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -459,6 +459,7 @@ describe('Members API', function () {
     it('Fails to import memmber with invalid values', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['new-global-label'])
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-invalid-values.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -488,7 +489,8 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.invalid.errors[3].message.should.equal('Validation failed for \'complimentary_plan\'');
                 jsonResponse.meta.stats.invalid.errors[3].count.should.equal(1);
 
-                should.not.exist(jsonResponse.meta.import_label);
+                should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.equal('new-global-label');
             });
     });
 
@@ -516,6 +518,7 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
 
                 should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.match(/^import-/);
             });
     });
 
