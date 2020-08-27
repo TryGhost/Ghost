@@ -7,7 +7,7 @@ const localUtils = require('./utils');
 
 // Values to test against
 const publicSettings = require('../../../core/server/services/settings/public');
-const defaultSettings = require('../../../core/server/data/schema').defaultSettings.site;
+const defaultSettings = require('../../../core/server/data/schema').defaultSettings;
 
 const ghost = testUtils.startGhost;
 let request;
@@ -34,6 +34,7 @@ const defaultSettingsKeys = [
     'twitter_image',
     'twitter_title',
     'twitter_description',
+    'members_support_address',
     'url'
 ];
 
@@ -71,6 +72,16 @@ describe('Settings Content API', function () {
                     return (o !== 'brand');
                 });
 
+                const flattenedPublicSettings = [];
+                _.each(defaultSettings, function each(_settings) {
+                    _.each(_settings, function eachSetting(setting) {
+                        const flags = setting.flags || '';
+                        if (setting.group === 'site' || (flags.includes('PUBLIC'))) {
+                            flattenedPublicSettings.push(setting);
+                        }
+                    });
+                });
+
                 // settings.should.have.properties(publicProperties);
                 // Object.keys(settings).length.should.equal(22);
                 Object.keys(settings).should.deepEqual(defaultSettingsKeys);
@@ -83,7 +94,7 @@ describe('Settings Content API', function () {
                     }
 
                     let defaultKey = _.findKey(publicSettings, v => v === key);
-                    let defaultValue = _.find(defaultSettings, setting => setting.key === defaultKey).defaultValue;
+                    let defaultValue = _.find(flattenedPublicSettings, setting => setting.key === defaultKey).defaultValue;
 
                     // Convert empty strings to null
                     defaultValue = defaultValue || null;
