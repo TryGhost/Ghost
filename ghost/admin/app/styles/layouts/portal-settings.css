@@ -143,14 +143,14 @@
 
 .gh-portal-settings .color-box-container .color-picker {
     position: absolute;
-    top: -3px;
-    left: -3px;
+    top: -10px;
+    left: -10px;
     border: none;
     outline: none;
     padding: 0;
     margin: 0;
-    width: 34px;
-    height: 34px;
+    width: 50px;
+    height: 50px;
 }
 
 .gh-portal-settings .gh-select svg {
