@@ -21,8 +21,8 @@ const handleUnrecognizedError = (error) => {
     }
 };
 
-const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) => {
-    debug(`Importing members: ${members.length}, labels: ${allLabelModels.length}, import lables: ${importSetLabels.length}, createdBy: ${createdBy}`);
+const doImport = async ({members, labels, importSetLabels, createdBy}) => {
+    debug(`Importing members: ${members.length}, labels: ${labels.length}, import lables: ${importSetLabels.length}, createdBy: ${createdBy}`);
 
     let {
         invalidMembers,
@@ -30,7 +30,7 @@ const doImport = async ({members, allLabelModels, importSetLabels, createdBy}) =
         stripeCustomersToFetch,
         stripeCustomersToCreate,
         labelAssociationsToInsert
-    } = getMemberData({members, allLabelModels, importSetLabels, createdBy});
+    } = getMemberData({members, labels, importSetLabels, createdBy});
 
     // NOTE: member insertion has to happen before the rest of insertions to handle validation
     //       errors - remove failed members from label/stripe sets
@@ -213,8 +213,8 @@ function serializeMemberLabels(labels) {
     }, []);
 }
 
-function getMemberData({members, allLabelModels, importSetLabels, createdBy}) {
-    const labelIdLookup = allLabelModels.reduce(function (labelIdLookupAcc, labelModel) {
+function getMemberData({members, labels, importSetLabels, createdBy}) {
+    const labelIdLookup = labels.reduce(function (labelIdLookupAcc, labelModel) {
         return Object.assign(labelIdLookupAcc, {
             [labelModel.name]: labelModel.id
         });
