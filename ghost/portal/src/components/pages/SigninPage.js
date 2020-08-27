@@ -72,15 +72,16 @@ export default class SigninPage extends React.Component {
 
     renderSubmitButton() {
         const isRunning = (this.context.action === 'signin:running');
-        const label = isRunning ? 'Sending' : 'Send Login Link';
+        const label = isRunning ? 'Sending login link...' : 'Send login link';
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
-                style={{width: '100%', height: '46px'}}
+                style={{width: '100%'}}
                 onClick={e => this.handleSignin(e)}
                 disabled={disabled}
                 brandColor={this.context.brandColor}
                 label={label}
+                isRunning={isRunning}
             />
         );
     }

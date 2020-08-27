@@ -1,9 +1,12 @@
 import React from 'react';
 import getContrastColor from '../../utils/contrast-color';
+import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 
 export const ActionButtonStyles = `
     .gh-portal-btn-main {
         box-shadow: none;
+        position: relative;
+        height: 46px;
     }
 
     .gh-portal-btn-main:hover {
@@ -19,6 +22,19 @@ export const ActionButtonStyles = `
         content: "";
         background: rgba(255, 255, 255, 0.08);
         border-radius: 5px;
+    }
+
+    .gh-portal-loadingicon {
+        position: absolute;
+        left: 50%;
+        display: inline-block;
+        margin-left: -19px;
+        height: 31px;
+    }
+
+    .gh-portal-loadingicon path,
+    .gh-portal-loadingicon rect {
+        fill: #fff;
     }
 `;
 
@@ -48,11 +64,11 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
     };
 };
 
-function ActionButton({label, onClick, disabled, retry, brandColor, style}) {
+function ActionButton({label, onClick, disabled, retry, brandColor, isRunning, style}) {
     let Style = Styles({disabled, retry, brandColor, style});
     return (
         <button className="gh-portal-btn gh-portal-btn-main gh-portal-btn-primary" style={Style.button} onClick={e => onClick(e)} disabled={disabled}>
-            {label}
+            {isRunning ? <LoaderIcon className='gh-portal-loadingicon' /> : label}
         </button>
     );
 }
