@@ -348,7 +348,7 @@
     position: relative;
     display: flex;
     box-sizing: border-box;
-    top: 100px;
+    top: 95px;
     flex-direction: column;
     justify-content: flex-start;
     overflow: hidden;
@@ -375,7 +375,7 @@
 .gh-portal-links-table {
     width: 100%;
     padding: 0;
-    margin: 0;
+    margin: 20px 0 0;
 }
 
 .gh-portal-links-table tr td {
