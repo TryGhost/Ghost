@@ -142,7 +142,6 @@ function createApiInstance(config) {
             }
         },
         paymentConfig: {
-            enableStripePromoCodes: config.getEnableStripePromoCodes(),
             stripe: config.getStripePaymentConfig()
         },
         models: {

@@ -154,10 +154,6 @@ class MembersConfigProvider {
         };
     }
 
-    getEnableStripePromoCodes() {
-        return this._config.get('enableStripePromoCodes');
-    }
-
     getStripePaymentConfig() {
         if (!this.isStripeConnected()) {
             return null;
@@ -182,6 +178,7 @@ class MembersConfigProvider {
                 id: this._settingsCache.get('members_stripe_webhook_id'),
                 secret: this._settingsCache.get('members_stripe_webhook_secret')
             },
+            enablePromoCodes: this._config.get('enableStripePromoCodes'),
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
