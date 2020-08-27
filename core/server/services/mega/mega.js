@@ -2,6 +2,7 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('mega');
 const url = require('url');
 const moment = require('moment');
+const ObjectId = require('bson-objectid');
 const errors = require('@tryghost/errors');
 const {events, i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
@@ -9,6 +10,7 @@ const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
 const jobService = require('../jobs');
 const models = require('../../models');
+const db = require('../../data/db');
 const postEmailSerializer = require('./post-email-serializer');
 
 const getEmailData = async (postModel, memberModels = []) => {
@@ -220,7 +222,29 @@ async function sendEmailJob({emailModel, options}) {
             id: emailModel.id
         });
 
-        // NOTE: meta can contains an array which can be a mix of successful and error responses
+        debug('pendingEmailHandler: storing recipient list');
+        const startStorage = Date.now();
+        const storeRecipientBatch = async function (recipients, i) {
+            const startOfBatchStore = Date.now();
+            const recipientData = recipients.map((memberModel) => {
+                return {
+                    id: ObjectId.generate(),
+                    email_id: emailModel.get('id'),
+                    member_id: memberModel.get('id'),
+                    batch: i + 1,
+                    uuid: memberModel.get('uuid'),
+                    email: memberModel.get('email'),
+                    name: memberModel.get('name')
+                };
+            });
+            const result = await db.knex('email_recipients').insert(recipientData);
+            debug(`pendingEmailHandler: stored recipient batch (${Date.now() - startOfBatchStore}ms)`);
+            return result;
+        };
+        await Promise.each(_.chunk(members, 1000), storeRecipientBatch);
+        debug(`pendingEmailHandler: stored recipient list (${Date.now() - startStorage}ms)`);
+
+        // NOTE: meta contains an array which can be a mix of successful and error responses
         //       needs filtering and saving objects of {error, batchData} form to separate property
         debug('pendingEmailHandler: sending email');
         startEmailSend = Date.now();
