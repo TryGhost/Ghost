@@ -43,9 +43,7 @@
                 </div>
             {{else}}
                 <div class="bg-whitegrey-l2 ba b--whitegrey br3 gh-image-uploader gh-members-import-spinner">
-                    <div class="gh-loading-content">
-                        <div class="gh-loading-spinner"></div>
-                    </div>
+                    <GhLoadingSpinner />
                 </div>
             {{/if}}
         {{/if}}
@@ -88,10 +86,8 @@
         {{/if}}
 
         {{#if this.uploading}}
-            <div class="progress-container pt20 pb20">
-                <div class="gh-progress-container-progress">
-                    <div class="gh-progress-bar {{if this.failureMessage "-error"}}" style={{this.progressStyle}}></div>
-                </div>
+            <div class="bg-whitegrey-l2 ba b--whitegrey br3 gh-image-uploader gh-members-import-spinner">
+                <GhLoadingSpinner />
             </div>
         {{/if}}
 
