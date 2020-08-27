@@ -192,6 +192,9 @@
     margin: 0;
 }
 
+.gh-portal-settings-maintabs li:not(:last-of-type) {
+    border-right: 1px solid color-mod(var(--midgrey) l(+35%) s(+10%));
+}
 
 .gh-portal-settings-maintabs li a {
     position: relative;
