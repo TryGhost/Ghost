@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.4.0",
-    "@sentry/node": "5.22.1",
+    "@sentry/node": "5.22.2",
     "@tryghost/adapter-manager": "0.1.10",
     "@tryghost/bootstrap-socket": "0.2.1",
     "@tryghost/constants": "0.1.0",
