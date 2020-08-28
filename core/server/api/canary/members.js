@@ -733,7 +733,7 @@ module.exports = {
                 let result;
 
                 if (isSQLite) {
-                    const dateModifier = `+${tzOffsetMins} minutes`;
+                    const dateModifier = `${Math.sign(tzOffsetMins) === -1 ? '' : '+'}${tzOffsetMins} minutes`;
 
                     result = await db.knex('members')
                         .select(db.knex.raw('DATE(created_at, ?) AS created_at, COUNT(DATE(created_at, ?)) AS count', [dateModifier, dateModifier]))
@@ -743,8 +743,8 @@ module.exports = {
                             }
                         }).groupByRaw('DATE(created_at, ?)', [dateModifier]);
                 } else {
-                    const mins = tzOffsetMins % 60;
-                    const hours = (tzOffsetMins - mins) / 60;
+                    const mins = Math.abs(tzOffsetMins) % 60;
+                    const hours = (Math.abs(tzOffsetMins) - mins) / 60;
                     const utcOffset = `${Math.sign(tzOffsetMins) === -1 ? '-' : '+'}${hours}:${mins < 10 ? '0' : ''}${mins}`;
 
                     result = await db.knex('members')
