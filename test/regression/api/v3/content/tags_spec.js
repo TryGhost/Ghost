@@ -1,5 +1,6 @@
 const should = require('should');
 const supertest = require('supertest');
+const _ = require('lodash');
 const localUtils = require('./utils');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
@@ -37,9 +38,9 @@ describe('api/v3/content/tags', function () {
             });
     });
 
-    it('Can request all tags with count.posts field and custom order', function () {
+    it('Can request all tags with count.posts field', function () {
         return request
-            .get(localUtils.API.getApiQuery(`tags/?key=${validKey}&include=count.posts&order=name%20DESC`))
+            .get(localUtils.API.getApiQuery(`tags/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -60,11 +61,12 @@ describe('api/v3/content/tags', function () {
                 jsonResponse.meta.pagination.should.have.property('next', 2);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 
-                jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
-                jsonResponse.tags[1].url.should.eql(`${config.get('url')}/tag/getting-started/`);
-
                 should.exist(jsonResponse.tags[0].count.posts);
-                jsonResponse.tags[0].count.posts.should.equal(2);
+                // Each tag should have the correct count
+                _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);
+                _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
+                _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
+                _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
             });
     });
 
