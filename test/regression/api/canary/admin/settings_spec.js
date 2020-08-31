@@ -37,8 +37,6 @@ const defaultSettingsKeyTypes = [
     {key: 'default_content_visibility', type: 'members'},
     {key: 'members_allow_free_signup', type: 'members'},
     {key: 'members_from_address', type: 'members'},
-    {key: 'members_support_address', type: 'members'},
-    {key: 'members_reply_address', type: 'members'},
     {key: 'stripe_product_name', type: 'members'},
     {key: 'stripe_plans', type: 'members'},
     {key: 'stripe_secret_key', type: 'members'},

@@ -37,8 +37,6 @@ const defaultSettingsKeys = [
     'default_content_visibility',
     'members_allow_free_signup',
     'members_from_address',
-    'members_support_address',
-    'members_reply_address',
     'stripe_product_name',
     'stripe_plans',
     'stripe_secret_key',
