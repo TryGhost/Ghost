@@ -59,6 +59,19 @@ const expectedProperties = {
         .without('parent_id', 'parent')
         // v2 Tag API doesn't return date fields
         .without('created_at', 'updated_at')
+        // v2 Tag API doesn't return extended meta fields
+        .without(
+            'og_image',
+            'og_title',
+            'og_description',
+            'twitter_image',
+            'twitter_title',
+            'twitter_description',
+            'codeinjection_head',
+            'codeinjection_foot',
+            'canonical_url',
+            'accent_color'
+        )
 };
 
 _.each(expectedProperties, (value, key) => {

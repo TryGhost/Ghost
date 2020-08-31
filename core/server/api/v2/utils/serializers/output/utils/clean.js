@@ -12,7 +12,8 @@ const tag = (attrs, frame) => {
             'name',
             'slug',
             'url',
-            'visibility'
+            'visibility',
+            'count'
         ]);
 
         // We are standardising on returning null from the Content API for any empty values
@@ -25,6 +26,8 @@ const tag = (attrs, frame) => {
         if (contentAttrs.description === '') {
             contentAttrs.description = null;
         }
+
+        return contentAttrs;
     }
 
     return _.pick(attrs, [
@@ -38,7 +41,8 @@ const tag = (attrs, frame) => {
         'slug',
         'updated_at',
         'url',
-        'visibility'
+        'visibility',
+        'count'
     ]);
 };
 
