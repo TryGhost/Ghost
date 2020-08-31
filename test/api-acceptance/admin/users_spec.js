@@ -149,6 +149,9 @@ describe('User API', function () {
                 jsonResponse.users.should.have.length(1);
                 localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count']);
                 localUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
+
+                should.exist(jsonResponse.users[0].count.posts);
+                jsonResponse.users[0].count.posts.should.equal(0);
                 done();
             });
     });
