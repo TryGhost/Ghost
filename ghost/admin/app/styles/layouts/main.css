@@ -116,11 +116,11 @@
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
-    top: -315px;
-    left: 30px;
+    top: -396px;
+    left: 20px;
     margin: 10px 0 0;
     box-shadow: 0 0 1px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.08), 0 18px 45px -5px rgba(0, 0, 0, 0.15);
-    min-width: 244px;
+    min-width: 280px;
     padding: 6px 0;
 }
 
@@ -129,7 +129,7 @@
     font-size: 1.4rem;
     margin: 0;
     width: unset;
-    padding: 7px 14px 8px;
+    padding: 10px 24px 11px;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu>li>button {
