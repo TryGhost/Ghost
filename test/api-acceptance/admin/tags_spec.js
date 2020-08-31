@@ -49,6 +49,7 @@ describe('Tag API', function () {
                 jsonResponse.tags[1].url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
 
                 should.exist(jsonResponse.tags[0].count.posts);
+                jsonResponse.tags[0].count.posts.should.equal(1);
             });
     });
 
@@ -79,6 +80,7 @@ describe('Tag API', function () {
                 jsonResponse.tags.should.have.length(1);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
                 should.exist(jsonResponse.tags[0].count.posts);
+                jsonResponse.tags[0].count.posts.should.equal(7);
 
                 jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
             });
