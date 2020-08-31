@@ -241,19 +241,6 @@
             "flags": "RO",
             "type": "string"
         },
-        "members_support_address": {
-            "defaultValue": "noreply",
-            "flags": "RO",
-            "type": "string"
-        },
-        "members_reply_address": {
-            "defaultValue": "newsletter",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["newsletter", "support"]]
-            },
-            "type": "string"
-        },
         "stripe_product_name": {
             "defaultValue": "Ghost Subscription",
             "type": "string"
