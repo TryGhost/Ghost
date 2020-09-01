@@ -36,9 +36,14 @@ export const ActionButtonStyles = `
     .gh-portal-loadingicon rect {
         fill: #fff;
     }
+
+    .gh-portal-loadingicon.dark path,
+    .gh-portal-loadingicon.dark rect {
+        fill: #1d1d1d;
+    }
 `;
 
-const Styles = ({brandColor, retry, disabled, style = {}}) => {
+const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
     let backgroundColor = (brandColor || '#3eb0ef');
     let opacity = '1.0';
     let pointerEvents = 'auto';
@@ -55,8 +60,8 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
 
     return {
         button: {
-            color: textColor,
-            backgroundColor,
+            ...(isPrimary ? {color: textColor} : {}),
+            ...(isPrimary ? {backgroundColor} : {}),
             opacity,
             pointerEvents,
             ...(style || {}) // Override any custom style
@@ -64,11 +69,13 @@ const Styles = ({brandColor, retry, disabled, style = {}}) => {
     };
 };
 
-function ActionButton({label, onClick, disabled, retry, brandColor, isRunning, style}) {
-    let Style = Styles({disabled, retry, brandColor, style});
+function ActionButton({label, onClick, disabled, retry, brandColor, isRunning, isPrimary = true, style}) {
+    let Style = Styles({disabled, retry, brandColor, style, isPrimary});
+    const className = isPrimary ? 'gh-portal-btn gh-portal-btn-main gh-portal-btn-primary' : 'gh-portal-btn';
+    const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
     return (
-        <button className="gh-portal-btn gh-portal-btn-main gh-portal-btn-primary" style={Style.button} onClick={e => onClick(e)} disabled={disabled}>
-            {isRunning ? <LoaderIcon className='gh-portal-loadingicon' /> : label}
+        <button className={className} style={Style.button} onClick={e => onClick(e)} disabled={disabled}>
+            {isRunning ? <LoaderIcon className={loaderClassName} /> : label}
         </button>
     );
 }

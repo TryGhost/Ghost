@@ -57,8 +57,8 @@ export const member = {
             status: 'active',
             start_date: '2019-05-01T11:42:40.000Z',
             default_payment_card_last4: '4242',
-            cancel_at_period_end: false,
-            current_period_end: '2019-06-01T11:42:40.000Z'
+            cancel_at_period_end: true,
+            current_period_end: '2021-06-05T11:42:40.000Z'
         }],
         paid: true
     }
