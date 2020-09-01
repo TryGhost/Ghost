@@ -42,7 +42,7 @@ describe('Members API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(3);
+                jsonResponse.members.should.have.length(4);
                 localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
 
                 testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
@@ -51,7 +51,7 @@ describe('Members API', function () {
                 jsonResponse.meta.pagination.should.have.property('page', 1);
                 jsonResponse.meta.pagination.should.have.property('limit', 15);
                 jsonResponse.meta.pagination.should.have.property('pages', 1);
-                jsonResponse.meta.pagination.should.have.property('total', 3);
+                jsonResponse.meta.pagination.should.have.property('total', 4);
                 jsonResponse.meta.pagination.should.have.property('next', null);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
             });
@@ -108,8 +108,9 @@ describe('Members API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
+                jsonResponse.members.should.have.length(2);
                 jsonResponse.members[0].email.should.equal('paid@test.com');
+                jsonResponse.members[1].email.should.equal('trialed@test.com');
                 localUtils.API.checkResponse(jsonResponse, 'members');
                 localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -412,8 +413,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures, 2 from above posts, 2 from above import
-                jsonResponse.total.should.equal(7);
+                // 4 from fixtures, 2 from above posts, 2 from above import
+                jsonResponse.total.should.equal(8);
             });
     });
 });
