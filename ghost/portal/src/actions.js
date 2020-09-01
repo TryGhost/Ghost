@@ -88,6 +88,19 @@ async function updateSubscription({data, api}) {
     };
 }
 
+async function cancelSubscription({data, api}) {
+    const {subscriptionId, cancelAtPeriodEnd} = data;
+    await api.member.updateSubscription({
+        subscriptionId, cancelAtPeriodEnd
+    });
+    const member = await api.member.sessionData();
+    return {
+        action: 'cancelSubscription:success',
+        page: 'accountHome',
+        member: member
+    };
+}
+
 async function editBilling({data, updateState, state, api}) {
     await api.member.editBilling();
 }
@@ -134,6 +147,7 @@ const Actions = {
     signup,
     updateEmail,
     updateSubscription,
+    cancelSubscription,
     updateMember,
     updateProfile,
     editBilling,
