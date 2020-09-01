@@ -84,10 +84,12 @@
 }
 
 .ember-power-calendar-nav {
-  line-height: 2;
+  padding: 0 4px 8px;
 }
 
 .ember-power-calendar-nav-control {
+  position: relative;
+  bottom: 2px;
   line-height: 1;
   font-size: 150%;
   color: var(--blue);
@@ -210,6 +212,10 @@
 
 
 /* Datepicker */
+.ember-power-datepicker-content {
+  padding: 12px;
+}
+
 .ember-power-datepicker-trigger:focus {
     outline: none;
 }

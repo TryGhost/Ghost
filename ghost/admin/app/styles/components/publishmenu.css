@@ -168,6 +168,7 @@
     display: flex;
     align-items: center;
     position: relative;
+    height: 32px;
     margin: 7px 0 4px;
     padding: 6px 8px;
     border: var(--input-border);
