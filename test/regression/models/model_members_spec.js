@@ -212,12 +212,13 @@ describe('Member Model', function run() {
 
         it('can use custom query', function (done) {
             Member.findAll().then(function (allResult) {
-                allResult.length.should.equal(3);
+                allResult.length.should.equal(4);
 
                 return Member.findAll({paid: true});
             }).then(function (queryResult) {
-                queryResult.length.should.equal(1);
+                queryResult.length.should.equal(2);
                 queryResult.models[0].get('email').should.equal('paid@test.com');
+                queryResult.models[1].get('email').should.equal('trialed@test.com');
 
                 done();
             }).catch(done);
