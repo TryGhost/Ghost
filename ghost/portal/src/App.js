@@ -232,6 +232,7 @@ export default class App extends React.Component {
 
     /** Handle actions from across App and update state */
     async onAction(action, data) {
+        clearTimeout(this.timeoutId);
         this.setState({
             action: `${action}:running`
         });
@@ -240,7 +241,7 @@ export default class App extends React.Component {
             this.setState(updatedState);
 
             /** Reset action state after short timeout */
-            setTimeout(() => {
+            this.timeoutId = setTimeout(() => {
                 this.setState({
                     action: ''
                 });
