@@ -9,6 +9,12 @@ import ActionHandler from './actions';
 import './App.css';
 const React = require('react');
 
+const DEV_MODE_DATA = {
+    showPopup: true,
+    site: Fixtures.site,
+    member: Fixtures.member.paid,
+    page: 'accountHome'
+};
 export default class App extends React.Component {
     constructor(props) {
         super(props);
@@ -139,12 +145,7 @@ export default class App extends React.Component {
     fetchDevData() {
         // Setup custom dev mode data from fixtures
         if (hasMode(['dev'])) {
-            return {
-                showPopup: true,
-                site: Fixtures.site,
-                member: Fixtures.member.paid,
-                page: 'accountPlan'
-            };
+            return DEV_MODE_DATA;
         }
         return {};
     }
