@@ -3,6 +3,8 @@ import {ReactComponent as LogoutIcon} from '../../images/icons/logout.svg';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
+import {getMemberSubscription} from '../../utils/helpers';
+import {getDateString} from '../../utils/date-time';
 
 const React = require('react');
 
@@ -78,6 +80,14 @@ export const AccountHomePageStyles = `
     }
 `;
 
+const LogoutButton = ({handleSignout}) => {
+    return (
+        <button className='gh-portal-btn gh-portal-btn-logout' name='logout' aria-label='logout' onClick = {e => handleSignout(e)}>
+            <LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span>
+        </button>
+    );
+};
+
 const UserAvatar = ({avatar, brandColor}) => {
     return (
         <div>
@@ -113,129 +123,202 @@ const UserHeader = ({member, brandColor}) => {
     );
 };
 
-class FreeAccountHomePage extends React.Component {
+const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
+    const getPlanLabel = ({amount = 0, currency_symbol: currencySymbol = '$', interval}) => {
+        return `${currencySymbol}${amount / 100}/${interval}`;
+    };
+
+    const getCardLabel = ({defaultCardLast4}) => {
+        if (defaultCardLast4) {
+            return `**** **** **** ${defaultCardLast4}`;
+        }
+        return `Complimentary`;
+    };
+    if (member.paid) {
+        const {subscriptions} = member;
+        const {
+            plan,
+            default_payment_card_last4: defaultCardLast4
+        } = subscriptions[0];
+        return (
+            <>
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>Plan</h3>
+                        <p>{getPlanLabel(plan)}</p>
+                    </div>
+                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}>Change</button>
+                </section>
+
+                <section>
+                    <div className='gh-portal-list-detail'>
+                        <h3>Billing Info</h3>
+                        <p>{getCardLabel({defaultCardLast4})}</p>
+                    </div>
+                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>Update</button>
+                </section>
+            </>
+        );
+    }
+    return null;
+};
+
+const AccountActions = ({member, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
+    const {name, email, subscribed} = member;
+
+    const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
+    return (
+        <div className='gh-portal-list'>
+            <section>
+                <div className='gh-portal-list-detail'>
+                    <h3>{name}</h3>
+                    <p>{email}</p>
+                </div>
+                <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openEditProfile(e)}>Edit</button>
+            </section>
+
+            <PaidAccountActions member={member} onEditBilling={onEditBilling} openUpdatePlan={openUpdatePlan} />
+
+            <section>
+                <div className='gh-portal-list-detail'>
+                    <h3>Newsletter</h3>
+                    <p>{label}</p>
+                </div>
+                <div>
+                    <Switch onToggle={(e) => {
+                        onToggleSubscription(e, subscribed);
+                    }} checked={subscribed} />
+                </div>
+            </section>
+        </div>
+    );
+};
+
+const SubscribeButton = ({site, openSubscribe, brandColor}) => {
+    const {is_stripe_configured: isStripeConfigured} = site;
+
+    if (!isStripeConfigured) {
+        return null;
+    }
+
+    return (
+        <ActionButton label="Subscribe now" onClick={() => openSubscribe()} brandColor={brandColor} style={{width: '100%'}} />
+    );
+};
+
+const AccountWelcome = ({member, site, openSubscribe, brandColor}) => {
+    const {name, firstname, email} = member;
+    const {title: siteTitle} = site;
+
+    if (member.paid) {
+        return null;
+    }
+
+    return (
+        <div className='gh-portal-section'>
+            <p className='gh-portal-text-center gh-portal-free-ctatext'>
+                Hey <strong>{firstname || name || email}! </strong>
+                You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
+            </p>
+            <SubscribeButton site={site} openSubscribe={openSubscribe} brandColor={brandColor} />
+        </div>
+    );
+};
+
+const CancelContinueSubscription = ({member, onAction, action, brandColor, showOnlyContinue = false}) => {
+    if (!member.paid) {
+        return null;
+    }
+    const subscription = getMemberSubscription({member});
+    if (!subscription) {
+        return null;
+    }
+
+    // To show only continue button and not cancellation
+    if (showOnlyContinue && !subscription.cancel_at_period_end) {
+        return null;
+    }
+    const label = subscription.cancel_at_period_end ? 'Continue subscription' : 'Cancel subscription';
+    const isRunning = ['cancelSubscription:running'].includes(action);
+    const disabled = (isRunning) ? true : false;
+    const isPrimary = !!subscription.cancel_at_period_end;
+
+    const CancelNotice = () => {
+        if (!subscription.cancel_at_period_end) {
+            return null;
+        }
+        const currentPeriodEnd = subscription.current_period_end;
+        return (
+            <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
+                Your subscription will expire on {getDateString(currentPeriodEnd)}
+            </div>
+        );
+    };
+
+    return (
+        <div style={{marginTop: '24px'}}>
+            <CancelNotice />
+            <ActionButton
+                onClick={(e) => {
+                    onAction('cancelSubscription', {
+                        subscriptionId: subscription.id,
+                        cancelAtPeriodEnd: !subscription.cancel_at_period_end
+                    });
+                }}
+                isRunning={isRunning}
+                disabled={disabled}
+                isPrimary={isPrimary}
+                brandColor={brandColor}
+                label={label}
+                style={{
+                    width: '100%'
+                }}
+            />
+        </div>
+    );
+};
+
+const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
+    return (
+        <div className='gh-portal-account-main'>
+            <UserHeader member={member} brandColor={brandColor} />
+            <section>
+                <AccountWelcome member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
+                <AccountActions
+                    member={member}
+                    openEditProfile={e => openEditProfile(e)}
+                    onToggleSubscription={(e, subscribed) => onToggleSubscription(e, subscribed)}
+                    openUpdatePlan={(e, subscribed) => openUpdatePlan(e, subscribed)}
+                    onEditBilling={(e, subscribed) => onEditBilling(e, subscribed)}
+                />
+                <CancelContinueSubscription
+                    member={member}
+                    onAction={onAction}
+                    action={action}
+                    brandColor={brandColor}
+                    showOnlyContinue={true} />
+            </section>
+        </div>
+    );
+};
+
+export default class AccountHomePage extends React.Component {
     static contextType = AppContext;
+
+    componentDidMount() {
+        const {member} = this.context;
+        if (!member) {
+            this.context.onAction('switchPage', {
+                page: 'signup'
+            });
+        }
+    }
 
     openSubscribe(e) {
         this.context.onAction('switchPage', {
             page: 'accountPlan',
             lastPage: 'accountHome'
         });
-    }
-
-    openEditProfile() {
-        this.context.onAction('switchPage', {
-            page: 'accountProfile',
-            lastPage: 'accountHome'
-        });
-    }
-
-    renderSubscribeButton() {
-        const {is_stripe_configured: isStripeConfigured} = this.context.site;
-
-        if (isStripeConfigured) {
-            return (
-                <ActionButton label="Subscribe now" onClick={() => this.openSubscribe()} brandColor={this.context.brandColor} style={{width: '100%'}} />
-            );
-        }
-
-        return null;
-    }
-
-    onToggleSubscription(e, subscribed) {
-        this.context.onAction('updateMember', {subscribed: !subscribed});
-    }
-
-    handleSignout(e) {
-        e.preventDefault();
-        this.context.onAction('signout');
-    }
-
-    renderLogout() {
-        return (
-            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' aria-label='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
-        );
-    }
-
-    renderAccountDetail() {
-        const {name, firstname, email, subscribed} = this.context.member;
-        const {title: siteTitle} = this.context.site;
-
-        const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
-        return (
-            <section>
-                <div className='gh-portal-section'>
-                    <p className='gh-portal-text-center gh-portal-free-ctatext'>
-                        Hey <strong>{firstname || name || email}! </strong>
-                        You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
-                    </p>
-                    {this.renderSubscribeButton()}
-                </div>
-                <div className='gh-portal-list'>
-                    <section>
-                        <div className='gh-portal-list-detail'>
-                            <h3>{name}</h3>
-                            <p>{email}</p>
-                        </div>
-                        <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.openEditProfile(e)}>Edit</button>
-                    </section>
-                    <section>
-                        <div className='gh-portal-list-detail'>
-                            <h3>Newsletter</h3>
-                            <p>{label}</p>
-                        </div>
-                        <div>
-                            <Switch onToggle={(e) => {
-                                this.onToggleSubscription(e, subscribed);
-                            }} checked={subscribed} />
-                        </div>
-                    </section>
-                </div>
-            </section>
-        );
-    }
-
-    render() {
-        const {member, brandColor} = this.context;
-        return (
-            <div className='gh-portal-account-wrapper'>
-                {this.renderLogout()}
-                <div className='gh-portal-account-main'>
-                    <UserHeader member={member} brandColor={brandColor} />
-                    {this.renderAccountDetail()}
-                </div>
-                <AccountFooter onClose={() => this.context.onAction('closePopup')} />
-            </div>
-        );
-    }
-}
-
-class PaidAccountHomePage extends React.Component {
-    static contextType = AppContext;
-
-    renderAccountWelcome() {
-        const {name, firstname, email} = this.context.member;
-        const siteTitle = this.context.site.title;
-
-        return (
-            <section className='gh-portal-section'>
-                <p className='gh-portal-text-center'>
-                    Hey <strong>{firstname || name || email}! </strong>
-                    You have an active <strong>{siteTitle}</strong> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
-                </p>
-            </section>
-        );
-    }
-
-    getPlanLabel({amount = 0, currency_symbol: currencySymbol = '$', interval}) {
-        return `${currencySymbol}${amount / 100}/${interval}`;
-    }
-
-    getCardLabel({defaultCardLast4}) {
-        if (defaultCardLast4) {
-            return `**** **** **** ${defaultCardLast4}`;
-        }
-        return `Complimentary`;
     }
 
     openEditProfile() {
@@ -268,100 +351,24 @@ class PaidAccountHomePage extends React.Component {
         this.context.onAction('signout');
     }
 
-    renderLogout() {
-        return (
-            <button className='gh-portal-btn gh-portal-btn-logout' name='logout' aria-label='logout' onClick = {e => this.handleSignout(e)}><LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span></button>
-        );
-    }
-
-    renderAccountDetails() {
-        const {name, email, subscriptions, subscribed} = this.context.member;
-
-        const {
-            plan,
-            default_payment_card_last4: defaultCardLast4
-        } = subscriptions[0];
-
-        const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
-        return (
-            <div className='gh-portal-list'>
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>{name}</h3>
-                        <p>{email}</p>
-                    </div>
-                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.openEditProfile(e)}>Edit</button>
-                </section>
-
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>Plan</h3>
-                        <p>{this.getPlanLabel(plan)}</p>
-                    </div>
-                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.openUpdatePlan(e)}>Change</button>
-                </section>
-
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>Billing Info</h3>
-                        <p>{this.getCardLabel({defaultCardLast4})}</p>
-                    </div>
-                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => this.onEditBilling(e)}>Update</button>
-                </section>
-
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>Newsletter</h3>
-                        <p>{label}</p>
-                    </div>
-                    <div>
-                        <Switch onToggle={(e) => {
-                            this.onToggleSubscription(e, subscribed);
-                        }} checked={subscribed} />
-                    </div>
-                </section>
-            </div>
-        );
-    }
-
     render() {
-        const {member, brandColor} = this.context;
+        const {member} = this.context;
+        if (!member) {
+            return null;
+        }
         return (
             <div className='gh-portal-account-wrapper'>
-                {this.renderLogout()}
-                <div className='gh-portal-account-main'>
-                    <UserHeader member={member} brandColor={brandColor} />
-                    {this.renderAccountDetails()}
-                </div>
+                <LogoutButton handleSignout={e => this.handleSignout(e)} />
+                <AccountMain
+                    {...this.context}
+                    openSubscribe={e => this.openSubscribe(e)}
+                    openEditProfile={e => this.openEditProfile(e)}
+                    onToggleSubscription={(e, subscribed) => this.onToggleSubscription(e, subscribed)}
+                    openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
+                    onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
+                />
                 <AccountFooter onClose={() => this.context.onAction('closePopup')} />
             </div>
         );
-    }
-}
-export default class AccountHomePage extends React.Component {
-    static contextType = AppContext;
-
-    componentDidMount() {
-        const {member} = this.context;
-        if (!member) {
-            this.context.onAction('switchPage', {
-                page: 'signup'
-            });
-        }
-    }
-
-    render() {
-        const {member} = this.context;
-        if (member) {
-            if (member.paid) {
-                return (
-                    <PaidAccountHomePage />
-                );
-            }
-            return (
-                <FreeAccountHomePage />
-            );
-        }
-        return null;
     }
 }
