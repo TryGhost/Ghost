@@ -38,7 +38,7 @@ const GlobalStyles = `
         --white: #fff;
         --red: #f02525;
     }
-    
+
     /* Globals
     /* ----------------------------------------------------- */
     h1, h2, h3, h4, h5, h6, p {
@@ -74,7 +74,7 @@ const GlobalStyles = `
     strong {
         font-weight: 600;
     }
-    
+
     a,
     .gh-portal-link {
         cursor: pointer;
@@ -286,14 +286,14 @@ const GlobalStyles = `
     }
 
     @keyframes popup {
-        0% { 
-            transform: scale(0.9) translateY(20px); 
+        0% {
+            transform: scale(0.9) translateY(20px);
             opacity: 0;
         }
         75% {
             opacity: 1.0;
         }
-        100%{ 
+        100%{
             transform: scale(1) translateY(0);
         }
     }
@@ -371,7 +371,7 @@ const GlobalStyles = `
     }
 
     .gh-portal-detail-header .gh-portal-btn-back,
-    .gh-portal-detail-header .gh-portal-btn-back:hover {        
+    .gh-portal-detail-header .gh-portal-btn-back:hover {
         position: absolute;
         top: -10px;
         left: 0;
@@ -443,13 +443,13 @@ const GlobalStyles = `
 `;
 
 // Append all styles as string which we want to pass to iframe
-const FrameStyle = 
+const FrameStyle =
     GlobalStyles +
     AccountHomePageStyles +
     AccountPlanPageStyles +
     InputFieldStyles +
     PlanSectionStyles +
-    SwitchStyles + 
+    SwitchStyles +
     ActionButtonStyles +
     AvatarStyles +
     MagicLinkStyles +

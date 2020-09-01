@@ -2,6 +2,7 @@ import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
 import CalculateDiscount from '../../utils/discount';
+import { getDateString } from '../../utils/date-time';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -162,22 +163,92 @@ export default class AccountPlanPage extends React.Component {
                     />
                     {this.renderError()}
                 </div>
-                <footer className='gh-portal-action-footer'>
-                    <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
-                    {this.renderSubmitButton()}
-                </footer>
+                <div style={{marginBottom: '24px'}}>
+                    {this.renderCancelContinueButton()}
+                </div>
+                {this.renderFooter()}
             </section>
         );
     }
 
+    renderCancelNotice() {
+        const subscription = this.getMemberSubscription();
+        if (!subscription || !subscription.cancel_at_period_end) {
+            return null;
+        }
+
+        const currentPeriodEnd = subscription.current_period_end;
+        return (
+            <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
+                Your subscription will expire on {getDateString(currentPeriodEnd)}
+            </div>
+        );
+    }
+
+    renderCancelContinueButton() {
+        const {onAction, member} = this.context;
+        if (!member.paid) {
+            return null;
+        }
+        const [subscription] = member.subscriptions;
+        const label = subscription.cancel_at_period_end ? 'Continue subscription' : 'Cancel subscription';
+        const isRunning = ['cancelSubscription:running'].includes(this.context.action);
+        const disabled = (isRunning) ? true : false;
+        const isPrimary = !!subscription.cancel_at_period_end;
+
+        return (
+            <div style={{marginBottom: '24px'}}>
+                {this.renderCancelNotice()}
+                <ActionButton
+                    onClick={(e) => {
+                        onAction('cancelSubscription', {
+                            subscriptionId: subscription.id,
+                            cancelAtPeriodEnd: !subscription.cancel_at_period_end
+                        });
+                    }}
+                    isRunning={isRunning}
+                    disabled={disabled}
+                    isPrimary={isPrimary}
+                    brandColor={this.context.brandColor}
+                    label={label}
+                    style={{
+                        width: '100%'
+                    }}
+                />
+            </div>
+        );
+    }
+
+    renderFooter() {
+        return (
+            <footer className='gh-portal-action-footer'>
+                <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
+                {this.renderSubmitButton()}
+            </footer>
+        );
+    }
+
+    getMemberSubscription() {
+        const {member} = this.context;
+        if (member.paid) {
+            const [subscription] = member.subscriptions || [];
+            return subscription;
+        }
+        return null;
+    }
+
     renderSubmitButton() {
         const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(this.context.action);
-        const label = isRunning ? 'Updating...' : 'Continue';
+        const label = 'Change Plan';
         const disabled = (isRunning || !this.state.plan) ? true : false;
+        const subscription = this.getMemberSubscription();
+        const isPrimary = !subscription.cancel_at_period_end;
         return (
             <ActionButton
                 onClick={e => this.onPlanCheckout(e)}
                 disabled={disabled}
+                isRunning={isRunning}
+                isPrimary={isPrimary}
                 brandColor={this.context.brandColor}
                 label={label}
                 style={{height: '40px'}}
