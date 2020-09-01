@@ -209,9 +209,9 @@ const Member = ghostBookshelf.Model.extend({
                     this.on(
                         'members_stripe_customers.customer_id',
                         'members_stripe_customers_subscriptions.customer_id'
-                    ).andOn(
+                    ).onIn(
                         'members_stripe_customers_subscriptions.status',
-                        ghostBookshelf.knex.raw('?', ['active'])
+                        ['active', 'trialed']
                     );
                 }
             );

@@ -542,7 +542,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.new_today);
 
                 // 3 from fixtures and 6 imported in previous tests
-                jsonResponse.total.should.equal(9);
+                jsonResponse.total.should.equal(10);
             });
     });
 
@@ -566,7 +566,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.new_today);
 
                 // 3 from fixtures and 6 imported in previous tests
-                jsonResponse.total.should.equal(9);
+                jsonResponse.total.should.equal(10);
             });
     });
 
@@ -590,7 +590,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.new_today);
 
                 // 3 from fixtures and 6 imported in previous tests
-                jsonResponse.total.should.equal(9);
+                jsonResponse.total.should.equal(10);
             });
     });
 

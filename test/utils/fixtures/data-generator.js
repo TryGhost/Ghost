@@ -321,6 +321,11 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             email: 'paid@test.com',
             name: 'Egon Spengler'
+        },
+        {
+            id: ObjectId.generate(),
+            email: 'trialed@test.com',
+            name: 'Ray Stantz'
         }
     ],
 
@@ -344,6 +349,13 @@ DataGenerator.Content = {
             customer_id: 'cus_HR3tBmNhx4QsZY',
             name: 'Egon Spengler',
             email: 'paid@test.com'
+        },
+        {
+            id: ObjectId.generate(),
+            member_id: null, // relation added later
+            customer_id: 'cus_HR3tBmNhx4QsZZ',
+            name: 'Ray Stantz',
+            email: 'trialed@test.com'
         }
     ],
 
@@ -356,6 +368,21 @@ DataGenerator.Content = {
             status: 'active',
             cancel_at_period_end: false,
             current_period_end: '2020-07-09 19:01:20',
+            start_date: '2020-06-09 19:01:20',
+            default_payment_card_last4: '4242',
+            plan_nickname: 'Monthly',
+            plan_interval: 'month',
+            plan_amount: '1000',
+            plan_currency: 'usd'
+        },
+        {
+            id: ObjectId.generate(),
+            customer_id: 'cus_HR3tBmNhx4QsZZ',
+            subscription_id: 'sub_HR3tLNgGAHsa7c',
+            plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
+            status: 'trialed',
+            cancel_at_period_end: true,
+            current_period_end: '2025-07-09 19:01:20',
             start_date: '2020-06-09 19:01:20',
             default_payment_card_last4: '4242',
             plan_nickname: 'Monthly',
@@ -445,6 +472,7 @@ DataGenerator.Content.api_keys[1].integration_id = DataGenerator.Content.integra
 DataGenerator.Content.emails[0].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.emails[1].post_id = DataGenerator.Content.posts[1].id;
 DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
+DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Content.members[3].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -910,7 +938,8 @@ DataGenerator.forKnex = (function () {
     const members = [
         createMember(DataGenerator.Content.members[0]),
         createMember(DataGenerator.Content.members[1]),
-        createMember(DataGenerator.Content.members[2])
+        createMember(DataGenerator.Content.members[2]),
+        createMember(DataGenerator.Content.members[3])
     ];
 
     const labels = [
@@ -925,11 +954,13 @@ DataGenerator.forKnex = (function () {
     ];
 
     const members_stripe_customers = [
-        createBasic(DataGenerator.Content.members_stripe_customers[0])
+        createBasic(DataGenerator.Content.members_stripe_customers[0]),
+        createBasic(DataGenerator.Content.members_stripe_customers[1])
     ];
 
     const stripe_customer_subscriptions = [
-        createBasic(DataGenerator.Content.members_stripe_customers_subscriptions[0])
+        createBasic(DataGenerator.Content.members_stripe_customers_subscriptions[0]),
+        createBasic(DataGenerator.Content.members_stripe_customers_subscriptions[1])
     ];
 
     return {
