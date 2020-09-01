@@ -2,7 +2,8 @@ import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
 import CalculateDiscount from '../../utils/discount';
-import { getDateString } from '../../utils/date-time';
+import {getDateString} from '../../utils/date-time';
+import {getMemberSubscription} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -25,6 +26,58 @@ const GlobalError = ({message, style}) => {
     );
 };
 
+export const CancelContinueSubscription = ({member, onAction, action, brandColor, showOnlyContinue = false}) => {
+    if (!member.paid) {
+        return null;
+    }
+    const subscription = getMemberSubscription({member});
+    if (!subscription) {
+        return null;
+    }
+
+    // To show only continue button and not cancellation
+    if (showOnlyContinue && !subscription.cancel_at_period_end) {
+        return null;
+    }
+    const label = subscription.cancel_at_period_end ? 'Continue subscription' : 'Cancel subscription';
+    const isRunning = ['cancelSubscription:running'].includes(action);
+    const disabled = (isRunning) ? true : false;
+    const isPrimary = !!subscription.cancel_at_period_end;
+
+    const CancelNotice = () => {
+        if (!subscription.cancel_at_period_end) {
+            return null;
+        }
+        const currentPeriodEnd = subscription.current_period_end;
+        return (
+            <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
+                Your subscription will expire on {getDateString(currentPeriodEnd)}
+            </div>
+        );
+    };
+
+    return (
+        <div style={{marginBottom: '24px'}}>
+            <CancelNotice />
+            <ActionButton
+                onClick={(e) => {
+                    onAction('cancelSubscription', {
+                        subscriptionId: subscription.id,
+                        cancelAtPeriodEnd: !subscription.cancel_at_period_end
+                    });
+                }}
+                isRunning={isRunning}
+                disabled={disabled}
+                isPrimary={isPrimary}
+                brandColor={brandColor}
+                label={label}
+                style={{
+                    width: '100%'
+                }}
+            />
+        </div>
+    );
+};
 export default class AccountPlanPage extends React.Component {
     static contextType = AppContext;
 
@@ -164,7 +217,7 @@ export default class AccountPlanPage extends React.Component {
                     {this.renderError()}
                 </div>
                 <div style={{marginBottom: '24px'}}>
-                    {this.renderCancelContinueButton()}
+                    <CancelContinueSubscription {...this.context} />
                 </div>
                 {this.renderFooter()}
             </section>
@@ -242,7 +295,7 @@ export default class AccountPlanPage extends React.Component {
         const label = 'Change Plan';
         const disabled = (isRunning || !this.state.plan) ? true : false;
         const subscription = this.getMemberSubscription();
-        const isPrimary = !subscription.cancel_at_period_end;
+        const isPrimary = (!subscription || !subscription.cancel_at_period_end);
         return (
             <ActionButton
                 onClick={e => this.onPlanCheckout(e)}
