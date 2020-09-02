@@ -211,7 +211,7 @@ const Member = ghostBookshelf.Model.extend({
                         'members_stripe_customers_subscriptions.customer_id'
                     ).onIn(
                         'members_stripe_customers_subscriptions.status',
-                        ['active', 'trialed']
+                        ['active', 'trialing']
                     );
                 }
             );

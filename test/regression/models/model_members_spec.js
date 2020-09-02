@@ -218,7 +218,7 @@ describe('Member Model', function run() {
             }).then(function (queryResult) {
                 queryResult.length.should.equal(2);
                 queryResult.models[0].get('email').should.equal('paid@test.com');
-                queryResult.models[1].get('email').should.equal('trialed@test.com');
+                queryResult.models[1].get('email').should.equal('trialing@test.com');
 
                 done();
             }).catch(done);
