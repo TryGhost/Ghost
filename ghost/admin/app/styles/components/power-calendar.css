@@ -72,11 +72,12 @@
 /* Theme styles */
 .ember-power-calendar {
   font-size: 14px;
-  line-height: 1.42857;
+  line-height: 1.65;
 }
 
 .ember-power-calendar-weekdays {
   color: var(--darkgrey);
+  padding: 4px 0;
 }
 
 .ember-power-calendar-day {
@@ -101,13 +102,13 @@
 }
 
 .ember-power-calendar-day--current-month {
-  color: var(--middarkgrey);
-  background-color: color-mod(var(--lightgrey) l(+4%));
+  color: var(--darkgrey);
 }
 
 .ember-power-calendar-day--today,
 .ember-power-calendar-day:not([disabled]):hover {
   background-color: var(--lightgrey);
+  border-radius: 3px;
 }
 
 .ember-power-calendar-day--other-month:not([disabled]):hover {
@@ -118,7 +119,8 @@
 .ember-power-calendar-day--selected:not([disabled]):hover {
   font-weight: bold;
   background-color: color-mod(var(--blue) l(+30%));
-  color: var(--middarkgrey);
+  color: var(--darkgrey);
+  border-radius: 3px;
 }
 
 .ember-power-calendar-day--selected.ember-power-calendar-day--range-start,
@@ -213,6 +215,7 @@
 
 /* Datepicker */
 .ember-power-datepicker-content {
+  min-width: 212px;
   padding: 12px;
 }
 
