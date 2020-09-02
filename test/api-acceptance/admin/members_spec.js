@@ -110,7 +110,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.members);
                 jsonResponse.members.should.have.length(2);
                 jsonResponse.members[0].email.should.equal('paid@test.com');
-                jsonResponse.members[1].email.should.equal('trialed@test.com');
+                jsonResponse.members[1].email.should.equal('trialing@test.com');
                 localUtils.API.checkResponse(jsonResponse, 'members');
                 localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');

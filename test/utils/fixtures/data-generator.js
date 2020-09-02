@@ -324,7 +324,7 @@ DataGenerator.Content = {
         },
         {
             id: ObjectId.generate(),
-            email: 'trialed@test.com',
+            email: 'trialing@test.com',
             name: 'Ray Stantz'
         }
     ],
@@ -355,7 +355,7 @@ DataGenerator.Content = {
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZZ',
             name: 'Ray Stantz',
-            email: 'trialed@test.com'
+            email: 'trialing@test.com'
         }
     ],
 
@@ -380,7 +380,7 @@ DataGenerator.Content = {
             customer_id: 'cus_HR3tBmNhx4QsZZ',
             subscription_id: 'sub_HR3tLNgGAHsa7c',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
-            status: 'trialed',
+            status: 'trialing',
             cancel_at_period_end: true,
             current_period_end: '2025-07-09 19:01:20',
             start_date: '2020-06-09 19:01:20',
