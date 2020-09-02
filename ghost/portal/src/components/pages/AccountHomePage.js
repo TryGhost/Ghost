@@ -249,9 +249,9 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
         }
         const currentPeriodEnd = subscription.current_period_end;
         return (
-            <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
-                Your subscription will expire on {getDateString(currentPeriodEnd)}
-            </div>
+            <p class="gh-portal-expire-warning">
+                Your subscription will expire on {getDateString(currentPeriodEnd)}.
+            </p>
         );
     };
 
