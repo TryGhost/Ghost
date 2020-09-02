@@ -431,15 +431,19 @@ const GlobalStyles = `
         color: var(--grey6);
     }
 
+    .gh-portal-expire-warning {
+        text-align: center;
+        color: var(--red);
+        font-weight: 500;
+        font-size: 1.4rem;
+        margin: 12px 0;
+    }
+
     /* Icons
     /* ----------------------------------------------------- */
     .gh-portal-icon {
         color: var(--brandcolor);
     }
-
-    /* Links
-    /* ----------------------------------------------------- */
-
 `;
 
 // Append all styles as string which we want to pass to iframe
