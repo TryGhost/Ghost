@@ -310,6 +310,8 @@ export default class App extends React.Component {
             if (isAccountPage({page})) {
                 if (hasMode(['dev'])) {
                     return member || Fixtures.member.free;
+                } else if (hasMode(['preview'])) {
+                    return Fixtures.member.preview;
                 } else {
                     return Fixtures.member.paid;
                 }
