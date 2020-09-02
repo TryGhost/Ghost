@@ -9,6 +9,10 @@ export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
         margin-top: 32px;
     }
+
+    .gh-portal-expire-container {
+        margin: -8px 0 32px;
+    }
 `;
 
 const React = require('react');
@@ -50,14 +54,14 @@ export const CancelContinueSubscription = ({member, onAction, action, brandColor
         }
         const currentPeriodEnd = subscription.current_period_end;
         return (
-            <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
-                Your subscription will expire on {getDateString(currentPeriodEnd)}
-            </div>
+            <p class="gh-portal-expire-warning">
+                Your subscription will expire on {getDateString(currentPeriodEnd)}.
+            </p>
         );
     };
 
     return (
-        <div style={{marginBottom: '24px'}}>
+        <div class="gh-portal-expire-container">
             <CancelNotice />
             <ActionButton
                 onClick={(e) => {
@@ -216,9 +220,7 @@ export default class AccountPlanPage extends React.Component {
                     />
                     {this.renderError()}
                 </div>
-                <div style={{marginBottom: '24px'}}>
-                    <CancelContinueSubscription {...this.context} />
-                </div>
+                <CancelContinueSubscription {...this.context} />
                 {this.renderFooter()}
             </section>
         );
@@ -233,7 +235,7 @@ export default class AccountPlanPage extends React.Component {
         const currentPeriodEnd = subscription.current_period_end;
         return (
             <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
-                Your subscription will expire on {getDateString(currentPeriodEnd)}
+                Your subscription will expire on {getDateString(currentPeriodEnd)}.
             </div>
         );
     }
