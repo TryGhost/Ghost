@@ -23,7 +23,7 @@ async function accept(invitation) {
         throw new errors.ValidationError({
             message: i18n.t('errors.api.invites.inviteEmailAlreadyExist.message'),
             context: i18n.t('errors.api.invites.inviteEmailAlreadyExist.context'),
-            errorDetails: i18n.t('errors.api.invites.inviteEmailAlreadyExist.help')
+            help: i18n.t('errors.api.invites.inviteEmailAlreadyExist.help')
         });
     }
 
