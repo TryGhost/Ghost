@@ -23,18 +23,16 @@ export const SignupPageStyles = `
         display: flex;
         flex-direction: column;
         align-items: center;
-        border-bottom: 1px solid var(--grey12);
         padding: 0 32px 32px;
-        margin: 0 -32px 18px;
+        margin: 0 -32px -8px;
     }
 
     .gh-portal-signin-header {
         display: flex;
         flex-direction: column;
         align-items: center;
-        border-bottom: 1px solid var(--grey12);
         padding: 0 32px 32px;
-        margin: 0 -32px 32px;
+        margin: 0 -32px -8px;
     }
 
     .gh-portal-signup-header.nodivider {
