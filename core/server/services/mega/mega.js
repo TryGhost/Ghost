@@ -177,7 +177,8 @@ async function handleUnsubscribeRequest(req) {
     }
 
     try {
-        return await membersService.api.members.update({subscribed: false}, {id: member.id});
+        const memberModel = await membersService.api.members.update({subscribed: false}, {id: member.id});
+        return memberModel.toJSON();
     } catch (err) {
         throw new errors.InternalServerError({
             message: 'Failed to unsubscribe member'
