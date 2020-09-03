@@ -29,7 +29,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
         // edge has known issues
         if (this.userAgent.browser.isEdge && this.userAgent.parser.getEngine().name === 'EdgeHTML') {
             this.notifications.showAlert(
-                htmlSafe('Microsoft Edge is not currently supported. Please switch to <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a> or a recent version of Chrome/Firefox/Safari.'),
+                htmlSafe('Microsoft Edge is not currently supported. Please use a recent version of Chrome/Firefox/Safari.'),
                 {type: 'info', key: 'koenig.browserSupport'}
             );
         }
