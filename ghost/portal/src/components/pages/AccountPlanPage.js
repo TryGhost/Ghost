@@ -138,9 +138,11 @@ export default class AccountPlanPage extends React.Component {
     }
 
     renderHeader() {
+        const {member} = this.context;
+        const title = member.paid ? 'Choose Plan' : 'Choose your subscription';
         return (
             <header className='gh-portal-detail-header'>
-                <h3 className='gh-portal-main-title'>Choose plan</h3>
+                <h3 className='gh-portal-main-title'>{title}</h3>
             </header>
         );
     }
@@ -296,8 +298,9 @@ export default class AccountPlanPage extends React.Component {
     }
 
     renderSubmitButton() {
+        const {member} = this.context;
         const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(this.context.action);
-        const label = 'Change Plan';
+        const label = member.paid ? 'Change Plan' : 'Continue';
         const disabled = (isRunning || !this.state.plan) ? true : false;
         const subscription = this.getMemberSubscription();
         const isPrimary = (!subscription || !subscription.cancel_at_period_end);
