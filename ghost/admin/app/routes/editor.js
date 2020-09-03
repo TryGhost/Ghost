@@ -33,14 +33,6 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
                 {type: 'info', key: 'koenig.browserSupport'}
             );
         }
-
-        // mobile browsers are not currently supported
-        if (this.userAgent.device.isMobile || this.userAgent.device.isTablet) {
-            this.notifications.showAlert(
-                htmlSafe('Mobile editing is not currently supported. Please use a desktop browser or <a href="https://ghost.org/downloads/" target="_blank" rel="noopener">Ghost Desktop</a>.'),
-                {type: 'info', key: 'koenig.browserSupport'}
-            );
-        }
     },
 
     deactivate() {
