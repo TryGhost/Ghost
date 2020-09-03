@@ -16,7 +16,9 @@ const createFrame = hbs.handlebars.createFrame;
 function restrictedCta(options) {
     options = options || {};
     options.data = options.data || {};
-
+    _.merge(this, {
+        accentColor: (options.data.site && options.data.site.accent_color) || '#3db0ef'
+    });
     const data = createFrame(options.data);
     return templates.execute('content', this, {data});
 }
