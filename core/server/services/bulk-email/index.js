@@ -81,8 +81,10 @@ module.exports = {
         }
 
         const blogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
-        const supportAddress = settingsCache.get('members_support_address');
-        const replyToAddress = (settingsCache.get('members_reply_address') === 'support') ? supportAddress : fromAddress;
+        let supportAddress = message.supportAddress;
+        delete message.supportAddress;
+        const replyAddressOption = settingsCache.get('members_reply_address');
+        const replyToAddress = (replyAddressOption === 'support') ? supportAddress : fromAddress;
         fromAddress = blogTitle ? `"${blogTitle}"<${fromAddress}>` : fromAddress;
 
         const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
