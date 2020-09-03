@@ -24,7 +24,7 @@ function back({state}) {
             page: state.lastPage
         };
     } else {
-        closePopup({state});
+        return closePopup({state});
     }
 }
 
