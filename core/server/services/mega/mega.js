@@ -17,6 +17,7 @@ const getEmailData = async (postModel, memberModels = []) => {
     const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel);
 
     emailTmpl.from = membersService.config.getEmailFromAddress();
+    emailTmpl.supportAddress = membersService.config.getEmailSupportAddress();
 
     // update templates to use Mailgun variable syntax for replacements
     replacements.forEach((replacement) => {
