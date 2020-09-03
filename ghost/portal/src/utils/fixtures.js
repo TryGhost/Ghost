@@ -62,6 +62,36 @@ export const member = {
         }],
         paid: true
     },
+    complimentary: {
+        uuid: '67906ee2-c80f-4b61-9c9b-6b98c5d3a195',
+        email: 'jamie@example.com',
+        name: 'Jamie Larson',
+        firstname: 'Jamie',
+        // avatar_image: 'https://gravatar.com/avatar/76a4c5450dbb6fde8a293a811622aa6f?s=250&d=blank',
+        subscribed: true,
+        subscriptions: [{
+            id: 'sub_HxAis4368CZIuX',
+            customer: {
+                id: 'cus_HxAiVNQ8C3MdAN',
+                name: null,
+                email: 'jamie@example.com'
+            },
+            plan: {
+                id: 'd46f4d6de40f9bb47c86b8c9abb8285182f0b10f3ac05b5ba8633417ecac2746',
+                nickname: 'Complimentary',
+                amount: 0,
+                interval: 'year',
+                currency: 'USD',
+                currency_symbol: '$'
+            },
+            status: 'active',
+            start_date: '2020-09-03T11:12:37.000Z',
+            default_payment_card_last4: null,
+            cancel_at_period_end: false,
+            current_period_end: '2021-09-03T11:12:37.000Z'
+        }],
+        paid: true
+    },
     preview: {
         uuid: '7dcc8939-3be0-4ac8-a363-96d19f909de6',
         email: 'jamie@example.com',
