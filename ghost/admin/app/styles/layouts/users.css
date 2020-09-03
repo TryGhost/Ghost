@@ -107,40 +107,47 @@
 /* ---------------------------------------------------------- */
 
 .gh-badge.owner {
-    background: var(--darkgrey);
+    background: var(--middarkgrey);
     text-transform: uppercase;
     color: var(--white);
 }
 
 .gh-badge.administrator {
-    background: var(--red);
+    background: color-mod(var(--purple) a(15%));
     text-transform: uppercase;
-    color: var(--white);
+    color: var(--purple-d2);
 }
 
 .gh-badge.editor {
-    background: var(--blue);
+    background: color-mod(var(--blue) a(20%));
     text-transform: uppercase;
-    color: var(--white);
+    color: var(--blue-d2);
+}
+
+.gh-badge.contributor {
+    background: var(--lightgrey);
+    text-transform: uppercase;
+    color: var(--middarkgrey);
 }
 
 .gh-badge.author {
+    background: color-mod(var(--green) a(20%));
+    text-transform: uppercase;
+    color: var(--green-d2);
+}
+
+.gh-badge.suspended {
+    background: var(--lightgrey);
+    text-transform: uppercase;
+    color: var(--middarkgrey);
+}
+
+.gh-badge.locked {
     border: color-mod(var(--lightgrey) blackness(+8%)) 1px solid;
     color: color-mod(var(--midgrey) l(+5%));
     background: #fff;
     text-transform: uppercase;
 }
-
-.gh-badge.suspended {
-    font-size: 13px;
-    margin-left: 16px;
-    margin-top: 1px;
-    padding: 6px 8px;
-    border: color-mod(var(--midlightgrey) l(+10%)) 1px solid;
-    background: transparent;
-    color: var(--midgrey);
-}
-
 
 /* User invitation modal
 /* ---------------------------------------------------------- */
