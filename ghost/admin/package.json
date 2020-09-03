@@ -122,7 +122,7 @@
     "markdown-it-mark": "3.0.0",
     "matchdep": "2.0.0",
     "normalize.css": "3.0.3",
-    "papaparse": "5.2.0",
+    "papaparse": "5.3.0",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
     "postcss-custom-properties": "9.1.1",
