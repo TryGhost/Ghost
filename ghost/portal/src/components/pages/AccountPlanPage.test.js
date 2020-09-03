@@ -8,7 +8,7 @@ const setup = (overrides) => {
     );
     const monthlyCheckboxEl = utils.getByLabelText('Monthly');
     const yearlyCheckboxEl = utils.getByLabelText('Yearly');
-    const continueBtn = utils.queryByRole('button', {name: 'Change Plan'});
+    const continueBtn = utils.queryByRole('button', {name: 'Continue'});
     return {
         monthlyCheckboxEl,
         yearlyCheckboxEl,
