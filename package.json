@@ -143,7 +143,7 @@
   "devDependencies": {
     "@lodder/grunt-postcss": "2.0.4",
     "coffeescript": "2.5.1",
-    "cross-env": "7.0.2",
+    "cross-env": "6.0.3",
     "cssnano": "4.1.10",
     "eslint": "7.8.0",
     "eslint-plugin-ghost": "1.5.0",
