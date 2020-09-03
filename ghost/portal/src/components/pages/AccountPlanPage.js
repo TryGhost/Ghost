@@ -90,8 +90,11 @@ export default class AccountPlanPage extends React.Component {
         const {member} = this.context;
         const {plans} = this.context.site;
         this.plans = this.getPlansData({plans});
-        const activePlan = this.getActivePlanName({member}) || this.plans[0].name;
-
+        let activePlan = this.getActivePlanName({member}) || this.plans[0].name;
+        const activePlanExists = this.plans.some(d => d.name === activePlan);
+        if (!activePlanExists) {
+            activePlan = this.plans[0].name;
+        }
         this.state = {
             plan: activePlan
         };
