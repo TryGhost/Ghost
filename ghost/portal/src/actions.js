@@ -31,6 +31,7 @@ function back({state}) {
 function closePopup({state}) {
     return {
         showPopup: false,
+        lastPage: null,
         page: state.page === 'magiclink' ? '' : state.page
     };
 }
