@@ -686,6 +686,8 @@
 .kg-card-selected,
 .kg-card-selected:hover
  {
+    background-color: transparent !important;
+    border: none;
     box-shadow: 0 0 0 2px var(--blue);
 }
 
