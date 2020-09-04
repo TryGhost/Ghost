@@ -71,7 +71,12 @@ const updateMemberData = async function (req, res) {
         const data = _.pick(req.body, 'name', 'subscribed');
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
-            const updatedMember = await membersService.api.members.update(data, {id: member.id});
+            const options = {
+                id: member.id,
+                withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer']
+            };
+            const updatedMember = await membersService.api.members.update(data, options);
+
             res.json(formattedMemberResponse(updatedMember.toJSON()));
         } else {
             res.json(null);
