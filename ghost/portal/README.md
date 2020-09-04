@@ -3,15 +3,19 @@
 [![CI Status](https://github.com/TryGhost/members.js/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/members.js/actions)
 [![npm version](https://badge.fury.io/js/%40tryghost%2Fmembers-js.svg)](https://badge.fury.io/js/%40tryghost%2Fmembers-js)
 
-Drop-in script to make the bulk of members work on any theme.
+Drop-in script to make the bulk of Ghost membership features work on any theme.
 
 ## Usage
 
 Add below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
 
 ```html
-<script type="text/javascript" src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js"></script>
+<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js" data-ghost="https://mymemberssite.com"></script>
 ```
+
+The `data-ghost` attribute expects the URL for your site which is the only input Portal needs to work with your site's membership data via Ghost APIs.
+
+NOTE: This is currently under active development and available only behind developer experiments flag - `enableDeveloperExperiments` in Ghost, which needs to be added to config file before starting the server.
 
 ### Custom trigger button
 
