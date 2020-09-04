@@ -437,7 +437,11 @@
     width: 50px;
 }
 
-.gh-portal-custom-icon:hover .gh-portal-button-custom {
+.gh-portal-button-custom.selected-icon:hover {
+    box-shadow: 0px 0px 0px 1px color-mod(var(--blue) a(40%));
+}
+
+.gh-portal-custom-icon:hover .gh-portal-button-custom.selected-icon {
     display: none;
 }
 

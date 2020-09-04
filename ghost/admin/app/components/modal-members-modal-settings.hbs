@@ -206,9 +206,11 @@
                                                         alt="icon"
                                                         data-test-icon-img
                                                     >
+                                                    {{#if (eq this.buttonIcon this.customIcon)}}
                                                     <button type="button" class="gh-btn gh-btn-hover-red gh-portal-button-deleteicon" {{action "deleteCustomIcon"}}>
                                                         <span> {{svg-jar "trash" class="w5 h5"}} </span>
                                                     </button>
+                                                    {{/if}}
                                                 {{else}}
                                                     <button type="button" class="gh-btn gh-portal-button-uploadicon" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="icon">
                                                         <span>{{svg-jar "add" class="w5 h5"}}</span>
