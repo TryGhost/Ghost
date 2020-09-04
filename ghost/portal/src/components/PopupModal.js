@@ -54,7 +54,7 @@ class PopupContent extends React.Component {
     renderPopupClose() {
         return (
             <div className='gh-portal-closeicon-container'>
-                <CloseIcon className='gh-portal-closeicon' onClick = {() => this.context.onAction('closePopup')} />
+                <CloseIcon className='gh-portal-closeicon' alt='Close' onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
     }
