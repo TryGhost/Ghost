@@ -171,7 +171,7 @@ const AccountActions = ({member, openEditProfile, openUpdatePlan, onEditBilling,
         <div className='gh-portal-list'>
             <section>
                 <div className='gh-portal-list-detail'>
-                    <h3>{name}</h3>
+                    <h3>{(name ? name : 'Account')}</h3>
                     <p>{email}</p>
                 </div>
                 <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openEditProfile(e)}>Edit</button>
