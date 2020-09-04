@@ -282,24 +282,35 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            frame.options.withRelated = ['stripeSubscriptions'];
-            const member = await membersService.api.members.update(frame.data.members[0], frame.options);
+            try {
+                frame.options.withRelated = ['stripeSubscriptions'];
+                const member = await membersService.api.members.update(frame.data.members[0], frame.options);
 
-            const hasCompedSubscription = !!member.related('stripeSubscriptions').find(subscription => subscription.get('plan_nickname') === 'Complimentary');
+                const hasCompedSubscription = !!member.related('stripeSubscriptions').find(subscription => subscription.get('plan_nickname') === 'Complimentary');
 
-            if (typeof frame.data.members[0].comped === 'boolean') {
-                if (frame.data.members[0].comped && !hasCompedSubscription) {
-                    await membersService.api.members.setComplimentarySubscription(member);
-                } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
-                    await membersService.api.members.cancelComplimentarySubscription(member);
+                if (typeof frame.data.members[0].comped === 'boolean') {
+                    if (frame.data.members[0].comped && !hasCompedSubscription) {
+                        await membersService.api.members.setComplimentarySubscription(member);
+                    } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
+                        await membersService.api.members.cancelComplimentarySubscription(member);
+                    }
+
+                    await member.load(['stripeSubscriptions']);
                 }
 
-                await member.load(['stripeSubscriptions']);
+                await member.load(['stripeSubscriptions.customer']);
+
+                return member.toJSON(frame.options);
+            } catch (error) {
+                if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                    throw new errors.ValidationError({
+                        message: i18n.t('errors.models.member.memberAlreadyExistsWithEmail.message'),
+                        context: i18n.t('errors.models.member.memberAlreadyExistsWithEmail.context')
+                    });
+                }
+
+                throw error;
             }
-
-            await member.load(['stripeSubscriptions.customer']);
-
-            return member.toJSON(frame.options);
         }
     },
 

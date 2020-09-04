@@ -251,6 +251,10 @@
                 "memberAlreadyExists": {
                     "message": "Member already exists",
                     "context": "Attempting to add member with existing email address."
+                },
+                "memberAlreadyExistsWithEmail": {
+                    "message": "Different member already exists with edited email",
+                    "context": "Attempting to edit member email to an existing email address."
                 }
             },
             "member_stripe_customer": {
