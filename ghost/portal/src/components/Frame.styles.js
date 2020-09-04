@@ -141,6 +141,7 @@ const GlobalStyles = `
         box-shadow: none;
         box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 6px -3px rgba(0,0,0,0.19);
         user-select: none;
+        outline: none;
     }
 
     .gh-portal-btn:hover {
