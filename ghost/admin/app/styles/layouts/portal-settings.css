@@ -235,7 +235,7 @@
     background-size: 22px 22px;
     background-position: center;
     border-radius: 2px;
-    margin: 2px 3px 2px;
+    margin: 3px;
 }
 
 .gh-portal-button-icon:hover {
@@ -282,7 +282,7 @@
 .gh-portal-button-deleteicon:hover,
 .gh-portal-button-deleteicon:focus {
     height: 44px;
-    width: 46px;
+    width: 44px;
     border: none;
     box-shadow: none;
 }
@@ -299,7 +299,7 @@
 }
 
 .gh-portal-button-deleteicon:hover span svg {
-    fill: var(--darkgrey);
+    fill: var(--white);
 }
 
 .gh-portal-setting-copy {
@@ -431,6 +431,12 @@
     top: 2px;
 }
 
+.gh-portal-custom-icon {
+    display: flex;
+    justify-content: center;
+    width: 50px;
+}
+
 .gh-portal-custom-icon:hover .gh-portal-button-custom {
     display: none;
 }
@@ -441,4 +447,5 @@
 
 .gh-portal-custom-icon .gh-portal-button-deleteicon {
     display: none;
+    background: color-mod(var(--darkgrey) a(0.8));
 }
