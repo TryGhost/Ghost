@@ -522,6 +522,8 @@
 }
 
 .settings-code code {
+    background-color: rgb(242, 244, 247);
+    border: 1px solid var(--lightgrey);
     vertical-align: middle;
     font-size: 1.2rem;
 }
@@ -553,6 +555,13 @@
     padding: 0;
     border: none;
     border-radius: inherit;
+    background: var(--white);
+    color: var(--darkgrey);
+}
+
+.settings-code-editor .CodeMirror-gutters {
+    background-color: rgb(242, 244, 247);
+    border-right: 1px solid var(--lightgrey);
 }
 
 .settings-code-editor .cm-s-xq-light span.cm-meta {
