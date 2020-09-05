@@ -39,6 +39,7 @@ function initialiseServices() {
     const {mega} = require('./services/mega');
     const webhooks = require('./services/webhooks');
     const scheduling = require('./adapters/scheduling');
+    const stats = require('./services/stats');
 
     debug('`initialiseServices` Start...');
     const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
@@ -52,6 +53,7 @@ function initialiseServices() {
         webhooks.listen(),
         settings.syncRoutesHash(getRoutesHash),
         appService.init(),
+        stats.init(),
         scheduling.init({
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
             //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
