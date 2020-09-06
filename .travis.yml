@@ -17,10 +17,20 @@ addons:
 
 env:
   global:
-    - GITHUB_OAUTH_KEY=023d1b4238cf6162ebd7b1ae1c9b7056ec409bb2
+    - GITHUB_OAUTH_KEY=74929bdc02b7549ff0a784d9e10a5d2cfa102767
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
+
+matrix:
+  include:
+    - node_js: "10"
+      env: TEST_SUITE=lint
+  fast_finish: true
+
+branches:
+  except:
+    - /^greenkeeper-.+$/
 
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
