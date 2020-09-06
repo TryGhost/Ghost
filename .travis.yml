@@ -3,7 +3,7 @@ language: node_js
 node_js:
   - "10"
 
-sudo: false
+sudo: required
 
 cache:
   directories:
