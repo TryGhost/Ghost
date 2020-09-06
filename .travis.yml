@@ -6,7 +6,22 @@ node_js:
 cache:
   directories:
     - node_modules
-  
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb https://dl.yarnpkg.com/debian/ stable main'
+        key_url: 'https://dl.yarnpkg.com/debian/pubkey.gpg'
+    packages:
+      - yarn
+
+env:
+  global:
+    - GITHUB_OAUTH_KEY=023d1b4238cf6162ebd7b1ae1c9b7056ec409bb2
+  matrix:
+    - DB=sqlite3 NODE_ENV=testing
+    - DB=mysql NODE_ENV=testing-mysql
+
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
 
@@ -28,3 +43,4 @@ after_success:
       else
         echo "This is a PR. No coverage generated."
       fi
+
