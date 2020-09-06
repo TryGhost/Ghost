@@ -5,8 +5,6 @@ node_js:
 
 sudo: false
 
-dist: trusty
-
 cache:
   directories:
     - node_modules
