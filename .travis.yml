@@ -7,8 +7,6 @@ sudo: false
 
 dist: trusty
 
-services: - mysql
-
 cache:
   directories:
     - node_modules
