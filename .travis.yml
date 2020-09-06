@@ -2,3 +2,25 @@ language: node_js
 
 node_js:
   - "10"
+  
+before_install:
+  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+
+install:
+  - yarn
+  - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
+
+after_success:
+  - |
+      if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "8" ]]; then
+          echo "Generate coverage..."
+          grunt coverage
+          npm install -g codeclimate-test-reporter
+          codeclimate-test-reporter < core/test/coverage/unit/lcov.info
+        else
+          echo "False DB and NODE_VERSION. No coverage generated."
+        fi
+      else
+        echo "This is a PR. No coverage generated."
+      fi
