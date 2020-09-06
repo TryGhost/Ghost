@@ -6,6 +6,7 @@ const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
 const labs = require('../../../server/services/labs');
+const stats = require('../../../server/services/stats');
 const activeTheme = require('./active');
 
 // ### Ensure Active Theme
@@ -90,6 +91,7 @@ function updateGlobalTemplateOptions(req, res, next) {
     // @TODO: decouple theme layer from settings cache using the Content API
     const siteData = settingsCache.getPublic();
     const labsData = labs.getAll();
+    const statsData = stats.getAll();
 
     const themeData = {
         posts_per_page: activeTheme.get().config('posts_per_page'),
@@ -104,6 +106,7 @@ function updateGlobalTemplateOptions(req, res, next) {
             blog: siteData,
             site: siteData,
             labs: labsData,
+            stats: statsData,
             config: themeData,
             price: priceData
         }
