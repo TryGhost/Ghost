@@ -5,6 +5,7 @@ const themes = require('../../../../core/frontend/services/themes');
 // is only exposed via themes.getActive()
 const activeTheme = require('../../../../core/frontend/services/themes/active');
 const settingsCache = require('../../../../core/server/services/settings/cache');
+const stats = require('../../../../core/server/services/stats');
 const middleware = themes.middleware;
 
 const sandbox = sinon.createSandbox();
@@ -35,6 +36,7 @@ describe('Themes middleware', function () {
     let fakeActiveThemeName;
     let fakeSiteData;
     let fakeLabsData;
+    let fakeStatsData;
 
     beforeEach(function () {
         req = {app: {}};
@@ -56,6 +58,8 @@ describe('Themes middleware', function () {
             '@@REQUIRED@@': true
         };
 
+        fakeStatsData = {};
+
         sandbox.stub(activeTheme, 'get')
             .returns(fakeActiveTheme);
 
@@ -65,6 +69,9 @@ describe('Themes middleware', function () {
 
         sandbox.stub(settingsCache, 'getPublic')
             .returns(fakeSiteData);
+
+        sandbox.stub(stats, 'getAll')
+            .returns(fakeStatsData);
 
         sandbox.stub(hbs, 'updateTemplateOptions');
     });
@@ -121,7 +128,7 @@ describe('Themes middleware', function () {
             const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
             const data = templateOptions.data;
 
-            data.should.be.an.Object().with.properties('site', 'labs', 'config');
+            data.should.be.an.Object().with.properties('site', 'labs', 'config', 'stats');
 
             // Check Theme Config
             data.config.should.be.an.Object()
@@ -134,6 +141,7 @@ describe('Themes middleware', function () {
             should.deepEqual(data.labs, fakeLabsData);
 
             should.equal(data.site, fakeSiteData);
+            should.equal(data.stats, fakeStatsData);
 
             done();
         });
