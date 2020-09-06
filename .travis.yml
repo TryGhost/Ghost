@@ -5,6 +5,8 @@ node_js:
 
 sudo: false
 
+dist: trusty
+
 services: - mysql
 
 cache:
