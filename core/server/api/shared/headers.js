@@ -98,22 +98,22 @@ module.exports = {
      * @description Get header based on ctrl configuration.
      *
      * @param {Object} result - API response
-     * @param {Object} apiConfig
+     * @param {Object} apiConfigHeaders
      * @return {Promise}
      */
-    async get(result, apiConfig = {}) {
+    async get(result, apiConfigHeaders = {}) {
         let headers = {};
 
-        if (apiConfig.disposition) {
-            const dispositionHeader = await disposition[apiConfig.disposition.type](result, apiConfig.disposition);
+        if (apiConfigHeaders.disposition) {
+            const dispositionHeader = await disposition[apiConfigHeaders.disposition.type](result, apiConfigHeaders.disposition);
 
             if (dispositionHeader) {
                 Object.assign(headers, dispositionHeader);
             }
         }
 
-        if (apiConfig.cacheInvalidate) {
-            const cacheInvalidationHeader = cacheInvalidate(result, apiConfig.cacheInvalidate);
+        if (apiConfigHeaders.cacheInvalidate) {
+            const cacheInvalidationHeader = cacheInvalidate(result, apiConfigHeaders.cacheInvalidate);
 
             if (cacheInvalidationHeader) {
                 Object.assign(headers, cacheInvalidationHeader);
