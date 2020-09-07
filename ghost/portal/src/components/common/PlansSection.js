@@ -17,7 +17,7 @@ export const PlanSectionStyles = `
         font-size: 1.4rem;
         line-height: 1.35em;
         border-right: 1px solid var(--grey10);
-        padding: 16px;
+        padding: 16px 10px;
         cursor: pointer;
     }
 
@@ -185,6 +185,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
             planDetails.feature = 'Free preview';
             break;
         case 'Monthly':
+        case 'Complimentary':
             planDetails.feature = 'Full access';
             break;
         case 'Yearly':
