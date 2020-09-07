@@ -132,8 +132,16 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
         if (defaultCardLast4) {
             return `**** **** **** ${defaultCardLast4}`;
         }
-        return `Complimentary`;
     };
+
+    let isComplimentary = false;
+    if (member && member.paid && member.subscriptions[0]) {
+        const {plan} = member.subscriptions[0];
+        if (plan.nickname === 'Complimentary') {
+            isComplimentary = true;
+        }
+    }
+
     if (member.paid) {
         const {subscriptions} = member;
         const {
@@ -145,18 +153,20 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
                 <section>
                     <div className='gh-portal-list-detail'>
                         <h3>Plan</h3>
-                        <p>{getPlanLabel(plan)}</p>
+                        <p>{(isComplimentary ? 'Complimentary (' + getPlanLabel(plan) + ')' : getPlanLabel(plan))}</p>
                     </div>
-                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}>Change</button>
+                    {(!isComplimentary ? <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}>Change</button> : '')}
                 </section>
 
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>Billing Info</h3>
-                        <p>{getCardLabel({defaultCardLast4})}</p>
-                    </div>
-                    <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>Update</button>
-                </section>
+                {(!isComplimentary ? 
+                    <section>
+                        <div className='gh-portal-list-detail'>
+                            <h3>Billing Info</h3>
+                            <p>{getCardLabel({defaultCardLast4})}</p>
+                        </div>
+                        <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>Update</button>
+                    </section>
+                    : '')}
             </>
         );
     }
