@@ -3636,7 +3636,23 @@ broccoli-templater@^2.0.1:
     rimraf "^2.6.2"
     walk-sync "^0.3.3"
 
-broccoli-uglify-sourcemap@3.2.0, broccoli-uglify-sourcemap@^3.1.0:
+broccoli-uglify-sourcemap@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-4.0.0.tgz#c5c5fbd9563cf0fe4c68c337bb61e98fe0697a3b"
+  integrity sha512-46yB4gw1Q3ALtBROY5QfKXNXxYK5uPSvER1OGjjh2t3piaipqBfuRXTzQZvmZ+Odr6/McY+J8XmxON4+lE1ukg==
+  dependencies:
+    async-promise-queue "^1.0.5"
+    broccoli-plugin "^4.0.3"
+    debug "^4.1.0"
+    lodash.defaultsdeep "^4.6.1"
+    matcher-collection "^2.0.1"
+    source-map-url "^0.4.0"
+    symlink-or-copy "^1.3.1"
+    terser "^5.3.0"
+    walk-sync "^2.2.0"
+    workerpool "^6.0.0"
+
+broccoli-uglify-sourcemap@^3.1.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.2.0.tgz#d96f1d41f6c18e9a5d49af1a5ab9489cdcac1c6c"
   integrity sha512-kkkn8v7kXdWwnZNekq+3ILuTAGkZoaoEMUYCKoER5/uokuoyTjtdYLHaE7UxHkuPEuLfjvJYv21sCCePZ74/2g==
@@ -13092,6 +13108,15 @@ terser@^4.1.2, terser@^4.3.9:
   version "4.8.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-4.8.0.tgz#63056343d7c70bb29f3af665865a46fe03a0df17"
   integrity sha512-EAPipTNeWsb/3wLPeup1tVPaXfIaU68xMnVdPafIL1TV05OhASArYyIfFvnvJCNrR2NIOvDVNNTFRa+Re2MWyw==
+  dependencies:
+    commander "^2.20.0"
+    source-map "~0.6.1"
+    source-map-support "~0.5.12"
+
+terser@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.3.0.tgz#c481f4afecdcc182d5e2bdd2ff2dc61555161e81"
+  integrity sha512-XTT3D3AwxC54KywJijmY2mxZ8nJiEjBHVYzq8l9OaYuRFWeQNBwvipuzzYEP4e+/AVcd1hqG/CqgsdIRyT45Fg==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"
