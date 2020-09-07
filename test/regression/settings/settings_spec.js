@@ -15,9 +15,10 @@ describe('Settings', function () {
         return testUtils.startGhost();
     });
 
-    // Whitelist: Only this list needs updating when a core setting is added/removed/renamed
+    // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
     const coreSettingKeys = [
         'db_hash',
+        'routes_hash',
         'next_update_check',
         'notifications',
         'session_secret',
@@ -31,7 +32,7 @@ describe('Settings', function () {
         'members_stripe_webhook_secret'
     ];
     // If this test is failing, then it is likely a new setting has been added without group migration
-    // In case of `core` setting modifications, whitelist above needs to be updated
+    // In case of `core` setting modifications, allowlist above needs to be updated
     it('should not modify core keys without fixing this test', function () {
         return db.knex('settings')
             .where('group', 'core')
