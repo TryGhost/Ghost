@@ -101,41 +101,26 @@ module.exports = {
      * @param {Object} apiConfig
      * @return {Promise}
      */
-    get(result, apiConfig = {}) {
+    async get(result, apiConfig = {}) {
         let headers = {};
 
-        return Promise.resolve()
-            .then(() => {
-                let header;
+        if (apiConfig.disposition) {
+            const dispositionHeader = await disposition[apiConfig.disposition.type](result, apiConfig.disposition);
 
-                if (apiConfig.disposition) {
-                    header = disposition[apiConfig.disposition.type](result, apiConfig.disposition);
-                }
+            if (dispositionHeader) {
+                Object.assign(headers, dispositionHeader);
+            }
+        }
 
-                return header;
-            })
-            .then((header) => {
-                if (header) {
-                    Object.assign(headers, header);
-                }
-            })
-            .then(() => {
-                let header;
+        if (apiConfig.cacheInvalidate) {
+            const cacheInvalidationHeader = cacheInvalidate(result, apiConfig.cacheInvalidate);
 
-                if (apiConfig.cacheInvalidate) {
-                    header = cacheInvalidate(result, apiConfig.cacheInvalidate);
-                }
+            if (cacheInvalidationHeader) {
+                Object.assign(headers, cacheInvalidationHeader);
+            }
+        }
 
-                return header;
-            })
-            .then((header) => {
-                if (header) {
-                    Object.assign(headers, header);
-                }
-            })
-            .then(() => {
-                debug(headers);
-                return headers;
-            });
+        debug(headers);
+        return headers;
     }
 };
