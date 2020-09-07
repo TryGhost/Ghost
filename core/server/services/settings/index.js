@@ -12,11 +12,18 @@ module.exports = {
     },
 
     async reinit() {
+        const oldSettings = SettingsCache.getAll();
+
         SettingsCache.shutdown();
         const settingsCollection = await models.Settings.populateDefaults();
-        SettingsCache.init(settingsCollection);
+        const newSettings = SettingsCache.init(settingsCollection);
+
         for (const model of settingsCollection.models) {
-            model.emitChange(model.attributes.key + '.' + 'edited', {});
+            const key = model.attributes.key;
+
+            if (newSettings[key] !== oldSettings[key]) {
+                model.emitChange(key + '.' + 'edited', {});
+            }
         }
     },
 
