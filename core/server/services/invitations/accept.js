@@ -18,6 +18,15 @@ async function accept(invitation) {
         throw new errors.NotFoundError({message: i18n.t('errors.api.invites.inviteExpired')});
     }
 
+    let user = await models.User.findOne({email: data.email});
+    if (user) {
+        throw new errors.ValidationError({
+            message: i18n.t('errors.api.invites.inviteEmailAlreadyExist.message'),
+            context: i18n.t('errors.api.invites.inviteEmailAlreadyExist.context'),
+            help: i18n.t('errors.api.invites.inviteEmailAlreadyExist.help')
+        });
+    }
+
     await models.User.add({
         email: data.email,
         name: data.name,
