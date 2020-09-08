@@ -1,11 +1,11 @@
 <span class="dropdown dropdown-topmenu">
     <GhDropdownButton
         @dropdownName="members-label-menu"
-        @classNames="gh-btn gh-btn-white gh-btn-filter first" @title="Member Labels"
+        @classNames="gh-contentfilter-menu-trigger" @title="Member Labels"
         @data-test-user-actions="true">
-        <span class="nudge-bottom--1 {{if @selectedLabel.slug "blue fw6"}} gh-btn-filter-maxwidth" title="{{@selectedLabel.name}}">
+        <span class="{{if @selectedLabel.slug "blue fw6"}} gh-btn-filter-maxwidth" title="{{@selectedLabel.name}}">
             <span>{{@selectedLabel.name}}</span>
-            {{svg-jar "arrow-down-stroke" class="w2 h2 stroke-midgrey ml1"}}
+            {{svg-jar "arrow-down-small"}}
         </span>
     </GhDropdownButton>
     <GhDropdown @name="members-label-menu" @tagName="div"
