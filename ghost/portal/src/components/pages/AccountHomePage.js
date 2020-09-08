@@ -385,6 +385,7 @@ export default class AccountHomePage extends React.Component {
     }
 
     onToggleSubscription(e, subscribed) {
+        e.preventDefault();
         this.context.onAction('updateNewsletter', {subscribed: !subscribed});
     }
 
