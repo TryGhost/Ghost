@@ -245,8 +245,13 @@ class SignupPage extends React.Component {
 
     renderSubmitButton() {
         const {action, brandColor} = this.context;
+        const plans = this.getPlans();
 
         let label = 'Continue';
+        if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
+            label = 'Sign up';
+        }
+
         let isRunning = false;
         if (action === 'signup:running') {
             label = 'Sending...';
