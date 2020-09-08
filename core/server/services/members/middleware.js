@@ -107,7 +107,8 @@ const getMemberSiteData = async function (req, res) {
         portal_plans: settingsCache.get('portal_plans'),
         portal_button_icon: settingsCache.get('portal_button_icon'),
         portal_button_signup_text: settingsCache.get('portal_button_signup_text'),
-        portal_button_style: settingsCache.get('portal_button_style')
+        portal_button_style: settingsCache.get('portal_button_style'),
+        members_support_address: settingsCache.get('members_support_address')
     };
 
     // accent_color is currently an experimental feature
