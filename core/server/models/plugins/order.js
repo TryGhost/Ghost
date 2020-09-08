@@ -31,11 +31,16 @@ const order = function order(Bookshelf) {
                 field = match[1].toLowerCase();
                 direction = match[2].toUpperCase();
 
-                if (orderAttributes.indexOf(field) === -1) {
+                const fieldRegexp = new RegExp(`${field}$`);
+                const matchingOrderAttribute = orderAttributes.find((value) => {
+                    return value.match(fieldRegexp);
+                });
+
+                if (!matchingOrderAttribute) {
                     return;
                 }
 
-                result[field] = direction;
+                result[matchingOrderAttribute] = direction;
             });
 
             return result;

@@ -83,6 +83,15 @@ Post = ghostBookshelf.Model.extend({
         return filteredKeys;
     },
 
+    orderAttributes: function orderAttributes() {
+        let keys = ghostBookshelf.Model.prototype.orderAttributes.apply(this, arguments);
+
+        // extend ordered keys with post_meta keys
+        let postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
+
+        return [...keys, ...postsMetaKeys];
+    },
+
     emitChange: function emitChange(event, options = {}) {
         let eventToTrigger;
         let resourceType = this.get('type');

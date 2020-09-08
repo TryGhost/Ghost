@@ -182,7 +182,7 @@ pagination = function pagination(bookshelf) {
                         if (property === 'count.posts') {
                             self.query('orderBy', 'count__posts', direction);
                         } else {
-                            self.query('orderBy', tableName + '.' + property, direction);
+                            self.query('orderBy', property, direction);
                         }
                     });
                 } else if (options.orderRaw) {
@@ -199,6 +199,7 @@ pagination = function pagination(bookshelf) {
 
                 // Setup the promise to do a fetch on our collection, running the specified query
                 // @TODO: ensure option handling is done using an explicit pick elsewhere
+
                 return self.fetchAll(_.omit(options, ['page', 'limit']))
                     .then(function (fetchResult) {
                         if (options.limit === 'all') {
