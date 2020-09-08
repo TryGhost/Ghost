@@ -248,7 +248,7 @@ export default class App extends React.Component {
                 this.setState({
                     action: ''
                 });
-            }, 5000);
+            }, 2000);
         } catch (e) {
             this.setState({
                 action: `${action}:failed`
