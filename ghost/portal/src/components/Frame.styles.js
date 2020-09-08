@@ -254,6 +254,7 @@ const GlobalStyles = `
     }
 
     .gh-portal-popup-container {
+        outline: none;
         position: relative;
         display: flex;
         box-sizing: border-box;

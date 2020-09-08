@@ -41,6 +41,27 @@ const StylesWrapper = ({member}) => {
 class PopupContent extends React.Component {
     static contextType = AppContext;
 
+    componentDidMount() {
+        // Handle Esc to close popup
+        if (this.node) {
+            this.node.focus();
+            this.keyUphandler = (event) => {
+                const eventTargetTag = (event.target && event.target.tagName);
+                if (event.key === 'Escape' && eventTargetTag !== 'INPUT') {
+                    this.context.onAction('closePopup');
+                }
+            };
+            this.node.removeEventListener('keyup', this.keyUphandler);
+            this.node.addEventListener('keyup', this.keyUphandler);
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.node) {
+            this.node.removeEventListener('keyup', this.keyUphandler);
+        }
+    }
+
     renderActivePage() {
         const {page} = this.context;
         getActivePage({page});
@@ -67,7 +88,7 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         return (
-            <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle}>
+            <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
                 {this.renderPopupClose()}
                 {this.renderActivePage()}
             </div>
