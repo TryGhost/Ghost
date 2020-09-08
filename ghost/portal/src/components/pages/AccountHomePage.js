@@ -196,7 +196,18 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
     return null;
 };
 
-const AccountActions = ({member, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
+const NotifyNewsletterUpdated = ({action}) => {
+    if (action === 'updateNewsletter:success') {
+        return (
+            <p>
+                ✓ Newsletter updated
+            </p>
+        );
+    }
+    return null;
+};
+
+const AccountActions = ({member, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     const {name, email, subscribed} = member;
 
     const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
@@ -216,6 +227,7 @@ const AccountActions = ({member, openEditProfile, openUpdatePlan, onEditBilling,
                 <div className='gh-portal-list-detail'>
                     <h3>Newsletter</h3>
                     <p>{label}</p>
+                    <NotifyNewsletterUpdated action={action} />
                 </div>
                 <div>
                     <Switch onToggle={(e) => {
@@ -323,6 +335,7 @@ const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor,
             <section>
                 <AccountWelcome member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
                 <AccountActions
+                    action={action}
                     member={member}
                     openEditProfile={e => openEditProfile(e)}
                     onToggleSubscription={(e, subscribed) => onToggleSubscription(e, subscribed)}
@@ -381,7 +394,7 @@ export default class AccountHomePage extends React.Component {
     }
 
     onToggleSubscription(e, subscribed) {
-        this.context.onAction('updateMember', {subscribed: !subscribed});
+        this.context.onAction('updateNewsletter', {subscribed: !subscribed});
     }
 
     handleSignout(e) {
