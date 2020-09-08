@@ -43,6 +43,9 @@ ghostBookshelf.plugin(plugins.customQuery);
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
 
+// Load the Ghost filter plugin, which handles applying a 'order' to findPage requests
+ghostBookshelf.plugin(plugins.order);
+
 // Load the Ghost search plugin, which handles applying a search query to findPage requests
 ghostBookshelf.plugin(plugins.search);
 
@@ -168,6 +171,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
     permittedAttributes: function permittedAttributes() {
         return _.keys(schema.tables[this.tableName]);
+    },
+
+    // Ghost ordering handling, allows to order by permitted attributes by default and can be overriden on specific model level
+    orderAttributes: function orderAttributes() {
+        return this.permittedAttributes();
     },
 
     // When loading an instance, subclasses can specify default to fetch
@@ -912,7 +920,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         if (options.order) {
-            options.order = this.parseOrderOption(options.order, options.withRelated);
+            options.order = itemCollection.parseOrderOption(options.order, options.withRelated);
         } else if (options.autoOrder) {
             options.orderRaw = options.autoOrder;
         } else if (this.orderDefaultRaw) {
@@ -1163,43 +1171,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Test for duplicate slugs.
         return checkIfSlugExists(slug);
-    },
-
-    parseOrderOption: function (order, withRelated) {
-        let permittedAttributes;
-        let result;
-        let rules;
-
-        permittedAttributes = this.prototype.permittedAttributes();
-        if (withRelated && withRelated.indexOf('count.posts') > -1) {
-            permittedAttributes.push('count.posts');
-        }
-        result = {};
-        rules = order.split(',');
-
-        _.each(rules, function (rule) {
-            let match;
-            let field;
-            let direction;
-
-            match = /^([a-z0-9_.]+)\s+(asc|desc)$/i.exec(rule.trim());
-
-            // invalid order syntax
-            if (!match) {
-                return;
-            }
-
-            field = match[1].toLowerCase();
-            direction = match[2].toUpperCase();
-
-            if (permittedAttributes.indexOf(field) === -1) {
-                return;
-            }
-
-            result[field] = direction;
-        });
-
-        return result;
     },
 
     /**
