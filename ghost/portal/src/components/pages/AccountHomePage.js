@@ -196,21 +196,13 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
     return null;
 };
 
-const NotifyNewsletterUpdated = ({action}) => {
-    if (action === 'updateNewsletter:success') {
-        return (
-            <p>
-                ✓ Newsletter updated
-            </p>
-        );
-    }
-    return null;
-};
-
 const AccountActions = ({member, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     const {name, email, subscribed} = member;
 
-    const label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
+    let label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
+    if (action === 'updateNewsletter:success') {
+        label = '✓ Newsletter updated';
+    }
     return (
         <div className='gh-portal-list'>
             <section>
@@ -227,7 +219,6 @@ const AccountActions = ({member, action, openEditProfile, openUpdatePlan, onEdit
                 <div className='gh-portal-list-detail'>
                     <h3>Newsletter</h3>
                     <p>{label}</p>
-                    <NotifyNewsletterUpdated action={action} />
                 </div>
                 <div>
                     <Switch onToggle={(e) => {
