@@ -45,7 +45,7 @@ export default class App extends React.Component {
 
     componentWillUnmount() {
         this.customTriggerButtons.forEach((customTriggerButton) => {
-            customTriggerButton.addEventListener('click', this.clickHandler);
+            customTriggerButton.removeEventListener('click', this.clickHandler);
         });
     }
 
@@ -65,6 +65,8 @@ export default class App extends React.Component {
         this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
         this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.classList.add(popupCloseClass);
+            // Remove any existing event listener
+            customTriggerButton.removeEventListener('click', this.clickHandler);
             customTriggerButton.addEventListener('click', this.clickHandler);
         });
     }
