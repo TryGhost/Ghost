@@ -51,14 +51,14 @@ class PopupContent extends React.Component {
                     this.context.onAction('closePopup');
                 }
             };
-            this.node.removeEventListener('keyup', this.keyUphandler);
-            this.node.addEventListener('keyup', this.keyUphandler);
+            this.node.ownerDocument.removeEventListener('keyup', this.keyUphandler);
+            this.node.ownerDocument.addEventListener('keyup', this.keyUphandler);
         }
     }
 
     componentWillUnmount() {
         if (this.node) {
-            this.node.removeEventListener('keyup', this.keyUphandler);
+            this.node.ownerDocument.removeEventListener('keyup', this.keyUphandler);
         }
     }
 
