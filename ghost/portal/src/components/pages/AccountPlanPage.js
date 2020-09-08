@@ -1,9 +1,8 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
-import CalculateDiscount from '../../utils/discount';
 import {getDateString} from '../../utils/date-time';
-import {getMemberSubscription} from '../../utils/helpers';
+import {getMemberSubscription, getSitePlans} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -88,8 +87,8 @@ export default class AccountPlanPage extends React.Component {
     constructor(props, context) {
         super(props, context);
         const {member} = this.context;
-        const {plans} = this.context.site;
-        this.plans = this.getPlansData({plans});
+        const {site} = this.context;
+        this.plans = getSitePlans({site});
         let activePlan = this.getActivePlanName({member}) || this.plans[0].name;
         const activePlanExists = this.plans.some(d => d.name === activePlan);
         if (!activePlanExists) {
@@ -107,25 +106,6 @@ export default class AccountPlanPage extends React.Component {
                 page: 'signup'
             });
         }
-    }
-
-    getPlansData({plans}) {
-        const discount = CalculateDiscount(plans.monthly, plans.yearly);
-        return [
-            {
-                type: 'month',
-                price: plans.monthly,
-                currency: plans.currency_symbol,
-                name: 'Monthly'
-            },
-            {
-                type: 'year',
-                price: plans.yearly,
-                currency: plans.currency_symbol,
-                name: 'Yearly',
-                discount
-            }
-        ];
     }
 
     handleSignout(e) {
