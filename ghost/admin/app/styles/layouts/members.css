@@ -103,6 +103,11 @@
     left: 10px;
 }
 
+.dropdown-topmenu .gh-contentfilter-menu-trigger {
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+}
+
 .gh-members-list-searchfield.active {
     border-color: #3eb0ef;
     box-shadow: inset 0 0 0 1px #3eb0ef;
