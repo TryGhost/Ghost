@@ -220,7 +220,7 @@ function PlanLabel({showLabel}) {
 }
 
 function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, style}) {
-    if (!plans || plans.length === 0) {
+    if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
         return null;
     }
     return (

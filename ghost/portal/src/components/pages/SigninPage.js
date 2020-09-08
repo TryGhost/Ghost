@@ -91,7 +91,7 @@ export default class SigninPage extends React.Component {
         return (
             <footer className='gh-portal-signup-footer'>
                 <div>Don't have an account?</div>
-                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}>Subscribe</button>
+                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}>Sign up</button>
             </footer>
         );
     }
@@ -134,7 +134,7 @@ export default class SigninPage extends React.Component {
         return (
             <header className='gh-portal-signin-header'>
                 {this.renderSiteLogo()}
-                <h2 className="gh-portal-main-title">Sign in to {siteTitle}</h2>
+                <h2 className="gh-portal-main-title">Log in to {siteTitle}</h2>
             </header>
         );
     }
