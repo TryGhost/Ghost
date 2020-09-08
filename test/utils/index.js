@@ -808,6 +808,7 @@ const startGhost = function startGhost(options) {
     console.time('Start Ghost'); // eslint-disable-line no-console
     options = _.merge({
         redirectsFile: true,
+        redirectsFileExt: '.json',
         forceStart: false,
         copyThemes: true,
         copySettings: true,
@@ -838,7 +839,23 @@ const startGhost = function startGhost(options) {
     }
 
     if (options.redirectsFile) {
-        fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
+        if (options.redirectsFileExt === '.json') {
+            const yamlPath = path.join(contentFolderForTests, 'data', 'redirects.yaml');
+
+            if (fs.existsSync(yamlPath)) {
+                fs.removeSync(yamlPath);
+            }
+            fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
+        }
+
+        if (options.redirectsFileExt === '.yaml') {
+            const jsonPath = path.join(contentFolderForTests, 'data', 'redirects.json');
+
+            if (fs.existsSync(jsonPath)) {
+                fs.removeSync(jsonPath);
+            }
+            fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.yaml'), path.join(contentFolderForTests, 'data', 'redirects.yaml'));
+        }
     }
 
     if (options.copySettings) {
