@@ -135,6 +135,7 @@ describe('Posts API', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Location', /^http:\/\/127.0.0.1:2369\/ghost\/api\/canary\/admin\/posts\/\w*/g)
                 .expect(201)
                 .then((res) => {
                     should.exist(res.body.posts);

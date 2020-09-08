@@ -84,7 +84,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            location: true
+        },
         options: [
             'include',
             'formats',
