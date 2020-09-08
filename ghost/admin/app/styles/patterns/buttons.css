@@ -541,6 +541,13 @@ Usage: CTA buttons grouped together horizontally.
     max-width: 160px;
 }
 
+.gh-btn-filter-maxwidth svg {
+    height: 4px;
+    width: 6.11px;
+    margin-left: 2px;
+    margin-top: -2px;
+    vertical-align: middle;
+}
 
 /* Stripe Connect buttons
 /* ---------------------------------------------------------- */
@@ -634,10 +641,6 @@ Usage: CTA buttons grouped together horizontally.
     -moz-box-shadow: inset 0 1px 0 rgba(0,0,0,0.1);
     -webkit-box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
     box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
-}
-
-.stripe-connect:active span:before {
-
 }
 
 .stripe-connect.light-blue {

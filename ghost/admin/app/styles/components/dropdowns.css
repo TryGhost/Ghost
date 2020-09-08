@@ -10,10 +10,6 @@
     z-index: 1100;
 }
 
-.dropdown-topmenu {
-    height: 33px;
-}
-
 .dropdown-toggle:focus {
     outline: 0;
 }
