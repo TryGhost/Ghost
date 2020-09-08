@@ -219,6 +219,11 @@ const SubscribeButton = ({site, openSubscribe, brandColor}) => {
 const AccountWelcome = ({member, site, openSubscribe, brandColor}) => {
     const {name, firstname, email} = member;
     const {title: siteTitle} = site;
+    const {is_stripe_configured: isStripeConfigured} = site;
+
+    if (!isStripeConfigured) {
+        return null;
+    }
 
     if (member.paid) {
         return null;
