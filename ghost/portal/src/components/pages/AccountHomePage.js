@@ -3,7 +3,7 @@ import {ReactComponent as LogoutIcon} from '../../images/icons/logout.svg';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription} from '../../utils/helpers';
+import {getMemberSubscription, isMemberComplimentary} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 
 const React = require('react');
@@ -124,49 +124,72 @@ const UserHeader = ({member, brandColor}) => {
 };
 
 const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
-    const getPlanLabel = ({amount = 0, currency_symbol: currencySymbol = '$', interval}) => {
-        return `${currencySymbol}${amount / 100}/${interval}`;
+    const PlanLabel = ({plan, isComplimentary}) => {
+        const {amount = 0, currency_symbol: currencySymbol = '$', interval} = plan;
+        let label = `${currencySymbol}${amount / 100}/${interval}`;
+        if (isComplimentary) {
+            label = `Complimentary (${label})`;
+        }
+        return (
+            <p>
+                {label}
+            </p>
+        );
     };
 
-    const getCardLabel = ({defaultCardLast4}) => {
+    const PlanUpdateButton = ({isComplimentary}) => {
+        if (isComplimentary) {
+            return null;
+        }
+        return (
+            <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}>Change</button>
+        );
+    };
+
+    const CardLabel = ({defaultCardLast4}) => {
         if (defaultCardLast4) {
-            return `**** **** **** ${defaultCardLast4}`;
+            const label = `**** **** **** ${defaultCardLast4}`;
+            return (
+                <p>
+                    {label}
+                </p>
+            );
         }
+        return null;
     };
 
-    let isComplimentary = false;
-    if (member && member.paid && member.subscriptions[0]) {
-        const {plan} = member.subscriptions[0];
-        if (plan.nickname === 'Complimentary') {
-            isComplimentary = true;
+    const BillingSection = ({defaultCardLast4, isComplimentary}) => {
+        if (isComplimentary) {
+            return null;
         }
-    }
+        return (
+            <section>
+                <div className='gh-portal-list-detail'>
+                    <h3>Billing Info</h3>
+                    <CardLabel defaultCardLast4={defaultCardLast4} />
+                </div>
+                <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>Update</button>
+            </section>
+        );
+    };
 
-    if (member.paid) {
-        const {subscriptions} = member;
+    const subscription = getMemberSubscription({member});
+    if (subscription) {
+        let isComplimentary = isMemberComplimentary({member});
         const {
             plan,
             default_payment_card_last4: defaultCardLast4
-        } = subscriptions[0];
+        } = subscription;
         return (
             <>
                 <section>
                     <div className='gh-portal-list-detail'>
                         <h3>Plan</h3>
-                        <p>{(isComplimentary ? 'Complimentary (' + getPlanLabel(plan) + ')' : getPlanLabel(plan))}</p>
+                        <PlanLabel plan={plan} isComplimentary={isComplimentary} />
                     </div>
-                    {(!isComplimentary ? <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}>Change</button> : '')}
+                    <PlanUpdateButton isComplimentary={isComplimentary} />
                 </section>
-
-                {(!isComplimentary ? 
-                    <section>
-                        <div className='gh-portal-list-detail'>
-                            <h3>Billing Info</h3>
-                            <p>{getCardLabel({defaultCardLast4})}</p>
-                        </div>
-                        <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>Update</button>
-                    </section>
-                    : '')}
+                <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
             </>
         );
     }

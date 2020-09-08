@@ -5,3 +5,12 @@ export function getMemberSubscription({member = {}}) {
     }
     return null;
 }
+
+export function isMemberComplimentary({member = {}}) {
+    const subscription = getMemberSubscription({member});
+    if (subscription) {
+        const {plan} = subscription;
+        return (plan.nickname === 'Complimentary');
+    }
+    return false;
+}
