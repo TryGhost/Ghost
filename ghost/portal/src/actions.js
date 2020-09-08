@@ -102,11 +102,11 @@ async function cancelSubscription({data, api}) {
     };
 }
 
-async function editBilling({data, updateState, state, api}) {
+async function editBilling({data, api}) {
     await api.member.editBilling();
 }
 
-async function updateMember({data, updateState, state, api}) {
+async function updateMember({data, api}) {
     const {name, subscribed} = data;
     const member = await api.member.update({name, subscribed});
     if (!member) {
@@ -121,7 +121,22 @@ async function updateMember({data, updateState, state, api}) {
     }
 }
 
-async function updateProfile({data, updateState, state, api}) {
+async function updateNewsletter({data, api}) {
+    const {subscribed} = data;
+    const member = await api.member.update({subscribed});
+    if (!member) {
+        return {
+            action: 'updateNewsletter:failed'
+        };
+    } else {
+        return {
+            action: 'updateNewsletter:success',
+            member: member
+        };
+    }
+}
+
+async function updateProfile({data, api}) {
     const {name, subscribed} = data;
     const member = await api.member.update({name, subscribed});
     if (!member) {
@@ -150,6 +165,7 @@ const Actions = {
     updateSubscription,
     cancelSubscription,
     updateMember,
+    updateNewsletter,
     updateProfile,
     editBilling,
     checkoutPlan
