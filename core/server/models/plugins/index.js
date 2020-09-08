@@ -1,5 +1,6 @@
 module.exports = {
     filter: require('./filter'),
+    order: require('./order'),
     customQuery: require('./custom-query'),
     search: require('./search'),
     includeCount: require('./include-count'),
