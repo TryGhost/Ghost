@@ -199,8 +199,8 @@ async function sendEmailJob({emailModel, options}) {
         // Check host limit for allowed member count and throw error if over limit
         await membersService.checkHostLimit();
 
-        // No need to fetch list until after we've passed the check
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
+        // TODO: this will clobber a user-assigned filter if/when we allow emails to be sent to filtered member lists
         const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true'});
 
         if (postModel.get('visibility') === 'paid') {
@@ -210,7 +210,7 @@ async function sendEmailJob({emailModel, options}) {
         const startRetrieve = Date.now();
         debug('pendingEmailHandler: retrieving members list');
         const memberQuery = await models.Member.getFilteredCollection(filterOptions).query();
-        // TODO: how to apply this which would normally be done by bookshelf via our `onFetching` hooks
+        // TODO: how to apply this more elegantly? Normally done by `onFetching` bookshelf hook
         if (options.transacting) {
             memberQuery.transacting(options.transacting);
             if (options.forUpdate) {
@@ -231,26 +231,27 @@ async function sendEmailJob({emailModel, options}) {
         });
 
         debug('pendingEmailHandler: storing recipient list');
-        const startStorage = Date.now();
-        const storeRecipientBatch = async function (recipients, i) {
-            const startOfBatchStore = Date.now();
+        const startOfRecipientStorage = Date.now();
+        const storeRecipientBatch = async function (recipients) {
+            let batchModel = await models.EmailBatch.add({email_id: emailModel.id}, knexOptions);
+
+            // use knex rather than bookshelf to avoid overhead and event loop blocking
+            // when instantiating large numbers of bookshelf model objects
             const recipientData = recipients.map((memberRow) => {
                 return {
                     id: ObjectId.generate(),
-                    email_id: emailModel.get('id'),
+                    email_id: emailModel.id,
                     member_id: memberRow.id,
-                    batch: i + 1,
-                    uuid: memberRow.uuid,
-                    email: memberRow.email,
-                    name: memberRow.name
+                    batch_id: batchModel.id,
+                    member_uuid: memberRow.uuid,
+                    member_email: memberRow.email,
+                    member_name: memberRow.name
                 };
             });
-            const result = await db.knex('email_recipients').insert(recipientData);
-            debug(`pendingEmailHandler: stored recipient batch (${Date.now() - startOfBatchStore}ms)`);
-            return result;
+            return await db.knex('email_recipients').insert(recipientData);
         };
         await Promise.each(_.chunk(memberRows, 1000), storeRecipientBatch);
-        debug(`pendingEmailHandler: stored recipient list (${Date.now() - startStorage}ms)`);
+        debug(`pendingEmailHandler: stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
 
         // NOTE: meta contains an array which can be a mix of successful and error responses
         //       needs filtering and saving objects of {error, batchData} form to separate property
