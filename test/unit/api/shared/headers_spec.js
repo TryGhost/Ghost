@@ -61,4 +61,56 @@ describe('Unit: api/shared/headers', function () {
                 });
         });
     });
+
+    describe('config.location', function () {
+        it('adds header when all needed data is present', function () {
+            const apiResult = {
+                posts: [{
+                    id: 'id_value'
+                }]
+            };
+
+            const apiConfigHeaders = {
+                location: true
+            };
+            const frame = {
+                docName: 'posts',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/canary/posts/`
+                    }
+                }
+            };
+
+            return shared.headers.get(apiResult, apiConfigHeaders, frame)
+                .then((result) => {
+                    result.should.eql({
+                        Location: 'https://example.com/api/canary/posts/id_value'
+                    });
+                });
+        });
+
+        it('does not add header when missing result values', function () {
+            const apiResult = {};
+
+            const apiConfigHeaders = {
+                location: true
+            };
+            const frame = {
+                docName: 'posts',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/canary/posts/`
+                    }
+                }
+            };
+
+            return shared.headers.get(apiResult, apiConfigHeaders, frame)
+                .then((result) => {
+                    result.should.eql({});
+                });
+        });
+    });
 });

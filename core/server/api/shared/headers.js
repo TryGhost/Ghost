@@ -99,9 +99,10 @@ module.exports = {
      *
      * @param {Object} result - API response
      * @param {Object} apiConfigHeaders
+     * @param {Object} frame
      * @return {Promise}
      */
-    async get(result, apiConfigHeaders = {}) {
+    async get(result, apiConfigHeaders = {}, frame) {
         let headers = {};
 
         if (apiConfigHeaders.disposition) {
@@ -118,6 +119,20 @@ module.exports = {
             if (cacheInvalidationHeader) {
                 Object.assign(headers, cacheInvalidationHeader);
             }
+        }
+
+        if (apiConfigHeaders.location
+            && result[frame.docName]
+            && result[frame.docName][0]
+            && result[frame.docName][0].id) {
+            const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
+            const resourceId = result[frame.docName][0].id;
+            const location = `${protocol}${frame.original.url.host}${frame.original.url.pathname}${resourceId}`;
+            const locationHeader = {
+                Location: location
+            };
+
+            Object.assign(headers, locationHeader);
         }
 
         debug(headers);
