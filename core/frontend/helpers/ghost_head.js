@@ -5,6 +5,7 @@
 const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs, urlUtils} = require('../services/proxy');
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('ghost_head');
+const templateStyles = require('./tpl/styles');
 
 const getMetaData = metaData.get;
 const getAssetUrl = metaData.getAssetUrl;
@@ -47,6 +48,7 @@ function getMembersHelper() {
     }
     if ((!!stripeDirectSecretKey && !!stripeDirectPublishableKey) || !!stripeConnectAccountId) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
+        membersHelper += (`<style type='text/css'> ${templateStyles}</style>`);
     }
     return membersHelper;
 }
