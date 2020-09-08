@@ -96,11 +96,12 @@ const UserAvatar = ({avatar, brandColor}) => {
     );
 };
 
-const AccountFooter = ({onClose}) => {
+const AccountFooter = ({onClose, supportAddress = ''}) => {
+    const supportAddressMail = `mailto:${supportAddress}`;
     return (
         <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                <li><button className='gh-portal-btn'>Contact support</button></li>
+                <li><a className='gh-portal-btn' href={supportAddressMail}>Contact support</a></li>
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
@@ -395,7 +396,8 @@ export default class AccountHomePage extends React.Component {
     }
 
     render() {
-        const {member} = this.context;
+        const {member, site} = this.context;
+        const {members_support_address: supportAddress} = site;
         if (!member) {
             return null;
         }
@@ -410,7 +412,7 @@ export default class AccountHomePage extends React.Component {
                     openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
                     onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
                 />
-                <AccountFooter onClose={() => this.context.onAction('closePopup')} />
+                <AccountFooter onClose={() => this.context.onAction('closePopup')} supportAddress={supportAddress} />
             </div>
         );
     }

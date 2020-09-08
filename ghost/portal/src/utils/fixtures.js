@@ -18,7 +18,8 @@ export const site = {
     portal_plans: ['free', 'monthly', 'yearly'],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
-    portal_button_style: 'icon-and-text'
+    portal_button_style: 'icon-and-text',
+    members_support_address: 'support@example.com'
 };
 
 export const member = {
