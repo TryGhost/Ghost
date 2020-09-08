@@ -193,6 +193,22 @@ describe('Authentication API v3', function () {
                 .expect(404);
         });
 
+        it('try to accept with invite and existing email address', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/invitation'))
+                .set('Origin', config.get('url'))
+                .send({
+                    invitation: [{
+                        token: testUtils.DataGenerator.forKnex.invites[0].token,
+                        password: '12345678910',
+                        email: testUtils.DataGenerator.forKnex.users[0].email,
+                        name: 'invited'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect(422);
+        });
+
         it('try to accept with invite', function () {
             return request
                 .post(localUtils.API.getApiQuery('authentication/invitation'))

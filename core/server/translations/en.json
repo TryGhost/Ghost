@@ -449,6 +449,11 @@
                 "invalidIdProvided": "Invalid id provided."
             },
             "invites": {
+                "inviteEmailAlreadyExist": {
+                    "message": "Could not create an account, email is already in use.",
+                    "context": "Attempting to create an account with existing email address.",
+                    "help": "Use different email address to register your account."
+                },
                 "inviteNotFound": "Invite not found.",
                 "inviteExpired": "Invite is expired.",
                 "emailIsRequired": "E-Mail is required.",
