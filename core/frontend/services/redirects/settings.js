@@ -143,9 +143,12 @@ const setFromFilePath = (filePath, ext) => {
 };
 
 const get = () => {
-    return readRedirectsFile(path.join(config.getContentPath('data'), 'redirects.json'));
+    return getCurrentRedirectsFilePath().then((filePath) => {
+        return readRedirectsFile(filePath);
+    });
 };
 
 module.exports.get = get;
 module.exports.setFromFilePath = setFromFilePath;
+module.exports.getCurrentRedirectsFilePath = getCurrentRedirectsFilePath;
 module.exports.parseRedirectsFile = parseRedirectsFile;

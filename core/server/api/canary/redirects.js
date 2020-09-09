@@ -1,3 +1,5 @@
+const path = require('path');
+
 const web = require('../../web');
 const redirects = require('../../../frontend/services/redirects');
 
@@ -8,10 +10,20 @@ module.exports = {
         headers: {
             disposition: {
                 type: 'file',
-                value: 'redirects.json'
+                value() {
+                    return redirects.settings.getCurrentRedirectsFilePath()
+                        .then((filePath) => {
+                            return path.extname(filePath) === '.yaml'
+                                ? 'redirects.yaml'
+                                : 'redirects.json';
+                        });
+                }
             }
         },
         permissions: true,
+        response: {
+            format: 'plain'
+        },
         query() {
             return redirects.settings.get();
         }
