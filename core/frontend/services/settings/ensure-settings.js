@@ -27,10 +27,11 @@ module.exports = function ensureSettingsFiles(knownSettings) {
 
         return fs.readFile(filePath, 'utf8')
             .catch({code: 'ENOENT'}, () => {
+                const defaultFilePath = path.join(defaultSettingsPath, defaultFileName);
                 // CASE: file doesn't exist, copy it from our defaults
                 return fs.copy(
-                    path.join(defaultSettingsPath, defaultFileName),
-                    path.join(contentPath, fileName)
+                    defaultFilePath,
+                    filePath
                 ).then(() => {
                     debug(`'${defaultFileName}' copied to ${contentPath}.`);
                 });

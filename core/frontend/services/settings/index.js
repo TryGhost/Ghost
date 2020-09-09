@@ -1,9 +1,23 @@
 const _ = require('lodash');
+const crypto = require('crypto');
 const debug = require('ghost-ignition').debug('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
 const ensureSettingsFiles = require('./ensure-settings');
 
 const errors = require('@tryghost/errors');
+
+/**
+ * md5 hashes of default settings
+ */
+const defaultHashes = {
+    routes: '3d180d52c663d173a6be791ef411ed01'
+};
+
+const calculateHash = (data) => {
+    return crypto.createHash('md5')
+        .update(data, 'binary')
+        .digest('hex');
+};
 
 module.exports = {
     init: function () {
@@ -76,5 +90,15 @@ module.exports = {
         });
 
         return settingsToReturn;
+    },
+
+    getDefaulHash: (setting) => {
+        return defaultHashes[setting];
+    },
+
+    getCurrentHash: async (setting) => {
+        const data = await SettingsLoader.loadSettings(setting);
+
+        return calculateHash(JSON.stringify(data));
     }
 };

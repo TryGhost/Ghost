@@ -402,6 +402,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
 
 /**
  * Validate and sanitize the routing object.
+ * NOTE: mutates the object even if it's a valid configuration
  */
 module.exports = function validate(object) {
     if (!object) {
