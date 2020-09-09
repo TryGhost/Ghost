@@ -5784,10 +5784,10 @@ ember-cli-version-checker@^5.0.2, ember-cli-version-checker@^5.1.1:
     semver "^7.3.2"
     silent-error "^1.1.1"
 
-ember-cli@3.21.0:
-  version "3.21.0"
-  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.21.0.tgz#711a48d1a5639bc22ab75e8dd82230f3f7f58f93"
-  integrity sha512-0bekYbwzmeo6rojpEcS99lIgagJ945DxbY8FibX7qtcQsFY/iA9/DhGp4vdyktIGXWSN2ww7dPQbtilKQ4wRgA==
+ember-cli@3.21.1:
+  version "3.21.1"
+  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.21.1.tgz#af82fe8102caee2bc684d844ece39a9ada837be0"
+  integrity sha512-Vuuzc8A+buctJ51mK2WOkR/NzdZBhaYgeWK3wZn1bZBYZ+iXLqxxgeH135Rb5TfzWsZJ63iiwnwQCzPsBrujxA==
   dependencies:
     "@babel/core" "^7.11.0"
     "@babel/plugin-transform-modules-amd" "^7.10.5"
@@ -5833,7 +5833,7 @@ ember-cli@3.21.0:
     express "^4.17.1"
     filesize "^6.1.0"
     find-up "^4.1.0"
-    find-yarn-workspace-root "^1.2.1"
+    find-yarn-workspace-root "^2.0.0"
     fixturify-project "^2.1.0"
     fs-extra "^9.0.0"
     fs-tree-diff "^2.0.1"
@@ -5847,7 +5847,7 @@ ember-cli@3.21.0:
     http-proxy "^1.18.1"
     inflection "^1.12.0"
     is-git-url "^1.0.0"
-    is-language-code "^1.0.7"
+    is-language-code "^1.0.9"
     isbinaryfile "^4.0.6"
     js-yaml "^3.13.1"
     json-stable-stringify "^1.0.1"
@@ -7378,13 +7378,20 @@ find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-find-yarn-workspace-root@^1.1.0, find-yarn-workspace-root@^1.2.1:
+find-yarn-workspace-root@^1.1.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/find-yarn-workspace-root/-/find-yarn-workspace-root-1.2.1.tgz#40eb8e6e7c2502ddfaa2577c176f221422f860db"
   integrity sha512-dVtfb0WuQG+8Ag2uWkbG79hOUzEsRrhBzgfn86g2sJPkzmcpGdghbNTfUKGTxymFrY/tLIodDzLoW9nOJ4FY8Q==
   dependencies:
     fs-extra "^4.0.3"
     micromatch "^3.1.4"
+
+find-yarn-workspace-root@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/find-yarn-workspace-root/-/find-yarn-workspace-root-2.0.0.tgz#f47fb8d239c900eb78179aa81b66673eac88f7bd"
+  integrity sha512-1IMnbjt4KzsQfnhnzNd8wUEgXZ44IzZaZmnLYx7D5FZlaHt2gW20Cri8Q+E/t5tIj4+epTBub+2Zxu/vNILzqQ==
+  dependencies:
+    micromatch "^4.0.2"
 
 findup-sync@^2.0.0:
   version "2.0.0"
@@ -8754,10 +8761,10 @@ is-glob@^4.0.0, is-glob@^4.0.1, is-glob@~4.0.1:
   dependencies:
     is-extglob "^2.1.1"
 
-is-language-code@^1.0.7:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/is-language-code/-/is-language-code-1.0.9.tgz#0c8b0fde3d24b5dccfa4b32e4c4816a080b01cfc"
-  integrity sha512-DfBm82Z5bhelTERts0vFLZ+2bIiYR+5+pvBbIifzkqMymqiY0A1c1DYM7hCKXoK6ZKVjoom0BcZT+C8sV2yAqA==
+is-language-code@^1.0.9:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/is-language-code/-/is-language-code-1.0.10.tgz#19bacf9f0f97368853a3544cdba53c9075d55522"
+  integrity sha512-kp9PYib4sMAZCo56ViCWtjtYWz4ePZQ/QFzMvdxYEm2uSJaGjaEgOt3AkIR8SBxXffcV7ZYYkEGZpWa+No2Xiw==
 
 is-number@^3.0.0:
   version "3.0.0"
