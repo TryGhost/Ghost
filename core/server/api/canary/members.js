@@ -242,7 +242,9 @@ module.exports = {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
                         message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context')
+                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                            action: 'add'
+                        })
                     });
                 }
 
@@ -304,8 +306,10 @@ module.exports = {
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.models.member.memberAlreadyExistsWithEmail.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExistsWithEmail.context')
+                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
+                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                            action: 'edit'
+                        })
                     });
                 }
 
