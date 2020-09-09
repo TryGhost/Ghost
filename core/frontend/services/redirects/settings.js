@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
+const yaml = require('js-yaml');
 
 const validation = require('./validation');
 
@@ -11,17 +11,6 @@ const errors = require('@tryghost/errors');
 
 const readRedirectsFile = (redirectsPath) => {
     return fs.readFile(redirectsPath, 'utf-8')
-        .then((content) => {
-            try {
-                content = JSON.parse(content);
-            } catch (err) {
-                throw new errors.BadRequestError({
-                    message: i18n.t('errors.general.jsonParse', {context: err.message})
-                });
-            }
-
-            return content;
-        })
         .catch((err) => {
             if (err.code === 'ENOENT') {
                 return Promise.resolve([]);
@@ -37,15 +26,90 @@ const readRedirectsFile = (redirectsPath) => {
         });
 };
 
-const setFromFilePath = (filePath) => {
-    const redirectsPath = path.join(config.getContentPath('data'), 'redirects.json');
-    const backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
+const parseRedirectsFile = (content, ext) => {
+    if (ext === '.json') {
+        let redirects;
 
-    return fs.pathExists(redirectsPath)
-        .then((redirectExists) => {
-            if (!redirectExists) {
+        try {
+            redirects = JSON.parse(content);
+        } catch (err) {
+            throw new errors.BadRequestError({
+                message: i18n.t('errors.general.jsonParse', {context: err.message})
+            });
+        }
+
+        return redirects;
+    }
+
+    if (ext === '.yaml') {
+        let redirects = [];
+        let configYaml = yaml.safeLoad(content);
+
+        /**
+         * 302: Temporary redirects
+         */
+        for (const redirect in configYaml['302']) {
+            redirects.push({
+                from: redirect,
+                to: configYaml['302'][redirect],
+                permanent: false
+            });
+        }
+
+        /**
+         * 301: Permanent redirects
+         */
+        for (const redirect in configYaml['301']) {
+            redirects.push({
+                from: redirect,
+                to: configYaml['301'][redirect],
+                permanent: true
+            });
+        }
+
+        return redirects;
+    }
+
+    throw new errors.IncorrectUsageError();
+};
+
+const createRedirectsFilePath = (ext) => {
+    return path.join(config.getContentPath('data'), `redirects${ext}`);
+};
+
+const getCurrentRedirectsFilePath = async () => {
+    const yamlPath = createRedirectsFilePath('.yaml');
+    const jsonPath = createRedirectsFilePath('.json');
+
+    const yamlExists = await fs.pathExists(yamlPath);
+
+    if (yamlExists) {
+        return yamlPath;
+    }
+
+    const jsonExist = await fs.pathExists(jsonPath);
+
+    if (jsonExist) {
+        return jsonPath;
+    }
+
+    return null;
+};
+
+const getBackupRedirectsFilePath = (filePath) => {
+    const {dir, name, ext} = path.parse(filePath);
+
+    return path.join(dir, `${name}-${moment().format('YYYY-MM-DD-HH-mm-ss')}${ext}`);
+};
+
+const setFromFilePath = (filePath, ext) => {
+    return getCurrentRedirectsFilePath()
+        .then((redirectsFilePath) => {
+            if (!redirectsFilePath) {
                 return null;
             }
+
+            const backupRedirectsPath = getBackupRedirectsFilePath(redirectsFilePath);
 
             return fs.pathExists(backupRedirectsPath)
                 .then((backupExists) => {
@@ -56,14 +120,24 @@ const setFromFilePath = (filePath) => {
                     return fs.unlink(backupRedirectsPath);
                 })
                 .then(() => {
-                    return fs.move(redirectsPath, backupRedirectsPath);
+                    return fs.move(redirectsFilePath, backupRedirectsPath);
                 });
         })
         .then(() => {
             return readRedirectsFile(filePath)
                 .then((content) => {
+                    return parseRedirectsFile(content, ext);
+                })
+                .then((content) => {
                     validation.validate(content);
-                    return fs.writeFile(redirectsPath, JSON.stringify(content), 'utf-8');
+
+                    if (ext === '.json') {
+                        return fs.writeFile(createRedirectsFilePath('.json'), JSON.stringify(content), 'utf-8');
+                    }
+
+                    if (ext === '.yaml') {
+                        return fs.copy(filePath, createRedirectsFilePath('.yaml'));
+                    }
                 });
         });
 };
@@ -74,3 +148,4 @@ const get = () => {
 
 module.exports.get = get;
 module.exports.setFromFilePath = setFromFilePath;
+module.exports.parseRedirectsFile = parseRedirectsFile;

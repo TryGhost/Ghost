@@ -2,7 +2,6 @@ const fs = require('fs-extra');
 const express = require('../../../../shared/express');
 const url = require('url');
 const path = require('path');
-const yaml = require('js-yaml');
 const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
@@ -15,42 +14,22 @@ const _private = {};
 
 let customRedirectsRouter;
 
+const getRedirectsFilePath = () => {
+    const yamlPath = path.join(config.getContentPath('data'), `redirects.yaml`);
+    const jsonPath = path.join(config.getContentPath('data'), `redirects.json`);
+
+    return fs.existsSync(yamlPath) ? yamlPath : jsonPath;
+};
+
 _private.registerRoutes = () => {
     debug('redirects loading');
 
     customRedirectsRouter = express.Router('redirects');
 
-    let redirects = [];
-
     try {
-        if (fs.existsSync(path.join(config.getContentPath('data'), 'redirects.yaml'))) {
-            let configYaml = yaml.safeLoad(fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.yaml'), 'utf-8'));
-
-            /**
-             * 302: Temporary redirects
-             */
-            for (const redirect in configYaml['302']) {
-                redirects.push({
-                    from: redirect,
-                    to: configYaml['302'][redirect],
-                    permanent: false
-                });
-            }
-
-            /**
-             * 301: Permanent redirects
-             */
-            for (const redirect in configYaml['301']) {
-                redirects.push({
-                    from: redirect,
-                    to: configYaml['301'][redirect],
-                    permanent: true
-                });
-            }
-        } else {
-            redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
-            redirects = JSON.parse(redirects);
-        }
+        const filePath = getRedirectsFilePath();
+        const content = fs.readFileSync(filePath);
+        const redirects = redirectsService.settings.parseRedirectsFile(content, path.extname(filePath));
 
         redirectsService.validation.validate(redirects);
 
