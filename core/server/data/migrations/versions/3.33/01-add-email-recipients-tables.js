@@ -1,11 +1,11 @@
 const logging = require('../../../../../shared/logging');
 const commands = require('../../../schema').commands;
 
-const TABLES = ['email_batches', 'email_recipients'];
-
 module.exports = {
     async up({connection}) {
-        return Promise.each(TABLES, async (table) => {
+        // table creation order is important because of foreign key constraints,
+        // email_recipients references email_batches so email_batches has to exist when creating
+        return Promise.each(['email_batches', 'email_recipients'], async (table) => {
             const tableExists = await connection.schema.hasTable(table);
 
             if (tableExists) {
@@ -18,7 +18,9 @@ module.exports = {
     },
 
     async down({connection}) {
-        return Promise.each(TABLES.reverse(), async (table) => {
+        // table deletion order is important because of foreign key constraints,
+        // email_recipients references email_batches so it has to be deleted first to not break constraints
+        return Promise.each(['email_recipients', 'email_batches'], async (table) => {
             const tableExists = await connection.schema.hasTable(table);
 
             if (!tableExists) {
