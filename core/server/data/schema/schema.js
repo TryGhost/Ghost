@@ -471,7 +471,7 @@ module.exports = {
             defaultTo: 'pending',
             validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
-        error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true}
+        updated_at: {type: 'dateTime', nullable: false}
     },
     email_recipients: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -479,9 +479,6 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         batch_id: {type: 'string', maxlength: 24, nullable: false, references: 'email_batches.id'},
         processed_at: {type: 'dateTime', nullable: true},
-        delivered_at: {type: 'dateTime', nullable: true},
-        failed_at: {type: 'dateTime', nullable: true},
-        opened_at: {type: 'dateTime', nullable: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true}
