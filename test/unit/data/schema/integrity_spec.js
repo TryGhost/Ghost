@@ -40,7 +40,7 @@ describe('DB version integrity', function () {
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
-        const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
+        const routesPath = path.join(config.getContentPath('settings'), 'routes-default.yaml');
         const defaultRoutes = validateFrontendSettings(yaml.safeLoad(fs.readFileSync(routesPath, 'utf-8')));
 
         const tablesNoValidation = _.cloneDeep(schema.tables);
