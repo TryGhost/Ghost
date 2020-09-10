@@ -89,6 +89,39 @@ describe('Posts API', function () {
                     done();
                 });
         });
+
+        it('can order by fields coming from posts_meta table', function (done) {
+            request.get(localUtils.API.getApiQuery('posts/?order=meta_description%20ASC'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    localUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(13);
+
+                    jsonResponse.posts[0].slug.should.equal('themes');
+                    should.equal(jsonResponse.posts[0].meta_description, null);
+                    jsonResponse.posts[12].slug.should.equal('short-and-sweet');
+                    jsonResponse.posts[12].meta_description.should.equal('test stuff');
+
+                    localUtils.API.checkResponse(
+                        jsonResponse.posts[0],
+                        'post'
+                    );
+
+                    localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                    done();
+                });
+        });
     });
 
     describe('Read', function () {
