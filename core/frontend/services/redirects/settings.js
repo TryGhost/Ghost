@@ -142,8 +142,14 @@ const setFromFilePath = (filePath, ext) => {
         });
 };
 
+const defaultJsonFileContent = '[]';
+
 const get = () => {
     return getCurrentRedirectsFilePath().then((filePath) => {
+        if (filePath === null) {
+            return defaultJsonFileContent;
+        }
+
         return readRedirectsFile(filePath);
     });
 };

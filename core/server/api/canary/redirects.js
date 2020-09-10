@@ -13,9 +13,12 @@ module.exports = {
                 value() {
                     return redirects.settings.getCurrentRedirectsFilePath()
                         .then((filePath) => {
-                            return path.extname(filePath) === '.yaml'
-                                ? 'redirects.yaml'
-                                : 'redirects.json';
+                            // TODO: Default file type is .json for backward compatibility.
+                            // When .yaml becomes default or .json is removed at v4,
+                            // This part should be changed.
+                            return filePath === null || path.extname(filePath) === '.json'
+                                ? 'redirects.json'
+                                : 'redirects.yaml';
                         });
                 }
             }
