@@ -275,6 +275,10 @@ const GlobalStyles = `
         animation: popup 0.25s;
     }
 
+    .gh-portal-container-singleplan {
+        width: 390px;
+    }
+
     .gh-portal-popup-container.preview {
         box-shadow:
             0 0 0 1px rgba(0,0,0,0.02),

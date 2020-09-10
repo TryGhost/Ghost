@@ -4,6 +4,7 @@ import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
+import {getSitePlans} from '../utils/helpers';
 
 const React = require('react');
 
@@ -81,14 +82,15 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page} = this.context;
+        const {page, site} = this.context;
+        const {portal_plans: portalPlans} = site;
         getActivePage({page});
         const Styles = StylesWrapper({page});
         const pageStyle = {
             ...Styles.page[page]
         };
         return (
-            <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container'} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
+            <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + (portalPlans.length <= 1 ? ' gh-portal-container-singleplan' : '')} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
                 {this.renderPopupClose()}
                 {this.renderActivePage()}
             </div>

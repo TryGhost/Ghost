@@ -279,13 +279,16 @@ class SignupPage extends React.Component {
 
     renderPlans() {
         const plansData = this.getPlans();
+        const plansContainerClass = plansData.length <= 1 ? 'gh-portal-signup-singleplan' : 'gh-portal-signup-multiplan';
 
         return (
-            <PlansSection
-                plans={plansData}
-                selectedPlan={this.state.plan}
-                onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}
-            />
+            <div className={plansContainerClass}>
+                <PlansSection
+                    plans={plansData}
+                    selectedPlan={this.state.plan}
+                    onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}
+                />
+            </div>
         );
     }
 

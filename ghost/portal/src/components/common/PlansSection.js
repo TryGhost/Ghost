@@ -145,6 +145,19 @@ export const PlanSectionStyles = `
         -ms-transform: rotate(45deg);
         transform: rotate(45deg);
     }
+
+    .gh-portal-signup-singleplan .gh-portal-plan-section {
+        cursor: auto;
+    }
+
+    .gh-portal-signup-singleplan .gh-portal-plan-checkbox,
+    .gh-portal-signup-singleplan .gh-portal-plan-section.checked::before {
+        display: none;
+    }
+
+    .gh-portal-signup-singleplan .gh-portal-plan-name {
+        margin-top: 0;
+    }
 `;
 
 function Checkbox({name, onPlanSelect, isChecked}) {
