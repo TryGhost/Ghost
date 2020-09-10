@@ -117,7 +117,7 @@ const getBackupRedirectsFilePath = (filePath) => {
     return path.join(dir, `${name}-${moment().format('YYYY-MM-DD-HH-mm-ss')}${ext}`);
 };
 
-const setFromFilePath = (filePath, ext) => {
+const setFromFilePath = (filePath, ext = '.json') => {
     return getCurrentRedirectsFilePath()
         .then((redirectsFilePath) => {
             if (!redirectsFilePath) {
