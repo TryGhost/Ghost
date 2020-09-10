@@ -85,7 +85,17 @@ const http = (apiImpl) => {
                 // CASE: generate headers based on the api ctrl configuration
                 res.set(headers);
 
-                if (apiImpl.response && apiImpl.response.format === 'plain') {
+                let format;
+
+                if (apiImpl.response){
+                    if (typeof apiImpl.response.format === 'function') {
+                        format = apiImpl.response.format();
+                    } else {
+                        format = apiImpl.response.format;
+                    }
+                }
+
+                if (format === 'plain') {
                     debug('plain text response');
                     return res.send(result);
                 }

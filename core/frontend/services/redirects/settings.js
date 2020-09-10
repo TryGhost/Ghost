@@ -96,6 +96,21 @@ const getCurrentRedirectsFilePath = async () => {
     return null;
 };
 
+const getCurrentRedirectsFilePathSync = () => {
+    const yamlPath = createRedirectsFilePath('.yaml');
+    const jsonPath = createRedirectsFilePath('.json');
+
+    if (fs.existsSync(yamlPath)) {
+        return yamlPath;
+    }
+
+    if (fs.existsSync(jsonPath)) {
+        return jsonPath;
+    }
+
+    return null;
+};
+
 const getBackupRedirectsFilePath = (filePath) => {
     const {dir, name, ext} = path.parse(filePath);
 
@@ -142,7 +157,7 @@ const setFromFilePath = (filePath, ext) => {
         });
 };
 
-const defaultJsonFileContent = '[]';
+const defaultJsonFileContent = [];
 
 const get = () => {
     return getCurrentRedirectsFilePath().then((filePath) => {
@@ -150,11 +165,16 @@ const get = () => {
             return defaultJsonFileContent;
         }
 
-        return readRedirectsFile(filePath);
+        return readRedirectsFile(filePath).then((content) => {
+            return path.extname(filePath) === '.json'
+                ? parseRedirectsFile(content, '.json')
+                : content;
+        });
     });
 };
 
 module.exports.get = get;
 module.exports.setFromFilePath = setFromFilePath;
 module.exports.getCurrentRedirectsFilePath = getCurrentRedirectsFilePath;
+module.exports.getCurrentRedirectsFilePathSync = getCurrentRedirectsFilePathSync;
 module.exports.parseRedirectsFile = parseRedirectsFile;

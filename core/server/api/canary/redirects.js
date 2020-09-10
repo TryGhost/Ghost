@@ -25,7 +25,11 @@ module.exports = {
         },
         permissions: true,
         response: {
-            format: 'plain'
+            format() {
+                const filePath = redirects.settings.getCurrentRedirectsFilePathSync();
+
+                return filePath === null || path.extname(filePath) === '.json' ? 'json' : 'plain';
+            }
         },
         query() {
             return redirects.settings.get();
