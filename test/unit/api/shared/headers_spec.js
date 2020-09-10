@@ -86,7 +86,8 @@ describe('Unit: api/shared/headers', function () {
             return shared.headers.get(apiResult, apiConfigHeaders, frame)
                 .then((result) => {
                     result.should.eql({
-                        Location: 'https://example.com/api/canary/posts/id_value'
+                        // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
+                        Location: 'https://example.com/api/canary/posts/id_value/'
                     });
                 });
         });
