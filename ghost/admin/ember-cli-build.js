@@ -4,7 +4,7 @@
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 const concat = require('broccoli-concat');
 const mergeTrees = require('broccoli-merge-trees');
-const Terser = require('broccoli-terser-sourcemap');
+const Uglify = require('broccoli-uglify-sourcemap');
 const Funnel = require('broccoli-funnel');
 const environment = EmberApp.env();
 const isProduction = environment === 'production';
@@ -50,7 +50,7 @@ const codemirrorAssets = function () {
             });
 
             if (isProduction) {
-                jsTree = new Terser(jsTree);
+                jsTree = new Uglify(jsTree);
             }
 
             let mergedTree = mergeTrees([tree, jsTree]);
@@ -88,7 +88,7 @@ const simplemdeAssets = function () {
             });
 
             if (isProduction) {
-                jsTree = new Terser(jsTree);
+                jsTree = new Uglify(jsTree);
             }
 
             let mergedTree = mergeTrees([tree, jsTree]);
