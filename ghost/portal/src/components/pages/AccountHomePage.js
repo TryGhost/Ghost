@@ -79,6 +79,10 @@ export const AccountHomePageStyles = `
     .gh-portal-free-ctatext {
         margin-top: -12px;
     }
+
+    .gh-portal-cancelcontinue-container {
+        margin: 24px 0 32px;
+    }
 `;
 
 const LogoutButton = ({handleSignout}) => {
@@ -299,7 +303,7 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
     };
 
     return (
-        <div style={{marginTop: '24px'}}>
+        <div className='gh-portal-cancelcontinue-container'>
             <CancelNotice />
             <ActionButton
                 onClick={(e) => {
@@ -327,6 +331,12 @@ const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor,
             <UserHeader member={member} brandColor={brandColor} />
             <section>
                 <AccountWelcome member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
+                <CancelContinueSubscription
+                    member={member}
+                    onAction={onAction}
+                    action={action}
+                    brandColor={brandColor}
+                    showOnlyContinue={true} />
                 <AccountActions
                     action={action}
                     member={member}
@@ -335,12 +345,6 @@ const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor,
                     openUpdatePlan={(e, subscribed) => openUpdatePlan(e, subscribed)}
                     onEditBilling={(e, subscribed) => onEditBilling(e, subscribed)}
                 />
-                <CancelContinueSubscription
-                    member={member}
-                    onAction={onAction}
-                    action={action}
-                    brandColor={brandColor}
-                    showOnlyContinue={true} />
             </section>
         </div>
     );
