@@ -666,4 +666,25 @@ describe('parser-plugins', function () {
             });
         });
     });
+
+    describe('tableToHtmlCard', function () {
+        it('can parse a table as HTML card', function () {
+            const dom = buildDOM('<table style="float:right"><tr><th>Month</th><th>Savings</th></tr><tr><td>January</td><td>$100</td></tr><tr><td>February</td><td>$80</td></tr></table>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('html');
+            section.payload.html.should.eql('<table style="float:right"><tbody><tr><th>Month</th><th>Savings</th></tr><tr><td>January</td><td>$100</td></tr><tr><td>February</td><td>$80</td></tr></tbody></table>');
+        });
+
+        it('can handle table nested in another table', function () {
+            const dom = buildDOM('<table id="table1"><tr><th>title1</th><th>title2</th><th>title3</th></tr><tr><td id="nested"><table id="table2"><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></td><td>cell2</td><td>cell3</td></tr><tr><td>cell4</td><td>cell5</td><td>cell6</td></tr></table>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('html');
+            section.payload.html.should.eql('<table id="table1"><tbody><tr><th>title1</th><th>title2</th><th>title3</th></tr><tr><td id="nested"><table id="table2"><tbody><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></tbody></table></td><td>cell2</td><td>cell3</td></tr><tr><td>cell4</td><td>cell5</td><td>cell6</td></tr></tbody></table>');
+        });
+    });
 });
+

@@ -466,6 +466,21 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
+    function tableToHtmlCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'TABLE') {
+            return;
+        }
+
+        if (node.parentNode.tagName === 'TABLE') {
+            return;
+        }
+
+        let payload = {html: node.outerHTML};
+        let cardSection = builder.createCardSection('html', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     return [
         mixtapeEmbed,
         kgHtmlCardToCard,
@@ -481,6 +496,7 @@ export function createParserPlugins(_options = {}) {
         preCodeToCard,
         figureIframeToEmbedCard,
         iframeToEmbedCard, // Process iFrames without figures after ones with
-        figureScriptToHtmlCard
+        figureScriptToHtmlCard,
+        tableToHtmlCard
     ];
 }
