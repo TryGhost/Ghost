@@ -55,7 +55,9 @@ const doImport = async ({members, labels, importSetLabels, createdBy}) => {
                 if (error.code === 'ER_DUP_ENTRY') {
                     return new errors.ValidationError({
                         message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context'),
+                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                            action: 'add'
+                        }),
                         err: error
                     });
                 } else {
