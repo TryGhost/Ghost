@@ -4,6 +4,7 @@
 */
 
 import {ActionButtonStyles} from './common/ActionButton';
+import {BackButtonStyles} from './common/BackButton';
 import {SwitchStyles} from './common/Switch';
 import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
@@ -164,7 +165,7 @@ const GlobalStyles = `
         background: var(--white);
         border: none;
         min-width: 80px;
-        height: 40px;
+        height: 42px;
         padding: 0 1.8rem;
         border-radius: 4px;
         cursor: pointer;
@@ -227,8 +228,8 @@ const GlobalStyles = `
 
     .gh-portal-btn-logout {
         position: absolute;
-        top: 13px;
-        left: 14px;
+        top: 22px;
+        left: 24px;
         background: none;
         border: none;
         height: unset;
@@ -257,6 +258,29 @@ const GlobalStyles = `
     .gh-portal-btn-logout:hover .label {
         opacity: 1.0;
         transform: translateX(-4px);
+    }
+
+    .gh-portal-logouticon {
+        color: var(--grey9);
+        cursor: pointer;
+        width: 23px;
+        height: 23px;
+        padding: 6px;
+        transform: translateX(0);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-logouticon path {
+        stroke: var(--grey9);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-btn-logout:hover .gh-portal-logouticon {
+        transform: translateX(-2px);
+    }
+
+    .gh-portal-btn-logout:hover .gh-portal-logouticon path {
+        stroke: var(--grey3);
     }
 
     /* Global layout styles
@@ -360,8 +384,8 @@ const GlobalStyles = `
 
     .gh-portal-closeicon-container {
         position: absolute;
-        top: 8px;
-        right: 8px;
+        top: 20px;
+        right: 20px;
         z-index: 999;
     }
 
@@ -384,29 +408,6 @@ const GlobalStyles = `
         left: 8px;
     }
 
-    .gh-portal-logouticon {
-        color: var(--grey9);
-        cursor: pointer;
-        width: 23px;
-        height: 23px;
-        padding: 6px;
-        transform: translateX(0);
-        transition: all 0.2s ease-in-out;
-    }
-
-    .gh-portal-logouticon path {
-        stroke: var(--grey9);
-        transition: all 0.2s ease-in-out;
-    }
-
-    .gh-portal-btn-logout:hover .gh-portal-logouticon {
-        transform: translateX(-2px);
-    }
-
-    .gh-portal-btn-logout:hover .gh-portal-logouticon path {
-        stroke: var(--grey3);
-    }
-
     .gh-portal-header {
         display: flex;
         flex-direction: column;
@@ -426,19 +427,8 @@ const GlobalStyles = `
         position: relative;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        margin: 0 0 20px;
-    }
-
-    .gh-portal-detail-header .gh-portal-btn-back,
-    .gh-portal-detail-header .gh-portal-btn-back:hover {
-        position: absolute;
-        top: -10px;
-        left: 0;
-        background: none;
-        padding: 0;
-        margin: 0;
-        box-shadow: none;
+        justify-content: center;
+        margin: -4px 0 24px;
     }
 
     .gh-portal-detail-footer .gh-portal-btn {
@@ -648,6 +638,7 @@ const FrameStyle =
     PlanSectionStyles +
     SwitchStyles +
     ActionButtonStyles +
+    BackButtonStyles +
     AvatarStyles +
     MagicLinkStyles +
     LinkPageStyles +
