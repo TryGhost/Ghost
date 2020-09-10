@@ -1,5 +1,4 @@
 import AppContext from '../../AppContext';
-import {ReactComponent as LogoutIcon} from '../../images/icons/logout.svg';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
@@ -9,10 +8,13 @@ import {getDateString} from '../../utils/date-time';
 const React = require('react');
 
 export const AccountHomePageStyles = `
+<<<<<<< HEAD
     .gh-portal-content.account-home {
         max-height: calc(100vh - 12vw - 104px);
     }
 
+=======
+>>>>>>> Added back button and rearranged logout
     .gh-portal-account-main {
         background: var(--grey13);
         margin: -32px;
@@ -85,14 +87,6 @@ export const AccountHomePageStyles = `
     }
 `;
 
-const LogoutButton = ({handleSignout}) => {
-    return (
-        <button className='gh-portal-btn gh-portal-btn-logout' name='logout' aria-label='logout' onClick = {e => handleSignout(e)}>
-            <LogoutIcon className='gh-portal-logouticon' /><span className='label'>Logout</span>
-        </button>
-    );
-};
-
 const UserAvatar = ({avatar, brandColor}) => {
     return (
         <div>
@@ -101,18 +95,16 @@ const UserAvatar = ({avatar, brandColor}) => {
     );
 };
 
-const AccountFooter = ({onClose, supportAddress = ''}) => {
+const AccountFooter = ({onClose, handleSignout, supportAddress = ''}) => {
     const supportAddressMail = `mailto:${supportAddress}`;
     return (
         <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                <li><a className='gh-portal-btn' href={supportAddressMail}>Contact support</a></li>
+                <li><button className='gh-portal-btn' name='logout' aria-label='logout' onClick={e => handleSignout(e)}>Logout</button></li>
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
-                    <li>
-                        <button className='gh-portal-btn gh-portal-btn-branded' onClick={onClose}>OK</button>
-                    </li>
+                    <li><a className='gh-portal-btn gh-portal-btn-branded' href={supportAddressMail}>Contact support</a></li>
                 </ul>
             </div>
         </footer>
@@ -408,18 +400,15 @@ export default class AccountHomePage extends React.Component {
         }
         return (
             <div className='gh-portal-account-wrapper'>
-                <div className='gh-portal-content account-home'>
-                    <LogoutButton handleSignout={e => this.handleSignout(e)} />
-                    <AccountMain
-                        {...this.context}
-                        openSubscribe={e => this.openSubscribe(e)}
-                        openEditProfile={e => this.openEditProfile(e)}
-                        onToggleSubscription={(e, subscribed) => this.onToggleSubscription(e, subscribed)}
-                        openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
-                        onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
-                    />
-                </div>
-                <AccountFooter onClose={() => this.context.onAction('closePopup')} supportAddress={supportAddress} />
+                <AccountMain
+                    {...this.context}
+                    openSubscribe={e => this.openSubscribe(e)}
+                    openEditProfile={e => this.openEditProfile(e)}
+                    onToggleSubscription={(e, subscribed) => this.onToggleSubscription(e, subscribed)}
+                    openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
+                    onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
+                />
+                <AccountFooter onClose={() => this.context.onAction('closePopup')} handleSignout={e => this.handleSignout(e)} supportAddress={supportAddress} />
             </div>
         );
     }

@@ -1,5 +1,6 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
+import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
 import {getMemberSubscription, getSitePlans} from '../../utils/helpers';
@@ -122,6 +123,7 @@ export default class AccountPlanPage extends React.Component {
         const title = member.paid ? 'Choose Plan' : 'Choose your subscription';
         return (
             <header className='gh-portal-detail-header'>
+                <BackButton brandColor={this.context.brandColor} onClick={e => this.onBack(e)} />
                 <h3 className='gh-portal-main-title'>{title}</h3>
             </header>
         );

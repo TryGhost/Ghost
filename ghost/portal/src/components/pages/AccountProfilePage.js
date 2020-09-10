@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
+import BackButton from '../common/BackButton';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 
@@ -71,7 +72,7 @@ export default class AccountProfilePage extends React.Component {
                 disabled={disabled}
                 brandColor={this.context.brandColor}
                 label={label}
-                style={{height: '40px'}}
+                style={{height: '44px', width: '100%'}}
             />
         );
     }
@@ -85,7 +86,6 @@ export default class AccountProfilePage extends React.Component {
     renderAccountFooter() {
         return (
             <footer className='gh-portal-action-footer'>
-                <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
                 {this.renderSaveButton()}
             </footer>
         );
@@ -94,6 +94,7 @@ export default class AccountProfilePage extends React.Component {
     renderHeader() {
         return (
             <header className='gh-portal-detail-header'>
+                <BackButton brandColor={this.context.brandColor} onClick={e => this.onBack(e)} />
                 <h3 className='gh-portal-main-title'>Account settings</h3>
             </header>
         );
