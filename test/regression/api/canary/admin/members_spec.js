@@ -494,7 +494,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Fails to import memmber duplicate emails', function () {
+    it('Fails to import member duplicate emails', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-duplicate-emails.csv'))

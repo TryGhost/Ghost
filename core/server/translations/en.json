@@ -250,7 +250,7 @@
             "member": {
                 "memberAlreadyExists": {
                     "message": "Member already exists",
-                    "context": "Attempting to add member with existing email address."
+                    "context": "Attempting to {action} member with existing email address."
                 }
             },
             "member_stripe_customer": {
