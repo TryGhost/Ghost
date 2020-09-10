@@ -127,7 +127,7 @@ module.exports = {
             && result[frame.docName][0].id) {
             const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
             const resourceId = result[frame.docName][0].id;
-            const location = `${protocol}${frame.original.url.host}${frame.original.url.pathname}${resourceId}`;
+            const location = `${protocol}${frame.original.url.host}${frame.original.url.pathname}${resourceId}/`;
             const locationHeader = {
                 Location: location
             };
