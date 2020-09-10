@@ -75,6 +75,7 @@ describe('Redirects API', function () {
         });
 
         // 'file does not exist' doesn't have to be tested because it always returns .json file.
+        // TODO: But it should be written when the default redirects file type is changed to yaml.
 
         it('file exists', function () {
             return request
