@@ -255,7 +255,18 @@ describe('Redirects API', function () {
     });
 
     describe('Upload yaml', function () {
-        // No error cases here because there are no easy syntax pitfalls in the yaml format.
+        describe('Error cases', function () {
+            it('syntax error', function () {
+                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.yaml'), 'x');
+
+                return request
+                    .post(localUtils.API.getApiQuery('redirects/json/'))
+                    .set('Origin', config.get('url'))
+                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.yaml'))
+                    .expect('Content-Type', /application\/json/)
+                    .expect(400);
+            });
+        });
 
         describe('Ensure re-registering redirects works', function () {
             const startGhost = (options) => {
