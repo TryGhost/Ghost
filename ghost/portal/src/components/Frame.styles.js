@@ -306,7 +306,7 @@ const GlobalStyles = `
         margin: 0 auto;
         border-radius: 5px;
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
-        animation: popup 0.25s;
+        animation: popup 0.25s ease-in-out;
     }
 
     .gh-portal-container-singleplan {
@@ -506,6 +506,139 @@ const GlobalStyles = `
     }
 `;
 
+const MobileStyles = `
+@media (max-width: 480px) {
+    .gh-portal-popup-wrapper {
+        height: 100%;
+        padding: 0;
+    }
+    
+    .gh-portal-popup-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        overflow-y: scroll;
+        animation: popup-mobile 0.25s ease-in-out;
+    }
+
+    .gh-portal-content {
+        overflow-y: auto !important;
+        max-height: unset !important;
+    }
+}
+
+@media (max-width: 390px) {
+    .gh-portal-plans-container {
+        flex-direction: column;
+    }
+
+    .gh-portal-plan-section {
+        flex-direction: row;
+        min-height: 60px;
+        border-right: none;
+        border-bottom: 1px solid var(--grey10);
+    }
+
+    .gh-portal-plan-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .gh-portal-plan-checkbox {
+        order: 1;
+        margin-left: 12px;
+    }
+
+    .gh-portal-plan-name {
+        position: absolute;
+        left: 40px;
+        top: 12px;
+        padding: 0;
+        margin: 0;
+        text-transform: none;
+        font-size: 1.4rem;
+        letter-spacing: 0.2px;
+    }
+
+    .gh-portal-plan-feature {
+        position: absolute;
+        left: 40px;
+        top: 32px;
+        padding: 0;
+        margin: 0;
+        width: unset;
+        text-align: left;
+        border-top: none;
+        font-weight: 400;
+        letter-spacing: 0.2px;
+    }
+    
+    .gh-portal-plan-pricelabel {
+        right: 20px;
+        top: 12px;
+        position: absolute;
+    }
+
+    .gh-portal-plan-section:first-of-type.checked::before {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        border-bottom-left-radius: 0;
+    }
+
+    .gh-portal-plan-section:last-of-type.checked::before {
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        border-top-right-radius: 0;
+    }
+
+    .gh-portal-input {
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+        height: 36px;
+    }
+
+    .gh-portal-content {
+        padding: 24px;
+    }
+
+    .gh-portal-popup-container footer {
+        padding-right: 24px;
+        padding-bottom: 24px;
+        padding-left: 24px;
+    }
+
+    .gh-portal-signup-header,
+    .gh-portal-signin-header {
+        padding-bottom: 16px;
+    }
+
+    .gh-portal-account-main {
+        margin: -24px;
+        padding: 24px;
+    }
+}
+
+@media (min-width: 768px) and (max-height: 768px) {
+    .gh-portal-signup-header,
+    .gh-portal-signin-header {
+        margin-top: -12px;
+        padding-bottom: 16px;
+    }
+}
+
+@keyframes popup-mobile {
+    0% {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+    75% {
+        opacity: 1.0;
+    }
+    100%{
+        transform: translateY(0);
+    }
+}
+`;
+
 // Append all styles as string which we want to pass to iframe
 const FrameStyle =
     GlobalStyles +
@@ -518,6 +651,7 @@ const FrameStyle =
     AvatarStyles +
     MagicLinkStyles +
     LinkPageStyles +
-    SignupPageStyles;
+    SignupPageStyles +
+    MobileStyles;
 
 export default FrameStyle;
