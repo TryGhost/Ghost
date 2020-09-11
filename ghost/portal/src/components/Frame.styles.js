@@ -41,6 +41,27 @@ const GlobalStyles = `
 
     /* Globals
     /* ----------------------------------------------------- */
+    html {
+        font-size: 62.5%;
+        height: 100%;
+    }
+
+    body {
+        margin: 0px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-size: 1.6rem;
+        height: 100%;
+        line-height: 1.6em;
+        font-weight: 400;
+        font-style: normal;
+        color: var(--grey4);
+        box-sizing: border-box;
+    }
+
+    *, ::after, ::before {
+        box-sizing: border-box;
+    }
+
     h1, h2, h3, h4, h5, h6, p {
         line-height: 1.15em;
         padding: 0;
@@ -80,11 +101,13 @@ const GlobalStyles = `
         cursor: pointer;
     }
 
+    svg {
+        box-sizing: content-box;
+    }
+
     .gh-portal-main-title {
         text-align: center;
         color: var(--grey1);
-        margin: 24px 0 12px;
-        padding: 0 12px;
         line-height: 1.35em;
     }
 
@@ -261,12 +284,15 @@ const GlobalStyles = `
         100%{ opacity: 1.0; }
     }
 
+    .gh-portal-popup-wrapper {
+        padding: 6vw 0;
+    }
+
     .gh-portal-popup-container {
         outline: none;
         position: relative;
         display: flex;
         box-sizing: border-box;
-        top: 100px;
         flex-direction: column;
         justify-content: flex-start;
         overflow: hidden;
@@ -276,7 +302,7 @@ const GlobalStyles = `
         text-rendering: optimizeLegibility;
         background: var(--white);
         width: 440px;
-        padding: 32px;
+        /*max-height: calc(100vh - 12vw);*/
         margin: 0 auto;
         border-radius: 5px;
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
@@ -297,6 +323,26 @@ const GlobalStyles = `
             0 41.8px 33.4px rgba(0, 0, 0, 0.05),
             0 100px 80px rgba(0, 0, 0, 0.07);
         animation: none;
+    }
+
+    /* Sets the main content area of the popup scrollable. 
+    /* 12vw is the sum horizontal padding of the popup container 
+    */
+    .gh-portal-content {
+        overflow-y: scroll;
+        padding: 32px;
+        max-height: calc(100vh - 12vw);
+    }
+
+    .gh-portal-content.with-footer {
+        overflow-y: scroll;
+        padding-bottom: 0;
+        max-height: calc(100vh - 12vw - 72px);
+    }
+    
+    .gh-portal-popup-container footer {
+        padding: 0 32px 32px;
+        height: 72px;
     }
 
     @keyframes popup {

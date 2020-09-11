@@ -49,8 +49,8 @@ export const SwitchStyles = `
         content: "";
         top: 2px !important;
         left: 2px !important;
-        height: 18px !important;
-        width: 18px !important;
+        height: 16px !important;
+        width: 16px !important;
         background-color: white;
         transition: .3s;
         box-shadow: 0 0 1px rgba(0,0,0,.3), 0 4px 6px rgba(0,0,0,.1);

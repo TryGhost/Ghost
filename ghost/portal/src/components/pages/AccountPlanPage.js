@@ -206,7 +206,6 @@ export default class AccountPlanPage extends React.Component {
                     {this.renderError()}
                 </div>
                 <CancelContinueSubscription {...this.context} />
-                {this.renderFooter()}
             </section>
         );
     }
@@ -304,8 +303,11 @@ export default class AccountPlanPage extends React.Component {
         }
         return (
             <div>
-                {this.renderHeader()}
-                {this.renderPlanChooser()}
+                <div className='gh-portal-content with-footer'>
+                    {this.renderHeader()}
+                    {this.renderPlanChooser()}
+                </div>
+                {this.renderFooter()}
             </div>
         );
     }

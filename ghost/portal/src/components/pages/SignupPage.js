@@ -8,6 +8,17 @@ import CalculateDiscount from '../../utils/discount';
 const React = require('react');
 
 export const SignupPageStyles = `
+    footer.gh-portal-signup-footer,
+    footer.gh-portal-signin-footer {
+        height: 112px;
+    }
+
+    .gh-portal-content.signup,
+    .gh-portal-content.signin {
+        max-height: calc(100vh - 12vw - 112px);
+        padding-bottom: 0;
+    }
+
     .gh-portal-signup-logo {
         position: relative;
         display: block;
@@ -19,20 +30,12 @@ export const SignupPageStyles = `
         margin: 12px 0 10px;
     }
 
-    .gh-portal-signup-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0 32px 32px;
-        margin: 0 -32px -8px;
-    }
-
+    .gh-portal-signup-header,
     .gh-portal-signin-header {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0 32px 32px;
-        margin: 0 -32px -8px;
+        padding: 0 32px 24px;
     }
 
     .gh-portal-signup-header.nodivider {
@@ -40,7 +43,7 @@ export const SignupPageStyles = `
         margin-bottom: 0;
     }
 
-    .gh-portal-signup-footer {
+    .gh-portal-signup-message {
         display: flex;
         justify-content: center;
         color: var(--grey4);
@@ -49,7 +52,7 @@ export const SignupPageStyles = `
         margin-top: 8px;
     }
 
-    .gh-portal-signup-footer button {
+    .gh-portal-signup-message button {
         font-size: 1.3rem;
         font-weight: 400;
         margin-left: 4px;
@@ -295,7 +298,7 @@ class SignupPage extends React.Component {
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
         return (
-            <footer className='gh-portal-signup-footer'>
+            <div className='gh-portal-signup-message'>
                 <div>Already a member?</div>
                 <button
                     className='gh-portal-btn gh-portal-btn-link'
@@ -304,7 +307,7 @@ class SignupPage extends React.Component {
                 >
                     Log in
                 </button>
-            </footer>
+            </div>
         );
     }
 
@@ -318,10 +321,6 @@ class SignupPage extends React.Component {
                         onBlur={(e, field) => this.handleInputBlur(e, field)}
                     />
                     {this.renderPlans()}
-                </div>
-                <div>
-                    {this.renderSubmitButton()}
-                    {this.renderLoginMessage()}
                 </div>
             </section>
         );
@@ -357,8 +356,14 @@ class SignupPage extends React.Component {
     render() {
         return (
             <div>
-                {this.renderFormHeader()}
-                {this.renderForm()}
+                <div className='gh-portal-content signup'>
+                    {this.renderFormHeader()}
+                    {this.renderForm()}
+                </div>
+                <footer className='gh-portal-signup-footer'>
+                    {this.renderSubmitButton()}
+                    {this.renderLoginMessage()}
+                </footer>
             </div>
         );
     }

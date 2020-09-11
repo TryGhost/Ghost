@@ -16,19 +16,8 @@ export default class Frame extends Component {
 
     setupFrameBaseStyle() {
         this.iframeHtml = this.node.contentDocument.documentElement;
-        this.iframeHtml.style.fontSize = '62.5%';
-        this.iframeHtml.style.height = '100%';
-
         this.iframeHead = this.node.contentDocument.head;
         this.iframeRoot = this.node.contentDocument.body;
-        this.iframeRoot.style.margin = '0px';
-        this.iframeRoot.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif';
-        this.iframeRoot.style.fontSize = '1.6rem';
-        this.iframeRoot.style.height = '100%';
-        this.iframeRoot.style.lineHeight = '1.6em';
-        this.iframeRoot.style.fontWeight = '400';
-        this.iframeRoot.style.fontStyle = 'normal';
-        this.iframeRoot.style.color = '#333';
         this.forceUpdate();
     }
 

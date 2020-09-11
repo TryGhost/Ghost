@@ -9,14 +9,13 @@ import {getDateString} from '../../utils/date-time';
 const React = require('react');
 
 export const AccountHomePageStyles = `
-    .gh-portal-account-wrapper {
-
+    .gh-portal-content.account-home {
+        max-height: calc(100vh - 12vw - 104px);
     }
 
     .gh-portal-account-main {
         background: var(--grey13);
-        border-bottom: 1px solid #eaeaea;
-        margin: -32px -32px 0;
+        margin: -32px;
         padding: 32px;
     }
 
@@ -31,9 +30,11 @@ export const AccountHomePageStyles = `
         margin: 6px 0 8px !important;
     }
 
-    .gh-portal-account-footer {
+    footer.gh-portal-account-footer {
         display: flex;
-        margin-top: 32px;
+        padding: 32px;
+        height: 104px;
+        border-top: 1px solid #eaeaea;
     }
 
     .gh-portal-account-footer.paid {
@@ -403,15 +404,17 @@ export default class AccountHomePage extends React.Component {
         }
         return (
             <div className='gh-portal-account-wrapper'>
-                <LogoutButton handleSignout={e => this.handleSignout(e)} />
-                <AccountMain
-                    {...this.context}
-                    openSubscribe={e => this.openSubscribe(e)}
-                    openEditProfile={e => this.openEditProfile(e)}
-                    onToggleSubscription={(e, subscribed) => this.onToggleSubscription(e, subscribed)}
-                    openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
-                    onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
-                />
+                <div className='gh-portal-content account-home'>
+                    <LogoutButton handleSignout={e => this.handleSignout(e)} />
+                    <AccountMain
+                        {...this.context}
+                        openSubscribe={e => this.openSubscribe(e)}
+                        openEditProfile={e => this.openEditProfile(e)}
+                        onToggleSubscription={(e, subscribed) => this.onToggleSubscription(e, subscribed)}
+                        openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
+                        onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
+                    />
+                </div>
                 <AccountFooter onClose={() => this.context.onAction('closePopup')} supportAddress={supportAddress} />
             </div>
         );

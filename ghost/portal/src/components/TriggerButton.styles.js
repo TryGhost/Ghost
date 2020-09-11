@@ -1,6 +1,30 @@
 import {AvatarStyles} from './common/MemberGravatar';
 
 const GlobalStyle = `
+    html {
+        font-size: 62.5%;
+        height: 100%;
+    }
+
+    body {
+        margin: 0px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-size: 1.6rem;
+        height: 100%;
+        line-height: 1.6em;
+        font-weight: 400;
+        font-style: normal;
+        color: var(--grey4);
+    }
+
+    *, ::after, ::before {
+        box-sizing: border-box;
+    }
+
+    svg {
+        box-sizing: content-box;
+    }
+    
     .gh-portal-triggerbtn-wrapper {
         cursor: pointer;
         display: flex;

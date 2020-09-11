@@ -13,7 +13,7 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.paid,
-    page: 'signup'
+    page: 'magiclink'
 };
 export default class App extends React.Component {
     constructor(props) {

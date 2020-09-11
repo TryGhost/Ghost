@@ -68,7 +68,7 @@ export default class MagicLinkPage extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className='gh-portal-content'>
                 {this.renderFormHeader()}
                 {this.renderCloseButton()}
             </div>
