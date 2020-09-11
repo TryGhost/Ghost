@@ -10,7 +10,6 @@
       "ghost-storage-base",
       "intl-messageformat",
       "moment",
-      "moment-timezone",
       "nodemailer",
       "tmp",
       "validator",
