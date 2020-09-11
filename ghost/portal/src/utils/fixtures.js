@@ -1,5 +1,5 @@
 export const site = {
-    title: 'Check out my paying site, it has a long title',
+    title: 'A Ghost site',
     description: 'Thoughts, stories and ideas.',
     logo: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
     icon: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
