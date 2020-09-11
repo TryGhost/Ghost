@@ -10,7 +10,7 @@ const React = require('react');
 const StylesWrapper = ({member}) => {
     return {
         modalContainer: {
-            zIndex: '1000',
+            zIndex: '3999999',
             position: 'fixed',
             left: '0',
             top: '0',
@@ -153,6 +153,9 @@ export default class PopupModal extends React.Component {
         const frameStyle = {
             ...Styles.frame.common
         };
+        if (hasMode(['preview', 'dev'])) {
+            Styles.modalContainer.zIndex = '3999997';
+        }
         return (
             <div style={Styles.modalContainer}>
                 <Frame style={frameStyle} title="membersjs-popup" head={this.renderFrameStyles()}>

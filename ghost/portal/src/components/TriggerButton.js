@@ -28,7 +28,7 @@ const Styles = ({brandColor, hasText}) => {
     const invertColor = getContrastColor(brandColor);
     return {
         frame: {
-            zIndex: '2147483000',
+            zIndex: '3999998',
             position: 'fixed',
             bottom: '28px',
             right: '28px',
