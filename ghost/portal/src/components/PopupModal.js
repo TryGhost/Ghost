@@ -4,7 +4,6 @@ import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
-import {getSitePlans} from '../utils/helpers';
 
 const React = require('react');
 

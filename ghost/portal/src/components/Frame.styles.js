@@ -81,7 +81,14 @@ const GlobalStyles = `
     }
 
     .gh-portal-main-title {
+        text-align: center;
         color: var(--grey1);
+        margin: 24px 0 12px;
+        padding: 0 12px;
+    }
+
+    .gh-portal-signup-logo + .gh-portal-main-title {
+        margin-top: 4px;
     }
 
     .gh-portal-text-disabled {
