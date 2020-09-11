@@ -9,7 +9,7 @@ module.exports = {
             const tableExists = await connection.schema.hasTable(table);
 
             if (tableExists) {
-                return logging.warn(`Adding table: ${table}`);
+                return logging.warn(`Skipping add table "${table}" - already exists`);
             }
 
             logging.info(`Adding table: ${table}`);
@@ -24,7 +24,7 @@ module.exports = {
             const tableExists = await connection.schema.hasTable(table);
 
             if (!tableExists) {
-                return logging.warn(`Dropping table: ${table}`);
+                return logging.warn(`Skipping drop table "${table}" - does not exist`);
             }
 
             logging.info(`Dropping table: ${table}`);
