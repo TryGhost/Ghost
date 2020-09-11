@@ -153,7 +153,7 @@ export default class PopupModal extends React.Component {
         const frameStyle = {
             ...Styles.frame.common
         };
-        if (hasMode(['preview', 'dev'])) {
+        if (hasMode(['preview'])) {
             Styles.modalContainer.zIndex = '3999997';
         }
         return (
