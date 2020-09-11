@@ -195,9 +195,11 @@ export default class AccountProfilePage extends React.Component {
         }
         return (
             <div>
-                {this.renderHeader()}
-                <div className='gh-portal-section'>
-                    {this.renderProfileData()}
+                <div className='gh-portal-content with-footer'>
+                    {this.renderHeader()}
+                    <div className='gh-portal-section'>
+                        {this.renderProfileData()}
+                    </div>
                 </div>
                 {this.renderAccountFooter()}
             </div>

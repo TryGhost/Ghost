@@ -136,9 +136,9 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-checkbox .checkmark:after {
         left: 6.5px;
-        top: 3px;
-        width: 3px;
-        height: 9px;
+        top: 2.5px;
+        width: 5px;
+        height: 11px;
         border: solid var(--white);
         border-width: 0 2px 2px 0;
         -webkit-transform: rotate(45deg);
