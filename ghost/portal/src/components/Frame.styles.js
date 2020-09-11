@@ -85,10 +85,11 @@ const GlobalStyles = `
         color: var(--grey1);
         margin: 24px 0 12px;
         padding: 0 12px;
+        line-height: 1.35em;
     }
 
     .gh-portal-signup-logo + .gh-portal-main-title {
-        margin-top: 4px;
+        margin: 4px 0 0;
     }
 
     .gh-portal-text-disabled {

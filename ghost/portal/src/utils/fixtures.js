@@ -1,5 +1,5 @@
 export const site = {
-    title: 'Ghost Site',
+    title: 'Check out my paying site, it has a long title',
     description: 'Thoughts, stories and ideas.',
     logo: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
     icon: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
@@ -15,7 +15,7 @@ export const site = {
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
-    portal_plans: ['yearly'],
+    portal_plans: ['free', 'monthly', 'yearly'],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
     portal_button_style: 'icon-and-text',

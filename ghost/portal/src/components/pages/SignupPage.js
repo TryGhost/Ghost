@@ -16,7 +16,7 @@ export const SignupPageStyles = `
         border-radius: 2px;
         width: 56px;
         height: 56px;
-        margin: 8px 0 10px;
+        margin: 12px 0 10px;
     }
 
     .gh-portal-signup-header {
