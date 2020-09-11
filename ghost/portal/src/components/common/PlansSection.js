@@ -48,7 +48,7 @@ export const PlanSectionStyles = `
         border-right: none;
     }
 
-    .gh-portal-plan-details {
+    .gh-portal-plan-pricelabel {
         margin-top: 8px;
     }
 
@@ -178,7 +178,7 @@ function Checkbox({name, onPlanSelect, isChecked}) {
 
 function PriceLabel({currency, price}) {
     return (
-        <div className='gh-portal-plan-details'>
+        <div className='gh-portal-plan-pricelabel'>
             <span className='gh-portal-plan-currency'>{currency}</span>
             <span className='gh-portal-plan-price'>{price}</span>
         </div>
@@ -212,9 +212,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
             <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
                 <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className='gh-portal-plan-name'>{name}</h4>
-                <div>
-                    <PriceLabel name={name} currency={currency} price={price} />
-                </div>
+                <PriceLabel name={name} currency={currency} price={price} />
                 <div className='gh-portal-plan-feature'>
                     {planDetails.feature}
                 </div>
