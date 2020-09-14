@@ -65,14 +65,14 @@ describe('Integrations API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
-            .end(function (err, {body}) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                should.equal(body.integrations.length, 1);
+                should.equal(res.body.integrations.length, 1);
 
-                const [integration] = body.integrations;
+                const [integration] = res.body.integrations;
                 should.equal(integration.name, 'Dis-Integrate!!');
 
                 should.equal(integration.api_keys.length, 2);
@@ -90,6 +90,9 @@ describe('Integrations API', function () {
                 should.equal(id, adminApiKey.id);
                 should.exist(secret);
                 secret.length.should.equal(64);
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
 
                 done();
             });
@@ -110,20 +113,23 @@ describe('Integrations API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
-            .end(function (err, {body}) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                should.equal(body.integrations.length, 1);
+                should.equal(res.body.integrations.length, 1);
 
-                const [integration] = body.integrations;
+                const [integration] = res.body.integrations;
                 should.equal(integration.name, 'Integratatron4000');
 
                 should.equal(integration.webhooks.length, 1);
 
                 const webhook = integration.webhooks[0];
                 should.equal(webhook.integration_id, integration.id);
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('integrations/')}${res.body.integrations[0].id}/`);
 
                 done();
             });

@@ -121,15 +121,18 @@ module.exports = {
             }
         }
 
-        if (apiConfigHeaders.location
+        const locationHeaderDisabled = apiConfigHeaders && apiConfigHeaders.location === false;
+        const hasFrameData = (frame.method === 'add')
             && result[frame.docName]
             && result[frame.docName][0]
-            && result[frame.docName][0].id) {
+            && result[frame.docName][0].id;
+
+        if (!locationHeaderDisabled && hasFrameData) {
             const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
             const resourceId = result[frame.docName][0].id;
             const location = `${protocol}${frame.original.url.host}${frame.original.url.pathname}${resourceId}/`;
             const locationHeader = {
-                Location: location
+                location: location
             };
 
             Object.assign(headers, locationHeader);

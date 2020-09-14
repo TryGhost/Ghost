@@ -141,6 +141,9 @@ describe('Posts API', function () {
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].title);
                     res.body.posts[0].title.should.equal('(Untitled)');
+
+                    should.exist(res.headers.Location);
+                    res.headers.Location.should.equal(`${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}`);
                 });
         });
     });
