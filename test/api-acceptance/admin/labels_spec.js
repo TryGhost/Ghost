@@ -46,6 +46,9 @@ describe('Labels API', function () {
                 jsonResponse.labels.should.have.length(1);
                 jsonResponse.labels[0].name.should.equal(label.name);
                 jsonResponse.labels[0].slug.should.equal(label.name);
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('labels/')}${res.body.labels[0].id}/`);
             });
     });
 });
