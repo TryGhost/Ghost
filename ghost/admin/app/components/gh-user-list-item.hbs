@@ -1,4 +1,4 @@
-<div class="apps-grid-cell">
+<div class="apps-grid-cell tooltip-centered" data-tooltip="{{ if user.isLocked 'Requires password reset to log in'}}">
     <LinkTo @route="staff.user" @model={{user.slug}} data-test-user-id={{user.id}}>
     <article class="apps-card-app">
         <div class="apps-card-left">
@@ -16,7 +16,7 @@
                     <span class="gh-badge suspended">Suspended</span>
                 {{else}}
                     {{#if user.isLocked}}
-                        <span class="gh-badge locked">Locked</span>
+                        <span class="gh-badge locked">{{svg-jar "lock"}}</span>
                     {{/if}}
                     {{#unless this.session.user.isAuthorOrContributor}}
                         {{#each user.roles as |role|}}

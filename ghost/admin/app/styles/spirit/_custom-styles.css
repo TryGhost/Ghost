@@ -225,6 +225,19 @@ button, .btn-base {
     transform: translate(-50%, 0);
 }
 
+.tooltip-centered:before {
+    position: absolute;
+    left: initial;
+    bottom: initial;
+    top: 50%;
+    right: 208px;
+    transform: translateY(-50%);
+}
+
+.tooltip-centered:hover:before {
+    transform: translate(0, -50%);
+}
+
 
 /* Errors
 ---------------------------------------------------------- */
