@@ -135,15 +135,14 @@ describe('Posts API', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Location', /^http:\/\/127.0.0.1:2369\/ghost\/api\/canary\/admin\/posts\/\w*/g)
                 .expect(201)
                 .then((res) => {
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].title);
                     res.body.posts[0].title.should.equal('(Untitled)');
 
-                    should.exist(res.headers.Location);
-                    res.headers.Location.should.equal(`${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}`);
+                    should.exist(res.headers.location);
+                    res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
                 });
         });
     });
