@@ -143,10 +143,7 @@
 }
 
 .gh-badge.locked {
-    border: color-mod(var(--lightgrey) blackness(+8%)) 1px solid;
-    color: color-mod(var(--midgrey) l(+5%));
-    background: #fff;
-    text-transform: uppercase;
+    background: none;
 }
 
 /* User invitation modal
