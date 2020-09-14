@@ -33,6 +33,8 @@ const models = [
     'member-stripe-customer',
     'stripe-customer-subscription',
     'email',
+    'email-batch',
+    'email-recipient',
     'label',
     'single-use-token'
 ];
