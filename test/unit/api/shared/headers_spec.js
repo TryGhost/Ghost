@@ -61,4 +61,83 @@ describe('Unit: api/shared/headers', function () {
                 });
         });
     });
+
+    describe('location header', function () {
+        it('adds header when all needed data is present', function () {
+            const apiResult = {
+                posts: [{
+                    id: 'id_value'
+                }]
+            };
+
+            const apiConfigHeaders = {};
+            const frame = {
+                docName: 'posts',
+                method: 'add',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/canary/posts/`
+                    }
+                }
+            };
+
+            return shared.headers.get(apiResult, apiConfigHeaders, frame)
+                .then((result) => {
+                    result.should.eql({
+                        // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
+                        Location: 'https://example.com/api/canary/posts/id_value/'
+                    });
+                });
+        });
+
+        it('adds and resolves header to correct url when pathname does not contain backslash in the end', function () {
+            const apiResult = {
+                posts: [{
+                    id: 'id_value'
+                }]
+            };
+
+            const apiConfigHeaders = {};
+            const frame = {
+                docName: 'posts',
+                method: 'add',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/canary/posts`
+                    }
+                }
+            };
+
+            return shared.headers.get(apiResult, apiConfigHeaders, frame)
+                .then((result) => {
+                    result.should.eql({
+                        // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
+                        Location: 'https://example.com/api/canary/posts/id_value/'
+                    });
+                });
+        });
+
+        it('does not add header when missing result values', function () {
+            const apiResult = {};
+
+            const apiConfigHeaders = {};
+            const frame = {
+                docName: 'posts',
+                method: 'add',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/canary/posts/`
+                    }
+                }
+            };
+
+            return shared.headers.get(apiResult, apiConfigHeaders, frame)
+                .then((result) => {
+                    result.should.eql({});
+                });
+        });
+    });
 });

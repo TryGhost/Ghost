@@ -75,6 +75,9 @@ describe('Pages API', function () {
                 localUtils.API.checkResponse(res.body.pages[0], 'page');
                 should.exist(res.headers['x-cache-invalidate']);
 
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
+
                 return models.Post.findOne({
                     id: res.body.pages[0].id
                 }, testUtils.context.internal);

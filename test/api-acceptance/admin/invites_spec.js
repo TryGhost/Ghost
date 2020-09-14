@@ -116,6 +116,9 @@ describe('Invites API', function () {
 
                 mailService.GhostMailer.prototype.send.called.should.be.true();
 
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+
                 done();
             });
     });

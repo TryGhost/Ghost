@@ -50,6 +50,8 @@ describe('Webhooks API', function () {
                 jsonResponse.webhooks[0].name.should.equal(webhookData.name);
                 jsonResponse.webhooks[0].api_version.should.equal(webhookData.api_version);
                 jsonResponse.webhooks[0].integration_id.should.equal(webhookData.integration_id);
+
+                should.not.exist(res.headers.location);
             });
     });
 

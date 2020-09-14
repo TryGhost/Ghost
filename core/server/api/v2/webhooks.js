@@ -7,7 +7,10 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            // NOTE: remove if there is ever a 'read' method
+            location: false
+        },
         options: [],
         data: [],
         validation: {

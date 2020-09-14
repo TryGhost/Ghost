@@ -1,3 +1,4 @@
+const url = require('url');
 const debug = require('ghost-ignition').debug('api:shared:headers');
 const Promise = require('bluebird');
 const INVALIDATE_ALL = '/*';
@@ -98,26 +99,51 @@ module.exports = {
      * @description Get header based on ctrl configuration.
      *
      * @param {Object} result - API response
-     * @param {Object} apiConfig
+     * @param {Object} apiConfigHeaders
+     * @param {Object} frame
      * @return {Promise}
      */
-    async get(result, apiConfig = {}) {
+    async get(result, apiConfigHeaders = {}, frame) {
         let headers = {};
 
-        if (apiConfig.disposition) {
-            const dispositionHeader = await disposition[apiConfig.disposition.type](result, apiConfig.disposition);
+        if (apiConfigHeaders.disposition) {
+            const dispositionHeader = await disposition[apiConfigHeaders.disposition.type](result, apiConfigHeaders.disposition);
 
             if (dispositionHeader) {
                 Object.assign(headers, dispositionHeader);
             }
         }
 
-        if (apiConfig.cacheInvalidate) {
-            const cacheInvalidationHeader = cacheInvalidate(result, apiConfig.cacheInvalidate);
+        if (apiConfigHeaders.cacheInvalidate) {
+            const cacheInvalidationHeader = cacheInvalidate(result, apiConfigHeaders.cacheInvalidate);
 
             if (cacheInvalidationHeader) {
                 Object.assign(headers, cacheInvalidationHeader);
             }
+        }
+
+        const locationHeaderDisabled = apiConfigHeaders && apiConfigHeaders.location === false;
+        const hasFrameData = frame
+            && (frame.method === 'add')
+            && result[frame.docName]
+            && result[frame.docName][0]
+            && result[frame.docName][0].id;
+
+        if (!locationHeaderDisabled && hasFrameData) {
+            const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
+            const resourceId = result[frame.docName][0].id;
+
+            let locationURL = url.resolve(`${protocol}${frame.original.url.host}`,frame.original.url.pathname);
+            if (!locationURL.endsWith('/')) {
+                locationURL += '/';
+            }
+            locationURL += `${resourceId}/`;
+
+            const locationHeader = {
+                Location: locationURL
+            };
+
+            Object.assign(headers, locationHeader);
         }
 
         debug(headers);

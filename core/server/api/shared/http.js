@@ -1,3 +1,4 @@
+const url = require('url');
 const debug = require('ghost-ignition').debug('api:shared:http');
 const shared = require('../shared');
 const models = require('../../models');
@@ -41,6 +42,11 @@ const http = (apiImpl) => {
             params: req.params,
             user: req.user,
             session: req.session,
+            url: {
+                host: req.vhost ? req.vhost.host : req.get('host'),
+                pathname: url.parse(req.originalUrl || req.url).pathname,
+                secure: req.secure
+            },
             context: {
                 api_key: apiKey,
                 user: user,

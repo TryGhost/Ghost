@@ -49,6 +49,9 @@ describe('Notifications API', function () {
                 should.exist(jsonResponse.notifications[0].location);
                 jsonResponse.notifications[0].location.should.equal('bottom');
                 jsonResponse.notifications[0].id.should.be.a.String();
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('notifications/')}${res.body.notifications[0].id}/`);
             });
     });
 
