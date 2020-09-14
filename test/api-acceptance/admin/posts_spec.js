@@ -291,6 +291,9 @@ describe('Posts API', function () {
                 res.body.posts[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
                 should.not.exist(res.headers['x-cache-invalidate']);
 
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+
                 return models.Post.findOne({
                     id: res.body.posts[0].id,
                     status: 'draft'

@@ -165,6 +165,9 @@ describe('Members API', function () {
 
                 jsonResponse.members[0].labels.length.should.equal(1);
                 jsonResponse.members[0].labels[0].name.should.equal('test-label');
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('members/')}${res.body.members[0].id}/`);
             })
             .then(() => {
                 return request
@@ -205,6 +208,9 @@ describe('Members API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
                 jsonResponse.members.should.have.length(1);
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('members/')}${res.body.members[0].id}/`);
 
                 return jsonResponse.members[0];
             })
