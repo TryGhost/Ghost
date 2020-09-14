@@ -123,7 +123,8 @@ module.exports = {
         }
 
         const locationHeaderDisabled = apiConfigHeaders && apiConfigHeaders.location === false;
-        const hasFrameData = (frame.method === 'add')
+        const hasFrameData = frame
+            && (frame.method === 'add')
             && result[frame.docName]
             && result[frame.docName][0]
             && result[frame.docName][0].id;
