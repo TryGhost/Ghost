@@ -1,3 +1,4 @@
+const url = require('url');
 const debug = require('ghost-ignition').debug('api:shared:headers');
 const Promise = require('bluebird');
 const INVALIDATE_ALL = '/*';
@@ -130,9 +131,15 @@ module.exports = {
         if (!locationHeaderDisabled && hasFrameData) {
             const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
             const resourceId = result[frame.docName][0].id;
-            const location = `${protocol}${frame.original.url.host}${frame.original.url.pathname}${resourceId}/`;
+
+            let locationURL = url.resolve(`${protocol}${frame.original.url.host}`,frame.original.url.pathname);
+            if (!locationURL.endsWith('/')) {
+                locationURL += '/';
+            }
+            locationURL += `${resourceId}/`;
+
             const locationHeader = {
-                location: location
+                location: locationURL
             };
 
             Object.assign(headers, locationHeader);
