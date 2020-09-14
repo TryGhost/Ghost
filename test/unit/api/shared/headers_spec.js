@@ -86,7 +86,7 @@ describe('Unit: api/shared/headers', function () {
                 .then((result) => {
                     result.should.eql({
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
-                        location: 'https://example.com/api/canary/posts/id_value/'
+                        Location: 'https://example.com/api/canary/posts/id_value/'
                     });
                 });
         });
@@ -114,7 +114,7 @@ describe('Unit: api/shared/headers', function () {
                 .then((result) => {
                     result.should.eql({
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
-                        location: 'https://example.com/api/canary/posts/id_value/'
+                        Location: 'https://example.com/api/canary/posts/id_value/'
                     });
                 });
         });

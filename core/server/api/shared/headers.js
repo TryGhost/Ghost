@@ -140,7 +140,7 @@ module.exports = {
             locationURL += `${resourceId}/`;
 
             const locationHeader = {
-                location: locationURL
+                Location: locationURL
             };
 
             Object.assign(headers, locationHeader);
