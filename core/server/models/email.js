@@ -19,6 +19,16 @@ const Email = ghostBookshelf.Model.extend({
         };
     },
 
+    post() {
+        return this.belongsTo('Post', 'post_id');
+    },
+    emailBatches() {
+        return this.hasMany('EmailBatch', 'email_id');
+    },
+    recipients() {
+        return this.hasMany('EmailRecipient', 'email_id');
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'email' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
