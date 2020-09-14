@@ -157,6 +157,38 @@ module.exports = {
         return JSON.stringify(mobiledoc);
     },
 
+    normalizeImageSizes(mobiledocJson) {
+        const mobiledoc = JSON.parse(mobiledocJson);
+
+        const resize = ({width, height}) => {
+            const isOverWidthLimit = width > 2000;
+
+            return {
+                height: isOverWidthLimit ? Math.round(height * 2000 / width) : height,
+                width: isOverWidthLimit ? 2000 : width
+            };
+        };
+
+        // The images are resized when its width is over 2000px.
+        mobiledoc.cards.forEach(([name, cardOptions]) => {
+            if (name === 'image') {
+                const {width, height} = resize(cardOptions);
+
+                cardOptions.height = height;
+                cardOptions.width = width;
+            } else if (name === 'gallery') {
+                cardOptions.images.forEach((image) => {
+                    const {width, height} = resize(image);
+
+                    image.height = height;
+                    image.width = width;
+                });
+            }
+        });
+
+        return JSON.stringify(mobiledoc);
+    },
+
     // allow config changes to be picked up - useful in tests
     reload() {
         cardFactory = null;

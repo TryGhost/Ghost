@@ -249,4 +249,32 @@ describe('lib/mobiledoc', function () {
             transformed.cards[1][1].height.should.equal(257);
         });
     });
+
+    describe('normalizeImageSizes', function () {
+        it('resizes the images whose width is over 2000px', async function () {
+            const mobiledoc = {
+                cards: [
+                    ['gallery', {
+                        images: [
+                            {src: 'a.jpg', width: 4500, height: 4500}
+                        ]
+                    }],
+                    ['image', {src: 'b.jpg', width: 3000, height: 31}],
+                    ['image', {src: 'c.jpg', width: 800, height: 3000}]
+                ]
+            };
+
+            const transformedMobiledoc = mobiledocLib.normalizeImageSizes(JSON.stringify(mobiledoc));
+            const transformed = JSON.parse(transformedMobiledoc);
+
+            transformed.cards[0][1].images[0].width.should.equal(2000);
+            transformed.cards[0][1].images[0].height.should.equal(2000);
+
+            transformed.cards[1][1].width.should.equal(2000);
+            transformed.cards[1][1].height.should.equal(21);
+
+            transformed.cards[2][1].width.should.equal(800);
+            transformed.cards[2][1].height.should.equal(3000);
+        });
+    });
 });

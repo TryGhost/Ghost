@@ -419,6 +419,7 @@ Post = ghostBookshelf.Model.extend({
             || (!this.get('html') && (options.migrating || options.importing))
         ) {
             try {
+                this.set('mobiledoc', mobiledocLib.normalizeImageSizes(this.get('mobiledoc')));
                 this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
                 throw new errors.ValidationError({
