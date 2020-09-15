@@ -11,7 +11,7 @@ export const AccountPlanPageStyles = `
     }
 
     .gh-portal-expire-container {
-        margin: -8px 0 18px;
+        margin: -8px 0 0;
     }
 `;
 
@@ -266,7 +266,7 @@ export default class AccountPlanPage extends React.Component {
         const {showConfirmation, newPlan} = this.state;
         return (
             <div>
-                <div className='gh-portal-content with-footer'>
+                <div className='gh-portal-content'>
                     <Header member={member} brandColor={brandColor} onBack={e => this.onBack} />
                     <PlanMain
                         {...this.context}
