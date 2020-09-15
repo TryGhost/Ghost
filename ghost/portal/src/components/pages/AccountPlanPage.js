@@ -215,7 +215,6 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onPlanSelect(e, name) {
-        debugger;
         e.preventDefault();
         if (name !== this.state.plan) {
             this.setState({
