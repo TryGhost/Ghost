@@ -265,7 +265,6 @@ export default class AccountPlanPage extends React.Component {
         const selectedPlan = this.state.plan;
         const errors = this.state.errors || {};
         const {showConfirmation, newPlan} = this.state;
-        debugger;
         return (
             <div>
                 <div className='gh-portal-content with-footer'>

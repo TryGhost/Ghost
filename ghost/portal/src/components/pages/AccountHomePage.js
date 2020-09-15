@@ -14,7 +14,6 @@ export const AccountHomePageStyles = `
 
     .gh-portal-account-main {
         background: var(--grey13);
-        margin: -32px;
         padding: 32px;
     }
 
