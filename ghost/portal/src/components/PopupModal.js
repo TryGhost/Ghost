@@ -88,9 +88,16 @@ class PopupContent extends React.Component {
         const pageStyle = {
             ...Styles.page[page]
         };
+        let popupWidthStyle = '';
+        if (portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
+            popupWidthStyle = 'gh-portal-container-wide';
+        }
+        if (portalPlans.length <= 1) {
+            popupWidthStyle = 'gh-portal-container-narrow';
+        }
         return (
             <div className='gh-portal-popup-wrapper'>
-                <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + (portalPlans.length <= 1 ? ' gh-portal-container-singleplan' : '')} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
+                <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
                     {this.renderPopupClose()}
                     {this.renderActivePage()}
                 </div>
