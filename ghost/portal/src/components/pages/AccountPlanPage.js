@@ -11,7 +11,7 @@ export const AccountPlanPageStyles = `
     }
 
     .gh-portal-expire-container {
-        margin: -8px 0 0;
+        margin: -8px 0 18px;
     }
 `;
 
@@ -82,6 +82,88 @@ export const CancelContinueSubscription = ({member, onAction, action, brandColor
         </div>
     );
 };
+
+const Header = ({member, brandColor, onBack}) => {
+    const title = member.paid ? 'Choose Plan' : 'Choose your subscription';
+    return (
+        <header className='gh-portal-detail-header'>
+            <BackButton brandColor={brandColor} onClick={e => onBack(e)} />
+            <h3 className='gh-portal-main-title'>{title}</h3>
+        </header>
+    );
+};
+
+const Footer = ({member, action, plan, brandColor, onPlanCheckout, onBack}) => {
+    return (
+        <footer className='gh-portal-action-footer'>
+            <button className='gh-portal-btn' onClick={e => onBack(e)}>Cancel</button>
+            <SubmitButton
+                member={member}
+                action={action}
+                plan={plan}
+                brandColor={brandColor}
+                onPlanCheckout={onPlanCheckout}
+            />
+        </footer>
+    );
+};
+
+const SubmitButton = ({member, action, plan, brandColor, onPlanCheckout}) => {
+    const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(action);
+    const label = member.paid ? 'Change Plan' : 'Continue';
+    const disabled = (isRunning || !plan) ? true : false;
+    const subscription = getMemberSubscription({member});
+    const isPrimary = (!subscription || !subscription.cancel_at_period_end);
+    return (
+        <ActionButton
+            onClick={e => onPlanCheckout(e)}
+            disabled={disabled}
+            isRunning={isRunning}
+            isPrimary={isPrimary}
+            brandColor={brandColor}
+            label={label}
+            style={{height: '40px'}}
+        />
+    );
+};
+
+const PlanConfirmation = ({newPlan, onCancelConfirmation, onPlanCheckout}) => {
+    return `Please confirm your new Plan ${newPlan}`;
+};
+
+const PlanChooser = ({plans, selectedPlan, errors, member, onAction, action, brandColor, onPlanSelect}) => {
+    const {global} = errors || {};
+    return (
+        <section>
+            <div className='gh-portal-section gh-portal-accountplans-main'>
+                <PlansSection
+                    showLabel={false}
+                    plans={plans}
+                    selectedPlan={selectedPlan}
+                    onPlanSelect={(e, name) => onPlanSelect(e, name)}
+                />
+                <GlobalError message={global} />
+            </div>
+            <CancelContinueSubscription {...{member, onAction, action, brandColor}} />
+        </section>
+    );
+};
+
+const PlanMain = ({
+    plans, selectedPlan, newPlan, errors, member, onAction, action, brandColor,
+    showConfirmation = false, onPlanSelect, onCancelConfirmation, onPlanCheckout
+}) => {
+    if (!showConfirmation) {
+        return (
+            <PlanChooser
+                {...{plans, selectedPlan, errors, member, onAction, action, brandColor, onPlanSelect}}
+            />
+        );
+    }
+    return (
+        <PlanConfirmation {...{newPlan, onCancelConfirmation, onPlanCheckout}}/>
+    );
+};
 export default class AccountPlanPage extends React.Component {
     static contextType = AppContext;
 
@@ -100,15 +182,6 @@ export default class AccountPlanPage extends React.Component {
         };
     }
 
-    componentDidMount() {
-        const {member} = this.context;
-        if (!member) {
-            this.context.onAction('switchPage', {
-                page: 'signup'
-            });
-        }
-    }
-
     handleSignout(e) {
         e.preventDefault();
         this.context.onAction('signout');
@@ -116,17 +189,6 @@ export default class AccountPlanPage extends React.Component {
 
     onBack(e) {
         this.context.onAction('back');
-    }
-
-    renderHeader() {
-        const {member} = this.context;
-        const title = member.paid ? 'Choose Plan' : 'Choose your subscription';
-        return (
-            <header className='gh-portal-detail-header'>
-                <BackButton brandColor={this.context.brandColor} onClick={e => this.onBack(e)} />
-                <h3 className='gh-portal-main-title'>{title}</h3>
-            </header>
-        );
     }
 
     onPlanCheckout(e) {
@@ -153,15 +215,29 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onPlanSelect(e, name) {
+        debugger;
         e.preventDefault();
-        // Hack: React checkbox gets out of sync with dom state with instant update
-        setTimeout(() => {
-            this.setState((state) => {
-                return {
-                    plan: name
-                };
+        if (name !== this.state.plan) {
+            this.setState({
+                newPlan: name,
+                showConfirmation: true
             });
-        }, 5);
+        }
+        // // Hack: React checkbox gets out of sync with dom state with instant update
+        // setTimeout(() => {
+        //     this.setState((state) => {
+        //         return {
+        //             plan: name
+        //         };
+        //     });
+        // }, 5);
+    }
+
+    onCancelConfirmation() {
+        this.setState({
+            newPlan: null,
+            showConfirmation: false
+        });
     }
 
     getActivePlanName({member}) {
@@ -183,133 +259,23 @@ export default class AccountPlanPage extends React.Component {
         return {};
     }
 
-    renderError() {
-        const {global} = this.state.errors || {};
-        if (global) {
-            return (
-                <GlobalError message={global} />
-            );
-        }
-        return null;
-    }
-
-    renderPlanChooser() {
-        const plansData = this.plans;
-        const selectedPlan = this.state.plan;
-        return (
-            <section>
-                <div className='gh-portal-section gh-portal-accountplans-main'>
-                    <PlansSection
-                        showLabel={false}
-                        plans={plansData}
-                        selectedPlan={selectedPlan}
-                        onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
-                    />
-                    {this.renderError()}
-                </div>
-                <CancelContinueSubscription {...this.context} />
-            </section>
-        );
-    }
-
-    renderCancelNotice() {
-        const subscription = this.getMemberSubscription();
-        if (!subscription || !subscription.cancel_at_period_end) {
-            return null;
-        }
-
-        const currentPeriodEnd = subscription.current_period_end;
-        return (
-            <div style={{width: '100%', display: 'flex', justifyContent: 'center', color: 'red', marginBottom: '12px', fontSize: '12px', fontWeight: 'bold'}}>
-                Your subscription will expire on {getDateString(currentPeriodEnd)}.
-            </div>
-        );
-    }
-
-    renderCancelContinueButton() {
-        const {onAction, member} = this.context;
-        if (!member.paid) {
-            return null;
-        }
-        const [subscription] = member.subscriptions;
-        const label = subscription.cancel_at_period_end ? 'Continue subscription' : 'Cancel subscription';
-        const isRunning = ['cancelSubscription:running'].includes(this.context.action);
-        const disabled = (isRunning) ? true : false;
-        const isPrimary = !!subscription.cancel_at_period_end;
-
-        return (
-            <div style={{marginBottom: '24px'}}>
-                {this.renderCancelNotice()}
-                <ActionButton
-                    onClick={(e) => {
-                        onAction('cancelSubscription', {
-                            subscriptionId: subscription.id,
-                            cancelAtPeriodEnd: !subscription.cancel_at_period_end
-                        });
-                    }}
-                    isRunning={isRunning}
-                    disabled={disabled}
-                    isPrimary={isPrimary}
-                    brandColor={this.context.brandColor}
-                    label={label}
-                    style={{
-                        width: '100%'
-                    }}
-                />
-            </div>
-        );
-    }
-
-    renderFooter() {
-        return (
-            <footer className='gh-portal-action-footer'>
-                <button className='gh-portal-btn' onClick={e => this.onBack(e)}>Cancel</button>
-                {this.renderSubmitButton()}
-            </footer>
-        );
-    }
-
-    getMemberSubscription() {
-        const {member} = this.context;
-        if (member.paid) {
-            const [subscription] = member.subscriptions || [];
-            return subscription;
-        }
-        return null;
-    }
-
-    renderSubmitButton() {
-        const {member} = this.context;
-        const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(this.context.action);
-        const label = member.paid ? 'Change Plan' : 'Continue';
-        const disabled = (isRunning || !this.state.plan) ? true : false;
-        const subscription = this.getMemberSubscription();
-        const isPrimary = (!subscription || !subscription.cancel_at_period_end);
-        return (
-            <ActionButton
-                onClick={e => this.onPlanCheckout(e)}
-                disabled={disabled}
-                isRunning={isRunning}
-                isPrimary={isPrimary}
-                brandColor={this.context.brandColor}
-                label={label}
-                style={{height: '40px'}}
-            />
-        );
-    }
-
     render() {
-        const {member} = this.context;
-        if (!member) {
-            return null;
-        }
+        const {member, brandColor} = this.context;
+        const plans = this.plans;
+        const selectedPlan = this.state.plan;
+        const errors = this.state.errors || {};
+        const {showConfirmation, newPlan} = this.state;
+        debugger;
         return (
             <div>
                 <div className='gh-portal-content with-footer'>
-                    {this.renderHeader()}
-                    {this.renderPlanChooser()}
+                    <Header member={member} brandColor={brandColor} onBack={e => this.onBack} />
+                    <PlanMain
+                        {...this.context}
+                        {...{plans, selectedPlan, showConfirmation, newPlan, errors}}
+                        onPlanSelect = {(e, name) => this.onPlanSelect(e, name)}
+                    />
                 </div>
-                {this.renderFooter()}
             </div>
         );
     }
