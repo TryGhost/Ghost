@@ -246,12 +246,12 @@
     box-shadow: 0px 0px 0px 2px var(--blue);
 }
 
-.gh-portal-button-icon svg {
-    color: var(--midlightgrey-d1);
+.gh-portal-button-icon svg path {
+    stroke: var(--midlightgrey-d1);
 }
 
-.gh-portal-button-icon.selected-icon svg {
-    color: var(--blue);
+.gh-portal-button-icon.selected-icon svg path {
+    stroke: var(--blue);
 }
 
 .gh-portal-button-uploadicon,
