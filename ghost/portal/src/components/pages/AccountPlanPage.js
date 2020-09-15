@@ -7,11 +7,12 @@ import {getMemberSubscription, getPlanFromSubscription, getSitePlans, getSubscri
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
-        margin-top: 32px;
+        margin-top: 24px;
+        margin-bottom: 0;
     }
 
     .gh-portal-expire-container {
-        margin: -8px 0 0;
+        margin: 24px 0 0;
     }
 `;
 
@@ -57,6 +58,7 @@ export const CancelContinueSubscription = ({member, onCancelContinueSubscription
     const isRunning = ['cancelSubscription:running'].includes(action);
     const disabled = (isRunning) ? true : false;
     const isPrimary = !!subscription.cancel_at_period_end;
+    const isDestructive = !subscription.cancelAtPeriodEnd;
 
     const CancelNotice = () => {
         if (!subscription.cancel_at_period_end) {
@@ -87,6 +89,7 @@ export const CancelContinueSubscription = ({member, onCancelContinueSubscription
                 isRunning={isRunning}
                 disabled={disabled}
                 isPrimary={isPrimary}
+                isDestructive={isDestructive}
                 brandColor={brandColor}
                 label={label}
                 style={{
@@ -98,7 +101,7 @@ export const CancelContinueSubscription = ({member, onCancelContinueSubscription
 };
 
 const Header = ({member, brandColor, onBack, showConfirmation, confirmationType}) => {
-    let title = member.paid ? 'Choose Plan' : 'Choose your subscription';
+    let title = member.paid ? 'Choose plan' : 'Choose your plan';
     if (showConfirmation) {
         title = getConfirmationPageTitle({confirmationType});
     }

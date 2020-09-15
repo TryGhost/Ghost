@@ -34,12 +34,12 @@ export const PlanSectionStyles = `
         pointer-events: none;
     }
 
-    .gh-portal-plan-section:first-of-type.checked::before {
+    .gh-portal-plan-section:first-of-type::before {
         border-top-left-radius: 5px;
         border-bottom-left-radius: 5px;
     }
 
-    .gh-portal-plan-section:last-of-type.checked::before {
+    .gh-portal-plan-section:last-of-type::before {
         border-top-right-radius: 5px;
         border-bottom-right-radius: 5px;
     }
@@ -158,6 +158,57 @@ export const PlanSectionStyles = `
     .gh-portal-content.signup .gh-portal-section.singleplan .gh-portal-plan-name {
         margin-top: 0;
     }
+
+    .gh-portal-plan-section:not(.checked)::before {
+        position: absolute;
+        display: block;
+        top: -1px;
+        right: -1px;
+        bottom: -1px;
+        left: -1px;
+        content: "";
+        z-index: 999;
+        border: 1px solid var(--brandcolor);
+        pointer-events: none;
+        opacity: 0;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .gh-portal-plan-section:not(.checked):hover::before {
+        opacity: 0.5;
+    }
+
+    .gh-portal-plan-section:not(.checked).show-check-onhover .checkmark:before {
+        position: absolute;
+        display: block;
+        content: "";
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: var(--brandcolor);
+        border-radius: 999px;
+        opacity: 0;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-plan-section:not(.checked).show-check-onhover:hover .checkmark:before {
+        opacity: 0.2;
+    }
+    
+    .gh-portal-plan-section:not(.checked).show-check-onhover .checkmark:after {
+        display: block;
+        opacity: 0;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-plan-section:not(.checked).show-check-onhover:hover .checkmark:after {
+        opacity: 1.0;
+    }
+
+    .gh-portal-plans-container.hide-checkboxes .gh-portal-plan-checkbox {
+        display: none;
+    }
 `;
 
 function Checkbox({name, onPlanSelect, isChecked}) {
@@ -234,10 +285,11 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, styl
     if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
         return null;
     }
+    const plansContainerClass = selectedPlan ? '' : 'hide-checkboxes';
     return (
         <section>
             <PlanLabel showLabel={showLabel} />
-            <div className='gh-portal-plans-container'>
+            <div className={'gh-portal-plans-container ' + plansContainerClass}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
             </div>
         </section>
