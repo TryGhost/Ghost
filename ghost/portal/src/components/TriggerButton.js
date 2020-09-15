@@ -34,7 +34,7 @@ const Styles = ({brandColor, hasText}) => {
             right: '28px',
             width: '500px',
             maxWidth: '500px',
-            height: '60px',
+            height: '58px',
             boxShadow: '0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px rgba(0, 0, 0, 0.035), 0 21.1px 24.1px rgba(0, 0, 0, 0.046), 0 70px 80px rgba(0, 0, 0, 0.07)',
             borderRadius: '999px',
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
@@ -48,8 +48,8 @@ const Styles = ({brandColor, hasText}) => {
             color: invertColor
         },
         buttonIcon: {
-            width: '26px',
-            height: '26px',
+            width: '24px',
+            height: '24px',
             color: invertColor
         },
         closeIcon: {
