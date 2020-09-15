@@ -38,6 +38,11 @@ const GlobalStyle = `
         overflow: hidden;
         user-select: none;
         background: var(--brandcolor);
+        line-height: 1;
+    }
+
+    .gh-portal-triggerbtn-wrapper span {
+        margin-bottom: 1px;
     }
 
     .gh-portal-triggerbtn-container {
@@ -47,7 +52,7 @@ const GlobalStyle = `
     }
 
     .gh-portal-triggerbtn-container.with-label {
-        padding: 0 16px 0 20px;
+        padding: 0 12px 0 16px;
     }
 
     .gh-portal-avatar {
