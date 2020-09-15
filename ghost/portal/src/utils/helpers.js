@@ -17,6 +17,10 @@ export function isMemberComplimentary({member = {}}) {
     return false;
 }
 
+export function isPaidMember({member = {}}) {
+    return (member && member.paid);
+}
+
 export function getSitePlans({site = {}}) {
     const {plans} = site;
     const discount = CalculateDiscount(plans.monthly, plans.yearly);
