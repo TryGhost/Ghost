@@ -325,16 +325,19 @@ const GlobalStyles = `
         letter-spacing: 0;
         text-rendering: optimizeLegibility;
         background: var(--white);
-        width: 440px;
-        /*max-height: calc(100vh - 12vw);*/
+        width: 400px;
         margin: 0 auto;
         border-radius: 5px;
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
         animation: popup 0.25s ease-in-out;
     }
 
-    .gh-portal-container-singleplan {
-        width: 390px;
+    .gh-portal-container-wide {
+        width: 440px;
+    }
+
+    .gh-portal-container-narrow {
+        width: 380px;
     }
 
     .gh-portal-popup-container.preview {
