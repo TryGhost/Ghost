@@ -21,6 +21,26 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
+export function getPlanFromSubscription({subscription}) {
+    if (subscription && subscription.plan) {
+        return {
+            type: subscription.plan.interval,
+            price: subscription.plan.amount / 100,
+            currency: subscription.plan.currency_symbol,
+            name: subscription.plan.nickname
+        };
+    }
+    return null;
+}
+
+export function getSubscriptionFromId({member, subscriptionId}) {
+    if (member.paid) {
+        const subscriptions = member.subscriptions || [];
+        return subscriptions.find(d => d.id === subscriptionId);
+    }
+    return null;
+}
+
 export function getSitePlans({site = {}}) {
     const {plans} = site;
     const discount = CalculateDiscount(plans.monthly, plans.yearly);
