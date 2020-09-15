@@ -147,7 +147,7 @@ const SubmitButton = ({member, action, plan, brandColor, onPlanCheckout}) => {
     );
 };
 
-const PlanConfirmation = ({plan, type, brandColor, onConfirm}) => {
+const PlanConfirmation = ({plan, type, brandColor, onConfirm, member}) => {
     let actionDescription = '';
     let confirmMessage = 'Are you sure ?';
     if (type === 'changePlan') {
@@ -155,7 +155,8 @@ const PlanConfirmation = ({plan, type, brandColor, onConfirm}) => {
     } else if (type === 'subscribe') {
         actionDescription = `You are subscribing to a ${plan.name} plan with pricing ${plan.currency} ${plan.price} / ${plan.type} `;
     } else if (type === 'cancel') {
-        actionDescription = `You are about to cancel your subscription for ${plan.currency} ${plan.price} ${plan.name} plan`;
+        const subscription = getMemberSubscription({member});
+        actionDescription = `If you confirm and end your subscription now, you can still access it until ${getDateString(subscription.current_period_end)}`;
     }
     const label = 'Confirm';
     return (
@@ -208,7 +209,7 @@ const PlanMain = ({
         );
     }
     return (
-        <PlanConfirmation {...{plan: confirmationPlan, type: confirmationType, onConfirm}}/>
+        <PlanConfirmation {...{plan: confirmationPlan, type: confirmationType, onConfirm, member}}/>
     );
 };
 export default class AccountPlanPage extends React.Component {
