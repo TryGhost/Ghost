@@ -8,13 +8,10 @@ import {getDateString} from '../../utils/date-time';
 const React = require('react');
 
 export const AccountHomePageStyles = `
-<<<<<<< HEAD
     .gh-portal-content.account-home {
         max-height: calc(100vh - 12vw - 104px);
     }
 
-=======
->>>>>>> Added back button and rearranged logout
     .gh-portal-account-main {
         background: var(--grey13);
         margin: -32px;
