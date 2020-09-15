@@ -57,6 +57,18 @@ export const SignupPageStyles = `
         font-weight: 400;
         margin-left: 4px;
     }
+
+    .gh-portal-content.signup .gh-portal-section {
+        margin-bottom: 24px;
+    }
+
+    .gh-portal-content.signup .gh-portal-section.noplan {
+        margin-bottom: 32px;
+    }
+
+    .gh-portal-content.signup .gh-portal-section.single-field {
+        margin-bottom: 20px;
+    }
 `;
 
 class SignupPage extends React.Component {
@@ -282,10 +294,9 @@ class SignupPage extends React.Component {
 
     renderPlans() {
         const plansData = this.getPlans();
-        const plansContainerClass = plansData.length <= 1 ? 'gh-portal-signup-singleplan' : 'gh-portal-signup-multiplan';
 
         return (
-            <div className={plansContainerClass}>
+            <div>
                 <PlansSection
                     plans={plansData}
                     selectedPlan={this.state.plan}
@@ -312,11 +323,26 @@ class SignupPage extends React.Component {
     }
 
     renderForm() {
+        const plansData = this.getPlans();
+        const fields = this.getInputFields({state: this.state});
+        let sectionClass = '';
+        
+        if (plansData.length <= 1) {
+            if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0) {
+                sectionClass = 'noplan';
+                if (fields.length === 1) {
+                    sectionClass = 'single-field';
+                }
+            } else {
+                sectionClass = 'singleplan';
+            }
+        }
+
         return (
             <section>
-                <div className='gh-portal-section'>
+                <div className={'gh-portal-section ' + sectionClass}>
                     <InputForm
-                        fields={this.getInputFields({state: this.state})}
+                        fields={fields}
                         onChange={(e, field) => this.handleInputChange(e, field)}
                         onBlur={(e, field) => this.handleInputBlur(e, field)}
                     />

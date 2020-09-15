@@ -15,7 +15,7 @@ export const site = {
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
-    portal_plans: ['free'],
+    portal_plans: ['free', 'yearly'],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
     portal_button_style: 'icon-and-text',
