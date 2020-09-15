@@ -39,11 +39,11 @@ export default Component.extend({
                     name: subscription.name || '',
                     email: subscription.email || '',
                     status: subscription.status,
-                    startDate: subscription.start_date ? moment(subscription.start_date).format('MMM DD YYYY') : '-',
+                    startDate: subscription.start_date ? moment(subscription.start_date).format('D MMM YYYY') : '-',
                     plan: subscription.plan,
                     amount: parseInt(subscription.plan.amount) ? (subscription.plan.amount / 100) : 0,
                     cancelAtPeriodEnd: subscription.cancel_at_period_end,
-                    validUntil: subscription.current_period_end ? moment(subscription.current_period_end).format('MMM DD YYYY') : '-'
+                    validUntil: subscription.current_period_end ? moment(subscription.current_period_end).format('D MMM YYYY') : '-'
                 };
             }).reverse();
         }
