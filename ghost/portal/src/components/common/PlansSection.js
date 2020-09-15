@@ -146,16 +146,16 @@ export const PlanSectionStyles = `
         transform: rotate(45deg);
     }
 
-    .gh-portal-signup-singleplan .gh-portal-plan-section {
+    .gh-portal-content.signup .gh-portal-section.singleplan .gh-portal-plan-section {
         cursor: auto;
     }
 
-    .gh-portal-signup-singleplan .gh-portal-plan-checkbox,
-    .gh-portal-signup-singleplan .gh-portal-plan-section.checked::before {
+    .gh-portal-content.signup .gh-portal-section.singleplan .gh-portal-plan-checkbox,
+    .gh-portal-content.signup .gh-portal-section.singleplan .gh-portal-plan-section.checked::before {
         display: none;
     }
 
-    .gh-portal-signup-singleplan .gh-portal-plan-name {
+    .gh-portal-content.signup .gh-portal-section.singleplan .gh-portal-plan-name {
         margin-top: 0;
     }
 `;
