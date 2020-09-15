@@ -357,7 +357,7 @@ const GlobalStyles = `
     */
     .gh-portal-content {
         overflow-y: scroll;
-        padding: 32px;
+        padding: 28px 32px 32px;
         max-height: calc(100vh - 12vw);
     }
 
@@ -387,7 +387,7 @@ const GlobalStyles = `
 
     .gh-portal-closeicon-container {
         position: absolute;
-        top: 20px;
+        top: 18px;
         right: 20px;
         z-index: 999;
     }
