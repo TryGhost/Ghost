@@ -602,7 +602,6 @@ const MobileStyles = `
     }
 
     .gh-portal-account-main {
-        margin: -24px;
         padding: 24px;
     }
 }
