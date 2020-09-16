@@ -326,7 +326,6 @@ class SignupPage extends React.Component {
     renderPlans() {
         const {site} = this.context;
         const plansData = getSitePlans({site});
-
         return (
             <div>
                 <PlansSection
