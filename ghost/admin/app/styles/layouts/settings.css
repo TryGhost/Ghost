@@ -611,8 +611,8 @@
     margin-bottom: 25px;
 }
 
-.gh-import-errors-warning {
-    border-left-color: var(--orange);
+.gh-import-errors-alert {
+    border-left-color: color-mod(var(--yellow) l(-8%) s(+10%));
 }
 
 .gh-import-errors-title {
@@ -623,8 +623,8 @@
     color: var(--red);
 }
 
-.gh-import-errors-warning .gh-import-errors-title {
-    color: var(--orange);
+.gh-import-errors-alert .gh-import-errors-title {
+    color: color-mod(var(--yellow) l(-8%) s(+10%));
 }
 
 .gh-import-error {

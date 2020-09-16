@@ -89,7 +89,7 @@
     {{else}}
         {{!-- Mail not sent yet --}}
         {{#if this.mailgunError}}
-            <p class="gh-box gh-box-warning settings-menu-mailgun-warning">
+            <p class="gh-box gh-box-alert settings-menu-mailgun-alert">
                 {{svg-jar "info" class="w5 h5 fill-yellow nl1"}}
                 You need to configure Mailgun in <LinkTo @route="settings.labs" data-test-nav="labs">Labs → Members settings</LinkTo> to enable email newsletters.
             </p>

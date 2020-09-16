@@ -93,6 +93,10 @@
         </section>
     </GhCanvasHeader>
 
+    {{#if user.isLocked}}
+        <p class="gh-box gh-box-alert">{{svg-jar "info"}}This user account is locked. To sign in, ask this user to perform a password reset on their account.</p>
+    {{/if}}
+
     {{!-- <div class="bg-"> --}}
     <section class="br3 shadow-1 bg-grouped-table">
         <div class="gm-main view-container settings-user">
