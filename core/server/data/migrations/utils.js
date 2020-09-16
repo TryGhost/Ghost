@@ -1,7 +1,36 @@
 const ObjectId = require('bson-objectid').default;
 const logging = require('../../../shared/logging');
+const commands = require('../schema').commands;
 
 const MIGRATION_USER = 1;
+
+/**
+ * Creates a migrations which will add a new table from schema.js to the database
+ */
+function addTable(name) {
+    return createNonTransactionalMigration(
+        async function up(connection) {
+            const tableExists = await connection.schema.hasTable(name);
+            if (tableExists) {
+                logging.warn(`Skipping adding table: ${name} - table already exists`);
+                return;
+            }
+
+            logging.info(`Adding table: ${name}`);
+            return commands.createTable(name, connection);
+        },
+        async function down(connection) {
+            const tableExists = await connection.schema.hasTable(name);
+            if (!tableExists) {
+                logging.warn(`Skipping dropping table: ${name} - table does not exist`);
+                return;
+            }
+
+            logging.info(`Dropping table: ${name}`);
+            return commands.deleteTable(name, connection);
+        }
+    );
+}
 
 /**
  * Creates a migration which will add a permission to the database
@@ -178,6 +207,26 @@ function addPermissionWithRoles(config, roles) {
  *
  * @returns {Migration}
  */
+function createNonTransactionalMigration(up, down) {
+    return {
+        config: {
+            transaction: false
+        },
+        async up(config) {
+            await up(config.connection);
+        },
+        async down(config) {
+            await down(config.connection);
+        }
+    };
+}
+
+/**
+ * @param {(connection: import('knex')) => Promise<void>} up
+ * @param {(connection: import('knex')) => Promise<void>} down
+ *
+ * @returns {Migration}
+ */
 function createTransactionalMigration(up, down) {
     return {
         config: {
@@ -218,10 +267,12 @@ function combineTransactionalMigrations(...migrations) {
 }
 
 module.exports = {
+    addTable,
     addPermission,
     addPermissionToRole,
     addPermissionWithRoles,
     createTransactionalMigration,
+    createNonTransactionalMigration,
     combineTransactionalMigrations,
     meta: {
         MIGRATION_USER
