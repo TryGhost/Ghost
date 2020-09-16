@@ -8,13 +8,10 @@ import {getDateString} from '../../utils/date-time';
 const React = require('react');
 
 export const AccountHomePageStyles = `
-    .gh-portal-content.account-home {
-        max-height: calc(100vh - 12vw - 104px);
-    }
-
     .gh-portal-account-main {
         background: var(--grey13);
-        padding: 32px;
+        padding: 32px 32px 0;
+        max-height: calc(100vh - 12vw - 104px);
     }
 
     .gh-portal-account-header {
@@ -26,6 +23,10 @@ export const AccountHomePageStyles = `
 
     .gh-portal-account-header .gh-portal-avatar {
         margin: 6px 0 8px !important;
+    }
+
+    .gh-portal-account-data {
+        margin-bottom: 32px;
     }
 
     footer.gh-portal-account-footer {
@@ -321,9 +322,9 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
 
 const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     return (
-        <div className='gh-portal-account-main'>
+        <div className='gh-portal-content gh-portal-account-main'>
             <UserHeader member={member} brandColor={brandColor} />
-            <section>
+            <section className='gh-portal-account-data'>
                 <AccountWelcome action={action} member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
                 <CancelContinueSubscription
                     member={member}
