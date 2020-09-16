@@ -318,15 +318,6 @@
     margin-bottom: 4px;
 }
 
-.settings-menu-mailgun-warning .gh-box-info {
-    border-left: var(--yellow);
-}
-
-.settings-menu-mailgun-warning a {
-    text-decoration: underline;
-    color: color-mod(var(--yellow) l(-8%) s(+10%));
-}
-
 .settings-menu-email .disabled button,
 .settings-menu-email .disabled input {
     opacity: 0.5;

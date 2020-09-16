@@ -15,46 +15,45 @@
     box-shadow: 0 6px 10px -8px rgba(0,0,0,.15)
 }
 
+.gh-box a {
+    color: var(--middarkgrey);
+    text-decoration: underline;
+}
+
 .gh-box svg:first-of-type {
     position: absolute;
-    top: 13px;
     left: 12px;
-    height: 2.1rem;
     width: auto;
 }
 
-.gh-box-info {
+.gh-box-tip {
     border-left-color: var(--blue);
 }
 
-.gh-box-info svg:first-of-type {
+.gh-box-tip svg:first-of-type {
+    top: 12px;
+    height: 2rem;
     fill: var(--blue);
 }
 
-.gh-box-warning {
-    border-left-color: var(--yellow);
+.gh-box-alert {
+    border-left-color: color-mod(var(--yellow) l(-8%) s(+10%));
 }
 
-.gh-box-warning svg:first-of-type {
-    fill: var(--yellow);
-}
-
-.gh-box-warning a {
-    color: var(--yellow);
+.gh-box-alert svg:first-of-type {
+    top: 14px;
+    height: 1.8rem;
+    fill: color-mod(var(--yellow) l(-8%) s(+10%));
 }
 
 .gh-box-error {
     border-left-color: var(--red);
-    color: var(--middarkgrey);
 }
 
 .gh-box-error svg:first-of-type {
-    fill: var(--red);
+    top: 14px;
     height: 1.8rem;
-}
-
-.gh-box-error a {
-    color: var(--red);
+    fill: var(--red);
 }
 
 .gh-box-error-border {

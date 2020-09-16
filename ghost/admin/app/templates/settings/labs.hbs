@@ -6,7 +6,7 @@
     </GhCanvasHeader>
 
     <section class="view-container settings-debug">
-        <p class="gh-box gh-box-info">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
+        <p class="gh-box gh-box-tip">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
 
         {{#if this.session.user.isOwner}}
         <div class="gh-setting-header">Members (BETA) </div>
@@ -69,7 +69,7 @@
             </div>
 
             {{#if this.importErrors}}
-                <div class="gh-import-errors {{if this.importSuccessful "gh-import-errors-warning"}}" data-test-import-errors>
+                <div class="gh-import-errors {{if this.importSuccessful "gh-import-errors-alert"}}" data-test-import-errors>
                     <div class="gh-import-errors-title">
                         {{#if this.importSuccessful}}
                             Import successful with warnings
