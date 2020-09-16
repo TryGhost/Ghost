@@ -12,8 +12,8 @@ const React = require('react');
 const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
-    member: Fixtures.member.paid,
-    page: 'accountPlan'
+    member: Fixtures.member.free,
+    page: 'accountHome'
 };
 export default class App extends React.Component {
     constructor(props) {
