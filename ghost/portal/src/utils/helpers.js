@@ -8,7 +8,7 @@ export function getMemberSubscription({member = {}}) {
     return null;
 }
 
-export function isMemberComplimentary({member = {}}) {
+export function isComplimentaryMember({member = {}}) {
     const subscription = getMemberSubscription({member});
     if (subscription) {
         const {plan} = subscription;
@@ -33,6 +33,11 @@ export function getPlanFromSubscription({subscription}) {
     return null;
 }
 
+export function getMemberActivePlan({member}) {
+    const subscription = getMemberSubscription({member});
+    return getPlanFromSubscription({subscription});
+}
+
 export function getSubscriptionFromId({member, subscriptionId}) {
     if (member.paid) {
         const subscriptions = member.subscriptions || [];
@@ -41,10 +46,26 @@ export function getSubscriptionFromId({member, subscriptionId}) {
     return null;
 }
 
-export function getSitePlans({site = {}}) {
-    const {plans} = site;
+export function hasOnlyFreePlan({site = {}}) {
+    const plans = getSitePlans({site});
+    return !plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free');
+}
+
+export function getSitePlans({site = {}, includeFree = true}) {
+    const {
+        plans,
+        allow_self_signup: allowSelfSignup,
+        is_stripe_configured: isStripeConfigured,
+        portal_plans: portalPlans
+    } = site || {};
+
+    if (!plans) {
+        return [];
+    }
+
+    const plansData = [];
     const discount = CalculateDiscount(plans.monthly, plans.yearly);
-    return [
+    const stripePlans = [
         {
             type: 'month',
             price: plans.monthly,
@@ -59,4 +80,22 @@ export function getSitePlans({site = {}}) {
             discount
         }
     ];
+
+    if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
+        plansData.push({
+            type: 'free',
+            price: 0,
+            currency: plans.currency_symbol,
+            name: 'Free'
+        });
+    }
+
+    if (isStripeConfigured) {
+        stripePlans.forEach((plan) => {
+            if (portalPlans.includes(plan.name.toLowerCase())) {
+                plansData.push(plan);
+            }
+        });
+    }
+    return plansData;
 }
