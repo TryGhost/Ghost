@@ -316,11 +316,7 @@
                 "setupAlreadyCompleted": "Setup has already been completed.",
                 "unableToSendWelcomeEmail": "Unable to send welcome email, your site will continue to function.",
                 "checkEmailConfigInstructions": "Please see {url} for instructions on configuring email.",
-                "notLoggedIn": "You are not logged in.",
-                "notTheBlogOwner": "You are not the site owner.",
-                "invalidTokenTypeHint": "Invalid token_type_hint given.",
-                "invalidTokenProvided": "Invalid token provided",
-                "tokenRevocationFailed": "Token revocation failed"
+                "notTheBlogOwner": "You are not the site owner."
             },
             "configuration": {
                 "invalidKey": "Invalid key"
