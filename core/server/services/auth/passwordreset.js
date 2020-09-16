@@ -48,7 +48,9 @@ function extractTokenParts(options) {
 
     if (!tokenParts) {
         return Promise.reject(new errors.UnauthorizedError({
-            message: i18n.t('errors.api.common.invalidTokenStructure')
+            message: i18n.t('errors.api.passwordReset.corruptedToken.message'),
+            context: i18n.t('errors.api.passwordReset.corruptedToken.context'),
+            help: i18n.t('errors.api.passwordReset.corruptedToken.help')
         }));
     }
 
@@ -86,16 +88,29 @@ function doReset(options, tokenParts, settingsAPI) {
                 throw new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')});
             }
 
-            let tokenIsCorrect = security.tokens.resetToken.compare({
+            let compareResult = security.tokens.resetToken.compare({
                 token: resetToken,
                 dbHash: dbHash,
                 password: user.get('password')
             });
 
-            if (!tokenIsCorrect) {
-                return Promise.reject(new errors.BadRequestError({
-                    message: i18n.t('errors.api.common.invalidTokenStructure')
-                }));
+            if (!compareResult.correct) {
+                let error;
+                if (compareResult.reason === 'expired' || compareResult.reason === 'invalid_expiry') {
+                    error = new errors.BadRequestError({
+                        message: i18n.t('errors.api.passwordReset.expired.message'),
+                        context: i18n.t('errors.api.passwordReset.expired.context'),
+                        help: i18n.t('errors.api.passwordReset.expired.help')
+                    });
+                } else {
+                    error = new errors.BadRequestError({
+                        message: i18n.t('errors.api.passwordReset.invalidToken.message'),
+                        context: i18n.t('errors.api.passwordReset.invalidToken.context'),
+                        help: i18n.t('errors.api.passwordReset.invalidToken.help')
+                    });
+                }
+
+                return Promise.reject(error);
             }
 
             return models.User.changePassword({
