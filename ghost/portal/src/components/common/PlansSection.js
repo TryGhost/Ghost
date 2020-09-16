@@ -173,7 +173,7 @@ export const PlanSectionStyles = `
         opacity: 0;
         transition: all 0.2s ease-in-out;
     }
-    
+
     .gh-portal-plan-section:not(.checked):hover::before {
         opacity: 0.5;
     }
@@ -195,7 +195,7 @@ export const PlanSectionStyles = `
     .gh-portal-plan-section:not(.checked).show-check-onhover:hover .checkmark:before {
         opacity: 0.2;
     }
-    
+
     .gh-portal-plan-section:not(.checked).show-check-onhover .checkmark:after {
         display: block;
         opacity: 0;
@@ -255,7 +255,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
         case 'Yearly':
             planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
             break;
-    
+
         default:
             break;
         }
@@ -289,7 +289,7 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, styl
     return (
         <section>
             <PlanLabel showLabel={showLabel} />
-            <div className={'gh-portal-plans-container ' + plansContainerClass}>
+            <div className={`gh-portal-plans-container ${plansContainerClass}`}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
             </div>
         </section>

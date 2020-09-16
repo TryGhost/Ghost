@@ -2,7 +2,7 @@ import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, isMemberComplimentary} from '../../utils/helpers';
+import {getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 
 const React = require('react');
@@ -117,7 +117,7 @@ const UserHeader = ({member, brandColor}) => {
     );
 };
 
-const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
+const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
     const PlanLabel = ({plan, isComplimentary}) => {
         const {amount = 0, currency_symbol: currencySymbol = '$', interval} = plan;
         let label = `${currencySymbol}${amount / 100}/${interval}`;
@@ -132,7 +132,7 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
     };
 
     const PlanUpdateButton = ({isComplimentary}) => {
-        if (isComplimentary) {
+        if (isComplimentary || hasOnlyFreePlan({site})) {
             return null;
         }
         return (
@@ -169,7 +169,7 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
 
     const subscription = getMemberSubscription({member});
     if (subscription) {
-        let isComplimentary = isMemberComplimentary({member});
+        let isComplimentary = isComplimentaryMember({member});
         const {
             plan,
             default_payment_card_last4: defaultCardLast4
@@ -190,7 +190,7 @@ const PaidAccountActions = ({member, openUpdatePlan, onEditBilling}) => {
     return null;
 };
 
-const AccountActions = ({member, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
+const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     const {name, email, subscribed} = member;
 
     let label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
@@ -207,7 +207,7 @@ const AccountActions = ({member, action, openEditProfile, openUpdatePlan, onEdit
                 <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openEditProfile(e)}>Edit</button>
             </section>
 
-            <PaidAccountActions member={member} onEditBilling={onEditBilling} openUpdatePlan={openUpdatePlan} />
+            <PaidAccountActions site={site} member={member} onEditBilling={onEditBilling} openUpdatePlan={openUpdatePlan} />
 
             <section>
                 <div className='gh-portal-list-detail'>
@@ -224,19 +224,25 @@ const AccountActions = ({member, action, openEditProfile, openUpdatePlan, onEdit
     );
 };
 
-const SubscribeButton = ({site, openSubscribe, brandColor}) => {
+const SubscribeButton = ({site, action, openSubscribe, brandColor}) => {
     const {is_stripe_configured: isStripeConfigured} = site;
 
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured || hasOnlyFreePlan({site})) {
         return null;
     }
-
+    const isRunning = ['checkoutPlan:running'].includes(action);
     return (
-        <ActionButton label="Subscribe now" onClick={() => openSubscribe()} brandColor={brandColor} style={{width: '100%'}} />
+        <ActionButton
+            isRunning={isRunning}
+            label="Subscribe now"
+            onClick={() => openSubscribe()}
+            brandColor={brandColor}
+            style={{width: '100%'}}
+        />
     );
 };
 
-const AccountWelcome = ({member, site, openSubscribe, brandColor}) => {
+const AccountWelcome = ({member, action, site, openSubscribe, brandColor}) => {
     const {name, firstname, email} = member;
     const {title: siteTitle} = site;
     const {is_stripe_configured: isStripeConfigured} = site;
@@ -255,7 +261,7 @@ const AccountWelcome = ({member, site, openSubscribe, brandColor}) => {
                 Hey <strong>{firstname || name || email}! </strong>
                 You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
             </p>
-            <SubscribeButton site={site} openSubscribe={openSubscribe} brandColor={brandColor} />
+            <SubscribeButton action={action} site={site} openSubscribe={openSubscribe} brandColor={brandColor} />
         </div>
     );
 };
@@ -318,7 +324,7 @@ const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor,
         <div className='gh-portal-account-main'>
             <UserHeader member={member} brandColor={brandColor} />
             <section>
-                <AccountWelcome member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
+                <AccountWelcome action={action} member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
                 <CancelContinueSubscription
                     member={member}
                     onAction={onAction}
@@ -328,6 +334,7 @@ const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor,
                 <AccountActions
                     action={action}
                     member={member}
+                    site={site}
                     openEditProfile={e => openEditProfile(e)}
                     onToggleSubscription={(e, subscribed) => onToggleSubscription(e, subscribed)}
                     openUpdatePlan={(e, subscribed) => openUpdatePlan(e, subscribed)}
@@ -362,6 +369,11 @@ export default class AccountHomePage extends React.Component {
             page: 'accountProfile',
             lastPage: 'accountHome'
         });
+    }
+
+    checkoutPlan(plan) {
+        const {onAction} = this.context;
+        onAction('checkoutPlan', {plan: plan.name});
     }
 
     openUpdatePlan() {

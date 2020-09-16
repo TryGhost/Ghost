@@ -4,6 +4,7 @@ import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
+import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
 
 const React = require('react');
 
@@ -259,11 +260,10 @@ class SignupPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, brandColor} = this.context;
-        const plans = this.getPlans();
+        const {action, site, brandColor} = this.context;
 
         let label = 'Continue';
-        if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
+        if (hasOnlyFreePlan({site})) {
             label = 'Sign up';
         }
 
@@ -293,7 +293,8 @@ class SignupPage extends React.Component {
     }
 
     renderPlans() {
-        const plansData = this.getPlans();
+        const {site} = this.context;
+        const plansData = getSitePlans({site});
 
         return (
             <div>
@@ -326,7 +327,7 @@ class SignupPage extends React.Component {
         const plansData = this.getPlans();
         const fields = this.getInputFields({state: this.state});
         let sectionClass = '';
-        
+
         if (plansData.length <= 1) {
             if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0) {
                 sectionClass = 'noplan';

@@ -37,9 +37,7 @@ function ActionButton({label = 'Back', brandColor = '#3eb0ef', hidden = false, o
     if (hidden) {
         return;
     }
-    let style = {
-        color: brandColor
-    };
+
     return (
         <button className='gh-portal-btn gh-portal-btn-back' onClick={e => onClick(e)}>
             <LeftArrowIcon /> {label}
