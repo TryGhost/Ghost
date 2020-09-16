@@ -619,14 +619,10 @@ const MobileStyles = `
 
 @keyframes popup-mobile {
     0% {
-        transform: translateY(40px);
         opacity: 0;
     }
-    75% {
-        opacity: 1.0;
-    }
     100%{
-        transform: translateY(0);
+        opacity: 1.0;
     }
 }
 `;
