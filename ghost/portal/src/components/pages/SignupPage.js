@@ -9,17 +9,6 @@ import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
 const React = require('react');
 
 export const SignupPageStyles = `
-    footer.gh-portal-signup-footer,
-    footer.gh-portal-signin-footer {
-        height: 112px;
-    }
-
-    .gh-portal-content.signup,
-    .gh-portal-content.signin {
-        max-height: calc(100vh - 12vw - 112px);
-        padding-bottom: 0;
-    }
-
     .gh-portal-signup-logo {
         position: relative;
         display: block;
@@ -59,16 +48,58 @@ export const SignupPageStyles = `
         margin-left: 4px;
     }
 
+    .gh-portal-content.signup {
+        background: linear-gradient(#fff 30%,hsla(0,0%,100%,0)),
+                    linear-gradient(hsla(0,0%,100%,0),#fff 70%) 0 100%,
+                    linear-gradient(#fff,transparent),
+                    linear-gradient(transparent,rgba(0,0,0,.08)) 0 100%;
+        background-repeat: no-repeat;
+        background-color: #fff;
+        background-size: 100% 40px,100% 40px,100% 14px,100% 14px;
+        background-attachment: local,local,scroll,scroll;
+    }
+
+    footer.gh-portal-signup-footer,
+    footer.gh-portal-signin-footer {
+        padding-top: 24px;
+        height: 132px;
+    }
+
+    .gh-portal-content.signup,
+    .gh-portal-content.signin {
+        max-height: calc(100vh - 12vw - 132px);
+        padding-bottom: 0;
+    }
+
     .gh-portal-content.signup .gh-portal-section {
-        margin-bottom: 24px;
+        margin-bottom: 0;
     }
 
-    .gh-portal-content.signup .gh-portal-section.noplan {
-        margin-bottom: 32px;
+    .gh-portal-content.signup.noplan {
+        margin-bottom: -8px;
     }
 
-    .gh-portal-content.signup .gh-portal-section.single-field {
-        margin-bottom: 20px;
+    .gh-portal-content.signup.single-field {
+        margin-bottom: 0;
+    }
+
+    .gh-portal-content.signup.single-field .gh-portal-input,
+    .gh-portal-content.signin .gh-portal-input {
+        margin-bottom: 8px;
+    }
+
+    .gh-portal-content.signup.single-field + .gh-portal-signup-footer,
+    footer.gh-portal-signin-footer {
+        padding-top: 12px;
+    }
+
+    .gh-portal-content.signin .gh-portal-section {
+        margin-bottom: 0;
+    }
+
+    .gh-portal-content.signup.single-field + footer.gh-portal-signup-footer,
+    .gh-portal-content.signin + footer.gh-portal-signin-footer {
+        height: 120px;
     }
 `;
 
@@ -324,24 +355,11 @@ class SignupPage extends React.Component {
     }
 
     renderForm() {
-        const plansData = this.getPlans();
         const fields = this.getInputFields({state: this.state});
-        let sectionClass = '';
-
-        if (plansData.length <= 1) {
-            if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0) {
-                sectionClass = 'noplan';
-                if (fields.length === 1) {
-                    sectionClass = 'single-field';
-                }
-            } else {
-                sectionClass = 'singleplan';
-            }
-        }
 
         return (
             <section>
-                <div className={'gh-portal-section ' + sectionClass}>
+                <div className='gh-portal-section'>
                     <InputForm
                         fields={fields}
                         onChange={(e, field) => this.handleInputChange(e, field)}
@@ -381,9 +399,24 @@ class SignupPage extends React.Component {
     }
 
     render() {
+        const plansData = this.getPlans();
+        const fields = this.getInputFields({state: this.state});
+        let sectionClass = '';
+
+        if (plansData.length <= 1) {
+            if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0) {
+                sectionClass = 'noplan';
+                if (fields.length === 1) {
+                    sectionClass = 'single-field';
+                }
+            } else {
+                sectionClass = 'singleplan';
+            }
+        }
+        
         return (
             <div>
-                <div className='gh-portal-content signup'>
+                <div className={'gh-portal-content signup ' + sectionClass}>
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>
