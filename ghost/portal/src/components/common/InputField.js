@@ -2,20 +2,24 @@ import React from 'react';
 
 export const InputFieldStyles = `
     .gh-portal-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        
         display: block;
         box-sizing: border-box;
         font-size: 1.5rem;
         color: inherit;
         background: var(--white);
         outline: none;
-        border: none;
+        border: 1px solid var(--grey12);
         border-radius: 3px;
         width: 100%;
         height: 40px;
         padding: 0 12px;
         margin-bottom: 18px;
         letter-spacing: 0.2px;
-        box-shadow: 0px 0px 0px 1px #e1e1e1 , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
         transition: all 0.25s ease-in-out;
     }
 
