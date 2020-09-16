@@ -285,7 +285,12 @@ describe('Authentication API v3', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(401);
+                .expect(401)
+                .then((res) => {
+                    should.exist(res.body.errors);
+                    res.body.errors[0].type.should.eql('UnauthorizedError');
+                    res.body.errors[0].message.should.eql('Invalid token structure');
+                });
         });
 
         it('reset password: generate reset token', function () {
