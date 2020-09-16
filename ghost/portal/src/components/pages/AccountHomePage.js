@@ -234,7 +234,7 @@ const SubscribeButton = ({site, action, openSubscribe, brandColor}) => {
     return (
         <ActionButton
             isRunning={isRunning}
-            label="Subscribe now"
+            label="Upgrade now"
             onClick={() => openSubscribe()}
             brandColor={brandColor}
             style={{width: '100%'}}
