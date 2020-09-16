@@ -556,15 +556,15 @@
   dependencies:
     bluebird "3.7.2"
 
-"@tryghost/security@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.1.0.tgz#ce78111dd6febb7705cf62d6838b0d8cdfb7df9f"
-  integrity sha512-jDiLbsN9zCAZhGIibCb92Ym30BBWzVSZx2DBPL+Ige8b95pefEx6d8humbCjXhMIcJS5dlaMw4Pk70mXLCXCvQ==
+"@tryghost/security@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.0.tgz#3f2ffa10bd933a21b19f659be9636146fb74a790"
+  integrity sha512-plCxkYWD22mCQowH6boGakc2svv6Xqc7W1gJL007baBHHFR4XvWigseTxit1sb6FsI+GpzV16lBLtUUNiYTQTA==
   dependencies:
-    "@tryghost/string" "0.1.10"
+    "@tryghost/string" "0.1.11"
     bcryptjs "2.4.3"
     bluebird "3.7.2"
-    lodash "4.17.19"
+    lodash "4.17.20"
 
 "@tryghost/session-service@0.1.8":
   version "0.1.8"
@@ -581,13 +581,6 @@
     bluebird "3.7.2"
     ghost-ignition "4.2.2"
     lodash "4.17.19"
-
-"@tryghost/string@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.10.tgz#6fb6a16cc628e6c22397c5889a7a85c29171374a"
-  integrity sha512-TqkuNTvM6zOHIugAc3lnok4U4e4kKLvZz/Oo5Kka1jMHe70SrJZ3X1ljZEn7RloV3PdHmLUE5zN3Zvj2aC1avg==
-  dependencies:
-    unidecode "^0.1.8"
 
 "@tryghost/string@0.1.11":
   version "0.1.11"

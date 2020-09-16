@@ -302,7 +302,6 @@
         },
         "api": {
             "common": {
-                "invalidTokenStructure": "Invalid token structure",
                 "notImplemented": "The server does not support the functionality required to fulfill the request."
             },
             "authentication": {
@@ -317,6 +316,23 @@
                 "unableToSendWelcomeEmail": "Unable to send welcome email, your site will continue to function.",
                 "checkEmailConfigInstructions": "Please see {url} for instructions on configuring email.",
                 "notTheBlogOwner": "You are not the site owner."
+            },
+            "passwordReset": {
+                "expired": {
+                    "message": "Cannot reset password.",
+                    "context": "Password reset link expired.",
+                    "help": "Request a new password reset via the login form."
+                },
+                "invalidToken": {
+                    "message": "Cannot reset password.",
+                    "context": "Password reset link has already been used.",
+                    "help": "Request a new password reset via the login form."
+                },
+                "corruptedToken": {
+                    "message": "Cannot reset password.",
+                    "context": "Invalid password reset link.",
+                    "help": "Check if password reset link has been fully copied or request new password reset via the login form."
+                }
             },
             "configuration": {
                 "invalidKey": "Invalid key"
