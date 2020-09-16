@@ -20,7 +20,7 @@ const React = require('react');
 
 function getConfirmationPageTitle({confirmationType}) {
     if (confirmationType === 'changePlan') {
-        return 'Change plan';
+        return 'Confirm subscription';
     } else if (confirmationType === 'cancel') {
         return 'Confirm cancellation';
     } else if (confirmationType === 'subscribe') {
@@ -102,7 +102,7 @@ const CancelContinueSubscription = ({member, onCancelContinueSubscription, onAct
 };
 
 const Header = ({member, lastPage, brandColor, onBack, showConfirmation, confirmationType}) => {
-    let title = member.paid ? 'Choose plan' : 'Choose your plan';
+    let title = member.paid ? 'Change plan' : 'Choose a plan';
     if (showConfirmation) {
         title = getConfirmationPageTitle({confirmationType});
     }
@@ -115,35 +115,57 @@ const Header = ({member, lastPage, brandColor, onBack, showConfirmation, confirm
 };
 
 const PlanConfirmation = ({action, member, plan, type, brandColor, onConfirm}) => {
-    let actionDescription = '';
-    let confirmMessage = 'Are you sure ?';
-    if (type === 'changePlan') {
-        actionDescription = `You are switching to a ${plan.name} plan with pricing ${plan.currency} ${plan.price} / ${plan.type} `;
-    } else if (type === 'subscribe') {
-        actionDescription = `You are subscribing to a ${plan.name} plan with pricing ${plan.currency} ${plan.price} / ${plan.type} `;
-    } else if (type === 'cancel') {
-        const subscription = getMemberSubscription({member});
-        actionDescription = `If you confirm and end your subscription now, you can still access it until ${getDateString(subscription.current_period_end)}`;
-    }
+    const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
     const label = 'Confirm';
-    return (
-        <div>
-            <div> {actionDescription} </div>
-            <div> {confirmMessage} </div>
-            <ActionButton
-                onClick={e => onConfirm(e, plan)}
-                isRunning={isRunning}
-                isPrimary={true}
-                brandColor={brandColor}
-                label={label}
-                style={{
-                    width: '100%',
-                    height: '40px'
-                }}
-            />
-        </div>
-    );
+    if (type === 'changePlan') {
+        return (
+            <div>
+                <div className='gh-portal-list outline mb6'>
+                    <section>
+                        <div className='gh-portal-list-detail'>
+                            <h3>Account</h3>
+                            <p>{member.email}</p>
+                        </div>
+                    </section>
+                    <section>
+                        <div className='gh-portal-list-detail'>
+                            <h3>Price</h3>
+                            <p>{plan.currency}{plan.price}/{plan.type} – Starting {getDateString(subscription.current_period_end)}</p>
+                        </div>
+                    </section>
+                </div>
+                <ActionButton
+                    onClick={e => onConfirm(e, plan)}
+                    isRunning={isRunning}
+                    isPrimary={true}
+                    brandColor={brandColor}
+                    label={label}
+                    style={{
+                        width: '100%',
+                        height: '40px'
+                    }}
+                />
+            </div>
+        );
+    } else {
+        return (
+            <div>
+                <p>If you confirm and end your subscription now, you can still access it until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
+                <ActionButton
+                    onClick={e => onConfirm(e, plan)}
+                    isRunning={isRunning}
+                    isPrimary={true}
+                    brandColor={brandColor}
+                    label={label}
+                    style={{
+                        width: '100%',
+                        height: '40px'
+                    }}
+                />
+            </div>
+        );
+    }
 };
 
 const PlanChooser = ({plans, selectedPlan, errors, member, onAction, onCancelContinueSubscription, action, brandColor, onPlanSelect}) => {
@@ -178,7 +200,7 @@ const PlanMain = ({
         );
     }
     return (
-        <PlanConfirmation {...{action, member, plan: confirmationPlan, type: confirmationType, onConfirm}}/>
+        <PlanConfirmation {...{action, member, plan: confirmationPlan, type: confirmationType, onConfirm, brandColor}}/>
     );
 };
 export default class AccountPlanPage extends React.Component {
