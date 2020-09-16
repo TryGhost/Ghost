@@ -99,7 +99,7 @@ export default class SigninPage extends React.Component {
     renderForm() {
         return (
             <section>
-                <div className='gh-portal-section form'>
+                <div className='gh-portal-section'>
                     <InputForm
                         fields={this.getInputFields({state: this.state})}
                         onChange={(e, field) => this.handleInputChange(e, field)}
