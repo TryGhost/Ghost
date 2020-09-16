@@ -30,13 +30,15 @@ export function createParserPlugins(_options = {}) {
 
     // HELPERS -----------------------------------------------------------------
 
-    function _readFigCaptionFromNode(node, payload) {
-        let figcaption = node.querySelector('figcaption');
+    function _readFigCaptionFromNode(node, payload, selector = 'figcaption') {
+        let figcaptions = Array.from(node.querySelectorAll(selector));
 
-        if (figcaption) {
-            let cleanHtml = cleanBasicHtml(figcaption.innerHTML, options);
-            payload.caption = payload.caption ? `${payload.caption} / ${cleanHtml}` : cleanHtml;
-            figcaption.remove(); // cleanup this processed element
+        if (figcaptions.length) {
+            figcaptions.forEach((caption) => {
+                let cleanHtml = cleanBasicHtml(caption.innerHTML, options);
+                payload.caption = payload.caption ? `${payload.caption} / ${cleanHtml}` : cleanHtml;
+                caption.remove(); // cleanup this processed element
+            });
         }
     }
 
@@ -58,6 +60,12 @@ export function createParserPlugins(_options = {}) {
             image.height = node.height;
         } else if (node.dataset && node.dataset.height) {
             image.height = parseInt(node.dataset.height, 10);
+        }
+
+        if ((!node.width && !node.height) && node.getAttribute('data-image-dimensions')) {
+            const [, width, height] = (/^(\d*)x(\d*)$/gi).exec(node.getAttribute('data-image-dimensions'));
+            image.width = parseInt(width, 10);
+            image.height = parseInt(height, 10);
         }
 
         if (node.alt) {
@@ -233,7 +241,7 @@ export function createParserPlugins(_options = {}) {
 
         let payload = {};
 
-        // These galleries exist in multiple divs. Read the images and cation from the first one...
+        // These galleries exist in multiple divs. Read the images and caption from the first one...
         let imgs = Array.from(node.querySelectorAll('img'));
         _readFigCaptionFromNode(node, payload);
 
@@ -247,6 +255,42 @@ export function createParserPlugins(_options = {}) {
             // remove nodes as we go so that they don't go through the parser
             currentNode.remove();
         }
+
+        // Process nodes into the payload
+        payload.images = imgs.map(_readGalleryImageFromNode);
+
+        let cardSection = builder.createCardSection('gallery', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
+    function sqsGalleriesToCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'DIV' || !node.className.match(/sqs-gallery-container/) || node.className.match(/summary-/)) {
+            return;
+        }
+
+        let payload = {};
+
+        // Each image exists twice...
+        // The first image is wrapped in `<noscript>`
+        // The second image contains image dimensions but the src property needs to be taken from `data-src`.
+        let imgs = Array.from(node.querySelectorAll('img.thumb-image'));
+
+        imgs = imgs.map((img) => {
+            if (!img.getAttribute('src')) {
+                if (img.previousSibling.tagName === 'NOSCRIPT' && img.previousSibling.getElementsByTagName('img').length) {
+                    const prevNode = img.previousSibling;
+                    img.setAttribute('src', img.getAttribute('data-src'));
+                    prevNode.remove();
+                } else {
+                    return;
+                }
+            }
+
+            return img;
+        });
+
+        _readFigCaptionFromNode(node, payload, '.meta-title');
 
         // Process nodes into the payload
         payload.images = imgs.map(_readGalleryImageFromNode);
@@ -489,6 +533,7 @@ export function createParserPlugins(_options = {}) {
         kgGalleryCardToCard,
         figureBlockquoteToEmbedCard, // I think these can contain images
         grafGalleryToCard,
+        sqsGalleriesToCard,
         figureToImageCard,
         imgToCard,
         hrToCard,
