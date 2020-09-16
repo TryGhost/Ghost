@@ -6,7 +6,7 @@ export const site = {
     accent_color: '#AB19E4',
     url: 'http://localhost:2368/',
     plans: {
-        monthly: 12,
+        monthly: 5,
         yearly: 110,
         currency: 'USD',
         currency_symbol: '$'
@@ -15,7 +15,7 @@ export const site = {
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
-    portal_plans: ['free', 'yearly'],
+    portal_plans: ['free', 'monthly', 'yearly'],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
     portal_button_style: 'icon-and-text',
