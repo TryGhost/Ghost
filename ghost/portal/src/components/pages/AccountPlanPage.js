@@ -106,6 +106,12 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
     const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
     const label = 'Confirm';
+    let planStartDate = getDateString(subscription.current_period_end);
+    const currentActivePlan = getMemberActivePlan({member});
+    if (currentActivePlan.type !== plan.type) {
+        planStartDate = 'immediately';
+    }
+    const planStartMessage = `${plan.currency}${plan.price}/${plan.type} – Starting ${planStartDate}`;
     if (type === 'changePlan') {
         return (
             <div>
@@ -119,7 +125,7 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
                     <section>
                         <div className='gh-portal-list-detail'>
                             <h3>Price</h3>
-                            <p>{plan.currency}{plan.price}/{plan.type} – Starting {getDateString(subscription.current_period_end)}</p>
+                            <p>{planStartMessage}</p>
                         </div>
                     </section>
                 </div>
