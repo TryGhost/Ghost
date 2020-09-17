@@ -1,29 +1,38 @@
-const jwt = require('jsonwebtoken');
-
 /**
- * @typedef { import('jsonwebtoken').Secret } Secret
  * @typedef { import('nodemailer').Transporter } MailTransporter
  * @typedef { import('nodemailer').SentMessageInfo } SentMessageInfo
- * @typedef { string } JSONWebToken
  * @typedef { string } URL
  */
 
+/**
+ * @template T
+ * @template D
+ * @typedef {Object} TokenProvider<T, D>
+ * @prop {(data: D) => Promise<T>} create
+ * @prop {(token: T) => Promise<D>} validate
+ */
+
+/**
+ * MagicLink
+ * @template Token
+ * @template TokenData
+ */
 class MagicLink {
     /**
      * @param {object} options
      * @param {MailTransporter} options.transporter
-     * @param {Secret} options.secret
-     * @param {(token: JSONWebToken, type: string) => URL} options.getSigninURL
+     * @param {TokenProvider<Token, TokenData>} options.tokenProvider
+     * @param {(token: Token, type: string) => URL} options.getSigninURL
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
      */
     constructor(options) {
-        if (!options || !options.transporter || !options.secret || !options.getSigninURL) {
-            throw new Error('Missing options. Expects {transporter, secret, getSigninURL}');
+        if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
+            throw new Error('Missing options. Expects {transporter, tokenProvider, getSigninURL}');
         }
         this.transporter = options.transporter;
-        this.secret = options.secret;
+        this.tokenProvider = options.tokenProvider;
         this.getSigninURL = options.getSigninURL;
         this.getText = options.getText || defaultGetText;
         this.getHTML = options.getHTML || defaultGetHTML;
@@ -35,15 +44,12 @@ class MagicLink {
      *
      * @param {object} options
      * @param {string} options.email - The email to send magic link to
-     * @param {object} options.tokenData - The data for token
+     * @param {TokenData} options.tokenData - The data for token
      * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
-     * @returns {Promise<{token: JSONWebToken, info: SentMessageInfo}>}
+     * @returns {Promise<{token: Token, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
-        const token = jwt.sign(options.tokenData, this.secret, {
-            algorithm: 'HS256',
-            expiresIn: '10m'
-        });
+        const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
 
@@ -63,15 +69,12 @@ class MagicLink {
      * getMagicLink
      *
      * @param {object} options
-     * @param {object} options.tokenData - The data for token
+     * @param {TokenData} options.tokenData - The data for token
      * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @returns {Promise<URL>} - signin URL
      */
     async getMagicLink(options) {
-        const token = jwt.sign(options.tokenData, this.secret, {
-            algorithm: 'HS256',
-            expiresIn: '10m'
-        });
+        const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
 
@@ -81,15 +84,11 @@ class MagicLink {
     /**
      * getDataFromToken
      *
-     * @param {JSONWebToken} token - The token to decode
-     * @returns {Promise<object>} data - The data object associated with the magic link
+     * @param {Token} token - The token to decode
+     * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
     async getDataFromToken(token) {
-        /** @type {object} */
-        const tokenData = (jwt.verify(token, this.secret, {
-            algorithms: ['HS256'],
-            maxAge: '10m'
-        }));
+        const tokenData = await this.tokenProvider.validate(token);
         return tokenData;
     }
 }
