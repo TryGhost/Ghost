@@ -49,10 +49,12 @@ DataGenerator.Content = {
             html: '<!--kg-card-begin: markdown--><h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n<!--kg-card-end: markdown-->',
             plaintext: 'testing\nmctesters\n\n * test\n * line\n * items',
             feature_image: 'http://placekitten.com/500/200',
-            meta_description: 'test stuff',
             published_at: new Date('2015-01-03'),
             featured: true,
-            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
+            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d',
+            posts_meta: {
+                meta_description: 'test stuff'
+            }
         },
         {
             id: ObjectId.generate(),
