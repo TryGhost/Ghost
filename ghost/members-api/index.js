@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const {Router} = require('express');
 const body = require('body-parser');
+const JWTTokenProvider = require('@tryghost/magic-link/JWTTokenProvider');
 const MagicLink = require('@tryghost/magic-link');
 const StripePaymentProcessor = require('./lib/stripe');
 const Tokens = require('./lib/tokens');
@@ -93,7 +94,7 @@ module.exports = function MembersApi({
 
     const magicLinkService = new MagicLink({
         transporter,
-        secret,
+        tokenProvider: new JWTTokenProvider(secret),
         getSigninURL,
         getText,
         getHTML,
