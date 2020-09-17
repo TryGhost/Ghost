@@ -19,7 +19,7 @@ module.exports = {
                 });
             }
 
-            const magicLink = membersService.api.getMagicLink(model.get('email'));
+            const magicLink = await membersService.api.getMagicLink(model.get('email'));
 
             return {
                 member_id: model.get('id'),
