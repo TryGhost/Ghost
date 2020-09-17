@@ -10,7 +10,7 @@ export const InputFieldStyles = `
         box-sizing: border-box;
         font-size: 1.5rem;
         color: inherit;
-        background: var(--white);
+        background: transparent;
         outline: none;
         border: 1px solid var(--grey12);
         border-radius: 3px;
