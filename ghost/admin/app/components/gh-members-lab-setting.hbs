@@ -140,7 +140,7 @@
         {{/if}}
     </section>
 
-    {{#if this.config.enableDeveloperExperiments}}
+    {{#if (or this.config.enableDeveloperExperiments this.config.portal)}}
         <section class="bb b--whitegrey pa5">
             <div class="flex justify-between">
                 <div>
