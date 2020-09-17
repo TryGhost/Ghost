@@ -42,7 +42,7 @@ module.exports = function content(options = {}) {
         this.html = '';
     }
 
-    if (!this.access && !!config.get('enableDeveloperExperiments')) {
+    if (!this.access && (!!config.get('enableDeveloperExperiments') || !!config.get('portal'))) {
         return restrictedCta.apply(self, args);
     }
 
