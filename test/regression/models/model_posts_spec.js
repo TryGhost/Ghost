@@ -53,6 +53,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -179,6 +182,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -697,6 +703,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -1172,6 +1181,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -1354,6 +1366,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -1592,6 +1607,9 @@ describe('Post Model', function () {
                 })
                 .then(function () {
                     return testUtils.truncate('posts');
+                })
+                .then(function () {
+                    return testUtils.truncate('posts_meta');
                 });
         });
 

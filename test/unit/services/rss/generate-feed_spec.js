@@ -20,10 +20,11 @@ describe('RSS: Generate Feed', function () {
             return post.status === 'published' && post.type === 'post';
         });
 
+        posts[2].meta_description = 'test stuffs';
+
         _.each(posts, function (post) {
             post.url = '/' + post.slug + '/';
             post.primary_author = {name: 'Joe Bloggs'};
-            post.meta_description = post.posts_meta && post.posts_meta.meta_description;
         });
     });
 
