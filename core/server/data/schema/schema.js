@@ -486,7 +486,7 @@ module.exports = {
     },
     tokens: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        token: {type: 'string', maxlength: 24, nullable: false, index: true},
+        token: {type: 'string', maxlength: 32, nullable: false, index: true},
         data: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false}
