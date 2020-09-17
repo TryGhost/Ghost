@@ -6,7 +6,7 @@ const FormInput = ({field, onChange, onBlur}) => {
         return null;
     }
     return (
-        <div>
+        <>
             <InputField
                 label = {field.label}
                 type={field.type}
@@ -17,7 +17,7 @@ const FormInput = ({field, onChange, onBlur}) => {
                 onBlur={e => onBlur(e, field)}
                 errorMessage={field.errorMessage}
             />
-        </div>
+        </>
     );
 };
 
