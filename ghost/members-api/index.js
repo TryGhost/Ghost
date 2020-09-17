@@ -105,17 +105,17 @@ module.exports = function MembersApi({
         Member
     });
 
-    async function sendEmailWithMagicLink({email, requestedType, payload, options = {forceEmailType: false}}) {
-        if (options.forceEmailType) {
-            return magicLinkService.sendMagicLink({email, payload, subject: email, type: requestedType});
+    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}}) {
+        let type = requestedType;
+        if (!options.forceEmailType) {
+            const member = await users.get({email});
+            if (member) {
+                type = 'signin';
+            } else if (type !== 'subscribe') {
+                type = 'signup';
+            }
         }
-        const member = await users.get({email});
-        if (member) {
-            return magicLinkService.sendMagicLink({email, payload, subject: email, type: 'signin'});
-        } else {
-            const type = requestedType === 'subscribe' ? 'subscribe' : 'signup';
-            return magicLinkService.sendMagicLink({email, payload, subject: email, type});
-        }
+        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email}, tokenData)});
     }
 
     function getMagicLink(email) {
@@ -123,8 +123,7 @@ module.exports = function MembersApi({
     }
 
     async function getMemberDataFromMagicLinkToken(token) {
-        const email = await magicLinkService.getUserFromToken(token);
-        const {labels = [], name = '', oldEmail} = await magicLinkService.getPayloadFromToken(token);
+        const {email, labels = [], name = '', oldEmail} = await magicLinkService.getDataFromToken(token);
         if (!email) {
             return null;
         }
@@ -170,7 +169,9 @@ module.exports = function MembersApi({
             }));
         }
 
-        const member = await getMemberIdentityData(email);
+        const member = await users.get(email, {
+            withRelated: ['labels']
+        });
 
         if (!member) {
             return Promise.reject(new common.errors.NotFoundError({
@@ -198,7 +199,6 @@ module.exports = function MembersApi({
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
         const {email, emailType, oldEmail} = req.body;
-        const payload = {};
 
         if (!email) {
             res.writeHead(400);
@@ -214,18 +214,16 @@ module.exports = function MembersApi({
                     });
                 }
             }
-            let extraPayload = {};
+
             if (!allowSelfSignup) {
                 const member = await users.get({email});
                 if (member) {
-                    extraPayload = _.pick(req.body, ['oldEmail']);
-                    Object.assign(payload, extraPayload);
-                    await sendEmailWithMagicLink({email, requestedType: emailType, payload});
+                    const tokenData = _.pick(req.body, ['oldEmail']);
+                    await sendEmailWithMagicLink({email, tokenData, requestedType: emailType});
                 }
             } else {
-                extraPayload = _.pick(req.body, ['labels', 'name', 'oldEmail']);
-                Object.assign(payload, extraPayload);
-                await sendEmailWithMagicLink({email, requestedType: emailType, payload});
+                const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
+                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType});
             }
             res.writeHead(201);
             return res.end('Created.');

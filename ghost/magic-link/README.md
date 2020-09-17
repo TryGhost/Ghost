@@ -59,9 +59,9 @@ async function main() {
     /**
      *  POST /signin
      */
-    const {token, info} = await service.sendMagicLink({
+    const {url, info} = await service.sendMagicLink({
         email: 'test@example.com',
-        user: {
+        tokenData: {
             id: 'some-id'
         }
     });
@@ -74,7 +74,7 @@ async function main() {
     /**
      *  GET /signin
      */
-    const user = await service.getUserFromToken(token);
+    const data = await service.getDataFromToken(token);
     // createSomeKindOfSession(user);
 }
 
