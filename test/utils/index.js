@@ -65,11 +65,6 @@ fixtures = {
             return models.Tag.add(tag, module.exports.context.internal);
         })
             .then(function () {
-                return Promise.map(DataGenerator.forKnex.posts_meta, function (postMeta) {
-                    return models.PostsMeta.add(postMeta, module.exports.context.internal);
-                });
-            })
-            .then(function () {
                 return Promise.each(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
                     let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
                     let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
@@ -86,6 +81,11 @@ fixtures = {
                     post.authors = postAuthorsRelations;
 
                     return models.Post.add(post, module.exports.context.internal);
+                });
+            })
+            .then(function () {
+                return Promise.map(DataGenerator.forKnex.posts_meta, function (postMeta) {
+                    return models.PostsMeta.add(postMeta, module.exports.context.internal);
                 });
             });
     },
