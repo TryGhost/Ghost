@@ -63,24 +63,31 @@ fixtures = {
     insertPostsAndTags: function insertPostsAndTags() {
         return Promise.map(DataGenerator.forKnex.tags, function (tag) {
             return models.Tag.add(tag, module.exports.context.internal);
-        }).then(function () {
-            return Promise.each(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
-                let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
-                let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
-
-                postTagRelations = _.map(postTagRelations, function (postTagRelation) {
-                    return _.find(DataGenerator.forKnex.tags, {id: postTagRelation.tag_id});
+        })
+            .then(function () {
+                return Promise.map(DataGenerator.forKnex.posts_meta, function (postMeta) {
+                    return models.PostsMeta.add(postMeta, module.exports.context.internal);
                 });
+            })
+            .then(function () {
+                return Promise.each(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
+                    let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
+                    let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
 
-                postAuthorsRelations = _.map(postAuthorsRelations, function (postAuthorsRelation) {
-                    return _.find(DataGenerator.forKnex.users, {id: postAuthorsRelation.author_id});
+                    postTagRelations = _.map(postTagRelations, function (postTagRelation) {
+                        return _.find(DataGenerator.forKnex.tags, {id: postTagRelation.tag_id});
+                    });
+
+                    postAuthorsRelations = _.map(postAuthorsRelations, function (postAuthorsRelation) {
+                        return _.find(DataGenerator.forKnex.users, {id: postAuthorsRelation.author_id});
+                    });
+
+                    post.tags = postTagRelations;
+                    post.authors = postAuthorsRelations;
+
+                    return models.Post.add(post, module.exports.context.internal);
                 });
-
-                post.tags = postTagRelations;
-                post.authors = postAuthorsRelations;
-                return models.Post.add(post, module.exports.context.internal);
             });
-        });
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {

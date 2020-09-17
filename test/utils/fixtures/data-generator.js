@@ -51,10 +51,7 @@ DataGenerator.Content = {
             feature_image: 'http://placekitten.com/500/200',
             published_at: new Date('2015-01-03'),
             featured: true,
-            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d',
-            posts_meta: {
-                meta_description: 'test stuff'
-            }
+            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
         },
         {
             id: ObjectId.generate(),
@@ -807,6 +804,14 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
+    const posts_meta = [
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[2].id,
+            meta_description: 'test stuff'
+        }
+    ];
+
     // this is not pretty, but the fastest
     // it relies on the created posts/tags
     const posts_tags = [
@@ -992,6 +997,7 @@ DataGenerator.forKnex = (function () {
         invites,
         posts,
         tags,
+        posts_meta,
         posts_tags,
         posts_authors,
         roles,
