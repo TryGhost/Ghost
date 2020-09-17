@@ -68,6 +68,13 @@ Post = ghostBookshelf.Model.extend({
         posts_meta: 'posts_meta'
     },
 
+    relationsMeta: {
+        posts_meta: {
+            targetTableName: 'posts_meta',
+            foreignKey: 'post_id'
+        }
+    },
+
     /**
      * The base model keeps only the columns, which are defined in the schema.
      * We have to add the relations on top, otherwise bookshelf-relations

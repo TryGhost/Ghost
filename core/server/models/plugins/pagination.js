@@ -90,6 +90,27 @@ paginationUtils = {
         }
 
         return pagination;
+    },
+
+    /**
+     *
+     * @param {Bookshelf.Model} model instance of Bookshelf model
+     * @param {string} propertyName property to be inspected and included in the relation
+     */
+    handleRelation: function handleRelation(model, propertyName) {
+        const tableName = _.result(model.constructor.prototype, 'tableName');
+
+        const targetTable = propertyName.includes('.') && propertyName.split('.')[0];
+
+        if (targetTable && targetTable !== tableName) {
+            if (!model.eagerLoad) {
+                model.eagerLoad = [];
+            }
+
+            if (!model.eagerLoad.includes(targetTable)) {
+                model.eagerLoad.push(targetTable);
+            }
+        }
     }
 };
 
@@ -183,6 +204,8 @@ pagination = function pagination(bookshelf) {
                             self.query('orderBy', 'count__posts', direction);
                         } else {
                             self.query('orderBy', property, direction);
+
+                            paginationUtils.handleRelation(self, property);
                         }
                     });
                 } else if (options.orderRaw) {

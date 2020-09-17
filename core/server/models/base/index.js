@@ -34,6 +34,8 @@ ghostBookshelf = bookshelf(db.knex);
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 
+ghostBookshelf.plugin(plugins.eagerLoad);
+
 // Add committed/rollback events.
 ghostBookshelf.plugin(plugins.transactionEvents);
 

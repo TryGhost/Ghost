@@ -1,4 +1,5 @@
 module.exports = {
+    eagerLoad: require('./eager-load'),
     filter: require('./filter'),
     order: require('./order'),
     customQuery: require('./custom-query'),
