@@ -114,7 +114,7 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
     const planStartMessage = `${plan.currency}${plan.price}/${plan.type} – Starting ${planStartDate}`;
     if (type === 'changePlan') {
         return (
-            <div>
+            <>
                 <div className='gh-portal-list outline mb6'>
                     <section>
                         <div className='gh-portal-list-detail'>
@@ -140,11 +140,11 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
                         height: '40px'
                     }}
                 />
-            </div>
+            </>
         );
     } else {
         return (
-            <div>
+            <>
                 <p>If you confirm and end your subscription now, you can still access it until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
                 <ActionButton
                     onClick={e => onConfirm(e, plan)}
@@ -157,7 +157,7 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
                         height: '40px'
                     }}
                 />
-            </div>
+            </>
         );
     }
 };
@@ -380,7 +380,7 @@ export default class AccountPlanPage extends React.Component {
         const plans = this.plans;
         const {selectedPlan, showConfirmation, confirmationPlan, confirmationType} = this.state;
         return (
-            <div>
+            <>
                 <div className='gh-portal-content'>
                     <Header
                         lastPage={lastPage}
@@ -397,7 +397,7 @@ export default class AccountPlanPage extends React.Component {
                         onPlanCheckout = {(e, name) => this.onPlanCheckout(e, name)}
                     />
                 </div>
-            </div>
+            </>
         );
     }
 }
