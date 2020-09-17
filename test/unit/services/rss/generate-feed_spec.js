@@ -23,6 +23,7 @@ describe('RSS: Generate Feed', function () {
         _.each(posts, function (post) {
             post.url = '/' + post.slug + '/';
             post.primary_author = {name: 'Joe Bloggs'};
+            post.meta_description = post.posts_meta && post.posts_meta.meta_description;
         });
     });
 
