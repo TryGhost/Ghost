@@ -295,7 +295,7 @@ export default class AccountPlanPage extends React.Component {
             const subscriptionId = subscriptions[0].id;
             onAction('updateSubscription', {plan: confirmationPlan.name, subscriptionId, cancelAtPeriodEnd: false});
         } else {
-            onAction('checkoutPlan', {plan: selectedPlan.name});
+            onAction('checkoutPlan', {plan: selectedPlan});
         }
     }
 
