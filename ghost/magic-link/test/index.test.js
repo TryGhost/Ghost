@@ -27,7 +27,9 @@ describe('MagicLink', function () {
 
             const args = {
                 email: 'test@example.com',
-                subject: '420',
+                tokenData: {
+                    id: '420'
+                },
                 type: 'blazeit'
             };
             const {token} = await service.sendMagicLink(args);
@@ -52,7 +54,7 @@ describe('MagicLink', function () {
         });
     });
 
-    describe('#getUserFromToken', function () {
+    describe('#getDataFromToken', function () {
         it('Returns the user data which from the token that was encoded by #sendMagicLink', async function () {
             const options = {
                 secret,
@@ -67,13 +69,15 @@ describe('MagicLink', function () {
 
             const args = {
                 email: 'test@example.com',
-                subject: '420'
+                tokenData: {
+                    id: '420'
+                }
             };
 
             const {token} = await service.sendMagicLink(args);
-            const subject = service.getUserFromToken(token);
+            const data = await service.getDataFromToken(token);
 
-            should.deepEqual(subject, args.subject);
+            should.deepEqual(data.id, args.tokenData.id);
         });
     });
 });
