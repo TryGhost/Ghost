@@ -12,24 +12,13 @@ or
 ## Usage
 
 ```js
-const util = require('util');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const MagicLink = require('@tryghost/magic-link');
+const JWTTokenProvider = require('@tryghost/magic-link/JWTTokenProvider');
 
 async function main() {
-    const generateKeyPair = util.promisify(crypto.generateKeyPair);
-    const {publicKey, privateKey} = await generateKeyPair('rsa', {
-        modulusLength: 4096,
-        publicKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem'
-        },
-        privateKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem'
-        }
-    });
+    const jwtSecret = crypto.randomBytes(16).toString('hex');
 
     // https://nodemailer.com/about/#example
     const testAccount = await nodemailer.createTestAccount();
@@ -48,9 +37,8 @@ async function main() {
     });
 
     const service = MagicLink({
+        tokenProvider: new JWTTokenProvider(jwtSecret),
         transporter,
-        publicKey,
-        privateKey,
         getSigninURL(token) {
             return `http://example.com/signin?token=${token}`
         }
