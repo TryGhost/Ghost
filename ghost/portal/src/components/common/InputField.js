@@ -42,12 +42,11 @@ export const InputFieldStyles = `
     }
 
     .gh-portal-input:focus {
-        border: none;
-        box-shadow: 0px 0px 0px 1px var(--brandcolor) , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
+        border-color: var(--brandcolor);
     }
 
     .gh-portal-input.error {
-        box-shadow: 0px 0px 0px 1px var(--red) , 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
+        border-color: var(--red);
     }
 
     .gh-portal-input::placeholder {
