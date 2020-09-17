@@ -195,7 +195,7 @@ export default class AccountProfilePage extends React.Component {
             return null;
         }
         return (
-            <div>
+            <>
                 <div className='gh-portal-content with-footer'>
                     {this.renderHeader()}
                     <div className='gh-portal-section'>
@@ -203,7 +203,7 @@ export default class AccountProfilePage extends React.Component {
                     </div>
                 </div>
                 {this.renderAccountFooter()}
-            </div>
+            </>
         );
     }
 }

@@ -137,7 +137,7 @@ export default class SigninPage extends React.Component {
 
     render() {
         return (
-            <div>
+            <>
                 <div className='gh-portal-content signin'>
                     {this.renderFormHeader()}
                     {this.renderForm()}
@@ -146,7 +146,7 @@ export default class SigninPage extends React.Component {
                     {this.renderSubmitButton()}
                     {this.renderSignupMessage()}
                 </footer>
-            </div>
+            </>
         );
     }
 }

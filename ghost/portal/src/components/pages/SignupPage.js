@@ -327,13 +327,13 @@ class SignupPage extends React.Component {
         const {site} = this.context;
         const plansData = getSitePlans({site});
         return (
-            <div>
+            <>
                 <PlansSection
                     plans={plansData}
                     selectedPlan={this.state.plan}
                     onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}
                 />
-            </div>
+            </>
         );
     }
 
@@ -414,7 +414,7 @@ class SignupPage extends React.Component {
         }
         
         return (
-            <div>
+            <>
                 <div className={'gh-portal-content signup ' + sectionClass}>
                     {this.renderFormHeader()}
                     {this.renderForm()}
@@ -423,7 +423,7 @@ class SignupPage extends React.Component {
                     {this.renderSubmitButton()}
                     {this.renderLoginMessage()}
                 </footer>
-            </div>
+            </>
         );
     }
 }
