@@ -57,7 +57,7 @@ describe('MagicLink', function () {
     describe('#getDataFromToken', function () {
         it('Returns the user data which from the token that was encoded by #sendMagicLink', async function () {
             const options = {
-                tokenProvider: new JWTTokenProvider(secret),
+                tokenProvider: new MagicLink.JWTTokenProvider(secret),
                 getSigninURL: sandbox.stub().returns('FAKEURL'),
                 getText: sandbox.stub().returns('SOMETEXT'),
                 getHTML: sandbox.stub().returns('SOMEHTML'),
