@@ -118,7 +118,7 @@ export default class SigninPage extends React.Component {
         if (siteLogo) {
             logoStyle.backgroundImage = `url(${siteLogo})`;
             return (
-                <span className='gh-portal-signup-logo' style={logoStyle}></span>
+                <img className='gh-portal-signup-logo' src={siteLogo} alt={this.context.site.title} />
             );
         }
         return null;
