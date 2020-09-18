@@ -442,7 +442,6 @@ const GlobalStyles = `
         display: flex;
         align-items: center;
         justify-content: space-between;
-        flex-grow: 1;
     }
 
     .gh-portal-list {
