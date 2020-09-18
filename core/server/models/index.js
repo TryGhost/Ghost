@@ -35,7 +35,8 @@ const models = [
     'email',
     'email-batch',
     'email-recipient',
-    'label'
+    'label',
+    'single-use-token'
 ];
 
 function init() {
