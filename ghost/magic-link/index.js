@@ -139,3 +139,4 @@ function defaultGetSubject(type) {
 }
 
 module.exports = MagicLink;
+module.exports.JWTTokenProvider = require('./lib/JWTTokenProvider');
