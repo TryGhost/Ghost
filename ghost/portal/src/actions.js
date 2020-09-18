@@ -36,6 +36,19 @@ function closePopup({state}) {
     };
 }
 
+function openNotification({data}) {
+    return {
+        showNotification: true,
+        ...data
+    };
+}
+
+function closeNotification({state}) {
+    return {
+        showNotification: false
+    };
+}
+
 async function signout({api}) {
     await api.member.signout();
     return {
@@ -157,6 +170,8 @@ const Actions = {
     openPopup,
     closePopup,
     switchPage,
+    openNotification,
+    closeNotification,
     back,
     signout,
     signin,
