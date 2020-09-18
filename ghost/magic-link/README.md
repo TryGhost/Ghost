@@ -15,7 +15,6 @@ or
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const MagicLink = require('@tryghost/magic-link');
-const JWTTokenProvider = require('@tryghost/magic-link/JWTTokenProvider');
 
 async function main() {
     const jwtSecret = crypto.randomBytes(16).toString('hex');
@@ -37,7 +36,7 @@ async function main() {
     });
 
     const service = MagicLink({
-        tokenProvider: new JWTTokenProvider(jwtSecret),
+        tokenProvider: new MagicLink.JWTTokenProvider(jwtSecret),
         transporter,
         getSigninURL(token) {
             return `http://example.com/signin?token=${token}`
