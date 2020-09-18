@@ -59,7 +59,7 @@ class SingleUseTokenProvider {
         try {
             return JSON.parse(model.get('data'));
         } catch (err) {
-            return null;
+            return {};
         }
     }
 }
