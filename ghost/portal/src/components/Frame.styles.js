@@ -367,6 +367,17 @@ const GlobalStyles = `
         padding-bottom: 0;
         max-height: calc(100vh - 12vw - 72px);
     }
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .gh-portal-content::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .gh-portal-content {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    } 
     
     .gh-portal-popup-container footer {
         padding: 0 32px 32px;
