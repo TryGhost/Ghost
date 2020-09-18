@@ -379,7 +379,7 @@ class SignupPage extends React.Component {
         if (siteLogo) {
             logoStyle.backgroundImage = `url(${siteLogo})`;
             return (
-                <span className='gh-portal-signup-logo' style={logoStyle}> </span>
+                <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
             );
         }
         return null;
