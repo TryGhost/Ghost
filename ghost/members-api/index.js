@@ -18,7 +18,7 @@ module.exports = function MembersApi({
     auth: {
         allowSelfSignup = true,
         getSigninURL,
-        secret
+        tokenProvider
     },
     paymentConfig,
     mail: {
@@ -93,7 +93,7 @@ module.exports = function MembersApi({
 
     const magicLinkService = new MagicLink({
         transporter,
-        tokenProvider: new MagicLink.JWTTokenProvider(secret),
+        tokenProvider,
         getSigninURL,
         getText,
         getHTML,
