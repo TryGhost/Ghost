@@ -206,8 +206,22 @@ export const PlanSectionStyles = `
         opacity: 1.0;
     }
 
-    .gh-portal-plans-container.hide-checkboxes .gh-portal-plan-checkbox {
+    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-checkbox {
         display: none;
+    }
+
+    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-section {
+        padding-top: 12px;
+        padding-bottom: 20px;
+    }
+
+    .gh-portal-plan-current {
+        display: block;
+        font-size: 1.25rem;
+        letter-spacing: 0.2px;
+        line-height: 1.25em;
+        color: var(--brandcolor);
+        margin: 4px 0 -2px;
     }
 `;
 
@@ -236,7 +250,7 @@ function PriceLabel({currency, price}) {
     );
 }
 
-function PlanOptions({plans, selectedPlan, onPlanSelect}) {
+function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const hasMonthlyPlan = plans.some(({name}) => {
         return name === 'Monthly';
     });
@@ -267,6 +281,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
                 <div className='gh-portal-plan-feature'>
                     {planDetails.feature}
                 </div>
+                {(changePlan && selectedPlan === name ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
             </div>
         );
     });
@@ -281,16 +296,15 @@ function PlanLabel({showLabel}) {
     );
 }
 
-function PlansSection({plans, showLabel = true, type, selectedPlan, onPlanSelect, style}) {
+function PlansSection({plans, showLabel = true, type, selectedPlan, onPlanSelect, changePlan = false, style}) {
     if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
         return null;
     }
-    const plansContainerClass = selectedPlan ? '' : 'hide-checkboxes';
     return (
         <section>
             <PlanLabel showLabel={showLabel} />
-            <div className={`gh-portal-plans-container ${plansContainerClass}`}>
-                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
+            <div className={'gh-portal-plans-container' + (changePlan ? ' hide-checkbox' : '')}>
+                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
         </section>
     );

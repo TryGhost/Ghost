@@ -16,6 +16,7 @@ export const BackButtonStyles = `
         margin: 0;
         box-shadow: none;
         color: var(--grey3);
+        border: none;
     }
 
     .gh-portal-btn-back:hover {
@@ -26,10 +27,6 @@ export const BackButtonStyles = `
     .gh-portal-btn-back svg {
         width: 16px;
         height: 16px;
-    }
-
-    .gh-portal-btn-main:hover {
-        box-shadow: none;
     }
 `;
 

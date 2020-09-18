@@ -7,7 +7,7 @@ export const site = {
     url: 'http://localhost:2368/',
     plans: {
         monthly: 5,
-        yearly: 110,
+        yearly: 15,
         currency: 'USD',
         currency_symbol: '$'
     },
@@ -15,7 +15,7 @@ export const site = {
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
-    portal_plans: ['monthly', 'yearly'],
+    portal_plans: ['free', 'monthly', 'yearly'],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
     portal_button_style: 'icon-and-text',
@@ -51,7 +51,7 @@ export const member = {
                 id: 'fd43b943666b97640188afb382cca39479de30f799985679dd7a71ad2925ac6c',
                 nickname: 'Yearly',
                 interval: 'year',
-                amount: 500,
+                amount: 1500,
                 currency: 'USD',
                 currency_symbol: '$'
             },
