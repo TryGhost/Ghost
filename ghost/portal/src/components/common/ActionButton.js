@@ -7,10 +7,12 @@ export const ActionButtonStyles = `
         box-shadow: none;
         position: relative;
         height: 46px;
+        border: none;
     }
 
     .gh-portal-btn-main:hover {
         box-shadow: none;
+        border: none;
     }
 
     .gh-portal-btn-primary:hover::before {
@@ -22,10 +24,12 @@ export const ActionButtonStyles = `
         content: "";
         background: rgba(255, 255, 255, 0.08);
         border-radius: 5px;
+        border: none;
     }
 
     .gh-portal-btn-destructive:hover {
         color: var(--red);
+        border-color: var(--red);
     }
 
     .gh-portal-loadingicon {

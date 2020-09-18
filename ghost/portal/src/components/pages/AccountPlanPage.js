@@ -172,6 +172,7 @@ const ChangePlanSection = ({plans, selectedPlan, member, action, brandColor, onP
                     plans={plans}
                     selectedPlan={selectedPlan}
                     onPlanSelect={(e, name) => onPlanSelect(e, name)}
+                    changePlan={true}
                 />
             </div>
             <CancelContinueSubscription {...{member, onCancelContinueSubscription, action, brandColor}} />

@@ -163,21 +163,21 @@ const GlobalStyles = `
         text-decoration: none;
         color: var(--grey0);
         background: var(--white);
-        border: none;
+        border: 1px solid var(--grey12);
         min-width: 80px;
         height: 42px;
         padding: 0 1.8rem;
         border-radius: 4px;
         cursor: pointer;
-        transition: .4s ease;
+        transition: all .25s ease;
         box-shadow: none;
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 6px -3px rgba(0,0,0,0.19);
+        box-shadow: 0 2px 6px -3px rgba(0,0,0,0.19);
         user-select: none;
         outline: none;
     }
 
     .gh-portal-btn:hover {
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.18), 0 2px 6px -3px rgba(0,0,0,0.19);
+        border-color: var(--grey10);
     }
 
     .gh-portal-btn-icon svg {
@@ -219,6 +219,7 @@ const GlobalStyles = `
         padding: 0 4px;
         margin: 0 -4px;
         box-shadow: none;
+        border: none;
     }
 
     .gh-portal-btn-list:hover {
