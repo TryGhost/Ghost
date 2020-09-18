@@ -119,7 +119,7 @@ module.exports = function MembersApi({
     }
 
     function getMagicLink(email) {
-        return magicLinkService.getMagicLink({email, subject: email, type: 'signin'});
+        return magicLinkService.getMagicLink({tokenData: {email}, type: 'signin'});
     }
 
     async function getMemberDataFromMagicLinkToken(token) {
