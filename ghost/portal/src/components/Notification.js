@@ -26,13 +26,41 @@ const Styles = ({brandColor, hasText}) => {
     };
 };
 
+const NotificationText = ({type, status}) => {
+    if (type === 'signin' && status === true) {
+        return (
+            <p>
+                Hey, you are successfully signed in!
+            </p>
+        );
+    } else if (type === 'signin' && status === false) {
+        return (
+            <p>
+                Hey, looks like you used an invalid link to signin!
+            </p>
+        );
+    }
+    return (
+        <p>
+            Hey, this is a neutral notification. I hope you feel well today, here's a <a href='http://ghost.org' target='_blank' rel='noopener noreferrer'>link</a> for you.
+        </p>
+    );
+};
+
 class NotificationContent extends React.Component {
+    static contextType = AppContext;
+
+    onNotificationClose() {
+        this.context.onAction('closeNotification');
+    }
+
     render() {
+        const {notificationType: type, notificationStatus: status} = this.context;
         return (
             <div className='gh-portal-notification-wrapper'>
                 <div className='gh-portal-notification'>
-                    <p>Hey, this is a neutral notification. I hope you feel well today, here's a <a href='http://ghost.org' target='_blank' rel='noopener noreferrer'>link</a> for you.</p>
-                    <CloseIcon className='gh-portal-notification-closeicon' alt='Close' />
+                    <NotificationText type={type} status={status} />
+                    <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
                 </div>
             </div>
         );
@@ -58,7 +86,10 @@ export default class Notification extends React.Component {
         const frameStyle = {
             ...Style.frame
         };
-
+        const {showNotification} = this.context;
+        if (!showNotification) {
+            return null;
+        }
         return (
             <Frame style={frameStyle} title="membersjs-notification" head={this.renderFrameStyles()}>
                 <NotificationContent updateWidth={width => this.onWidthChange(width)} />
