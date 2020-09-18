@@ -58,7 +58,7 @@ class NotificationContent extends React.Component {
         const {notificationType: type, notificationStatus: status} = this.context;
         return (
             <div className='gh-portal-notification-wrapper'>
-                <div className='gh-portal-notification'>
+                <div className={'gh-portal-notification' + (status ? ' success' : ' error')}>
                     <NotificationText type={type} status={status} />
                     <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
                 </div>
