@@ -1,13 +1,10 @@
 const config = require('../../../shared/config');
-const db = require('../../data/db');
+const models = require('../../models');
 const errors = require('@tryghost/errors');
 
 // Get total members direct from DB
-// @TODO: determine performance difference between this, normal knex, and using the model layer
 async function getTotalMembers() {
-    const isSQLite = config.get('database:client') === 'sqlite3';
-    const result = await db.knex.raw('SELECT COUNT(id) AS total FROM members');
-    return isSQLite ? result[0].total : result[0][0].total;
+    return models.Member.count('id');
 }
 
 module.exports = async () => {

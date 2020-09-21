@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 
 // App requires
 const config = require('../../../shared/config');
-const constants = require('../../lib/constants');
+const constants = require('@tryghost/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../../frontend/services/url');
 const urlUtils = require('../../../shared/url-utils');

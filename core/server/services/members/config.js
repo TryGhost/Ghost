@@ -44,6 +44,20 @@ class MembersConfigProvider {
         return fromAddress;
     }
 
+    getEmailSupportAddress() {
+        const supportAddress = this._settingsCache.get('members_support_address') || 'noreply';
+
+        // Any fromAddress without domain uses site domain, like default setting `noreply`
+        if (supportAddress.indexOf('@') < 0) {
+            return `${supportAddress}@${this._getDomain()}`;
+        }
+        return supportAddress;
+    }
+
+    getAuthEmailFromAddress() {
+        return this.getEmailSupportAddress() || this.getEmailFromAddress();
+    }
+
     getPublicPlans() {
         const CURRENCY_SYMBOLS = {
             USD: '$',

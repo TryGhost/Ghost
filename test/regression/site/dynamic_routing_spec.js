@@ -701,6 +701,8 @@ describe('Dynamic Routing', function () {
             }).then(function () {
                 return testUtils.fixtures.overrideOwnerUser('ghost-owner');
             }).then(function () {
+                return testUtils.initFixtures('settings');
+            }).then(function () {
                 done();
             }).catch(done);
         });

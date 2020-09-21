@@ -266,6 +266,8 @@ describe('Members API', function () {
     });
 
     it('Can import CSV with minimum one field and labels', function () {
+        let importLabel;
+
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['global-label-1', 'global-label-1'])
@@ -282,12 +284,14 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
+                should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.equal('global-label-1');
                 jsonResponse.meta.stats.imported.count.should.equal(2);
                 jsonResponse.meta.stats.invalid.count.should.equal(0);
-            })
-            .then(() => {
+
+                importLabel = jsonResponse.meta.import_label.slug;
                 return request
-                    .get(localUtils.API.getApiQuery(`members/?search=${encodeURIComponent('member+labels_1@example.com')}`))
+                    .get(localUtils.API.getApiQuery(`members/?&filter=label:${importLabel}`))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -299,18 +303,30 @@ describe('Members API', function () {
 
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
-                should.exist(jsonResponse.members[0]);
+                should.equal(jsonResponse.members.length, 2);
 
-                const importedMember1 = jsonResponse.members[0];
-                should(importedMember1.email).equal('member+labels_1@example.com');
+                const importedMember1 = jsonResponse.members.find(m => m.email === 'member+labels_1@example.com');
+                should.exist(importedMember1);
                 should(importedMember1.name).equal(null);
                 should(importedMember1.note).equal(null);
                 importedMember1.subscribed.should.equal(true);
                 importedMember1.comped.should.equal(false);
                 importedMember1.stripe.should.not.be.undefined();
                 importedMember1.stripe.subscriptions.length.should.equal(0);
-                // 2 specified labels plus auto-generated import label
-                importedMember1.labels.length.should.equal(3);
+
+                // check label order
+                // 1 unique global + 1 record labels
+                importedMember1.labels.length.should.equal(2);
+                importedMember1.labels[0].slug.should.equal('label');
+                importedMember1.labels[1].slug.should.equal('global-label-1');
+
+                const importedMember2 = jsonResponse.members.find(m => m.email === 'member+labels_2@example.com');
+                should.exist(importedMember2);
+                // 1 unique global + 2 record labels
+                importedMember2.labels.length.should.equal(3);
+                importedMember2.labels[0].slug.should.equal('another-label');
+                importedMember2.labels[1].slug.should.equal('and-one-more');
+                importedMember2.labels[2].slug.should.equal('global-label-1');
             });
     });
 
@@ -334,6 +350,9 @@ describe('Members API', function () {
 
                 jsonResponse.meta.stats.imported.count.should.equal(1);
                 jsonResponse.meta.stats.invalid.count.should.equal(0);
+
+                should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.match(/^import-/);
             })
             .then(() => {
                 return request
@@ -367,7 +386,6 @@ describe('Members API', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
-
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -430,6 +448,77 @@ describe('Members API', function () {
 
                 jsonResponse.meta.stats.imported.count.should.equal(0);
                 jsonResponse.meta.stats.invalid.count.should.equal(2);
+
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Missing Stripe connection');
+
+                should.not.exist(jsonResponse.meta.import_label);
+            });
+    });
+
+    it('Fails to import memmber with invalid values', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['new-global-label'])
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-invalid-values.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.count.should.equal(0);
+                jsonResponse.meta.stats.invalid.count.should.equal(2);
+
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 4);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Validation failed for \'name\'');
+                jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
+
+                jsonResponse.meta.stats.invalid.errors[1].message.should.equal('Validation failed for \'email\'');
+                jsonResponse.meta.stats.invalid.errors[1].count.should.equal(2);
+
+                jsonResponse.meta.stats.invalid.errors[2].message.should.equal('Validation failed for \'created_at\'');
+                jsonResponse.meta.stats.invalid.errors[2].count.should.equal(1);
+
+                jsonResponse.meta.stats.invalid.errors[3].message.should.equal('Validation failed for \'complimentary_plan\'');
+                jsonResponse.meta.stats.invalid.errors[3].count.should.equal(1);
+
+                should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.equal('new-global-label');
+            });
+    });
+
+    it('Fails to import member duplicate emails', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-duplicate-emails.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.count.should.equal(1);
+                jsonResponse.meta.stats.invalid.count.should.equal(1);
+
+                should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
+                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Member already exists');
+                jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
+
+                should.exist(jsonResponse.meta.import_label);
+                jsonResponse.meta.import_label.slug.should.match(/^import-/);
             });
     });
 
@@ -452,8 +541,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(8);
+                // 3 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(10);
             });
     });
 
@@ -476,8 +565,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(8);
+                // 3 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(10);
             });
     });
 
@@ -500,8 +589,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(8);
+                // 3 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(10);
             });
     });
 

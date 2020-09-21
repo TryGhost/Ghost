@@ -12,6 +12,76 @@ describe('Member Model', function run() {
     beforeEach(testUtils.setup('roles'));
     afterEach(testUtils.teardownDb);
 
+    describe('stripeSubscriptions', function () {
+        it('It is correctly mapped to all a members subscriptions, regardless of customer', async function () {
+            const context = testUtils.context.admin;
+            await Member.add({
+                email: 'test@test.member',
+                labels: []
+            }, context);
+            const member = await Member.findOne({
+                email: 'test@test.member'
+            }, context);
+
+            should.exist(member, 'Member should have been created');
+
+            await MemberStripeCustomer.add({
+                member_id: member.get('id'),
+                customer_id: 'fake_customer_id1'
+            }, context);
+
+            await MemberStripeCustomer.add({
+                member_id: member.get('id'),
+                customer_id: 'fake_customer_id2'
+            }, context);
+
+            await StripeCustomerSubscription.add({
+                customer_id: 'fake_customer_id1',
+                subscription_id: 'fake_subscription_id1',
+                plan_id: 'fake_plan_id',
+                plan_amount: 1337,
+                plan_nickname: 'e-LEET',
+                plan_interval: 'year',
+                plan_currency: 'btc',
+                status: 'active',
+                start_date: new Date(),
+                current_period_end: new Date(),
+                cancel_at_period_end: false
+            }, context);
+
+            await StripeCustomerSubscription.add({
+                customer_id: 'fake_customer_id2',
+                subscription_id: 'fake_subscription_id2',
+                plan_id: 'fake_plan_id',
+                plan_amount: 1337,
+                plan_nickname: 'e-LEET',
+                plan_interval: 'year',
+                plan_currency: 'btc',
+                status: 'active',
+                start_date: new Date(),
+                current_period_end: new Date(),
+                cancel_at_period_end: false
+            }, context);
+
+            const memberWithRelations = await Member.findOne({
+                email: 'test@test.member'
+            }, Object.assign({
+                withRelated: [
+                    'stripeSubscriptions',
+                    'stripeSubscriptions.customer'
+                ]
+            }, context));
+
+            const subscriptions = memberWithRelations.related('stripeSubscriptions').toJSON();
+
+            const subscription1 = subscriptions.find(({id}) => id === 'fake_subscription_id1');
+            const subscription2 = subscriptions.find(({id}) => id === 'fake_subscription_id2');
+
+            should.exist(subscription1);
+            should.exist(subscription2);
+        });
+    });
+
     describe('stripeCustomers', function () {
         it('Is correctly mapped to the stripe customers', async function () {
             const context = testUtils.context.admin;
@@ -134,6 +204,32 @@ describe('Member Model', function run() {
                 customer_id: customer.get('customer_id')
             });
             should.not.exist(subscriptionAfterDestroy, 'StripeCustomerSubscription should have been destroyed');
+        });
+    });
+
+    describe('findAll', function () {
+        beforeEach(testUtils.setup('members'));
+
+        it('can use custom query', function (done) {
+            Member.findAll().then(function (allResult) {
+                allResult.length.should.equal(4);
+
+                return Member.findAll({paid: true});
+            }).then(function (queryResult) {
+                queryResult.length.should.equal(2);
+                queryResult.models[0].get('email').should.equal('paid@test.com');
+                queryResult.models[1].get('email').should.equal('trialing@test.com');
+
+                done();
+            }).catch(done);
+        });
+
+        it('can use search query', function (done) {
+            Member.findAll({search: 'egg'}).then(function (queryResult) {
+                queryResult.length.should.equal(1);
+                queryResult.models[0].get('name').should.equal('Mr Egg');
+                done();
+            }).catch(done);
         });
     });
 });

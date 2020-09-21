@@ -17,7 +17,7 @@ function createSettingsInstance(config) {
                     logging.warn(message.text);
                 }
                 let msg = Object.assign({
-                    from: config.getEmailFromAddress(),
+                    from: config.getAuthEmailFromAddress(),
                     subject: 'Update email address',
                     forceTextContent: true
                 }, message);
@@ -70,21 +70,40 @@ function createSettingsInstance(config) {
         getSubject
     });
 
-    const sendFromAddressUpdateMagicLink = ({email, payload = {}}) => {
-        return magicLinkService.sendMagicLink({email, payload, subject: email, type: 'updateFromAddress'});
+    const sendEmailAddressUpdateMagicLink = ({email, payload = {}, type = 'fromAddressUpdate'}) => {
+        const [,toDomain] = email.split('@');
+        let fromEmail = `noreply@${toDomain}`;
+        if (fromEmail === email) {
+            fromEmail = `no-reply@${toDomain}`;
+        }
+        magicLinkService.transporter = {
+            sendMail(message) {
+                if (process.env.NODE_ENV !== 'production') {
+                    logging.warn(message.text);
+                }
+                let msg = Object.assign({
+                    from: fromEmail,
+                    subject: 'Update email address',
+                    forceTextContent: true
+                }, message);
+
+                return ghostMailer.send(msg);
+            }
+        };
+        return magicLinkService.sendMagicLink({email, payload, subject: email, type});
     };
 
     const getEmailFromToken = ({token}) => {
         return magicLinkService.getUserFromToken(token);
     };
 
-    const getAdminRedirectLink = () => {
+    const getAdminRedirectLink = ({type}) => {
         const adminUrl = urlUtils.urlFor('admin', true);
-        return urlUtils.urlJoin(adminUrl, '#/settings/labs/?fromAddressUpdate=success');
+        return urlUtils.urlJoin(adminUrl, `#/settings/labs/?${type}=success`);
     };
 
     return {
-        sendFromAddressUpdateMagicLink,
+        sendEmailAddressUpdateMagicLink,
         getEmailFromToken,
         getAdminRedirectLink
     };

@@ -49,6 +49,7 @@ describe('Tag API', function () {
                 jsonResponse.tags[1].url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
 
                 should.exist(jsonResponse.tags[0].count.posts);
+                jsonResponse.tags[0].count.posts.should.equal(1);
             });
     });
 
@@ -79,6 +80,7 @@ describe('Tag API', function () {
                 jsonResponse.tags.should.have.length(1);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
                 should.exist(jsonResponse.tags[0].count.posts);
+                jsonResponse.tags[0].count.posts.should.equal(7);
 
                 jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
             });
@@ -105,6 +107,9 @@ describe('Tag API', function () {
 
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
                 testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
             });
     });
 
@@ -130,6 +135,9 @@ describe('Tag API', function () {
                 jsonResponse.tags[0].visibility.should.eql('internal');
                 jsonResponse.tags[0].name.should.eql('#test');
                 jsonResponse.tags[0].slug.should.eql('hash-test');
+
+                should.exist(res.headers.location);
+                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('tags/')}${res.body.tags[0].id}/`);
             });
     });
 

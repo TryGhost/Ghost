@@ -1,0 +1,16 @@
+<aside class="gh-post-upgrade-cta">
+    <div class="gh-post-upgrade-cta-content" style="background-color: {{accentColor}}">
+        {{#has visibility="paid"}}
+            <h2>This post is for paying subscribers only</h2>
+        {{/has}}
+        {{#has visibility="members"}}
+            <h2>This post is for subscribers only</h2>
+        {{/has}}
+        {{#if @member}}
+            <a class="gh-btn" data-portal="account/plans" style="color:{{accentColor}}">Upgrade your account</a>
+        {{else}}
+            <a class="gh-btn" data-portal="signup" style="color:{{accentColor}}">Subscribe now</a>
+            <p><small>Already have an account? <a data-portal="signin">Sign in</a></small></p>
+        {{/if}}
+    </div>
+</aside>

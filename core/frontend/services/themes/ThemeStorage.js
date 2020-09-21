@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
 const config = require('../../../shared/config');
-const security = require('../../../server/lib/security');
+const security = require('@tryghost/security');
 const {compress} = require('@tryghost/zip');
 const LocalFileStorage = require('../../../server/adapters/storage/LocalFileStorage');
 

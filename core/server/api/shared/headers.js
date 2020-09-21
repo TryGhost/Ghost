@@ -1,3 +1,4 @@
+const url = require('url');
 const debug = require('ghost-ignition').debug('api:shared:headers');
 const Promise = require('bluebird');
 const INVALIDATE_ALL = '/*';
@@ -98,44 +99,54 @@ module.exports = {
      * @description Get header based on ctrl configuration.
      *
      * @param {Object} result - API response
-     * @param {Object} apiConfig
+     * @param {Object} apiConfigHeaders
+     * @param {Object} frame
      * @return {Promise}
      */
-    get(result, apiConfig = {}) {
+    async get(result, apiConfigHeaders = {}, frame) {
         let headers = {};
 
-        return Promise.resolve()
-            .then(() => {
-                let header;
+        if (apiConfigHeaders.disposition) {
+            const dispositionHeader = await disposition[apiConfigHeaders.disposition.type](result, apiConfigHeaders.disposition);
 
-                if (apiConfig.disposition) {
-                    header = disposition[apiConfig.disposition.type](result, apiConfig.disposition);
-                }
+            if (dispositionHeader) {
+                Object.assign(headers, dispositionHeader);
+            }
+        }
 
-                return header;
-            })
-            .then((header) => {
-                if (header) {
-                    Object.assign(headers, header);
-                }
-            })
-            .then(() => {
-                let header;
+        if (apiConfigHeaders.cacheInvalidate) {
+            const cacheInvalidationHeader = cacheInvalidate(result, apiConfigHeaders.cacheInvalidate);
 
-                if (apiConfig.cacheInvalidate) {
-                    header = cacheInvalidate(result, apiConfig.cacheInvalidate);
-                }
+            if (cacheInvalidationHeader) {
+                Object.assign(headers, cacheInvalidationHeader);
+            }
+        }
 
-                return header;
-            })
-            .then((header) => {
-                if (header) {
-                    Object.assign(headers, header);
-                }
-            })
-            .then(() => {
-                debug(headers);
-                return headers;
-            });
+        const locationHeaderDisabled = apiConfigHeaders && apiConfigHeaders.location === false;
+        const hasFrameData = frame
+            && (frame.method === 'add')
+            && result[frame.docName]
+            && result[frame.docName][0]
+            && result[frame.docName][0].id;
+
+        if (!locationHeaderDisabled && hasFrameData) {
+            const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
+            const resourceId = result[frame.docName][0].id;
+
+            let locationURL = url.resolve(`${protocol}${frame.original.url.host}`,frame.original.url.pathname);
+            if (!locationURL.endsWith('/')) {
+                locationURL += '/';
+            }
+            locationURL += `${resourceId}/`;
+
+            const locationHeader = {
+                Location: locationURL
+            };
+
+            Object.assign(headers, locationHeader);
+        }
+
+        debug(headers);
+        return headers;
     }
 };

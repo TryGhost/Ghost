@@ -2,7 +2,8 @@
     "url": "http://localhost:2368",
     "server": {
         "host": "127.0.0.1",
-        "port": 2368
+        "port": 2368,
+        "shutdownTimeout": 60000
     },
     "admin": {
         "redirects": true
@@ -29,7 +30,11 @@
     },
     "members": {
         "contentApiAccess": [],
-        "paymentProcessors": []
+        "paymentProcessors": [],
+        "emailTemplate": {
+            "showSiteHeader": true,
+            "showPoweredBy": false
+        }
     },
     "logging": {
         "level": "info",
@@ -110,5 +115,6 @@
     "adminFrameProtection": true,
     "sendWelcomeEmail": true,
     "stripeDirect": false,
-    "enableStripePromoCodes": false
+    "enableStripePromoCodes": false,
+    "portal": false
 }

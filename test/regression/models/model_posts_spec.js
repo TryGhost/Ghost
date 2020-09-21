@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const moment = require('moment');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const sequence = require('../../../core/server/lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const urlService = require('../../../core/frontend/services/url');
 const ghostBookshelf = require('../../../core/server/models/base');
 const models = require('../../../core/server/models');
@@ -53,6 +53,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -179,6 +182,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -697,6 +703,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -1172,6 +1181,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -1354,6 +1366,9 @@ describe('Post Model', function () {
                     })
                     .then(function () {
                         return testUtils.truncate('posts');
+                    })
+                    .then(function () {
+                        return testUtils.truncate('posts_meta');
                     });
             });
 
@@ -1592,6 +1607,9 @@ describe('Post Model', function () {
                 })
                 .then(function () {
                     return testUtils.truncate('posts');
+                })
+                .then(function () {
+                    return testUtils.truncate('posts_meta');
                 });
         });
 

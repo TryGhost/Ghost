@@ -2,9 +2,11 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const validator = require('validator');
 const models = require('../../models');
-const routing = require('../../../frontend/services/routing');
+const frontendRouting = require('../../../frontend/services/routing');
+const frontendSettings = require('../../../frontend/services/settings');
 const {i18n} = require('../../lib/common');
 const {BadRequestError, NoPermissionError, NotFoundError} = require('@tryghost/errors');
+const settingsService = require('../../services/settings');
 const settingsCache = require('../../services/settings/cache');
 const membersService = require('../../services/members');
 
@@ -74,15 +76,19 @@ module.exports = {
         }
     },
 
-    validateMembersFromEmail: {
+    validateMembersEmailUpdate: {
         options: [
-            'token'
+            'token',
+            'action'
         ],
         permissions: false,
         validation: {
             options: {
                 token: {
                     required: true
+                },
+                action: {
+                    values: ['fromaddressupdate', 'supportaddressupdate']
                 }
             }
         },
@@ -90,14 +96,19 @@ module.exports = {
             // This is something you have to do if you want to use the "framework" with access to the raw req/res
             frame.response = async function (req, res) {
                 try {
-                    const updatedFromAddress = membersService.settings.getEmailFromToken({token: frame.options.token});
-                    if (updatedFromAddress) {
+                    const {token, action} = frame.options;
+                    const updatedEmailAddress = membersService.settings.getEmailFromToken({token});
+                    const actionToKeyMapping = {
+                        fromAddressUpdate: 'members_from_address',
+                        supportAddressUpdate: 'members_support_address'
+                    };
+                    if (updatedEmailAddress) {
                         return models.Settings.edit({
-                            key: 'members_from_address',
-                            value: updatedFromAddress
+                            key: actionToKeyMapping[action],
+                            value: updatedEmailAddress
                         }).then(() => {
                             // Redirect to Ghost-Admin settings page
-                            const adminLink = membersService.settings.getAdminRedirectLink();
+                            const adminLink = membersService.settings.getAdminRedirectLink({type: action});
                             res.redirect(adminLink);
                         });
                     } else {
@@ -115,21 +126,32 @@ module.exports = {
         }
     },
 
-    updateMembersFromEmail: {
+    updateMembersEmail: {
         permissions: {
             method: 'edit'
         },
+        data: [
+            'email',
+            'type'
+        ],
         async query(frame) {
-            const email = frame.data.from_address;
+            const {email, type} = frame.data;
             if (typeof email !== 'string' || !validator.isEmail(email)) {
                 throw new BadRequestError({
                     message: i18n.t('errors.api.settings.invalidEmailReceived')
                 });
             }
+
+            if (!type || !['fromAddressUpdate', 'supportAddressUpdate'].includes(type)) {
+                throw new BadRequestError({
+                    message: 'Invalid email type recieved'
+                });
+            }
             try {
                 // Send magic link to update fromAddress
-                await membersService.settings.sendFromAddressUpdateMagicLink({
-                    email
+                await membersService.settings.sendEmailAddressUpdateMagicLink({
+                    email,
+                    type
                 });
             } catch (err) {
                 throw new BadRequestError({
@@ -271,8 +293,10 @@ module.exports = {
         permissions: {
             method: 'edit'
         },
-        query(frame) {
-            return routing.settings.setFromFilePath(frame.file.path);
+        async query(frame) {
+            await frontendRouting.settings.setFromFilePath(frame.file.path);
+            const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
+            await settingsService.syncRoutesHash(getRoutesHash);
         }
     },
 
@@ -290,7 +314,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            return routing.settings.get();
+            return frontendRouting.settings.get();
         }
     }
 };

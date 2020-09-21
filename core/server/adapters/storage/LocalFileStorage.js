@@ -10,7 +10,7 @@ const config = require('../../../shared/config');
 const {i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
-const constants = require('../../lib/constants');
+const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
 

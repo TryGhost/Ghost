@@ -6,6 +6,8 @@ const models = require('../../models');
 const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
+const SingleUseTokenProvider = require('./SingleUseTokenProvider');
+const MAGIC_LINK_TOKEN_VALIDITY = 4 * 60 * 60 * 1000;
 
 const ghostMailer = new mail.GhostMailer();
 
@@ -17,7 +19,7 @@ function createApiInstance(config) {
         auth: {
             getSigninURL: config.getSigninURL.bind(config),
             allowSelfSignup: config.getAllowSelfSignup(),
-            secret: config.getAuthSecret()
+            tokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY)
         },
         mail: {
             transporter: {
@@ -26,7 +28,7 @@ function createApiInstance(config) {
                         logging.warn(message.text);
                     }
                     let msg = Object.assign({
-                        from: config.getEmailFromAddress(),
+                        from: config.getAuthEmailFromAddress(),
                         subject: 'Signin',
                         forceTextContent: true
                     }, message);

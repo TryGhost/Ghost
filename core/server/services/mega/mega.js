@@ -2,20 +2,24 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('mega');
 const url = require('url');
 const moment = require('moment');
+const ObjectId = require('bson-objectid');
 const errors = require('@tryghost/errors');
 const {events, i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
+const jobService = require('../jobs');
 const models = require('../../models');
+const db = require('../../data/db');
 const postEmailSerializer = require('./post-email-serializer');
 
-const getEmailData = async (postModel, memberModels = []) => {
+const getEmailData = async (postModel, memberRows = []) => {
     const startTime = Date.now();
-    debug(`getEmailData: starting for ${memberModels.length} members`);
+    debug(`getEmailData: starting for ${memberRows.length} members`);
     const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel);
 
     emailTmpl.from = membersService.config.getEmailFromAddress();
+    emailTmpl.supportAddress = membersService.config.getEmailSupportAddress();
 
     // update templates to use Mailgun variable syntax for replacements
     replacements.forEach((replacement) => {
@@ -27,40 +31,40 @@ const getEmailData = async (postModel, memberModels = []) => {
 
     const emails = [];
     const emailData = {};
-    memberModels.forEach((memberModel) => {
-        emails.push(memberModel.get('email'));
+    memberRows.forEach((memberRow) => {
+        emails.push(memberRow.email);
 
         // first_name is a computed property only used here for now
         // TODO: move into model computed property or output serializer?
-        memberModel.first_name = (memberModel.get('name') || '').split(' ')[0];
+        memberRow.first_name = (memberRow.name || '').split(' ')[0];
 
         // add static data to mailgun template variables
         const data = {
-            unique_id: memberModel.uuid,
-            unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(memberModel.get('uuid'))
+            unique_id: memberRow.uuid,
+            unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(memberRow.uuid)
         };
 
         // add replacement data/requested fallback to mailgun template variables
         replacements.forEach(({id, memberProp, fallback}) => {
-            data[id] = memberModel[memberProp] || fallback || '';
+            data[id] = memberRow[memberProp] || fallback || '';
         });
 
-        emailData[memberModel.get('email')] = data;
+        emailData[memberRow.email] = data;
     });
 
     debug(`getEmailData: done (${Date.now() - startTime}ms)`);
     return {emailTmpl, emails, emailData};
 };
 
-const sendEmail = async (postModel, memberModels) => {
-    const {emailTmpl, emails, emailData} = await getEmailData(postModel, memberModels);
+const sendEmail = async (postModel, memberRows) => {
+    const {emailTmpl, emails, emailData} = await getEmailData(postModel, memberRows);
 
     return bulkEmailService.send(emailTmpl, emails, emailData);
 };
 
 const sendTestEmail = async (postModel, toEmails) => {
     const recipients = await Promise.all(toEmails.map(async (email) => {
-        const member = await models.Member.findOne({email});
+        const member = await membersService.api.members.get({email});
         return member || new models.Member({email});
     }));
     const {emailTmpl, emails, emailData} = await getEmailData(postModel, recipients);
@@ -87,7 +91,7 @@ const addEmail = async (postModel, options) => {
 
     const startRetrieve = Date.now();
     debug('addEmail: retrieving members count');
-    const {meta: {pagination: {total: membersCount}}} = await models.Member.findPage(Object.assign({}, knexOptions, filterOptions));
+    const {meta: {pagination: {total: membersCount}}} = await membersService.api.members.list(Object.assign({}, knexOptions, filterOptions));
     debug(`addEmail: retrieved members count - ${membersCount} members (${Date.now() - startRetrieve}ms)`);
 
     // NOTE: don't create email object when there's nobody to send the email to
@@ -176,7 +180,8 @@ async function handleUnsubscribeRequest(req) {
     }
 
     try {
-        return await membersService.api.members.update({subscribed: false}, {id: member.id});
+        const memberModel = await membersService.api.members.update({subscribed: false}, {id: member.id});
+        return memberModel.toJSON();
     } catch (err) {
         throw new errors.InternalServerError({
             message: 'Failed to unsubscribe member'
@@ -184,18 +189,8 @@ async function handleUnsubscribeRequest(req) {
     }
 }
 
-async function pendingEmailHandler(emailModel, options) {
-    // CASE: do not send email if we import a database
-    // TODO: refactor post.published events to never fire on importing
-    if (options && options.importing) {
-        return;
-    }
+async function sendEmailJob({emailModel, options}) {
     const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, {withRelated: ['authors']});
-
-    if (emailModel.get('status') !== 'pending') {
-        return;
-    }
-
     let meta = [];
     let error = null;
     let startEmailSend = null;
@@ -204,9 +199,9 @@ async function pendingEmailHandler(emailModel, options) {
         // Check host limit for allowed member count and throw error if over limit
         await membersService.checkHostLimit();
 
-        // No need to fetch list until after we've passed the check
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-        const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true', limit: 'all'});
+        // TODO: this will clobber a user-assigned filter if/when we allow emails to be sent to filtered member lists
+        const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true'});
 
         if (postModel.get('visibility') === 'paid') {
             filterOptions.paid = true;
@@ -214,10 +209,18 @@ async function pendingEmailHandler(emailModel, options) {
 
         const startRetrieve = Date.now();
         debug('pendingEmailHandler: retrieving members list');
-        const {data: members} = await models.Member.findPage(Object.assign({}, knexOptions, filterOptions));
-        debug(`pendingEmailHandler: retrieved members list - ${members.length} members (${Date.now() - startRetrieve}ms)`);
+        const memberQuery = await models.Member.getFilteredCollection(filterOptions).query();
+        // TODO: how to apply this more elegantly? Normally done by `onFetching` bookshelf hook
+        if (options.transacting) {
+            memberQuery.transacting(options.transacting);
+            if (options.forUpdate) {
+                memberQuery.forUpdate();
+            }
+        }
+        const memberRows = await memberQuery;
+        debug(`pendingEmailHandler: retrieved members list - ${memberRows.length} members (${Date.now() - startRetrieve}ms)`);
 
-        if (!members.length) {
+        if (!memberRows.length) {
             return;
         }
 
@@ -227,11 +230,34 @@ async function pendingEmailHandler(emailModel, options) {
             id: emailModel.id
         });
 
-        // NOTE: meta can contains an array which can be a mix of successful and error responses
+        debug('pendingEmailHandler: storing recipient list');
+        const startOfRecipientStorage = Date.now();
+        const storeRecipientBatch = async function (recipients) {
+            let batchModel = await models.EmailBatch.add({email_id: emailModel.id}, knexOptions);
+
+            // use knex rather than bookshelf to avoid overhead and event loop blocking
+            // when instantiating large numbers of bookshelf model objects
+            const recipientData = recipients.map((memberRow) => {
+                return {
+                    id: ObjectId.generate(),
+                    email_id: emailModel.id,
+                    member_id: memberRow.id,
+                    batch_id: batchModel.id,
+                    member_uuid: memberRow.uuid,
+                    member_email: memberRow.email,
+                    member_name: memberRow.name
+                };
+            });
+            return await db.knex('email_recipients').insert(recipientData);
+        };
+        await Promise.each(_.chunk(memberRows, 1000), storeRecipientBatch);
+        debug(`pendingEmailHandler: stored recipient list (${Date.now() - startOfRecipientStorage}ms)`);
+
+        // NOTE: meta contains an array which can be a mix of successful and error responses
         //       needs filtering and saving objects of {error, batchData} form to separate property
         debug('pendingEmailHandler: sending email');
         startEmailSend = Date.now();
-        meta = await sendEmail(postModel, members);
+        meta = await sendEmail(postModel, memberRows);
         debug(`pendingEmailHandler: sent email (${Date.now() - startEmailSend}ms)`);
     } catch (err) {
         if (startEmailSend) {
@@ -262,13 +288,27 @@ async function pendingEmailHandler(emailModel, options) {
             status: batchStatus,
             meta: JSON.stringify(successes),
             error: error,
-            error_data: JSON.stringify(failures) // NOTE:need to discuss how we store this
+            error_data: JSON.stringify(failures) // NOTE: need to discuss how we store this
         }, {
             id: emailModel.id
         });
     } catch (err) {
         logging.error(err);
     }
+}
+
+async function pendingEmailHandler(emailModel, options) {
+    // CASE: do not send email if we import a database
+    // TODO: refactor post.published events to never fire on importing
+    if (options && options.importing) {
+        return;
+    }
+
+    if (emailModel.get('status') !== 'pending') {
+        return;
+    }
+
+    return jobService.addJob(sendEmailJob, {emailModel, options});
 }
 
 const statusChangedHandler = (emailModel, options) => {

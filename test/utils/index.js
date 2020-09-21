@@ -25,7 +25,7 @@ const settingsCache = require('../../core/server/services/settings/cache');
 const imageLib = require('../../core/server/lib/image');
 const web = require('../../core/server/web');
 const permissions = require('../../core/server/services/permissions');
-const sequence = require('../../core/server/lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const themes = require('../../core/frontend/services/themes');
 const DataGenerator = require('./fixtures/data-generator');
 const configUtils = require('./configUtils');
@@ -63,24 +63,31 @@ fixtures = {
     insertPostsAndTags: function insertPostsAndTags() {
         return Promise.map(DataGenerator.forKnex.tags, function (tag) {
             return models.Tag.add(tag, module.exports.context.internal);
-        }).then(function () {
-            return Promise.each(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
-                let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
-                let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
+        })
+            .then(function () {
+                return Promise.each(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
+                    let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
+                    let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
 
-                postTagRelations = _.map(postTagRelations, function (postTagRelation) {
-                    return _.find(DataGenerator.forKnex.tags, {id: postTagRelation.tag_id});
+                    postTagRelations = _.map(postTagRelations, function (postTagRelation) {
+                        return _.find(DataGenerator.forKnex.tags, {id: postTagRelation.tag_id});
+                    });
+
+                    postAuthorsRelations = _.map(postAuthorsRelations, function (postAuthorsRelation) {
+                        return _.find(DataGenerator.forKnex.users, {id: postAuthorsRelation.author_id});
+                    });
+
+                    post.tags = postTagRelations;
+                    post.authors = postAuthorsRelations;
+
+                    return models.Post.add(post, module.exports.context.internal);
                 });
-
-                postAuthorsRelations = _.map(postAuthorsRelations, function (postAuthorsRelation) {
-                    return _.find(DataGenerator.forKnex.users, {id: postAuthorsRelation.author_id});
+            })
+            .then(function () {
+                return Promise.map(DataGenerator.forKnex.posts_meta, function (postMeta) {
+                    return models.PostsMeta.add(postMeta, module.exports.context.internal);
                 });
-
-                post.tags = postTagRelations;
-                post.authors = postAuthorsRelations;
-                return models.Post.add(post, module.exports.context.internal);
             });
-        });
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
@@ -946,7 +953,7 @@ startGhost = function startGhost(options) {
         .then(function () {
             let timeout;
 
-            GhostServer.announceServerStart();
+            GhostServer.announceServerReadiness();
 
             return new Promise(function (resolve) {
                 (function retry() {

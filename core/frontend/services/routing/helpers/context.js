@@ -71,6 +71,10 @@ function setResponseContext(req, res, data) {
         if (!res.locals.context.includes('page')) {
             res.locals.context.push('page');
         }
+    } else if (data && data.tag) {
+        if (!res.locals.context.includes('tag')) {
+            res.locals.context.push('tag');
+        }
     }
 }
 

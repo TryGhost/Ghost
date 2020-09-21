@@ -247,6 +247,24 @@
                 "emailNotFound": "Email not found.",
                 "retryNotAllowed": "Only failed emails can be retried"
             },
+            "member": {
+                "memberAlreadyExists": {
+                    "message": "Member already exists",
+                    "context": "Attempting to {action} member with existing email address."
+                }
+            },
+            "member_stripe_customer": {
+                "customerAlreadyExists": {
+                    "message": "Stripe customer already exists",
+                    "context": "Attempting to add Stripe customer with existing Stripe customer id"
+                }
+            },
+            "stripe_customer_subscription": {
+                "subscriptionAlreadyExists": {
+                    "message": "Stripe customer subscription already exists",
+                    "context": "Attempting to add Stripe customer subscription with existing Stripe customer"
+                }
+            },
             "base": {
                 "index": {
                     "missingContext": "missing context"
@@ -298,11 +316,7 @@
                 "setupAlreadyCompleted": "Setup has already been completed.",
                 "unableToSendWelcomeEmail": "Unable to send welcome email, your site will continue to function.",
                 "checkEmailConfigInstructions": "Please see {url} for instructions on configuring email.",
-                "notLoggedIn": "You are not logged in.",
-                "notTheBlogOwner": "You are not the site owner.",
-                "invalidTokenTypeHint": "Invalid token_type_hint given.",
-                "invalidTokenProvided": "Invalid token provided",
-                "tokenRevocationFailed": "Token revocation failed"
+                "notTheBlogOwner": "You are not the site owner."
             },
             "configuration": {
                 "invalidKey": "Invalid key"
@@ -368,10 +382,6 @@
             },
             "members": {
                 "memberNotFound": "Member not found.",
-                "memberAlreadyExists": {
-                    "message": "Member already exists",
-                    "context": "Attempting to add member with existing email address."
-                },
                 "stripeNotConnected": {
                     "message": "Missing Stripe connection",
                     "context": "Attempting to import members with Stripe data when there is no Stripe account connected",
@@ -435,6 +445,11 @@
                 "invalidIdProvided": "Invalid id provided."
             },
             "invites": {
+                "inviteEmailAlreadyExist": {
+                    "message": "Could not create an account, email is already in use.",
+                    "context": "Attempting to create an account with existing email address.",
+                    "help": "Use different email address to register your account."
+                },
                 "inviteNotFound": "Invite not found.",
                 "inviteExpired": "Invite is expired.",
                 "emailIsRequired": "E-Mail is required.",
@@ -650,10 +665,10 @@
             "ghostIsRunningIn": "Ghost is running in {env}...",
             "listeningOn": "Listening on: {host}:{port}",
             "urlConfiguredAs": "Url configured as: {url}",
+            "ghostIsShuttingDown": "Ghost is shutting down",
             "ghostHasShutdown": "Ghost has shut down",
             "yourBlogIsNowOffline": "Your site is now offline",
-            "ghostWasRunningFor": "Ghost was running for",
-            "ghostIsClosingConnections": "Ghost is closing connections"
+            "ghostWasRunningFor": "Ghost was running for"
         },
         "mail": {
             "messageSent": "Message sent. Double check inbox and spam folder!"

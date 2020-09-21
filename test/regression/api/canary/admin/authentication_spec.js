@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../../utils/index');
 const models = require('../../../../../core/server/models/index');
-const security = require('../../../../../core/server/lib/security/index');
+const security = require('@tryghost/security');
 const settingsCache = require('../../../../../core/server/services/settings/cache');
 const config = require('../../../../../core/shared/config/index');
 const mailService = require('../../../../../core/server/services/mail/index');
@@ -193,6 +193,22 @@ describe('Authentication API v3', function () {
                 .expect(404);
         });
 
+        it('try to accept with invite and existing email address', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/invitation'))
+                .set('Origin', config.get('url'))
+                .send({
+                    invitation: [{
+                        token: testUtils.DataGenerator.forKnex.invites[0].token,
+                        password: '12345678910',
+                        email: testUtils.DataGenerator.forKnex.users[0].email,
+                        name: 'invited'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect(422);
+        });
+
         it('try to accept with invite', function () {
             return request
                 .post(localUtils.API.getApiQuery('authentication/invitation'))
@@ -285,7 +301,12 @@ describe('Authentication API v3', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(401);
+                .expect(401)
+                .then((res) => {
+                    should.exist(res.body.errors);
+                    res.body.errors[0].type.should.eql('UnauthorizedError');
+                    res.body.errors[0].message.should.eql('Invalid token structure');
+                });
         });
 
         it('reset password: generate reset token', function () {

@@ -7,7 +7,7 @@ const _ = require('lodash');
 const {events} = require('../../../../core/server/lib/common');
 const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
-const sequence = require('../../../../core/server/lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 
 describe('Models: listeners', function () {
     const eventsToRemember = {};

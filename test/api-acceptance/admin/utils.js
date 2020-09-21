@@ -23,7 +23,7 @@ const expectedProperties = {
 
     action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
-    config: ['version', 'environment', 'database', 'mail', 'labs', 'clientExtensions', 'enableDeveloperExperiments', 'useGravatar', 'stripeDirect'],
+    config: ['version', 'environment', 'database', 'mail', 'labs', 'clientExtensions', 'enableDeveloperExperiments', 'useGravatar', 'stripeDirect', 'portal'],
 
     post: _(schema.posts)
         .keys()

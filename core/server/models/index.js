@@ -33,7 +33,10 @@ const models = [
     'member-stripe-customer',
     'stripe-customer-subscription',
     'email',
-    'label'
+    'email-batch',
+    'email-recipient',
+    'label',
+    'single-use-token'
 ];
 
 function init() {

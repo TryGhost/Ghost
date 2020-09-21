@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
-const sequence = require('../lib/promise/sequence');
+const {sequence} = require('@tryghost/promise');
 const config = require('../../shared/config');
 const crypto = require('crypto');
 
@@ -35,6 +35,30 @@ const Member = ghostBookshelf.Model.extend({
 
     stripeCustomers() {
         return this.hasMany('MemberStripeCustomer', 'member_id', 'id');
+    },
+
+    stripeSubscriptions() {
+        return this.belongsToMany(
+            'StripeCustomerSubscription',
+            'members_stripe_customers',
+            'member_id',
+            'customer_id',
+            'id',
+            'customer_id'
+        ).query('whereIn', 'status', ['active', 'trialing']);
+    },
+
+    serialize(options) {
+        const defaultSerializedObject = ghostBookshelf.Model.prototype.serialize.call(this, options);
+
+        if (defaultSerializedObject.stripeSubscriptions) {
+            defaultSerializedObject.stripe = {
+                subscriptions: defaultSerializedObject.stripeSubscriptions
+            };
+            delete defaultSerializedObject.stripeSubscriptions;
+        }
+
+        return defaultSerializedObject;
     },
 
     emitChange: function emitChange(event, options) {
@@ -185,9 +209,9 @@ const Member = ghostBookshelf.Model.extend({
                     this.on(
                         'members_stripe_customers.customer_id',
                         'members_stripe_customers_subscriptions.customer_id'
-                    ).andOn(
+                    ).onIn(
                         'members_stripe_customers_subscriptions.status',
-                        ghostBookshelf.knex.raw('?', ['active'])
+                        ['active', 'trialing']
                     );
                 }
             );

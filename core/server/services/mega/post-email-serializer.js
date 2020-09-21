@@ -1,5 +1,6 @@
 const juice = require('juice');
 const template = require('./template');
+const config = require('../../../shared/config');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
@@ -105,6 +106,14 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
     }
+
+    // we use post.excerpt as a hidden piece of text that is picked up by some email
+    // clients as a "preview" when listing emails. Our current plaintext/excerpt
+    // generation outputs links as "Link [https://url/]" which isn't desired in the preview
+    if (!post.custom_excerpt && post.excerpt) {
+        post.excerpt = post.excerpt.replace(/\s\[http(.*?)\]/g, '');
+    }
+
     post.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(post.mobiledoc), {target: 'email'});
     // same options as used in Post model for generating plaintext but without `wordwrap: 80`
     // to avoid replacement strings being split across lines and for mail clients to handle
@@ -118,18 +127,28 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
         uppercaseHeadings: false
     });
 
-    let htmlTemplate = template({post, site: getSite()});
+    const templateConfig = config.get('members:emailTemplate');
+    let htmlTemplate = template({post, site: getSite(), templateConfig});
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl();
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
     }
 
-    let juicedHtml = juice(htmlTemplate);
+    // Inline css to style attributes, turn on support for pseudo classes.
+    const juiceOptions = {inlinePseudoElements: true};
+    let juicedHtml = juice(htmlTemplate, juiceOptions);
 
-    // Force all links to open in new tab
+    // convert juiced HTML to a DOM-like interface for further manipulation
+    // happens after inlining of CSS so we can change element types without worrying about styling
     let _cheerio = cheerio.load(juicedHtml);
+    // force all links to open in new tab
     _cheerio('a').attr('target','_blank');
+    // convert figure and figcaption to div so that Outlook applies margins
+    _cheerio('figure, figcaption').each((i, elem) => (elem.tagName = 'div'));
     juicedHtml = _cheerio.html();
+
+    // Fix any unsupported chars in Outlook
+    juicedHtml = juicedHtml.replace(/&apos;/g, '&#39;');
 
     const emailTmpl = {
         subject: post.email_subject || post.title,

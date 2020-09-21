@@ -6,7 +6,7 @@ const testUtils = require('../../utils');
 const knex = require('../../../core/server/data/db').knex;
 const urlService = require('../../../core/frontend/services/url');
 const models = require('../../../core/server/models');
-const security = require('../../../core/server/lib/security');
+const security = require('@tryghost/security');
 
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
@@ -220,17 +220,10 @@ describe('Unit: models/post', function () {
                         }]
                     }
                 }).then(() => {
-                    queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?))');
-                    queries[0].bindings.should.eql([
-                        'published',
-                        'draft',
-                        'published',
-                        'post'
-                    ]);
+                    queries.length.should.eql(1);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
-                    queries[1].bindings.should.eql([
+                    queries[0].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    queries[0].bindings.should.eql([
                         'published',
                         'draft',
                         'published',
