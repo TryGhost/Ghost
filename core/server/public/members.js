@@ -8,10 +8,10 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             errorEl.innerText = '';
         }
         form.classList.remove('success', 'invalid', 'error');
-        var email_input = event.target.querySelector('input[data-members-email]');
-        var name_input = event.target.querySelector('input[data-members-name]');
-        var email = email_input.value;
-        var name = name_input.value;
+        var emailInput = event.target.querySelector('input[data-members-email]');
+        var nameInput = event.target.querySelector('input[data-members-name]');
+        var email = emailInput.value;
+        var name = nameInput.value;
         var emailType = undefined;
         var labels = [];
 
