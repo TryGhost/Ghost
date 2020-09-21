@@ -115,5 +115,6 @@
     "adminFrameProtection": true,
     "sendWelcomeEmail": true,
     "stripeDirect": false,
+    "enableStripePromoCodes": false,
     "portal": false
 }
