@@ -65,6 +65,17 @@ class GhTokenInput extends Component {
             }
         }
 
+        // https://github.com/TryGhost/Ghost/issues/11786
+        // ember-power-select stops propagation of events when ctrl/CMD or meta key is down.
+        // So, we're dispatching KeyboardEvent directly to the root of ghost app.
+        if (event.ctrlKey || event.metaKey) {
+            const copy = new KeyboardEvent(event.type, event);
+            document.getElementsByClassName('gh-app')[0].dispatchEvent(copy);
+            event.preventDefault(); // don't show the save dialog.
+
+            return false;
+        }
+
         // fallback to default
         return true;
     }
