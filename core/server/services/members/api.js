@@ -61,7 +61,7 @@ function createApiInstance(config) {
 
                         ${url}
 
-                        For your security, the link will expire in 10 minutes time.
+                        For your security, the link will expire in 4 hours time.
 
                         All the best!
                         The team at ${siteTitle}
@@ -79,7 +79,7 @@ function createApiInstance(config) {
 
                         ${url}
 
-                        For your security, the link will expire in 10 minutes time.
+                        For your security, the link will expire in 4 hours time.
 
                         See you soon!
                         The team at ${siteTitle}
@@ -97,7 +97,7 @@ function createApiInstance(config) {
 
                         ${url}
 
-                        For your security, the link will expire in 10 minutes time.
+                        For your security, the link will expire in 4 hours time.
 
                         All the best!
                         The team at ${siteTitle}
@@ -116,7 +116,7 @@ function createApiInstance(config) {
 
                         ${url}
 
-                        For your security, the link will expire in 10 minutes time.
+                        For your security, the link will expire in 4 hours time.
 
                         See you soon!
                         The team at ${siteTitle}

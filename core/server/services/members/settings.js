@@ -36,7 +36,7 @@ function createSettingsInstance(config) {
 
             ${url}
 
-            For your security, the link will expire in 10 minutes time.
+            For your security, the link will expire in 4 hours time.
 
             ---
 
