@@ -192,6 +192,7 @@ class MembersConfigProvider {
                 id: this._settingsCache.get('members_stripe_webhook_id'),
                 secret: this._settingsCache.get('members_stripe_webhook_secret')
             },
+            enablePromoCodes: this._config.get('enableStripePromoCodes'),
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
