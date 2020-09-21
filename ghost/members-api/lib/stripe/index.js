@@ -34,6 +34,7 @@ module.exports = class StripePaymentProcessor {
         this._checkoutCancelUrl = config.checkoutCancelUrl;
         this._billingSuccessUrl = config.billingSuccessUrl;
         this._billingCancelUrl = config.billingCancelUrl;
+        this._enablePromoCodes = config.enablePromoCodes;
 
         try {
             this._product = await api.products.ensure(this._stripe, config.product);
@@ -192,6 +193,7 @@ module.exports = class StripePaymentProcessor {
             cancel_url: options.cancelUrl || this._checkoutCancelUrl,
             customer: customer ? customer.id : undefined,
             customer_email: customerEmail,
+            allow_promotion_codes: this._enablePromoCodes,
             metadata,
             subscription_data: {
                 trial_from_plan: true,
