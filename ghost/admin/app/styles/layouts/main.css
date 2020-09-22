@@ -635,6 +635,12 @@
         padding-bottom: 55px;
     }
 
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .gh-viewport {
+            padding-bottom: calc(55px + env(safe-area-inset-bottom, 0px));
+        }
+    }
+
     .gh-mobile-nav-bar {
         display: flex;
         align-items: center;
@@ -645,6 +651,12 @@
         right: 0;
         background: #fff;
         border-top: var(--lightgrey) 1px solid;
+    }
+
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .gh-mobile-nav-bar {
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
     }
 
     .gh-mobile-nav-bar a,
