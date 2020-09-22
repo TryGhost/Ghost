@@ -18,7 +18,15 @@ export default Component.extend({
     stats: null,
     chartData: null,
     chartOptions: null,
-    startDateLabel: '',
+
+    startDateLabel: computed('membersStats.stats', function () {
+        if (!this.membersStats?.stats?.total_on_date) {
+            return '';
+        }
+
+        let firstDate = Object.keys(this.membersStats.stats.total_on_date)[0];
+        return moment(firstDate).format(DATE_FORMAT);
+    }),
 
     selectedRange: computed('membersStats.days', function () {
         const availableRanges = this.availableRanges;
