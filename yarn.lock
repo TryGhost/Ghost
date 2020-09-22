@@ -396,14 +396,6 @@
     ghost-ignition "4.2.2"
     lodash "4.17.20"
 
-"@tryghost/errors@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.3.tgz#f3431d00d67c5d6c1b145e8adcdf68ff2464e1fa"
-  integrity sha512-VX/eLFoX/xAJREu9ftZtXBNz3LsFvj0eRFVHDFdn8mu/oBZsEDLlWMqJX2U1fI0M5p9J9mO5hUa1Vrw7oxwHbA==
-  dependencies:
-    ghost-ignition "4.2.2"
-    lodash "4.17.19"
-
 "@tryghost/helpers@1.1.30":
   version "1.1.30"
   resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.30.tgz#239286b06a912a275ece61ed1989e05d5de117fb"
@@ -574,12 +566,12 @@
     bluebird "3.7.2"
     lodash "4.17.20"
 
-"@tryghost/session-service@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.8.tgz#35206a10d6ea66ab98bd783c78c37815b26b2dc6"
-  integrity sha512-uIi703ATDvLPvqzVIYZAPm2tYj5aMWFoN8sibLrEBEIx4btvjiBzWO1ohPg4/+8ICtg34hVEdQ4g55Nok9PPLw==
+"@tryghost/session-service@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.9.tgz#ddc06aa70ffb527efc9aa0d4fcf82c7265cbe052"
+  integrity sha512-QyYyHmaOB80rU8Py1nN/NMcG+wlLbi02Uc6cShTUspHAZTNurMEjJvKHzHNZTJfIQF92gOVseOR++AoaOwjvQw==
   dependencies:
-    "@tryghost/errors" "^0.2.3"
+    "@tryghost/errors" "^0.2.4"
 
 "@tryghost/social-urls@0.1.12":
   version "0.1.12"
