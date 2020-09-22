@@ -371,12 +371,12 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.10.tgz#d8ea5281edaceb5472bd03f40404c49f9861d6e9"
-  integrity sha512-gMGemFWbuOlncJz+kxHNo+58fp259IX/lwgMIP751bs+i5JitpuEfnFogTv+guYJnvEP/a3KoWggcZOwZDpu2w==
+"@tryghost/adapter-manager@0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.11.tgz#105c90ea155cc7677899aa3790fc760ba7eb6cd0"
+  integrity sha512-pB2MKyi9MMFJWqPtLOmJUxo9ZXet5VZBNxOGo/r6kACU/YqeGaNiJz7E8yOJZog+8e5LdxQOeIlpUr/eT+usrA==
   dependencies:
-    "@tryghost/errors" "^0.2.3"
+    "@tryghost/errors" "^0.2.4"
 
 "@tryghost/bootstrap-socket@0.2.1":
   version "0.2.1"
@@ -395,6 +395,14 @@
   dependencies:
     ghost-ignition "4.2.2"
     lodash "4.17.19"
+
+"@tryghost/errors@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.4.tgz#873107f0915667852f86e616a8698eddf7b1f59e"
+  integrity sha512-U0S/oeRCvYDe2Uuzx+D7dKQDW91D24wGm0cP90wf3EOzJH82imYFYgRXT4FZ6ypnraSSC74IFPT/+2Kyp9CnFQ==
+  dependencies:
+    ghost-ignition "4.2.2"
+    lodash "4.17.20"
 
 "@tryghost/helpers@1.1.30":
   version "1.1.30"
