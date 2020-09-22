@@ -388,21 +388,21 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.1.tgz#f92f9e5938c3bc1839fbc16353009a106bbd19ee"
   integrity sha512-CTLFnSz0XREKZqDUn7yoBWnsVoUa4dWOJrz/3Dk55IVSIaPAG/qcgKCOmroZ9f1IyJZFIrqCRfPOO9k0mUaWoA==
 
-"@tryghost/errors@0.2.3", "@tryghost/errors@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.3.tgz#f3431d00d67c5d6c1b145e8adcdf68ff2464e1fa"
-  integrity sha512-VX/eLFoX/xAJREu9ftZtXBNz3LsFvj0eRFVHDFdn8mu/oBZsEDLlWMqJX2U1fI0M5p9J9mO5hUa1Vrw7oxwHbA==
-  dependencies:
-    ghost-ignition "4.2.2"
-    lodash "4.17.19"
-
-"@tryghost/errors@^0.2.4":
+"@tryghost/errors@0.2.4", "@tryghost/errors@^0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.4.tgz#873107f0915667852f86e616a8698eddf7b1f59e"
   integrity sha512-U0S/oeRCvYDe2Uuzx+D7dKQDW91D24wGm0cP90wf3EOzJH82imYFYgRXT4FZ6ypnraSSC74IFPT/+2Kyp9CnFQ==
   dependencies:
     ghost-ignition "4.2.2"
     lodash "4.17.20"
+
+"@tryghost/errors@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.3.tgz#f3431d00d67c5d6c1b145e8adcdf68ff2464e1fa"
+  integrity sha512-VX/eLFoX/xAJREu9ftZtXBNz3LsFvj0eRFVHDFdn8mu/oBZsEDLlWMqJX2U1fI0M5p9J9mO5hUa1Vrw7oxwHbA==
+  dependencies:
+    ghost-ignition "4.2.2"
+    lodash "4.17.19"
 
 "@tryghost/helpers@1.1.30":
   version "1.1.30"
