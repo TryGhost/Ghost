@@ -269,6 +269,7 @@ const FrameStyles = `
     /* 12vw is the sum horizontal padding of the popup container 
     */
     .gh-portal-content {
+        position: relative;
         overflow-y: scroll;
         padding: 28px 32px 32px;
         max-height: calc(100vh - 12vw);
