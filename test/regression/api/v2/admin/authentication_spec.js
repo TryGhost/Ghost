@@ -413,7 +413,7 @@ describe('Authentication API v2', function () {
                 .then((res) => {
                     should.exist(res.body.errors);
                     res.body.errors[0].type.should.eql('UnauthorizedError');
-                    res.body.errors[0].message.should.eql('Invalid token structure');
+                    res.body.errors[0].message.should.eql('Cannot reset password.');
                 });
         });
 
