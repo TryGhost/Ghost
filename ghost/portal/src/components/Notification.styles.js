@@ -19,8 +19,11 @@ const NotificationStyles = `
         color: var(--white);
         border-radius: 5px;
         box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.12);
-        animation: notification-slidein 0.6s ease-in-out,
-                    notification-slideout 0.6s ease-in-out 2s;
+        animation: notification-slidein 0.6s ease-in-out;
+    }
+
+    .gh-portal-notification.slideout {
+        animation: notification-slideout 0.6s ease-in-out;
     }
 
     .gh-portal-notification p {
