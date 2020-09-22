@@ -19,7 +19,8 @@ const NotificationStyles = `
         color: var(--white);
         border-radius: 5px;
         box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.12);
-        animation: notification-slidein 0.6s ease-in-out;
+        animation: notification-slidein 0.6s ease-in-out,
+                    notification-slideout 0.6s ease-in-out 2s;
     }
 
     .gh-portal-notification p {
@@ -51,7 +52,7 @@ const NotificationStyles = `
         height: 14px;
         padding: 12px;
         transition: all 0.2s ease-in-out forwards;
-        opacity: 0.5;
+        opacity: 0.8;
     }
 
     .gh-portal-notification-closeicon:hover {
@@ -87,6 +88,12 @@ const NotificationStyles = `
         0% { transform: translateY(-100px); }
         60% { transform: translateY(8px); }
         100% { transform: translateY(0); }
+    }
+
+    @keyframes notification-slideout {
+        0% { transform: translateY(0); }
+        40% { transform: translateY(8px); }
+        100% { transform: translateY(-100px); }
     }
 `;
 

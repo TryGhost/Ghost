@@ -15,6 +15,7 @@ import {PlanSectionStyles} from './common/PlansSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {LinkPageStyles} from './pages/LinkPage';
+import {PopupNotificationStyles} from './common/PopupNotification';
 
 // Global styles
 const FrameStyles = `
@@ -661,6 +662,7 @@ const FrameStyle =
     MagicLinkStyles +
     LinkPageStyles +
     SignupPageStyles +
+    PopupNotificationStyles +
     MobileStyles;
 
 export default FrameStyle;

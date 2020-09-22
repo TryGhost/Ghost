@@ -3,6 +3,7 @@ import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
+import PopupNotification from './common/PopupNotification';
 
 const React = require('react');
 
@@ -89,6 +90,7 @@ class PopupContent extends React.Component {
         return (
             <div className='gh-portal-popup-wrapper'>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
+                    <PopupNotification />
                     {this.renderActivePage()}
                 </div>
             </div>
