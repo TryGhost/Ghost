@@ -1,10 +1,12 @@
 import ActionButton from '../common/ActionButton';
+import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
 import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
+// import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
 
 const React = require('react');
 
@@ -416,6 +418,7 @@ class SignupPage extends React.Component {
         return (
             <>
                 <div className={'gh-portal-content signup ' + sectionClass}>
+                    <CloseButton />
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>

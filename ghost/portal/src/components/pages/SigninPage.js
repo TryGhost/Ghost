@@ -1,4 +1,5 @@
 import ActionButton from '../common/ActionButton';
+import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
@@ -139,6 +140,7 @@ export default class SigninPage extends React.Component {
         return (
             <>
                 <div className='gh-portal-content signin'>
+                    <CloseButton />
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>

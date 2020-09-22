@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
+import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
@@ -197,6 +198,7 @@ export default class AccountProfilePage extends React.Component {
         return (
             <>
                 <div className='gh-portal-content with-footer'>
+                    <CloseButton />
                     {this.renderHeader()}
                     <div className='gh-portal-section'>
                         {this.renderProfileData()}

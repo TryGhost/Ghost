@@ -1,5 +1,6 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
+import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
@@ -383,6 +384,7 @@ export default class AccountPlanPage extends React.Component {
         return (
             <>
                 <div className='gh-portal-content'>
+                    <CloseButton />
                     <Header
                         lastPage={lastPage}
                         member={member} brandColor={brandColor} onBack={e => this.onBack(e)}

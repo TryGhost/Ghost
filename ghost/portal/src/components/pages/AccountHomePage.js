@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
+import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
 import {getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
@@ -323,6 +324,7 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
 const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     return (
         <div className='gh-portal-content gh-portal-account-main'>
+            <CloseButton />
             <UserHeader member={member} brandColor={brandColor} />
             <section className='gh-portal-account-data'>
                 <AccountWelcome action={action} member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
