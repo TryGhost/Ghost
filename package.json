@@ -61,7 +61,7 @@
     "@tryghost/mw-session-from-token": "0.1.8",
     "@tryghost/promise": "0.1.1",
     "@tryghost/security": "0.2.0",
-    "@tryghost/session-service": "0.1.8",
+    "@tryghost/session-service": "0.1.9",
     "@tryghost/social-urls": "0.1.12",
     "@tryghost/string": "0.1.11",
     "@tryghost/url-utils": "0.6.20",
