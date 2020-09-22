@@ -1,5 +1,4 @@
 import Frame from './Frame';
-import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
@@ -72,14 +71,6 @@ class PopupContent extends React.Component {
         );
     }
 
-    renderPopupClose() {
-        return (
-            <div className='gh-portal-closeicon-container'>
-                <CloseIcon className='gh-portal-closeicon' alt='Close' onClick = {() => this.context.onAction('closePopup')} />
-            </div>
-        );
-    }
-
     render() {
         const {page, site} = this.context;
         const {portal_plans: portalPlans} = site;
@@ -98,7 +89,6 @@ class PopupContent extends React.Component {
         return (
             <div className='gh-portal-popup-wrapper'>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
-                    {this.renderPopupClose()}
                     {this.renderActivePage()}
                 </div>
             </div>
@@ -126,14 +116,6 @@ export default class PopupModal extends React.Component {
 
     onHeightChange(height) {
         this.setState({height});
-    }
-
-    renderPopupClose() {
-        return (
-            <div className='gh-portal-closeicon-container'>
-                <CloseIcon className='gh-portal-closeicon' onClick = {() => this.context.onAction('closePopup')} />
-            </div>
-        );
     }
 
     handlePopupClose(e) {

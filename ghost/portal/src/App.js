@@ -15,7 +15,7 @@ const DEV_MODE_DATA = {
     showNotification: true,
     site: Fixtures.site,
     member: Fixtures.member.paid,
-    page: 'signup'
+    page: 'accountHome'
 };
 export default class App extends React.Component {
     constructor(props) {
@@ -374,7 +374,7 @@ export default class App extends React.Component {
                 <AppContext.Provider value={this.getContextFromState()}>
                     <PopupModal />
                     <TriggerButton />
-                    <Notification />
+                    {/* <Notification /> */}
                 </AppContext.Provider>
             );
         }

@@ -1,4 +1,5 @@
 import ActionButton from '../common/ActionButton';
+import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 
@@ -69,6 +70,7 @@ export default class MagicLinkPage extends React.Component {
     render() {
         return (
             <div className='gh-portal-content'>
+                <CloseButton />
                 {this.renderFormHeader()}
                 {this.renderCloseButton()}
             </div>
