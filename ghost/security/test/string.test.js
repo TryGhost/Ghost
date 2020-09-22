@@ -78,16 +78,12 @@ describe('Lib: Security - String', function () {
         });
 
         it('should not lose or convert dashes if options are passed with truthy importing flag', function () {
-            let result;
-            const options = {importing: true};
-            result = security.string.safe('-slug-with-starting-ending-and---multiple-dashes-', options);
+            let result = security.string.safe('-slug-with-starting-ending-and---multiple-dashes-', {importing: true});
             result.should.equal('-slug-with-starting-ending-and---multiple-dashes-');
         });
 
         it('should still remove/convert invalid characters when passed options with truthy importing flag', function () {
-            let result;
-            const options = {importing: true};
-            result = security.string.safe('-slug-&with-✓-invalid-characters-に\'', options);
+            let result = security.string.safe('-slug-&with-✓-invalid-characters-に\'', {importing: true});
             result.should.equal('-slug--with--invalid-characters-ni');
         });
     });
