@@ -431,10 +431,10 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.1.0.tgz#988f93ce356f98dbb8b763ee9a10a7a5ca7c1df1"
-  integrity sha512-Xd7fSn9J/iz08YtcYXpd8+xgzNPVOw3GvEdp0Q9V/ve3vknVvDi2tHVthTKVRSTZhxcK8maYOAMf9Wfk8MKq8w==
+"@tryghost/job-manager@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.1.1.tgz#dee0b235f5576681f4c5bbece77e053af93b8820"
+  integrity sha512-z/sWG80vDWTy7o0quyQmDxV2IVQvqFzqYZ5R5+uHX3Sq9u4L42BMLfNpPI83ldY+W+0/fP1vMxjC3mI1vaj/Gg==
   dependencies:
     fastq "1.8.0"
     p-wait-for "3.1.0"
