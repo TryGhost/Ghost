@@ -65,7 +65,7 @@
     "@tryghost/social-urls": "0.1.12",
     "@tryghost/string": "0.1.11",
     "@tryghost/url-utils": "0.6.20",
-    "@tryghost/vhost-middleware": "1.0.8",
+    "@tryghost/vhost-middleware": "1.0.9",
     "@tryghost/zip": "1.1.3",
     "ajv": "6.12.5",
     "amperize": "0.6.1",
