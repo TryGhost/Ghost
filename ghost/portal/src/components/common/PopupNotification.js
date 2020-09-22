@@ -17,8 +17,11 @@ export const PopupNotificationStyles = `
                     0px 2.2538793087005615px 2.2538793087005615px 0px rgba(0,0,0,0.02), 
                     0px 5.426473140716553px 5.426473140716553px 0px rgba(0,0,0,0.03),  
                     0px 18px 18px 0px rgba(0,0,0,0.04);
-        animation: popupnotification-slidein 0.6s ease-in-out,
-                    popupnotification-slideout 0.6s ease-in-out 2s;
+        animation: popupnotification-slidein 0.6s ease-in-out;
+    }
+
+    .gh-portal-popupnotification.slideout {
+        animation: popupnotification-slideout 0.6s ease-in-out;
     }
 
     .gh-portal-popupnotification p {
