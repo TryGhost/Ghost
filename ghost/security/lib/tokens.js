@@ -87,12 +87,18 @@ module.exports.resetToken = {
         let i;
 
         if (isNaN(parts.expires)) {
-            return false;
+            return {
+                correct: false,
+                reason: 'invalid_expiry'
+            };
         }
 
         // Check if token is expired to prevent replay attacks
         if (parts.expires < Date.now()) {
-            return false;
+            return {
+                correct: false,
+                reason: 'expired'
+            };
         }
 
         generatedToken = exports.resetToken.generateHash({
@@ -110,6 +116,14 @@ module.exports.resetToken = {
             diff |= tokenToCompare.charCodeAt(i) ^ generatedToken.charCodeAt(i);
         }
 
-        return diff === 0;
+        const result = {
+            correct: (diff === 0)
+        };
+
+        if (!result.correct) {
+            result.reason = 'invalid';
+        }
+
+        return result;
     }
 };

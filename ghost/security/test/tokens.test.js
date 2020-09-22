@@ -39,7 +39,8 @@ describe('Utils: tokens', function () {
             password: '12345678'
         });
 
-        tokenIsCorrect.should.eql(true);
+        tokenIsCorrect.correct.should.eql(true);
+        should(tokenIsCorrect.reason).be.undefined;
     });
 
     it('compare: error from invalid password', function () {
@@ -61,7 +62,8 @@ describe('Utils: tokens', function () {
             password: '123456'
         });
 
-        tokenIsCorrect.should.eql(false);
+        tokenIsCorrect.correct.should.eql(false);
+        tokenIsCorrect.reason.should.eql('invalid');
     });
 
     it('compare: error from invalid expires parameter', function () {
@@ -83,7 +85,8 @@ describe('Utils: tokens', function () {
             password: '123456'
         });
 
-        tokenIsCorrect.should.eql(false);
+        tokenIsCorrect.correct.should.eql(false);
+        tokenIsCorrect.reason.should.eql('invalid_expiry');
     });
 
     it('compare: error from expired token', function () {
@@ -105,7 +108,8 @@ describe('Utils: tokens', function () {
             password: '123456'
         });
 
-        tokenIsCorrect.should.eql(false);
+        tokenIsCorrect.correct.should.eql(false);
+        tokenIsCorrect.reason.should.eql('expired');
     });
 
     it('extract', function () {
@@ -189,7 +193,7 @@ describe('Utils: tokens', function () {
             password: '12345678'
         });
 
-        tokenIsCorrect.should.eql(true);
+        tokenIsCorrect.correct.should.eql(true);
     });
 });
 
