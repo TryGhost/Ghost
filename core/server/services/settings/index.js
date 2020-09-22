@@ -21,7 +21,8 @@ module.exports = {
         for (const model of settingsCollection.models) {
             const key = model.attributes.key;
 
-            if (newSettings[key] !== oldSettings[key]) {
+            // The type of setting is object. That's why we need to compare the value of the `value` property.
+            if (newSettings[key].value !== oldSettings[key].value) {
                 model.emitChange(key + '.' + 'edited', {});
             }
         }
