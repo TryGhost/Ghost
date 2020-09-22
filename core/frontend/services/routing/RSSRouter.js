@@ -28,7 +28,7 @@ class RSSRouter extends ParentRouter {
     }
 
     /**
-     * @description Simple controller function to redirect /rss to /feed
+     * @description Simple controller function to redirect /feed to /rss
      * @param {Object} req
      * @param {Object}res
      * @private
