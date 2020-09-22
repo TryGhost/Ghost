@@ -44,7 +44,7 @@
     "@sentry/node": "5.24.2",
     "@tryghost/adapter-manager": "0.1.11",
     "@tryghost/bootstrap-socket": "0.2.2",
-    "@tryghost/constants": "0.1.0",
+    "@tryghost/constants": "0.1.1",
     "@tryghost/errors": "0.2.3",
     "@tryghost/helpers": "1.1.30",
     "@tryghost/image-transform": "1.0.3",
