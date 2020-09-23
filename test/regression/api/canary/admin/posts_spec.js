@@ -90,6 +90,35 @@ describe('Posts API', function () {
                 });
         });
 
+        it('can filter by fields coming from posts_meta table', function (done) {
+            request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:-null`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    localUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(1);
+                    jsonResponse.posts[0].id.should.equal('CHECK IF ID IS CORRECT');
+
+                    localUtils.API.checkResponse(
+                        jsonResponse.posts[0],
+                        'post'
+                    );
+
+                    localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+
+                    done();
+                });
+        });
+
         it('can order by fields coming from posts_meta table', function (done) {
             request.get(localUtils.API.getApiQuery('posts/?order=meta_description%20ASC'))
                 .set('Origin', config.get('url'))
