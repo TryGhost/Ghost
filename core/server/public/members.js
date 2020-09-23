@@ -8,8 +8,10 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             errorEl.innerText = '';
         }
         form.classList.remove('success', 'invalid', 'error');
-        var input = event.target.querySelector('input[data-members-email]');
-        var email = input.value;
+        var emailInput = event.target.querySelector('input[data-members-email]');
+        var nameInput = event.target.querySelector('input[data-members-name]');
+        var email = emailInput.value;
+        var name = nameInput.value;
         var emailType = undefined;
         var labels = [];
 
@@ -31,7 +33,8 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             body: JSON.stringify({
                 email: email,
                 emailType: emailType,
-                labels: labels
+                labels: labels,
+                name: name
             })
         }).then(function (res) {
             form.addEventListener('submit', submitHandler);
