@@ -7,7 +7,7 @@ const NotificationStyles = `
         align-items: stretch;
         padding: 12px;
     }
-    
+
     .gh-portal-notification {
         position: relative;
         width: 100%;
@@ -24,6 +24,10 @@ const NotificationStyles = `
 
     .gh-portal-notification.slideout {
         animation: notification-slideout 0.6s ease-in-out;
+    }
+
+    .gh-portal-notification.hide {
+        display: none;
     }
 
     .gh-portal-notification p {
@@ -100,7 +104,7 @@ const NotificationStyles = `
     }
 `;
 
-const NotificationStyle = 
+const NotificationStyle =
     GlobalStyles +
     NotificationStyles;
 
