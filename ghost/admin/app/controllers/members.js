@@ -132,7 +132,17 @@ export default class MembersController extends Controller {
     @action
     exportData() {
         let exportUrl = ghostPaths().url.api('members/upload');
-        let downloadURL = `${exportUrl}?limit=all`;
+        let downloadParams = new URLSearchParams();
+        downloadParams.set('limit', 'all');
+        if (this.paidParam !== null) {
+            downloadParams.set('paid', this.paidParam);
+        }
+        if (this.label !== null) {
+            downloadParams.set('filter', `label:${this.label}`);
+        }
+        if (this.searchText !== '') {
+            downloadParams.set('search', this.searchText);
+        }
         let iframe = document.getElementById('iframeDownload');
 
         if (!iframe) {
@@ -141,7 +151,7 @@ export default class MembersController extends Controller {
             iframe.style.display = 'none';
             document.body.append(iframe);
         }
-        iframe.setAttribute('src', downloadURL);
+        iframe.setAttribute('src', `${exportUrl}?${downloadParams.toString()}`);
     }
 
     @action

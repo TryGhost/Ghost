@@ -37,10 +37,20 @@
                             <span>Import members</span>
                         </LinkTo>
                     </li>
-                    <li>
-                        <button class="mr2" {{on "click" this.exportData}}>
-                            <span>Export all members</span>
-                        </button>
+                    <li class="{{if this.members.length "" "disabled"}}">
+                        {{#if this.members.length}}
+                            <button class="mr2" {{on "click" this.exportData}}>
+                                {{#if this.showingAll}}
+                                    <span>Export all members</span>
+                                {{else}}
+                                <span>Export selected members ({{this.members.length}})</span>
+                                {{/if}}
+                            </button>
+                        {{else}}
+                            <button class="mr2" disabled="true">
+                                <span>Export selected members (0)</span>
+                            </button>
+                        {{/if}}
                     </li>
                 </GhDropdown>
             </span>
