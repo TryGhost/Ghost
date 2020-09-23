@@ -196,9 +196,6 @@ const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, 
     const {name, email, subscribed} = member;
 
     let label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
-    if (action === 'updateNewsletter:success') {
-        label = '✓ Newsletter updated';
-    }
     return (
         <div className='gh-portal-list'>
             <section>

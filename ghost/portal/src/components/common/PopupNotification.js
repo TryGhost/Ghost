@@ -46,7 +46,7 @@ export const PopupNotificationStyles = `
         transition: all 0.2s ease-in-out forwards;
         opacity: 0.8;
     }
-    
+
     .gh-portal-popupnotification .closeicon:hover {
         opacity: 1.0;
     }
@@ -72,13 +72,99 @@ export const PopupNotificationStyles = `
     }
 `;
 
+const CloseButton = ({hide = false}) => {
+    if (hide) {
+        return null;
+    }
+    return (
+        <CloseIcon className='closeicon' alt='Close' />
+    );
+};
+
+const NotificationText = ({type, status}) => {
+    if (type === 'updateNewsletter:success') {
+        return (
+            <p> Newsletter updated! </p>
+        );
+    } else if (type === 'updateSubscription:success') {
+        return (
+            <p> Subscription updated! </p>
+        );
+    } else if (type === 'updateProfile:success') {
+        return (
+            <p> Profile Updated! </p>
+        );
+    } else if (type === 'updateProfile:failed') {
+        return (
+            <p> Failed to update profile! </p>
+        );
+    }
+    const label = status === 'success' ? 'Success' : 'Failed';
+    return (
+        <p> ${label}</p>
+    );
+};
+
 export default class PopupNotification extends React.Component {
     static contextType = AppContext;
+    constructor() {
+        super();
+        this.state = {
+            className: '',
+            notificationType: ''
+        };
+    }
+
+    onAnimationEnd(e) {
+        if (e.animationName === 'popupnotification-slideout') {
+            this.context.onAction('clearPopupNotification');
+        }
+    }
+
+    componentDidUpdate() {
+        const {popupNotification} = this.context;
+        if (popupNotification.count !== this.state.count) {
+            clearTimeout(this.timeoutId);
+            this.handlePopupNotification({popupNotification});
+        }
+    }
+
+    handlePopupNotification({popupNotification}) {
+        if (popupNotification.autoHide) {
+            const {duration = 2000} = popupNotification;
+            this.timeoutId = setTimeout(() => {
+                this.setState({
+                    className: 'slideout',
+                    notificationCount: popupNotification.count
+                });
+            }, duration);
+        } else {
+            this.setState({
+                notificationCount: popupNotification.count
+            });
+        }
+    }
+
+    componentDidMount() {
+        const {popupNotification} = this.context;
+        this.handlePopupNotification({popupNotification});
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timeoutId);
+    }
+
     render() {
+        const {popupNotification} = this.context;
+        const {className} = this.state;
+        const {type, status, closeable} = popupNotification;
+        const statusClass = status ? `  ${status}` : '';
+        const slideClass = className ? ` ${className}` : '';
+
         return (
-            <div className='gh-portal-popupnotification success'>
-                <p>Plan changed successfully</p>
-                <CloseIcon className='closeicon' alt='Close' />
+            <div className={`gh-portal-popupnotification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
+                <NotificationText type={type} status={status} />
+                <CloseButton hide={!closeable} />
             </div>
         );
     }
