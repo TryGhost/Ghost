@@ -8,7 +8,6 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -185,10 +184,8 @@ export default Controller.extend({
                     throw 'invalid url';
                 }
 
-                this.set('settings.facebook', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('settings.facebook', newUrl);
-                });
+                this.settings.set('facebook', newUrl);
+                this.settings.notifyPropertyChange('facebook');
             } catch (e) {
                 if (e === 'invalid url') {
                     errMessage = 'The URL must be in a format like '
@@ -243,12 +240,9 @@ export default Controller.extend({
 
                 newUrl = `https://twitter.com/${username}`;
 
-                this.get('settings.hasValidated').pushObject('twitter');
-
-                this.set('settings.twitter', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('settings.twitter', newUrl);
-                });
+                this.settings.get('hasValidated').pushObject('twitter');
+                this.settings.set('twitter', newUrl);
+                this.settings.notifyPropertyChange('twitter');
             } else {
                 errMessage = 'The URL must be in a format like '
                            + 'https://twitter.com/yourUsername';
@@ -274,6 +268,14 @@ export default Controller.extend({
     save: task(function* () {
         let notifications = this.notifications;
         let config = this.config;
+
+        if (this.settings.get('twitter') !== this._scratchTwitter) {
+            this.send('validateTwitterUrl');
+        }
+
+        if (this.settings.get('facebook') !== this._scratchFacebook) {
+            this.send('validateFacebookUrl');
+        }
 
         try {
             let settings = yield this.settings.save();
