@@ -1,6 +1,6 @@
 import React from 'react';
 import {render} from '@testing-library/react';
-import {site, member} from './utils/fixtures';
+import {site} from './utils/fixtures';
 import App from './App';
 
 const setup = (overrides) => {
