@@ -76,6 +76,10 @@ class NotificationContent extends React.Component {
         };
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.timeoutId);
+    }
+
     onNotificationClose() {
         this.props.onHideNotification();
     }
@@ -97,7 +101,7 @@ class NotificationContent extends React.Component {
                 className: 'slideout'
             });
         } else if (autoHide) {
-            setTimeout(() => {
+            this.timeoutId = setTimeout(() => {
                 this.setState({
                     className: 'slideout'
                 });

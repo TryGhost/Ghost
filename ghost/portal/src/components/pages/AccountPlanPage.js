@@ -251,6 +251,10 @@ export default class AccountPlanPage extends React.Component {
         this.state = this.getInitialState();
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.timeoutId);
+    }
+
     getInitialState() {
         const {member, site} = this.context;
         this.plans = getSitePlans({site, includeFree: false});
@@ -309,7 +313,7 @@ export default class AccountPlanPage extends React.Component {
         // Work as checkboxes for free member plan selection and button for paid members
         if (!isPaidMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
-            setTimeout(() => {
+            this.timeoutId = setTimeout(() => {
                 this.setState((state) => {
                     return {
                         selectedPlan: name

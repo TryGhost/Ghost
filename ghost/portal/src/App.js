@@ -19,8 +19,11 @@ const DEV_MODE_DATA = {
 export default class App extends React.Component {
     constructor(props) {
         super(props);
-        // Setup custom trigger button handling
-        this.setupCustomTriggerButton();
+
+        if (!props.testState) {
+            // Setup custom trigger button handling
+            this.setupCustomTriggerButton();
+        }
 
         // testState is used by App.test to pass custom default state for testing
         this.state = props.testState || {
@@ -35,7 +38,9 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
-        this.initSetup();
+        if (!this.props.testState) {
+            this.initSetup();
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -45,7 +50,8 @@ export default class App extends React.Component {
     }
 
     componentWillUnmount() {
-        this.customTriggerButtons.forEach((customTriggerButton) => {
+        clearTimeout(this.timeoutId);
+        this.customTriggerButtons && this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.removeEventListener('click', this.clickHandler);
         });
     }
