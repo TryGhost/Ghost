@@ -31,9 +31,8 @@ const order = function order(Bookshelf) {
                 field = match[1].toLowerCase();
                 direction = match[2].toUpperCase();
 
-                const fieldRegexp = new RegExp(`${field}$`);
-                const matchingOrderAttribute = orderAttributes.find((value) => {
-                    return value.match(fieldRegexp);
+                const matchingOrderAttribute = orderAttributes.find((orderAttribute) => {
+                    return orderAttribute.endsWith(`.${field}`);
                 });
 
                 if (!matchingOrderAttribute) {
