@@ -23,60 +23,46 @@ const Styles = () => {
     };
 };
 
-const NotificationText = ({type, status}) => {
+const NotificationText = ({type, status, context}) => {
     if (type === 'signin' && status === 'success') {
         return (
             <p>
-                Hey, you are successfully signed in!
+                Welcome back! You've successfully signed in.
             </p>
         );
     } else if (type === 'signin' && status === 'error') {
         return (
             <p>
-                Hey, looks like you used an invalid link to signin!
+                Could not sign in! Login link expired. <a href="/#/portal/signin" target="_parent">Click here to retry</a>
             </p>
         );
     } else if (type === 'signup' && status === 'success') {
         return (
             <p>
-                Hey, you are successfully signed up!
+                You've successfully subscribed to {context.site.title}
             </p>
         );
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                Hey, looks like you used an invalid link to signup!
+                Could not sign up! Invalid sign up link. <a href="/#/portal/signup" target="_parent">Click here to retry</a>
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
         return (
             <p>
-                You have successfully subscribed to the plan!
-            </p>
-        );
-    } else if (type === 'stripe:checkout' && status === 'warning') {
-        return (
-            <p>
-                Strpie checkout flow was cancelled.
+                Success! Your account is fully activated, you now have access to all content.
             </p>
         );
     } else if (type === 'stripe:billing-update' && status === 'success') {
         return (
             <p>
-                Successfully updated your billing details on Stripe
-            </p>
-        );
-    } else if (type === 'stripe:billing-update' && status === 'warning') {
-        return (
-            <p>
-                Cancelled your billing update flow on Stripe
+                You've successfully updated your billing information
             </p>
         );
     }
     return (
-        <p>
-            Hey, this is a neutral notification. I hope you feel well today, here's a <a href='http://ghost.org' target='_blank' rel='noopener noreferrer'>link</a> for you.
-        </p>
+        <></>
     );
 };
 
@@ -119,7 +105,7 @@ class NotificationContent extends React.Component {
         return (
             <div className='gh-portal-notification-wrapper'>
                 <div className={`gh-portal-notification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
-                    <NotificationText type={type} status={status} />
+                    <NotificationText type={type} status={status} context={this.context} />
                     <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
                 </div>
             </div>
