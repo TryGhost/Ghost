@@ -12,11 +12,19 @@ module.exports = {
     },
 
     async reinit() {
+        const oldSettings = SettingsCache.getAll();
+
         SettingsCache.shutdown();
         const settingsCollection = await models.Settings.populateDefaults();
-        SettingsCache.init(settingsCollection);
+        const newSettings = SettingsCache.init(settingsCollection);
+
         for (const model of settingsCollection.models) {
-            model.emitChange(model.attributes.key + '.' + 'edited', {});
+            const key = model.attributes.key;
+
+            // The type of setting is object. That's why we need to compare the value of the `value` property.
+            if (newSettings[key].value !== oldSettings[key].value) {
+                model.emitChange(key + '.' + 'edited', {});
+            }
         }
     },
 
