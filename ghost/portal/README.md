@@ -1,7 +1,7 @@
 # Portal
 
 [![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/portal/actions)
-[![npm version](https://badge.fury.io/js/%40tryghost%2Fmembers-js.svg)](https://badge.fury.io/js/%40tryghost%2Fmembers-js)
+[![npm version](https://badge.fury.io/js/%40tryghost%portal.svg)](https://badge.fury.io/js/%40tryghost%2Fportal)
 
 Drop-in script to make the bulk of Ghost membership features work on any theme.
 
@@ -10,18 +10,25 @@ Drop-in script to make the bulk of Ghost membership features work on any theme.
 Add below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
 
 ```html
-<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js" data-ghost="https://mymemberssite.com"></script>
+<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/portal.min.js" data-ghost="https://mymemberssite.com"></script>
 ```
 
 The `data-ghost` attribute expects the URL for your site which is the only input Portal needs to work with your site's membership data via Ghost APIs.
 
-NOTE: This is currently under active development and available only behind developer experiments flag - `enableDeveloperExperiments` in Ghost, which needs to be added to config file before starting the server.
+NOTE: This is currently under active development and can be switched on with a new dedicated flag - `portal` - in [Ghost config](https://ghost.org/docs/concepts/config/), which needs to be added to config file before starting the server.
+
+```json
+{
+    ...,
+    "portal": true
+}
+```
 
 ### Custom trigger button
 
 By default, the script adds a default floating trigger button on the bottom right of your page which is used to trigger the popup on screen.
 
-Its possible to override the default trigger button with your own by adding data attribute `data-portal` to any HTML tag on page, which will hide the default trigger and allow controlling the popup state by clicking on this element.
+Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specfic [page](https://github.com/TryGhost/Portal/blob/master/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-members-popup-open` and `gh-members-popup-close`, allowing devs to update its UI based on popup state.
 
@@ -42,19 +49,19 @@ yarn
 
 ## Configure for local development
 
-Only useful for active UI development without publishing a version on unpkg. Always use the unpkg link for testing latest released members.js.
+Only useful for active UI development without publishing a version on unpkg. Always use the unpkg link for testing latest released portal script.
 
 #### In this repo(Portal):
 
-- Run `yarn build` to create the minified bundle with your changes at `umd/members.min.js`
+- Run `yarn build` to create the minified bundle with your changes at `umd/portal.min.js`
 
 #### In your theme(Ex. Lyra):
 
-- Copy `members.min.js` from above and paste it in your theme at `assets/built/members.min.js`
+- Copy `portal.min.js` from above and paste it in your theme at `assets/built/portal.min.js`
 - Add below code in your theme's `default.hbs` just before end of body tag
 
 ```html
-<script src="{{asset "built/members.min.js"}}"></script>
+<script src='{{asset "built/portal.min.js"}}'></script>
 ```
 
 ## Available Scripts
@@ -71,7 +78,7 @@ You will also see any lint errors in the console.
 
 ### `yarn build`
 
-Creates the production single minified bundle for external use in `umd/members.min.js`.  <br />
+Creates the production single minified bundle for external use in `umd/portal.min.js`.  <br />
 
 ### `yarn test`
 
