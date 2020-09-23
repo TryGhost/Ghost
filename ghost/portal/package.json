@@ -2,7 +2,7 @@
   "name": "@tryghost/members-js",
   "version": "0.9.1",
   "license": "MIT",
-  "repository": "git@github.com:TryGhost/membersjs.git",
+  "repository": "git@github.com:TryGhost/portal.git",
   "author": "Ghost Foundation",
   "unpkg": "umd/members.min.js",
   "files": [

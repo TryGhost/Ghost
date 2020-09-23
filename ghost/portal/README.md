@@ -1,6 +1,6 @@
-# Members.js
+# Portal
 
-[![CI Status](https://github.com/TryGhost/members.js/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/members.js/actions)
+[![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/portal/actions)
 [![npm version](https://badge.fury.io/js/%40tryghost%2Fmembers-js.svg)](https://badge.fury.io/js/%40tryghost%2Fmembers-js)
 
 Drop-in script to make the bulk of Ghost membership features work on any theme.
@@ -30,13 +30,13 @@ The script also adds custom class names to this element for open and close state
 1. Clone this repository:
 
 ```shell
-git@github.com:TryGhost/members.js.git
+git@github.com:TryGhost/portal.git
 ```
 
 2. Change into the new directory and install the dependencies:
 
 ```shell
-cd members.js
+cd portal
 yarn
 ```
 
@@ -44,7 +44,7 @@ yarn
 
 Only useful for active UI development without publishing a version on unpkg. Always use the unpkg link for testing latest released members.js.
 
-#### In this repo(Members.js):
+#### In this repo(Portal):
 
 - Run `yarn build` to create the minified bundle with your changes at `umd/members.min.js`
 
