@@ -399,7 +399,10 @@ module.exports = {
 
     exportCSV: {
         options: [
-            'limit'
+            'limit',
+            'filter',
+            'search',
+            'paid'
         ],
         headers: {
             disposition: {
