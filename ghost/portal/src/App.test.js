@@ -6,7 +6,7 @@ import App from './App';
 const setup = (overrides) => {
     const testState = {
         site,
-        member: member.free,
+        member: null,
         action: 'init:success',
         brandColor: site.accent_color,
         page: 'signup',

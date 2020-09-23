@@ -148,6 +148,10 @@ class SignupPage extends React.Component {
         }
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.timeoutId);
+    }
+
     handleSignup(e) {
         e.preventDefault();
         this.setState((state) => {
@@ -190,7 +194,7 @@ class SignupPage extends React.Component {
     handleSelectPlan(e, name) {
         e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
-        setTimeout(() => {
+        this.timeoutId = setTimeout(() => {
             this.setState((prevState) => {
                 return {
                     plan: name
@@ -414,7 +418,7 @@ class SignupPage extends React.Component {
                 sectionClass = 'singleplan';
             }
         }
-        
+
         return (
             <>
                 <div className={'gh-portal-content signup ' + sectionClass}>
