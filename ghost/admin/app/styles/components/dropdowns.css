@@ -131,7 +131,7 @@
 .dropdown-menu > .disabled > button,
 .dropdown-menu > .disabled > button:hover,
 .dropdown-menu > .disabled > button:focus {
-    color: var(--midgrey);
+    color: var(--midlightgrey-l1);
 }
 
 .dropdown-menu > .disabled > a:hover,
@@ -141,7 +141,7 @@
     background-color: transparent;
     background-image: none;
     text-decoration: none;
-    cursor: not-allowed;
+    cursor: auto;
 }
 
 
