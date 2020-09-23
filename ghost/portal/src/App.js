@@ -12,7 +12,6 @@ const React = require('react');
 
 const DEV_MODE_DATA = {
     showPopup: true,
-    showNotification: true,
     site: Fixtures.site,
     member: Fixtures.member.paid,
     page: 'accountHome'
@@ -29,7 +28,6 @@ export default class App extends React.Component {
             member: null,
             page: 'loading',
             showPopup: false,
-            showNotification: false,
             action: 'init:running',
             initStatus: 'running',
             lastPage: null
@@ -90,15 +88,12 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, showNotification, notificationType, notificationStatus} = await this.fetchData();
+            const {site, member, page, showPopup} = await this.fetchData();
             this.setState({
                 site,
                 member,
                 page,
                 showPopup,
-                showNotification,
-                notificationType,
-                notificationStatus,
                 action: 'init:success',
                 initStatus: 'success'
             });
@@ -125,7 +120,6 @@ export default class App extends React.Component {
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
         const {site: linkSiteData, ...restLinkData} = this.fetchLinkData();
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
-        const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
 
         const stripeParam = this.getStripeUrlParam();
         let page = '';
@@ -142,27 +136,11 @@ export default class App extends React.Component {
                 ...apiSiteData,
                 ...linkSiteData,
                 ...previewSiteData,
-                ...notificationSiteData,
                 ...devSiteData
             },
-            ...restNotificationData,
             ...restDevData,
             ...restLinkData,
             ...restPreviewData
-        };
-    }
-
-    /** Fetch state for any notifications */
-    fetchNotificationData() {
-        const qs = window.location.search;
-        const qsParams = new URLSearchParams(qs);
-        const notificationType = qsParams.get('action');
-        const notificationStatus = qsParams.get('success') ? JSON.parse(qsParams.get('success')) : null;
-        const showNotification = !!notificationType;
-        return {
-            showNotification: showNotification,
-            notificationType,
-            notificationStatus
         };
     }
 
@@ -350,7 +328,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from data/state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, showNotification, notificationType, notificationStatus} = this.state;
+        const {site, member, action, page, lastPage, showPopup} = this.state;
         const contextPage = this.getContextPage({page, member});
         const contextMember = this.getContextMember({page: contextPage, member});
         return {
@@ -361,9 +339,6 @@ export default class App extends React.Component {
             member: contextMember,
             lastPage,
             showPopup,
-            showNotification,
-            notificationType,
-            notificationStatus,
             onAction: (_action, data) => this.onAction(_action, data)
         };
     }
