@@ -18,7 +18,7 @@ const NotificationStyles = `
         background: var(--grey1);
         color: var(--white);
         border-radius: 5px;
-        box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.08);
         animation: notification-slidein 0.6s ease-in-out;
     }
 

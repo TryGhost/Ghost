@@ -4,7 +4,7 @@ export const handleAuthActions = ({action, status}) => {
         return {
             type: action,
             status: successStatus ? 'success' : 'error',
-            duration: 2000,
+            duration: 3000,
             autoHide: successStatus ? true : false
         };
     }
@@ -17,7 +17,7 @@ export const handleStripeActions = ({status}) => {
         return {
             type: 'stripe:checkout',
             status: statusVal,
-            duration: 2000,
+            duration: 3000,
             autoHide: true
         };
     } else if (['billing-update-success', 'billing-update-cancel'].includes(status)) {
@@ -25,7 +25,7 @@ export const handleStripeActions = ({status}) => {
         return {
             type: 'stripe:billing-update',
             status: statusVal,
-            duration: 2000,
+            duration: 3000,
             autoHide: true
         };
     }
