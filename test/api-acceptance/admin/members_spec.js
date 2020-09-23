@@ -346,6 +346,25 @@ describe('Members API', function () {
         should.exist(csv.data.find(row => row.email === 'member2@test.com'));
     });
 
+    it('Can export a filtered CSV', async function () {
+        const res = await request
+            .get(localUtils.API.getApiQuery(`members/upload/?search=Egg`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /text\/csv/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        res.headers['content-disposition'].should.match(/Attachment;\sfilename="members/);
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
+
+        const csv = Papa.parse(res.text, {header: true});
+        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
+        should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
+        should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
+        should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
+    });
+
     it('Can import CSV', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
