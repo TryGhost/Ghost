@@ -80,9 +80,23 @@ class NotificationContent extends React.Component {
         this.props.onHideNotification();
     }
 
+    componentDidUpdate() {
+        const {showPopup} = this.context;
+        if (!this.state.className && showPopup) {
+            this.setState({
+                className: 'slideout'
+            });
+        }
+    }
+
     componentDidMount() {
         const {autoHide, duration = 2000} = this.props;
-        if (autoHide) {
+        const {showPopup} = this.context;
+        if (showPopup) {
+            this.setState({
+                className: 'slideout'
+            });
+        } else if (autoHide) {
             setTimeout(() => {
                 this.setState({
                     className: 'slideout'

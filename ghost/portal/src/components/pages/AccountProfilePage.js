@@ -186,10 +186,6 @@ export default class AccountProfilePage extends React.Component {
         );
     }
 
-    onToggleSubscription(e, subscribed) {
-        this.context.onAction('updateMember', {subscribed: !subscribed});
-    }
-
     render() {
         const {member} = this.context;
         if (!member) {

@@ -72,6 +72,16 @@ class PopupContent extends React.Component {
         );
     }
 
+    renderPopupNotification() {
+        const {popupNotification} = this.context;
+        if (!popupNotification || !popupNotification.type) {
+            return null;
+        }
+        return (
+            <PopupNotification />
+        );
+    }
+
     render() {
         const {page, site} = this.context;
         const {portal_plans: portalPlans} = site;
@@ -90,7 +100,7 @@ class PopupContent extends React.Component {
         return (
             <div className='gh-portal-popup-wrapper'>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
-                    {/* <PopupNotification /> */}
+                    {this.renderPopupNotification()}
                     {this.renderActivePage()}
                 </div>
             </div>
