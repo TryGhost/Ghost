@@ -90,7 +90,7 @@ class PopupContent extends React.Component {
         return (
             <div className='gh-portal-popup-wrapper'>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
-                    <PopupNotification />
+                    {/* <PopupNotification /> */}
                     {this.renderActivePage()}
                 </div>
             </div>
