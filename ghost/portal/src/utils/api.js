@@ -104,7 +104,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 if (res.ok) {
                     return 'Success';
                 } else {
-                    return 'Failed to send magic link';
+                    throw new Error('Failed to send magic link email');
                 }
             });
         },

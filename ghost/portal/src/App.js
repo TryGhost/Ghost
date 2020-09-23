@@ -328,7 +328,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from data/state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup} = this.state;
+        const {site, member, action, page, lastPage, showPopup, popupNotification} = this.state;
         const contextPage = this.getContextPage({page, member});
         const contextMember = this.getContextMember({page: contextPage, member});
         return {
@@ -339,6 +339,7 @@ export default class App extends React.Component {
             member: contextMember,
             lastPage,
             showPopup,
+            popupNotification,
             onAction: (_action, data) => this.onAction(_action, data)
         };
     }

@@ -1,3 +1,17 @@
+function createPopupNotification({type, status, autoHide, closeable, state}) {
+    let count = 0;
+    if (state.popupNotification) {
+        count = (state.popupNotification.count || 0) + 1;
+    }
+    return {
+        type,
+        status,
+        autoHide,
+        closeable,
+        count
+    };
+}
+
 function switchPage({data}) {
     return {
         page: data.page,
@@ -32,6 +46,7 @@ function closePopup({state}) {
     return {
         showPopup: false,
         lastPage: null,
+        popupNotification: null,
         page: state.page === 'magiclink' ? '' : state.page
     };
 }
@@ -57,29 +72,71 @@ async function signout({api}) {
 }
 
 async function signin({data, api}) {
-    await api.member.sendMagicLink(data);
-    return {
-        page: 'magiclink'
-    };
+    try {
+        await api.member.sendMagicLink(data);
+        return {
+            page: 'magiclink'
+        };
+    } catch (e) {
+        return {
+            popupNotification: createPopupNotification({
+                type: 'signin:failed',
+                autoHide: false,
+                closeable: true,
+                status: 'error',
+                meta: {
+                    reason: e.message
+                }
+            })
+        };
+    }
 }
 
 async function signup({data, api}) {
-    const {plan, email, name} = data;
-    if (plan.toLowerCase() === 'free') {
-        await api.member.sendMagicLink(data);
-    } else {
-        await api.member.checkoutPlan({plan, email, name});
+    try {
+        const {plan, email, name} = data;
+        if (plan.toLowerCase() === 'free') {
+            await api.member.sendMagicLink(data);
+        } else {
+            await api.member.checkoutPlan({plan, email, name});
+        }
+        return {
+            page: 'magiclink'
+        };
+    } catch (e) {
+        return {
+            popupNotification: createPopupNotification({
+                type: 'signup:failed',
+                autoHide: false,
+                closeable: true,
+                status: 'error',
+                meta: {
+                    reason: e.message
+                }
+            })
+        };
     }
-    return {
-        page: 'magiclink'
-    };
 }
 
 async function updateEmail({data, api}) {
-    await api.member.sendMagicLink(data);
-    return {
-        action: 'updateEmail:success'
-    };
+    try {
+        await api.member.sendMagicLink(data);
+        return {
+            action: 'updateEmail:success'
+        };
+    } catch (e) {
+        return {
+            popupNotification: createPopupNotification({
+                type: 'updateEmail:failed',
+                autoHide: false,
+                closeable: true,
+                status: 'error',
+                meta: {
+                    reason: e.message
+                }
+            })
+        };
+    }
 }
 
 async function checkoutPlan({data, api}) {
@@ -89,14 +146,21 @@ async function checkoutPlan({data, api}) {
     });
 }
 
-async function updateSubscription({data, api}) {
+async function updateSubscription({data, state, api}) {
     const {plan, subscriptionId, cancelAtPeriodEnd} = data;
     await api.member.updateSubscription({
         planName: plan, subscriptionId, cancelAtPeriodEnd
     });
     const member = await api.member.sessionData();
+    const action = 'updateSubscription:success';
     return {
-        action: 'updateSubscription:success',
+        action,
+        popupNotification: createPopupNotification({
+            type: action,
+            autoHide: true,
+            closeable: true,
+            state
+        }),
         page: 'accountHome',
         member: member
     };
@@ -119,22 +183,13 @@ async function editBilling({data, api}) {
     await api.member.editBilling();
 }
 
-async function updateMember({data, api}) {
-    const {name, subscribed} = data;
-    const member = await api.member.update({name, subscribed});
-    if (!member) {
-        return {
-            action: 'updateMember:failed'
-        };
-    } else {
-        return {
-            action: 'updateMember:success',
-            member: member
-        };
-    }
+async function clearPopupNotification() {
+    return {
+        popupNotification: null
+    };
 }
 
-async function updateNewsletter({data, api}) {
+async function updateNewsletter({data, state, api}) {
     const {subscribed} = data;
     const member = await api.member.update({subscribed});
     if (!member) {
@@ -142,25 +197,48 @@ async function updateNewsletter({data, api}) {
             action: 'updateNewsletter:failed'
         };
     } else {
+        const action = 'updateNewsletter:success';
         return {
-            action: 'updateNewsletter:success',
-            member: member
+            action,
+            member: member,
+            popupNotification: createPopupNotification({
+                type: action,
+                autoHide: true,
+                closeable: true,
+                state
+            })
         };
     }
 }
 
-async function updateProfile({data, api}) {
+async function updateProfile({data, state, api}) {
     const {name, subscribed} = data;
     const member = await api.member.update({name, subscribed});
     if (!member) {
+        const action = 'updateProfile:failed';
         return {
-            action: 'updateProfile:failed'
+            action,
+            popupNotification: createPopupNotification({
+                type: action,
+                autoHide: true,
+                closeable: true,
+                status: 'error',
+                state
+            })
         };
     } else {
+        const action = 'updateProfile:success';
         return {
-            action: 'updateProfile:success',
+            action,
             member: member,
-            page: 'accountHome'
+            page: 'accountHome',
+            popupNotification: createPopupNotification({
+                type: action,
+                autoHide: true,
+                closeable: true,
+                status: 'success',
+                state
+            })
         };
     }
 }
@@ -179,18 +257,18 @@ const Actions = {
     updateEmail,
     updateSubscription,
     cancelSubscription,
-    updateMember,
     updateNewsletter,
     updateProfile,
+    clearPopupNotification,
     editBilling,
     checkoutPlan
 };
 
 /** Handle actions in the App, returns updated state */
-export default async function ActionHandler({action, data, updateState, state, api}) {
+export default async function ActionHandler({action, data, state, api}) {
     const handler = Actions[action];
     if (handler) {
-        return await handler({data, updateState, state, api}) || {};
+        return await handler({data, state, api}) || {};
     }
     return {};
 }
