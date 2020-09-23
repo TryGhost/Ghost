@@ -32,7 +32,7 @@ const order = function order(Bookshelf) {
                 direction = match[2].toUpperCase();
 
                 const matchingOrderAttribute = orderAttributes.find((orderAttribute) => {
-                    return orderAttribute.endsWith(`.${field}`);
+                    return orderAttribute.endsWith(field);
                 });
 
                 if (!matchingOrderAttribute) {
