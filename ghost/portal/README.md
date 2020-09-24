@@ -1,7 +1,7 @@
 # Portal
 
 [![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/portal/actions)
-[![npm version](https://badge.fury.io/js/%40tryghost%portal.svg)](https://badge.fury.io/js/%40tryghost%2Fportal)
+[![npm version](https://badge.fury.io/js/%40tryghost%2Fportal.svg)](https://badge.fury.io/js/%40tryghost%2Fportal)
 
 Drop-in script to make the bulk of Ghost membership features work on any theme.
 
@@ -10,7 +10,7 @@ Drop-in script to make the bulk of Ghost membership features work on any theme.
 Add below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
 
 ```html
-<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/portal.min.js" data-ghost="https://mymemberssite.com"></script>
+<script defer src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js" data-ghost="https://mymemberssite.com"></script>
 ```
 
 The `data-ghost` attribute expects the URL for your site which is the only input Portal needs to work with your site's membership data via Ghost APIs.
@@ -93,7 +93,7 @@ Run `yarn ship` to publish new version of script.
 `yarn ship` is an alias for `npm publish`
 
 - Builds the script with latest code using `yarn build` (prePublish)
-- Publishes package on npm as `@tryghost/members-js` and creates an unpkg link for script at https://unpkg.com/@tryghost/portal@VERSION
+- Publishes package on npm as `@tryghost/portal` and creates an unpkg link for script at https://unpkg.com/@tryghost/portal@VERSION
 
 ## Learn More
 
