@@ -587,7 +587,7 @@ const MobileStyles = `
         letter-spacing: 0.2px;
     }
 
-    .gh-portal-plan-feature {
+    .gh-portal-plan-featurewrapper {
         position: absolute;
         left: 40px;
         top: 32px;
@@ -616,6 +616,21 @@ const MobileStyles = `
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
         border-top-right-radius: 0;
+    }
+
+    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-name,
+    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-featurewrapper,
+    .gh-portal-content.signup.singleplan .gh-portal-plan-name,
+    .gh-portal-content.signup.singleplan .gh-portal-plan-featurewrapper {
+        left: 12px;
+    }
+
+    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-featurewrapper {
+        flex-direction: row;
+    }
+
+    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-featurewrapper .gh-portal-plan-current {
+        margin: 0 0 0 12px;
     }
 
     .gh-portal-input {
