@@ -99,7 +99,8 @@ describe('Webhooks API', function () {
                         webhooks: [{
                             name: 'Edit Test',
                             event: 'subscriber.added',
-                            target_url: 'https://example.com/new-subscriber'
+                            target_url: 'https://example.com/new-subscriber',
+                            integration_id: 'ignore_me'
                         }]
                     })
                     .expect(200)
