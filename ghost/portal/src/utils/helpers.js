@@ -1,5 +1,26 @@
 import CalculateDiscount from './discount';
 
+export function getPortalLinkPath({page}) {
+    const Links = {
+        'default': '#/portal',
+        'signin': '#/portal/signin',
+        'signup': '#/portal/signup',
+        'account': '#/portal/account',
+        'account-plans': '#/portal/account/plans',
+        'account-profile': '#/portal/account/profile',
+    };
+    if (Object.keys(Links).includes(page)) {
+        return Links[page];
+    }
+    return Links.default;
+}
+
+export function getPortalLink({page, siteUrl}) {
+    const url = siteUrl || `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+    const portalLinkPath = getPortalLinkPath({page});
+    return `${url}${portalLinkPath}`;
+}
+
 export function isCookiesDisabled() {
     return !(navigator && navigator.cookieEnabled);
 }

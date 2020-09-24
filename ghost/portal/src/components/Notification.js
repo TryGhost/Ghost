@@ -3,6 +3,7 @@ import AppContext from '../AppContext';
 import NotificationStyle from './Notification.styles';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
+import { getPortalLink } from '../utils/helpers';
 
 const React = require('react');
 
@@ -24,6 +25,8 @@ const Styles = () => {
 };
 
 const NotificationText = ({type, status, context}) => {
+    const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
+    const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
     if (type === 'signin' && status === 'success') {
         return (
             <p>
@@ -33,7 +36,7 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signin' && status === 'error') {
         return (
             <p>
-                Could not sign in! Login link expired. <a href="/#/portal/signin" target="_parent">Click here to retry</a>
+                Could not sign in! Login link expired. <a href={signinPortalLink} target="_parent">Click here to retry</a>
             </p>
         );
     } else if (type === 'signup' && status === 'success') {
@@ -45,7 +48,7 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                Could not sign up! Invalid sign up link. <a href="/#/portal/signup" target="_parent">Click here to retry</a>
+                Could not sign up! Invalid sign up link. <a href={singupPortalLink} target="_parent">Click here to retry</a>
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
