@@ -148,7 +148,7 @@
                     <p class="gh-setting-desc pa0 ma0">Customize members modal signup flow</p>
                 </div>
                 <div>
-                    <button type="button" class="gh-btn" {{action (toggle "showMembersModalSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
+                    <button type="button" class="gh-btn" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
                 </div>
             </div>
         </section>
@@ -454,9 +454,9 @@
         @modifier="action wide" />
 {{/if}}
 
-{{#if this.showMembersModalSettings}}
-    <GhFullscreenModal @modal="members-modal-settings"
-        @close={{action "closeMembersModalSettings"}}
+{{#if this.showPortalSettings}}
+    <GhFullscreenModal @modal="portal-settings"
+        @close={{action "closePortalSettings"}}
         @modifier="full-overlay portal-settings" />
 {{/if}}
 {{#if this.showLeaveSettingsModal}}
