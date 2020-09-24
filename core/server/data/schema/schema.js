@@ -452,6 +452,8 @@ module.exports = {
         stats: {type: 'text', maxlength: 65535, nullable: true},
         email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         subject: {type: 'string', maxlength: 300, nullable: true},
+        from: {type: 'string', maxlength: 2000, nullable: true},
+        reply_to: {type: 'string', maxlength: 2000, nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         submitted_at: {type: 'dateTime', nullable: false},
