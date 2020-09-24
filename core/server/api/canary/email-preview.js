@@ -31,16 +31,17 @@ module.exports = {
                         });
                     }
 
-                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true}).then(({emailTmpl, replacements}) => {
-                        // perform replacements using no member data
+                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true}).then((emailContent) => {
+                        const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
+
                         replacements.forEach((replacement) => {
-                            emailTmpl[replacement.format] = emailTmpl[replacement.format].replace(
+                            emailContent[replacement.format] = emailContent[replacement.format].replace(
                                 replacement.match,
                                 replacement.fallback || ''
                             );
                         });
 
-                        return emailTmpl;
+                        return emailContent;
                     });
                 });
         }
