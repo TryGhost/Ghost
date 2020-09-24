@@ -277,7 +277,7 @@ const FrameStyles = `
     .gh-portal-content {
         position: relative;
         overflow-y: scroll;
-        padding: 28px 32px 32px;
+        padding: 24px 32px 32px;
         max-height: calc(100vh - 12vw);
     }
 
@@ -318,8 +318,8 @@ const FrameStyles = `
 
     .gh-portal-closeicon-container {
         position: absolute;
-        top: 18px;
-        right: 20px;
+        top: 14px;
+        right: 14px;
         z-index: 999;
     }
 
