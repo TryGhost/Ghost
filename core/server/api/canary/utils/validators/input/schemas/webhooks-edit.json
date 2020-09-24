@@ -10,7 +10,64 @@
             "type": "array",
             "minItems": 1,
             "maxItems": 1,
-            "items": {"$ref": "webhooks#/definitions/webhook"}
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "event": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "isLowercase": true
+                    },
+                    "target_url": {
+                        "type": "string",
+                        "format": "uri-reference",
+                        "maxLength": 2000
+                    },
+                    "name": {
+                        "type": ["string", "null"],
+                        "maxLength": 191
+                    },
+                    "secret": {
+                        "type": ["string", "null"],
+                        "maxLength": 191
+                    },
+                    "api_version": {
+                        "type": ["string", "null"],
+                        "maxLength": 50
+                    },
+                    "integration_id": {
+                        "strip": true
+                    },
+                    "id": {
+                        "strip": true
+                    },
+                    "status": {
+                        "strip": true
+                    },
+                    "last_triggered_at": {
+                        "strip": true
+                    },
+                    "last_triggered_status": {
+                        "strip": true
+                    },
+                    "last_triggered_error": {
+                        "strip": true
+                    },
+                    "created_at": {
+                        "strip": true
+                    },
+                    "created_by": {
+                        "strip": true
+                    },
+                    "updated_at": {
+                        "strip": true
+                    },
+                    "updated_by": {
+                        "strip": true
+                    }
+                }
+            }
         }
     },
     "required": ["webhooks"]
