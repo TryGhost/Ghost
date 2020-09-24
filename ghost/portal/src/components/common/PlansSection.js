@@ -1,4 +1,5 @@
 import React from 'react';
+import {isCookiesDisabled} from '../../utils/helpers';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
@@ -19,6 +20,10 @@ export const PlanSectionStyles = `
         border-right: 1px solid var(--grey10);
         padding: 16px 10px;
         cursor: pointer;
+    }
+
+    .gh-portal-plans-container.disabled .gh-portal-plan-section {
+        cursor: auto;
     }
 
     .gh-portal-plan-section.checked::before {
@@ -46,6 +51,10 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-section:last-of-type {
         border-right: none;
+    }
+
+    .gh-portal-plans-container.disabled .gh-portal-plan-section.checked::before {
+        opacity: 0.3;
     }
 
     .gh-portal-plan-pricelabel {
@@ -102,6 +111,10 @@ export const PlanSectionStyles = `
         user-select: none;
     }
 
+    .gh-portal-plans-container.disabled .gh-portal-plan-checkbox {
+        cursor: auto;
+    }
+
     .gh-portal-plan-checkbox input {
         position: absolute;
         height: 0;
@@ -146,6 +159,10 @@ export const PlanSectionStyles = `
         transform: rotate(45deg);
     }
 
+    .gh-portal-plans-container.disabled .gh-portal-plan-checkbox input:checked ~ .checkmark {
+        opacity: 0.3;
+    }
+
     .gh-portal-content.signup.singleplan .gh-portal-plan-section {
         cursor: auto;
     }
@@ -178,32 +195,8 @@ export const PlanSectionStyles = `
         opacity: 0.5;
     }
 
-    .gh-portal-plan-section:not(.checked).show-check-onhover .checkmark:before {
-        position: absolute;
-        display: block;
-        content: "";
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        background: var(--brandcolor);
-        border-radius: 999px;
+    .gh-portal-plans-container.disabled .gh-portal-plan-section:not(.checked):hover::before {
         opacity: 0;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .gh-portal-plan-section:not(.checked).show-check-onhover:hover .checkmark:before {
-        opacity: 0.2;
-    }
-
-    .gh-portal-plan-section:not(.checked).show-check-onhover .checkmark:after {
-        display: block;
-        opacity: 0;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .gh-portal-plan-section:not(.checked).show-check-onhover:hover .checkmark:after {
-        opacity: 1.0;
     }
 
     .gh-portal-plans-container.hide-checkbox .gh-portal-plan-checkbox {
@@ -225,7 +218,10 @@ export const PlanSectionStyles = `
     }
 `;
 
-function Checkbox({name, onPlanSelect, isChecked}) {
+function Checkbox({name, onPlanSelect, isChecked, disabled}) {
+    if (isCookiesDisabled()) {
+        disabled = true;
+    }
     return (
         <div className='gh-portal-plan-checkbox'>
             <input
@@ -235,6 +231,7 @@ function Checkbox({name, onPlanSelect, isChecked}) {
                 checked={isChecked}
                 aria-label={name}
                 onChange={e => onPlanSelect(e, name)}
+                disabled={disabled}
             />
             <span className='checkmark'></span>
         </div>
@@ -300,10 +297,14 @@ function PlansSection({plans, showLabel = true, type, selectedPlan, onPlanSelect
     if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
         return null;
     }
+    const cookiesDisabled = isCookiesDisabled();
+    if (cookiesDisabled) {
+        onPlanSelect = (e, name) => {};
+    } 
     return (
         <section>
             <PlanLabel showLabel={showLabel} />
-            <div className={'gh-portal-plans-container' + (changePlan ? ' hide-checkbox' : '')}>
+            <div className={'gh-portal-plans-container' + (changePlan ? ' hide-checkbox' : '') + (cookiesDisabled ? ' disabled' : '')}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
         </section>

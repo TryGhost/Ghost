@@ -4,7 +4,7 @@ import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
-import { isCookiesDisabled } from '../utils/helpers';
+import {isCookiesDisabled} from '../utils/helpers';
 
 const React = require('react');
 
@@ -39,11 +39,11 @@ const StylesWrapper = ({member}) => {
     };
 };
 
-const CookieDisabledBanner = () => {
+function CookieDisabledBanner({message}) {
     const cookieDisabled = isCookiesDisabled();
     if (cookieDisabled) {
         return (
-            <div> Cookies are disabled </div>
+            <div className='gh-portal-cookiebanner'>{message}</div>
         );
     }
     return null;
@@ -108,10 +108,22 @@ class PopupContent extends React.Component {
         if (portalPlans.length <= 1) {
             popupWidthStyle = 'gh-portal-container-narrow';
         }
+        let cookieBannerText = '';
+        switch (page) {
+        case 'signup':
+            cookieBannerText = 'Cookies must be enabled in your browser to sign up.';
+            break;
+        case 'signin':
+            cookieBannerText = 'Cookies must be enabled in your browser to sign in.';
+            break;
+        default:
+            cookieBannerText = 'Cookies must be enabled in your browser.';
+            break;
+        }
         return (
             <div className='gh-portal-popup-wrapper'>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
-                    <CookieDisabledBanner />
+                    <CookieDisabledBanner message={cookieBannerText} />
                     {this.renderPopupNotification()}
                     {this.renderActivePage()}
                 </div>
