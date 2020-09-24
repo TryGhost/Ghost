@@ -1,5 +1,9 @@
 import CalculateDiscount from './discount';
 
+export function isCookiesDisabled() {
+    return !(navigator && navigator.cookieEnabled);
+}
+
 export function getMemberSubscription({member = {}}) {
     if (member.paid) {
         const [subscription] = member.subscriptions || [];
