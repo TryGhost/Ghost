@@ -1,4 +1,5 @@
 import React from 'react';
+import {isCookiesDisabled} from '../../utils/helpers';
 
 export const InputFieldStyles = `
     .gh-portal-input {
@@ -52,6 +53,16 @@ export const InputFieldStyles = `
     .gh-portal-input::placeholder {
         color: var(--grey7);
     }
+
+    .gh-portal-input:disabled {
+        background: var(--grey13);
+        color: var(--grey9);
+        box-shadow: none;
+    }
+
+    .gh-portal-input:disabled::placeholder {
+        color: var(--grey9);
+    }
 `;
 
 function InputError({message, style}) {
@@ -72,6 +83,9 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
     onBlur = onBlur || function (){};
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
+    if (isCookiesDisabled()) {
+        disabled = true;
+    }
     return (
         <section className='gh-portal-input-section'>
             <div className='gh-portal-input-labelcontainer'>

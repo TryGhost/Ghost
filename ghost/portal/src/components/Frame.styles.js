@@ -93,6 +93,11 @@ const FrameStyles = `
         border-color: var(--grey10);
     }
 
+    .gh-portal-btn:disabled {
+        opacity: 0.3 !important;
+        cursor: auto;
+    }
+
     .gh-portal-btn-icon svg {
         width: 16px;
         height: 16px;
@@ -420,6 +425,16 @@ const FrameStyles = `
         font-weight: 500;
         font-size: 1.4rem;
         margin: 12px 0;
+    }
+
+    .gh-portal-cookiebanner {
+        background: var(--red);
+        color: var(--white);
+        text-align: center;
+        font-size: 1.4rem;
+        letter-spacing: 0.2px;
+        line-height: 1.4em;
+        padding: 8px;
     }
 
     /* Icons

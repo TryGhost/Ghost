@@ -1,6 +1,7 @@
 import React from 'react';
 import getContrastColor from '../../utils/contrast-color';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {isCookiesDisabled} from '../../utils/helpers';
 
 export const ActionButtonStyles = `
     .gh-portal-btn-main {
@@ -27,7 +28,11 @@ export const ActionButtonStyles = `
         border: none;
     }
 
-    .gh-portal-btn-destructive:hover {
+    .gh-portal-btn-primary:disabled:hover::before {
+        display: none;
+    }
+
+    .gh-portal-btn-destructive:not(:disabled):hover {
         color: var(--red);
         border-color: var(--red);
     }
@@ -87,7 +92,9 @@ function ActionButton({label, onClick, disabled, retry, brandColor, isRunning, i
     if (isDestructive) {
         className += ' gh-portal-btn-destructive';
     }
-    
+    if (isCookiesDisabled()) {
+        disabled = true;
+    }
     const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
     return (
         <button className={className} style={Style.button} onClick={e => onClick(e)} disabled={disabled}>
