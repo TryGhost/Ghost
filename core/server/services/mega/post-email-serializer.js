@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
 const config = require('../../../shared/config');
@@ -9,6 +10,8 @@ const api = require('../../api');
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToText = require('html-to-text');
+
+const ALLOWED_REPLACEMENTS = ['first_name'];
 
 const getSite = () => {
     const publicSettings = settingsCache.getPublic();
@@ -55,33 +58,22 @@ const serializePostModel = async (model) => {
     return frame.response[docName][0];
 };
 
-// parses templates and extracts an array of replacements with desired fallbacks
-// removes %% wrappers from unknown replacement strings (modifies emailTmpl in place)
-const _parseReplacements = (emailTmpl) => {
-    const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
-    // the &quot; is necessary here because `juice` will convert "->&quot; for email compatibility
-    const REPLACEMENT_STRING_REGEX = /\{(?<memberProp>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
-    const ALLOWED_REPLACEMENTS = ['first_name'];
+// removes %% wrappers from unknown replacement strings in email content
+const normalizeReplacementStrings = (email) => {
+    // we don't want to modify the email object in-place
+    const emailContent = _.pick(email, ['html', 'plaintext']);
 
-    const replacements = [];
+    const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
+    const REPLACEMENT_STRING_REGEX = /\{(?<recipientProperty>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
+
     ['html', 'plaintext'].forEach((format) => {
-        emailTmpl[format] = emailTmpl[format].replace(EMAIL_REPLACEMENT_REGEX, (replacementMatch, replacementStr) => {
+        emailContent[format] = emailContent[format].replace(EMAIL_REPLACEMENT_REGEX, (replacementMatch, replacementStr) => {
             const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
 
             if (match) {
-                const {memberProp, fallback} = match.groups;
+                const {recipientProperty} = match.groups;
 
-                if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
-                    const id = `replacement_${replacements.length + 1}`;
-
-                    replacements.push({
-                        format,
-                        id,
-                        match: replacementMatch,
-                        memberProp,
-                        fallback
-                    });
-
+                if (ALLOWED_REPLACEMENTS.includes(recipientProperty)) {
                     // keeps wrapping %% for later replacement with real data
                     return replacementMatch;
                 }
@@ -90,6 +82,40 @@ const _parseReplacements = (emailTmpl) => {
             // removes %% so output matches user supplied content
             return replacementStr;
         });
+    });
+
+    return emailContent;
+};
+
+// parses email content and extracts an array of replacements with desired fallbacks
+const parseReplacements = (email) => {
+    const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
+    const REPLACEMENT_STRING_REGEX = /\{(?<recipientProperty>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
+
+    const replacements = [];
+
+    ['html', 'plaintext'].forEach((format) => {
+        let result;
+        while ((result = EMAIL_REPLACEMENT_REGEX.exec(email[format])) !== null) {
+            const [replacementMatch, replacementStr] = result;
+            const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
+
+            if (match) {
+                const {recipientProperty, fallback} = match.groups;
+
+                if (ALLOWED_REPLACEMENTS.includes(recipientProperty)) {
+                    const id = `replacement_${replacements.length + 1}`;
+
+                    replacements.push({
+                        format,
+                        id,
+                        match: replacementMatch,
+                        recipientProperty: `member_${recipientProperty}`,
+                        fallback
+                    });
+                }
+            }
+        }
     });
 
     return replacements;
@@ -150,19 +176,21 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     // Fix any unsupported chars in Outlook
     juicedHtml = juicedHtml.replace(/&apos;/g, '&#39;');
 
-    const emailTmpl = {
-        subject: post.email_subject || post.title,
+    // Clean up any unknown replacements strings to get our final content
+    const {html, plaintext} = normalizeReplacementStrings({
         html: juicedHtml,
         plaintext: post.plaintext
+    });
+
+    return {
+        subject: post.email_subject || post.title,
+        html,
+        plaintext
     };
-
-    // Extract known replacements and clean up unknown replacement strings
-    const replacements = _parseReplacements(emailTmpl);
-
-    return {emailTmpl, replacements};
 };
 
 module.exports = {
     serialize,
-    createUnsubscribeUrl
+    createUnsubscribeUrl,
+    parseReplacements
 };
