@@ -14,20 +14,35 @@ module.exports = {
         options: [],
         data: [],
         permissions: true,
-        query(frame) {
-            return models.Webhook.getByEventAndTarget(
+        async query(frame) {
+            const isIntegrationRequest = frame.options.context && frame.options.context.integration && frame.options.context.integration.id;
+
+            // NOTE: this check can be removed once `webhooks.integration_id` gets foreigh ke constraint (Ghost 4.0)
+            if (!isIntegrationRequest && frame.data.webhooks[0].integration_id) {
+                const integration = await models.Integration.findOne({id: frame.data.webhooks[0].integration_id}, {context: {internal: true}});
+
+                if (!integration) {
+                    throw new errors.ValidationError({
+                        message: i18n.t('notices.data.validation.index.schemaValidationFailed', {
+                            key: 'integration_id'
+                        }),
+                        context: i18n.t('errors.api.webhooks.nonExistingIntegrationIdProvided.context'),
+                        help: i18n.t('errors.api.webhooks.nonExistingIntegrationIdProvided.help')
+                    });
+                }
+            }
+
+            const webhook = await models.Webhook.getByEventAndTarget(
                 frame.data.webhooks[0].event,
                 frame.data.webhooks[0].target_url,
                 frame.options
-            ).then((webhook) => {
-                if (webhook) {
-                    return Promise.reject(
-                        new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')})
-                    );
-                }
+            );
 
-                return models.Webhook.add(frame.data.webhooks[0], frame.options);
-            });
+            if (webhook) {
+                throw new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')});
+            }
+
+            return models.Webhook.add(frame.data.webhooks[0], frame.options);
         }
     },
 

@@ -486,6 +486,10 @@
                 "noIntegrationIdProvided": {
                     "context": "You may only create webhooks with 'integration_id' when using session authentication."
                 },
+                "nonExistingIntegrationIdProvided": {
+                    "context": "'integration_id' value does not match any existing integration.",
+                    "help": "Provide 'integration_id' of existing integration."
+                },
                 "webhookAlreadyExists": "Target URL has already been used for this event."
             },
             "oembed": {
@@ -711,7 +715,7 @@
                     "valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
                     "themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",
                     "validationFailed": "Validation ({validationName}) failed for {key}",
-                    "schemaValidationFailed": "Validation failed for '{key}'",
+                    "schemaValidationFailed": "Validation failed for '{key}'.",
                     "validationFailedTypes": {
                         "isLength": "Value in [{tableName}.{key}] exceeds maximum length of {max} characters."
                     }
