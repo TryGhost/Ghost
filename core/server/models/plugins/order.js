@@ -32,6 +32,10 @@ const order = function order(Bookshelf) {
                 direction = match[2].toUpperCase();
 
                 const matchingOrderAttribute = orderAttributes.find((orderAttribute) => {
+                    // NOTE: this logic assumes we use different field names for "parent" and "child" relations.
+                    //       E.g.: ['parent.title', 'child.title'] and ['child.title', 'parent.title'] - would not
+                    //       distinguish on which relation to sort neither which order to pick the fields on.
+                    //       For more context see: https://github.com/TryGhost/Ghost/pull/12226#discussion_r493085098
                     return orderAttribute.endsWith(field);
                 });
 
