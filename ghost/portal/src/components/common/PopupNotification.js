@@ -84,19 +84,19 @@ const CloseButton = ({hide = false}) => {
 const NotificationText = ({type, status}) => {
     if (type === 'updateNewsletter:success') {
         return (
-            <p> Newsletter updated! </p>
+            <p> Newsletter settings updated</p>
         );
     } else if (type === 'updateSubscription:success') {
         return (
-            <p> Subscription updated! </p>
+            <p> Subscription plan successfully updated</p>
         );
     } else if (type === 'updateProfile:success') {
         return (
-            <p> Profile Updated! </p>
+            <p>Profile updated</p>
         );
     } else if (type === 'updateProfile:failed') {
         return (
-            <p> Failed to update profile! </p>
+            <p>Failed to update profile</p>
         );
     }
     const label = status === 'success' ? 'Success' : 'Failed';
@@ -131,7 +131,7 @@ export default class PopupNotification extends React.Component {
 
     handlePopupNotification({popupNotification}) {
         if (popupNotification.autoHide) {
-            const {duration = 2000} = popupNotification;
+            const {duration = 2400} = popupNotification;
             this.timeoutId = setTimeout(() => {
                 this.setState({
                     className: 'slideout',
