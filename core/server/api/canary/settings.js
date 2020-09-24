@@ -97,7 +97,7 @@ module.exports = {
             frame.response = async function (req, res) {
                 try {
                     const {token, action} = frame.options;
-                    const updatedEmailAddress = membersService.settings.getEmailFromToken({token});
+                    const updatedEmailAddress = await membersService.settings.getEmailFromToken({token});
                     const actionToKeyMapping = {
                         fromAddressUpdate: 'members_from_address',
                         supportAddressUpdate: 'members_support_address'
