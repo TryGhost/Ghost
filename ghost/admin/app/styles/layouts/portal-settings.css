@@ -254,6 +254,15 @@
     stroke: var(--blue);
 }
 
+.gh-portal-button-icon .gh-loading-spinner {
+    width: 20px;
+    height: 20px;
+}
+
+.gh-portal-button-icon .gh-loading-spinner:before {
+    margin-top: -2px;
+}
+
 .gh-portal-button-uploadicon,
 .gh-portal-button-uploadicon:hover,
 .gh-portal-button-uploadicon:focus {
