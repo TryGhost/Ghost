@@ -34,6 +34,8 @@ ghostBookshelf = bookshelf(db.knex);
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 
+ghostBookshelf.plugin(plugins.eagerLoad);
+
 // Add committed/rollback events.
 ghostBookshelf.plugin(plugins.transactionEvents);
 
@@ -175,7 +177,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Ghost ordering handling, allows to order by permitted attributes by default and can be overriden on specific model level
     orderAttributes: function orderAttributes() {
-        return this.permittedAttributes();
+        return Object.keys(schema.tables[this.tableName])
+            .map(key => `${this.tableName}.${key}`);
     },
 
     // When loading an instance, subclasses can specify default to fetch
