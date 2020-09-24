@@ -87,16 +87,22 @@ export const PlanSectionStyles = `
         color: var(--grey7);
     }
 
+    .gh-portal-plan-featurewrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-top: 1px solid var(--grey12);
+        margin-top: 12px;
+        padding-top: 12px;
+        width: 100%;
+    }
+
     .gh-portal-plan-feature {
         font-size: 1.25rem;
         font-weight: 500;
         line-height: 1.25em;
         text-align: center;
         letter-spacing: 0.2px;
-        border-top: 1px solid var(--grey12);
-        width: 100%;
-        margin-top: 12px;
-        padding-top: 12px;
     }
 
     .gh-portal-plan-checkbox {
@@ -275,10 +281,12 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
                 <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className='gh-portal-plan-name'>{name}</h4>
                 <PriceLabel name={name} currency={currency} price={price} />
-                <div className='gh-portal-plan-feature'>
-                    {planDetails.feature}
+                <div className='gh-portal-plan-featurewrapper'>
+                    <div className='gh-portal-plan-feature'>
+                        {planDetails.feature}
+                    </div>
+                    {(changePlan && selectedPlan === name ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
                 </div>
-                {(changePlan && selectedPlan === name ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
             </div>
         );
     });
