@@ -14,8 +14,8 @@ export const PopupNotificationStyles = `
         border-radius: 4px;
         font-size: 1.3rem;
         box-shadow: 0px 0.8151839971542358px 0.8151839971542358px 0px rgba(0,0,0,0.01),
-                    0px 2.2538793087005615px 2.2538793087005615px 0px rgba(0,0,0,0.02), 
-                    0px 5.426473140716553px 5.426473140716553px 0px rgba(0,0,0,0.03),  
+                    0px 2.2538793087005615px 2.2538793087005615px 0px rgba(0,0,0,0.02),
+                    0px 5.426473140716553px 5.426473140716553px 0px rgba(0,0,0,0.03),
                     0px 18px 18px 0px rgba(0,0,0,0.04);
         animation: popupnotification-slidein 0.6s ease-in-out;
     }
@@ -72,12 +72,12 @@ export const PopupNotificationStyles = `
     }
 `;
 
-const CloseButton = ({hide = false}) => {
+const CloseButton = ({hide = false, onClose}) => {
     if (hide) {
         return null;
     }
     return (
-        <CloseIcon className='closeicon' alt='Close' />
+        <CloseIcon className='closeicon' alt='Close' onClick={onClose}/>
     );
 };
 
@@ -121,6 +121,12 @@ export default class PopupNotification extends React.Component {
         }
     }
 
+    closeNotification(e) {
+        this.setState({
+            className: 'slideout'
+        });
+    }
+
     componentDidUpdate() {
         const {popupNotification} = this.context;
         if (popupNotification.count !== this.state.count) {
@@ -133,9 +139,14 @@ export default class PopupNotification extends React.Component {
         if (popupNotification.autoHide) {
             const {duration = 2400} = popupNotification;
             this.timeoutId = setTimeout(() => {
-                this.setState({
-                    className: 'slideout',
-                    notificationCount: popupNotification.count
+                this.setState((state) => {
+                    if (state.className !== 'slideout') {
+                        return {
+                            className: 'slideout',
+                            notificationCount: popupNotification.count
+                        }
+                    }
+                    return {};
                 });
             }, duration);
         } else {
@@ -164,7 +175,7 @@ export default class PopupNotification extends React.Component {
         return (
             <div className={`gh-portal-popupnotification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
                 <NotificationText type={type} status={status} />
-                <CloseButton hide={!closeable} />
+                <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>
             </div>
         );
     }
