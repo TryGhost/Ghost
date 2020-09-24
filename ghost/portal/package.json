@@ -2,7 +2,10 @@
   "name": "@tryghost/portal",
   "version": "0.10.1",
   "license": "MIT",
-  "repository": "git@github.com:TryGhost/portal.git",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/TryGhost/Portal.git"
+  },
   "author": "Ghost Foundation",
   "unpkg": "umd/portal.min.js",
   "files": [
