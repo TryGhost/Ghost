@@ -266,7 +266,7 @@ describe('pagination', function () {
 
                 model.prototype.query.calledTwice.should.be.true();
                 model.prototype.query.firstCall.calledWith().should.be.true();
-                model.prototype.query.secondCall.calledWith('orderBy', 'undefined.id', 'DESC').should.be.true();
+                model.prototype.query.secondCall.calledWith('orderBy', 'id', 'DESC').should.be.true();
 
                 mockQuery.clone.calledOnce.should.be.true();
                 mockQuery.clone.firstCall.calledWith().should.be.true();

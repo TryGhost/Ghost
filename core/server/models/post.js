@@ -68,6 +68,13 @@ Post = ghostBookshelf.Model.extend({
         posts_meta: 'posts_meta'
     },
 
+    relationsMeta: {
+        posts_meta: {
+            targetTableName: 'posts_meta',
+            foreignKey: 'post_id'
+        }
+    },
+
     /**
      * The base model keeps only the columns, which are defined in the schema.
      * We have to add the relations on top, otherwise bookshelf-relations
@@ -81,6 +88,15 @@ Post = ghostBookshelf.Model.extend({
         });
 
         return filteredKeys;
+    },
+
+    orderAttributes: function orderAttributes() {
+        let keys = ghostBookshelf.Model.prototype.orderAttributes.apply(this, arguments);
+
+        // extend ordered keys with post_meta keys
+        let postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
+
+        return [...keys, ...postsMetaKeys];
     },
 
     emitChange: function emitChange(event, options = {}) {
