@@ -9,8 +9,8 @@ export const BackButtonStyles = `
         height: unset;
         min-width: unset;
         position: absolute;
-        top: -3px;
-        left: -12px;
+        top: -2px;
+        left: -16px;
         background: none;
         padding: 8px;
         margin: 0;
