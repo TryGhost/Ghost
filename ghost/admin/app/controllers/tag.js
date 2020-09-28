@@ -7,7 +7,7 @@ import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
 import {task} from 'ember-concurrency';
 
-const SCRATCH_PROPS = ['name', 'slug', 'description', 'metaTitle', 'metaDescription'];
+const SCRATCH_PROPS = ['name', 'slug', 'description', 'metaTitle', 'metaDescription', 'ogTitle', 'ogDescription', 'twitterTitle', 'twitterDescription', 'codeinjectionHead', 'codeinjectionFoot'];
 
 export default Controller.extend({
     notifications: service(),
