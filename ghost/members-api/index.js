@@ -169,7 +169,7 @@ module.exports = function MembersApi({
             });
         }
 
-        const member = await users.get(email, {
+        const member = await users.get({email}, {
             withRelated: ['labels']
         });
 
