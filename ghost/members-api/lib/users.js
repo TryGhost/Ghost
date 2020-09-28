@@ -29,7 +29,7 @@ module.exports = function ({
 
     async function update(data, options) {
         debug(`update id:${options.id}`);
-        return Member.edit(_.pick(data, [
+        const member = await Member.edit(_.pick(data, [
             'email',
             'name',
             'note',
@@ -37,6 +37,14 @@ module.exports = function ({
             'labels',
             'geolocation'
         ]), options);
+        if (member._changed.email) {
+            await member.related('stripeCustomers').fetch();
+            const customers = member.related('stripeCustomers');
+            for (const customer of customers.models) {
+                await stripe.updateStripeCustomerEmail(customer.get('customer_id'), member.get('email'));
+            }
+        }
+        return member;
     }
 
     async function list(options = {}) {
