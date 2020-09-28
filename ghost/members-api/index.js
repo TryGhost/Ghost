@@ -164,9 +164,9 @@ module.exports = function MembersApi({
 
     async function setMemberGeolocationFromIp(email, ip) {
         if (!email || !ip) {
-            return Promise.reject(new common.errors.IncorrectUsageError({
+            throw new common.errors.IncorrectUsageError({
                 message: 'setMemberGeolocationFromIp() expects email and ip arguments to be present'
-            }));
+            });
         }
 
         const member = await users.get(email, {
@@ -174,9 +174,9 @@ module.exports = function MembersApi({
         });
 
         if (!member) {
-            return Promise.reject(new common.errors.NotFoundError({
+            throw new common.errors.NotFoundError({
                 message: `Member with email address ${email} does not exist`
-            }));
+            });
         }
 
         // max request time is 500ms so shouldn't slow requests down too much
