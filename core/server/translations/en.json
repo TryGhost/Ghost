@@ -488,7 +488,7 @@
                 },
                 "nonExistingIntegrationIdProvided": {
                     "context": "'integration_id' value does not match any existing integration.",
-                    "help": "Provide 'integration_id' of existing integration."
+                    "help": "Provide the 'integration_id' of an existing integration."
                 },
                 "webhookAlreadyExists": "Target URL has already been used for this event."
             },
