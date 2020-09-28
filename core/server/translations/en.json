@@ -577,7 +577,7 @@
             },
             "mega": {
                 "requestFailed": {
-                    "error" : "The email service was unable to send an email batch."
+                    "error": "The email service was unable to send an email batch."
                 }
             }
         },
