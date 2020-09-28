@@ -316,26 +316,26 @@
         <div class="mt6 flex flex-column flex-row-ns flex-wrap items-start justify-between">
             <GhFormGroup @class="settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionHead">
                 <label for="codeinjection-head" class="gh-tag-setting-codeheader">Tag header <code class="fw4 ml1">\{{ghost_head}}</code></label>
-                <GhCmEditor @value={{this.codeinjectionHeadScratch}}
+                <GhCmEditor @value={{this.scratchTag.codeinjectionHead}}
                     @id="tag-setting-codeinjection-head"
                     @class="gh-tag-setting-codeinjection"
                     @name="tag-setting-codeinjection-head"
-                    @focusOut={{action "setProperty" "codeinjectionHead" this.codeinjectionHeadScratch}}
+                    @focusOut={{action "setProperty" "codeinjectionHead" this.scratchTag.codeinjectionHead}}
                     @stopEnterKeyDownPropagation="true"
-                    @update={{action (mut this.codeinjectionHeadScratch)}}
+                    @update={{action (mut this.scratchTag.codeinjectionHead)}}
                 />
                 <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionHead"/>
             </GhFormGroup>
 
             <GhFormGroup @class="settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionFoot">
                 <label for="codeinjection-foot"class="gh-tag-setting-codeheader">Tag footer <code class="fw4 ml1">\{{ghost_foot}}</code></label>
-                <GhCmEditor @value={{this.codeinjectionfootScratch}}
+                <GhCmEditor @value={{this.scratchTag.codeinjectionFoot}}
                     @id="tag-setting-codeinjection-foot"
                     @class="gh-tag-setting-codeinjection"
                     @name="tag-setting-codeinjection-foot"
-                    @focusOut={{action "setProperty" "codeinjectionFoot" this.codeinjectionFootScratch}}
+                    @focusOut={{action "setProperty" "codeinjectionFoot" this.scratchTag.codeinjectionFoot}}
                     @stopEnterKeyDownPropagation="true"
-                    @update={{action (mut this.codeinjectionFootScratch)}}
+                    @update={{action (mut this.scratchTag.codeinjectionFoot)}}
                 />
                 <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionFoot"/>
             </GhFormGroup>
