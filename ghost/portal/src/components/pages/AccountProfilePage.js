@@ -62,6 +62,9 @@ export default class AccountProfilePage extends React.Component {
         } else if (isSaved) {
             label = 'Saved';
         }
+        if (this.context.action === 'updateProfile:failed') {
+            label = 'Retry';
+        }
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
