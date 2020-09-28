@@ -64,6 +64,20 @@ const NotificationText = ({type, status, context}) => {
                 Success! Check your email for magic link to sign-in.
             </p>
         );
+    } else if (type === 'stripe:checkout' && status === 'warning') {
+        // Stripe checkout flow was cancelled
+        if (context.member) {
+            return (
+                <p>
+                    Plan upgrade was cancelled.
+                </p>
+            );
+        }
+        return (
+            <p>
+                Plan checkout was cancelled.
+            </p>
+        );
     }
     return (
         <></>

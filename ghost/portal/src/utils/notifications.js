@@ -11,7 +11,7 @@ export const handleAuthActions = ({qsParams, action, status}) => {
     return {};
 };
 
-export const handleStripeActions = ({qsParams, status, billingOnly}) => {
+export const handleStripeActions = ({status, billingOnly}) => {
     if (!billingOnly && ['cancel', 'success'].includes(status)) {
         const statusVal = status === 'success' ? 'success' : 'warning';
         return {
