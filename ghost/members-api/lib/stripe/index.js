@@ -418,6 +418,25 @@ module.exports = class StripePaymentProcessor {
         await this._updateSubscription(subscription);
     }
 
+    /**
+     * @param {string} customerId - The ID of the Stripe Customer to update
+     * @param {string} email - The email to update
+     *
+     * @returns {Promise<null>}
+     */
+    async updateStripeCustomerEmail(customerId, email) {
+        try {
+            await update(this._stripe, 'customers', customerId, {
+                email
+            });
+        } catch (err) {
+            this.logging.error(err, {
+                message: 'Failed to update Stripe Customer email'
+            });
+        }
+        return null;
+    }
+
     async _updateCustomer(member, customer) {
         debug(`Attaching customer to member ${member.get('email')} ${customer.id}`);
         await this.storage.set({
