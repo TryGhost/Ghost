@@ -61,10 +61,6 @@ const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
     let opacity = '1.0';
     let pointerEvents = 'auto';
 
-    if (retry) {
-        backgroundColor = '#f02525';
-    }
-
     if (disabled) {
         opacity = '0.5';
         pointerEvents = 'none';
