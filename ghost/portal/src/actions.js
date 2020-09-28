@@ -63,8 +63,8 @@ async function signout({api, state}) {
         return {
             action: 'signout:failed',
             popupNotification: createPopupNotification({
-                type: 'signout:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to logout, please try again.'
+                type: 'signout:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to log out, please try again'
             })
         };
     }
@@ -80,8 +80,8 @@ async function signin({data, api, state}) {
         return {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
-                type: 'signin:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to login, please try again.'
+                type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to log in, please try again'
             })
         };
     }
@@ -102,8 +102,8 @@ async function signup({data, state, api}) {
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
-                type: 'signup:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to signup, please try again.'
+                type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to sign up, please try again'
             })
         };
     }
@@ -119,8 +119,8 @@ async function checkoutPlan({data, state, api}) {
         return {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
-                type: 'checkoutPlan:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to checkout plan, please try again.'
+                type: 'checkoutPlan:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to process checkout, please try again'
             })
         };
     }
@@ -138,7 +138,7 @@ async function updateSubscription({data, state, api}) {
             action,
             popupNotification: createPopupNotification({
                 type: action, autoHide: true, closeable: true, state, status: 'success',
-                message: 'Subscription plan successfully updated'
+                message: 'Subscription plan updated successfully'
             }),
             page: 'accountHome',
             member: member
@@ -147,8 +147,8 @@ async function updateSubscription({data, state, api}) {
         return {
             action: 'updateSubscription:failed',
             popupNotification: createPopupNotification({
-                type: 'updateSubscription:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to update subscription.'
+                type: 'updateSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to update subscription, please try again'
             })
         };
     }
@@ -161,8 +161,9 @@ async function cancelSubscription({data, state, api}) {
             subscriptionId, cancelAtPeriodEnd
         });
         const member = await api.member.sessionData();
+        const action = 'cancelSubscription:success';
         return {
-            action: 'cancelSubscription:success',
+            action,
             page: 'accountHome',
             member: member
         };
@@ -170,8 +171,8 @@ async function cancelSubscription({data, state, api}) {
         return {
             action: 'cancelSubscription:failed',
             popupNotification: createPopupNotification({
-                type: 'cancelSubscription:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to cancel subscription.'
+                type: 'cancelSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to cancel subscription, please try again'
             })
         };
     }
@@ -184,8 +185,8 @@ async function editBilling({data, state, api}) {
         return {
             action: 'editBilling:failed',
             popupNotification: createPopupNotification({
-                type: 'editBilling:failed', autoHide: true, closeable: true, state, status: 'error',
-                message: 'Failed to update billing information.'
+                type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to update billing information, please try again'
             })
         };
     }
@@ -209,7 +210,7 @@ async function updateNewsletter({data, state, api}) {
             action,
             member: member,
             popupNotification: createPopupNotification({
-                type: action, autoHide: true, closeable: true, state, status: 'success',
+                type: action, autoHide: true, duration: 2000, closeable: true, state, status: 'success',
                 message: 'Newsletter settings updated'
             })
         };
@@ -292,13 +293,13 @@ async function updateProfile({data, state, api}) {
     } else if (dataUpdate) {
         const action = dataUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
         const status = dataUpdate.success ? 'success' : 'error';
-        const message = !dataUpdate.success ? 'Failed to update account data' : 'Account data successfully updated';
+        const message = !dataUpdate.success ? 'Failed to update account details' : 'Account details updated successfully';
         return {
             action,
             ...(dataUpdate.success ? {member: dataUpdate.member} : {}),
             page: 'accountHome',
             popupNotification: createPopupNotification({
-                type: action, autoHide: true, closeable: true, status, state, message
+                type: action, autoHide: dataUpdate.success, closeable: true, status, state, message
             })
         };
     } else if (emailUpdate) {
@@ -308,7 +309,7 @@ async function updateProfile({data, state, api}) {
         return {
             action,
             popupNotification: createPopupNotification({
-                type: action, autoHide: true, closeable: true, status, state, message
+                type: action, autoHide: emailUpdate.success, closeable: true, status, state, message
             })
         };
     }
@@ -316,8 +317,8 @@ async function updateProfile({data, state, api}) {
         action: 'updateProfile:success',
         page: 'accountHome',
         popupNotification: createPopupNotification({
-            type: 'updateProfile:success', autoHide: true, closeable: true, status: 'success', state,
-            message: 'Account data successfully updated'
+            type: 'updateProfile:success', autoHide: true, duration: 2000, closeable: true, status: 'success', state,
+            message: 'Account details updated successfully'
         })
     };
 }
