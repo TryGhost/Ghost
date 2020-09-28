@@ -29,8 +29,9 @@ export const PopupNotificationStyles = `
     .gh-portal-popupnotification p {
         color: var(--white);
         margin: 0;
-        padding: 0;
+        padding: 0 20px;
         font-size: 1.4rem;
+        line-height: 1.5em;
         letter-spacing: 0.2px;
         text-align: center;
     }
