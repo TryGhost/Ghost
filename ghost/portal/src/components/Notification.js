@@ -3,7 +3,7 @@ import AppContext from '../AppContext';
 import NotificationStyle from './Notification.styles';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
-import { getPortalLink } from '../utils/helpers';
+import {getPortalLink} from '../utils/helpers';
 
 const React = require('react');
 
@@ -52,15 +52,16 @@ const NotificationText = ({type, status, context}) => {
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
+        if (context.member) {
+            return (
+                <p>
+                    Success! Your account is fully activated, you now have access to all content.
+                </p>
+            );
+        }
         return (
             <p>
-                Success! Your account is fully activated, you now have access to all content.
-            </p>
-        );
-    } else if (type === 'stripe:billing-update' && status === 'success') {
-        return (
-            <p>
-                You've successfully updated your billing information
+                Success! Check your email for magic link to sign-in.
             </p>
         );
     }
@@ -151,16 +152,14 @@ export default class Notification extends React.Component {
     }
 
     onHideNotification() {
-        const qs = window.location.search || '';
-        const qsParams = new URLSearchParams(qs);
         const type = this.state.type;
         const deleteParams = [];
-        if (['signin', 'signout'].includes(type)) {
+        if (['signin', 'signup'].includes(type)) {
             deleteParams.push('action', 'success');
-        } else if (['stripe:checkout', 'stripe:billing-update'].includes(type)) {
+        } else if (['stripe:checkout'].includes(type)) {
             deleteParams.push('stripe');
         }
-        clearURLParams(qsParams, deleteParams);
+        clearURLParams(deleteParams);
         this.setState({
             active: false
         });

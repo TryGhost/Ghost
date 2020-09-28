@@ -72,11 +72,18 @@ export default class SigninPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const isRunning = (this.context.action === 'signin:running');
-        const label = isRunning ? 'Sending login link...' : 'Send login link';
+        const {action} = this.context;
+        let retry = false;
+        const isRunning = (action === 'signin:running');
+        let label = isRunning ? 'Sending login link...' : 'Send login link';
         const disabled = isRunning ? true : false;
+        if (action === 'signin:failed') {
+            label = 'Retry';
+            retry = true;
+        }
         return (
             <ActionButton
+                retry={retry}
                 style={{width: '100%'}}
                 onClick={e => this.handleSignin(e)}
                 disabled={disabled}

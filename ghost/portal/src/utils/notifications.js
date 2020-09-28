@@ -1,4 +1,4 @@
-export const handleAuthActions = ({action, status}) => {
+export const handleAuthActions = ({qsParams, action, status}) => {
     if (status && ['true', 'false'].includes(status)) {
         const successStatus = JSON.parse(status);
         return {
@@ -11,8 +11,8 @@ export const handleAuthActions = ({action, status}) => {
     return {};
 };
 
-export const handleStripeActions = ({status}) => {
-    if (['cancel', 'success'].includes(status)) {
+export const handleStripeActions = ({qsParams, status, billingOnly}) => {
+    if (!billingOnly && ['cancel', 'success'].includes(status)) {
         const statusVal = status === 'success' ? 'success' : 'warning';
         return {
             type: 'stripe:checkout',
@@ -20,18 +20,23 @@ export const handleStripeActions = ({status}) => {
             duration: 3000,
             autoHide: true
         };
-    } else if (['billing-update-success', 'billing-update-cancel'].includes(status)) {
+    }
+
+    if (billingOnly && ['billing-update-success', 'billing-update-cancel'].includes(status)) {
         const statusVal = status === 'billing-update-success' ? 'success' : 'warning';
         return {
             type: 'stripe:billing-update',
             status: statusVal,
             duration: 3000,
-            autoHide: true
+            autoHide: true,
+            closeable: true
         };
     }
 };
 
-export const clearURLParams = (qsParams, paramsToClear = []) => {
+export const clearURLParams = (paramsToClear = []) => {
+    const qs = window.location.search || '';
+    const qsParams = new URLSearchParams(qs);
     paramsToClear.forEach((param) => {
         qsParams.delete(param);
     });
@@ -40,7 +45,7 @@ export const clearURLParams = (qsParams, paramsToClear = []) => {
 };
 
 /** Handle actions in the App, returns updated state */
-export default function NotificationParser() {
+export default function NotificationParser({billingOnly = false} = {}) {
     const qs = window.location.search;
     if (!qs) {
         return null;
@@ -50,10 +55,13 @@ export default function NotificationParser() {
     const successStatus = qsParams.get('success');
     const stripeStatus = qsParams.get('stripe');
     let notificationData = null;
-    if (action && successStatus) {
-        return handleAuthActions({action, status: successStatus});
-    } else if (stripeStatus) {
-        return handleStripeActions({status: stripeStatus});
+
+    if (stripeStatus) {
+        return handleStripeActions({qsParams, status: stripeStatus, billingOnly});
+    }
+
+    if (action && successStatus && !billingOnly) {
+        return handleAuthActions({qsParams, action, status: successStatus});
     }
 
     return notificationData;
