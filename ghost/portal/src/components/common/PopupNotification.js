@@ -1,6 +1,8 @@
 import React from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
+import {getSupportAddress} from '../../utils/helpers';
+import {clearURLParams} from '../../utils/notifications';
 
 export const PopupNotificationStyles = `
     .gh-portal-popupnotification {
@@ -59,6 +61,14 @@ export const PopupNotificationStyles = `
         background: var(--red);
     }
 
+    .gh-portal-popupnotification.warning {
+        background: var(--yellow);
+    }
+
+    .gh-portal-popupnotification.warning p, .gh-portal-popupnotification.warning .closeicon {
+        color: var(--grey1);
+    }
+
     @keyframes popupnotification-slidein {
         0% { transform: translateY(-100px); }
         60% { transform: translateY(8px); }
@@ -77,31 +87,20 @@ const CloseButton = ({hide = false, onClose}) => {
         return null;
     }
     return (
-        <CloseIcon className='closeicon' alt='Close' onClick={onClose}/>
+        <CloseIcon className='closeicon' alt='Close' onClick={onClose} />
     );
 };
 
-const NotificationText = ({type, status}) => {
-    if (type === 'updateNewsletter:success') {
+const NotificationText = ({message, site}) => {
+    const supportAddress = getSupportAddress({site});
+    const supportAddressMail = `mailto:${supportAddress}`;
+    if (message) {
         return (
-            <p> Newsletter settings updated</p>
-        );
-    } else if (type === 'updateSubscription:success') {
-        return (
-            <p> Subscription plan successfully updated</p>
-        );
-    } else if (type === 'updateProfile:success') {
-        return (
-            <p>Profile updated</p>
-        );
-    } else if (type === 'updateProfile:failed') {
-        return (
-            <p>Failed to update profile</p>
+            <p>{message}</p>
         );
     }
-    const label = status === 'success' ? 'Success' : 'Failed';
     return (
-        <p> ${label}</p>
+        <p> An unexpected error occured. Please try again or <a href={supportAddressMail}>contact support</a> if the error persists. </p>
     );
 };
 
@@ -110,13 +109,17 @@ export default class PopupNotification extends React.Component {
     constructor() {
         super();
         this.state = {
-            className: '',
-            notificationType: ''
+            className: ''
         };
     }
 
     onAnimationEnd(e) {
+        const {popupNotification} = this.context;
+        const {type} = popupNotification || {};
         if (e.animationName === 'popupnotification-slideout') {
+            if (type === 'stripe:billing-update') {
+                clearURLParams(['stripe']);
+            }
             this.context.onAction('clearPopupNotification');
         }
     }
@@ -129,7 +132,7 @@ export default class PopupNotification extends React.Component {
 
     componentDidUpdate() {
         const {popupNotification} = this.context;
-        if (popupNotification.count !== this.state.count) {
+        if (popupNotification.count !== this.state.notificationCount) {
             clearTimeout(this.timeoutId);
             this.handlePopupNotification({popupNotification});
         }
@@ -144,7 +147,7 @@ export default class PopupNotification extends React.Component {
                         return {
                             className: 'slideout',
                             notificationCount: popupNotification.count
-                        }
+                        };
                     }
                     return {};
                 });
@@ -166,15 +169,15 @@ export default class PopupNotification extends React.Component {
     }
 
     render() {
-        const {popupNotification} = this.context;
+        const {popupNotification, site} = this.context;
         const {className} = this.state;
-        const {type, status, closeable} = popupNotification;
-        const statusClass = status ? `  ${status}` : '';
+        const {type, status, closeable, message} = popupNotification;
+        const statusClass = status ? ` ${status}` : '';
         const slideClass = className ? ` ${className}` : '';
 
         return (
             <div className={`gh-portal-popupnotification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
-                <NotificationText type={type} status={status} />
+                <NotificationText type={type} status={status} message={message} site={site} />
                 <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>
             </div>
         );
