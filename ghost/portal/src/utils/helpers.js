@@ -2,12 +2,12 @@ import CalculateDiscount from './discount';
 
 export function getPortalLinkPath({page}) {
     const Links = {
-        'default': '#/portal',
-        'signin': '#/portal/signin',
-        'signup': '#/portal/signup',
-        'account': '#/portal/account',
+        default: '#/portal',
+        signin: '#/portal/signin',
+        signup: '#/portal/signup',
+        account: '#/portal/account',
         'account-plans': '#/portal/account/plans',
-        'account-profile': '#/portal/account/profile',
+        'account-profile': '#/portal/account/profile'
     };
     if (Object.keys(Links).includes(page)) {
         return Links[page];
@@ -124,3 +124,39 @@ export function getSitePlans({site = {}, includeFree = true}) {
     }
     return plansData;
 }
+
+export const getMemberEmail = ({member}) => {
+    if (!member) {
+        return '';
+    }
+    return member.email;
+};
+
+export const getMemberName = ({member}) => {
+    if (!member) {
+        return '';
+    }
+    return member.name;
+};
+
+export const getSupportAddress = ({site}) => {
+    const {members_support_address: supportAddress} = site || {};
+    return supportAddress || '';
+};
+
+export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta}) => {
+    let count = 0;
+    if (state && state.popupNotification) {
+        count = (state.popupNotification.count || 0) + 1;
+    }
+    return {
+        type,
+        status,
+        autoHide,
+        closeable,
+        duration,
+        meta,
+        message,
+        count
+    };
+};

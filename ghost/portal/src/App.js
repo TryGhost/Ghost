@@ -8,6 +8,8 @@ import {getActivePage, isAccountPage} from './pages';
 import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
+import NotificationParser from './utils/notifications';
+import {createPopupNotification} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -94,12 +96,13 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup} = await this.fetchData();
+            const {site, member, page, showPopup, popupNotification} = await this.fetchData();
             this.setState({
                 site,
                 member,
                 page,
                 showPopup,
+                popupNotification,
                 action: 'init:success',
                 initStatus: 'success'
             });
@@ -126,14 +129,15 @@ export default class App extends React.Component {
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
         const {site: linkSiteData, ...restLinkData} = this.fetchLinkData();
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
+        const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
 
-        const stripeParam = this.getStripeUrlParam();
+        // const stripeParam = this.getStripeUrlParam();
         let page = '';
 
-        /** Set page for magic link popup on stripe success*/
-        if (!member && stripeParam === 'success') {
-            page = 'magiclink';
-        }
+        // /** Set page for magic link popup on stripe success*/
+        // if (!member && stripeParam === 'success') {
+        //     page = 'magiclink';
+        // }
 
         return {
             member,
@@ -142,10 +146,12 @@ export default class App extends React.Component {
                 ...apiSiteData,
                 ...linkSiteData,
                 ...previewSiteData,
+                ...notificationSiteData,
                 ...devSiteData
             },
             ...restDevData,
             ...restLinkData,
+            ...restNotificationData,
             ...restPreviewData
         };
     }
@@ -197,6 +203,18 @@ export default class App extends React.Component {
         }
         data.site.portal_plans = allowedPlans;
         return data;
+    }
+
+    fetchNotificationData() {
+        const {type, status, duration, autoHide, closeable} = NotificationParser({billingOnly: true}) || {};
+        if (['stripe:billing-update'].includes(type)) {
+            const popupNotification = createPopupNotification({type, status, duration, closeable, autoHide, state: this.state});
+            return {
+                showPopup: true,
+                popupNotification
+            };
+        }
+        return {};
     }
 
     /** Fetch state from Portal Links */
@@ -256,9 +274,17 @@ export default class App extends React.Component {
                     action: ''
                 });
             }, 2000);
-        } catch (e) {
+        } catch (error) {
+            const popupNotification = createPopupNotification({
+                type: `${action}:failed`,
+                autoHide: true, closeable: true, status: 'error', state: this.state,
+                meta: {
+                    error
+                }
+            });
             this.setState({
-                action: `${action}:failed`
+                action: `${action}:failed`,
+                popupNotification
             });
         }
     }

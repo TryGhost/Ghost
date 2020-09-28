@@ -6,7 +6,6 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
 import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
-// import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
 
 const React = require('react');
 
