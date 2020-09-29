@@ -1,8 +1,26 @@
 const {i18n} = require('../../../../../lib/common');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
-const mapper = require('./utils/mapper');
 const {unparse} = require('@tryghost/members-csv');
+
+
+const mapMember = (model, frame) => {
+    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+
+    const stripeSubscriptions = jsonModel && jsonModel.stripe && jsonModel.stripe.subscriptions;
+    if (stripeSubscriptions) {
+        let compedSubscriptions = stripeSubscriptions.filter(sub => (sub.plan.nickname === 'Complimentary'));
+        const hasCompedSubscription = !!(compedSubscriptions.length);
+
+        // NOTE: `frame.options.fields` has to be taken into account in the same way as for `stripe.subscriptions`
+        //       at the moment of implementation fields were not fully supported by members endpoints
+        Object.assign(jsonModel, {
+            comped: hasCompedSubscription
+        });
+    }
+
+    return jsonModel;
+};
 
 module.exports = {
     hasActiveStripeSubscriptions(data, apiConfig, frame) {
@@ -12,7 +30,7 @@ module.exports = {
         debug('browse');
 
         frame.response = {
-            members: data.members.map(member => mapper.mapMember(member, frame)),
+            members: data.members.map(member => mapMember(member, frame)),
             meta: data.meta
         };
     },
@@ -21,7 +39,7 @@ module.exports = {
         debug('add');
 
         frame.response = {
-            members: [mapper.mapMember(data, frame)]
+            members: [mapMember(data, frame)]
         };
     },
 
@@ -29,7 +47,7 @@ module.exports = {
         debug('edit');
 
         frame.response = {
-            members: [mapper.mapMember(data, frame)]
+            members: [mapMember(data, frame)]
         };
     },
 
@@ -43,7 +61,7 @@ module.exports = {
         }
 
         frame.response = {
-            members: [mapper.mapMember(data, frame)]
+            members: [mapMember(data, frame)]
         };
     },
 
@@ -51,7 +69,7 @@ module.exports = {
         debug('exportCSV');
 
         const members = data.members.map((member) => {
-            return mapper.mapMember(member, frame);
+            return mapMember(member, frame);
         });
 
         frame.response = unparse(members);
@@ -70,7 +88,7 @@ module.exports = {
     editSubscription(data, apiConfig, frame) {
         debug('editSubscription');
         frame.response = {
-            members: [mapper.mapMember(data, frame)]
+            members: [mapMember(data, frame)]
         };
     }
 };
