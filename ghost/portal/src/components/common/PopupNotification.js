@@ -126,9 +126,7 @@ export default class PopupNotification extends React.Component {
     }
 
     closeNotification(e) {
-        this.setState({
-            className: 'slideout'
-        });
+        this.context.onAction('clearPopupNotification');
     }
 
     componentDidUpdate() {

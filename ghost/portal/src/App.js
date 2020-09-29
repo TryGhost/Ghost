@@ -268,12 +268,14 @@ export default class App extends React.Component {
             const updatedState = await ActionHandler({action, data, state: this.state, api: this.GhostApi});
             this.setState(updatedState);
 
-            /** Reset action state after short timeout */
-            this.timeoutId = setTimeout(() => {
-                this.setState({
-                    action: ''
-                });
-            }, 2000);
+            /** Reset action state after short timeout if not failed*/
+            if (updatedState && updatedState.action && !updatedState.action.includes(':failed')) {
+                this.timeoutId = setTimeout(() => {
+                    this.setState({
+                        action: ''
+                    });
+                }, 2000);
+            }
         } catch (error) {
             const popupNotification = createPopupNotification({
                 type: `${action}:failed`,
