@@ -23,6 +23,7 @@
     "sinon": "9.1.0"
   },
   "dependencies": {
+    "@tryghost/errors": "0.2.4",
     "bluebird": "^3.5.3",
     "ghost-ignition": "4.2.2",
     "lodash": "^4.17.11"
