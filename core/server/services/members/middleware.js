@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const logging = require('../../../shared/logging');
-const config = require('../../../shared/config');
 const labsService = require('../labs');
 const membersService = require('./index');
 const urlUtils = require('../../../shared/url-utils');
@@ -115,11 +114,6 @@ const getMemberSiteData = async function (req, res) {
         portal_button_style: settingsCache.get('portal_button_style'),
         members_support_address: supportAddress
     };
-
-    // accent_color is currently an experimental feature
-    if (!config.get('enableDeveloperExperiments')) {
-        delete response.accent_color;
-    }
 
     res.json({site: response});
 };
