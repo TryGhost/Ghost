@@ -7,6 +7,7 @@ const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 const config = require('../../../../../../../shared/config');
+const mega = require('../../../../../../services/mega');
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -60,6 +61,10 @@ const mapPost = (model, frame) => {
 
             if (relation === 'authors' && jsonModel.authors) {
                 jsonModel.authors = jsonModel.authors.map(author => mapUser(author, frame));
+            }
+
+            if (relation === 'email' && jsonModel.email) {
+                jsonModel.email = mapEmail(jsonModel.email, frame);
             }
 
             if (relation === 'email' && _.isEmpty(jsonModel.email)) {
@@ -159,6 +164,22 @@ const mapLabel = (model, frame) => {
     return jsonModel;
 };
 
+const mapEmail = (model, frame) => {
+    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+
+    // Ensure we're not outputting unwanted replacement strings when viewing email contents
+    // TODO: extract this to a utility, it's duplicated in the email-preview API controller
+    const replacements = mega.postEmailSerializer.parseReplacements(jsonModel);
+    replacements.forEach((replacement) => {
+        jsonModel[replacement.format] = jsonModel[replacement.format].replace(
+            replacement.match,
+            replacement.fallback || ''
+        );
+    });
+
+    return jsonModel;
+};
+
 module.exports.mapPost = mapPost;
 module.exports.mapPage = mapPage;
 module.exports.mapUser = mapUser;
@@ -169,3 +190,4 @@ module.exports.mapSettings = mapSettings;
 module.exports.mapImage = mapImage;
 module.exports.mapAction = mapAction;
 module.exports.mapMember = mapMember;
+module.exports.mapEmail = mapEmail;
