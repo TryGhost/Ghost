@@ -37,6 +37,6 @@
     "rollup": "2.28.2",
     "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
-    "sinon": "9.0.3"
+    "sinon": "9.1.0"
   }
 }
