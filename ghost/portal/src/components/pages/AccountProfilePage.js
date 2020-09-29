@@ -48,6 +48,7 @@ export default class AccountProfilePage extends React.Component {
             const {email, name, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
+                this.context.onAction('clearPopupNotification');
                 this.context.onAction('updateProfile', {email, name});
             }
         });

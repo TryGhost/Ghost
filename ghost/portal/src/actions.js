@@ -297,7 +297,7 @@ async function updateProfile({data, state, api}) {
         return {
             action,
             ...(dataUpdate.success ? {member: dataUpdate.member} : {}),
-            page: 'accountHome',
+            ...(dataUpdate.success ? {page: 'accountHome'} : {}),
             popupNotification: createPopupNotification({
                 type: action, autoHide: dataUpdate.success, closeable: true, status, state, message
             })
@@ -308,6 +308,7 @@ async function updateProfile({data, state, api}) {
         const message = !emailUpdate.success ? 'Failed to send verification email' : 'Check your inbox to verify email update';
         return {
             action,
+            ...(emailUpdate.success ? {page: 'accountHome'} : {}),
             popupNotification: createPopupNotification({
                 type: action, autoHide: emailUpdate.success, closeable: true, status, state, message
             })
