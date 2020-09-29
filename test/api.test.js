@@ -49,7 +49,7 @@ describe('Exposes a correct API', function () {
                 };
 
                 try {
-                    await apiSchema.validate({data, schema: 'posts-add', definitions: 'posts'});
+                    await apiSchema.validate({data, schema: 'posts-add'});
                 } catch (err) {
                     throw new Error('should not throw an error');
                 }
@@ -63,7 +63,7 @@ describe('Exposes a correct API', function () {
                 };
 
                 try {
-                    await apiSchema.validate({data, schema: 'posts-add', definitions: 'posts'});
+                    await apiSchema.validate({data, schema: 'posts-add', definition: 'posts'});
                     throw new Error('should throw an error');
                 } catch (err) {
                     err.errorType.should.equal('ValidationError');
@@ -103,7 +103,7 @@ describe('Exposes a correct API', function () {
                 };
 
                 try {
-                    await apiSchema.validate({data, schema: 'posts-add', definitions: 'posts', version: 'v2'});
+                    await apiSchema.validate({data, schema: 'posts-add', version: 'v2'});
                 } catch (err) {
                     throw new Error('should not throw an error');
                 }
@@ -117,7 +117,7 @@ describe('Exposes a correct API', function () {
                 };
 
                 try {
-                    await apiSchema.validate({data, schema: 'posts-add', definitions: 'posts', version: 'v2'});
+                    await apiSchema.validate({data, schema: 'posts-add', version: 'v2'});
                     throw new Error('should throw an error');
                 } catch (err) {
                     err.errorType.should.equal('ValidationError');
