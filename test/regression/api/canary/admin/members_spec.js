@@ -474,20 +474,35 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta.stats);
 
                 jsonResponse.meta.stats.imported.count.should.equal(0);
-                jsonResponse.meta.stats.invalid.count.should.equal(2);
+                jsonResponse.meta.stats.invalid.count.should.equal(3);
 
-                should.equal(jsonResponse.meta.stats.invalid.errors.length, 4);
-                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Validation failed for \'name\'.');
-                jsonResponse.meta.stats.invalid.errors[0].count.should.equal(1);
+                const validationErrors = jsonResponse.meta.stats.invalid.errors;
 
-                jsonResponse.meta.stats.invalid.errors[1].message.should.equal('Validation failed for \'email\'.');
-                jsonResponse.meta.stats.invalid.errors[1].count.should.equal(2);
+                should.equal(validationErrors.length, 4);
 
-                jsonResponse.meta.stats.invalid.errors[2].message.should.equal('Validation failed for \'created_at\'.');
-                jsonResponse.meta.stats.invalid.errors[2].count.should.equal(1);
+                const nameValidationErrors = validationErrors.find(
+                    obj => obj.message === 'Validation failed for \'name\'.'
+                );
+                should.exist(nameValidationErrors);
+                nameValidationErrors.count.should.equal(1);
 
-                jsonResponse.meta.stats.invalid.errors[3].message.should.equal('Validation failed for \'complimentary_plan\'.');
-                jsonResponse.meta.stats.invalid.errors[3].count.should.equal(1);
+                const emailValidationErrors = validationErrors.find(
+                    obj => obj.message === 'Validation (isEmail) failed for email'
+                );
+                should.exist(emailValidationErrors);
+                emailValidationErrors.count.should.equal(1);
+
+                const createdAtValidationErrors = validationErrors.find(
+                    obj => obj.message === 'Validation failed for \'created_at\'.'
+                );
+                should.exist(createdAtValidationErrors);
+                createdAtValidationErrors.count.should.equal(1);
+
+                const compedPlanValidationErrors = validationErrors.find(
+                    obj => obj.message === 'Validation failed for \'complimentary_plan\'.'
+                );
+                should.exist(compedPlanValidationErrors);
+                compedPlanValidationErrors.count.should.equal(1);
 
                 should.exist(jsonResponse.meta.import_label);
                 jsonResponse.meta.import_label.slug.should.equal('new-global-label');

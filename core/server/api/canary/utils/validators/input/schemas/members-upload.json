@@ -19,7 +19,7 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 191,
-                "format": "email"
+                "pattern": "^([^,]|$)"
             },
             "note": {
                 "type": ["string", "null"],
