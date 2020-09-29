@@ -10,6 +10,14 @@ describe('Exposes a correct API', function () {
         apiSchema.validate.should.not.be.undefined;
     });
 
+    it('Throws when incorrect api version is passed in', function () {
+        try {
+            apiSchema.get('posts', 'v1');
+        } catch (err) {
+            err.errorType.should.equal('IncorrectUsageError');
+        }
+    });
+
     describe('default version (canary)', function () {
         describe('get', function () {
             it('Returns schema definition by name', function () {
