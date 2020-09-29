@@ -7,6 +7,8 @@ const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
 const SingleUseTokenProvider = require('./SingleUseTokenProvider');
+const urlUtils = require('../../../shared/url-utils');
+
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
 const ghostMailer = new mail.GhostMailer();
@@ -130,17 +132,19 @@ function createApiInstance(config) {
             },
             getHTML(url, type, email) {
                 const siteTitle = settingsCache.get('title');
+                const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+                const siteDomain = (domain && domain[1]);
                 const accentColor = settingsCache.get('accent_color') || '#15212A';
                 switch (type) {
                 case 'subscribe':
-                    return subscribeEmail({url, email, siteTitle, accentColor});
+                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain});
                 case 'signup':
-                    return signupEmail({url, email, siteTitle, accentColor});
+                    return signupEmail({url, email, siteTitle, accentColor, siteDomain});
                 case 'updateEmail':
-                    return subscribeEmail({url, email, siteTitle, accentColor});
+                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain});
                 case 'signin':
                 default:
-                    return signinEmail({url, email, siteTitle, accentColor});
+                    return signinEmail({url, email, siteTitle, accentColor, siteDomain});
                 }
             }
         },

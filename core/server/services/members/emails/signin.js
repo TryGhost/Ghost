@@ -1,4 +1,4 @@
-module.exports = ({siteTitle, email, url, accentColor = '#15212A'}) => `
+module.exports = ({siteTitle, email, url, accentColor = '#15212A', siteDomain}) => `
 <!doctype html>
 <html>
   <head>
@@ -153,7 +153,7 @@ module.exports = ({siteTitle, email, url, accentColor = '#15212A'}) => `
             <!-- END MAIN CONTENT AREA -->
             </table>
 
-            
+
           <!-- END CENTERED CONTAINER -->
           </div>
         </td>
