@@ -1,7 +1,9 @@
+const mapper = require('./utils/mapper');
+
 module.exports = {
     read(email, apiConfig, frame) {
         frame.response = {
-            emails: [email.toJSON(frame.options)]
+            emails: [mapper.mapEmail(email, frame)]
         };
     },
 
