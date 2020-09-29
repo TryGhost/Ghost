@@ -1,4 +1,4 @@
-module.exports = ({siteTitle, email, url}) => `
+module.exports = ({siteTitle, email, url, accentColor = '#15212A'}) => `
 <!doctype html>
 <html>
   <head>
