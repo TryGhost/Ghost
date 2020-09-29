@@ -1,94 +1,186 @@
-const {i18n} = require('../../../../../lib/common');
-const errors = require('@tryghost/errors');
+//@ts-check
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
 
-
-const mapMember = (model, frame) => {
-    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
-
-    const stripeSubscriptions = jsonModel && jsonModel.stripe && jsonModel.stripe.subscriptions;
-    if (stripeSubscriptions) {
-        let compedSubscriptions = stripeSubscriptions.filter(sub => (sub.plan.nickname === 'Complimentary'));
-        const hasCompedSubscription = !!(compedSubscriptions.length);
-
-        // NOTE: `frame.options.fields` has to be taken into account in the same way as for `stripe.subscriptions`
-        //       at the moment of implementation fields were not fully supported by members endpoints
-        Object.assign(jsonModel, {
-            comped: hasCompedSubscription
-        });
-    }
-
-    return jsonModel;
-};
-
 module.exports = {
-    hasActiveStripeSubscriptions(data, apiConfig, frame) {
-        frame.response = data;
-    },
-    browse(data, apiConfig, frame) {
-        debug('browse');
+    hasActiveStripeSubscriptions: createSerializer('hasActiveStripeSubscriptions', passthrough),
 
-        frame.response = {
-            members: data.members.map(member => mapMember(member, frame)),
-            meta: data.meta
-        };
-    },
+    browse: createSerializer('browse', paginatedMembers),
+    read: createSerializer('read', singleMember),
+    edit: createSerializer('edit', singleMember),
+    add: createSerializer('add', singleMember),
+    editSubscription: createSerializer('editSubscription', singleMember),
 
-    add(data, apiConfig, frame) {
-        debug('add');
+    exportCSV: createSerializer('exportCSV', exportCSV),
 
-        frame.response = {
-            members: [mapMember(data, frame)]
-        };
-    },
-
-    edit(data, apiConfig, frame) {
-        debug('edit');
-
-        frame.response = {
-            members: [mapMember(data, frame)]
-        };
-    },
-
-    read(data, apiConfig, frame) {
-        debug('read');
-
-        if (!data) {
-            return Promise.reject(new errors.NotFoundError({
-                message: i18n.t('errors.api.members.memberNotFound')
-            }));
-        }
-
-        frame.response = {
-            members: [mapMember(data, frame)]
-        };
-    },
-
-    exportCSV(data, apiConfig, frame) {
-        debug('exportCSV');
-
-        const members = data.members.map((member) => {
-            return mapMember(member, frame);
-        });
-
-        frame.response = unparse(members);
-    },
-
-    importCSV(data, apiConfig, frame) {
-        debug('importCSV');
-        frame.response = data;
-    },
-
-    stats(data, apiConfig, frame) {
-        debug('stats');
-        frame.response = data;
-    },
-
-    editSubscription(data, apiConfig, frame) {
-        debug('editSubscription');
-        frame.response = {
-            members: [mapMember(data, frame)]
-        };
-    }
+    importCSV: createSerializer('importCSV', passthrough),
+    stats: createSerializer('stats', passthrough)
 };
+
+/**
+ * @template PageMeta
+ *
+ * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
+ * @param {APIConfig} _apiConfig
+ * @param {Frame} frame
+ *
+ * @returns {{members: SerializedMember[], meta: PageMeta}}
+ */
+function paginatedMembers(page, _apiConfig, frame) {
+    return {
+        members: page.data.map(model => serializeMember(model, frame.options)),
+        meta: page.meta
+    };
+}
+
+/**
+ * @param {import('bookshelf').Model} model
+ * @param {APIConfig} _apiConfig
+ * @param {Frame} frame
+ *
+ * @returns {{members: SerializedMember[]}}
+ */
+function singleMember(model, _apiConfig, frame) {
+    return {
+        members: [serializeMember(model, frame.options)]
+    };
+}
+
+/**
+ * @template PageMeta
+ *
+ * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
+ * @param {APIConfig} _apiConfig
+ * @param {Frame} frame
+ *
+ * @returns {string} - A CSV string
+ */
+function exportCSV(page, _apiConfig, frame) {
+    debug('exportCSV');
+
+    const members = page.data.map(model => serializeMember(model, frame.options));
+
+    return unparse(members);
+}
+
+/**
+ * @param {import('bookshelf').Model} member
+ * @param {object} options
+ *
+ * @returns {SerializedMember}
+ */
+function serializeMember(member, options) {
+    const json = member.toJSON(options);
+
+    let comped = false;
+    if (json.stripe && json.stripe.subscriptions) {
+        const hasCompedSubscription = !!json.stripe.subscriptions.find(
+            /**
+             * @param {SerializedMemberStripeSubscription} sub
+             */
+            function (sub) {
+                return sub.plan.nickname === 'Complimentary';
+            }
+        );
+        if (hasCompedSubscription) {
+            comped = true;
+        }
+    }
+
+    return {
+        id: json.id,
+        uuid: json.uuid,
+        email: json.email,
+        name: json.name,
+        note: json.note,
+        geolocation: json.geolocation,
+        subscribed: json.subscribed,
+        created_at: json.created_at,
+        updated_at: json.updated_at,
+        labels: json.labels,
+        stripe: json.stripe,
+        avatar_image: json.avatar_image,
+        comped: comped
+    };
+}
+
+/**
+ * @template Data
+ * @param {Data} data
+ * @returns Data
+ */
+function passthrough(data) {
+    return data;
+}
+
+/**
+ * @template Data
+ * @template Response
+ * @param {string} debugString
+ * @param {(data: Data, apiConfig: APIConfig, frame: Frame) => Response} serialize - A function to serialize the data into an object suitable for API response
+ *
+ * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => void}
+ */
+function createSerializer(debugString, serialize) {
+    return function serializer(data, apiConfig, frame) {
+        debug(debugString);
+        const response = serialize(data, apiConfig, frame);
+        frame.response = response;
+    };
+}
+
+/**
+ * @typedef {Object} SerializedMember
+ * @prop {string} id
+ * @prop {string} uuid
+ * @prop {string} email
+ * @prop {string=} name
+ * @prop {string=} note
+ * @prop {null|string} geolocation
+ * @prop {boolean} subscribed
+ * @prop {string} created_at
+ * @prop {string} updated_at
+ * @prop {string[]} labels
+ * @prop {null|SerializedMemberStripeData} stripe
+ * @prop {string} avatar_image
+ * @prop {boolean} comped
+ */
+
+/**
+ * @typedef {Object} SerializedMemberStripeData
+ * @prop {SerializedMemberStripeSubscription[]} subscriptions
+ */
+
+/**
+ * @typedef {Object} SerializedMemberStripeSubscription
+ *
+ * @prop {string} id
+ * @prop {string} status
+ * @prop {string} start_date
+ * @prop {string} default_payment_card_last4
+ * @prop {string} current_period_end
+ * @prop {boolean} cancel_at_period_end
+ *
+ * @prop {Object} customer
+ * @prop {string} customer.id
+ * @prop {null|string} customer.name
+ * @prop {string} customer.email
+ *
+ * @prop {Object} plan
+ * @prop {string} plan.id
+ * @prop {string} plan.nickname
+ * @prop {number} plan.amount
+ * @prop {string} plan.currency
+ * @prop {string} plan.currency_symbol
+ */
+
+/**
+ * @typedef {Object} APIConfig
+ * @prop {string} docName
+ * @prop {string} method
+ */
+
+/**
+ * @typedef {Object<string, any>} Frame
+ * @prop {Object} options
+ */
