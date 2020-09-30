@@ -132,19 +132,20 @@ function createApiInstance(config) {
             },
             getHTML(url, type, email) {
                 const siteTitle = settingsCache.get('title');
+                const siteUrl = urlUtils.urlFor('home', true);
                 const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
                 const siteDomain = (domain && domain[1]);
                 const accentColor = settingsCache.get('accent_color') || '#15212A';
                 switch (type) {
                 case 'subscribe':
-                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain});
+                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signup':
-                    return signupEmail({url, email, siteTitle, accentColor, siteDomain});
+                    return signupEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'updateEmail':
-                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain});
+                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
                 default:
-                    return signinEmail({url, email, siteTitle, accentColor, siteDomain});
+                    return signinEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 }
             }
         },
