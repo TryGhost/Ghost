@@ -165,12 +165,8 @@ module.exports = {
         async query(frame) {
             frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
             const page = await membersService.api.members.list(frame.options);
-            const members = page.data.map(model => model.toJSON(frame.options));
 
-            return {
-                members: members,
-                meta: page.meta
-            };
+            return page;
         }
     },
 
@@ -192,7 +188,7 @@ module.exports = {
                 });
             }
 
-            return model.toJSON(frame.options);
+            return model;
         }
     },
 
@@ -240,7 +236,7 @@ module.exports = {
                     await membersService.api.sendEmailWithMagicLink({email: member.get('email'), requestedType: frame.options.email_type});
                 }
 
-                return member.toJSON(frame.options);
+                return member;
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
@@ -305,7 +301,7 @@ module.exports = {
 
                 await member.load(['stripeSubscriptions.customer']);
 
-                return member.toJSON(frame.options);
+                return member;
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
@@ -363,7 +359,7 @@ module.exports = {
                 });
             }
 
-            return model.toJSON(frame.options);
+            return model;
         }
     },
 
@@ -426,12 +422,8 @@ module.exports = {
         async query(frame) {
             frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
             const page = await membersService.api.members.list(frame.options);
-            const members = page.data.map(model => model.toJSON(frame.options));
 
-            return {
-                members: members,
-                meta: page.meta
-            };
+            return page;
         }
     },
 
