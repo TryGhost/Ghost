@@ -12,7 +12,7 @@ describe('Exposes a correct API', function () {
 
     it('Throws when incorrect api version is passed in', function () {
         try {
-            apiSchema.get('posts', 'v1');
+            apiSchema.get('posts-edit', 'v1');
         } catch (err) {
             err.errorType.should.equal('IncorrectUsageError');
         }
@@ -21,9 +21,9 @@ describe('Exposes a correct API', function () {
     describe('default version (canary)', function () {
         describe('get', function () {
             it('Returns schema definition by name', function () {
-                const postsDefinition = apiSchema.get('posts');
-                postsDefinition.title.should.eql('posts');
-                Object.keys(postsDefinition.definitions.post.properties).length.should.equal(44);
+                const postsDefinition = apiSchema.get('posts-edit');
+                postsDefinition.title.should.eql('posts.edit');
+                postsDefinition.properties.posts.items.allOf[0].$ref.should.equal('posts#/definitions/post');
             });
 
             it('Returns null when schema definition does not exist', function () {
@@ -75,9 +75,9 @@ describe('Exposes a correct API', function () {
     describe('v2 version', function () {
         describe('get', function () {
             it('Returns schema definition by name', function () {
-                const postsDefinition = apiSchema.get('posts', 'v2');
-                postsDefinition.title.should.eql('posts');
-                Object.keys(postsDefinition.definitions.post.properties).length.should.equal(41);
+                const postsDefinition = apiSchema.get('posts-edit', 'v2');
+                postsDefinition.title.should.eql('posts.edit');
+                postsDefinition.properties.posts.items.allOf[0].$ref.should.equal('posts#/definitions/post');
             });
 
             it('Returns null when schema definition does not exist', function () {
