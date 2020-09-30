@@ -32,12 +32,15 @@ const sanitizeInput = async (members) => {
     let invalidCount = 0;
 
     const jsonSchema = require('./utils/validators/utils/json-schema');
-    const schema = require('./utils/validators/input/schemas/members-upload');
-    const definitions = require('./utils/validators/input/schemas/members');
 
     let invalidValidationCount = 0;
     try {
-        await jsonSchema.validate(schema, definitions, members);
+        await jsonSchema.validate({
+            docName: 'members',
+            method: 'upload'
+        }, {
+            data: members
+        });
     } catch (error) {
         if (error.errorDetails && error.errorDetails.length) {
             const jsonPointerIndexRegex = /\[(?<index>\d+)\]/;

@@ -64,9 +64,7 @@ module.exports = {
     upload(apiConfig, frame) {
         return Promise.resolve()
             .then(() => {
-                const schema = require('./schemas/images-upload');
-                const definitions = require('./schemas/images');
-                return jsonSchema.validate(schema, definitions, frame.data);
+                return jsonSchema.validate(apiConfig, frame);
             })
             .then(() => {
                 if (frame.data.purpose === 'profile_image') {
