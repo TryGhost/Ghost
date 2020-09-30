@@ -8,7 +8,7 @@ const mail = require('../mail');
 const updateEmailTemplate = require('./emails/updateEmail');
 const SingleUseTokenProvider = require('./SingleUseTokenProvider');
 const models = require('../../models');
-const MAGIC_LINK_TOKEN_VALIDITY = 4 * 60 * 60 * 1000;
+const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
 const ghostMailer = new mail.GhostMailer();
 
@@ -39,7 +39,7 @@ function createSettingsInstance(config) {
 
             ${url}
 
-            For your security, the link will expire in 4 hours time.
+            For your security, the link will expire in 24 hours time.
 
             ---
 
