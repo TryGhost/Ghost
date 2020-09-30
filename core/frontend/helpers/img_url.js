@@ -38,14 +38,14 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     if (!isInternalImage) {
         // If it's an external link that specifies width (eg. unsplash), update the width
         if (
-            /\&w=[\d]+/.test(requestedImageUrl) ||
-            /\&amp;w&#x3D;[\d]+/.test(requestedImageUrl)
+            /&w=[\d]+/.test(requestedImageUrl) ||
+            /&amp;w&#x3D;[\d]+/.test(requestedImageUrl)
         ) {
-            const { requestedSize, imageSizes } = getImageSizeOptions(options);
-            const { width } = imageSizes[requestedSize];
+            const {requestedSize, imageSizes} = getImageSizeOptions(options);
+            const {width} = imageSizes[requestedSize];
             return requestedImageUrl
-                .replace(/\&w=[\d]+/, '&w=' + width)
-                .replace(/\&amp;w&#x3D;[\d]+/, '&amp;w&#x3D;' + width);
+                .replace(/&w=[\d]+/, '&w=' + width)
+                .replace(/&amp;w&#x3D;[\d]+/, '&amp;w&#x3D;' + width);
         }
         return requestedImageUrl;
     }
