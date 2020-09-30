@@ -24,7 +24,7 @@
     "sinon": "9.1.0"
   },
   "dependencies": {
-    "@tryghost/string": "0.1.11",
+    "@tryghost/string": "0.1.12",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
     "lodash": "4.17.20"
