@@ -15,14 +15,8 @@ module.exports = {
             }));
         }
 
-        const schema = require('./schemas/webhooks-add');
-        const definitions = require('./schemas/webhooks');
-        return jsonSchema.validate(schema, definitions, frame.data);
+        return jsonSchema.validate(apiConfig, frame);
     },
 
-    edit(apiConfig, frame) {
-        const schema = require('./schemas/webhooks-edit');
-        const definitions = require('./schemas/webhooks');
-        return jsonSchema.validate(schema, definitions, frame.data);
-    }
+    edit: jsonSchema.validate
 };
