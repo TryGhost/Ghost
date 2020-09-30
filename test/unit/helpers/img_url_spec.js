@@ -181,6 +181,25 @@ describe('{{image}} helper', function () {
             rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
         });
 
+        it('should output the correct url for external paths with width queries', function () {
+            const rendered = helpers.img_url('http://example.com/picture.jpg?w=2000', {
+                hash: {
+                    size: 'medium'
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('http://example.com/picture.jpg?w=400');
+        });
+
         it('should output the correct url for relative paths without leading slash', function () {
             const rendered = helpers.img_url('content/images/my-coole-img.jpg', {
                 hash: {
