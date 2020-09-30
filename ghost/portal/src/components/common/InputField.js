@@ -43,7 +43,7 @@ export const InputFieldStyles = `
     }
 
     .gh-portal-input:focus {
-        border-color: var(--grey10);
+        border-color: #cdcdcd;
     }
 
     .gh-portal-input.error {
