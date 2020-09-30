@@ -1,22 +1,23 @@
 
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "pages.edit",
-    "title": "pages.edit",
-    "description": "Schema for pages.edit",
+    "$id": "labels.add",
+    "title": "labels.add",
+    "description": "Schema for labels.add",
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "pages": {
+        "labels": {
             "type": "array",
             "minItems": 1,
             "maxItems": 1,
+            "additionalProperties": false,
             "items": {
                 "type": "object",
-                "allOf": [{"$ref": "pages#/definitions/page"}],
-                "required": ["updated_at"]
+                "allOf": [{"$ref": "labels#/definitions/label"}],
+                "required": ["name"]
             }
         }
     },
-    "required": ["pages"]
+    "required": [ "labels" ]
   }

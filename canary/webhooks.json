@@ -1,52 +1,53 @@
 
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "tags",
-    "title": "tags",
-    "description": "Base tags definitions",
+    "$id": "webhooks",
+    "title": "webhooks",
+    "description": "Base webhooks definitions",
     "definitions": {
-        "tag": {
+        "webhook": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "name": {
+                "event": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 191,
-                    "pattern": "^([^,]|$)"
+                    "maxLength": 50,
+                    "isLowercase": true
                 },
-                "slug": {
-                    "type": ["string", "null"],
-                    "maxLength": 191
-                },
-                "description": {
-                    "type": ["string", "null"],
-                    "maxLength": 500
-                },
-                "feature_image": {
-                    "type": ["string", "null"],
+                "target_url": {
+                    "type": "string",
                     "format": "uri-reference",
                     "maxLength": 2000
                 },
-                "visibility": {
-                    "type": "string",
-                    "enum": ["public", "internal"]
-                },
-                "meta_title": {
+                "name": {
                     "type": ["string", "null"],
-                    "maxLength": 300
+                    "maxLength": 191
                 },
-                "meta_description": {
+                "secret": {
                     "type": ["string", "null"],
-                    "maxLength": 500
+                    "maxLength": 191
+                },
+                "api_version": {
+                    "type": ["string", "null"],
+                    "maxLength": 50
+                },
+                "integration_id": {
+                    "type": ["string", "null"],
+                    "maxLength": 24
                 },
                 "id": {
                     "strip": true
                 },
-                "parent": {
+                "status": {
                     "strip": true
                 },
-                "parent_id": {
+                "last_triggered_at": {
+                    "strip": true
+                },
+                "last_triggered_status": {
+                    "strip": true
+                },
+                "last_triggered_error": {
                     "strip": true
                 },
                 "created_at": {
@@ -59,9 +60,6 @@
                     "strip": true
                 },
                 "updated_by": {
-                    "strip": true
-                },
-                "url": {
                     "strip": true
                 }
             }

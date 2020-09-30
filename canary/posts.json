@@ -1,11 +1,11 @@
 
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "pages",
-    "title": "pages",
-    "description": "Base pages definitions",
+    "$id": "posts",
+    "title": "posts",
+    "description": "Base posts definitions",
     "definitions": {
-        "page": {
+        "post": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -100,6 +100,10 @@
                     "type": ["string", "null"],
                     "maxLength": 500
                 },
+                "email_subject": {
+                    "type": ["string", "null"],
+                    "maxLength": 300
+                },
                 "custom_template": {
                     "type": ["string", "null"],
                     "maxLength": 100
@@ -110,21 +114,27 @@
                     "maxLength": 2000
                 },
                 "authors": {
-                    "$ref": "#/definitions/page-authors"
+                    "$ref": "#/definitions/post-authors"
                 },
                 "tags": {
-                    "$ref": "#/definitions/page-tags"
+                    "$ref": "#/definitions/post-tags"
                 },
                 "id": {
                     "strip": true
                 },
-                "page": {
+                "uuid": {
+                    "strip": true
+                },
+                "comment_id": {
                     "strip": true
                 },
                 "author": {
                     "strip": true
                 },
                 "author_id": {
+                    "strip": true
+                },
+                "page": {
                     "strip": true
                 },
                 "created_at": {
@@ -153,11 +163,17 @@
                 },
                 "plaintext": {
                     "strip": true
+                },
+                "email": {
+                    "strip": true
+                },
+                "send_email_when_published": {
+                    "strip": true
                 }
             }
         },
-        "page-authors": {
-            "description": "Authors of the page",
+        "post-authors": {
+            "description": "Authors of the post",
             "type": "array",
             "items": {
                 "anyOf": [{
@@ -193,8 +209,8 @@
                 }]
             }
         },
-        "page-tags": {
-            "description": "Tags of the page",
+        "post-tags": {
+            "description": "Tags of the post",
             "type": "array",
             "items": {
                 "anyOf": [{
@@ -209,10 +225,7 @@
                             "maxLength": 191
                         },
                         "slug": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
+                            "type": ["string", "null"],
                             "maxLength": 191
                         },
                         "parent": {
@@ -221,26 +234,14 @@
                         "parent_id": {
                             "strip": true
                         },
-                        "pages": {
+                        "posts": {
                             "strip": true
                         }
                     },
                     "anyOf": [
-                        {
-                            "required": [
-                                "id"
-                            ]
-                        },
-                        {
-                            "required": [
-                                "name"
-                            ]
-                        },
-                        {
-                            "required": [
-                                "slug"
-                            ]
-                        }
+                        {"required": ["id"]},
+                        {"required": ["name"]},
+                        {"required": ["slug"]}
                     ]
                 }, {
                     "type": "string",

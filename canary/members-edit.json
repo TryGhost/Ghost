@@ -1,0 +1,63 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "members.edit",
+    "title": "members.edit",
+    "description": "Schema for members.edit",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "members": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 191,
+                    "pattern": "^([^,]|$)"
+                },
+                "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 191,
+                    "pattern": "^([^,]|$)"
+                },
+                "note": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                },
+                "subscribed": {
+                    "type": "boolean"
+                },
+                "comped": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "strip": true
+                },
+                "labels": {
+                    "$ref": "members#/definitions/member-labels"
+                },
+                "created_at": {
+                    "strip": true
+                },
+                "created_by": {
+                    "strip": true
+                },
+                "updated_at": {
+                    "strip": true
+                },
+                "updated_by": {
+                    "strip": true
+                }
+            }
+            }
+        }
+    },
+    "required": ["members"]
+}
