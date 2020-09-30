@@ -69,6 +69,21 @@ describe('Exposes a correct API', function () {
                     err.errorType.should.equal('ValidationError');
                 }
             });
+
+            it('Incorrect use throws an error', async function () {
+                const data = {
+                    posts: [{
+                        title: 'valid'
+                    }]
+                };
+
+                try {
+                    await apiSchema.validate({data});
+                    throw new Error('should throw an error');
+                } catch (err) {
+                    err.errorType.should.equal('IncorrectUsageError');
+                }
+            });
         });
     });
 
@@ -121,6 +136,21 @@ describe('Exposes a correct API', function () {
                     throw new Error('should throw an error');
                 } catch (err) {
                     err.errorType.should.equal('ValidationError');
+                }
+            });
+
+            it('Incorrect use throws an error', async function () {
+                const data = {
+                    posts: [{
+                        title: 'valid'
+                    }]
+                };
+
+                try {
+                    await apiSchema.validate({data, version: 'v2'});
+                    throw new Error('should throw an error');
+                } catch (err) {
+                    err.errorType.should.equal('IncorrectUsageError');
                 }
             });
         });
