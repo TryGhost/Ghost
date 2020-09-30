@@ -378,6 +378,16 @@
   dependencies:
     "@tryghost/errors" "^0.2.4"
 
+"@tryghost/admin-api-schema@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.0.0.tgz#7da26b8589fc75b73ea2ef8e744a8d9b2d41d7f1"
+  integrity sha512-FDEw4oEX3AsPugBbHT/1RuDqcyvPZhrwum+2mfk1OW9buw10opERFzhAdZz+Jrf4C8WAuoMXFk7BLm4xi30+9w==
+  dependencies:
+    "@tryghost/errors" "0.2.4"
+    bluebird "^3.5.3"
+    ghost-ignition "4.2.2"
+    lodash "^4.17.11"
+
 "@tryghost/bootstrap-socket@0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.2.tgz#e365c75d7822394553077c3bf05a3bbfde986829"
