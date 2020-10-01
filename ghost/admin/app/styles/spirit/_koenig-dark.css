@@ -74,6 +74,12 @@
     border-top-color: var(--whitegrey-d2);
 }
 
+.kg-card-selected,
+.kg-card-selected:hover {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
 .koenig-card-html--editor .CodeMirror {
     background: var(--white);
 }
