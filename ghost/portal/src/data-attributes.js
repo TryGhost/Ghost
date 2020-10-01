@@ -11,8 +11,10 @@ function handleDataAttributes({siteUrl}) {
                 errorEl.innerText = '';
             }
             form.classList.remove('success', 'invalid', 'error');
-            let input = event.target.querySelector('input[data-members-email]');
-            let email = input.value;
+            let emailInput = event.target.querySelector('input[data-members-email]');
+            let nameInput = event.target.querySelector('input[data-members-name]');
+            let email = emailInput.value;
+            let name = nameInput.value;
             let emailType = undefined;
             let labels = [];
 
@@ -34,7 +36,8 @@ function handleDataAttributes({siteUrl}) {
                 body: JSON.stringify({
                     email: email,
                     emailType: emailType,
-                    labels: labels
+                    labels: labels,
+                    name: name
                 })
             }).then(function (res) {
                 form.addEventListener('submit', submitHandler);
