@@ -70,7 +70,7 @@ function send(message, recipientData, replacements) {
         });
 
         messageData = {
-            toAddresses: Object.keys(recipientData),
+            to: Object.keys(recipientData),
             from: message.from,
             'h:Reply-To': message.replyTo,
             'recipient-variables': recipientData,
