@@ -106,7 +106,7 @@ describe('Posts API', function () {
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(1);
-                    jsonResponse.posts[0].id.should.equal('CHECK IF ID IS CORRECT');
+                    jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[2].id);
 
                     localUtils.API.checkResponse(
                         jsonResponse.posts[0],
