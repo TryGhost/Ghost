@@ -11,7 +11,7 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
         var emailInput = event.target.querySelector('input[data-members-email]');
         var nameInput = event.target.querySelector('input[data-members-name]');
         var email = emailInput.value;
-        var name = nameInput.value;
+        var name = nameInput && nameInput.value || undefined;
         var emailType = undefined;
         var labels = [];
 
