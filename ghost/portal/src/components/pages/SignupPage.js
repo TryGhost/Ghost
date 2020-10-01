@@ -29,6 +29,15 @@ export const SignupPageStyles = `
         padding: 0 32px 24px;
     }
 
+    .gh-portal-signup-header .gh-portal-main-title,
+    .gh-portal-signin-header .gh-portal-main-title {
+        margin-top: 12px;
+    }
+
+    .gh-portal-signup-logo + .gh-portal-main-title {
+        margin: 4px 0 0;
+    }
+
     .gh-portal-signup-header.nodivider {
         border: none;
         margin-bottom: 0;
