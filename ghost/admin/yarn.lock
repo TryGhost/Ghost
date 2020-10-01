@@ -1477,10 +1477,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/string@0.1.11":
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.11.tgz#259e101a6fa7d08870e5c3b12091f62eb61c3725"
-  integrity sha512-k7Ix+Qd+oTVgFP45Y/EfU38HsJ1GLp04FU6ImlghsrA+3X4a+Prh+CJMTsDxISLjO5a4OCPFcmxCZBH8ueoOTw==
+"@tryghost/string@0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.12.tgz#f9fe04e301dac3117d7924c3e0692f406f23c24b"
+  integrity sha512-HqMlCj4LzzEF/AQKojHwwfcA4Pnx8ZmVaXXH3W+iatSPzbSR6Gk8xkb0EhwRXWZogwOM1C6eRgKnbVFw8Oi1+g==
   dependencies:
     unidecode "^0.1.8"
 
