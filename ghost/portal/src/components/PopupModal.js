@@ -109,6 +109,7 @@ class PopupContent extends React.Component {
             popupWidthStyle = 'gh-portal-container-narrow';
         }
         let cookieBannerText = '';
+        let pageClass = page;
         switch (page) {
         case 'signup':
             cookieBannerText = 'Cookies must be enabled in your browser to sign up.';
@@ -116,13 +117,24 @@ class PopupContent extends React.Component {
         case 'signin':
             cookieBannerText = 'Cookies must be enabled in your browser to sign in.';
             break;
+        case 'accountHome':
+            pageClass = 'account-home';
+            break;
+        case 'accountProfile':
+            pageClass = 'account-profile';
+            break;
+        case 'accountPlan':
+            pageClass = 'account-plan';
+            break;
         default:
             cookieBannerText = 'Cookies must be enabled in your browser.';
+            pageClass = page;
             break;
         }
+
         return (
             <div className='gh-portal-popup-wrapper'>
-                <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
+                <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle + ' ' + pageClass} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
                     <CookieDisabledBanner message={cookieBannerText} />
                     {this.renderPopupNotification()}
                     {this.renderActivePage()}
