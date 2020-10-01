@@ -254,7 +254,7 @@ export default class MembersController extends Controller {
 
             query = Object.assign({
                 limit: range.length,
-                page: range.start / range.length,
+                page: range.page,
                 order: 'created_at desc',
                 filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
             }, paidQuery, searchQuery, query);
