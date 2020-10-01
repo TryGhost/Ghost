@@ -191,7 +191,7 @@ export default class App extends React.Component {
                 data.site.portal_plans = value ? value.split(',') : [];
             } else if (key === 'page' && value) {
                 data.page = value;
-            } else if (key === 'accentColor' && value) {
+            } else if (key === 'accentColor' && (value === '' || value)) {
                 data.site.accent_color = value;
             } else if (key === 'buttonIcon' && value) {
                 data.site.portal_button_icon = value;
