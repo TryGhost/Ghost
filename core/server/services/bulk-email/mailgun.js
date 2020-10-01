@@ -59,7 +59,7 @@ function send(message, recipientData, replacements) {
         const bulkEmailConfig = configService.get('bulkEmail');
         const mailgunInstance = getInstance();
 
-        const messageContent = _.pick(message, 'html', 'plaintext');
+        const messageContent = _.pick(message, 'subject', 'html', 'plaintext');
 
         // update content to use Mailgun variable syntax for replacements
         replacements.forEach((replacement) => {
@@ -74,6 +74,7 @@ function send(message, recipientData, replacements) {
             from: message.from,
             'h:Reply-To': message.replyTo,
             'recipient-variables': recipientData,
+            subject: messageContent.subject,
             html: messageContent.html,
             text: messageContent.plaintext
         };
