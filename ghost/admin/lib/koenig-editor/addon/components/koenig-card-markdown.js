@@ -67,7 +67,7 @@ export default Component.extend({
 
         // subtract toolbar height from MIN_HEIGHT so the trigger happens at
         // the expected position without forcing the min height to be too small
-        this.set('bottomOffset', -MIN_HEIGHT - 49);
+        this.set('bottomOffset', -MIN_HEIGHT);
 
         this.registerComponent(this);
     },

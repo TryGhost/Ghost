@@ -7,7 +7,6 @@
     "ember-drag-drop",
     "normalize.css",
     "validator",
-    "ember-in-viewport",
     "codemirror"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
