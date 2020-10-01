@@ -25,10 +25,6 @@ const FrameStyles = `
         line-height: 1.35em;
     }
 
-    .gh-portal-signup-logo + .gh-portal-main-title {
-        margin: 4px 0 0;
-    }
-
     .gh-portal-text-disabled {
         color: var(--grey3);
         font-weight: normal;
