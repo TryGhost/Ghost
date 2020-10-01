@@ -2,6 +2,8 @@ import Frame from './Frame';
 import AppContext from '../AppContext';
 import NotificationStyle from './Notification.styles';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
+import {ReactComponent as CheckmarkIcon} from '../images/icons/checkmark-fill.svg';
+import {ReactComponent as WarningIcon} from '../images/icons/warning-fill.svg';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
 import {getPortalLink} from '../utils/helpers';
 
@@ -12,11 +14,11 @@ const Styles = () => {
         frame: {
             zIndex: '4000000',
             position: 'fixed',
-            top: '0px',
+            top: '0',
             right: '0',
-            left: '0',
+            maxWidth: '415px',
             width: '100%',
-            height: '80px',
+            height: '120px',
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
             overflow: 'hidden'
@@ -42,7 +44,7 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'success') {
         return (
             <p>
-                You've successfully subscribed to {context.site.title}
+                You've successfully subscribed to <strong>{context.site.title}</strong>
             </p>
         );
     } else if (type === 'signup' && status === 'error') {
@@ -128,7 +130,7 @@ class NotificationContent extends React.Component {
     }
 
     onAnimationEnd(e) {
-        if (e.animationName === 'notification-slideout') {
+        if (e.animationName === 'notification-slideout' || e.animationName === 'notification-slideout-mobile') {
             this.props.onHideNotification(e);
         }
     }
@@ -141,6 +143,7 @@ class NotificationContent extends React.Component {
         return (
             <div className='gh-portal-notification-wrapper'>
                 <div className={`gh-portal-notification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
+                    {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
                     <NotificationText type={type} status={status} context={this.context} />
                     <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
                 </div>

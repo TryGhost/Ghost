@@ -1,6 +1,8 @@
 import React from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
+import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
 
@@ -11,7 +13,7 @@ export const PopupNotificationStyles = `
         left: 8px;
         right: 8px;
         padding: 8px;
-        background: var(--green);
+        background: var(--grey2);
         z-index: 9999;
         border-radius: 4px;
         font-size: 1.3rem;
@@ -36,9 +38,25 @@ export const PopupNotificationStyles = `
         text-align: center;
     }
 
+    .gh-portal-popupnotification-icon {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .gh-portal-popupnotification-icon.success {
+        color: var(--green);
+    }
+
+    .gh-portal-popupnotification-icon.error {
+        color: #FF2828;
+    }
+
     .gh-portal-popupnotification .closeicon {
         position: absolute;
-        top: 1px;
+        top: 0px;
         bottom: 0;
         right: 0;
         color: var(--white);
@@ -52,22 +70,6 @@ export const PopupNotificationStyles = `
 
     .gh-portal-popupnotification .closeicon:hover {
         opacity: 1.0;
-    }
-
-    .gh-portal-popupnotification.success {
-        background: var(--green);
-    }
-
-    .gh-portal-popupnotification.error {
-        background: var(--red);
-    }
-
-    .gh-portal-popupnotification.warning {
-        background: var(--yellow);
-    }
-
-    .gh-portal-popupnotification.warning p, .gh-portal-popupnotification.warning .closeicon {
-        color: var(--grey1);
     }
 
     @keyframes popupnotification-slidein {
@@ -176,6 +178,7 @@ export default class PopupNotification extends React.Component {
 
         return (
             <div className={`gh-portal-popupnotification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
+                {(status === 'error' ? <WarningIcon className='gh-portal-popupnotification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-popupnotification-icon success' alt=''/>)}
                 <NotificationText type={type} status={status} message={message} site={site} />
                 <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>
             </div>

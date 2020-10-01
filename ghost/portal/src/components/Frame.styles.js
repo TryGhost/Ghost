@@ -549,6 +549,16 @@ const MobileStyles = `
         animation: popup-mobile 0.25s ease-in-out;
     }
 
+    .gh-portal-popup-container.account-home {
+        background: var(--grey13);
+    }
+
+    .gh-portal-popup-container.account-home .gh-portal-account-footer {
+        border-top: none;
+        padding-top: 0;
+        height: unset;
+    }
+
     .gh-portal-content {
         overflow-y: auto !important;
         max-height: unset !important;
@@ -655,7 +665,7 @@ const MobileStyles = `
     }
 
     .gh-portal-account-main {
-        padding: 24px;
+        padding: 24px 24px 0;
     }
 }
 
