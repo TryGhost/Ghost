@@ -6,7 +6,7 @@ export const InputFieldStyles = `
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
-        
+
         display: block;
         box-sizing: border-box;
         font-size: 1.5rem;
@@ -78,7 +78,7 @@ function InputError({message, style}) {
     );
 }
 
-function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, onBlur, errorMessage, brandColor}) {
+function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, onBlur, onKeyDown, errorMessage}) {
     id = id || `input-${name}`;
     onBlur = onBlur || function (){};
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
@@ -100,6 +100,7 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 value={value}
                 placeholder={placeholder}
                 onChange={e => onChange(e, name)}
+                onKeyDown={e => onKeyDown(e, name)}
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
                 aria-label={label}

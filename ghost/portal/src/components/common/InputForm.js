@@ -1,18 +1,20 @@
 import React, {Component} from 'react';
 import InputField from './InputField';
 
-const FormInput = ({field, onChange, onBlur}) => {
+const FormInput = ({field, onChange, onBlur, onKeyDown = () => {}}) => {
     if (!field) {
         return null;
     }
     return (
         <>
             <InputField
+                key={field.name}
                 label = {field.label}
                 type={field.type}
                 name={field.name}
                 placeholder={field.placeholder}
                 value={field.value}
+                onKeyDown={onKeyDown}
                 onChange={e => onChange(e, field)}
                 onBlur={e => onBlur(e, field)}
                 errorMessage={field.errorMessage}
@@ -28,9 +30,9 @@ class InputForm extends Component {
     }
 
     render() {
-        const {fields, onChange, onBlur} = this.props;
+        const {fields, onChange, onBlur, onKeyDown} = this.props;
         const inputFields = fields.map((field) => {
-            return <FormInput field={field} key={field.name} onChange={onChange} onBlur={onBlur} />;
+            return <FormInput field={field} key={field.name} onChange={onChange} onBlur={onBlur} onKeyDown={onKeyDown} />;
         });
         return (
             <>
