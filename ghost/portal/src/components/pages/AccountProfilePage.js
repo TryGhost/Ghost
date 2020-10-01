@@ -174,12 +174,20 @@ export default class AccountProfilePage extends React.Component {
         return fields;
     }
 
+    onKeyDown(e) {
+        // Handles submit on Enter press
+        if (e.keyCode === 13){
+            this.onProfileSave(e);
+        }
+    }
+
     renderProfileData() {
         return (
             <div className='gh-portal-section'>
                 <InputForm
                     fields={this.getInputFields({state: this.state})}
                     onChange={(e, field) => this.handleInputChange(e, field)}
+                    onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     onBlur={(e, field) => this.handleInputBlur(e, field)}
                 />
             </div>

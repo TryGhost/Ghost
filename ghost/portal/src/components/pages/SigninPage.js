@@ -55,6 +55,13 @@ export default class SigninPage extends React.Component {
         });
     }
 
+    onKeyDown(e) {
+        // Handles submit on Enter press
+        if (e.keyCode === 13){
+            this.handleSignin(e);
+        }
+    }
+
     getInputFields({state}) {
         const errors = state.errors || {};
         const fields = [
@@ -112,6 +119,7 @@ export default class SigninPage extends React.Component {
                         fields={this.getInputFields({state: this.state})}
                         onChange={(e, field) => this.handleInputChange(e, field)}
                         onBlur={(e, field) => this.handleInputBlur(e, field)}
+                        onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     />
                 </div>
             </section>

@@ -211,6 +211,13 @@ class SignupPage extends React.Component {
         }, 5);
     }
 
+    onKeyDown(e) {
+        // Handles submit on Enter press
+        if (e.keyCode === 13){
+            this.handleSignup(e);
+        }
+    }
+
     getDefaultSelectedPlan(plans = [], selectedPlan) {
         if (!plans || plans.length === 0) {
             return 'Free';
@@ -377,6 +384,7 @@ class SignupPage extends React.Component {
                         fields={fields}
                         onChange={(e, field) => this.handleInputChange(e, field)}
                         onBlur={(e, field) => this.handleInputBlur(e, field)}
+                        onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     />
                     {this.renderPlans()}
                 </div>

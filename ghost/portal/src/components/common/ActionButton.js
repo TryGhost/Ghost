@@ -78,9 +78,9 @@ const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
     };
 };
 
-function ActionButton({label, onClick, disabled, retry, brandColor, isRunning, isPrimary = true, isDestructive = false, style}) {
+function ActionButton({label, type, onClick, disabled, retry, brandColor, isRunning, isPrimary = true, isDestructive = false, style}) {
     let Style = Styles({disabled, retry, brandColor, style, isPrimary});
-    
+
     let className = 'gh-portal-btn';
     if (isPrimary) {
         className += ' gh-portal-btn-main gh-portal-btn-primary';
@@ -93,7 +93,7 @@ function ActionButton({label, onClick, disabled, retry, brandColor, isRunning, i
     }
     const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
     return (
-        <button className={className} style={Style.button} onClick={e => onClick(e)} disabled={disabled}>
+        <button className={className} style={Style.button} onClick={e => onClick(e)} disabled={disabled} type='submit'>
             {isRunning ? <LoaderIcon className={loaderClassName} /> : label}
         </button>
     );
