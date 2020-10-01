@@ -6194,7 +6194,7 @@ ember-in-element-polyfill@^1.0.0:
     ember-cli-htmlbars "^4.3.1"
     ember-cli-version-checker "^5.0.2"
 
-ember-in-viewport@3.5.8, ember-in-viewport@~3.0.0, ember-in-viewport@~3.7.2:
+ember-in-viewport@3.5.8, ember-in-viewport@~3.7.2:
   version "3.5.8"
   resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.5.8.tgz#da03f5e69c5e5e6cbd048f0db8de0b05c2e3e68f"
   integrity sha512-2GBK5KbNYiGADy433tN3yHnxZ77wSnVyMezx23cr3qs2gwac+5ta2FkOTiKibNkGmWE/Mk/c7zcF7sDk1jy5DA==
@@ -6479,15 +6479,6 @@ ember-source@3.21.3:
     resolve "^1.17.0"
     semver "^6.1.1"
     silent-error "^1.1.1"
-
-ember-sticky-element@0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/ember-sticky-element/-/ember-sticky-element-0.2.3.tgz#39702e0fc0f04905a7b34add61a85a9186d3d16b"
-  integrity sha512-AtKkM8zh6LK5FsPxtsDywUSodGk5c2AI03vcgk995dC5Z7DG4XLJoAwV0FZM5RYnymnYEJvOs6VTcIM8uwcX5w==
-  dependencies:
-    ember-cli-babel "^6.8.2"
-    ember-cli-htmlbars "^2.0.1"
-    ember-in-viewport "~3.0.0"
 
 ember-svg-jar@2.2.3:
   version "2.2.3"
