@@ -31,7 +31,7 @@ const corsOptionsDelegate = function corsOptionsDelegate(req, callback) {
         credentials: true // required to allow admin-client to login to private sites
     };
 
-    if (!origin) {
+    if (!origin || origin === 'null') {
         return callback(null, corsOptions);
     }
 
