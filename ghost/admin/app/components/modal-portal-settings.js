@@ -92,7 +92,7 @@ export default ModalComponent.extend({
             settingsParam.append('buttonIcon', encodeURIComponent(this.buttonIcon));
         }
         settingsParam.append('signupButtonText', encodeURIComponent(this.settings.get('portalButtonSignupText')));
-        if (this.settings.get('accentColor')) {
+        if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
             settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
         }
         if (this.settings.get('portalButtonStyle')) {
@@ -274,7 +274,10 @@ export default ModalComponent.extend({
 
         if (newColor === '') {
             // Clear out the accent color
-            this.set('settings.accentColor', '');
+            run.schedule('afterRender', this, function () {
+                this.settings.set('accentColor', '');
+                this.set('accentColor', '');
+            });
             return;
         }
 
