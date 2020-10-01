@@ -14,7 +14,7 @@ function handleDataAttributes({siteUrl}) {
             let emailInput = event.target.querySelector('input[data-members-email]');
             let nameInput = event.target.querySelector('input[data-members-name]');
             let email = emailInput.value;
-            let name = nameInput.value;
+            let name = (nameInput && nameInput.value) || undefined;
             let emailType = undefined;
             let labels = [];
 
