@@ -96,11 +96,12 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, popupNotification} = await this.fetchData();
+            const {site, member, page, showPopup, popupNotification, lastPage} = await this.fetchData();
             this.setState({
                 site,
                 member,
                 page,
+                lastPage,
                 showPopup,
                 popupNotification,
                 action: 'init:success',
@@ -227,9 +228,11 @@ export default class App extends React.Component {
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
             const page = this.getPageFromPath(pagePath);
+            const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             return {
                 showPopup: true,
-                ...(page ? {page} : {})
+                ...(page ? {page} : {}),
+                ...(lastPage ? {lastPage} : {})
             };
         }
         return {};
