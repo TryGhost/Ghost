@@ -274,8 +274,15 @@ async function createEmailBatches({emailModel, options}) {
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
         const batchModel = await models.EmailBatch.add({email_id: emailModel.id}, knexOptions);
 
-        const recipientData = recipients.map((memberRow) => {
-            return {
+        const recipientData = [];
+
+        recipients.forEach((memberRow) => {
+            if (!memberRow.id || !memberRow.uuid || !memberRow.email) {
+                logging.warn(`Member row not included as email recipient due to missing data - id: ${memberRow.id}, uuid: ${memberRow.uuid}, email: ${memberRow.email}`);
+                return;
+            }
+
+            recipientData.push({
                 id: ObjectID.generate(),
                 email_id: emailModel.id,
                 member_id: memberRow.id,
@@ -283,7 +290,7 @@ async function createEmailBatches({emailModel, options}) {
                 member_uuid: memberRow.uuid,
                 member_email: memberRow.email,
                 member_name: memberRow.name
-            };
+            });
         });
 
         await db.knex('email_recipients').insert(recipientData);
