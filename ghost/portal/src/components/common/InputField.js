@@ -86,6 +86,22 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
     if (isCookiesDisabled()) {
         disabled = true;
     }
+    let autocomplete = '';
+    let autocorrect = '';
+    let autocapitalize = '';
+    switch (id) {
+    case 'input-email':
+        autocomplete = 'off';
+        autocorrect = 'off';
+        autocapitalize = 'off';
+        break;
+    case 'input-name':
+        autocomplete = 'off';
+        autocorrect = 'off';
+        break;
+    default:
+        break;
+    }
     return (
         <section className='gh-portal-input-section'>
             <div className='gh-portal-input-labelcontainer'>
@@ -103,6 +119,9 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 onKeyDown={e => onKeyDown(e, name)}
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
+                autoComplete={autocomplete}
+                autoCorrect={autocorrect}
+                autoCapitalize={autocapitalize}
                 aria-label={label}
             />
         </section>
