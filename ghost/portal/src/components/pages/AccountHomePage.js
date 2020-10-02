@@ -195,7 +195,7 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
 const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     const {name, email, subscribed} = member;
 
-    let label = subscribed ? 'Subscribed to email newsletters' : 'Not subscribed to email newsletters';
+    let label = subscribed ? 'Subscribed' : 'Unsubscribed';
     return (
         <div className='gh-portal-list'>
             <section>
@@ -210,7 +210,7 @@ const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, 
 
             <section>
                 <div className='gh-portal-list-detail'>
-                    <h3>Newsletter</h3>
+                    <h3>Email newsletter</h3>
                     <p>{label}</p>
                 </div>
                 <div>
