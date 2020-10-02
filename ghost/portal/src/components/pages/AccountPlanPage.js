@@ -23,7 +23,7 @@ function getConfirmationPageTitle({confirmationType}) {
     if (confirmationType === 'changePlan') {
         return 'Confirm subscription';
     } else if (confirmationType === 'cancel') {
-        return 'Confirm cancellation';
+        return 'Cancel subscription';
     } else if (confirmationType === 'subscribe') {
         return 'Subscribe';
     }
@@ -146,13 +146,13 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
     } else {
         return (
             <>
-                <p>If you confirm and end your subscription now, you can still access it until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
+                <p>If you cancel your subscription now, you will continue to have access until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
                 <ActionButton
                     onClick={e => onConfirm(e, plan)}
                     isRunning={isRunning}
                     isPrimary={true}
                     brandColor={brandColor}
-                    label={label}
+                    label={label + ' cancellation'}
                     style={{
                         width: '100%',
                         height: '40px'
