@@ -7,7 +7,7 @@ export const FormInputError = ({field}) => {
             return `Please enter a name`;
         
         case 'email':
-            return `Please supply an email`;
+            return `Enter your email address`;
 
         default:
             return `Please enter ${field.name}`;
