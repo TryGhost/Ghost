@@ -9,7 +9,7 @@ export const BackButtonStyles = `
         height: unset;
         min-width: unset;
         position: absolute;
-        top: -2px;
+        top: -3px;
         left: -16px;
         background: none;
         padding: 8px;
@@ -25,8 +25,10 @@ export const BackButtonStyles = `
     }
 
     .gh-portal-btn-back svg {
-        width: 16px;
-        height: 16px;
+        width: 17px;
+        height: 17px;
+        margin-top: 1px;
+        margin-right: 2px;
     }
 `;
 
