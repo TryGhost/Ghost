@@ -561,6 +561,16 @@ const MobileStyles = `
     }
 }
 
+@media (max-width: 414px) {
+    .gh-portal-input {
+        height: 44px;
+    }
+
+    .gh-portal-btn:not(.gh-portal-btn-link):not(.gh-portal-btn-back) {
+        min-height: 44px;
+    }
+}
+
 @media (max-width: 390px) {
     .gh-portal-plans-container {
         flex-direction: column;
@@ -642,7 +652,6 @@ const MobileStyles = `
     .gh-portal-input {
         font-size: 1.4rem;
         margin-bottom: 16px;
-        height: 36px;
     }
 
     .gh-portal-content {
