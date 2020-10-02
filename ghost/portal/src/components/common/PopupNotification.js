@@ -38,6 +38,10 @@ export const PopupNotificationStyles = `
         text-align: center;
     }
 
+    .gh-portal-popupnotification a {
+        color: var(--white);
+    }
+
     .gh-portal-popupnotification-icon {
         position: absolute;
         top: 10px;
@@ -103,7 +107,7 @@ const NotificationText = ({message, site}) => {
         );
     }
     return (
-        <p> An unexpected error occured. Please try again or <a href={supportAddressMail}>contact support</a> if the error persists. </p>
+        <p> An unexpected error occured. Please try again or <a href={supportAddressMail}>contact support</a> if the error persists.</p>
     );
 };
 
