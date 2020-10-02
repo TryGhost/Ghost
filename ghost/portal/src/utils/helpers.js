@@ -26,7 +26,7 @@ export function isCookiesDisabled() {
 }
 
 export function getMemberSubscription({member = {}}) {
-    if (member.paid) {
+    if (isPaidMember({member})) {
         const [subscription] = member.subscriptions || [];
         return subscription;
     }
@@ -64,7 +64,7 @@ export function getMemberActivePlan({member}) {
 }
 
 export function getSubscriptionFromId({member, subscriptionId}) {
-    if (member.paid) {
+    if (isPaidMember({member})) {
         const subscriptions = member.subscriptions || [];
         return subscriptions.find(d => d.id === subscriptionId);
     }

@@ -30,7 +30,7 @@ function getConfirmationPageTitle({confirmationType}) {
 }
 
 const Header = ({member, lastPage, brandColor, onBack, showConfirmation, confirmationType}) => {
-    let title = member.paid ? 'Change plan' : 'Choose a plan';
+    let title = isPaidMember({member}) ? 'Change plan' : 'Choose a plan';
     if (showConfirmation) {
         title = getConfirmationPageTitle({confirmationType});
     }
@@ -251,6 +251,15 @@ export default class AccountPlanPage extends React.Component {
         this.state = this.getInitialState();
     }
 
+    componentDidMount() {
+        const {member} = this.context;
+        if (!member) {
+            this.context.onAction('switchPage', {
+                page: 'signup'
+            });
+        }
+    }
+
     componentWillUnmount() {
         clearTimeout(this.timeoutId);
     }
@@ -296,7 +305,7 @@ export default class AccountPlanPage extends React.Component {
     onPlanCheckout(e, name) {
         const {onAction, member} = this.context;
         const {confirmationPlan, selectedPlan} = this.state;
-        if (member.paid) {
+        if (isPaidMember({member})) {
             const {subscriptions} = member;
             const subscriptionId = subscriptions[0].id;
             onAction('updateSubscription', {plan: confirmationPlan.name, subscriptionId, cancelAtPeriodEnd: false});
