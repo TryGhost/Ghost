@@ -109,7 +109,7 @@ export default class App extends React.Component {
 
             // Listen to preview mode changes
             this.hashHandler = () => {
-                this.updateStateForPreview();
+                this.updateStateForPreviewLinks();
             };
             window.addEventListener('hashchange', this.hashHandler, false);
         } catch (e) {
@@ -295,13 +295,16 @@ export default class App extends React.Component {
     }
 
     /**Handle state update for preview url changes */
-    updateStateForPreview() {
+    updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
+        const {site: linkSite, ...restLinkData} = this.fetchLinkData();
         this.setState({
             site: {
                 ...this.state.site,
+                ...(linkSite || {}),
                 ...(previewSite || {})
             },
+            ...restLinkData,
             ...restPreviewData
         });
     }
