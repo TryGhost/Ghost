@@ -201,7 +201,7 @@ async function pendingEmailHandler(emailModel, options) {
         return;
     }
 
-    return jobService.addJob(sendEmailJob, {emailModel, options});
+    return jobService.addJob(sendEmailJob, {emailModel});
 }
 
 async function sendEmailJob({emailModel, options}) {
@@ -213,9 +213,14 @@ async function sendEmailJob({emailModel, options}) {
         await membersService.checkHostLimit();
 
         // Create email batch and recipient rows unless this is a retry and they already exist
-        const existingBatchCount = await emailModel.related('emailBatches').count();
+        const existingBatchCount = await emailModel.related('emailBatches').count('id');
+
         if (existingBatchCount === 0) {
-            const newBatchCount = await createEmailBatches({emailModel, options});
+            let newBatchCount;
+
+            await models.Base.transaction(async (transacting) => {
+                newBatchCount = await createEmailBatches({emailModel, options: {transacting}});
+            });
 
             if (newBatchCount === 0) {
                 return;
@@ -306,7 +311,13 @@ async function createEmailBatches({emailModel, options}) {
             });
         });
 
-        await db.knex('email_recipients').insert(recipientData);
+        const insertQuery = db.knex('email_recipients').insert(recipientData);
+
+        if (knexOptions.transacting) {
+            insertQuery.transacting(knexOptions.transacting);
+        }
+
+        await insertQuery;
 
         return batchModel.id;
     };
