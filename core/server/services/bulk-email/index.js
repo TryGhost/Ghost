@@ -16,14 +16,13 @@ const BATCH_SIZE = mailgunProvider.BATCH_SIZE;
  * @typedef { Object } BatchResultBase
  * @property { string } data - data that is returned from Mailgun or one which Mailgun was called with
  */
-class BatchResultBase {}
-
-class SuccessfulBatch extends BatchResultBase {
+class BatchResultBase {
     constructor(id) {
-        super(...arguments);
         this.id = id;
     }
 }
+
+class SuccessfulBatch extends BatchResultBase { }
 
 class FailedBatch extends BatchResultBase {
     constructor(id, error) {
@@ -93,7 +92,7 @@ module.exports = {
             .getFilteredCollectionQuery({filter: `email_id:${emailId}+status:[pending,failed]`}, knexOptions)
             .select('id');
 
-        const batchResults = Promise.map(batchIds, async ({id: emailBatchId}) => {
+        const batchResults = await Promise.map(batchIds, async ({id: emailBatchId}) => {
             try {
                 await this.processEmailBatch({emailBatchId, options});
                 return new SuccessfulBatch(emailBatchId);
@@ -104,7 +103,7 @@ module.exports = {
 
         const successes = batchResults.filter(response => (response instanceof SuccessfulBatch));
         const failures = batchResults.filter(response => (response instanceof FailedBatch));
-        const batchStatus = successes.length ? 'submitted' : 'failed';
+        const emailStatus = failures.length ? 'failed' : 'submitted';
 
         let error;
 
@@ -118,7 +117,7 @@ module.exports = {
 
         try {
             await models.Email.edit({
-                status: batchStatus,
+                status: emailStatus,
                 results: JSON.stringify(successes),
                 error: error,
                 error_data: JSON.stringify(failures) // NOTE: need to discuss how we store this
@@ -128,8 +127,6 @@ module.exports = {
         } catch (err) {
             logging.error(err);
         }
-
-        await emailModel.save({status: 'submitted'}, Object.assign({}, knexOptions, {patch: true}));
 
         return batchResults;
     },
@@ -163,14 +160,12 @@ module.exports = {
 
         await emailBatchModel.save({status: 'submitting'}, knexOptions);
 
-        let result;
-
         try {
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows);
 
             // update batch success status
-            result = await emailBatchModel.save({
+            return await emailBatchModel.save({
                 status: 'submitted',
                 provider_id: sendResponse.id
             }, Object.assign({}, knexOptions, {patch: true}));
@@ -187,14 +182,14 @@ module.exports = {
                 logging.error(ghostError);
                 throw ghostError;
             }
+
+            throw error;
         } finally {
             // update all email recipients with a processed_at
             await models.EmailRecipient
                 .where({batch_id: emailBatchId})
                 .save({processed_at: moment()}, Object.assign({}, knexOptions, {patch: true}));
         }
-
-        return result;
     },
 
     /**
