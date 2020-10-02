@@ -32,7 +32,7 @@ export const BackButtonStyles = `
 
 function ActionButton({label = 'Back', brandColor = '#3eb0ef', hidden = false, onClick}) {
     if (hidden) {
-        return;
+        return null;
     }
 
     return (

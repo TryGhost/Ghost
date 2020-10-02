@@ -36,7 +36,7 @@ const Header = ({member, lastPage, brandColor, onBack, showConfirmation, confirm
     }
     return (
         <header className='gh-portal-detail-header'>
-            {lastPage ? <BackButton brandColor={brandColor} onClick={e => onBack(e)} /> : null}
+            <BackButton brandColor={brandColor} onClick={e => onBack(e)} hidden={!lastPage} />
             <h3 className='gh-portal-main-title'>{title}</h3>
         </header>
     );

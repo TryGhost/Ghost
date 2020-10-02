@@ -95,7 +95,7 @@ export default class AccountProfilePage extends React.Component {
     renderHeader() {
         return (
             <header className='gh-portal-detail-header'>
-                <BackButton brandColor={this.context.brandColor} onClick={e => this.onBack(e)} />
+                <BackButton brandColor={this.context.brandColor} hidden={!this.context.lastPage} onClick={e => this.onBack(e)} />
                 <h3 className='gh-portal-main-title'>Account settings</h3>
             </header>
         );
