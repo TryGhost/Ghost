@@ -211,7 +211,7 @@ async function updateNewsletter({data, state, api}) {
             member: member,
             popupNotification: createPopupNotification({
                 type: action, autoHide: true, duration: 2000, closeable: true, state, status: 'success',
-                message: 'Newsletter settings updated'
+                message: 'Email newsletter settings updated'
             })
         };
     } catch (e) {
