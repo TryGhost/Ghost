@@ -104,13 +104,13 @@ const mapSettings = (attrs, frame) => {
     //      fields completely.
     if (_.isArray(attrs)) {
         attrs = _.filter(attrs, (o) => {
-            if (o.key === 'accent_color' && !config.get('enableDeveloperExperiments')) {
+            if (o.key === 'accent_color' && !config.get('enableDeveloperExperiments') && !config.get('portal')) {
                 return false;
             }
             return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
         });
     } else {
-        if (!config.get('enableDeveloperExperiments')) {
+        if (!config.get('enableDeveloperExperiments') && !config.get('portal')) {
             delete attrs.accent_color;
         }
     }
