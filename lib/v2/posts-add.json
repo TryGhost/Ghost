@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "posts.add",
+  "$id": "posts.add.v2",
   "title": "posts.add",
   "description": "Schema for posts.add",
   "type": "object",
@@ -12,7 +12,7 @@
       "maxItems": 1,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "posts#/definitions/post" }],
+        "allOf": [{ "$ref": "posts.v2#/definitions/post" }],
         "required": ["title"]
       }
     }

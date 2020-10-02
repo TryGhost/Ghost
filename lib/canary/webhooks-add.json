@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "webhooks.add",
+  "$id": "webhooks.add.canary",
   "title": "webhooks.add",
   "description": "Schema for webhooks.add",
   "type": "object",
@@ -12,7 +12,7 @@
       "maxItems": 1,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "webhooks#/definitions/webhook" }],
+        "allOf": [{ "$ref": "webhooks.canary#/definitions/webhook" }],
         "required": ["event", "target_url"]
       }
     }

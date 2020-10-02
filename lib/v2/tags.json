@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "tags",
+  "$id": "tags.v2",
   "title": "tags",
   "description": "Base tags definitions",
   "definitions": {

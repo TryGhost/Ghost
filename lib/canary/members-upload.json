@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "members.upload",
+  "$id": "members.upload.canary",
   "title": "members.upload",
   "description": "Schema for members.upload",
   "type": "array",

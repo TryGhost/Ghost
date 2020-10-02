@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "tags.add",
+  "$id": "tags.add.canary",
   "title": "tags.add",
   "description": "Schema for tags.add",
   "type": "object",
@@ -13,7 +13,7 @@
       "additionalProperties": false,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "tags#/definitions/tag" }],
+        "allOf": [{ "$ref": "tags.canary#/definitions/tag" }],
         "required": ["name"]
       }
     }

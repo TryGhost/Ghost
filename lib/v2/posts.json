@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "posts",
+  "$id": "posts.v2",
   "title": "posts",
   "description": "Base posts definitions",
   "definitions": {

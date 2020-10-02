@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "images.upload",
+  "$id": "images.upload.canary",
   "title": "images.upload",
   "description": "Schema for images.upload",
-  "$ref": "images#/definitions/image"
+  "$ref": "images.canary#/definitions/image"
 }

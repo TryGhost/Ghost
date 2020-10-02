@@ -32,7 +32,7 @@ jsonSchema.get('tags-edit');
 /*
 > {
   '$schema': 'http://json-schema.org/draft-07/schema#',
-  '$id': 'tags.edit',
+  '$id': 'tags.edit.canary',
   title: 'tags.edit',
   description: 'Schema for tags.edit',
   type: 'object',

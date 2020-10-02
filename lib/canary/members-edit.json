@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "members.edit",
+  "$id": "members.edit.canary",
   "title": "members.edit",
   "description": "Schema for members.edit",
   "type": "object",
@@ -40,7 +40,7 @@
             "strip": true
           },
           "labels": {
-            "$ref": "members#/definitions/member-labels"
+            "$ref": "members.canary#/definitions/member-labels"
           },
           "created_at": {
             "strip": true
