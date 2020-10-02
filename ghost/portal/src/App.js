@@ -208,7 +208,10 @@ export default class App extends React.Component {
     fetchNotificationData() {
         const {type, status, duration, autoHide, closeable} = NotificationParser({billingOnly: true}) || {};
         if (['stripe:billing-update'].includes(type)) {
-            const popupNotification = createPopupNotification({type, status, duration, closeable, autoHide, state: this.state});
+            const popupNotification = createPopupNotification({
+                type, status, duration, closeable, autoHide, state: this.state,
+                message: status === 'success' ? 'Successfully updated Billing info' : 'Billing update was cancelled'
+            });
             return {
                 showPopup: true,
                 popupNotification
