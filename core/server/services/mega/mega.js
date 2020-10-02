@@ -226,14 +226,25 @@ async function sendEmailJob({emailModel, options}) {
         startEmailSend = Date.now();
         await bulkEmailService.processEmail({emailId: emailModel.get('id'), options});
         debug(`sendEmailJob: sent email (${Date.now() - startEmailSend}ms)`);
-    } catch (err) {
+    } catch (error) {
         if (startEmailSend) {
             debug(`sendEmailJob: send email failed (${Date.now() - startEmailSend}ms)`);
         }
-        logging.error(new errors.GhostError({
-            err: err,
+
+        let errorMessage = error.message;
+        if (errorMessage.length > 2000) {
+            errorMessage = errorMessage.substring(0, 2000);
+        }
+
+        await emailModel.save({
+            status: 'failed',
+            error: errorMessage
+        }, {patch: true});
+
+        throw new errors.GhostError({
+            err: error,
             context: i18n.t('errors.services.mega.requestFailed.error')
-        }));
+        });
     }
 }
 
