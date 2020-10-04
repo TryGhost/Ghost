@@ -9,6 +9,10 @@ const models = require('../models');
 const stats = {};
 let siteCreatedAt;
 
+async function getOldestPostCreatedDate() {
+    return models.Post.query(qb => qb.orderBy('created_at', 'ASC').limit(1)).fetchAll({columns: ['created_at']});
+}
+
 module.exports = {
     async init() {
         await this.updateMembers();
@@ -31,7 +35,7 @@ module.exports = {
     },
 
     async updateSiteCreatedDate() {
-        const result = await models.Post.query(qb => qb.orderBy('created_at', 'ASC').limit(1)).fetchAll({columns: ['created_at']});
+        const result = await getOldestPostCreatedDate();
         siteCreatedAt = result.models[0].get('created_at');
     },
 
