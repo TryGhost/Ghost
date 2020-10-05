@@ -221,8 +221,8 @@ module.exports = {
             recipient.member_first_name = (recipient.member_name || '').split(' ')[0];
 
             // dynamic data from replacements
-            replacements.forEach((id, recipientProp, fallback) => {
-                data[id] = recipient[recipientProp] || fallback || '';
+            replacements.forEach(({id, recipientProperty, fallback}) => {
+                data[id] = recipient[recipientProperty] || fallback || '';
             });
 
             recipientData[recipient.member_email] = data;
