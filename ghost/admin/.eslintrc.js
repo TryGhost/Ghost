@@ -16,6 +16,8 @@ module.exports = {
         'plugin:ghost/ember'
     ],
     rules: {
+        'no-shadow': ['error'],
+
         // octane 🏎
         'ghost/ember/classic-decorator-hooks': 'error',
         'ghost/ember/classic-decorator-no-classic-methods': 'error',

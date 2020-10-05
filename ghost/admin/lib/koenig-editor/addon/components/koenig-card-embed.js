@@ -274,7 +274,7 @@ export default Component.extend({
             mutations.forEach(addImageLoadListeners);
         }
 
-        function createMutationObserver(target) {
+        function createMutationObserver(mutationTarget) {
             let config = {
                 attributes: true,
                 attributeOldValue: false,
@@ -285,7 +285,7 @@ export default Component.extend({
             };
 
             let observer = new MutationObserver(mutationObserved);
-            observer.observe(target, config); // eslint-disable-line ghost/ember/no-observers
+            observer.observe(mutationTarget, config); // eslint-disable-line ghost/ember/no-observers
             return observer;
         }
 

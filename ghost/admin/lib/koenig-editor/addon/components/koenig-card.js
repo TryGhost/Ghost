@@ -372,14 +372,14 @@ export default Component.extend({
             mutations.forEach(addInputFocusListeners);
         }
 
-        function createMutationObserver(target) {
+        function createMutationObserver(mutationTarget) {
             let config = {
                 childList: true,
                 subtree: true
             };
 
             let observer = new MutationObserver(mutationObserved);
-            observer.observe(target, config); // eslint-disable-line ghost/ember/no-observers
+            observer.observe(mutationTarget, config); // eslint-disable-line ghost/ember/no-observers
             return observer;
         }
 

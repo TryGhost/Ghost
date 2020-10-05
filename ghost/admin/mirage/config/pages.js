@@ -78,11 +78,11 @@ export default function mockPages(server) {
 
         let statusFilter = extractFilterParam('status', filter);
 
-        let collection = pages.all().filter((page) => {
+        let collection = pages.all().filter((pageModel) => {
             let matchesStatus = true;
 
             if (!isEmpty(statusFilter)) {
-                matchesStatus = statusFilter.includes(page.status);
+                matchesStatus = statusFilter.includes(pageModel.status);
             }
 
             return matchesStatus;
