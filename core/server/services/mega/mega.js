@@ -271,7 +271,7 @@ async function getEmailMemberRows({emailModel, options}) {
     debug('getEmailMemberRows: retrieving members list');
     // select('members.*') is necessary here to avoid duplicate `email` columns in the result set
     // without it we do `select *` which pulls in the Stripe customer email too which overrides the member email
-    const memberRows = await models.Member.getFilteredCollectionQuery(filterOptions).select('members.*');
+    const memberRows = await models.Member.getFilteredCollectionQuery(filterOptions).select('members.*').distinct();
     debug(`getEmailMemberRows: retrieved members list - ${memberRows.length} members (${Date.now() - startRetrieve}ms)`);
 
     return memberRows;
