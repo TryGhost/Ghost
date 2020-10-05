@@ -294,7 +294,7 @@ export default Component.extend({
         }
 
         for (let section of sections) {
-            let item = section.items.find(item => item.selected);
+            let item = section.items.find(sectionItem => sectionItem.selected);
             if (item) {
                 return item;
             }

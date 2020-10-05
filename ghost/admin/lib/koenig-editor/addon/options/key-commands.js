@@ -182,7 +182,7 @@ export const DEFAULT_KEY_COMMANDS = [{
             let hasReversed = false;
             specialMarkupTagNames.forEach((tagName) => {
                 // only continue if we're about to delete a special markup
-                let markup = marker.markups.find(markup => markup.tagName.toUpperCase() === tagName);
+                let markup = marker.markups.find(markerMarkup => markerMarkup.tagName.toUpperCase() === tagName);
                 if (markup) {
                     let nextMarker = head.markerIn(1);
                     // ensure we're at the end of the markup not inside it
@@ -197,7 +197,7 @@ export const DEFAULT_KEY_COMMANDS = [{
                                 markdown = markdown.char;
                             }
 
-                            let range = editor.range.expandByMarker(marker => !!marker.markups.includes(markup));
+                            let range = editor.range.expandByMarker(markerToExpand => !!markerToExpand.markups.includes(markup));
 
                             // replaced markdown (default) will have chars removed when formatted
                             // and added back when the format is removed by backspace

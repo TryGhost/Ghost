@@ -515,14 +515,14 @@ export default Component.extend({
                 return;
             }
 
-            let operation = function (postEditor) {
+            let operation = function (operationPostEditor) {
                 // strip all formatting aside from links
-                postEditor.removeMarkupFromRange(
+                operationPostEditor.removeMarkupFromRange(
                     editor.activeSection.toRange(),
                     m => m.tagName !== 'a'
                 );
 
-                postEditor.toggleSection(headingTagName);
+                operationPostEditor.toggleSection(headingTagName);
             };
 
             this._performEdit(operation, postEditor);
@@ -670,7 +670,7 @@ export default Component.extend({
 
             if (typeof shouldDelete === 'string') {
                 let payloadKey = shouldDelete;
-                shouldDelete = card => isBlank(get(card, payloadKey));
+                shouldDelete = cardToDelete => isBlank(get(cardToDelete, payloadKey));
             }
 
             if (shouldDelete(card)) {
@@ -1212,8 +1212,8 @@ export default Component.extend({
         if (postEditor) {
             editOperation(postEditor);
         } else {
-            this.editor.run((postEditor) => {
-                editOperation(postEditor);
+            this.editor.run((operationPostEditor) => {
+                editOperation(operationPostEditor);
             });
         }
     },
