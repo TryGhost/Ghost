@@ -9,9 +9,9 @@ export default function cleanTextReplacementHtml(html = '', _options = {}) {
             throw new Error('cleanTextReplacementHtml() must be passed a `createDocument` function as an option when used in a non-browser environment');
         }
 
-        options.createDocument = function (html) {
+        options.createDocument = function (documentHtml) {
             const parser = new Parser();
-            return parser.parseFromString(html, 'text/html');
+            return parser.parseFromString(documentHtml, 'text/html');
         };
     }
 

@@ -230,8 +230,7 @@ export default Service.extend({
         this.set('isDragging', true);
         utils.applyUserSelect(document.body, 'none');
 
-        let container = this.sourceContainer;
-        let draggableInfo = container.getDraggableInfo(this.grabbedElement);
+        let draggableInfo = this.sourceContainer.getDraggableInfo(this.grabbedElement);
 
         if (!draggableInfo) {
             this._resetDrag();
@@ -261,7 +260,7 @@ export default Service.extend({
 
         // create the ghost element and cache it's position so avoid costly
         // getBoundingClientRect calls in the mousemove handler
-        let ghostElement = container.createGhostElement(this.draggableInfo);
+        let ghostElement = this.sourceContainer.createGhostElement(this.draggableInfo);
         if (ghostElement && ghostElement instanceof HTMLElement) {
             this._ghostContainerElement.appendChild(ghostElement);
             let ghostElementRect = ghostElement.getBoundingClientRect();
