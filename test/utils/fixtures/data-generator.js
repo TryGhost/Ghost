@@ -809,6 +809,11 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[2].id,
             meta_description: 'test stuff'
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[3].id,
+            meta_description: 'meta description for draft post'
         }
     ];
 
