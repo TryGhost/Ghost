@@ -92,7 +92,7 @@ Settings = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
-            type: 'core'
+            type: ''
         };
     },
 
