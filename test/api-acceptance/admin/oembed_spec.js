@@ -598,5 +598,38 @@ describe('Oembed API', function () {
                     done();
                 });
         });
+
+        it('falls back to bookmark card for WP oembeds', function (done) {
+            const pageMock = nock('http://test.com')
+                .get('/')
+                .twice() // oembed fetch then bookmark fetch
+                .reply(
+                    200,
+                    '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/wp-json/oembed/embed?url=https%3A%2F%2Ftest.com%2F"><title>TESTING</title></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const oembedMock = nock('http://test.com')
+                .get('/wp-json/oembed/embed')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'link'
+                });
+
+            const url = encodeURIComponent('http://test.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.true();
+                    oembedMock.isDone().should.be.false();
+                    done();
+                });
+        });
     });
 });
