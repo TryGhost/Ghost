@@ -8,7 +8,7 @@ const config = require('../../../shared/config');
 const {i18n} = require('../../lib/common');
 const externalRequest = require('../../lib/request-external');
 
-async function fetchBookmarkData(url, html) {
+async function fetchBookmarkData(url) {
     const metascraper = require('metascraper')([
         require('metascraper-url')(),
         require('metascraper-title')(),
@@ -23,11 +23,9 @@ async function fetchBookmarkData(url, html) {
     let scraperResponse;
 
     try {
-        if (!html) {
-            const cookieJar = new CookieJar();
-            const response = await externalRequest(url, {cookieJar});
-            html = response.body;
-        }
+        const cookieJar = new CookieJar();
+        const response = await externalRequest(url, {cookieJar});
+        const html = response.body;
         scraperResponse = await metascraper({html, url});
     } catch (err) {
         return Promise.reject(err);
@@ -118,7 +116,7 @@ function isIpOrLocalhost(url) {
     }
 }
 
-function fetchOembedData(_url) {
+function fetchOembedData(_url, cardType) {
     // parse the url then validate the protocol and host to make sure it's
     // http(s) and not an IP address or localhost to avoid potential access to
     // internal network endpoints
@@ -161,6 +159,12 @@ function fetchOembedData(_url) {
             // make sure the linked url is not an ip address or localhost
             if (isIpOrLocalhost(oembedUrl)) {
                 return unknownProvider(oembedUrl);
+            }
+
+            // for standard WP oembed's we want to insert a bookmark card rather than their blockquote+script
+            // which breaks in the editor and most Ghost themes. Only fallback if card type was not explicitly chosen
+            if (!cardType && oembedUrl.match(/wp-json\/oembed/)) {
+                return;
             }
 
             // fetch oembed response from embedded rel="alternate" url
