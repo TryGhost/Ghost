@@ -24,7 +24,7 @@
   "devDependencies": {
     "mocha": "8.1.3",
     "should": "13.2.3",
-    "sinon": "9.1.0"
+    "sinon": "9.2.0"
   },
   "dependencies": {
     "markdown-it": "^11.0.0",
