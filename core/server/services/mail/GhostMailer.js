@@ -27,8 +27,10 @@ function getFromAddress(requestedFromAddress) {
         return getFromAddress(`noreply@${getDomain()}`);
     }
 
+    const useRawFrom = config.get('mail') && config.get('mail').useRawFrom;
+
     // If we do have a from address, and it's just an email
-    if (validator.isEmail(address, {require_tld: false})) {
+    if (validator.isEmail(address, {require_tld: false}) && !useRawFrom) {
         const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: getDomain()});
         return `"${defaultBlogTitle}" <${address}>`;
     }
