@@ -126,7 +126,7 @@
     </div>
     <div class="gh-nav-bottom">
         <GhBasicDropdown @horizontalPosition="left" @verticalPosition="above" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
-            <dropdown.Trigger class="flex items-center outline-0 pointer space-between pa2 pl4 pr3">
+            <dropdown.Trigger class="flex items-center outline-0 pointer space-between pa2 pl4 pr3 mt3 mb6">
                 <div class="flex-auto flex items-center">
                     <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
                         {{#if this.whatsNew.hasNew}}<span class="absolute dib bg-blue ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
