@@ -64,7 +64,7 @@
             <GhErrorMessage @errors={{this.webhook.errors}} @property="targetUrl" data-test-error="webhook-targetUrl" />
         </GhFormGroup>
     </fieldset>
-    {{#if enable-developer-experiments}}
+    {{#if (enable-developer-experiments)}}
         <fieldset>
             <GhFormGroup @errors={{this.webhook.errors}} @hasValidated={{this.webhook.hasValidated}} @property="secret">
                 <label for="webhook-secret" class="fw6">Secret</label>
