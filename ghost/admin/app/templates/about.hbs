@@ -9,6 +9,9 @@
                 <li><strong>Environment</strong> {{this.config.environment}}</li>
                 <li class="gh-env-list-database-type"><strong>Database</strong> {{this.config.database}}</li>
                 <li><strong>Mail</strong> {{#if this.config.mail}}{{this.config.mail}}{{else}}Native{{/if}}</li>
+                {{#if (enable-developer-experiments)}}
+                <li><strong>Developer experiments</strong> Enabled</li>
+                {{/if}}
             </ul>
             <div class="gh-env-help">
                 <a class="gh-btn" href="https://ghost.org/docs/" target="_blank"><span>User Documentation</span></a>
