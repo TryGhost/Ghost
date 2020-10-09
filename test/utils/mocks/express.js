@@ -28,7 +28,8 @@ module.exports = {
             destroyed: false,
             cork: function () {},
             uncork: function () {},
-            write: function () {}
+            write: function () {},
+            on: function () {}
         };
 
         return new Promise(function (resolve) {
