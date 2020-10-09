@@ -361,7 +361,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled post status'
-            ).to.match(/Will be published in (4|5) minutes./);
+            ).to.match(/Will be published in (4|5) minutes/);
 
             // Re-schedule
             await click('[data-test-publishmenu-trigger]');
@@ -388,7 +388,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled status text'
-            ).to.match(/Will be published in (4|5) minutes\./);
+            ).to.match(/Will be published in (4|5) minutes/);
 
             // unschedule
             await click('[data-test-publishmenu-trigger]');
