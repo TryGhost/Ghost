@@ -446,7 +446,7 @@
 }
 
 .gh-nav-bottom {
-    margin: 12px 5px 24px;
+    margin: 0 5px;
 }
 
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover {
