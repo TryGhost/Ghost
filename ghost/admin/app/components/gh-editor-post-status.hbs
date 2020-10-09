@@ -10,7 +10,7 @@
         {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
-            Will be published {{this.scheduledText}}.
+            Will be published {{this.scheduledText}}
         </time>
     {{else if @post.isNew}}
         New
