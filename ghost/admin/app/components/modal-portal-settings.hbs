@@ -254,18 +254,22 @@
                             <div {{action (toggle "isShowModalLink" this)}} class="blue pointer f8"> {{if this.isShowModalLink "Data Attribute" "Link"}} </div>
                         </div>
                         <div class="flex items-center justify-center mt1 gh-show-modal-link-form relative">
-                            <GhTextInput
-                                @value={{this.showModalLinkOrAttribute}}
-                                @type="text"
-                                @disabled={{true}}
-                            />
-                            <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="gh-portal-setting-copy">
-                                {{#if this.copyLinkOrAttribute.isRunning}}
-                                    {{svg-jar "check-circle" class="w4 v-mid mr1 stroke-darkgrey"}} Copied
-                                {{else}}
-                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-                                {{/if}}
-                            </button>
+                            <div class="gh-portal-page-url-container">
+                                <div class="page-url-label">
+                                    {{#if this.isShowModalLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>{{this.showModalLinkOrAttribute}}</span>
+                                    {{else}}
+                                        {{this.showModalLinkOrAttribute}}
+                                    {{/if}}
+                                </div>
+                                <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="gh-portal-setting-copy">
+                                    {{#if this.copyLinkOrAttribute.isRunning}}
+                                        {{svg-jar "check-circle" class="w4 v-mid mr1 stroke-darkgrey"}} Copied
+                                    {{else}}
+                                        <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                    {{/if}}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <span onclick={{action "switchPreviewPage" "links"}} class="blue pointer f7">Show more</span>

@@ -73,7 +73,7 @@ export default ModalComponent.extend({
 
     showModalLinkOrAttribute: computed('isShowModalLink', function () {
         if (this.isShowModalLink) {
-            return `${this.config.get('blogUrl')}/#/portal`;
+            return `#/portal`;
         }
         return `data-portal`;
     }),
@@ -147,6 +147,7 @@ export default ModalComponent.extend({
         if (portalButtonIcon && !defaultIconKeys.includes(portalButtonIcon)) {
             this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
+        this.siteUrl = this.config.get('blogUrl');
     },
 
     didInsertElement() {
