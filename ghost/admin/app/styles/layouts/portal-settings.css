@@ -317,11 +317,12 @@
     align-items: center;
     top: 2px;
     right: 2px;
-    height: 34px;
-    padding: 3px 8px 5px 9px;
+    height: 32px;
+    padding: 0 8px 0 9px;
     border-radius: 2px;
     background: var(--white);
     border: 1px solid var(--whitegrey);
+    font-size: 1.3rem;
 }
 
 .gh-portal-siteiframe {
@@ -369,7 +370,7 @@
     letter-spacing: 0;
     text-rendering: optimizeLegibility;
     background: var(--white);
-    width: 600px;
+    width: 640px;
     padding: 32px;
     margin: 0 auto;
     border-radius: 5px;
@@ -430,14 +431,41 @@
     width: 130px;
 }
 
-.gh-portal-links-table .page-url-container {
+.gh-portal-page-url-container {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    padding: 5px 4px 5px 8px;
+    height: 38px;
+    background: var(--whitegrey-l2);
+    border-radius: 4px;
+    border: 1px solid var(--whitegrey);
+    color: var(--darkgrey);
+    font-weight: 500;
+    width: 100%;
 }
 
-.gh-portal-links-table .page-url-container .gh-portal-setting-copy {
-    position: absolute;
-    right: 2px;
-    top: 2px;
+.gh-portal-page-url-container .page-url-slash {
+    color: var(--midlightgrey);
+    font-weight: 400;
+}
+
+.gh-portal-page-url-container .page-url-label {
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-show-modal-link-form .page-url-label {
+    max-width: 230px;
+}
+
+.gh-portal-page-url-container .page-url-disabled {
+    color: var(--midlightgrey);
+    font-weight: 400;
 }
 
 .gh-portal-custom-icon {

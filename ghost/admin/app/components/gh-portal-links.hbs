@@ -15,9 +15,15 @@
             <tr>
                 <td class="pagename">Default</td>
                 <td class='page-url'>
-                    <div class="page-url-container">
-                        <input class="gh-input" value={{if isLink (concat this.siteUrl '/#/portal') 'data-portal'}} disabled="disabled" />
-                        <button type="button" {{action (perform this.copyDefault (if isLink (concat this.siteUrl '/#/portal') 'data-portal'))}} class="gh-portal-setting-copy">
+                    <div class="gh-portal-page-url-container">
+                        <div class="page-url-label">
+                            {{#if isLink}}
+                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal</span>
+                            {{else}}
+                                data-portal
+                            {{/if}}
+                        </div>
+                        <button type="button" {{action (perform this.copyDefault (if isLink '/#/portal' 'data-portal'))}} class="gh-portal-setting-copy">
                             {{#if this.copyDefault.isRunning}}
                                 {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                             {{else}}
@@ -30,9 +36,15 @@
             <tr>
                 <td class='pagename'>Sign up</td>
                 <td class='page-url'>
-                    <div class="page-url-container">
-                        <input class="gh-input" value={{if isLink (concat this.siteUrl '/#/portal/signup') 'data-portal="signup"'}} disabled="disabled" />
-                        <button type="button" {{action (perform this.copySignup (if isLink (concat this.siteUrl '/#/portal/signup') 'data-portal="signup"'))}} class="gh-portal-setting-copy">
+                    <div class="gh-portal-page-url-container">
+                        <div class="page-url-label">
+                            {{#if isLink}}
+                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup</span>
+                            {{else}}
+                                data-portal="signup"
+                            {{/if}}
+                        </div>
+                        <button type="button" {{action (perform this.copySignup (if isLink '/#/portal/signup' 'data-portal="signup"'))}} class="gh-portal-setting-copy">
                             {{#if this.copySignup.isRunning}}
                                 {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                             {{else}}
@@ -45,9 +57,15 @@
             <tr>
                 <td class='pagename'>Sign in</td>
                 <td class='page-url'>
-                    <div class="page-url-container">
-                        <input class="gh-input" value={{if isLink (concat this.siteUrl '/#/portal/signin') 'data-portal="signin"'}} disabled="disabled" />
-                        <button type="button" {{action (perform this.copySignin (if isLink (concat this.siteUrl '/#/portal/signin') 'data-portal="signin"'))}} class="gh-portal-setting-copy">
+                    <div class="gh-portal-page-url-container">
+                        <div class="page-url-label">
+                            {{#if isLink}}
+                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signin</span>
+                            {{else}}
+                                data-portal="signin"
+                            {{/if}}
+                        </div>
+                        <button type="button" {{action (perform this.copySignin (if isLink '/#/portal/signin' 'data-portal="signin"'))}} class="gh-portal-setting-copy">
                             {{#if this.copySignin.isRunning}}
                                 {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                             {{else}}
@@ -60,9 +78,15 @@
             <tr>
                 <td class='pagename'>Account home</td>
                 <td class='page-url'>
-                    <div class="page-url-container">
-                        <input class="gh-input" value={{if isLink (concat this.siteUrl '/#/portal/account') 'data-portal="account"'}} disabled="disabled" />
-                        <button type="button" {{action (perform this.copyAccountHome (if isLink (concat this.siteUrl '/#/portal/account') 'data-portal="account"'))}} class="gh-portal-setting-copy">
+                    <div class="gh-portal-page-url-container">
+                        <div class="page-url-label">
+                            {{#if isLink}}
+                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account</span>
+                            {{else}}
+                                data-portal="account"
+                            {{/if}}
+                        </div>
+                        <button type="button" {{action (perform this.copyAccountHome (if isLink '/#/portal/account' 'data-portal="account"'))}} class="gh-portal-setting-copy">
                             {{#if this.copyAccountHome.isRunning}}
                                 {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                             {{else}}
@@ -75,9 +99,15 @@
             <tr>
                 <td class='pagename'>Account/Plans</td>
                 <td class='page-url'>
-                    <div class="page-url-container">
-                        <input class="gh-input" value={{if isLink (concat this.siteUrl '/#/portal/account/plans') 'data-portal="account/plans"'}} disabled="disabled" />
-                        <button type="button" {{action (perform this.copyAccountPlans (if isLink (concat this.siteUrl '/#/portal/account/plans') 'data-portal="account/plans"'))}} class="gh-portal-setting-copy">
+                    <div class="gh-portal-page-url-container">
+                        <div class="page-url-label">
+                            {{#if isLink}}
+                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/plans</span>
+                            {{else}}
+                                data-portal="account/plans"
+                            {{/if}}
+                        </div>
+                        <button type="button" {{action (perform this.copyAccountPlans (if isLink '/#/portal/account/plans' 'data-portal="account/plans"'))}} class="gh-portal-setting-copy">
                             {{#if this.copyAccountPlans.isRunning}}
                                 {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                             {{else}}
@@ -90,9 +120,15 @@
             <tr>
                 <td class='pagename'>Account/Profile</td>
                 <td class='page-url'>
-                    <div class="page-url-container">
-                        <input class="gh-input" value={{if isLink (concat this.siteUrl '/#/portal/account/profile') 'data-portal="account/profile"'}} disabled="disabled" />
-                        <button type="button" {{action (perform this.copyAccountProfile (if isLink (concat this.siteUrl '/#/portal/account/profile') 'data-portal="account/profile"'))}} class="gh-portal-setting-copy">
+                    <div class="gh-portal-page-url-container">
+                        <div class="page-url-label">
+                            {{#if isLink}}
+                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/profile</span>
+                            {{else}}
+                                data-portal="account/profile"
+                            {{/if}}
+                        </div>
+                        <button type="button" {{action (perform this.copyAccountProfile (if isLink '/#/portal/account/profile' 'data-portal="account/profile"'))}} class="gh-portal-setting-copy">
                             {{#if this.copyAccountProfile.isRunning}}
                                 {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                             {{else}}
