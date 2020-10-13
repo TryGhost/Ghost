@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification} from './utils/helpers';
+import {createPopupNotification, isComplimentaryMember} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -344,6 +344,10 @@ export default class App extends React.Component {
         /**Set default page based on logged-in status */
         if (!page) {
             page = member ? 'accountHome' : 'signup';
+        }
+
+        if (page === 'accountPlan' && isComplimentaryMember({member})) {
+            page = 'accountHome';
         }
 
         return getActivePage({page});
