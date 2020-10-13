@@ -1,4 +1,4 @@
-import {createPopupNotification, getMemberEmail, getMemberName} from './utils/helpers';
+import {createPopupNotification, getMemberEmail, getMemberName, removePortalLinkFromUrl} from './utils/helpers';
 
 function switchPage({data}) {
     return {
@@ -32,6 +32,7 @@ function back({state}) {
 }
 
 function closePopup({state}) {
+    removePortalLinkFromUrl();
     return {
         showPopup: false,
         lastPage: null,
