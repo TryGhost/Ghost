@@ -31,7 +31,7 @@
           "type": "boolean"
         },
         "comped": {
-          "strip": "true"
+          "type": "boolean"
         },
         "id": {
           "strip": true
