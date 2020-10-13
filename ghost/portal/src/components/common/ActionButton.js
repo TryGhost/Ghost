@@ -1,5 +1,4 @@
 import React from 'react';
-import getContrastColor from '../../utils/contrast-color';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {isCookiesDisabled} from '../../utils/helpers';
 
@@ -65,7 +64,7 @@ const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
         opacity = '0.5';
         pointerEvents = 'none';
     }
-    const textColor = getContrastColor(backgroundColor);
+    const textColor = '#fff';
 
     return {
         button: {

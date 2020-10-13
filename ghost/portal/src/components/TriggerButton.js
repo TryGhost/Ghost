@@ -8,7 +8,6 @@ import {ReactComponent as ButtonIcon2} from '../images/icons/button-icon-2.svg';
 import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
 import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
-import getContrastColor from '../utils/contrast-color';
 import TriggerButtonStyle from './TriggerButton.styles';
 
 const React = require('react');
@@ -25,7 +24,6 @@ const Styles = ({brandColor, hasText}) => {
     const frame = {
         ...(!hasText ? {width: '60px'} : {})
     };
-    const invertColor = getContrastColor(brandColor);
     return {
         frame: {
             zIndex: '3999998',
@@ -45,12 +43,12 @@ const Styles = ({brandColor, hasText}) => {
         userIcon: {
             width: '34px',
             height: '34px',
-            color: invertColor
+            color: '#fff'
         },
         buttonIcon: {
             width: '24px',
             height: '24px',
-            color: invertColor
+            color: '#fff'
         },
         closeIcon: {
             width: '20px',
@@ -157,11 +155,9 @@ class TriggerButtonContent extends React.Component {
         const {
             portal_button_signup_text: buttonText
         } = this.context.site;
-        const {brandColor} = this.context;
-        const textColor = getContrastColor(brandColor);
         if (this.hasText()) {
             return (
-                <span style={{padding: '0 8px', color: textColor}}> {buttonText} </span>
+                <span style={{padding: '0 8px', color: '#fff'}}> {buttonText} </span>
             );
         }
         return null;
