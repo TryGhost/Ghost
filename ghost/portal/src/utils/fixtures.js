@@ -124,3 +124,8 @@ export const member = {
         paid: true
     }
 };
+
+export const testSite = {
+    ...site,
+    portal_plans: ['free', 'monthly', 'yearly']
+};
