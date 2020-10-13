@@ -474,7 +474,7 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.invalid.count.should.equal(2);
 
                 should.equal(jsonResponse.meta.stats.invalid.errors.length, 1);
-                jsonResponse.meta.stats.invalid.errors[0].message.should.equal('Missing Stripe connection');
+                jsonResponse.meta.stats.invalid.errors[0].message.should.match(/Missing Stripe connection/);
 
                 should.not.exist(jsonResponse.meta.import_label);
             });
