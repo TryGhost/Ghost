@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import InputField from './InputField';
 
-const FormInput = ({field, onChange, onBlur, onKeyDown = () => {}}) => {
+const FormInput = ({field, onChange, onBlur = () => { }, onKeyDown = () => {}}) => {
     if (!field) {
         return null;
     }
