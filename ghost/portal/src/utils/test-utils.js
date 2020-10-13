@@ -2,7 +2,7 @@
 import React from 'react';
 import {render} from '@testing-library/react';
 import AppContext from '../AppContext';
-import {site, member} from './fixtures';
+import {testSite, member} from './fixtures';
 
 const setupProvider = (context) => {
     return ({children}) => {
@@ -18,10 +18,10 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
     const mockOnActionFn = jest.fn();
 
     const context = {
-        site,
+        site: testSite,
         member: member.free,
         action: 'init:success',
-        brandColor: site.accent_color,
+        brandColor: testSite.accent_color,
         page: 'signup',
         onAction: mockOnActionFn,
         ...overrideContext
