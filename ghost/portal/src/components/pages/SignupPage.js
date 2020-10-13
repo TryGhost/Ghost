@@ -187,18 +187,6 @@ class SignupPage extends React.Component {
         });
     }
 
-    handleInputBlur(e, field) {
-        this.setState((state) => {
-            const fieldErrors = ValidateInputForm({fields: this.getInputFields({state, fieldNames: [field.name]})}) || {};
-            return {
-                errors: {
-                    ...(state.errors || {}),
-                    ...fieldErrors
-                }
-            };
-        });
-    }
-
     handleSelectPlan(e, name) {
         e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
@@ -383,7 +371,6 @@ class SignupPage extends React.Component {
                     <InputForm
                         fields={fields}
                         onChange={(e, field) => this.handleInputChange(e, field)}
-                        onBlur={(e, field) => this.handleInputBlur(e, field)}
                         onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     />
                     {this.renderPlans()}
