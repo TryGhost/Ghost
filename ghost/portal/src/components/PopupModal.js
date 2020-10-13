@@ -96,17 +96,22 @@ class PopupContent extends React.Component {
     render() {
         const {page, site} = this.context;
         const {portal_plans: portalPlans} = site;
+        const {is_stripe_configured: isStripeConfigured, 
+            allow_self_signup: allowSelfSignup} = site;
+
         getActivePage({page});
         const Styles = StylesWrapper({page});
         const pageStyle = {
             ...Styles.page[page]
         };
         let popupWidthStyle = '';
-        if (portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
-            popupWidthStyle = 'gh-portal-container-wide';
-        }
-        if (portalPlans.length <= 1) {
-            popupWidthStyle = 'gh-portal-container-narrow';
+        if (page === 'signup' || page === 'signin') {
+            if (allowSelfSignup && portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
+                popupWidthStyle = 'gh-portal-container-wide';
+            }
+            if (portalPlans.length <= 1 || (!allowSelfSignup && portalPlans.length > 1 && portalPlans.indexOf('free') !== -1) || !isStripeConfigured) {
+                popupWidthStyle = 'gh-portal-container-narrow';
+            }
         }
         let cookieBannerText = '';
         let pageClass = page;
