@@ -105,6 +105,30 @@ describe('Members API', function () {
             .expect(422);
     });
 
+    it('Add should fail when comped flag is passed in but Stripe is not enabled', function () {
+        const member = {
+            email: 'memberTestAdd@test.com',
+            comped: true
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`members/`))
+            .send({members: [member]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422)
+            .then((res) => {
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
+
+                jsonResponse.errors[0].message.should.eql('Validation error, cannot save member.');
+                jsonResponse.errors[0].context.should.match(/Missing Stripe connection./);
+            });
+    });
+
     // NOTE: this test should be enabled and expanded once test suite fully supports Stripe mocking
     it.skip('Can set a "Complimentary" subscription', function () {
         const memberToChange = {
