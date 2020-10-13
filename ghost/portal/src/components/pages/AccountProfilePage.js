@@ -127,18 +127,6 @@ export default class AccountProfilePage extends React.Component {
         });
     }
 
-    handleInputBlur(e, field) {
-        this.setState((state) => {
-            const fieldErrors = ValidateInputForm({fields: this.getInputFields({state, fieldNames: [field.name]})}) || {};
-            return {
-                errors: {
-                    ...(state.errors || {}),
-                    ...fieldErrors
-                }
-            };
-        });
-    }
-
     getInputFields({state, fieldNames}) {
         const errors = state.errors || {};
         const fields = [
@@ -183,7 +171,6 @@ export default class AccountProfilePage extends React.Component {
                     fields={this.getInputFields({state: this.state})}
                     onChange={(e, field) => this.handleInputChange(e, field)}
                     onKeyDown={(e, field) => this.onKeyDown(e, field)}
-                    onBlur={(e, field) => this.handleInputBlur(e, field)}
                 />
             </div>
         );
