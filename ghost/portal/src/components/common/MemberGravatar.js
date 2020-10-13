@@ -8,19 +8,19 @@ export const AvatarStyles = `
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        margin-bottom: 8px;
+        margin: 0 0 8px 0;
         border-radius: 999px;
     }
 
     .gh-portal-avatar img {
         position: absolute;
         display: block;
-        top: -1px;
-        right: -1px;
-        bottom: -1px;
-        left: -1px;
-        width: calc(100% + 2px);
-        height: calc(100% + 2px);
+        top: -2px;
+        right: -2px;
+        bottom: -2px;
+        left: -2px;
+        width: calc(100% + 4px);
+        height: calc(100% + 4px);
         opacity: 1;
         max-width: unset;
     }
