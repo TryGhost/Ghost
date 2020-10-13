@@ -114,7 +114,7 @@ class NotificationContent extends React.Component {
     }
 
     componentDidMount() {
-        const {autoHide, duration = 2000} = this.props;
+        const {autoHide, duration = 2400} = this.props;
         const {showPopup} = this.context;
         if (showPopup) {
             this.setState({

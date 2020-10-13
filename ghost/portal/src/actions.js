@@ -211,7 +211,7 @@ async function updateNewsletter({data, state, api}) {
             action,
             member: member,
             popupNotification: createPopupNotification({
-                type: action, autoHide: true, duration: 2000, closeable: true, state, status: 'success',
+                type: action, autoHide: true, closeable: true, state, status: 'success',
                 message: 'Email newsletter settings updated'
             })
         };
@@ -319,7 +319,7 @@ async function updateProfile({data, state, api}) {
         action: 'updateProfile:success',
         page: 'accountHome',
         popupNotification: createPopupNotification({
-            type: 'updateProfile:success', autoHide: true, duration: 2000, closeable: true, status: 'success', state,
+            type: 'updateProfile:success', autoHide: true, closeable: true, status: 'success', state,
             message: 'Account details updated successfully'
         })
     };

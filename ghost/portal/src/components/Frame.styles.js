@@ -252,7 +252,7 @@ const FrameStyles = `
     }
 
     .gh-portal-container-narrow {
-        width: 388px;
+        width: 380px;
     }
 
     .gh-portal-popup-container.preview {
