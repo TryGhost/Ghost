@@ -5,6 +5,8 @@ import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
 import {getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
+import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {useContext} from 'react';
 
 const React = require('react');
 
@@ -155,16 +157,21 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
     };
 
     const BillingSection = ({defaultCardLast4, isComplimentary}) => {
+        const {action} = useContext(AppContext);
+        const label = action === 'editBilling:running' ? (
+            <LoaderIcon className='' />
+        ) : 'Update';
         if (isComplimentary) {
             return null;
         }
+
         return (
             <section>
                 <div className='gh-portal-list-detail'>
                     <h3>Billing Info</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
-                <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>Update</button>
+                <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>{label}</button>
             </section>
         );
     };
