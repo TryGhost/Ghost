@@ -23,11 +23,11 @@ const NotificationStyles = `
         color: var(--white);
         border-radius: 5px;
         box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.08);
-        animation: notification-slidein 0.7s ease-in-out;
+        animation: notification-slidein 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000);
     }
 
     .gh-portal-notification.slideout {
-        animation: notification-slideout 0.6s ease-in-out;
+        animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
     }
 
     .gh-portal-notification.hide {
@@ -94,25 +94,25 @@ const NotificationStyles = `
 
     @keyframes notification-slidein {
         0% { transform: translateX(380px); }
-        75% { transform: translateX(-8px); }
+        60% { transform: translateX(-6px); }
         100% { transform: translateX(0); }
     }
 
     @keyframes notification-slideout {
         0% { transform: translateX(0); }
-        25% { transform: translateX(-8px); }
+        30% { transform: translateX(-10px); }
         100% { transform: translateX(380px); }
     }
 
     @keyframes notification-slidein-mobile {
         0% { transform: translateY(-150px); }
-        75% { transform: translateY(8px); }
+        50% { transform: translateY(6px); }
         100% { transform: translateY(0); }
     }
 
     @keyframes notification-slideout-mobile {
         0% { transform: translateY(0); }
-        25% { transform: translateY(8px); }
+        35% { transform: translateY(6px); }
         100% { transform: translateY(-150px); }
     }
 
@@ -124,6 +124,7 @@ const NotificationStyles = `
         }
 
         .gh-portal-notification.slideout {
+            animation-duration: 0.55s;
             animation-name: notification-slideout-mobile;
         }
     }
