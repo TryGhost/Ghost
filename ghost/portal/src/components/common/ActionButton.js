@@ -15,16 +15,8 @@ export const ActionButtonStyles = `
         border: none;
     }
 
-    .gh-portal-btn-primary:hover::before {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        content: "";
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 5px;
-        border: none;
+    .gh-portal-btn-primary:hover {
+        opacity: 0.92 !important;
     }
 
     .gh-portal-btn-primary:disabled:hover::before {

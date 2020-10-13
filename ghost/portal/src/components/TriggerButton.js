@@ -22,20 +22,17 @@ const ICON_MAPPING = {
 
 const Styles = ({brandColor, hasText}) => {
     const frame = {
-        ...(!hasText ? {width: '60px'} : {})
+        ...(!hasText ? {width: '105px'} : {})
     };
     return {
         frame: {
             zIndex: '3999998',
             position: 'fixed',
-            bottom: '28px',
-            right: '28px',
+            bottom: '0',
+            right: '0',
             width: '500px',
             maxWidth: '500px',
-            height: '60px',
-            // boxShadow: '0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px rgba(0, 0, 0, 0.035), 0 21.1px 24.1px rgba(0, 0, 0, 0.046), 0 70px 80px rgba(0, 0, 0, 0.07)',
-            boxShadow: 'rgba(0, 0, 0, 0.24) 0px 6px 16px -3px',
-            borderRadius: '999px',
+            height: '98px',
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
             overflow: 'hidden',
@@ -176,10 +173,13 @@ class TriggerButtonContent extends React.Component {
 
     render() {
         const hasText = this.hasText();
+        const {member} = this.context;
+        const triggerBtnClass = member ? 'halo' : '';
+
         if (hasText) {
             return (
-                <div className='gh-portal-triggerbtn-wrapper' onClick={e => this.onToggle(e)}>
-                    <div className='gh-portal-triggerbtn-container with-label' ref={this.container}>
+                <div className='gh-portal-triggerbtn-wrapper' ref={this.container}>
+                    <div className='gh-portal-triggerbtn-container with-label' onClick={e => this.onToggle(e)}>
                         {this.renderTriggerIcon()}
                         {this.renderText()}
                     </div>
@@ -187,8 +187,8 @@ class TriggerButtonContent extends React.Component {
             );
         }
         return (
-            <div className='gh-portal-triggerbtn-wrapper' onClick={e => this.onToggle(e)}>
-                <div className='gh-portal-triggerbtn-container'>
+            <div className='gh-portal-triggerbtn-wrapper'>
+                <div className={'gh-portal-triggerbtn-container ' + triggerBtnClass} onClick={e => this.onToggle(e)}>
                     {this.renderTriggerIcon()}
                 </div>
             </div>
@@ -249,7 +249,7 @@ export default class TriggerButton extends React.Component {
         }
 
         return (
-            <Frame style={frameStyle} title="membersjs-trigger" head={this.renderFrameStyles()}>
+            <Frame className='gh-portal-triggerbtn-iframe' style={frameStyle} title="membersjs-trigger" head={this.renderFrameStyles()}>
                 <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );
