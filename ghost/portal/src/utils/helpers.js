@@ -1,5 +1,13 @@
 import CalculateDiscount from './discount';
 
+export function removePortalLinkFromUrl() {
+    const [path] = window.location.hash.substr(1).split('?');
+    const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
+    if (path && linkRegex.test(path)) {
+        window.location.hash = '';
+    }
+}
+
 export function getPortalLinkPath({page}) {
     const Links = {
         default: '#/portal',
