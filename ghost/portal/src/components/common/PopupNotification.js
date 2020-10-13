@@ -25,7 +25,7 @@ export const PopupNotificationStyles = `
     }
 
     .gh-portal-popupnotification.slideout {
-        animation: popupnotification-slideout 0.6s ease-in-out;
+        animation: popupnotification-slideout 0.48s ease-in;
     }
 
     .gh-portal-popupnotification p {
@@ -144,8 +144,11 @@ export default class PopupNotification extends React.Component {
     }
 
     handlePopupNotification({popupNotification}) {
+        this.setState({
+            notificationCount: popupNotification.count
+        });
         if (popupNotification.autoHide) {
-            const {duration = 2400} = popupNotification;
+            const {duration = 2600} = popupNotification;
             this.timeoutId = setTimeout(() => {
                 this.setState((state) => {
                     if (state.className !== 'slideout') {
@@ -157,10 +160,6 @@ export default class PopupNotification extends React.Component {
                     return {};
                 });
             }, duration);
-        } else {
-            this.setState({
-                notificationCount: popupNotification.count
-            });
         }
     }
 
