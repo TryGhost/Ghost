@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
+import AppContext from '../../AppContext';
 
 export const SwitchStyles = `
     .gh-portal-for-switch label,
@@ -74,17 +75,24 @@ export const SwitchStyles = `
 `;
 
 function Switch({id, label, onToggle, checked = false}) {
+    const {action} = useContext(AppContext);
+    const [isChecked, setIsChecked] = useState(checked);
+    const isActionChanged = ['updateNewsletter:failed', 'updateNewsletter:success'].includes(action);
+    useEffect(() => {
+        setIsChecked(checked);
+    }, [checked, isActionChanged]);
     return (
         <div className="gh-portal-for-switch">
             <label className="switch" htmlFor={id}>
                 <input
                     type="checkbox"
-                    checked={checked}
+                    checked={isChecked}
                     id={id}
                     onChange={() => {}}
                     aria-label={label}
                 />
                 <span className="input-toggle-component" onClick={(e) => {
+                    setIsChecked(!isChecked);
                     onToggle(e);
                 }} data-testid="switch-input"></span>
             </label>
