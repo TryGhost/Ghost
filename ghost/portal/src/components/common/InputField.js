@@ -21,7 +21,7 @@ export const InputFieldStyles = `
         margin-bottom: 18px;
         letter-spacing: 0.2px;
         box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.07), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.05);
-        transition: all 0.25s ease-in-out;
+        transition: border-color 0.25s ease-in-out;
     }
 
     .gh-portal-input-labelcontainer {
