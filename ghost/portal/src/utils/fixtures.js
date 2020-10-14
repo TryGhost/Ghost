@@ -17,7 +17,7 @@ export const site = {
     portal_name: true,
     portal_plans: ['yearly'],
     portal_button_icon: 'icon-1',
-    portal_button_signup_text: 'Subscribe now',
+    portal_button_signup_text: 'Subscribe now this is a really long text that should not be the default but even though its still possible',
     portal_button_style: 'icon-and-text',
     members_support_address: 'support@example.com'
 };
