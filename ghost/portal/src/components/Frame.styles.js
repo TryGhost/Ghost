@@ -433,6 +433,11 @@ const FrameStyles = `
         padding: 8px;
     }
 
+    .gh-portal-popup-container.account-profile .gh-portal-action-footer {
+        height: unset;
+        padding-bottom: 36px;
+    }
+
     /* Icons
     /* ----------------------------------------------------- */
     .gh-portal-icon {
