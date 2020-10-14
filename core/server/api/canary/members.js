@@ -214,17 +214,21 @@ module.exports = {
             let member;
             frame.options.withRelated = ['stripeSubscriptions', 'stripeSubscriptions.customer'];
             try {
+                if (!membersService.config.isStripeConnected()
+                    && (frame.data.members[0].stripe_customer_id || frame.data.members[0].comped)) {
+                    const property = frame.data.members[0].comped ? 'comped' : 'stripe_customer_id';
+
+                    throw new errors.ValidationError({
+                        message: i18n.t('errors.api.members.stripeNotConnected.message'),
+                        context: i18n.t('errors.api.members.stripeNotConnected.context'),
+                        help: i18n.t('errors.api.members.stripeNotConnected.help'),
+                        property
+                    });
+                }
+
                 member = await membersService.api.members.create(frame.data.members[0], frame.options);
 
                 if (frame.data.members[0].stripe_customer_id) {
-                    if (!membersService.config.isStripeConnected()) {
-                        throw new errors.ValidationError({
-                            message: i18n.t('errors.api.members.stripeNotConnected.message'),
-                            context: i18n.t('errors.api.members.stripeNotConnected.context'),
-                            help: i18n.t('errors.api.members.stripeNotConnected.help')
-                        });
-                    }
-
                     await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
                 }
 
@@ -250,7 +254,7 @@ module.exports = {
                 // NOTE: failed to link Stripe customer/plan/subscription or have thrown custom Stripe connection error.
                 //       It's a bit ugly doing regex matching to detect errors, but it's the easiest way that works without
                 //       introducing additional logic/data format into current error handling
-                const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g) || error.context === i18n.t('errors.api.members.stripeNotConnected.context'));
+                const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g));
                 if (member && isStripeLinkingError) {
                     if (error.message.indexOf('customer') && error.code === 'resource_missing') {
                         error.message = `Member not imported. ${error.message}`;
