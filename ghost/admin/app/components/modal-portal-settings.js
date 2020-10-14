@@ -82,6 +82,7 @@ export default ModalComponent.extend({
         const baseUrl = this.config.get('blogUrl');
         const portalBase = '/#/portal/preview';
         const settingsParam = new URLSearchParams();
+        const signupButtonText = this.settings.get('portalButtonSignupText') || '';
         settingsParam.append('button', this.settings.get('portalButton'));
         settingsParam.append('name', this.settings.get('portalName'));
         settingsParam.append('isFree', this.isFreeChecked);
@@ -91,7 +92,7 @@ export default ModalComponent.extend({
         if (this.buttonIcon) {
             settingsParam.append('buttonIcon', encodeURIComponent(this.buttonIcon));
         }
-        settingsParam.append('signupButtonText', encodeURIComponent(this.settings.get('portalButtonSignupText')));
+        settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
         if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
             settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
         }
