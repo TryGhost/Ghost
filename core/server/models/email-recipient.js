@@ -21,5 +21,5 @@ const EmailRecipients = ghostBookshelf.Collection.extend({
 
 module.exports = {
     EmailRecipient: ghostBookshelf.model('EmailRecipient', EmailRecipient),
-    EmailRecipients: ghostBookshelf.model('EmailRecipients', EmailRecipients)
+    EmailRecipients: ghostBookshelf.collection('EmailRecipients', EmailRecipients)
 };
