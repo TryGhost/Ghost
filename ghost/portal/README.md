@@ -7,7 +7,7 @@ Drop-in script to make the bulk of Ghost membership features work on any theme.
 
 ## Usage
 
-Add below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
+Portal can be enabled on any theme directly by adding the below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
 
 ```html
 <script defer src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js" data-ghost="https://mymemberssite.com"></script>
@@ -15,7 +15,9 @@ Add below script in your theme's `default.hbs` just before the end of body tag O
 
 The `data-ghost` attribute expects the URL for your site which is the only input Portal needs to work with your site's membership data via Ghost APIs.
 
-NOTE: This is currently under active development and can be switched on with a new dedicated flag - `portal` - in [Ghost config](https://ghost.org/docs/concepts/config/), which needs to be added to config file before starting the server.
+Alternatively, Ghost automatically injects this Portal script to any site behind a dedicated flag(see below) which can be added via config, which also enables Site owner/admins to customize specific Portal settings from Ghost-Admin.
+
+NOTE: Since this is currently under active development, Portal can be switched on with a new dedicated flag - `portal` - in [Ghost config](https://ghost.org/docs/concepts/config/), which needs to be added to config file before starting the server.
 
 ```json
 {
