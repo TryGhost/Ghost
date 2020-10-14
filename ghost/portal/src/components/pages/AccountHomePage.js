@@ -85,6 +85,13 @@ export const AccountHomePageStyles = `
     .gh-portal-cancelcontinue-container {
         margin: 24px 0 32px;
     }
+
+    .gh-portal-billing-button-loader {
+        width: 32px;
+        height: 32px;
+        margin-right: -3px;
+        opacity: 0.6;
+    }
 `;
 
 const UserAvatar = ({avatar, brandColor}) => {
@@ -159,7 +166,7 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
     const BillingSection = ({defaultCardLast4, isComplimentary}) => {
         const {action} = useContext(AppContext);
         const label = action === 'editBilling:running' ? (
-            <LoaderIcon className='' />
+            <LoaderIcon className='gh-portal-billing-button-loader' />
         ) : 'Update';
         if (isComplimentary) {
             return null;
