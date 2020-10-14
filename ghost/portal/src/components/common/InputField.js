@@ -78,7 +78,7 @@ function InputError({message, style}) {
     );
 }
 
-function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, onBlur, onKeyDown, errorMessage}) {
+function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, onBlur, onKeyDown, tabindex, errorMessage}) {
     id = id || `input-${name}`;
     onBlur = onBlur || function (){};
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
@@ -119,6 +119,7 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 onKeyDown={e => onKeyDown(e, name)}
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
+                tabindex={tabindex}
                 autoComplete={autocomplete}
                 autoCorrect={autocorrect}
                 autoCapitalize={autocapitalize}
