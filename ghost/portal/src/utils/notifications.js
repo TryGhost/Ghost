@@ -12,7 +12,7 @@ export const handleAuthActions = ({qsParams, action, status}) => {
 };
 
 export const handleStripeActions = ({status, billingOnly}) => {
-    if (!billingOnly && ['cancel', 'success'].includes(status)) {
+    if (!billingOnly && ['success'].includes(status)) {
         const statusVal = status === 'success' ? 'success' : 'warning';
         return {
             type: 'stripe:checkout',
