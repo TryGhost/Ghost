@@ -29,7 +29,7 @@ const NotificationStyles = `
     }
 
     .gh-portal-notification.slideout {
-        gr-animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
+        animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
     }
 
     .gh-portal-notification.hide {
