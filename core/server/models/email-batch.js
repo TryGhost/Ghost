@@ -26,5 +26,5 @@ const EmailBatches = ghostBookshelf.Collection.extend({
 
 module.exports = {
     EmailBatch: ghostBookshelf.model('EmailBatch', EmailBatch),
-    EmailBatches: ghostBookshelf.model('EmailBatches', EmailBatches)
+    EmailBatches: ghostBookshelf.collection('EmailBatches', EmailBatches)
 };
