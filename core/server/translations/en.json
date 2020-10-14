@@ -399,8 +399,8 @@
             "members": {
                 "memberNotFound": "Member not found.",
                 "stripeNotConnected": {
-                    "message": "Missing Stripe connection",
-                    "context": "Attempting to import members with Stripe data when there is no Stripe account connected",
+                    "message": "Missing Stripe connection.",
+                    "context": "Attempting to import members with Stripe data when there is no Stripe account connected.",
                     "help": "You need to connect to Stripe to import Stripe customers. "
                 },
                 "stripeCustomerNotFound": {
