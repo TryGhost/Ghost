@@ -10,6 +10,8 @@ const NotificationStyles = `
 
     .gh-portal-notification {
         position: absolute;
+        display: flex;
+        align-items: center;
         top: 12px;
         right: 12px;
         width: 100%;
@@ -27,7 +29,7 @@ const NotificationStyles = `
     }
 
     .gh-portal-notification.slideout {
-        animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
+        gr-animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
     }
 
     .gh-portal-notification.hide {
