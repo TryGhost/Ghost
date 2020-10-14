@@ -155,7 +155,7 @@ class TriggerButtonContent extends React.Component {
         } = this.context.site;
         if (this.hasText()) {
             return (
-                <span style={{padding: '0 8px', color: '#fff'}}> {buttonText} </span>
+                <span className='gh-portal-triggerbtn-label'> {buttonText} </span>
             );
         }
         return null;
@@ -181,7 +181,7 @@ class TriggerButtonContent extends React.Component {
                 <div className='gh-portal-triggerbtn-wrapper' ref={this.container}>
                     <div className='gh-portal-triggerbtn-container with-label' onClick={e => this.onToggle(e)}>
                         {this.renderTriggerIcon()}
-                        {this.renderText()}
+                        {(hasText ? this.renderText() : '')}
                     </div>
                 </div>
             );

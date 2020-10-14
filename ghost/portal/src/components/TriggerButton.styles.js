@@ -60,6 +60,16 @@ const TriggerButtonStyles = `
         padding: 0 12px 0 16px;
     }
 
+    .gh-portal-triggerbtn-label {
+        padding: 8px;
+        color: rgb(255, 255, 255);
+        display: block;
+        white-space: nowrap;
+        max-width: 380px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .gh-portal-avatar {
         margin-bottom: 0px !important;
         width: 60px;
