@@ -275,6 +275,7 @@ class SignupPage extends React.Component {
                 label: 'Email',
                 name: 'email',
                 required: true,
+                tabindex: 2,
                 errorMessage: errors.email || ''
             }
         ];
@@ -288,6 +289,7 @@ class SignupPage extends React.Component {
                 label: 'Name',
                 name: 'name',
                 required: true,
+                tabindex: 1,
                 errorMessage: errors.name || ''
             });
         }
@@ -328,6 +330,7 @@ class SignupPage extends React.Component {
                 brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
+                tabindex='3'
             />
         );
     }
