@@ -28,7 +28,6 @@ const models = [
     'api-key',
     'mobiledoc-revision',
     'member',
-    'action',
     'posts-meta',
     'member-stripe-customer',
     'stripe-customer-subscription',
@@ -36,7 +35,10 @@ const models = [
     'email-batch',
     'email-recipient',
     'label',
-    'single-use-token'
+    'single-use-token',
+    // Action model MUST be loaded last as it loops through all of the registered models
+    // Please do not append items to this array.
+    'action'
 ];
 
 function init() {
