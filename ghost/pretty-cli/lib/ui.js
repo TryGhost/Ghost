@@ -20,7 +20,7 @@ module.exports.log.info = (...args) => {
 };
 
 module.exports.log.warn = (...args) => {
-    log(chalk.magenta('ok'), ...args);
+    log(chalk.magenta('warn'), ...args);
 };
 
 module.exports.log.error = (...args) => {
