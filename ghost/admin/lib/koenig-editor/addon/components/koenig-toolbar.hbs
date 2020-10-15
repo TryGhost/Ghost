@@ -19,7 +19,7 @@
             {{svg-jar "koenig/kg-italic" class=(concat (if (or this.activeMarkupTagNames.isEm this.activeMarkupTagNames.isI) "fill-blue-l2" "fill-white") " w4 h4")}}
         </button>
     </li>
-    {{#unless basicOnly}}
+    {{#unless this.basicOnly}}
         <li class="ma0 lh-solid">
             <button
                 type="button"
@@ -44,7 +44,7 @@
 
     <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
 
-    {{#unless basicOnly}}
+    {{#unless this.basicOnly}}
         <li class="ma0 lh-solid">
             <button
                 type="button"
@@ -66,4 +66,21 @@
             {{svg-jar "koenig/kg-link" class=(concat (if this.activeMarkupTagNames.isA "fill-blue-l2" "fill-white") " w4 h4")}}
         </button>
     </li>
+
+    {{#if (enable-developer-experiments)}}
+        {{#unless this.basicOnly}}
+            <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+            <li class="ma0 lh-solid">
+                <button
+                    type="button"
+                    title="Create snippet"
+                    class="dib dim-lite link h9 w9 nudge-top--1"
+                    {{on "click" @addSnippet}}
+                >
+                    {{svg-jar "koenig/kg-quote" class="w4 h4"}}
+                </button>
+            </li>
+        {{/unless}}
+    {{/if}}
+
 </KgActionBar>

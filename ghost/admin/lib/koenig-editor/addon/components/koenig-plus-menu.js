@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
 import {CARD_MENU} from '../options/cards';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
@@ -10,9 +11,9 @@ export default Component.extend({
     attributeBindings: ['style', 'data-kg'],
     editor: null,
     editorRange: null,
+    snippets: null,
 
     // internal properties
-    itemSections: null,
     showButton: false,
     showMenu: false,
     top: 0,
@@ -33,10 +34,36 @@ export default Component.extend({
         return htmlSafe(`top: ${this.top}px`);
     }),
 
+    itemSections: computed('snippets.[]', function () {
+        let {snippets} = this;
+        let itemSections = [...CARD_MENU];
+
+        // TODO: move or create util, duplicated with koenig-slash-menu
+        if (snippets?.length) {
+            let snippetsSection = {
+                title: 'Snippets',
+                items: [],
+                rowLength: 1,
+                developerExperiment: true
+            };
+
+            snippets.forEach((snippet) => {
+                snippetsSection.items.push({
+                    label: snippet.title,
+                    icon: 'koenig/kg-card-type-bookmark',
+                    type: 'snippet',
+                    matches: [snippet.title.toLowerCase()]
+                });
+            });
+
+            itemSections.push(snippetsSection);
+        }
+
+        return itemSections;
+    }),
+
     init() {
         this._super(...arguments);
-
-        this.itemSections = CARD_MENU;
 
         this._onResizeHandler = run.bind(this, this._handleResize);
         window.addEventListener('resize', this._onResizeHandler);
@@ -89,11 +116,23 @@ export default Component.extend({
             this._hideMenu();
         },
 
-        itemClicked(item) {
+        itemClicked(item, event) {
+            if (event) {
+                event.preventDefault();
+            }
+
             let range = this._editorRange;
 
             if (item.type === 'card') {
                 this.replaceWithCardSection(item.replaceArg, range, item.payload);
+            }
+
+            if (item.tpye === 'snippet') {
+                let clickedSnippet = this.snippets.find(snippet => snippet.title === item.label);
+                if (clickedSnippet) {
+                    let post = mobiledocParsers.parse(this.editor.builder, clickedSnippet.mobiledoc);
+                    this.replaceWithPost(range, post);
+                }
             }
 
             this._hideButton();

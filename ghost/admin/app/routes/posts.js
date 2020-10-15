@@ -79,7 +79,7 @@ export default AuthenticatedRoute.extend({
         });
     },
 
-    // trigger a background load of all tags and authors for use in the filter dropdowns
+    // trigger a background load of all tags, authors, and snipps for use in filter dropdowns and card menu
     setupController(controller) {
         this._super(...arguments);
 
@@ -96,6 +96,12 @@ export default AuthenticatedRoute.extend({
                 });
             }
         });
+
+        if (!controller._hasLoadedSnippets) {
+            this.store.query('snippet', {limit: 'all'}).then(() => {
+                controller._hasLoadedSnippets = true;
+            });
+        }
     },
 
     actions: {

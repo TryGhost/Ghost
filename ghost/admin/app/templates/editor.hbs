@@ -81,6 +81,8 @@
             @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
             @onEditorCreated={{action "setKoenigEditor"}}
             @onWordCountChange={{action "updateWordCount"}}
+            @snippets={{this.snippets}}
+            @saveSnippet={{action "saveSnippet"}}
         />
 
         <div class="absolute flex items-center br3 bg-white {{if editor.headerClass "right-4 bottom-4" "right-6 bottom-6"}}">
