@@ -5,13 +5,14 @@ import mockEmails from './config/emails';
 import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockLabels from './config/labels';
-import mockMembers, {mockMembersStats} from './config/members';
+import mockMembers from './config/members';
 import mockPages from './config/pages';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
 import mockSettings from './config/settings';
 import mockSite from './config/site';
 import mockSlugs from './config/slugs';
+import mockSnippets from './config/snippets';
 import mockTags from './config/tags';
 import mockThemes from './config/themes';
 import mockUploads from './config/uploads';
@@ -34,7 +35,7 @@ export default function () {
     // this.put('/posts/:id/', versionMismatchResponse);
     // mockTags(this);
     // this.loadFixtures('settings');
-    mockMembersStats(this);
+    mockSnippets(this);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();

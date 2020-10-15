@@ -1,40 +1,31 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
+import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
 import {CARD_MENU} from '../options/cards';
-import {assign} from '@ember/polyfills';
-import {computed, set} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {tracked} from '@glimmer/tracking';
 
-const ROW_LENGTH = 3;
+const Y_OFFSET = 16;
 
-export default Component.extend({
-    // public attrs
-    classNames: 'absolute',
-    attributeBindings: ['style'],
-    editor: null,
-    editorRange: null,
+export default class KoenigSlashMenuComponent extends Component {
+    @tracked itemSections = [];
+    @tracked showMenu = false;
+    @tracked selectedRowIndex = 0;
+    @tracked selectedColumnIndex = 0;
 
-    // public properties
-    showMenu: false,
-    top: 0,
-    itemSections: null,
+    query = '';
 
-    // private properties
-    _openRange: null,
-    _query: '',
-    _onWindowMousedownHandler: null,
-    _yOffset: 16,
+    constructor() {
+        super(...arguments);
+        this.registerEditor(null, [this.args.editor]);
+    }
 
-    // closure actions
-    replaceWithCardSection() {},
+    willDestroy() {
+        window.removeEventListener('mousedown', this._onWindowMousedownHandler);
+    }
 
-    // computed properties
-    style: computed('top', function () {
-        return htmlSafe(`top: ${this.top}px`);
-    }),
-
-    // create a 2-dimensional array of items based on the ROW_LENGTH, eg
+    // create a 2-dimensional array of items based on the section row length, eg
     // [
     //   [item1, item1, item3]
     //   [item4, item5],
@@ -42,79 +33,97 @@ export default Component.extend({
     //   [item9]
     // ]
     // - used for arrow key movement of selected item
-    itemMap: computed('itemSections', function () {
-        let map = [];
+    get itemMap() {
+        let itemMap = [];
 
         this.itemSections.forEach((section) => {
-            let iterations = Math.ceil(section.items.length / ROW_LENGTH);
+            let iterations = Math.ceil(section.items.length / section.rowLength);
             for (let i = 0; i < iterations; i++) {
-                let startIndex = i * ROW_LENGTH;
-                map.push(section.items.slice(startIndex, startIndex + ROW_LENGTH));
+                let startIndex = i * section.rowLength;
+                itemMap.push(section.items.slice(startIndex, startIndex + section.rowLength));
             }
         });
 
-        return map;
-    }),
+        return itemMap;
+    }
 
-    didReceiveAttrs() {
-        this._super(...arguments);
+    get selectedItem() {
+        return this.itemMap[this.selectedRowIndex][this.selectedColumnIndex];
+    }
 
-        // re-register the / text input handler if the editor changes such as
-        // when a "New post" is clicked from the sidebar or a different post
-        // is loaded via search
-        if (this.editor !== this._lastEditor) {
-            this.editor.onTextInput({
-                name: 'slash_menu',
-                text: '/',
-                run: run.bind(this, this._showMenu)
-            });
-        }
-        this._lastEditor = this.editor;
+    @action
+    updateItemSections() {
+        let {query} = this;
+        let {snippets} = this.args;
 
-        // re-position the menu and update the query if necessary when the
-        // cursor position changes
-        let editorRange = this.editorRange;
-        if (editorRange !== this._lastEditorRange) {
-            this._handleCursorChange(editorRange);
-        }
-        this._lastEditorRange = editorRange;
-    },
+        let itemSections = [...CARD_MENU];
 
-    willDestroyElement() {
-        this._super(...arguments);
-        window.removeEventListener('mousedown', this._onMousedownHandler);
-    },
+        if (snippets?.length) {
+            let snippetsSection = {
+                title: 'Snippets',
+                items: [],
+                rowLength: 1,
+                developerExperiment: true
+            };
 
-    actions: {
-        itemClicked(item, event) {
-            let range = this._openRange.head.section.toRange();
-            let [, ...params] = this._query.split(/\s/);
-            let payload = assign({}, item.payload);
-
-            // make sure the click doesn't propagate and get picked up by the
-            // newly inserted card which can then remove itself because it
-            // looks like a click outside of an empty card
-            if (event) {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-            }
-
-            // params are order-dependent and listed in CARD_MENU for each card
-            if (!isEmpty(item.params) && !isEmpty(params)) {
-                item.params.forEach((param, i) => {
-                    payload[param] = params[i];
+            snippets.forEach((snippet) => {
+                snippetsSection.items.push({
+                    label: snippet.title,
+                    icon: 'koenig/kg-card-type-bookmark',
+                    type: 'snippet',
+                    matches: [snippet.title.toLowerCase()]
                 });
-            }
+            });
 
-            if (item.type === 'card') {
-                this.replaceWithCardSection(item.replaceArg, range, payload);
-            }
-
-            this._hideMenu();
+            itemSections.push(snippetsSection);
         }
-    },
 
-    _handleCursorChange(editorRange) {
+        // match everything before a space to a card. Keeps the relevant
+        // card selected when providing attributes to a card, eg:
+        // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
+        let card = query.split(/\s/)[0].replace(/^\//, '');
+
+        let matchedItems = itemSections.map((section) => {
+            // show all items before anything is typed
+            if (!card) {
+                return section;
+            }
+
+            // show icons where there's a match of the begining of one of the
+            // "item.matches" strings
+            let matches = section.items.filter(item => item.matches.any(match => match.indexOf(card) === 0));
+            if (matches.length > 0) {
+                return Object.assign({}, section, {items: matches});
+            }
+        }).compact();
+
+        if (query !== this._lastQuery) {
+            this.selectedRowIndex = 0;
+            this.selectedColumnIndex = 0;
+        }
+
+        this.itemSections = matchedItems;
+    }
+
+    @action
+    registerContainerElement(element) {
+        this.containerElement = element;
+    }
+
+    @action
+    registerEditor(element, [editor]) {
+        // re-register the slash_menu text input handler if the editor changes
+        // such as when a "New post" is clicked from the sidebar or a different
+        // post is loaded via search
+        editor.onTextInput({
+            name: 'slash_menu',
+            text: '/',
+            run: this._showMenu.bind(this)
+        });
+    }
+
+    @action
+    handleCursorChange(element, [editorRange]) {
         // update menu position to match cursor position
         this._positionMenu(editorRange);
 
@@ -129,64 +138,92 @@ export default Component.extend({
 
             // update the query when the menu is open and cursor is in our open range
             if (section === this._openRange.head.section) {
-                let query = section.text.substring(
+                this.query = section.text.substring(
                     this._openRange.head.offset,
                     editorRange.head.offset
                 );
-                this._updateQuery(query);
+                this._selectedItem = null;
+                this.updateItemSections();
             }
         }
-    },
+    }
 
-    _updateQuery(query) {
-        this._query = query;
-
-        // match everything before a space to a card. Keeps the relevant
-        // card selected when providing attributes to a card, eg:
-        // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
-        let card = query.split(/\s/)[0].replace(/^\//, '');
-
-        let matchedItems = CARD_MENU.map((section) => {
-            // show all items before anything is typed
-            if (!card) {
-                return section;
-            }
-
-            // show icons where there's a match of the begining of one of the
-            // "item.matches" strings
-            let matches = section.items.filter(item => item.matches.any(match => match.indexOf(card) === 0));
-            if (matches.length > 0) {
-                return {title: section.title, items: matches};
-            }
-        }).compact();
-
-        // we need a copy to avoid modifying the object references
-        let sections = JSON.parse(JSON.stringify(matchedItems || []));
-
-        if (sections.length) {
-            set(sections[0].items[0], 'selected', true);
+    @action
+    itemClicked(item, event) {
+        if (event) {
+            event.preventDefault();
         }
 
-        this.set('itemSections', sections);
-    },
+        let range = this._openRange.head.section.toRange();
+        let [, ...params] = this.query.split(/\s/);
+        let payload = Object.assign({}, item.payload);
+
+        // make sure the click doesn't propagate and get picked up by the
+        // newly inserted card which can then remove itself because it
+        // looks like a click outside of an empty card
+        if (event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+
+        // params are order-dependent and listed in CARD_MENU for each card
+        if (!isEmpty(item.params) && !isEmpty(params)) {
+            item.params.forEach((param, i) => {
+                payload[param] = params[i];
+            });
+        }
+
+        if (item.type === 'card') {
+            this.args.replaceWithCardSection(item.replaceArg, range, payload);
+        }
+
+        if (item.type === 'snippet') {
+            const clickedSnippet = this.args.snippets.find(snippet => snippet.title === item.label);
+            if (clickedSnippet) {
+                const post = mobiledocParsers.parse(this.args.editor.builder, clickedSnippet.mobiledoc);
+                this.args.replaceWithPost(range, post);
+            }
+        }
+
+        this._hideMenu();
+    }
+
+    _positionMenu(range) {
+        if (!range) {
+            return;
+        }
+
+        let {head: {section}} = range;
+
+        if (section && section.renderNode.element) {
+            let containerRect = this.containerElement.parentNode.getBoundingClientRect();
+            let selectedElement = section.renderNode.element;
+            let selectedElementRect = selectedElement.getBoundingClientRect();
+            let top = selectedElementRect.top + selectedElementRect.height - containerRect.top + Y_OFFSET;
+
+            this.containerElement.style.top = `${top}px`;
+        }
+    }
 
     _showMenu() {
-        let editorRange = this.editorRange;
+        let {editorRange} = this.args;
         let {head: {section}} = editorRange;
 
         // only show the menu if the slash is on an otherwise empty paragraph
         if (!this.showMenu && editorRange.isCollapsed && section && !section.isListItem && section.text === '/') {
-            this.set('showMenu', true);
+            this.showMenu = true;
 
             // ensure all items are shown before we have a query filter
-            this._updateQuery('');
+            this.query = '';
+            // this.set('_selectedItem', null);
+            this.updateItemSections();
 
             // store a ref to the range when the menu was triggered so that we
             // can query text after the slash
-            this._openRange = this.editorRange;
+            this._openRange = editorRange;
 
             // set up key handlers for selection & closing
-            this._registerKeyboardNavHandlers();
+            this._registerEditorKeyboardNavHandlers();
 
             // watch the window for mousedown events so that we can close the
             // menu when we detect a click outside. This is preferable to
@@ -197,19 +234,75 @@ export default Component.extend({
             });
             window.addEventListener('mousedown', this._onWindowMousedownHandler);
         }
-    },
+    }
 
     _hideMenu() {
         if (this.showMenu) {
-            this.set('showMenu', false);
-            this._unregisterKeyboardNavHandlers();
+            this.showMenu = false;
+            this._unregisterEditorKeyboardNavHandlers();
             window.removeEventListener('mousedown', this._onWindowMousedownHandler);
         }
-    },
+    }
+
+    _moveSelection(direction) {
+        let {itemMap, selectedRowIndex, selectedColumnIndex} = this;
+
+        if (isEmpty(itemMap)) {
+            return;
+        }
+
+        let maxSelectedRowIndex = itemMap.length - 1;
+        let maxSelectedColumnIndex = itemMap[selectedRowIndex].length - 1;
+
+        if (direction === 'right') {
+            selectedColumnIndex += 1;
+            if (selectedColumnIndex > maxSelectedColumnIndex) {
+                if (selectedRowIndex < maxSelectedRowIndex) {
+                    selectedRowIndex += 1;
+                } else {
+                    selectedRowIndex = 0;
+                }
+                selectedColumnIndex = 0;
+            }
+        } else if (direction === 'left') {
+            selectedColumnIndex -= 1;
+            if (selectedColumnIndex < 0) {
+                if (selectedRowIndex > 0) {
+                    selectedRowIndex -= 1;
+                } else {
+                    selectedRowIndex = itemMap.length - 1;
+                }
+                selectedColumnIndex = itemMap[selectedRowIndex].length - 1;
+            }
+        } else if (direction === 'up') {
+            selectedRowIndex -= 1;
+            if (selectedRowIndex < 0) {
+                selectedRowIndex = maxSelectedRowIndex;
+            }
+        } else if (direction === 'down') {
+            selectedRowIndex += 1;
+            if (selectedRowIndex > maxSelectedRowIndex) {
+                selectedRowIndex = 0;
+            }
+        }
+
+        if (selectedColumnIndex > itemMap[selectedRowIndex].length - 1) {
+            selectedColumnIndex = itemMap[selectedRowIndex].length - 1;
+        }
+
+        this.selectedRowIndex = selectedRowIndex;
+        this.selectedColumnIndex = selectedColumnIndex;
+    }
+
+    _performAction() {
+        if (this.selectedItem) {
+            this.itemClicked(this.selectedItem);
+        }
+    }
 
     _handleWindowMousedown(event) {
         // clicks outside the menu should always close
-        if (!event.target.closest(`#${this.elementId}`)) {
+        if (!event.target.closest(`#${this.containerElement.id}`)) {
             this._hideMenu();
 
         // clicks on the menu but not on a button should be ignored so that the
@@ -217,29 +310,12 @@ export default Component.extend({
         } else if (!event.target.closest('[data-kg="cardmenu-card"]')) {
             event.preventDefault();
         }
-    },
+    }
 
-    _positionMenu(range) {
-        if (!range) {
-            return;
-        }
-
-        let {head: {section}} = range;
-
-        if (section && section.renderNode.element) {
-            let containerRect = this.element.parentNode.getBoundingClientRect();
-            let selectedElement = section.renderNode.element;
-            let selectedElementRect = selectedElement.getBoundingClientRect();
-            let top = selectedElementRect.top + selectedElementRect.height - containerRect.top + this._yOffset;
-
-            this.set('top', top);
-        }
-    },
-
-    _registerKeyboardNavHandlers() {
+    _registerEditorKeyboardNavHandlers() {
         // ESC = close menu
         // ARROWS = selection
-        let editor = this.editor;
+        let {editor} = this.args;
 
         editor.registerKeyCommand({
             str: 'ESC',
@@ -276,88 +352,9 @@ export default Component.extend({
             name: 'slash-menu',
             run: run.bind(this, this._moveSelection, 'right')
         });
-    },
-
-    _performAction() {
-        let selectedItem = this._getSelectedItem();
-
-        if (selectedItem) {
-            this.send('itemClicked', selectedItem);
-        }
-    },
-
-    _getSelectedItem() {
-        let sections = this.itemSections;
-
-        if (sections.length <= 0) {
-            return;
-        }
-
-        for (let section of sections) {
-            let item = section.items.find(sectionItem => sectionItem.selected);
-            if (item) {
-                return item;
-            }
-        }
-    },
-
-    _moveSelection(direction) {
-        let itemMap = this.itemMap;
-
-        if (isEmpty(itemMap)) {
-            return;
-        }
-
-        let selectedItem = this._getSelectedItem();
-        let selectedRow = itemMap.find(row => row.includes(selectedItem));
-        let selectedRowIndex = itemMap.indexOf(selectedRow);
-        let selectedItemIndex = selectedRow.indexOf(selectedItem);
-        let lastRowIndex = itemMap.length - 1;
-        let lastItemIndex = selectedRow.length - 1;
-
-        set(selectedItem, 'selected', false);
-
-        if (direction === 'right') {
-            selectedItemIndex += 1;
-            if (selectedItemIndex > lastItemIndex) {
-                if (selectedRowIndex < lastRowIndex) {
-                    selectedRowIndex += 1;
-                } else {
-                    selectedRowIndex = 0;
-                }
-                selectedItemIndex = 0;
-            }
-        } else if (direction === 'left') {
-            selectedItemIndex -= 1;
-            if (selectedItemIndex < 0) {
-                if (selectedRowIndex > 0) {
-                    selectedRowIndex -= 1;
-                } else {
-                    selectedRowIndex = itemMap.length - 1;
-                }
-                selectedItemIndex = itemMap[selectedRowIndex].length - 1;
-            }
-        } else if (direction === 'up') {
-            selectedRowIndex -= 1;
-            if (selectedRowIndex < 0) {
-                selectedRowIndex = lastRowIndex;
-            }
-        } else if (direction === 'down') {
-            selectedRowIndex += 1;
-            if (selectedRowIndex > lastRowIndex) {
-                selectedRowIndex = 0;
-            }
-        }
-
-        if (selectedItemIndex > itemMap[selectedRowIndex].length - 1) {
-            selectedItemIndex = itemMap[selectedRowIndex].length - 1;
-        }
-
-        set(itemMap[selectedRowIndex][selectedItemIndex], 'selected', true);
-    },
-
-    _unregisterKeyboardNavHandlers() {
-        let editor = this.editor;
-        editor.unregisterKeyCommands('slash-menu');
     }
-});
+
+    _unregisterEditorKeyboardNavHandlers() {
+        this.args.editor.unregisterKeyCommands('slash-menu');
+    }
+}

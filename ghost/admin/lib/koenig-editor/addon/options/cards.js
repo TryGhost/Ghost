@@ -48,6 +48,7 @@ export default [
 export const CARD_MENU = [
     {
         title: 'Primary',
+        rowLength: 3,
         items: [{
             label: 'Image',
             icon: 'koenig/kg-card-type-image',
@@ -110,6 +111,7 @@ export const CARD_MENU = [
     },
     {
         title: 'Embed',
+        rowLength: 3,
         items: [{
             label: 'YouTube',
             icon: 'koenig/kg-card-type-youtube',

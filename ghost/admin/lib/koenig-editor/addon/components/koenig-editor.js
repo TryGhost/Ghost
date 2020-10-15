@@ -17,6 +17,7 @@ import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import validator from 'validator';
 import {A} from '@ember/array';
+import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
 import {createParserPlugins} from '@tryghost/kg-parser-plugins';
@@ -565,6 +566,23 @@ export default Component.extend({
             });
         },
 
+        replaceWithPost(range, post) {
+            let {editor} = this;
+            let {head: {section}} = range;
+
+            editor.run((postEditor) => {
+                let nextPosition = postEditor.deleteRange(section.toRange());
+                postEditor.setRange(nextPosition);
+
+                let blankSection = postEditor.builder.createMarkupSection('p');
+                postEditor.insertSectionBefore(editor.post.sections, blankSection);
+                postEditor.setRange(blankSection.toRange());
+
+                nextPosition = postEditor.insertPost(editor.range.head, post);
+                postEditor.setRange(nextPosition);
+            });
+        },
+
         selectCard(card) {
             this.selectCard(card);
         },
@@ -640,6 +658,23 @@ export default Component.extend({
             });
         }
     },
+
+    addSnippet: action(function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        let {selectedRange} = this;
+
+        if (selectedRange.isCollapsed) {
+            return;
+        }
+
+        this.set('snippetRange', selectedRange);
+    }),
+
+    cancelAddSnippet: action(function () {
+        this.set('snippetRange', null);
+    }),
 
     /* public interface ----------------------------------------------------- */
     // TODO: find a better way to expose the public interface?

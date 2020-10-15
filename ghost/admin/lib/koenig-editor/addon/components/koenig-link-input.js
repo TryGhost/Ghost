@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import getScrollParent from '../utils/get-scroll-parent';
 import relativeToAbsolute from '../lib/relative-to-absolute';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {computed} from '@ember/object';
@@ -10,21 +11,6 @@ import {inject as service} from '@ember/service';
 // pixels that should be added to the `left` property of the tick adjustment styles
 // TODO: handle via CSS?
 const TICK_ADJUSTMENT = 8;
-
-// TODO: move to a util
-function getScrollParent(node) {
-    const isElement = node instanceof HTMLElement;
-    const overflowY = isElement && window.getComputedStyle(node).overflowY;
-    const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
-
-    if (!node) {
-        return null;
-    } else if (isScrollable && node.scrollHeight >= node.clientHeight) {
-        return node;
-    }
-
-    return getScrollParent(node.parentNode) || document.body;
-}
 
 export default Component.extend({
     config: service(),
@@ -194,7 +180,7 @@ export default Component.extend({
         scrollParent.scrollTop = scrollTop;
     },
 
-    // TODO: largely shared with {{koenig-toolbar}} code - extract to a shared util?
+    // TODO: largely shared with {{koenig-toolbar}} and {{koenig-snippet-input}} - extract to a shared util?
     _positionToolbar() {
         let containerRect = this.element.offsetParent.getBoundingClientRect();
         let rangeRect = this.linkRect || this._windowRange.getBoundingClientRect();

@@ -12,6 +12,7 @@
     @toggleSection={{action "toggleSection"}}
     @toggleHeaderSection={{action "toggleHeaderSection"}}
     @editLink={{action "editLink"}}
+    @addSnippet={{this.addSnippet}}
 />
 
 {{!-- pop-up link hover toolbar --}}
@@ -34,18 +35,32 @@
     />
 {{/if}}
 
+{{!-- pop-up snippet editing toolbar --}}
+{{#if this.snippetRange}}
+    <KoenigSnippetInput
+        @editor={{this.editor}}
+        @snippetRange={{this.snippetRange}}
+        @save={{@saveSnippet}}
+        @cancel={{this.cancelAddSnippet}}
+    />
+{{/if}}
+
 {{!-- (+) icon and pop-up menu --}}
 <KoenigPlusMenu
     @editor={{this.editor}}
     @editorRange={{this.selectedRange}}
+    @snippets={{this.snippets}}
     @replaceWithCardSection={{action "replaceWithCardSection"}}
+    @replaceWithPost={{action "replaceWithPost"}}
 />
 
 {{!-- slash menu popup --}}
 <KoenigSlashMenu
     @editor={{this.editor}}
     @editorRange={{this.selectedRange}}
+    @snippets={{this.snippets}}
     @replaceWithCardSection={{action "replaceWithCardSection"}}
+    @replaceWithPost={{action "replaceWithPost"}}
 />
 
 {{!-- all component cards wormholed into the editor canvas --}}

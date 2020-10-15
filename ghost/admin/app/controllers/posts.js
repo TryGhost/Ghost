@@ -56,6 +56,7 @@ export default Controller.extend({
 
     _hasLoadedTags: false,
     _hasLoadedAuthors: false,
+    _hasLoadedSnippets: false,
 
     availableTypes: null,
     availableVisibilities: null,
@@ -131,6 +132,10 @@ export default Controller.extend({
         let authors = this.get('availableAuthors');
 
         return authors.findBy('slug', author) || {slug: '!unknown'};
+    }),
+
+    snippets: computed(function () {
+        return this.store.peekAll('snippet');
     }),
 
     actions: {

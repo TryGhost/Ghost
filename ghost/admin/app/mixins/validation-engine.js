@@ -17,6 +17,7 @@ import SetupValidator from 'ghost-admin/validators/setup';
 import SigninValidator from 'ghost-admin/validators/signin';
 import SignupValidator from 'ghost-admin/validators/signup';
 import SlackIntegrationValidator from 'ghost-admin/validators/slack-integration';
+import SnippetValidator from 'ghost-admin/validators/snippet';
 import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
 import UserValidator from 'ghost-admin/validators/user';
 import WebhookValidator from 'ghost-admin/validators/webhook';
@@ -52,7 +53,8 @@ export default Mixin.create({
         member: MemberValidator,
         integration: IntegrationValidator,
         webhook: WebhookValidator,
-        label: LabelValidator
+        label: LabelValidator,
+        snippet: SnippetValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect

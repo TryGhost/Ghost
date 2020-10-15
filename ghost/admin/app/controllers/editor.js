@@ -138,6 +138,14 @@ export default Controller.extend({
         }
     }),
 
+    _snippets: computed(function () {
+        return this.store.peekAll('snippet');
+    }),
+
+    snippets: computed('_snippets.@each.isNew', function () {
+        return this._snippets.reject(snippet => snippet.get('isNew'));
+    }),
+
     _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
         let autosave = this.get('_autosave.isRunning');
         let timedsave = this.get('_timedSave.isRunning');
@@ -281,6 +289,27 @@ export default Controller.extend({
 
         updateWordCount(counts) {
             this.set('wordCount', counts);
+        },
+
+        saveSnippet(snippet) {
+            let snippetRecord = this.store.createRecord('snippet', snippet);
+            return snippetRecord.save().then(() => {
+                this.notifications.closeAlerts('snippet.save');
+                this.notifications.showNotification(
+                    `Snippet saved as "${snippet.title}"`,
+                    {type: 'success'}
+                );
+                return snippetRecord;
+            }).catch((error) => {
+                if (!snippetRecord.errors.isEmpty) {
+                    this.notifications.showAlert(
+                        `Snippet save failed: ${snippetRecord.errors.messages.join('. ')}`,
+                        {type: 'error', key: 'snippet.save'}
+                    );
+                }
+                snippetRecord.rollbackAttributes();
+                throw error;
+            });
         }
     },
 

@@ -1,0 +1,10 @@
+<div class="kg-input-bar absolute z-999" style={{this.style}} {{did-insert this.registerAndPositionElement}} ...attributes>
+    <input
+        placeholder="Snippet title"
+        value={{this.title}}
+        class="kg-link-input pa2 pr6 mih-100 ba br3 shadow-2 f8 lh-heading tracked-2 outline-0 b--blue h10 nudge-top--8"
+        {{on "input" this.titleInput}}
+        {{on "keydown" this.titleKeydown}}
+        {{did-insert this.focusInput}}
+    />
+</div>
