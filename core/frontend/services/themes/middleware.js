@@ -5,9 +5,8 @@ const config = require('../../../shared/config');
 const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
-const labs = require('../../../server/services/labs');
-const stats = require('../../../server/services/stats');
 const activeTheme = require('./active');
+const templates = require('./handlebars/template');
 
 // ### Ensure Active Theme
 // Ensure there's a properly set & mounted active theme before attempting to serve a site request
@@ -42,76 +41,8 @@ function ensureActiveTheme(req, res, next) {
     next();
 }
 
-/*
- * @TODO
- * This should be definitely refactored and we need to consider _some_
- * members settings as publicly readable
- */
-function haxGetMembersPriceData() {
-    const CURRENCY_SYMBOLS = {
-        USD: '$',
-        AUD: '$',
-        CAD: '$',
-        GBP: '£',
-        EUR: '€',
-        INR: '₹'
-    };
-    const defaultPriceData = {
-        monthly: 0,
-        yearly: 0
-    };
-
-    try {
-        const stripePlans = settingsCache.get('stripe_plans');
-
-        const priceData = stripePlans.reduce((prices, plan) => {
-            const numberAmount = 0 + plan.amount;
-            const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
-            return Object.assign(prices, {
-                [plan.name.toLowerCase()]: dollarAmount
-            });
-        }, {});
-
-        priceData.currency = stripePlans[0].currency;
-        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency.toUpperCase()];
-
-        if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
-            return priceData;
-        }
-
-        return defaultPriceData;
-    } catch (err) {
-        return defaultPriceData;
-    }
-}
-
 function updateGlobalTemplateOptions(req, res, next) {
-    // Static information, same for every request unless the settings change
-    // @TODO: bind this once and then update based on events?
-    // @TODO: decouple theme layer from settings cache using the Content API
-    const siteData = settingsCache.getPublic();
-    const labsData = labs.getAll();
-    const statsData = stats.getAll();
-
-    const themeData = {
-        posts_per_page: activeTheme.get().config('posts_per_page'),
-        image_sizes: activeTheme.get().config('image_sizes')
-    };
-    const priceData = haxGetMembersPriceData();
-
-    // @TODO: only do this if something changed?
-    // @TODO: remove blog if we drop v2 (Ghost 4.0)
-    hbs.updateTemplateOptions({
-        data: {
-            blog: siteData,
-            site: siteData,
-            labs: labsData,
-            stats: statsData,
-            config: themeData,
-            price: priceData
-        }
-    });
-
+    templates.updateGlobalTemplateOptions();
     next();
 }
 

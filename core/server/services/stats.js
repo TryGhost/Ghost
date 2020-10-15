@@ -5,6 +5,7 @@
 const debug = require('ghost-ignition').debug('stats');
 const moment = require('moment');
 const models = require('../models');
+const {events} = require('../lib/common');
 
 const stats = {};
 let siteCreatedAt;
@@ -20,6 +21,25 @@ module.exports = {
         await this.updateSiteCreatedDate();
 
         debug('Current stats', this.getAll());
+
+        // Set up events
+        const postEvents = ['post.published', 'post.unpublished', 'post.deleted'];
+
+        postEvents.forEach((event) => {
+            events.on(event, async () => {
+                await this.updatePosts();
+                events.emit('updateGlobalTemplateOptions');
+            });
+        });
+
+        const memberEvents = ['member.added', 'member.deleted', 'member.edited'];
+
+        memberEvents.forEach((event) => {
+            events.on(event, async () => {
+                await this.updateMembers();
+                events.emit('updateGlobalTemplateOptions');
+            });
+        });
     },
 
     async updateMembers() {
