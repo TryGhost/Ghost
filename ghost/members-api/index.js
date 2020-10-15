@@ -216,10 +216,11 @@ module.exports = function MembersApi({
             }
 
             if (!allowSelfSignup) {
-                const member = await users.get({email});
+                const member = oldEmail ? await users.get({oldEmail}) : await users.get({email});
                 if (member) {
                     const tokenData = _.pick(req.body, ['oldEmail']);
-                    await sendEmailWithMagicLink({email, tokenData, requestedType: emailType});
+                    const forceEmailType = oldEmail ? true : false;
+                    await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, options: {forceEmailType}});
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
