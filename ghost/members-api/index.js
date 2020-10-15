@@ -346,6 +346,10 @@ module.exports = function MembersApi({
                 await stripe.handleCustomerSubscriptionUpdatedWebhook(event.data.object);
             }
 
+            if (event.type === 'customer.subscription.created') {
+                await stripe.handleCustomerSubscriptionCreatedWebhook(event.data.object);
+            }
+
             if (event.type === 'invoice.payment_succeeded') {
                 await stripe.handleInvoicePaymentSucceededWebhook(event.data.object);
             }

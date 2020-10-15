@@ -70,6 +70,7 @@ module.exports = class StripePaymentProcessor {
                 'checkout.session.completed',
                 'customer.subscription.deleted',
                 'customer.subscription.updated',
+                'customer.subscription.created',
                 'invoice.payment_succeeded',
                 'invoice.payment_failed'
             ]
@@ -383,6 +384,10 @@ module.exports = class StripePaymentProcessor {
     }
 
     async handleCustomerSubscriptionUpdatedWebhook(subscription) {
+        await this._updateSubscription(subscription);
+    }
+
+    async handleCustomerSubscriptionCreatedWebhook(subscription) {
         await this._updateSubscription(subscription);
     }
 
