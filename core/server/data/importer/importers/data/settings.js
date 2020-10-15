@@ -110,7 +110,7 @@ class SettingsImporter extends BaseImporter {
         const oldIsPrivate = _.find(this.existingData, {key: 'is_private'});
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return !_.includes([['is_private']], data.key);
+            return data.key !== 'is_private';
         });
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
