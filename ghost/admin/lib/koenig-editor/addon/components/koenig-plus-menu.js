@@ -49,10 +49,10 @@ export default Component.extend({
 
             snippets.forEach((snippet) => {
                 snippetsSection.items.push({
-                    label: snippet.title,
+                    label: snippet.name,
                     icon: 'koenig/kg-card-type-bookmark',
                     type: 'snippet',
-                    matches: [snippet.title.toLowerCase()]
+                    matches: [snippet.name.toLowerCase()]
                 });
             });
 
@@ -127,8 +127,8 @@ export default Component.extend({
                 this.replaceWithCardSection(item.replaceArg, range, item.payload);
             }
 
-            if (item.tpye === 'snippet') {
-                let clickedSnippet = this.snippets.find(snippet => snippet.title === item.label);
+            if (item.type === 'snippet') {
+                let clickedSnippet = this.snippets.find(snippet => snippet.name === item.label);
                 if (clickedSnippet) {
                     let post = mobiledocParsers.parse(this.editor.builder, clickedSnippet.mobiledoc);
                     this.replaceWithPost(range, post);
