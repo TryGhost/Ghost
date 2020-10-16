@@ -36,6 +36,7 @@ const models = [
     'email-recipient',
     'label',
     'single-use-token',
+    'snippet',
     // Action model MUST be loaded last as it loops through all of the registered models
     // Please do not append items to this array.
     'action'
