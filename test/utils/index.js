@@ -502,6 +502,12 @@ fixtures = {
                 return models.StripeCustomerSubscription.add(subscription, module.exports.context.internal);
             });
         });
+    },
+
+    insertSnippets: function insertSnippets() {
+        return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
+            return models.Snippet.add(snippet, module.exports.context.internal);
+        });
     }
 };
 
@@ -636,6 +642,9 @@ toDoList = {
     },
     emails: function insertEmails() {
         return fixtures.insertEmails();
+    },
+    snippets: function insertSnippets() {
+        return fixtures.insertSnippets();
     }
 };
 
