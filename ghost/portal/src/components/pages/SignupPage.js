@@ -6,6 +6,7 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
 import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
+import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
 
@@ -110,6 +111,28 @@ export const SignupPageStyles = `
     .gh-portal-content.signup.single-field + footer.gh-portal-signup-footer,
     .gh-portal-content.signin + footer.gh-portal-signin-footer {
         height: 120px;
+    }
+
+    footer.gh-portal-signup-footer.invite-only {
+        height: unset;
+    }
+
+    .gh-portal-invite-only-notification {
+        margin: 8px 32px;
+        padding: 0;
+        text-align: center;
+        color: var(--grey2);
+    }
+
+    .gh-portal-icon-invitation {
+        width: 44px;
+        margin: 12px 0 2px;
+    }
+
+    .gh-portal-icon-invitation path,
+    .gh-portal-icon-invitation circle,
+    .gh-portal-icon-invitation line {
+        stroke-width: 1.2px;
     }
 `;
 
@@ -378,7 +401,7 @@ class SignupPage extends React.Component {
             return (
                 <section>
                     <div className='gh-portal-section'>
-                        This site is invite only. Contact owner if you'd like to sign up.
+                        <p className='gh-portal-invite-only-notification'>This site is invite-only, contact the owner for access.</p>
                     </div>
                 </section>
             );
@@ -398,6 +421,7 @@ class SignupPage extends React.Component {
     }
 
     renderSiteLogo() {
+        const plansData = this.getPlans();
         const {site} = this.context;
         const siteLogo = site.icon;
 
@@ -407,6 +431,10 @@ class SignupPage extends React.Component {
             logoStyle.backgroundImage = `url(${siteLogo})`;
             return (
                 <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
+            );
+        } else if (plansData.length === 0) {
+            return (
+                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
         }
         return null;
@@ -428,12 +456,16 @@ class SignupPage extends React.Component {
         const plansData = this.getPlans();
         const fields = this.getInputFields({state: this.state});
         let sectionClass = '';
+        let footerClass = '';
 
         if (plansData.length <= 1) {
             if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0) {
                 sectionClass = 'noplan';
                 if (fields.length === 1) {
                     sectionClass = 'single-field';
+                }
+                if (plansData.length === 0) {
+                    footerClass = 'invite-only';
                 }
             } else {
                 sectionClass = 'singleplan';
@@ -447,7 +479,7 @@ class SignupPage extends React.Component {
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>
-                <footer className='gh-portal-signup-footer'>
+                <footer className={'gh-portal-signup-footer ' + footerClass}>
                     {this.renderSubmitButton()}
                     {this.renderLoginMessage()}
                 </footer>
