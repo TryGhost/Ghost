@@ -604,6 +604,8 @@ export default Controller.extend({
                 let membersResponse = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
                 this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
             }
+
+            yield this.store.query('snippet', {limit: 'all'});
         } catch (error) {
             this.set('memberCount', 0);
         }
