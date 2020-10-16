@@ -54,7 +54,7 @@ class PopupContent extends React.Component {
 
     componentDidMount() {
         // Handle Esc to close popup
-        if (this.node) {
+        if (this.node && !hasMode(['preview'])) {
             this.node.focus();
             this.keyUphandler = (event) => {
                 const eventTargetTag = (event.target && event.target.tagName);
@@ -96,7 +96,7 @@ class PopupContent extends React.Component {
     render() {
         const {page, site} = this.context;
         const {portal_plans: portalPlans} = site;
-        const {is_stripe_configured: isStripeConfigured, 
+        const {is_stripe_configured: isStripeConfigured,
             allow_self_signup: allowSelfSignup} = site;
 
         getActivePage({page});
