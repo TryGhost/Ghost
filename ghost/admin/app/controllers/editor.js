@@ -296,7 +296,7 @@ export default Controller.extend({
             return snippetRecord.save().then(() => {
                 this.notifications.closeAlerts('snippet.save');
                 this.notifications.showNotification(
-                    `Snippet saved as "${snippet.title}"`,
+                    `Snippet saved as "${snippet.name}"`,
                     {type: 'success'}
                 );
                 return snippetRecord;

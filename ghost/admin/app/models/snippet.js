@@ -4,7 +4,7 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 export default Model.extend(ValidationEngine, {
     validationType: 'snippet',
 
-    title: attr('string'),
+    name: attr('string'),
     mobiledoc: attr('json-string'),
     createdAtUTC: attr('moment-utc'),
     updatedAtUTC: attr('moment-utc')

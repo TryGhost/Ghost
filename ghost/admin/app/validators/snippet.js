@@ -2,14 +2,14 @@ import BaseValidator from './base';
 import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({
-    properties: ['title', 'mobiledoc'],
+    properties: ['name', 'mobiledoc'],
 
-    title(model) {
-        if (isBlank(model.get('title'))) {
-            model.errors.add('title', 'Title cannot be blank');
+    name(model) {
+        if (isBlank(model.get('name'))) {
+            model.errors.add('name', 'Name cannot be blank');
             this.invalidate();
         }
-        model.get('hasValidated').addObject('title');
+        model.get('hasValidated').addObject('name');
     },
 
     mobiledoc(model) {

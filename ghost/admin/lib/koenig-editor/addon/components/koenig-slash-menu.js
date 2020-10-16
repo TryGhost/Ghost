@@ -68,10 +68,10 @@ export default class KoenigSlashMenuComponent extends Component {
 
             snippets.forEach((snippet) => {
                 snippetsSection.items.push({
-                    label: snippet.title,
+                    label: snippet.name,
                     icon: 'koenig/kg-card-type-bookmark',
                     type: 'snippet',
-                    matches: [snippet.title.toLowerCase()]
+                    matches: [snippet.name.toLowerCase()]
                 });
             });
 
@@ -178,9 +178,9 @@ export default class KoenigSlashMenuComponent extends Component {
         }
 
         if (item.type === 'snippet') {
-            const clickedSnippet = this.args.snippets.find(snippet => snippet.title === item.label);
+            let clickedSnippet = this.args.snippets.find(snippet => snippet.name === item.label);
             if (clickedSnippet) {
-                const post = mobiledocParsers.parse(this.args.editor.builder, clickedSnippet.mobiledoc);
+                let post = mobiledocParsers.parse(this.args.editor.builder, clickedSnippet.mobiledoc);
                 this.args.replaceWithPost(range, post);
             }
         }
