@@ -304,6 +304,11 @@ class SignupPage extends React.Component {
     renderSubmitButton() {
         const {action, site, brandColor} = this.context;
 
+        const availablePlans = getSitePlans({site});
+        if (availablePlans.length === 0) {
+            return null;
+        }
+
         let label = 'Continue';
         if (hasOnlyFreePlan({site})) {
             label = 'Sign up';
@@ -367,7 +372,17 @@ class SignupPage extends React.Component {
 
     renderForm() {
         const fields = this.getInputFields({state: this.state});
-
+        const {site} = this.context;
+        const availablePlans = getSitePlans({site});
+        if (availablePlans.length === 0) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        This site is invite only. Contact owner if you'd like to sign up.
+                    </div>
+                </section>
+            );
+        }
         return (
             <section>
                 <div className='gh-portal-section'>
