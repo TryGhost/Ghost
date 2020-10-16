@@ -411,10 +411,10 @@
     ghost-ignition "4.2.2"
     lodash "4.17.20"
 
-"@tryghost/helpers@1.1.32":
-  version "1.1.32"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.32.tgz#d408a7822c2286c49a3232d6aa4c9f28552c0e22"
-  integrity sha512-g2OaBPDlWQRDNMgScyVkeWi+dNkeTllu7qSHzdDCIGy/MWenyE3JPDq7M0Qa+YfnDLUbwv6bZwJXr6w/HQVwxA==
+"@tryghost/helpers@1.1.33":
+  version "1.1.33"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.33.tgz#e835ea1def3383ce315b53a96f2a2645b55ce937"
+  integrity sha512-m9RrmUcz/RGihWVFievx5UBvoQ5mqm+XRhpX6QwUJjfz4umSxpbHpVabcZ7PdfNntd4jyqL47bOAO9tEwou7PA==
   dependencies:
     lodash-es "^4.17.11"
 
