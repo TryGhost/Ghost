@@ -320,9 +320,14 @@
     height: 32px;
     padding: 0 8px 0 9px;
     border-radius: 2px;
-    background: var(--white);
-    border: 1px solid var(--whitegrey);
+    background: var(--whitegrey-l2);
+    border-color: transparent;
+    box-shadow: none;
     font-size: 1.3rem;
+}
+
+.gh-portal-setting-copy span {
+    margin-top: -2px;
 }
 
 .gh-portal-siteiframe {
@@ -396,10 +401,6 @@
     padding: 10px 12px 0 0;
 }
 
-.gh-portal-links-table tr.header td {
-    border-bottom: 1px solid var(--lightgrey);
-}
-
 .gh-portal-links-table tr.header h4 {
     font-size: 1.2rem;
     text-transform: uppercase;
@@ -466,6 +467,15 @@
 .gh-portal-page-url-container .page-url-disabled {
     color: var(--midlightgrey);
     font-weight: 400;
+}
+
+.gh-portal-links-group-divider {
+    margin: 8px -32px;
+    border-top-color: var(--lightgrey);
+}
+
+.gh-portal-links-group-divider.first {
+    margin-top: -4px;
 }
 
 .gh-portal-custom-icon {

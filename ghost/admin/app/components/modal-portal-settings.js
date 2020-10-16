@@ -195,6 +195,13 @@ export default ModalComponent.extend({
             }
         },
 
+        switchToSignupPage() {
+            if (this.showLinksPage) {
+                this.set('showLinksPage', false);
+                this.set('page', 'signup');
+            }
+        },
+
         updateAccentColor(color) {
             this._validateAccentColor(color);
         },
