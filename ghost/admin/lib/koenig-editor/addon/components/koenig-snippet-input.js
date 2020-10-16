@@ -11,7 +11,7 @@ import {tracked} from '@glimmer/tracking';
 const TICK_ADJUSTMENT = 8;
 
 export default class KoenigSnippetInputComponent extends Component {
-    @tracked title = '';
+    @tracked name = '';
     @tracked style = ''.htmlSafe();
 
     constructor() {
@@ -64,7 +64,7 @@ export default class KoenigSnippetInputComponent extends Component {
     }
 
     @action
-    titleKeydown(event) {
+    nameKeydown(event) {
         if (event.key === 'Enter') {
             // prevent Enter from triggering in the editor and removing text
             event.preventDefault();
@@ -74,7 +74,7 @@ export default class KoenigSnippetInputComponent extends Component {
             let mobiledoc = editor.serializePost(editor.post.trimTo(snippetRange), 'mobiledoc');
 
             this.args.save({
-                title: event.target.value,
+                name: event.target.value,
                 mobiledoc
             }).then(() => {
                 this.args.cancel();
@@ -83,8 +83,8 @@ export default class KoenigSnippetInputComponent extends Component {
     }
 
     @action
-    titleInput(event) {
-        this.title = event.target.value;
+    nameInput(event) {
+        this.name = event.target.value;
     }
 
     // TODO: largely shared with {{koenig-toolbar}} and {{koenig-link-input}} - extract to a shared util?
