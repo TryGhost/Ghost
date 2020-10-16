@@ -90,6 +90,22 @@ describe('Members API', function () {
             });
     });
 
+    it('Search for non existing member returns empty result set', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/?search=do_not_exist'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                jsonResponse.members.should.have.length(0);
+            });
+    });
+
     it('Add should fail when passing incorrect email_type query parameter', function () {
         const member = {
             name: 'test',
