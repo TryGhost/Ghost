@@ -20,6 +20,7 @@ const expectedProperties = {
     themes: ['themes'],
     actions: ['actions', 'meta'],
     members: ['members', 'meta'],
+    snippets: ['snippets', 'meta'],
 
     action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
@@ -112,7 +113,8 @@ const expectedProperties = {
     ,
     email: _(schema.emails)
         .keys(),
-    email_preview: ['html', 'subject', 'plaintext']
+    email_preview: ['html', 'subject', 'plaintext'],
+    snippet: _(schema.snippets).keys()
 };
 
 _.each(expectedProperties, (value, key) => {

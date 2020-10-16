@@ -53,5 +53,9 @@ module.exports = {
 
     get webhooks() {
         return require('./webhooks');
+    },
+
+    get snippets() {
+        return require('./snippets');
     }
 };

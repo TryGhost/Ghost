@@ -135,6 +135,10 @@ module.exports = {
         return shared.pipeline(require('./site'), localUtils);
     },
 
+    get snippets() {
+        return shared.pipeline(require('./snippets'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
