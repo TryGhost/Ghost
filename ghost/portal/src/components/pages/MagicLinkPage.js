@@ -6,7 +6,7 @@ import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 const React = require('react');
 
 export const MagicLinkStyles = `
-    .gh-portal-envelope {
+    .gh-portal-icon-envelope {
         width: 44px;
         margin: 0 0 2px;
     }
@@ -30,7 +30,7 @@ export default class MagicLinkPage extends React.Component {
         return (
             <section className='gh-portal-inbox-notification'>
                 <header className='gh-portal-header'>
-                    <EnvelopeIcon className='gh-portal-icon gh-portal-envelope' />
+                    <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' />
                     <h2>Check your inbox!</h2>
                 </header>
                 <p>Check your inbox and click on the login link to complete the signin.</p>
