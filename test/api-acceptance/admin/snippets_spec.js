@@ -10,7 +10,7 @@ const ghost = testUtils.startGhost;
 
 let request;
 
-describe.only('Snippets API', function () {
+describe('Snippets API', function () {
     after(function () {
         sinon.restore();
     });
