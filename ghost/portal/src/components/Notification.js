@@ -47,6 +47,18 @@ const NotificationText = ({type, status, context}) => {
                 You've successfully subscribed to <strong>{context.site.title}</strong>
             </p>
         );
+    } else if (type === 'updateEmail' && status === 'success') {
+        return (
+            <p>
+                Success! Your email is updated.
+            </p>
+        );
+    } else if (type === 'updateEmail' && status === 'error') {
+        return (
+            <p>
+                Could not update email! Invalid link.
+            </p>
+        );
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
@@ -82,7 +94,9 @@ const NotificationText = ({type, status, context}) => {
         );
     }
     return (
-        <></>
+        <p>
+            {status === 'success' ? 'Success' : 'Error'}
+        </p>
     );
 };
 
