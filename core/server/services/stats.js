@@ -24,7 +24,10 @@ module.exports = {
         debug('Current stats', this.getAll());
 
         // Set up events
-        const postEvents = ['post.published', 'post.unpublished', 'post.deleted'];
+
+        // We don't update for post.deleted
+        // because post.unpublished is emitted when deleting a published post.
+        const postEvents = ['post.published', 'post.unpublished'];
 
         postEvents.forEach((event) => {
             events.on(event, async () => {
