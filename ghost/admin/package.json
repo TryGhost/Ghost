@@ -35,7 +35,7 @@
     "@tryghost/kg-parser-plugins": "1.0.8",
     "@tryghost/mobiledoc-kit": "0.12.4-ghost.1",
     "@tryghost/string": "0.1.13",
-    "@tryghost/timezone-data": "0.2.28",
+    "@tryghost/timezone-data": "0.2.30",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
     "blueimp-md5": "2.18.0",
