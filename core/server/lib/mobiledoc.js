@@ -31,8 +31,7 @@ module.exports = {
 
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
-                contentImageSizes: config.get('imageOptimization:contentImageSizes'),
-                srcsets: config.get('imageOptimization:srcsets'),
+                imageOptimization: config.get('imageOptimization'),
                 canTransformImage(storagePath) {
                     const {ext} = path.parse(storagePath);
 
