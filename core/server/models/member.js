@@ -142,14 +142,14 @@ const Member = ghostBookshelf.Model.extend({
          * For the reason above, `detached` handler is using the scope of `detaching`
          * to access the models that are not present in `detached`.
          */
-        model.related('labels').once('detaching', function onDetached(collection, label) {
+        model.related('labels').once('detaching', function onDetaching(collection, label) {
             model.related('labels').once('detached', function onDetached(detachedCollection, response, options) {
                 label.emitChange('detached', options);
                 model.emitChange('label.detached', options);
             });
         });
 
-        model.related('labels').once('attaching', function onDetached(collection, labels) {
+        model.related('labels').once('attaching', function onDetaching(collection, labels) {
             model.related('labels').once('attached', function onDetached(detachedCollection, response, options) {
                 labels.forEach((label) => {
                     label.emitChange('attached', options);

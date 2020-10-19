@@ -346,7 +346,7 @@ class Resources {
                     return this._fetchSingle(resourceConfig, model.id);
                 })
                 .then(([dbResource]) => {
-                    const resource = this.data[type].find(resource => (resource.data.id === model.id));
+                    const resource = this.data[type].find(r => (r.data.id === model.id));
 
                     // CASE: cached resource exists, API conditions matched with the data in the db
                     if (resource && dbResource) {

@@ -22,7 +22,7 @@ module.exports = function tags(options) {
     let from = options.hash.from ? parseInt(options.hash.from, 10) : 1;
     let to = options.hash.to ? parseInt(options.hash.to, 10) : undefined;
 
-    function createTagList(tags) {
+    function createTagList(tagsList) {
         function processTag(tag) {
             return autolink ? templates.link({
                 url: urlService.getUrlByResourceId(tag.id, {withSubdirectory: true}),
@@ -30,7 +30,7 @@ module.exports = function tags(options) {
             }) : _.escape(tag.name);
         }
 
-        return ghostHelperUtils.visibility.filter(tags, options.hash.visibility, processTag);
+        return ghostHelperUtils.visibility.filter(tagsList, options.hash.visibility, processTag);
     }
 
     if (this.tags && this.tags.length) {
