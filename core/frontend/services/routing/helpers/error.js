@@ -1,10 +1,10 @@
 /**
  * @description Centralised error handling for API requests.
  * @param {Function} next
- * @returns {Closure} handleError
+ * @returns {Function} handleErrorClosure
  */
 function handleError(next) {
-    return function handleError(err) {
+    return function handleErrorClosure(err) {
         // CASE: if we've thrown an error message of type: 'NotFound' then we found no path match, try next router!
         if (err.errorType === 'NotFoundError') {
             return next();

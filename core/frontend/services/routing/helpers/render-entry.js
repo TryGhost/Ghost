@@ -10,7 +10,7 @@ const renderer = require('./renderer');
  */
 module.exports = function renderEntry(req, res) {
     debug('renderEntry called');
-    return function renderEntry(entry) {
+    return function renderEntryClosure(entry) {
         // Format data 2 - 1 is in preview/entry
         // Render
         return renderer(req, res, formatResponse.entry(entry));

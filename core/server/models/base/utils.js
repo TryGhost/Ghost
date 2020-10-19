@@ -7,8 +7,6 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
 const errors = require('@tryghost/errors');
-let attach;
-let detach;
 
 /**
  * Attach wrapper (please never call attach manual!)
@@ -23,7 +21,7 @@ let detach;
  * roles [{role_id: 1}]
  * roles [BookshelfModel]
  */
-attach = function attach(Model, effectedModelId, relation, modelsToAttach, options) {
+const attach = function attach(Model, effectedModelId, relation, modelsToAttach, options) {
     options = options || {};
 
     let fetchedModel;
@@ -65,7 +63,7 @@ attach = function attach(Model, effectedModelId, relation, modelsToAttach, optio
         });
 };
 
-detach = function detach(Model, effectedModelId, relation, modelsToAttach, options) {
+const detach = function detach(Model, effectedModelId, relation, modelsToAttach, options) {
     options = options || {};
 
     let fetchedModel;

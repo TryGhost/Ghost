@@ -116,12 +116,12 @@ module.exports = {
 
             // CASE: ensure we destroy the invite before
             return models.Invite.findOne({email: frame.data.invites[0].email}, frame.options)
-                .then((invite) => {
-                    if (!invite) {
+                .then((existingInvite) => {
+                    if (!existingInvite) {
                         return;
                     }
 
-                    return invite.destroy(frame.options);
+                    return existingInvite.destroy(frame.options);
                 })
                 .then(() => {
                     return models.Invite.add(frame.data.invites[0], frame.options);
@@ -163,8 +163,8 @@ module.exports = {
                         status: 'sent'
                     }, Object.assign({id: invite.id}, frame.options));
                 })
-                .then((invite) => {
-                    return invite;
+                .then((editedInvite) => {
+                    return editedInvite;
                 })
                 .catch((err) => {
                     if (err && err.errorType === 'EmailError') {

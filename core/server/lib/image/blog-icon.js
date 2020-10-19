@@ -8,11 +8,6 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../services/settings/cache');
 const storageUtils = require('../../adapters/storage/utils');
-let getIconDimensions;
-let isIcoImageType;
-let getIconType;
-let getIconUrl;
-let getIconPath;
 
 /**
  * Get dimensions for ico file from its real file storage path
@@ -21,12 +16,12 @@ let getIconPath;
  * @returns {Promise<Object>} getIconDimensions
  * @description Takes a file path and returns ico width and height.
  */
-getIconDimensions = function getIconDimensions(path) {
+const getIconDimensions = function getIconDimensions(storagePath) {
     return new Promise(function getIconSize(resolve, reject) {
         let dimensions;
 
         try {
-            dimensions = sizeOf(path);
+            dimensions = sizeOf(storagePath);
 
             if (dimensions.images) {
                 dimensions.width = _.maxBy(dimensions.images, function (w) {
@@ -44,7 +39,7 @@ getIconDimensions = function getIconDimensions(path) {
         } catch (err) {
             return reject(new errors.ValidationError({
                 message: i18n.t('errors.utils.blogIcon.error', {
-                    file: path,
+                    file: storagePath,
                     error: err.message
                 })
             }));
@@ -59,7 +54,7 @@ getIconDimensions = function getIconDimensions(path) {
  * @returns {Boolean} true if submitted path is .ico file
  * @description Takes a path and returns boolean value.
  */
-isIcoImageType = function isIcoImageType(icon) {
+const isIcoImageType = function isIcoImageType(icon) {
     const blogIcon = icon || settingsCache.get('icon');
 
     return blogIcon.match(/.ico$/i) ? true : false;
@@ -72,7 +67,7 @@ isIcoImageType = function isIcoImageType(icon) {
  * @returns {Boolean} true if submitted path is .ico file
  * @description Takes a path and returns boolean value.
  */
-getIconType = function getIconType(icon) {
+const getIconType = function getIconType(icon) {
     const blogIcon = icon || settingsCache.get('icon');
 
     return isIcoImageType(blogIcon) ? 'x-icon' : 'png';
@@ -85,7 +80,7 @@ getIconType = function getIconType(icon) {
  * @description Checks if we have a custom uploaded icon and the extension of it. If no custom uploaded icon
  * exists, we're returning the default `favicon.ico`
  */
-getIconUrl = function getIconUrl(absolut) {
+const getIconUrl = function getIconUrl(absolut) {
     const blogIcon = settingsCache.get('icon');
 
     if (absolut) {
@@ -110,7 +105,7 @@ getIconUrl = function getIconUrl(absolut) {
  * @description Checks if we have a custom uploaded icon. If no custom uploaded icon
  * exists, we're returning the default `favicon.ico`
  */
-getIconPath = function getIconPath() {
+const getIconPath = function getIconPath() {
     const blogIcon = settingsCache.get('icon');
 
     if (blogIcon) {

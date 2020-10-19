@@ -11,7 +11,7 @@ const renderer = require('./renderer');
  */
 module.exports = function renderEntries(req, res) {
     debug('renderEntries called');
-    return function renderEntries(result) {
+    return function renderEntriesClosure(result) {
         // Format data 2
         // Render
         return renderer(req, res, formatResponse.entries(result));

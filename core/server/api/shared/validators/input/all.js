@@ -59,8 +59,8 @@ const validate = (config, attrs) => {
                 }
 
                 const valuesAsArray = Array.isArray(value) ? value : value.trim().toLowerCase().split(',');
-                const unallowedValues = _.filter(valuesAsArray, (value) => {
-                    return !allowedValues.includes(value);
+                const unallowedValues = _.filter(valuesAsArray, (valueToFilter) => {
+                    return !allowedValues.includes(valueToFilter);
                 });
 
                 if (unallowedValues.length) {

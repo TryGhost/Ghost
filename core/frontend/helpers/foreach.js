@@ -73,7 +73,7 @@ module.exports = function foreach(items, options) {
 
         // For each post, if it is a post number that fits within the from and to
         // send the key to execIteration to set to be added to the page
-        _.each(context, (_, key) => {
+        _.each(context, (value, key) => {
             if (current < from) {
                 current += 1;
                 return;

@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const {i18n} = require('../../../lib/common');
 const _ = require('lodash');
 
-let JWT_OPTIONS = {
+let JWT_OPTIONS_DEFAULTS = {
     algorithms: ['HS256'],
     maxAge: '5m'
 };
@@ -49,7 +49,7 @@ const authenticate = (req, res, next) => {
         }));
     }
 
-    return authenticateWithToken(req, res, next, {token, JWT_OPTIONS});
+    return authenticateWithToken(req, res, next, {token, JWT_OPTIONS: JWT_OPTIONS_DEFAULTS});
 };
 
 const authenticateWithUrl = (req, res, next) => {
@@ -61,7 +61,7 @@ const authenticateWithUrl = (req, res, next) => {
         }));
     }
     // CASE: Scheduler publish URLs can have long maxAge but controllerd by expiry and neverBefore
-    return authenticateWithToken(req, res, next, {token, JWT_OPTIONS: _.omit(JWT_OPTIONS, 'maxAge')});
+    return authenticateWithToken(req, res, next, {token, JWT_OPTIONS: _.omit(JWT_OPTIONS_DEFAULTS, 'maxAge')});
 };
 
 /**

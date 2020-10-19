@@ -4,9 +4,8 @@
 const models = require('../../models');
 
 const actionsMap = require('./actions-map-cache');
-let init;
 
-init = function init(options) {
+const init = function init(options) {
     options = options || {};
 
     // Load all the permissions
