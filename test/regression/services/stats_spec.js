@@ -87,9 +87,15 @@ describe('Stats', function () {
     describe('Member', function () {
         const getMemberCount = async function () {
             const res = await request.get('/');
-            const result = res.text.match(/Total members: (\d+)/);
+            const total = res.text.match(/Total members: (\d+)/);
+            const free = res.text.match(/Total free members: (\d+)/);
+            const paid = res.text.match(/Total paid members: (\d+)/);
 
-            return result ? parseInt(result[1]) : null;
+            return {
+                total: total ? parseInt(total[1]) : null,
+                free: free ? parseInt(free[1]) : null,
+                paid: paid ? parseInt(paid[1]) : null
+            };
         };
 
         it('member added', async function () {
@@ -105,12 +111,13 @@ describe('Stats', function () {
             // Check post count
             const memberCount = await getMemberCount();
 
-            memberCount.should.equal(initialMemberCount + 1);
+            memberCount.total.should.equal(initialMemberCount.total + 1);
+            memberCount.free.should.equal(initialMemberCount.free + 1);
+            memberCount.paid.should.equal(initialMemberCount.paid);
         });
 
         it('member subscribed', async function () {
-            const initialMemberCount = await getMemberCount();
-
+            // Add a member first.
             const context = testUtils.context.admin;
 
             const createdMember = await models.Member.add({
@@ -118,6 +125,10 @@ describe('Stats', function () {
                 labels: []
             }, context);
 
+            // Count current members.
+            const initialMemberCount = await getMemberCount();
+
+            // Subscribe.
             await models.MemberStripeCustomer.add({
                 member_id: createdMember.id,
                 customer_id: 'fake_customer_id1'
@@ -137,13 +148,16 @@ describe('Stats', function () {
                 cancel_at_period_end: false
             }, context);
 
-            // Check post count
+            // Check post count change.
             const memberCount = await getMemberCount();
 
-            memberCount.should.equal(initialMemberCount + 1);
+            memberCount.total.should.equal(initialMemberCount.total);
+            memberCount.free.should.equal(initialMemberCount.free - 1);
+            memberCount.paid.should.equal(initialMemberCount.paid + 1);
         });
 
         it('member unsubscribed', async function () {
+            // Add a member and subscribe.
             const context = testUtils.context.admin;
 
             const createdMember = await models.Member.add({
@@ -151,7 +165,7 @@ describe('Stats', function () {
                 labels: []
             }, context);
 
-            await models.MemberStripeCustomer.add({
+            const rel = await models.MemberStripeCustomer.add({
                 member_id: createdMember.id,
                 customer_id: 'fake_customer_id2'
             }, context);
@@ -170,18 +184,23 @@ describe('Stats', function () {
                 cancel_at_period_end: false
             }, context);
 
+            // Count current members.
             const initialMemberCount = await getMemberCount();
 
             // Unsubscribe
-            await sub.destroy();
+            await models.StripeCustomerSubscription.destroy({id: sub.id});
+            await models.MemberStripeCustomer.destroy({id: rel.id});
 
             // Check post count
             const memberCount = await getMemberCount();
 
-            memberCount.should.equal(initialMemberCount);
+            memberCount.total.should.equal(initialMemberCount.total);
+            memberCount.free.should.equal(initialMemberCount.free + 1);
+            memberCount.paid.should.equal(initialMemberCount.paid - 1);
         });
 
         it('member deleted', async function () {
+            // Add a member.
             const context = testUtils.context.admin;
 
             const createdMember = await models.Member.add({
@@ -189,6 +208,7 @@ describe('Stats', function () {
                 labels: []
             }, context);
 
+            // Count current members.
             const initialMemberCount = await getMemberCount();
 
             // delete
@@ -197,7 +217,9 @@ describe('Stats', function () {
             // Check post count
             const memberCount = await getMemberCount();
 
-            memberCount.should.equal(initialMemberCount - 1);
+            memberCount.total.should.equal(initialMemberCount.total - 1);
+            memberCount.free.should.equal(initialMemberCount.free - 1);
+            memberCount.paid.should.equal(initialMemberCount.paid);
         });
     });
 });

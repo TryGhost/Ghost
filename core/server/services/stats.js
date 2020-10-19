@@ -5,6 +5,7 @@
 const debug = require('ghost-ignition').debug('stats');
 const moment = require('moment');
 const models = require('../models');
+const db = require('../data/db');
 const {events} = require('../lib/common');
 
 const stats = {};
@@ -38,7 +39,7 @@ module.exports = {
             });
         });
 
-        const memberEvents = ['member.added', 'member.deleted', 'member.edited'];
+        const memberEvents = ['member.added', 'member.deleted', 'member.edited', 'customer.added', 'customer.deleted'];
 
         memberEvents.forEach((event) => {
             events.on(event, async () => {
@@ -51,6 +52,8 @@ module.exports = {
 
     async updateMembers() {
         stats.total_members = await models.Member.count();
+        stats.total_paid_members = (await db.knex('members_stripe_customers').countDistinct('member_id'))[0]['count(distinct `member_id`)'];
+        stats.total_free_members = stats.total_members - stats.total_paid_members;
     },
 
     async updatePosts() {
