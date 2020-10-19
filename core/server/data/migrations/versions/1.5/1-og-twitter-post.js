@@ -10,19 +10,19 @@ _private.handle = function handle(options) {
     let isAdding = type === 'Adding';
     let operation = isAdding ? commands.addColumn : commands.dropColumn;
 
-    return function (options) {
-        let connection = options.connection;
+    return function (opts) {
+        let connection = opts.connection;
 
         return connection.schema.hasTable(table)
-            .then(function (exists) {
-                if (!exists) {
+            .then(function (tableExists) {
+                if (!tableExists) {
                     return Promise.reject(new Error('Table does not exist!'));
                 }
 
                 return Promise.each(columns, function (column) {
                     return connection.schema.hasColumn(table, column)
-                        .then(function (exists) {
-                            if (exists && isAdding || !exists && !isAdding) {
+                        .then(function (columnExists) {
+                            if (columnExists && isAdding || !columnExists && !isAdding) {
                                 logging.warn(`${type} column ${table}.${column}`);
                                 return Promise.resolve();
                             }

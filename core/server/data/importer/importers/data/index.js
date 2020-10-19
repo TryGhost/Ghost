@@ -147,9 +147,9 @@ DataImporter = {
             });
 
             return toReturn;
-        }).catch(function (errors) {
-            debug(errors);
-            return Promise.reject(errors);
+        }).catch(function (err) {
+            debug(err);
+            return Promise.reject(err);
         }).finally(() => {
             // release memory
             importers = {};

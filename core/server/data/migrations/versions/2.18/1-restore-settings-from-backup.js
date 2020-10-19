@@ -89,13 +89,13 @@ module.exports.up = (options) => {
 
                 return localOptions
                     .transacting('settings')
-                    .then((response) => {
-                        if (!response) {
+                    .then((settingsResponse) => {
+                        if (!settingsResponse) {
                             logging.warn('Cannot find settings.');
                             return;
                         }
 
-                        const relevantLiveSettings = response.filter(function (entry) {
+                        const relevantLiveSettings = settingsResponse.filter(function (entry) {
                             return ['is_private', 'force_i18n', 'amp'].includes(entry.key);
                         });
 

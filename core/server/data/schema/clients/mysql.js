@@ -1,23 +1,13 @@
 const _ = require('lodash');
 const db = require('../../../data/db');
 
-// private
-let doRawAndFlatten;
-
-// public
-let getTables;
-
-let getIndexes;
-let getColumns;
-let checkPostTable;
-
-doRawAndFlatten = function doRaw(query, transaction, flattenFn) {
+const doRawAndFlatten = function doRaw(query, transaction, flattenFn) {
     return (transaction || db.knex).raw(query).then(function (response) {
         return _.flatten(flattenFn(response));
     });
 };
 
-getTables = function getTables(transaction) {
+const getTables = function getTables(transaction) {
     return doRawAndFlatten('show tables', transaction, function (response) {
         return _.map(response[0], function (entry) {
             return _.values(entry);
@@ -25,13 +15,13 @@ getTables = function getTables(transaction) {
     });
 };
 
-getIndexes = function getIndexes(table, transaction) {
+const getIndexes = function getIndexes(table, transaction) {
     return doRawAndFlatten('SHOW INDEXES from ' + table, transaction, function (response) {
         return _.map(response[0], 'Key_name');
     });
 };
 
-getColumns = function getColumns(table, transaction) {
+const getColumns = function getColumns(table, transaction) {
     return doRawAndFlatten('SHOW COLUMNS FROM ' + table, transaction, function (response) {
         return _.map(response[0], 'Field');
     });
@@ -41,7 +31,7 @@ getColumns = function getColumns(table, transaction) {
 // a wrong datatype in schema.js some installations using mysql could have been created using the
 // data type text instead of mediumtext.
 // For details see: https://github.com/TryGhost/Ghost/issues/1947
-checkPostTable = function checkPostTable(transaction) {
+const checkPostTable = function checkPostTable(transaction) {
     return (transaction || db.knex).raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
         return _.flatten(_.map(response[0], function (entry) {
             if (entry.Type.toLowerCase() !== 'mediumtext') {
