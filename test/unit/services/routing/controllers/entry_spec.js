@@ -123,7 +123,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
+            urlUtils.redirectToAdmin.callsFake(function (statusCode, _res, editorUrl) {
                 statusCode.should.eql(302);
                 editorUrl.should.eql(EDITOR_URL + post.id);
                 done();
@@ -145,7 +145,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
+            urlUtils.redirectToAdmin.callsFake(function (statusCode, _res, editorUrl) {
                 configUtils.restore();
                 done(new Error('redirectToAdmin was called'));
             });
@@ -197,7 +197,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtils.redirect301.callsFake(function (res, postUrl) {
+            urlUtils.redirect301.callsFake(function (_res, postUrl) {
                 postUrl.should.eql(post.url);
                 done();
             });
@@ -226,7 +226,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtils.redirect301.callsFake(function (res, postUrl) {
+            urlUtils.redirect301.callsFake(function (_res, postUrl) {
                 postUrl.should.eql(post.url + '?query=true');
                 done();
             });

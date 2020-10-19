@@ -29,10 +29,10 @@ describe('{{#has}} helper', function () {
         };
     });
 
-    function callHasHelper(thisCtx, hash) {
+    function callHasHelper(context, hash) {
         // Hash is the options passed in
         handlebarsOptions.hash = hash;
-        return helpers.has.call(thisCtx, handlebarsOptions);
+        return helpers.has.call(context, handlebarsOptions);
     }
 
     describe('tag match', function () {

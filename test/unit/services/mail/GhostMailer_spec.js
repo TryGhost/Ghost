@@ -191,8 +191,6 @@ describe('Mail: Ghostmailer', function () {
         });
 
         describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
-            let mailer;
-
             beforeEach(async function () {
                 mailer = new mail.GhostMailer();
                 sandbox.stub(mailer, 'sendMail').resolves();

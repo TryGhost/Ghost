@@ -135,8 +135,8 @@ describe('Integrations API', function () {
             });
     });
 
-    it('Can successfully get a created integration', function (done) {
-        request.post(localUtils.API.getApiQuery('integrations/'))
+    it('Can successfully get a created integration', function () {
+        return request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
@@ -144,22 +144,18 @@ describe('Integrations API', function () {
                 }]
             })
             .expect(201)
-            .end(function (err, {body}) {
-                if (err) {
-                    return done(err);
-                }
+            .then(function ({body}) {
                 const [createdIntegration] = body.integrations;
 
-                request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                return createdIntegration;
+            })
+            .then((createdIntegration) => {
+                return request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
-                    .end(function (err, {body}) {
-                        if (err) {
-                            return done(err);
-                        }
-
+                    .then(function ({body}) {
                         should.equal(body.integrations.length, 1);
 
                         const [integration] = body.integrations;
@@ -169,13 +165,12 @@ describe('Integrations API', function () {
                         should.equal(integration.slug, createdIntegration.slug);
                         should.equal(integration.description, createdIntegration.description);
                         should.equal(integration.icon_image, createdIntegration.icon_image);
-                        done();
                     });
             });
     });
 
-    it('Can successfully get *all* created integrations with api_keys', function (done) {
-        request.post(localUtils.API.getApiQuery('integrations/'))
+    it('Can successfully get *all* created integrations with api_keys', function () {
+        return request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
@@ -183,51 +178,40 @@ describe('Integrations API', function () {
                 }]
             })
             .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                request.post(localUtils.API.getApiQuery('integrations/'))
+            .then(function () {
+                return request.post(localUtils.API.getApiQuery('integrations/'))
                     .set('Origin', config.get('url'))
                     .send({
                         integrations: [{
                             name: 'Winter-(is)-great'
                         }]
                     })
-                    .expect(201)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                    .expect(201);
+            })
+            .then(function () {
+                return request.get(localUtils.API.getApiQuery(`integrations/?include=api_keys&limit=all`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then(function ({body}) {
+                        // This is the only page
+                        should.equal(body.meta.pagination.page, 1);
+                        should.equal(body.meta.pagination.pages, 1);
+                        should.equal(body.meta.pagination.next, null);
+                        should.equal(body.meta.pagination.prev, null);
 
-                        request.get(localUtils.API.getApiQuery(`integrations/?include=api_keys&limit=all`))
-                            .set('Origin', config.get('url'))
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
-                            .end(function (err, {body}) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                // This is the only page
-                                should.equal(body.meta.pagination.page, 1);
-                                should.equal(body.meta.pagination.pages, 1);
-                                should.equal(body.meta.pagination.next, null);
-                                should.equal(body.meta.pagination.prev, null);
-
-                                body.integrations.forEach((integration) => {
-                                    should.exist(integration.api_keys);
-                                });
-
-                                done();
-                            });
+                        body.integrations.forEach((integration) => {
+                            should.exist(integration.api_keys);
+                        });
                     });
             });
     });
 
-    it('Can successfully edit a created integration', function (done) {
-        request.post(localUtils.API.getApiQuery('integrations/'))
+    it('Can successfully edit a created integration', function () {
+        let createdIntegration;
+
+        return request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
@@ -235,12 +219,10 @@ describe('Integrations API', function () {
                 }]
             })
             .expect(201)
-            .end(function (err, {body}) {
-                if (err) {
-                    return done(err);
-                }
-                const [createdIntegration] = body.integrations;
-                request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+            .then(function ({body}) {
+                [createdIntegration] = body.integrations;
+
+                return request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
                     .set('Origin', config.get('url'))
                     .send({
                         integrations: [{
@@ -248,35 +230,30 @@ describe('Integrations API', function () {
                             description: 'Finally got round to writing this...'
                         }]
                     })
-                    .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                    .expect(200);
+            })
+            .then(function () {
+                return request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then(function ({body}) {
+                const [updatedIntegration] = body.integrations;
 
-                        request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
-                            .set('Origin', config.get('url'))
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
-                            .end(function (err, {body}) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                const [updatedIntegration] = body.integrations;
-
-                                should.equal(updatedIntegration.id, createdIntegration.id);
-                                should.equal(updatedIntegration.name, 'Awesome Integration Name');
-                                should.equal(updatedIntegration.description, 'Finally got round to writing this...');
-                                done();
-                            });
-                    });
+                should.equal(updatedIntegration.id, createdIntegration.id);
+                should.equal(updatedIntegration.name, 'Awesome Integration Name');
+                should.equal(updatedIntegration.description, 'Finally got round to writing this...');
             });
     });
 
-    it('Can successfully refresh an integration api key', function (done) {
-        request.post(localUtils.API.getApiQuery('integrations/?include=api_keys'))
+    it('Can successfully refresh an integration api key', function () {
+        let createdIntegration;
+        let apiKeys;
+        let adminApiKey;
+
+        return request.post(localUtils.API.getApiQuery('integrations/?include=api_keys'))
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
@@ -284,60 +261,53 @@ describe('Integrations API', function () {
                 }]
             })
             .expect(201)
-            .end(function (err, {body}) {
-                if (err) {
-                    return done(err);
-                }
-                const [createdIntegration] = body.integrations;
-                const apiKeys = createdIntegration.api_keys;
-                const adminApiKey = apiKeys.find(key => key.type === 'admin');
-                request.post(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/api_key/${adminApiKey.id}/refresh`))
+            .then(function ({body}) {
+                [createdIntegration] = body.integrations;
+                apiKeys = createdIntegration.api_keys;
+                adminApiKey = apiKeys.find(key => key.type === 'admin');
+
+                return request.post(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/api_key/${adminApiKey.id}/refresh`))
                     .set('Origin', config.get('url'))
                     .send({
                         integrations: [{
                             id: createdIntegration.id
                         }]
                     })
+                    .expect(200);
+            })
+            .then(function () {
+                return request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=api_keys`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then(function ({body}) {
+                const [updatedIntegration] = body.integrations;
+                const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
+                should.equal(updatedIntegration.id, createdIntegration.id);
+                updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
+            })
+            .then(() => {
+                return request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${adminApiKey.id}&include=actor`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=api_keys`))
-                            .set('Origin', config.get('url'))
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
-                            .end(function (err, {body}) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                const [updatedIntegration] = body.integrations;
-                                const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
-                                should.equal(updatedIntegration.id, createdIntegration.id);
-                                updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
-                                request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${adminApiKey.id}&include=actor`))
-                                    .set('Origin', config.get('url'))
-                                    .expect('Content-Type', /json/)
-                                    .expect('Cache-Control', testUtils.cacheRules.private)
-                                    .expect(200)
-                                    .end(function (err, {body}) {
-                                        const actions = body.actions;
-                                        const refreshedAction = actions.find((action) => {
-                                            return action.event === 'refreshed';
-                                        });
-                                        should.exist(refreshedAction);
-                                        done();
-                                    });
-                            });
+                    .then(function ({body}) {
+                        const actions = body.actions;
+                        const refreshedAction = actions.find((action) => {
+                            return action.event === 'refreshed';
+                        });
+                        should.exist(refreshedAction);
                     });
             });
     });
 
-    it('Can successfully add and delete a created integrations webhooks', function (done) {
-        request.post(localUtils.API.getApiQuery('integrations/'))
+    it('Can successfully add and delete a created integrations webhooks', function () {
+        let createdIntegration;
+
+        return request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
@@ -345,12 +315,10 @@ describe('Integrations API', function () {
                 }]
             })
             .expect(201)
-            .end(function (err, {body}) {
-                if (err) {
-                    return done(err);
-                }
-                const [createdIntegration] = body.integrations;
-                request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+            .then(function ({body}) {
+                [createdIntegration] = body.integrations;
+
+                return request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
                     .set('Origin', config.get('url'))
                     .send({
                         integrations: [{
@@ -360,65 +328,48 @@ describe('Integrations API', function () {
                             }]
                         }]
                     })
+                    .expect(200);
+            })
+            .then(function () {
+                return request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=webhooks`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then(function ({body}) {
+                const [updatedIntegration] = body.integrations;
+
+                should.equal(updatedIntegration.webhooks.length, 1);
+
+                const webhook = updatedIntegration.webhooks[0];
+                should.equal(webhook.integration_id, updatedIntegration.id);
+
+                return request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                    .set('Origin', config.get('url'))
+                    .send({
+                        integrations: [{
+                            webhooks: []
+                        }]
+                    })
+                    .expect(200);
+            })
+            .then(function () {
+                return request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=webhooks`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                    .then(function ({body}) {
+                        const [updatedIntegration] = body.integrations;
 
-                        request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=webhooks`))
-                            .set('Origin', config.get('url'))
-                            .expect('Content-Type', /json/)
-                            .expect('Cache-Control', testUtils.cacheRules.private)
-                            .expect(200)
-                            .end(function (err, {body}) {
-                                if (err) {
-                                    return done(err);
-                                }
-
-                                const [updatedIntegration] = body.integrations;
-
-                                should.equal(updatedIntegration.webhooks.length, 1);
-
-                                const webhook = updatedIntegration.webhooks[0];
-                                should.equal(webhook.integration_id, updatedIntegration.id);
-
-                                request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
-                                    .set('Origin', config.get('url'))
-                                    .send({
-                                        integrations: [{
-                                            webhooks: []
-                                        }]
-                                    })
-                                    .expect(200)
-                                    .end(function (err) {
-                                        if (err) {
-                                            return done(err);
-                                        }
-
-                                        request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=webhooks`))
-                                            .set('Origin', config.get('url'))
-                                            .expect('Content-Type', /json/)
-                                            .expect('Cache-Control', testUtils.cacheRules.private)
-                                            .expect(200)
-                                            .end(function (err, {body}) {
-                                                if (err) {
-                                                    return done(err);
-                                                }
-
-                                                const [updatedIntegration] = body.integrations;
-
-                                                should.equal(updatedIntegration.webhooks.length, 0);
-                                                done();
-                                            });
-                                    });
-                            });
+                        should.equal(updatedIntegration.webhooks.length, 0);
                     });
             });
     });
 
-    it('Can succesfully delete a created integration', function (done) {
-        request.post(localUtils.API.getApiQuery('integrations/'))
+    it('Can succesfully delete a created integration', function () {
+        return request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
@@ -426,24 +377,16 @@ describe('Integrations API', function () {
                 }]
             })
             .expect(201)
-            .end(function (err, {body}) {
-                if (err) {
-                    return done(err);
-                }
+            .then(function ({body}) {
                 const [createdIntegration] = body.integrations;
 
-                request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                return request.del(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
                     .set('Origin', config.get('url'))
                     .expect(204)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+                    .then(function () {
+                        return request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
                             .set('Origin', config.get('url'))
-                            .expect(404)
-                            .end(done);
+                            .expect(404);
                     });
             });
     });
