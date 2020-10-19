@@ -101,7 +101,6 @@ SchedulingDefault.prototype.unschedule = function (object, options = {bootstrap:
 SchedulingDefault.prototype.run = function () {
     const self = this;
     let timeout = null;
-    let recursiveRun;
 
     // NOTE: Ensure the scheduler never runs twice.
     if (this.isRunning) {
@@ -110,7 +109,7 @@ SchedulingDefault.prototype.run = function () {
 
     this.isRunning = true;
 
-    recursiveRun = function recursiveRun() {
+    let recursiveRun = function recursiveRun() {
         timeout = setTimeout(function () {
             const times = Object.keys(self.allJobs);
             const nextJobs = {};
