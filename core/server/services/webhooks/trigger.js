@@ -64,13 +64,13 @@ const response = {
 
 module.exports = (event, model) => {
     webhooks.getAll(event)
-        .then((webhooks) => {
-            debug(`${webhooks.models.length} webhooks found for ${event}.`);
+        .then((hooks) => {
+            debug(`${hooks.models.length} webhooks found for ${event}.`);
 
-            _.each(webhooks.models, (webhook) => {
+            _.each(hooks.models, (webhook) => {
                 payload(webhook.get('event'), model)
-                    .then((payload) => {
-                        const reqPayload = JSON.stringify(payload);
+                    .then((hookPayload) => {
+                        const reqPayload = JSON.stringify(hookPayload);
                         const url = webhook.get('target_url');
                         const opts = {
                             body: reqPayload,

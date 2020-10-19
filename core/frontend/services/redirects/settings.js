@@ -42,14 +42,14 @@ const setFromFilePath = (filePath) => {
     const backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
 
     return fs.pathExists(redirectsPath)
-        .then((exists) => {
-            if (!exists) {
+        .then((redirectExists) => {
+            if (!redirectExists) {
                 return null;
             }
 
             return fs.pathExists(backupRedirectsPath)
-                .then((exists) => {
-                    if (!exists) {
+                .then((backupExists) => {
+                    if (!backupExists) {
                         return null;
                     }
 

@@ -39,15 +39,15 @@ class I18n {
     /**
      * Helper method to find and compile the given data context with a proper string resource.
      *
-     * @param {string} path Path with in the JSON language file to desired string (ie: "errors.init.jsNotBuilt")
+     * @param {string} translationPath Path within the JSON language file to desired string (ie: "errors.init.jsNotBuilt")
      * @param {object} [bindings]
      * @returns {string}
      */
-    t(path, bindings) {
+    t(translationPath, bindings) {
         let string;
         let msg;
 
-        string = this._findString(path);
+        string = this._findString(translationPath);
 
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
@@ -101,8 +101,8 @@ class I18n {
         // While bracket-notation allows any Unicode characters in keys for themes,
         // dot-notation allows only word characters in keys for backend messages
         // (that is \w or [A-Za-z0-9_] in RegExp)
-        let path = `$.${msgPath}`;
-        return jp.value(this._strings, path);
+        let jsonPath = `$.${msgPath}`;
+        return jp.value(this._strings, jsonPath);
     }
 
     /**

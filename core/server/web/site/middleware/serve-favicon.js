@@ -29,7 +29,7 @@ function serveFavicon() {
     let iconType;
     let filePath;
 
-    return function serveFavicon(req, res, next) {
+    return function serveFaviconMiddleware(req, res, next) {
         if (req.path.match(/^\/favicon\.(ico|png)/i)) {
             // CASE: favicon is default
             // confusing: if you upload an icon, it's same logic as storing images
