@@ -461,20 +461,30 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-2.0.2.tgz#b8a1143bb0fa559cd46a96181c91771a35a3547b"
   integrity sha512-cV9FcTatyyf6QgOgNJ56sZmxu+rj3W105owcJatGuNtMx4hWrKupnvzxt7HXNBlAzwNrct7m9trrDFk+ghj1xw==
 
-"@tryghost/kg-default-cards@2.6.1":
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-2.6.1.tgz#36a6b8f6bf68ec14e2d00848cd66faf2fbe06207"
-  integrity sha512-EsLqsW4b59M1B5PyAybVI6zaNY5EJQ/1IQBmw3eVLGY4yJURzkQbcNygZgQ/0xXtjC5zypHMJiYuvgalf63QMw==
+"@tryghost/kg-default-cards@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-3.0.0.tgz#7357e5f30808cc73f012786c62ad519f2125140a"
+  integrity sha512-pnEPkbYrTXVdiiy/5X0Y1gWZORHk71jDiSGI+INd7mLSMqbzPYqCgPOdvsdLefi53GOy119Cu5s3+nNvC2ihFw==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "^2.0.2"
+    "@tryghost/kg-markdown-html-renderer" "^2.0.3"
     "@tryghost/url-utils" "^0.6.14"
     handlebars "^4.7.6"
     juice "^7.0.0"
 
-"@tryghost/kg-markdown-html-renderer@2.0.2", "@tryghost/kg-markdown-html-renderer@^2.0.2":
+"@tryghost/kg-markdown-html-renderer@2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-2.0.2.tgz#e52f44c02e1b9c3a7dfe2a4840f07a5af2e8717e"
   integrity sha512-gqGUEMQq/ZOCNfF2oBu1mGrGYfsh32ueG5zYj2jsYkzzWFgRZkaW7+zIMFCMtxeW3xKopYDQcCcwbiwP6R1afw==
+  dependencies:
+    markdown-it "^11.0.0"
+    markdown-it-footnote "^3.0.2"
+    markdown-it-lazy-headers "^0.1.3"
+    markdown-it-mark "^3.0.0"
+
+"@tryghost/kg-markdown-html-renderer@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-2.0.3.tgz#895ea5f590bf80f6bb6cebb7aeb658f30fcf32f1"
+  integrity sha512-Vo1Kbi94YfPdaij8yF330I7CSu7ppdEcxAXm/7VTR0XHJRzBE7XGQwLNLzSaovb3R1BbQE1UKmIAknAFIGEkdg==
   dependencies:
     markdown-it "^11.0.0"
     markdown-it-footnote "^3.0.2"
