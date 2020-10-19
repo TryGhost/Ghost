@@ -373,17 +373,19 @@ module.exports = function MembersApi({
                     });
                     let member = await users.get({email: customer.email});
                     if (!member) {
-                        const metadata = event.data.object.metadata;
-                        const name = (metadata && metadata.name) || '';
+                        const metadataName = _.get(event, 'data.object.metadata.name');
+                        const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
+                        const name = metadataName || payerName || null;
                         member = await users.create({email: customer.email, name});
+                    } else {
+                        const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
+
+                        if (payerName && !member.get('name')) {
+                            await users.update({name: payerName}, {id: member.get('id')});
+                        }
                     }
+
                     await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
-
-                    const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
-
-                    if (payerName && !member.get('name')) {
-                        await users.update({name: payerName}, {id: member.get('id')});
-                    }
 
                     const emailType = 'signup';
                     await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, options: {forceEmailType: true}});
