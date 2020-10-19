@@ -5,6 +5,7 @@ import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import {isCookiesDisabled} from '../utils/helpers';
+import {ReactComponent as PoweredIcon} from '../images/powered-icon.svg';
 
 const React = require('react');
 
@@ -138,12 +139,13 @@ class PopupContent extends React.Component {
         }
 
         return (
-            <div className='gh-portal-popup-wrapper'>
+            <div className={'gh-portal-popup-wrapper ' + pageClass}>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle + ' ' + pageClass} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
                     <CookieDisabledBanner message={cookieBannerText} />
                     {this.renderPopupNotification()}
                     {this.renderActivePage()}
                 </div>
+                <div className={'gh-portal-powered' + (hasMode(['preview']) ? ' hidden' : '')}><a href='https://ghost.org' target='_blank' rel='noopener noreferrer'><PoweredIcon /> <span>Publish with Ghost</span></a></div>
             </div>
         );
     }

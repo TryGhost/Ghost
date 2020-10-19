@@ -224,7 +224,9 @@ const FrameStyles = `
     }
 
     .gh-portal-popup-wrapper {
-        padding: 6vw 0;
+        position: relative;
+        padding: 6vw 0 0;
+        height: 100%;
     }
 
     .gh-portal-popup-container {
@@ -245,6 +247,68 @@ const FrameStyles = `
         border-radius: 5px;
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
         animation: popup 0.25s ease-in-out;
+        z-index: 9999;
+    }
+
+    @keyframes popup {
+        0% {
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+        }
+        75% {
+            opacity: 1.0;
+        }
+        100%{
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .gh-portal-powered {
+        position: absolute;
+        bottom: 24px;
+        left: 24px;
+    }
+    
+    .gh-portal-powered a {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 9px 6px 6px;
+        border: none;
+        font-size: 12px;
+        line-height: 12px;
+        letter-spacing: -.3px;
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+        font-weight: 600;
+        text-decoration: none;
+        color: #383838;
+        background: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(0,0,0,.08);
+        cursor: pointer;
+        outline: none;
+        background: var(--white);
+        z-index: 9998;
+        animation: powered-fade-in 0.25s ease-in-out;
+        transform-origin: top right;
+    }
+
+    @keyframes powered-fade-in {
+        0% {
+            transform: scale(0.98); 
+            opacity: 0; 
+        }
+        75% {
+            opacity: 1.0;
+        }
+        100%{
+            transform: scale(1);
+        }
+    }
+
+    .gh-portal-powered a svg {
+        height: 16px;
+        width: 16px;
+        margin: 0 6px 0 0;
     }
 
     .gh-portal-container-wide {
@@ -297,19 +361,6 @@ const FrameStyles = `
     .gh-portal-popup-container footer {
         padding: 0 32px 32px;
         height: 72px;
-    }
-
-    @keyframes popup {
-        0% {
-            transform: scale(0.9) translateY(20px);
-            opacity: 0;
-        }
-        75% {
-            opacity: 1.0;
-        }
-        100%{
-            transform: scale(1) translateY(0);
-        }
     }
 
     .gh-portal-closeicon-container {
@@ -533,6 +584,8 @@ const FrameStyles = `
     .pl8 { padding-left: 32px; }
     .pl9 { padding-left: 36px; }
     .pl10 { padding-left: 40px; }
+
+    .hidden { display: none !important; }
 `;
 
 const MobileStyles = `
@@ -540,16 +593,22 @@ const MobileStyles = `
     .gh-portal-popup-wrapper {
         height: 100%;
         padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--white);
     }
     
     .gh-portal-popup-container {
         width: 100%;
-        height: 100%;
         border-radius: 0;
-        overflow-y: scroll;
+        overflow: unset;
         animation: popup-mobile 0.25s ease-in-out;
+        box-shadow: none !important;
     }
 
+    .gh-portal-popup-wrapper.account-home,
     .gh-portal-popup-container.account-home {
         background: var(--grey13);
     }
@@ -563,6 +622,40 @@ const MobileStyles = `
     .gh-portal-content {
         overflow-y: auto !important;
         max-height: unset !important;
+    }
+
+    .gh-portal-powered {
+        position: relative;
+        bottom: unset;
+        left: unset;
+        background: var(--white);
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding-top: 32px;
+    }
+
+    .gh-portal-popup-wrapper.account-home .gh-portal-powered {
+        background: var(--grey13);
+    }
+
+    .gh-portal-powered a {
+        animation: none;
+        box-shadow: none;
+        background: none;
+        margin-bottom: 32px;
+    }
+
+    .gh-portal-powered a span {
+        opacity: 0.5;
+    }
+
+    .gh-portal-powered a svg {
+        opacity: 0.65;
+    }
+
+    .gh-portal-popup-wrapper.account-home .gh-portal-powered a {
+        box-shadow: none;
     }
 }
 
@@ -676,6 +769,10 @@ const MobileStyles = `
 
     .gh-portal-account-main {
         padding: 24px 24px 0;
+    }
+
+    .gh-portal-powered {
+        padding-top: 12px;
     }
 }
 
