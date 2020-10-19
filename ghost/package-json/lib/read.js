@@ -10,14 +10,11 @@ const parsePackageJson = require('./parse');
 const errors = require('@tryghost/errors');
 const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
 const packageJSONPath = 'package.json';
-let readPackage;
-let readPackages;
-let processPackage;
 
 /**
  * Recursively read directory and find the packages in it
  */
-processPackage = function processPackage(absolutePath, packageName) {
+const processPackage = function processPackage(absolutePath, packageName) {
     const pkg = {
         name: packageName,
         path: absolutePath
@@ -37,7 +34,7 @@ processPackage = function processPackage(absolutePath, packageName) {
         });
 };
 
-readPackage = function readPackage(packagePath, packageName) {
+const readPackage = function readPackage(packagePath, packageName) {
     const absolutePath = join(packagePath, packageName);
     return fs.stat(absolutePath)
         .then(function (stat) {
@@ -62,7 +59,7 @@ readPackage = function readPackage(packagePath, packageName) {
         });
 };
 
-readPackages = function readPackages(packagePath) {
+const readPackages = function readPackages(packagePath) {
     return fs.readdir(packagePath)
         .filter(function (packageName) {
             // Filter out things which are not packages by regex
