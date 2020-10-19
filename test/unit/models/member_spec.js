@@ -22,7 +22,7 @@ describe('Unit: models/member', function () {
         let toJSON;
 
         beforeEach(function () {
-            toJSON = function toJSON(model, options) {
+            toJSON = function (model, options) {
                 return new models.Member(model).toJSON(options);
             };
         });

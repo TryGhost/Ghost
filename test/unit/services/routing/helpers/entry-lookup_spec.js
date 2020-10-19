@@ -6,7 +6,6 @@ const api = require('../../../../../core/server/api');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 describe('Unit - services/routing/helpers/entry-lookup', function () {
-    let posts;
     let locals;
 
     afterEach(function () {

@@ -271,8 +271,6 @@ describe('{{url}} helper', function () {
     });
 
     describe('with subdir', function () {
-        let sandbox;
-
         before(function () {
             sandbox = sinon.createSandbox();
             urlUtils.stubUrlUtils({url: 'http://localhost:65535/blog'}, sandbox);

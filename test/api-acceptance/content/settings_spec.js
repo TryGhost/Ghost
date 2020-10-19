@@ -86,14 +86,14 @@ describe('Settings Content API', function () {
                 // Object.keys(settings).length.should.equal(22);
                 Object.keys(settings).should.deepEqual(defaultSettingsKeys);
                 // Verify that we are returning the defaults for each value
-                _.forEach(settings, (value, key) => {
+                _.forEach(settings, (value, settingsKey) => {
                     // `url` does not come from the settings cache
-                    if (key === 'url') {
+                    if (settingsKey === 'url') {
                         should(value).eql(`${config.get('url')}/`);
                         return;
                     }
 
-                    let defaultKey = _.findKey(publicSettings, v => v === key);
+                    let defaultKey = _.findKey(publicSettings, v => v === settingsKey);
                     let defaultValue = _.find(flattenedPublicSettings, setting => setting.key === defaultKey).defaultValue;
 
                     // Convert empty strings to null

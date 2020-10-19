@@ -200,8 +200,8 @@ describe('User API', function () {
             });
     });
 
-    it('can edit a user', function (done) {
-        request.put(localUtils.API.getApiQuery('users/me/'))
+    it('can edit a user', function () {
+        return request.put(localUtils.API.getApiQuery('users/me/'))
             .set('Origin', config.get('url'))
             .send({
                 users: [{
@@ -212,11 +212,7 @@ describe('User API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .then(function (res) {
                 const putBody = res.body;
                 res.headers['x-cache-invalidate'].should.eql('/*');
                 should.exist(putBody.users[0]);
@@ -226,7 +222,7 @@ describe('User API', function () {
 
                 should.not.exist(putBody.users[0].password);
 
-                models.User.findOne({id: putBody.users[0].id})
+                return models.User.findOne({id: putBody.users[0].id})
                     .then((user) => {
                         return models.User.isPasswordCorrect({
                             plainPassword: 'mynewfancypasswordwhichisnotallowed',
@@ -236,7 +232,6 @@ describe('User API', function () {
                     .then(Promise.reject)
                     .catch((err) => {
                         err.code.should.eql('PASSWORD_INCORRECT');
-                        done();
                     });
             });
     });
@@ -285,14 +280,14 @@ describe('User API', function () {
                     })
                     .select();
             })
-            .then((models) => {
-                models.length.should.eql(0);
+            .then((rolesUsersModels) => {
+                rolesUsersModels.length.should.eql(0);
 
                 return db.knex('roles_users')
                     .select();
             })
-            .then((models) => {
-                models.length.should.greaterThan(0);
+            .then((rolesUsers) => {
+                rolesUsers.length.should.greaterThan(0);
             });
     });
 

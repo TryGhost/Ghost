@@ -9,8 +9,8 @@ const middleware = themes.middleware;
 
 const sandbox = sinon.createSandbox();
 
-function executeMiddleware(middleware, req, res, next) {
-    const [current, ...rest] = middleware;
+function executeMiddleware(toExecute, req, res, next) {
+    const [current, ...rest] = toExecute;
 
     current(req, res, function (err) {
         if (err) {

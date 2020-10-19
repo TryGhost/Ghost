@@ -78,17 +78,17 @@ describe('Permissions', function () {
         it('can load an actions map from existing permissions', function (done) {
             fakePermissions = loadFakePermissions();
 
-            permissions.init().then(function (actionsMap) {
-                should.exist(actionsMap);
+            permissions.init().then(function (actions) {
+                should.exist(actions);
 
                 permissions.canThis.should.not.throwError();
 
-                _.keys(actionsMap).should.eql(['browse', 'edit', 'add', 'destroy']);
+                _.keys(actions).should.eql(['browse', 'edit', 'add', 'destroy']);
 
-                actionsMap.browse.should.eql(['post']);
-                actionsMap.edit.should.eql(['post', 'tag', 'user', 'page']);
-                actionsMap.add.should.eql(['post', 'user', 'page']);
-                actionsMap.destroy.should.eql(['post', 'user']);
+                actions.browse.should.eql(['post']);
+                actions.edit.should.eql(['post', 'tag', 'user', 'page']);
+                actions.add.should.eql(['post', 'user', 'page']);
+                actions.destroy.should.eql(['post', 'user']);
 
                 done();
             }).catch(done);
@@ -97,17 +97,17 @@ describe('Permissions', function () {
         it('can load an actions map from existing permissions, and deduplicate', function (done) {
             fakePermissions = loadFakePermissions({extra: true});
 
-            permissions.init().then(function (actionsMap) {
-                should.exist(actionsMap);
+            permissions.init().then(function (actions) {
+                should.exist(actions);
 
                 permissions.canThis.should.not.throwError();
 
-                _.keys(actionsMap).should.eql(['browse', 'edit', 'add', 'destroy']);
+                _.keys(actions).should.eql(['browse', 'edit', 'add', 'destroy']);
 
-                actionsMap.browse.should.eql(['post']);
-                actionsMap.edit.should.eql(['post', 'tag', 'user', 'page']);
-                actionsMap.add.should.eql(['post', 'user', 'page']);
-                actionsMap.destroy.should.eql(['post', 'user']);
+                actions.browse.should.eql(['post']);
+                actions.edit.should.eql(['post', 'tag', 'user', 'page']);
+                actions.add.should.eql(['post', 'user', 'page']);
+                actions.destroy.should.eql(['post', 'user']);
 
                 done();
             }).catch(done);

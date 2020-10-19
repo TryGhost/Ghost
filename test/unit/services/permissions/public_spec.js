@@ -122,8 +122,8 @@ describe('Permissions', function () {
 
                 return applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                     done('Did not throw an error for draft');
-                }).catch(function (err) {
-                    (err instanceof errors.NoPermissionError).should.eql(true);
+                }).catch(function (error) {
+                    (error instanceof errors.NoPermissionError).should.eql(true);
                     done();
                 });
             });

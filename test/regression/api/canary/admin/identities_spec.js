@@ -12,7 +12,6 @@ let request;
 
 const verifyJWKS = (endpoint, token) => {
     return new Promise((resolve, reject) => {
-        const jwksClient = require('jwks-rsa');
         const client = jwksClient({
             jwksUri: endpoint
         });

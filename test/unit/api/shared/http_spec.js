@@ -58,12 +58,12 @@ describe('Unit: api/shared/http', function () {
     });
 
     it('api response is fn', function (done) {
-        const response = sinon.stub().callsFake(function (req, res, next) {
-            should.exist(req);
-            should.exist(res);
-            should.exist(next);
+        const response = sinon.stub().callsFake(function (_req, _res, _next) {
+            should.exist(_req);
+            should.exist(_res);
+            should.exist(_next);
             apiImpl.calledOnce.should.be.true();
-            res.json.called.should.be.false();
+            _res.json.called.should.be.false();
             done();
         });
 

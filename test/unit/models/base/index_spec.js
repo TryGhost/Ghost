@@ -67,8 +67,8 @@ describe('Models: base', function () {
             security.string.safe.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
-                .then((slug) => {
-                    slug.should.eql(new Array(186).join('a'));
+                .then((generatedSlug) => {
+                    generatedSlug.should.eql(new Array(186).join('a'));
                 });
         });
 
@@ -79,8 +79,8 @@ describe('Models: base', function () {
             security.string.safe.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
-                .then((slug) => {
-                    slug.should.eql('upsi-tableName');
+                .then((generatedSlug) => {
+                    generatedSlug.should.eql('upsi-tableName');
                 });
         });
 
@@ -95,8 +95,8 @@ describe('Models: base', function () {
             security.string.safe.withArgs(slug).returns(slug);
 
             return models.Base.Model.generateSlug(Model, slug, options)
-                .then((slug) => {
-                    slug.should.eql('hash-#lul');
+                .then((generatedSlug) => {
+                    generatedSlug.should.eql('hash-#lul');
                 });
         });
 
