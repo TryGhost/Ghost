@@ -92,6 +92,30 @@ describe('Image card', function () {
         serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image" width="640" height="480"></figure>');
     });
 
+    it.skip('renders an image with resized max default width/height', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                fileName: 'NatGeo01.jpg',
+                src: '/content/images/2018/08/NatGeo01-9.jpg',
+                width: 3200,
+                height: 1600
+            },
+            options: {
+                imageOptimization: {
+                    defaultMaxWidth: 2000
+                },
+                canTransformImage: () => true
+            }
+        };
+
+        const output = serializer.serialize(card.render(opts));
+        output.should.match(/width="2000"/);
+        output.should.match(/height="1000"/);
+    });
+
     it('renders nothing with no src', function () {
         let opts = {
             env: {
