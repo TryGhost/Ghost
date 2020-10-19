@@ -31,8 +31,8 @@ describe('{{#foreach}} helper', function () {
             };
         });
 
-        function runTest(self, context, options) {
-            helpers.foreach.call(self, context, options);
+        function runTest(self, _context, _options) {
+            helpers.foreach.call(self, _context, _options);
         }
 
         it('should not populate data if no private data is supplied (array)', function () {
@@ -567,14 +567,14 @@ describe('{{#foreach}} helper', function () {
             });
 
             it('should output nothing if all tags are internal', function () {
-                const tagArrayHash = {
+                const internalTagArrayHash = {
                     tags: [
                         {name: 'first', visibility: 'internal'},
                         {name: 'second', visibility: 'internal'}
                     ]
                 };
 
-                const tagObjectHash = {
+                const internalTagObjectHash = {
                     tags: {
                         first: {name: 'first', visibility: 'internal'},
                         second: {name: 'second', visibility: 'internal'}
@@ -584,8 +584,8 @@ describe('{{#foreach}} helper', function () {
                 const templateString = '<ul>{{#foreach tags}}<li>{{@index}} {{name}}</li>{{/foreach}}</ul>';
                 const expected = '<ul></ul>';
 
-                shouldCompileToExpected(templateString, tagObjectHash, expected);
-                shouldCompileToExpected(templateString, tagArrayHash, expected);
+                shouldCompileToExpected(templateString, internalTagObjectHash, expected);
+                shouldCompileToExpected(templateString, internalTagArrayHash, expected);
             });
         });
     });

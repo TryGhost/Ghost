@@ -213,7 +213,7 @@ describe('Unit: api/shared/pipeline', function () {
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
             shared.pipeline.STAGES.query.resolves('response');
-            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, apiUtils, apiConfig, apiImpl, frame) {
+            shared.pipeline.STAGES.serialisation.output.callsFake(function (response, _apiUtils, apiConfig, apiImpl, frame) {
                 frame.response = response;
             });
 

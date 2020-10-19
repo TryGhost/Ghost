@@ -39,8 +39,8 @@ describe.skip('Scheduling: Post Scheduling', function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sinon.stub(events, 'onMany').callsFake(function (events, stubDone) {
-            events.forEach(function (event) {
+        sinon.stub(events, 'onMany').callsFake(function (stubedEvents, stubDone) {
+            stubedEvents.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
         });
