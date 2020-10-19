@@ -18,7 +18,7 @@ module.exports = function normalize(req, res, next) {
         in: originalPath,
         out,
         ext: req.file.ext,
-        width: 2000
+        width: config.get('imageOptimization:defaultMaxWidth')
     }, imageOptimizationOptions);
 
     imageTransform.resizeFromPath(options)
