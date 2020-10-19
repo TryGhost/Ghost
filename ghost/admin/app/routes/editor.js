@@ -8,6 +8,7 @@ import {inject as service} from '@ember/service';
 
 let generalShortcuts = {};
 generalShortcuts[`${ctrlOrCmd}+shift+p`] = 'publish';
+generalShortcuts[`${ctrlOrCmd}+p`] = 'preview';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, {
     feature: service(),
@@ -52,6 +53,10 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
                 this.controller.send('setSaveType', 'publish');
                 this.controller.send('save');
             });
+        },
+
+        preview() {
+            window.open(this.controller.post.previewUrl, '_blank', 'noopener');
         },
 
         authorizationFailed() {
