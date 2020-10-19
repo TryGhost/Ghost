@@ -10,8 +10,8 @@ const SingleUseToken = ghostBookshelf.Model.extend({
                 .randomBytes(192 / 8)
                 .toString('base64')
                 // base64url encoding means the tokens are URL safe
-                .replace('+', '-')
-                .replace('/', '_')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
         };
     }
 }, {
