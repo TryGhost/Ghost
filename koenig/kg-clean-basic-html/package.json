@@ -34,7 +34,7 @@
     "@babel/preset-env": "7.12.1",
     "jsdom": "16.4.0",
     "mocha": "8.2.0",
-    "rollup": "2.30.0",
+    "rollup": "2.32.0",
     "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
     "sinon": "9.2.0"
