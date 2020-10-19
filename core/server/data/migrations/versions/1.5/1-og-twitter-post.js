@@ -14,8 +14,8 @@ _private.handle = function handle(options) {
         let connection = opts.connection;
 
         return connection.schema.hasTable(table)
-            .then(function (exists) {
-                if (!exists) {
+            .then(function (tableExists) {
+                if (!tableExists) {
                     return Promise.reject(new Error('Table does not exist!'));
                 }
 
