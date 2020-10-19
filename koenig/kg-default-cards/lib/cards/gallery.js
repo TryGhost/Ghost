@@ -125,7 +125,7 @@ module.exports = {
 
                     if (isLocalContentImage(image.src) && options.canTransformImage && options.canTransformImage(image.src)) {
                         // find available image size next up from 2x600 so we can use it for the "retina" src
-                        const availableImageWidths = getAvailableImageWidths(image, options.contentImageSizes);
+                        const availableImageWidths = getAvailableImageWidths(image, options.imageOptimization.contentImageSizes);
                         const srcWidth = availableImageWidths.find(width => width >= 1200);
 
                         if (!srcWidth || srcWidth === image.width) {

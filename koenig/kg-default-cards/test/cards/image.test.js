@@ -162,11 +162,13 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -185,11 +187,13 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     },
                     target: 'email'
                 }
@@ -225,12 +229,14 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    srcsets: false,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        srcsets: false,
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -251,11 +257,13 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     },
                     canTransformImage
                 }
@@ -274,11 +282,13 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -297,11 +307,13 @@ describe('Image card', function () {
                     height: 700
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -320,11 +332,13 @@ describe('Image card', function () {
                     height: 300
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -343,11 +357,13 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -366,11 +382,13 @@ describe('Image card', function () {
                     height: 6000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -390,11 +408,13 @@ describe('Image card', function () {
                     height: 300
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -415,11 +435,13 @@ describe('Image card', function () {
                     height: 2000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -439,11 +461,13 @@ describe('Image card', function () {
                     cardWidth: 'wide'
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -462,12 +486,14 @@ describe('Image card', function () {
                     height: 2000
                 },
                 options: {
-                    srcsets: false,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        srcsets: false,
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -486,11 +512,13 @@ describe('Image card', function () {
                     height: 2000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -509,11 +537,13 @@ describe('Image card', function () {
                     // height: 2000
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -532,11 +562,13 @@ describe('Image card', function () {
                     height: 480
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -556,11 +588,13 @@ describe('Image card', function () {
                     cardWidth: 'wide'
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -580,11 +614,13 @@ describe('Image card', function () {
                     cardWidth: 'full'
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -607,11 +643,13 @@ describe('Image card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => true,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -658,11 +696,13 @@ describe('Image card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => false,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -688,11 +728,13 @@ describe('Image card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => true,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -717,11 +759,13 @@ describe('Image card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => true,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -744,11 +788,13 @@ describe('Image card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => true,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };

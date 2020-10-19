@@ -215,11 +215,13 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -243,11 +245,13 @@ describe('Gallery card', function () {
                 },
                 options: {
                     canTransformImage: () => true,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     },
                     target: 'email'
                 }
@@ -291,12 +295,14 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
-                    srcsets: false,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        srcsets: false,
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -333,11 +339,13 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -366,11 +374,13 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -393,11 +403,13 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -432,12 +444,14 @@ describe('Gallery card', function () {
                     }]
                 },
                 options: {
-                    srcsets: false,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        srcsets: false,
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -485,11 +499,13 @@ describe('Gallery card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => true,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };
@@ -532,11 +548,13 @@ describe('Gallery card', function () {
                 options: {
                     target: 'email',
                     canTransformImage: () => false,
-                    contentImageSizes: {
-                        w600: {width: 600},
-                        w1000: {width: 1000},
-                        w1600: {width: 1600},
-                        w2400: {width: 2400}
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
                     }
                 }
             };

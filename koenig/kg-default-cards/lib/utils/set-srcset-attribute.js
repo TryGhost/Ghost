@@ -9,7 +9,7 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         return;
     }
 
-    if (options.srcsets === false || !image.width || !options.contentImageSizes) {
+    if (!options.imageOptimization || options.imageOptimization.srcsets === false || !image.width || !options.imageOptimization.contentImageSizes) {
         return;
     }
 
@@ -17,7 +17,7 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         return;
     }
 
-    const srcsetWidths = getAvailableImageWidths(image, options.contentImageSizes);
+    const srcsetWidths = getAvailableImageWidths(image, options.imageOptimization.contentImageSizes);
 
     // apply srcset if this is a relative image that matches Ghost's image url structure
     if (isLocalContentImage(image.src)) {
