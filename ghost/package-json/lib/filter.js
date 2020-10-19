@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const notAPackageRegex = /^\.|_messages|README.md/i;
-let filterPackages;
 
 /**
  * ### Filter Packages
@@ -19,7 +18,7 @@ let filterPackages;
  * @param   {array/string}      active      as read from the settings object
  * @returns {Array}                         of objects with useful info about themes
  */
-filterPackages = function filterPackages(packages, active) {
+const filterPackages = function filterPackages(packages, active) {
     // turn active into an array if it isn't one, so this function can deal with lists and one-offs
     if (!Array.isArray(active)) {
         active = [active];
