@@ -570,6 +570,8 @@ export default Component.extend({
             let {editor} = this;
             let {head: {section}} = range;
 
+            editor.selectRange(range);
+
             editor.run((postEditor) => {
                 let nextPosition = postEditor.deleteRange(section.toRange());
                 postEditor.setRange(nextPosition);
