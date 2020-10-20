@@ -90,9 +90,9 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             const userData = testUtils.DataGenerator.forModel.users[4];
 
-            sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
-                userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
-                return Promise.resolve(userData);
+            sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (data) {
+                data.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
+                return Promise.resolve(data);
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
@@ -107,8 +107,8 @@ describe('User Model', function run() {
         it('can handle no gravatar', function (done) {
             const userData = testUtils.DataGenerator.forModel.users[0];
 
-            sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
-                return Promise.resolve(userData);
+            sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (data) {
+                return Promise.resolve(data);
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
