@@ -148,6 +148,7 @@ Post = ghostBookshelf.Model.extend({
         model.resourceTypeChanging = model.get('type') !== model.previous('type');
         model.publishedAtHasChanged = model.hasDateChanged('published_at');
         model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
+        model.isVisibilityChanging = model.get('visibility') !== model.previous('visibility');
 
         // Handle added and deleted for post -> page or page -> post
         if (model.resourceTypeChanging) {
@@ -206,6 +207,10 @@ Post = ghostBookshelf.Model.extend({
 
         if (model.statusChanging && (model.isPublished || model.wasPublished)) {
             this.handleStatusForAttachedModels(model, options);
+        }
+
+        if (model.isPublished && model.isVisibilityChanging) {
+            model.emitChange('visibility.changed');
         }
     },
 

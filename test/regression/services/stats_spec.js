@@ -21,10 +21,32 @@ describe('Stats', function () {
     describe('Post', function () {
         const getPostCount = async function () {
             const res = await request.get('/');
-            const result = res.text.match(/Total posts: (\d+)/);
+            const total = res.text.match(/Total posts: (\d+)/);
+            const members = res.text.match(/Total members posts: (\d+)/);
+            const paid = res.text.match(/Total paid members posts: (\d+)/);
 
-            return result ? parseInt(result[1]) : null;
+            return {
+                total: total ? parseInt(total[1]) : null,
+                members: members ? parseInt(members[1]) : null,
+                paid: paid ? parseInt(paid[1]) : null
+            };
         };
+
+        it('counts only published posts', async function () {
+            const initialPostCount = await getPostCount();
+
+            const newPost = testUtils.DataGenerator.forModel.posts[2];
+
+            // Create post by saving it. + Don't publish it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const postCount = await getPostCount();
+
+            postCount.total.should.equal(initialPostCount.total);
+
+            // clean up
+            await createdPost.destroy();
+        });
 
         it('publish', async function () {
             const initialPostCount = await getPostCount();
@@ -39,26 +61,31 @@ describe('Stats', function () {
 
             const postCount = await getPostCount();
 
-            postCount.should.equal(initialPostCount + 1);
+            postCount.total.should.equal(initialPostCount.total + 1);
+            postCount.members.should.equal(initialPostCount.members);
+            postCount.paid.should.equal(initialPostCount.paid);
 
             // clean up
             await createdPost.destroy();
         });
 
         it('unpublish', async function () {
-            const initialPostCount = await getPostCount();
-
             const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
 
             // Create post by saving it.
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const initialPostCount = await getPostCount();
 
             // Unpublish the post
             await models.Post.edit({status: 'draft'}, _.extend({}, authorContext, {id: createdPost.id}));
 
             const postCount = await getPostCount();
 
-            postCount.should.equal(initialPostCount);
+            postCount.total.should.equal(initialPostCount.total - 1);
+            postCount.members.should.equal(initialPostCount.members);
+            postCount.paid.should.equal(initialPostCount.paid);
 
             // clean up
             await createdPost.destroy();
@@ -80,7 +107,74 @@ describe('Stats', function () {
             // Check post count
             const postCount = await getPostCount();
 
-            postCount.should.equal(initialPostCount - 1);
+            postCount.total.should.equal(initialPostCount.total - 1);
+            postCount.members.should.equal(initialPostCount.members);
+            postCount.paid.should.equal(initialPostCount.paid);
+        });
+
+        it('publishes a members post', async function () {
+            const initialPostCount = await getPostCount();
+
+            const newPost = testUtils.DataGenerator.forModel.posts[2];
+
+            // Create post by saving it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            // Publish the post
+            await models.Post.edit({status: 'published', visibility: 'members'}, _.extend({}, authorContext, {id: createdPost.id}));
+
+            const postCount = await getPostCount();
+
+            postCount.total.should.equal(initialPostCount.total + 1);
+            postCount.members.should.equal(initialPostCount.members + 1);
+            postCount.paid.should.equal(initialPostCount.paid);
+
+            // clean up
+            await models.Post.destroy({id: createdPost.id});
+        });
+
+        it('publishes a paid post', async function () {
+            const initialPostCount = await getPostCount();
+
+            const newPost = testUtils.DataGenerator.forModel.posts[2];
+
+            // Create post by saving it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            // Publish the post
+            await models.Post.edit({status: 'published', visibility: 'paid'}, _.extend({}, authorContext, {id: createdPost.id}));
+
+            const postCount = await getPostCount();
+
+            postCount.total.should.equal(initialPostCount.total + 1);
+            postCount.members.should.equal(initialPostCount.members);
+            postCount.paid.should.equal(initialPostCount.paid + 1);
+
+            // clean up
+            await createdPost.destroy();
+        });
+
+        it('changes a members post to a paid post', async function () {
+            const newPost = testUtils.DataGenerator.forModel.posts[2];
+            newPost.status = 'published';
+            newPost.visibility = 'members';
+
+            // Create post by saving it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const initialPostCount = await getPostCount();
+
+            // Publish the post
+            await models.Post.edit({visibility: 'paid'}, _.extend({}, authorContext, {id: createdPost.id}));
+
+            const postCount = await getPostCount();
+
+            postCount.total.should.equal(initialPostCount.total);
+            postCount.members.should.equal(initialPostCount.members - 1);
+            postCount.paid.should.equal(initialPostCount.paid + 1);
+
+            // clean up
+            await createdPost.destroy();
         });
     });
 

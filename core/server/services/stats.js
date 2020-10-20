@@ -28,7 +28,7 @@ module.exports = {
 
         // We don't update for post.deleted
         // because post.unpublished is emitted when deleting a published post.
-        const postEvents = ['post.published', 'post.unpublished'];
+        const postEvents = ['post.published', 'post.unpublished', 'post.visibility.changed'];
 
         postEvents.forEach((event) => {
             events.on(event, async () => {
@@ -51,15 +51,15 @@ module.exports = {
     },
 
     async updateMembers() {
-        stats.total_members = await models.Member.count();
+        stats.total_members = (await db.knex('members').count())[0]['count(*)'];
         stats.total_paid_members = (await db.knex('members_stripe_customers').countDistinct('member_id'))[0]['count(distinct `member_id`)'];
         stats.total_free_members = stats.total_members - stats.total_paid_members;
     },
 
     async updatePosts() {
-        stats.total_posts = await models.Post.count();
-        stats.total_members_posts = await models.Post.where('visibility', 'member').count();
-        stats.total_paid_members_posts = await models.Post.where('visibility', 'paid').count();
+        stats.total_posts = (await db.knex('posts').where({status: 'published'}).count())[0]['count(*)'];
+        stats.total_members_posts = (await db.knex('posts').where({visibility: 'members', status: 'published'}).count())[0]['count(*)'];
+        stats.total_paid_members_posts = (await db.knex('posts').where({visibility: 'paid', status: 'published'}).count())[0]['count(*)'];
         stats.total_tags = await models.Tag.count();
         stats.total_authors = await models.Author.count();
     },
