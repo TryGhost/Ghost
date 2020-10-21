@@ -4818,6 +4818,13 @@ is-color-stop@^1.0.0:
     rgb-regex "^1.0.1"
     rgba-regex "^1.0.0"
 
+is-core-module@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.0.0.tgz#58531b70aed1db7c0e8d4eb1a0a2d1ddd64bd12d"
+  integrity sha512-jq1AH6C8MuteOoBPwkxHafmByhL9j5q4OaPGdbuD+ZtQJVzH+i6E3BJDQcBA09k57i2Hh2yQbEG8yObZ0jdlWw==
+  dependencies:
+    has "^1.0.3"
+
 is-data-descriptor@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz#0b5ee648388e2c860282e793f1856fec3f301b56"
@@ -5352,45 +5359,24 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@3.4.7:
-  version "3.4.7"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.4.7.tgz#ec98d5b78659e619314c2f1e3ae7515768e2629a"
-  integrity sha512-ihcodeD/OZ4MwCkKwEWMY4mNQyoxhqCydo3LNL54+6TVdFTR3fg2aHNWqlv7Arbdi3Jj96UjYk+jVHCMhMSrjQ==
+knex-migrator@3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.5.0.tgz#8fbf7757d550f24ee8fb95750d56893afd6cc1cd"
+  integrity sha512-AwyUg0dm+diLZi2gbSThMQDVP+Bwf2foBisBc3u52fsPzCtLdsQp4W9vJ+7DSmNctvAh4T8hxq2Mkj75ayN94w==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
-    debug "4.1.1"
+    debug "4.2.0"
     ghost-ignition "4.2.2"
-    knex "0.21.3"
-    lodash "4.17.19"
+    knex "0.21.6"
+    lodash "4.17.20"
     moment "2.24.0"
     nconf "0.10.0"
-    resolve "1.17.0"
+    resolve "1.18.1"
   optionalDependencies:
     mysql "2.18.1"
     sqlite3 "4.2.0"
-
-knex@0.21.3:
-  version "0.21.3"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.3.tgz#e9de972d290c96419ecaa792a0cd308aca9e4564"
-  integrity sha512-XENKsDdeKmn5yBENTRoik5AOlrxhjTUbDuML6iX7TtOtFHQ5rTfuUce7jk9UVKKmxgbzyA0wsSKWs6xfRgAwfA==
-  dependencies:
-    colorette "1.2.1"
-    commander "^5.1.0"
-    debug "4.1.1"
-    esm "^3.2.25"
-    getopts "2.2.5"
-    inherits "~2.0.4"
-    interpret "^2.2.0"
-    liftoff "3.1.0"
-    lodash "^4.17.19"
-    mkdirp "^1.0.4"
-    pg-connection-string "2.3.0"
-    tarn "^3.0.0"
-    tildify "2.0.0"
-    uuid "^7.0.3"
-    v8flags "^3.2.0"
 
 knex@0.21.6:
   version "0.21.6"
@@ -7976,7 +7962,15 @@ resolve-url@^0.2.1:
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
   integrity sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
 
-resolve@1.17.0, resolve@^1.1.6, resolve@^1.1.7, resolve@^1.11.1:
+resolve@1.18.1:
+  version "1.18.1"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.18.1.tgz#018fcb2c5b207d2a6424aee361c5a266da8f4130"
+  integrity sha512-lDfCPaMKfOJXjy0dPayzPdF1phampNWr3qFCjAu+rw/qbQmr5jWH5xN2hwh9QKfw9E5v4hwV7A+jrCmL8yjjqA==
+  dependencies:
+    is-core-module "^2.0.0"
+    path-parse "^1.0.6"
+
+resolve@^1.1.6, resolve@^1.1.7, resolve@^1.11.1:
   version "1.17.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.17.0.tgz#b25941b54968231cc2d1bb76a79cb7f2c0bf8444"
   integrity sha512-ic+7JYiV8Vi2yzQGFWOkiZD5Z9z7O2Zhm9XMaTxdJExKasieFCr+yXZ/WmXsckHiKl12ar0y6XiXDx3m4RHn1w==

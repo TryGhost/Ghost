@@ -105,7 +105,7 @@
     "juice": "7.0.0",
     "keypair": "1.0.1",
     "knex": "0.21.6",
-    "knex-migrator": "3.4.7",
+    "knex-migrator": "3.5.0",
     "lodash": "4.17.20",
     "mailgun-js": "0.22.0",
     "metascraper": "5.11.9",
