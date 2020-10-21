@@ -316,4 +316,89 @@ describe('Stats', function () {
             memberCount.paid.should.equal(initialMemberCount.paid);
         });
     });
+
+    describe('Tag', function () {
+        const getTagCount = async function () {
+            const res = await request.get('/');
+            const total = res.text.match(/Total tags: (\d+)/);
+
+            return total ? parseInt(total[1]) : null;
+        };
+
+        it('does not count unused tags', async function () {
+            const initialTagCount = await getTagCount();
+
+            const createdTag = await models.Tag.add({
+                name: 'test tag',
+                slug: 'test-tag'
+            });
+
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+
+            // Create post by saving it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const tagCount = await getTagCount();
+
+            tagCount.should.equal(initialTagCount);
+
+            // clean up
+            await models.Tag.destroy({id: createdTag.id});
+            await models.Post.destroy({id: createdPost.id});
+        });
+
+        it('tag added to a post', async function () {
+            const initialTagCount = await getTagCount();
+
+            const createdTag = await models.Tag.add({
+                name: 'test tag',
+                slug: 'test-tag'
+            });
+
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+            newPost.tags = [
+                {id: createdTag.id}
+            ];
+
+            // Create post by saving it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const tagCount = await getTagCount();
+
+            tagCount.should.equal(initialTagCount + 1);
+
+            // clean up
+            await models.Tag.destroy({id: createdTag.id});
+            await models.Post.destroy({id: createdPost.id});
+        });
+
+        it('tag deleted', async function () {
+            const createdTag = await models.Tag.add({
+                name: 'test tag',
+                slug: 'test-tag'
+            });
+
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+            newPost.tags = [
+                {id: createdTag.id}
+            ];
+
+            // Create post by saving it.
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const initialTagCount = await getTagCount();
+
+            await models.Tag.destroy({id: createdTag.id});
+
+            const tagCount = await getTagCount();
+
+            tagCount.should.equal(initialTagCount - 1);
+
+            // clean up
+            await models.Post.destroy({id: createdPost.id});
+        });
+    });
 });

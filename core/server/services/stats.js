@@ -16,6 +16,12 @@ async function getOldestPostCreatedDate() {
     return result.models && result.models[0] ? result.models[0] : null;
 }
 
+async function countTags() {
+    const result = await db.knex('posts_tags').join('posts', 'posts.id', '=', 'posts_tags.post_id').where({status: 'published'}).countDistinct('tag_id');
+
+    return result[0]['count(distinct `tag_id`)'];
+}
+
 module.exports = {
     async init() {
         await this.updateMembers();
@@ -48,6 +54,12 @@ module.exports = {
                 events.emit('updateGlobalTemplateOptions');
             });
         });
+
+        events.on('tag.deleted', async () => {
+            stats.total_tags = await countTags();
+
+            events.emit('updateGlobalTemplateOptions');
+        });
     },
 
     async updateMembers() {
@@ -60,7 +72,7 @@ module.exports = {
         stats.total_posts = (await db.knex('posts').where({status: 'published'}).count())[0]['count(*)'];
         stats.total_members_posts = (await db.knex('posts').where({visibility: 'members', status: 'published'}).count())[0]['count(*)'];
         stats.total_paid_members_posts = (await db.knex('posts').where({visibility: 'paid', status: 'published'}).count())[0]['count(*)'];
-        stats.total_tags = await models.Tag.count();
+        stats.total_tags = await countTags();
         stats.total_authors = await models.Author.count();
     },
 
