@@ -19,8 +19,8 @@
     )
 )}}
 
-{{#if this.toolbar}}
-    <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}}>
+{{#if (or this.toolbar this.saveAsSnippet)}}
+    <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}} @instantClose={{this.koenigUi.inputHasFocus}}>
         {{#each this.toolbar.items as |item|}}
             {{#if item.divider}}
                 <li class="ma0 kg-action-bar-divider bg-darkgrey-d2 h5" role="separator"></li>
@@ -37,5 +37,21 @@
                 </li>
             {{/if}}
         {{/each}}
+
+        {{#if (and this.saveAsSnippet (enable-developer-experiments))}}
+            {{#if this.toolbar.items}}
+                <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+            {{/if}}
+            <li class="ma0 lh-solid">
+                <button
+                    type="button"
+                    title="Create snippet"
+                    class="dib dim-lite link h9 w9 nudge-top--1"
+                    {{on "click" this.saveAsSnippet}}
+                >
+                    {{svg-jar "koenig/kg-snippet" class="w4 h4"}}
+                </button>
+            </li>
+        {{/if}}
     </KgActionBar>
 {{/if}}

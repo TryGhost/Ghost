@@ -618,6 +618,12 @@ export default Component.extend({
             this.deleteCard(card, cursorMovement);
         },
 
+        saveCardAsSnippet(card) {
+            let section = this.getSectionFromCard(card);
+            this.set('snippetRect', card.component.element.getBoundingClientRect());
+            this.set('snippetRange', section.toRange());
+        },
+
         moveCursorToPrevSection(card) {
             let section = this.getSectionFromCard(card);
 
@@ -671,11 +677,13 @@ export default Component.extend({
             return;
         }
 
+        this.set('snippetRect', null);
         this.set('snippetRange', selectedRange);
     }),
 
     cancelAddSnippet: action(function () {
         this.set('snippetRange', null);
+        this.set('snippetRect', null);
     }),
 
     /* public interface ----------------------------------------------------- */
