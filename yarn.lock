@@ -8111,10 +8111,10 @@ safe-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sanitize-html@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.1.0.tgz#fd7ae54981277cbda8dbd844c273088acf928d94"
-  integrity sha512-KmMfD0jJGigON1Ll0snYz6QgK+L3wYoi6Zl4jSUZT/rg5Pw55zIKAQSjCiZmxL5izM+qJSFr+PW9WGHuiYobgA==
+sanitize-html@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.1.1.tgz#ad87355592bcb6c4659d45193db86098c7efe449"
+  integrity sha512-yb+I+K25cn6PzsRJb+kGdlOBC3SkvEwJrr/Xl+6YR42oDZDeu61yWeEMSEi0hCKlRSYlWWE4tUnF2Ds+c/M1Vg==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
