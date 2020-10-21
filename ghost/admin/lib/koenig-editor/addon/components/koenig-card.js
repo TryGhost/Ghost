@@ -109,9 +109,14 @@ export default Component.extend({
             run.scheduleOnce('afterRender', this, this._showToolbar);
         }
 
+        if (isSelected && this._lastIsSelected && this.saveAsSnippet && this.saveAsSnippet !== this._lastSaveAsSnippet) {
+            run.scheduleOnce('afterRender', this, this._showToolbar);
+        }
+
         this._lastIsSelected = isSelected;
         this._lastIsEditing = isEditing;
         this._lastToolbar = this.toolbar;
+        this._lastSaveAsSnippet = this.saveAsSnippet;
     },
 
     didInsertElement() {
