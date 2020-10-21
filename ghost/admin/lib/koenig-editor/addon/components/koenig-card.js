@@ -42,8 +42,11 @@ export default Component.extend({
     onEnterEdit() {},
     onLeaveEdit() {},
 
-    shouldShowToolbar: computed('showToolbar', 'koenigUi.{captionHasFocus,isDragging}', function () {
-        return this.showToolbar && !this.koenigUi.captionHasFocus && !this.koenigUi.isDragging;
+    shouldShowToolbar: computed('showToolbar', 'koenigUi.{captionHasFocus,isDragging,inputHasFocus}', function () {
+        return this.showToolbar
+            && !this.koenigUi.captionHasFocus
+            && !this.koenigUi.inputHasFocus
+            && !this.koenigUi.isDragging;
     }),
 
     toolbarStyle: computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight', function () {
@@ -241,7 +244,7 @@ export default Component.extend({
     },
 
     _setToolbarProperties() {
-        if (this.toolbar) {
+        if (this.toolbar || this.saveAsSnippet) {
             // select the last toolbar in the element because card contents/captions
             // may have their own toolbar elements
             let toolbar = this.element.querySelector(':scope > [data-kg-toolbar="true"]');
@@ -256,7 +259,7 @@ export default Component.extend({
 
     _showToolbar() {
         // only show a toolbar if we have one
-        if (this.toolbar) {
+        if (this.toolbar || this.saveAsSnippet) {
             this._setToolbarProperties();
 
             if (!this.showToolbar && !this._onMousemoveHandler) {

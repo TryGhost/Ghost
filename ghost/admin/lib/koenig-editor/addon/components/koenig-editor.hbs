@@ -40,6 +40,7 @@
     <KoenigSnippetInput
         @editor={{this.editor}}
         @snippetRange={{this.snippetRange}}
+        @snippetRect={{this.snippetRect}}
         @save={{@saveSnippet}}
         @cancel={{this.cancelAddSnippet}}
     />
@@ -83,6 +84,7 @@
             deselectCard=(action "deselectCard" card)
             editCard=(action "editCard" card)
             deleteCard=(action "deleteCard" card)
+            saveAsSnippet=(action "saveCardAsSnippet" card)
             moveCursorToPrevSection=(action "moveCursorToPrevSection" card)
             moveCursorToNextSection=(action "moveCursorToNextSection" card)
             addParagraphAfterCard=(action "addParagraphAfterCard" card)
