@@ -526,4 +526,53 @@ describe('Stats', function () {
             await models.Post.destroy({id: createdPost.id});
         });
     });
+
+    describe('Age', function () {
+        const getSiteAge = async function () {
+            // wait for global template update.
+            await sleep(200);
+
+            const res = await request.get('/');
+            const age = res.text.match(/Site age: (\d+)/);
+            const years = res.text.match(/Site age years: (\d+)/);
+
+            return {
+                site_age: age ? parseInt(age[1]) : null,
+                site_age_years: years ? parseInt(years[1]) : null
+            };
+        };
+
+        it('no post', async function () {
+            await testUtils.truncate('posts');
+
+            // Create and remove a post to update global template options.
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+            await models.Post.destroy({id: createdPost.id});
+
+            const {site_age, site_age_years} = await getSiteAge();
+
+            site_age.should.equal(0);
+            site_age_years.should.equal(0);
+        });
+
+        it('a post', async function () {
+            // Add a post.
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+            newPost.created_at = moment().subtract(3, 'years');
+
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
+
+            const {site_age, site_age_years} = await getSiteAge();
+
+            // 94694400000 = 3 years.
+            site_age.should.be.greaterThan(94694400000).lessThan(94694430000);
+            site_age_years.should.equal(3);
+
+            // clean up
+            await createdPost.destroy();
+        });
+    });
 });

@@ -11,9 +11,9 @@ const {events} = require('../lib/common');
 const stats = {};
 
 async function getOldestPostCreatedDate() {
-    const result = models.Post.query(qb => qb.orderBy('created_at', 'ASC').limit(1)).fetchAll({columns: ['created_at']});
+    const result = await models.Post.query(qb => qb.orderBy('created_at', 'ASC').limit(1)).fetchAll({columns: ['created_at']});
 
-    return result.models && result.models[0] ? result.models[0] : null;
+    return result.models && result.models[0] ? result.models[0].get('created_at') : null;
 }
 
 async function countTags() {
