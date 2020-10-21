@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const _ = require('lodash');
+const moment = require('moment');
 const should = require('should');
 
 const testUtils = require('../../utils');
@@ -17,6 +18,10 @@ function sleep(ms) {
     });
 }
 
+function post() {
+    return _.clone(testUtils.DataGenerator.forModel.posts[0]);
+}
+
 describe('Stats', function () {
     before(async function () {
         await ghost();
@@ -27,6 +32,9 @@ describe('Stats', function () {
 
     describe('Post', function () {
         const getPostCount = async function () {
+            // wait for global template update.
+            await sleep(200);
+
             const res = await request.get('/');
             const total = res.text.match(/Total posts: (\d+)/);
             const members = res.text.match(/Total members posts: (\d+)/);
@@ -42,7 +50,7 @@ describe('Stats', function () {
         it('counts only published posts', async function () {
             const initialPostCount = await getPostCount();
 
-            const newPost = testUtils.DataGenerator.forModel.posts[2];
+            const newPost = post();
 
             // Create post by saving it. + Don't publish it.
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
@@ -58,7 +66,7 @@ describe('Stats', function () {
         it('publish', async function () {
             const initialPostCount = await getPostCount();
 
-            const newPost = testUtils.DataGenerator.forModel.posts[2];
+            const newPost = post();
 
             // Create post by saving it.
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
@@ -77,7 +85,7 @@ describe('Stats', function () {
         });
 
         it('unpublish', async function () {
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
 
             // Create post by saving it.
@@ -99,7 +107,7 @@ describe('Stats', function () {
         });
 
         it('delete', async function () {
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
 
             // Create post by saving it.
@@ -122,7 +130,7 @@ describe('Stats', function () {
         it('publishes a members post', async function () {
             const initialPostCount = await getPostCount();
 
-            const newPost = testUtils.DataGenerator.forModel.posts[2];
+            const newPost = post();
 
             // Create post by saving it.
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
@@ -143,7 +151,7 @@ describe('Stats', function () {
         it('publishes a paid post', async function () {
             const initialPostCount = await getPostCount();
 
-            const newPost = testUtils.DataGenerator.forModel.posts[2];
+            const newPost = post();
 
             // Create post by saving it.
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
@@ -162,7 +170,7 @@ describe('Stats', function () {
         });
 
         it('changes a members post to a paid post', async function () {
-            const newPost = testUtils.DataGenerator.forModel.posts[2];
+            const newPost = post();
             newPost.status = 'published';
             newPost.visibility = 'members';
 
@@ -187,6 +195,9 @@ describe('Stats', function () {
 
     describe('Member', function () {
         const getMemberCount = async function () {
+            // wait for global template update.
+            await sleep(200);
+
             const res = await request.get('/');
             const total = res.text.match(/Total members: (\d+)/);
             const free = res.text.match(/Total free members: (\d+)/);
@@ -215,6 +226,9 @@ describe('Stats', function () {
             memberCount.total.should.equal(initialMemberCount.total + 1);
             memberCount.free.should.equal(initialMemberCount.free + 1);
             memberCount.paid.should.equal(initialMemberCount.paid);
+
+            // clean up
+            await models.Member.destroy({id: createdMember.id});
         });
 
         it('member subscribed', async function () {
@@ -255,6 +269,9 @@ describe('Stats', function () {
             memberCount.total.should.equal(initialMemberCount.total);
             memberCount.free.should.equal(initialMemberCount.free - 1);
             memberCount.paid.should.equal(initialMemberCount.paid + 1);
+
+            // clean up
+            await models.Member.destroy({id: createdMember.id});
         });
 
         it('member unsubscribed', async function () {
@@ -298,6 +315,9 @@ describe('Stats', function () {
             memberCount.total.should.equal(initialMemberCount.total);
             memberCount.free.should.equal(initialMemberCount.free + 1);
             memberCount.paid.should.equal(initialMemberCount.paid - 1);
+
+            // clean up
+            await models.Member.destroy({id: createdMember.id});
         });
 
         it('member deleted', async function () {
@@ -326,6 +346,9 @@ describe('Stats', function () {
 
     describe('Tag', function () {
         const getTagCount = async function () {
+            // wait for global template update.
+            await sleep(200);
+
             const res = await request.get('/');
             const total = res.text.match(/Total tags: (\d+)/);
 
@@ -340,7 +363,7 @@ describe('Stats', function () {
                 slug: 'test-tag'
             });
 
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
 
             // Create post by saving it.
@@ -363,7 +386,7 @@ describe('Stats', function () {
                 slug: 'test-tag'
             });
 
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
             newPost.tags = [
                 {id: createdTag.id}
@@ -387,7 +410,7 @@ describe('Stats', function () {
                 slug: 'test-tag'
             });
 
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
             newPost.tags = [
                 {id: createdTag.id}
@@ -440,7 +463,7 @@ describe('Stats', function () {
                 }
             };
 
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
 
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, testAuthorContext));
@@ -468,7 +491,7 @@ describe('Stats', function () {
                 password: '1234aa56789'
             });
 
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
 
             const testAuthorContext = {
@@ -499,7 +522,7 @@ describe('Stats', function () {
                 password: '1234aa56789'
             });
 
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
 
             const testAuthorContext = {
@@ -545,8 +568,10 @@ describe('Stats', function () {
         it('no post', async function () {
             await testUtils.truncate('posts');
 
+            await request.get('/'); // Load handlebars. Without this, UnhandledPromiseRejectionWarning is thrown.
+
             // Create and remove a post to update global template options.
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
             const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, authorContext));
             await models.Post.destroy({id: createdPost.id});
@@ -559,7 +584,7 @@ describe('Stats', function () {
 
         it('a post', async function () {
             // Add a post.
-            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            const newPost = post();
             newPost.status = 'published';
             newPost.created_at = moment().subtract(3, 'years');
 
