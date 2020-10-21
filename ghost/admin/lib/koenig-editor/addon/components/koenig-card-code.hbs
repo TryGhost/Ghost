@@ -1,5 +1,5 @@
 <KoenigCard
-    @class={{concat "ba b--white relative kg-card-hover miw-100 relative" (if this.isEditing " bw2 pt1 pb1 pl2 nl6 pr6 nr6")}}
+    @class={{concat "ba b--white relative kg-card-hover miw-100" (if this.isEditing " bw2 pt1 pb1 pl2 nl6 pr6 nr6")}}
     @style={{this.cardStyle}}
     @headerOffset={{this.headerOffset}}
     @toolbar={{this.toolbar}}
@@ -10,6 +10,7 @@
     @deselectCard={{action this.deselectCard}}
     @editCard={{action this.editCard}}
     @saveCard={{action this.saveCard}}
+    @saveAsSnippet={{this.saveAsSnippet}}
     @onEnterEdit={{action "enterEditMode"}}
     @onLeaveEdit={{action "leaveEditMode"}}
     @addParagraphAfterCard={{this.addParagraphAfterCard}}

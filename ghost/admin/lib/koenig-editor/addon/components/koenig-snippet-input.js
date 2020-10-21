@@ -4,6 +4,7 @@ import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {action} from '@ember/object';
 import {guidFor} from '@ember/object/internals';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 // pixels that should be added to the `left` property of the tick adjustment styles
@@ -11,11 +12,16 @@ import {tracked} from '@glimmer/tracking';
 const TICK_ADJUSTMENT = 8;
 
 export default class KoenigSnippetInputComponent extends Component {
+    @service koenigUi;
+
     @tracked name = '';
     @tracked style = ''.htmlSafe();
 
     constructor() {
         super(...arguments);
+
+        // hide any other toolbars
+        this.koenigUi.inputHasFocus = true;
 
         // record the range now because the property is bound and will update
         // when the selection changes
@@ -46,6 +52,7 @@ export default class KoenigSnippetInputComponent extends Component {
     }
 
     willDestroy() {
+        this.koenigUi.inputHasFocus = false;
         window.removeEventListener('mousedown', this._onMousedownHandler);
         window.removeEventListener('keydown', this._onKeydownHandler);
         this._removeStyleElement();
