@@ -20,13 +20,6 @@
   },
   "devDependencies": {
     "mocha": "8.2.0",
-    "should": "13.2.3",
-    "sinon": "9.2.0",
     "supertest": "5.0.0"
-  },
-  "dependencies": {
-    "bluebird": "3.7.2",
-    "ghost-ignition": "4.2.2",
-    "lodash": "4.17.20"
   }
 }
