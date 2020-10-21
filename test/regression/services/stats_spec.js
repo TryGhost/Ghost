@@ -6,9 +6,16 @@ const testUtils = require('../../utils');
 const localUtils = require('../api/canary/admin/utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const ghost = testUtils.startGhost;
 const authorContext = testUtils.context.owner;
 let request;
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 describe('Stats', function () {
     before(async function () {
@@ -398,6 +405,124 @@ describe('Stats', function () {
             tagCount.should.equal(initialTagCount - 1);
 
             // clean up
+            await models.Post.destroy({id: createdPost.id});
+        });
+    });
+
+    describe('Author', function () {
+        const getAuthorCount = async function () {
+            // wait for global template update.
+            await sleep(200);
+
+            const res = await request.get('/');
+            const total = res.text.match(/Total authors: (\d+)/);
+
+            return total ? parseInt(total[1]) : null;
+        };
+
+        it('does not count users with no published post', async function () {
+            // Count authors
+            const initialTagCount = await getAuthorCount();
+
+            // Create user
+            const createdUser = await models.User.add({
+                name: 'Hello Worlder',
+                slug: 'hello-worlder',
+                email: 'helloworlder@gmail.com',
+                password: '1234aa56789'
+            });
+
+            // Publish a post without using that user.
+            const ghostUser = await models.User.findOne({email: 'ghost-author@example.com'});
+            const testAuthorContext = {
+                context: {
+                    user: ghostUser.id
+                }
+            };
+
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, testAuthorContext));
+
+            // Check count
+            const authorCount = await getAuthorCount();
+
+            authorCount.should.equal(initialTagCount);
+
+            // clean up
+            await models.User.destroy({id: createdUser.id});
+            await models.Post.destroy({id: createdPost.id});
+            await db.knex('posts_authors').where({author_id: createdUser.id}).del();
+        });
+
+        it('a user wrote a post', async function () {
+            // Count authors
+            const initialAuthorCount = await getAuthorCount();
+
+            // Create user and publish post with that user.
+            const createdUser = await models.User.add({
+                name: 'Hello Worlder 2',
+                slug: 'hello-worlder',
+                email: 'helloworlder-2@gmail.com',
+                password: '1234aa56789'
+            });
+
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+
+            const testAuthorContext = {
+                context: {
+                    user: createdUser.id
+                }
+            };
+
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, testAuthorContext));
+
+            // Check count
+            const authorCount = await getAuthorCount();
+
+            authorCount.should.equal(initialAuthorCount + 1);
+
+            // Clean up
+            await models.User.destroy({id: createdUser.id});
+            await models.Post.destroy({id: createdPost.id});
+            await db.knex('posts_authors').where({author_id: createdUser.id}).del();
+        });
+
+        it('user deleted', async function () {
+            // Create user and publish post
+            const createdUser = await models.User.add({
+                name: 'Hello Worlder 3',
+                slug: 'hello-worlder',
+                email: 'helloworlder-3@gmail.com',
+                password: '1234aa56789'
+            });
+
+            const newPost = testUtils.DataGenerator.forModel.posts[0];
+            newPost.status = 'published';
+
+            const testAuthorContext = {
+                context: {
+                    user: createdUser.id
+                }
+            };
+
+            const createdPost = await models.Post.add(newPost, _.merge({withRelated: ['author']}, testAuthorContext));
+
+            // Count authors
+            const initialAuthorCount = await getAuthorCount();
+
+            // Delete the user.
+            await db.knex('posts_authors').where({author_id: createdUser.id}).del();
+            await models.User.destroy({id: createdUser.id});
+
+            // Check count.
+            const authorCount = await getAuthorCount();
+
+            authorCount.should.equal(initialAuthorCount - 1);
+
+            // Clean up
             await models.Post.destroy({id: createdPost.id});
         });
     });
