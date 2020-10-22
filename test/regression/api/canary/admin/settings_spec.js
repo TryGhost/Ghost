@@ -399,18 +399,13 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('can toggle member setting', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/'))
+        it('can toggle member setting', function () {
+            return request.get(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .then(function (res) {
                     const jsonResponse = res.body;
-                    const changedValue = [];
 
                     const settingToChange = {
                         settings: [
@@ -424,25 +419,19 @@ describe('Settings API (canary)', function () {
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
 
-                    request.put(localUtils.API.getApiQuery('settings/'))
+                    return request.put(localUtils.API.getApiQuery('settings/'))
                         .set('Origin', config.get('url'))
                         .send(settingToChange)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            const putBody = res.body;
-                            res.headers['x-cache-invalidate'].should.eql('/*');
+                        .then(function ({body, headers}) {
+                            const putBody = body;
+                            headers['x-cache-invalidate'].should.eql('/*');
                             should.exist(putBody);
 
                             putBody.settings[0].key.should.eql('labs');
                             putBody.settings[0].value.should.eql(JSON.stringify({subscribers: false, members: false}));
-
-                            done();
                         });
                 });
         });
@@ -507,16 +496,12 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('Will transform "1"', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/'))
+        it('Will transform "1"', function () {
+            return request.get(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .then(function (res) {
                     const jsonResponse = res.body;
 
                     const settingToChange = {
@@ -531,26 +516,21 @@ describe('Settings API (canary)', function () {
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
 
-                    request.put(localUtils.API.getApiQuery('settings/'))
+                    return request.put(localUtils.API.getApiQuery('settings/'))
                         .set('Origin', config.get('url'))
                         .send(settingToChange)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            const putBody = res.body;
-                            res.headers['x-cache-invalidate'].should.eql('/*');
+                        .then(function ({body, headers}) {
+                            const putBody = body;
+                            headers['x-cache-invalidate'].should.eql('/*');
                             should.exist(putBody);
 
                             putBody.settings[0].key.should.eql('is_private');
                             putBody.settings[0].value.should.eql(true);
 
                             localUtils.API.checkResponse(putBody, 'settings');
-                            done();
                         });
                 });
         });
@@ -629,36 +609,28 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('should not be able to edit settings', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/'))
+        it('should not be able to edit settings', function () {
+            return request.get(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .then(function (res) {
                     let jsonResponse = res.body;
                     const newValue = 'new value';
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
 
-                    request.put(localUtils.API.getApiQuery('settings/'))
+                    return request.put(localUtils.API.getApiQuery('settings/'))
                         .set('Origin', config.get('url'))
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(403)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            jsonResponse = res.body;
-                            should.not.exist(res.headers['x-cache-invalidate']);
+                        .then(function ({body, headers}) {
+                            jsonResponse = body;
+                            should.not.exist(headers['x-cache-invalidate']);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
@@ -670,8 +642,6 @@ describe('Settings API (canary)', function () {
                                 'code',
                                 'id'
                             ]);
-
-                            done();
                         });
                 });
         });
@@ -699,36 +669,27 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('should not be able to edit settings', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/'))
+        it('should not be able to edit settings', function () {
+            return request.get(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .then(function (res) {
                     let jsonResponse = res.body;
-                    const newValue = 'new value';
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
 
-                    request.put(localUtils.API.getApiQuery('settings/'))
+                    return request.put(localUtils.API.getApiQuery('settings/'))
                         .set('Origin', config.get('url'))
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(403)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            jsonResponse = res.body;
-                            should.not.exist(res.headers['x-cache-invalidate']);
+                        .then(function ({body, headers}) {
+                            jsonResponse = body;
+                            should.not.exist(headers['x-cache-invalidate']);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
@@ -740,8 +701,6 @@ describe('Settings API (canary)', function () {
                                 'code',
                                 'id'
                             ]);
-
-                            done();
                         });
                 });
         });

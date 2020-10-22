@@ -62,8 +62,8 @@ describe('{{amp_content}} helper', function () {
                 amperizeCache[1].should.have.property('amp', testData.html);
                 // call it again, to make it fetch from cache
                 ampCachedResult = ampContentHelper.call(testData);
-                ampCachedResult.then(function (rendered) {
-                    should.exist(rendered);
+                ampCachedResult.then(function (cachedResult) {
+                    should.exist(cachedResult);
                     should.exist(amperizeCache);
                     amperizeCache[1].should.have.property('updated_at', 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)');
                     amperizeCache[1].should.have.property('amp', testData.html);
@@ -97,14 +97,14 @@ describe('{{amp_content}} helper', function () {
 
                 // call it again with different values to fetch from Amperize and not from cache
                 ampResult = ampContentHelper.call(testData2);
-                ampResult.then(function (rendered) {
-                    should.exist(rendered);
+                ampResult.then(function (cachedResult) {
+                    should.exist(cachedResult);
                     should.exist(amperizeCache);
 
                     // it should not have the old value,
                     amperizeCache[1].should.not.have.property('Wed Jul 30 2016 18:17:22 GMT+0200 (CEST)');
                     // only the new one
-                    rendered.string.should.equal(testData2.html);
+                    cachedResult.string.should.equal(testData2.html);
                     amperizeCache[1].should.have.property('updated_at', 'Wed Jul 30 2016 18:17:22 GMT+0200 (CEST)');
                     amperizeCache[1].should.have.property('amp', testData2.html);
                     done();

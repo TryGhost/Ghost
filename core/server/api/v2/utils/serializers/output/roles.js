@@ -18,9 +18,9 @@ module.exports = {
                     .catch(() => {});
             }), (value) => {
                 return value && (value.name !== 'Owner');
-            }).then((roles) => {
+            }).then((filteredRoles) => {
                 return frame.response = {
-                    roles: roles
+                    roles: filteredRoles
                 };
             });
         }

@@ -201,12 +201,30 @@ describe('Database Migration (special functions)', function () {
             permissions[65].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
             permissions[66].name.should.eql('Retry emails');
             permissions[66].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+
+            // Labels
             permissions[67].name.should.eql('Browse labels');
             permissions[68].name.should.eql('Read labels');
             permissions[69].name.should.eql('Edit labels');
             permissions[70].name.should.eql('Add labels');
             permissions[71].name.should.eql('Delete labels');
+
+            // Member auth
             permissions[72].name.should.eql('Read member signin urls');
+            permissions[73].name.should.eql('Read identities');
+            permissions[74].name.should.eql('Auth Stripe Connect for Members');
+
+            // Snippets
+            permissions[75].name.should.eql('Browse snippets');
+            permissions[75].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
+            permissions[76].name.should.eql('Read snippets');
+            permissions[76].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
+            permissions[77].name.should.eql('Edit snippets');
+            permissions[77].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[78].name.should.eql('Add snippets');
+            permissions[78].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[79].name.should.eql('Delete snippets');
+            permissions[79].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
         });
 
         describe('Populate', function () {
@@ -264,7 +282,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(7).get('name').should.eql('Scheduler Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(75);
+                    result.permissions.length.should.eql(80);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });

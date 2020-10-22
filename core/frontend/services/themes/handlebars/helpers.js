@@ -3,9 +3,7 @@ const coreHelpers = require('../../../helpers');
 const registerThemeHelper = register.registerThemeHelper;
 const registerAsyncThemeHelper = register.registerAsyncThemeHelper;
 
-let registerAllCoreHelpers;
-
-registerAllCoreHelpers = function registerAllCoreHelpers() {
+const registerAllCoreHelpers = function registerAllCoreHelpers() {
     // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
     registerThemeHelper('author', coreHelpers.author);

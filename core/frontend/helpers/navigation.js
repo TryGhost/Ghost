@@ -48,13 +48,13 @@ module.exports = function navigation(options) {
     }
 
     // strips trailing slashes and compares urls
-    function _isCurrentUrl(href, currentUrl) {
-        if (!currentUrl) {
+    function _isCurrentUrl(href, url) {
+        if (!url) {
             return false;
         }
 
         const strippedHref = href.replace(/\/+$/, '');
-        const strippedCurrentUrl = currentUrl.replace(/\/+$/, '');
+        const strippedCurrentUrl = url.replace(/\/+$/, '');
         return strippedHref === strippedCurrentUrl;
     }
 

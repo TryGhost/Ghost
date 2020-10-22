@@ -96,8 +96,8 @@ module.exports = function (req, res, next) {
                 }
                 return imagePath;
             })
-            .then((path) => {
-                return storageInstance.read({path});
+            .then((storagePath) => {
+                return storageInstance.read({path: storagePath});
             })
             .then((originalImageBuffer) => {
                 return imageTransform.resizeFromBuffer(originalImageBuffer, imageDimensionConfig);

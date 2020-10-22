@@ -12,8 +12,8 @@ module.exports = {
     globalBlock(req, res, next) {
         return spamPrevention.globalBlock().getMiddleware({
             ignoreIP: false,
-            key: function (req, res, next) {
-                next(url.parse(req.url).pathname);
+            key: function (_req, _res, _next) {
+                _next(url.parse(_req.url).pathname);
             }
         })(req, res, next);
     },
@@ -23,8 +23,8 @@ module.exports = {
     globalReset(req, res, next) {
         return spamPrevention.globalReset().getMiddleware({
             ignoreIP: false,
-            key(req, res, next) {
-                next(url.parse(req.url).pathname);
+            key(_req, _res, _next) {
+                _next(url.parse(_req.url).pathname);
             }
         })(req, res, next);
     },
@@ -35,20 +35,20 @@ module.exports = {
     userLogin(req, res, next) {
         return spamPrevention.userLogin().getMiddleware({
             ignoreIP: false,
-            key(req, res, next) {
-                if (req.body.username) {
-                    return next(`${req.body.username}login`);
+            key(_req, _res, _next) {
+                if (_req.body.username) {
+                    return _next(`${_req.body.username}login`);
                 }
 
-                if (req.body.authorizationCode) {
-                    return next(`${req.body.authorizationCode}login`);
+                if (_req.body.authorizationCode) {
+                    return _next(`${_req.body.authorizationCode}login`);
                 }
 
-                if (req.body.refresh_token) {
-                    return next(`${req.body.refresh_token}login`);
+                if (_req.body.refresh_token) {
+                    return _next(`${_req.body.refresh_token}login`);
                 }
 
-                return next();
+                return _next();
             }
         })(req, res, next);
     },
@@ -58,8 +58,8 @@ module.exports = {
     userReset(req, res, next) {
         return spamPrevention.userReset().getMiddleware({
             ignoreIP: false,
-            key(req, res, next) {
-                next(`${req.body.username}reset`);
+            key(_req, _res, _next) {
+                _next(`${_req.body.username}reset`);
             }
         })(req, res, next);
     },
@@ -69,8 +69,8 @@ module.exports = {
     privateBlog(req, res, next) {
         return spamPrevention.privateBlog().getMiddleware({
             ignoreIP: false,
-            key(req, res, next) {
-                next('privateblog');
+            key(_req, _res, _next) {
+                _next('privateblog');
             }
         })(req, res, next);
     },

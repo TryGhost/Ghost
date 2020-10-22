@@ -427,6 +427,31 @@
                     "name": "Auth Stripe Connect for Members",
                     "action_type": "auth",
                     "object_type": "members_stripe_connect"
+                },
+                {
+                    "name": "Browse snippets",
+                    "action_type": "browse",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Read snippets",
+                    "action_type": "read",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Edit snippets",
+                    "action_type": "edit",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Add snippets",
+                    "action_type": "add",
+                    "object_type": "snippet"
+                },
+                {
+                    "name": "Delete snippets",
+                    "action_type": "destroy",
+                    "object_type": "snippet"
                 }
             ]
         },
@@ -625,7 +650,8 @@
                     "label": "all",
                     "email_preview": "all",
                     "email": "all",
-                    "member_signin_url": "read"
+                    "member_signin_url": "read",
+                    "snippet": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -650,7 +676,8 @@
                     "member": "all",
                     "label": "all",
                     "email_preview": "all",
-                    "email": "all"
+                    "email": "all",
+                    "snippet": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -663,7 +690,8 @@
                     "invite": "all",
                     "theme": ["browse"],
                     "email_preview": "all",
-                    "email": "all"
+                    "email": "all",
+                    "snippet": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -674,7 +702,8 @@
                     "role": ["browse"],
                     "theme": ["browse"],
                     "email_preview": "read",
-                    "email": "read"
+                    "email": "read",
+                    "snippet": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
@@ -685,7 +714,8 @@
                     "role": ["browse"],
                     "theme": ["browse"],
                     "email_preview": "read",
-                    "email": "read"
+                    "email": "read",
+                    "snippet": ["browse", "read"]
                 }
             }
         },

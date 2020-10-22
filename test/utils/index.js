@@ -34,20 +34,9 @@ const APIUtils = require('./api');
 const config = require('../../core/shared/config');
 const knexMigrator = new KnexMigrator();
 let fixtures;
-let getFixtureOps;
 let toDoList;
 let originalRequireFn;
 let postsInserted = 0;
-let teardownDb;
-let setup;
-let truncate;
-let createUser;
-let createPost;
-let startGhost;
-let initFixtures;
-let initData;
-let clearData;
-let clearBruteData;
 
 // Require additional assertions which help us keep our tests small and clear
 require('./assertions');
@@ -502,11 +491,17 @@ fixtures = {
                 return models.StripeCustomerSubscription.add(subscription, module.exports.context.internal);
             });
         });
+    },
+
+    insertSnippets: function insertSnippets() {
+        return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
+            return models.Snippet.add(snippet, module.exports.context.internal);
+        });
     }
 };
 
 /** Test Utility Functions **/
-initData = function initData() {
+const initData = function initData() {
     return knexMigrator.init()
         .then(function () {
             events.emit('db.ready');
@@ -527,11 +522,11 @@ initData = function initData() {
         });
 };
 
-clearBruteData = function clearBruteData() {
+const clearBruteData = function clearBruteData() {
     return db.knex('brute').truncate();
 };
 
-truncate = function truncate(tableName) {
+const truncate = function truncate(tableName) {
     if (config.get('database:client') === 'sqlite3') {
         return db.knex(tableName).truncate();
     }
@@ -546,7 +541,7 @@ truncate = function truncate(tableName) {
 };
 
 // we must always try to delete all tables
-clearData = function clearData() {
+const clearData = function clearData() {
     debug('Database reset');
     return knexMigrator.reset({force: true})
         .then(function () {
@@ -636,6 +631,9 @@ toDoList = {
     },
     emails: function insertEmails() {
         return fixtures.insertEmails();
+    },
+    snippets: function insertSnippets() {
+        return fixtures.insertSnippets();
     }
 };
 
@@ -651,7 +649,7 @@ toDoList = {
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */
-getFixtureOps = function getFixtureOps(toDos) {
+const getFixtureOps = function getFixtureOps(toDos) {
     // default = default fixtures, if it isn't present, init with tables only
     const tablesOnly = !toDos.default;
 
@@ -696,7 +694,7 @@ getFixtureOps = function getFixtureOps(toDos) {
 
 // ## Test Setup and Teardown
 
-initFixtures = function initFixtures() {
+const initFixtures = function initFixtures() {
     const options = _.merge({init: true}, _.transform(arguments, function (result, val) {
         result[val] = true;
     }));
@@ -712,19 +710,19 @@ initFixtures = function initFixtures() {
  * Setup does 'init' (DB) by default
  * @returns {Function}
  */
-setup = function setup() {
+const setup = function setup() {
     /*eslint no-invalid-this: "off"*/
     const self = this;
 
     const args = arguments;
 
-    return function setup() {
+    return function innerSetup() {
         models.init();
         return initFixtures.apply(self, args);
     };
 };
 
-createUser = function createUser(options) {
+const createUser = function createUser(options) {
     const user = options.user;
     const role = options.role;
 
@@ -740,7 +738,7 @@ createUser = function createUser(options) {
         });
 };
 
-createPost = function createPost(options) {
+const createPost = function createPost(options) {
     const post = DataGenerator.forKnex.createPost(options.post);
 
     if (options.author) {
@@ -755,7 +753,7 @@ createPost = function createPost(options) {
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
  */
-teardownDb = function teardownDb() {
+const teardownDb = function teardownDb() {
     debug('Database teardown');
     urlService.softReset();
 
@@ -806,7 +804,7 @@ let ghostServer;
  *
  * @TODO: tidy up the tmp folders
  */
-startGhost = function startGhost(options) {
+const startGhost = function startGhost(options) {
     console.time('Start Ghost'); // eslint-disable-line no-console
     options = _.merge({
         redirectsFile: true,
@@ -939,7 +937,7 @@ startGhost = function startGhost(options) {
 
             return ghost();
         })
-        .then(function startGhost(_ghostServer) {
+        .then(function startGhostServer(_ghostServer) {
             ghostServer = _ghostServer;
 
             if (options.subdir) {
@@ -1011,9 +1009,9 @@ module.exports = {
     },
 
     integrationTesting: {
-        overrideGhostConfig: function overrideGhostConfig(configUtils) {
-            configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
-            configUtils.set('times:getImageSizeTimeoutInMS', 1);
+        overrideGhostConfig: function overrideGhostConfig(utils) {
+            utils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
+            utils.set('times:getImageSizeTimeoutInMS', 1);
         },
 
         defaultMocks: function defaultMocks(sandbox, options) {

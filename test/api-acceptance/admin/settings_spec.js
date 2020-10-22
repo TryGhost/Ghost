@@ -87,16 +87,12 @@ describe('Settings API', function () {
             });
     });
 
-    it('Can edit a setting', function (done) {
-        request.get(localUtils.API.getApiQuery('settings/'))
+    it('Can edit a setting', function () {
+        return request.get(localUtils.API.getApiQuery('settings/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .then(function (res) {
                 const jsonResponse = res.body;
                 const changedValue = [];
 
@@ -172,19 +168,15 @@ describe('Settings API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.settings);
 
-                request.put(localUtils.API.getApiQuery('settings/'))
+                return request.put(localUtils.API.getApiQuery('settings/'))
                     .set('Origin', config.get('url'))
                     .send(settingToChange)
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        const putBody = res.body;
-                        res.headers['x-cache-invalidate'].should.eql('/*');
+                    .then(function ({body, headers}) {
+                        const putBody = body;
+                        headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(putBody);
 
                         putBody.settings[0].key.should.eql('title');
@@ -239,7 +231,6 @@ describe('Settings API', function () {
                         should.equal(putBody.settings[15].value, 'Pacific/Auckland');
 
                         localUtils.API.checkResponse(putBody, 'settings');
-                        done();
                     });
             });
     });

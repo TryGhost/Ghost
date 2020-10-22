@@ -246,5 +246,12 @@ module.exports = function apiRoutes() {
     router.get('/emails/:id', mw.authAdminApi, http(apiCanary.emails.read));
     router.put('/emails/:id/retry', mw.authAdminApi, http(apiCanary.emails.retry));
 
+    // ## Snippets
+    router.get('/snippets', mw.authAdminApi, http(apiCanary.snippets.browse));
+    router.get('/snippets/:id', mw.authAdminApi, http(apiCanary.snippets.read));
+    router.post('/snippets', mw.authAdminApi, http(apiCanary.snippets.add));
+    router.put('/snippets/:id', mw.authAdminApi, http(apiCanary.snippets.edit));
+    router.del('/snippets/:id', mw.authAdminApi, http(apiCanary.snippets.destroy));
+
     return router;
 };

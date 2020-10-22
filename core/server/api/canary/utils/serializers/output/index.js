@@ -121,5 +121,9 @@ module.exports = {
 
     get labels() {
         return require('./labels');
+    },
+
+    get snippets() {
+        return require('./snippets');
     }
 };

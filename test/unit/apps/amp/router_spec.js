@@ -58,8 +58,8 @@ describe('Unit - apps/amp/lib/router', function () {
 
     describe('fn: renderer', function () {
         it('should render default amp page when theme has no amp template', function (done) {
-            helpers.renderer.callsFake(function (req, res, data) {
-                res.routerOptions.defaultTemplate.should.eql(defaultPath);
+            helpers.renderer.callsFake(function (_req, _res, data) {
+                _res.routerOptions.defaultTemplate.should.eql(defaultPath);
                 data.should.eql({post: {title: 'test'}});
                 done();
             });
@@ -93,8 +93,6 @@ describe('Unit - apps/amp/lib/router', function () {
     });
 
     describe('fn: getPostData', function () {
-        let res;
-        let req;
         let entryLookupStub;
         let post;
 

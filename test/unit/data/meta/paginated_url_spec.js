@@ -5,13 +5,12 @@ const urlUtils = require('../../../utils/urlUtils');
 
 describe('getPaginatedUrl', function () {
     let data;
-    let getTestUrls;
 
     beforeEach(function () {
         data = {};
     });
 
-    getTestUrls = function getTestUrls() {
+    const getTestUrls = function getTestUrls() {
         return {
             next: getPaginatedUrl('next', data, true),
             prev: getPaginatedUrl('prev', data, true),

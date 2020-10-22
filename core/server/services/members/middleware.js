@@ -91,7 +91,7 @@ const getMemberSiteData = async function (req, res) {
     const isStripeConfigured = membersService.config.isStripeConnected();
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     const blogDomain = domain && domain[1];
-    let supportAddress = settingsCache.get('members_support_address');
+    let supportAddress = settingsCache.get('members_support_address') || 'noreply';
     if (!supportAddress.includes('@')) {
         supportAddress = `${supportAddress}@${blogDomain}`;
     }

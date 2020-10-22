@@ -40,15 +40,15 @@ module.exports.up = function handleMultipleAuthors(options) {
 
                                 return post;
                             })
-                            .then(function (post) {
+                            .then(function (editedPost) {
                                 if (invalidAuthorId) {
                                     return;
                                 }
 
                                 return options.transacting('posts_authors').insert({
                                     id: ObjectId.generate(),
-                                    post_id: post.id,
-                                    author_id: post.get('author_id'),
+                                    post_id: editedPost.id,
+                                    author_id: editedPost.get('author_id'),
                                     sort_order: 0
                                 });
                             });

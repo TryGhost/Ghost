@@ -47,9 +47,9 @@ class UsersImporter extends BaseImporter {
         this.requiredFromFile.roles_users = _.toArray(lookup);
 
         _.each(this.requiredFromFile.roles_users, (attachedRole) => {
-            role = _.find(this.requiredFromFile.roles, (role) => {
-                if (attachedRole.role_id === role.id) {
-                    return role;
+            role = _.find(this.requiredFromFile.roles, (requiredRole) => {
+                if (attachedRole.role_id === requiredRole.id) {
+                    return requiredRole;
                 }
             });
 
