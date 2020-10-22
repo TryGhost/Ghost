@@ -31,11 +31,39 @@ async function countAuthors() {
     return result[0]['count(distinct `posts_authors`.`author_id`)'];
 }
 
+async function updateMembers() {
+    stats.total_members = (await db.knex('members').count())[0]['count(*)'];
+    stats.total_paid_members = (await db.knex('members_stripe_customers').countDistinct('member_id'))[0]['count(distinct `member_id`)'];
+    stats.total_free_members = stats.total_members - stats.total_paid_members;
+}
+
+async function updatePosts() {
+    stats.total_posts = (await db.knex('posts').where({status: 'published'}).count())[0]['count(*)'];
+    stats.total_members_posts = (await db.knex('posts').where({visibility: 'members', status: 'published'}).count())[0]['count(*)'];
+    stats.total_paid_members_posts = (await db.knex('posts').where({visibility: 'paid', status: 'published'}).count())[0]['count(*)'];
+    stats.total_tags = await countTags();
+    stats.total_authors = await countAuthors();
+}
+
+async function updateSiteCreatedDate() {
+    const siteCreatedAt = await getOldestPostCreatedDate();
+
+    Object.assign(stats, {
+        get site_age() {
+            return siteCreatedAt ? Date.now() - siteCreatedAt : 0;
+        },
+
+        get site_age_years() {
+            return siteCreatedAt ? moment(Date.now()).diff(siteCreatedAt, 'years') : 0;
+        }
+    });
+}
+
 module.exports = {
     async init() {
-        await this.updateMembers();
-        await this.updatePosts();
-        await this.updateSiteCreatedDate();
+        await updateMembers();
+        await updatePosts();
+        await updateSiteCreatedDate();
 
         debug('Current stats', this.getAll());
 
@@ -47,8 +75,8 @@ module.exports = {
 
         postEvents.forEach((event) => {
             events.on(event, async () => {
-                await this.updatePosts();
-                await this.updateSiteCreatedDate();
+                await updatePosts();
+                await updateSiteCreatedDate();
 
                 events.emit('updateGlobalTemplateOptions');
             });
@@ -58,7 +86,7 @@ module.exports = {
 
         memberEvents.forEach((event) => {
             events.on(event, async () => {
-                await this.updateMembers();
+                await updateMembers();
 
                 events.emit('updateGlobalTemplateOptions');
             });
@@ -74,34 +102,6 @@ module.exports = {
             stats.total_authors = await countAuthors();
 
             events.emit('updateGlobalTemplateOptions');
-        });
-    },
-
-    async updateMembers() {
-        stats.total_members = (await db.knex('members').count())[0]['count(*)'];
-        stats.total_paid_members = (await db.knex('members_stripe_customers').countDistinct('member_id'))[0]['count(distinct `member_id`)'];
-        stats.total_free_members = stats.total_members - stats.total_paid_members;
-    },
-
-    async updatePosts() {
-        stats.total_posts = (await db.knex('posts').where({status: 'published'}).count())[0]['count(*)'];
-        stats.total_members_posts = (await db.knex('posts').where({visibility: 'members', status: 'published'}).count())[0]['count(*)'];
-        stats.total_paid_members_posts = (await db.knex('posts').where({visibility: 'paid', status: 'published'}).count())[0]['count(*)'];
-        stats.total_tags = await countTags();
-        stats.total_authors = await countAuthors();
-    },
-
-    async updateSiteCreatedDate() {
-        const siteCreatedAt = await getOldestPostCreatedDate();
-
-        Object.assign(stats, {
-            get site_age() {
-                return siteCreatedAt ? Date.now() - siteCreatedAt : 0;
-            },
-
-            get site_age_years() {
-                return siteCreatedAt ? moment(Date.now()).diff(siteCreatedAt, 'years') : 0;
-            }
         });
     },
 
