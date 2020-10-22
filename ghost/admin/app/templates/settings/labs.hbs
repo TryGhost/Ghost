@@ -9,43 +9,25 @@
         <p class="gh-box gh-box-tip">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
 
         {{#if this.session.user.isOwner}}
-        <div class="gh-setting-header">Members (BETA) </div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2">
-            <div class="gh-setting-first gh-setting-last">
-                <div class="gh-members-setting-content">
-                    <div class="flex">
-                        <div class="flex flex-column flex-grow-1">
-                            <div class="gh-setting-title pl5 pt5">Enable members</div>
-                            <div class="gh-setting-desc pl5 pb5">Create registered members and take subscription payments — <a href="https://ghost.org/docs/members/" target="_blank" rel="noopener">Find out more</a></div>
-                        </div>
-                        <div class="gh-setting-action">
-                            <div class="for-switch pa5">
-                                <GhFeatureFlag @flag="members" @testKey="enable-members"/>
-                            </div>
-                        </div>
+        <div class="gh-setting-header"></div>
+        <LinkTo @route="settings.labs.members">
+            <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2 pa5 gh-setting-linkrow">
+                <div class="gh-setting-first gh-setting-last">
+                    <div class="gh-setting-content">
+                            <div class="gh-setting-title">Members</div>
+                            <div class="gh-setting-desc">Create registered members and take subscription payments</div>
                     </div>
-                    {{#liquid-if this.feature.labs.members}}
-                    <GhMembersLabSetting
-                        @settings={{this.settings}}
-                        @fromAddress={{this.fromAddress}}
-                        @supportAddress={{this.supportAddress}}
-                        @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
-                        @setStripeConnectIntegrationTokenSetting={{action "setStripeConnectIntegrationTokenSetting"}}
-                        @setEmailAddress={{action "setEmailAddress"}}
-                    />
-                    <div class="mt5 pl5 pr5 pb5">
-                        <GhTaskButton @buttonText="Save members settings"
-                            @task={{this.saveSettings}}
-                            @successText="Saved"
-                            @runningText="Saving"
-                            @class="gh-btn gh-btn-blue gh-btn-icon"
-                            data-test-button="save-members-settings"
-                        />
+                    <div class="gh-setting-action flex items-center midgrey">
+                        {{#if this.feature.labs.members}}
+                            <span class="gh-badge">Enabled</span>
+                        {{else}}
+                            <span>Configure</span>
+                        {{/if}}
+                        {{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1 nr2 ml2"}}
                     </div>
-                    {{/liquid-if}}
                 </div>
             </div>
-        </div>
+        </LinkTo>
         {{/if}}
         <div class="gh-setting-header">Migration options</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">

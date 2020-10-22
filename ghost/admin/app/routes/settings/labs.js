@@ -5,14 +5,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     settings: service(),
     notifications: service(),
-    queryParams: {
-        fromAddressUpdate: {
-            replace: true
-        },
-        supportAddressUpdate: {
-            replace: true
-        }
-    },
 
     beforeModel() {
         this._super(...arguments);
@@ -23,20 +15,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     model() {
         return this.settings.reload();
-    },
-
-    setupController(controller) {
-        if (controller.fromAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Newsletter email address has been updated`.htmlSafe(),
-                {type: 'success', key: 'members.settings.from-address.updated'}
-            );
-        } else if (controller.supportAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Support email address has been updated`.htmlSafe(),
-                {type: 'success', key: 'members.settings.support-address.updated'}
-            );
-        }
     },
 
     resetController(controller, isExiting) {
