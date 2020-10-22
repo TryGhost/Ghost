@@ -22,7 +22,7 @@
 
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-geolocation gh-list-cellwidth-20 middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
             {{#if (and @member.geolocation @member.geolocation.country)}}
-                {{#if (eq @member.geolocation.country_code "US")}}
+                {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
                     {{@member.geolocation.region}}, US
                 {{else}}
                     {{@member.geolocation.country}}
