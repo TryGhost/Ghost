@@ -61,6 +61,7 @@
 
 .gh-portal-settings-sidebar {
     padding: 0px 24px 20px;
+    width: 342px;
 }
 
 .gh-portal-settings-form {
@@ -499,4 +500,15 @@
 .gh-portal-custom-icon .gh-portal-button-deleteicon {
     display: none;
     background: color-mod(var(--darkgrey) a(0.8));
+}
+
+.gh-portal-setting-no-stripe {
+    padding: 20px;
+    margin-bottom: 28px;
+    font-size: 1.3rem;
+    text-align: center;
+    background: var(--whitegrey-l2);
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+    color: var(--midgrey);
 }
