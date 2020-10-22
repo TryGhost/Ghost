@@ -508,9 +508,9 @@ describe('Stats', function () {
             authorCount.should.equal(initialAuthorCount + 1);
 
             // Clean up
+            await db.knex('posts_authors').where({author_id: createdUser.id}).del();
             await models.User.destroy({id: createdUser.id});
             await models.Post.destroy({id: createdPost.id});
-            await db.knex('posts_authors').where({author_id: createdUser.id}).del();
         });
 
         it('user deleted', async function () {
@@ -566,6 +566,7 @@ describe('Stats', function () {
         };
 
         it('no post', async function () {
+            await testUtils.truncate('posts_authors');
             await testUtils.truncate('posts');
 
             await request.get('/'); // Load handlebars. Without this, UnhandledPromiseRejectionWarning is thrown.
