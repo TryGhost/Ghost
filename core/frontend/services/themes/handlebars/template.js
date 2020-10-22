@@ -1,6 +1,7 @@
 // ## Template utils
 const templates = {};
 const _ = require('lodash');
+const debug = require('ghost-ignition').debug('themes:handlebars:template');
 const errors = require('@tryghost/errors');
 const hbs = require('../engine');
 const {i18n, events} = require('../../../../server/lib/common');
@@ -99,7 +100,15 @@ templates.updateGlobalTemplateOptions = function () {
 };
 
 events.on('updateGlobalTemplateOptions', function () {
-    templates.updateGlobalTemplateOptions();
+    try {
+        templates.updateGlobalTemplateOptions();
+    } catch (e) {
+        if (e.message.includes(`Cannot set property 'templateOptions' of undefined`)) {
+            debug(`'templateOptions' of undefined error is thrown because hbs is not initialised.`);
+        } else {
+            throw e;
+        }
+    }
 });
 
 templates.asset = _.template('<%= source %>?v=<%= version %>');
