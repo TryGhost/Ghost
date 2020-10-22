@@ -192,11 +192,6 @@ describe('Post Model', function () {
                 eventsTriggered = {};
 
                 sinon.stub(events, 'emit').callsFake(function (eventName, eventObj) {
-                    // Ignore updateGlobalTemplateOptions event because they're fired inside event listeners.
-                    if (eventName === 'updateGlobalTemplateOptions') {
-                        return;
-                    }
-
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -718,11 +713,6 @@ describe('Post Model', function () {
                 eventsTriggered = {};
 
                 sinon.stub(events, 'emit').callsFake(function (eventName, eventObj) {
-                    // Ignore updateGlobalTemplateOptions event because they're fired inside event listeners.
-                    if (eventName === 'updateGlobalTemplateOptions') {
-                        return;
-                    }
-
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1200,11 +1190,6 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
                 sinon.stub(events, 'emit').callsFake(function (eventName, eventObj) {
-                    // Ignore updateGlobalTemplateOptions event because they're fired inside event listeners.
-                    if (eventName === 'updateGlobalTemplateOptions') {
-                        return;
-                    }
-
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }

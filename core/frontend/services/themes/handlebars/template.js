@@ -1,13 +1,12 @@
 // ## Template utils
 const templates = {};
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('themes:handlebars:template');
 const errors = require('@tryghost/errors');
 const hbs = require('../engine');
-const {i18n, events} = require('../../../../server/lib/common');
+const {i18n} = require('../../../../server/lib/common');
 const settingsCache = require('../../../../server/services/settings/cache');
 const labs = require('../../../../server/services/labs');
-const stats = require('../../../../server/services/stats');
+const stats = require('../../../../server/services/stats/cache');
 const activeTheme = require('../active');
 
 // Execute a template helper
@@ -86,30 +85,26 @@ templates.updateGlobalTemplateOptions = function () {
     };
     const priceData = haxGetMembersPriceData();
 
-    // @TODO: remove blog if we drop v2 (Ghost 4.0)
-    hbs.updateTemplateOptions({
-        data: {
-            blog: siteData,
-            site: siteData,
-            labs: labsData,
-            stats: statsData,
-            config: themeData,
-            price: priceData
-        }
-    });
-};
-
-events.on('updateGlobalTemplateOptions', function () {
     try {
-        templates.updateGlobalTemplateOptions();
+        // @TODO: remove blog if we drop v2 (Ghost 4.0)
+        hbs.updateTemplateOptions({
+            data: {
+                blog: siteData,
+                site: siteData,
+                labs: labsData,
+                stats: statsData,
+                config: themeData,
+                price: priceData
+            }
+        });
     } catch (e) {
-        if (e.message.includes(`Cannot set property 'templateOptions' of undefined`)) {
-            debug(`'templateOptions' of undefined error is thrown because hbs is not initialised.`);
-        } else {
+        // Ignore this error message because this message is shown in some regression tests
+        // when handlebars is not initialised.
+        if (!e.message.includes(`Cannot set property 'templateOptions' of undefined`)) {
             throw e;
         }
     }
-});
+};
 
 templates.asset = _.template('<%= source %>?v=<%= version %>');
 templates.link = _.template('<a href="<%= url %>"><%= text %></a>');
