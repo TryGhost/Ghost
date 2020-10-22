@@ -5,7 +5,7 @@ module.exports = (result) => `
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Your member import is complete.</title>
+    <title>Your member import is complete</title>
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -115,15 +115,57 @@ module.exports = (result) => `
               <tr>
                 <td class="wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;">
                   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                      <tr>
+                          <td align="center" style="padding-top: 20px; padding-bottom: 12px;"><img src="https://static.ghost.org/v3.0.0/images/ghost-squircle.png" width="60" height="60" style="width: 60px; height: 60px;" /></td>
+                      </tr>
+                      <tr>
+                          <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;">
+                            <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 28px; margin-top: 40px; font-weight: 600; color: #15212A;">You member import is complete</p>
+                          </td>
+                      </tr>
                     <tr>
-                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;">A total of ${result.imported} members have been successfully added or updated</p>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 12px;">
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 28px;">A total of <strong style="font-weight: 600;">${result.imported}</strong> members have been successfully added or updated.</p>
                         ${
-    iff(result.errors.length > 0, `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;">${result.errors.length} members were skipped due to errors. We attached a validated CSV file in this email with the complete list of errors.</p>`, '')
+                          iff(result.errors.length > 0, `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 28px;"><strong style="font-weight: 600;">${result.errors.length}</strong> members were skipped due to errors. We attached a validated CSV file in this email with the complete list of errors. You can fix the errors and re-upload the CSV to complete the import.</p>`, '')
     }
-                        <hr/>
                       </td>
                     </tr>
+                      <tr>
+                          <td>
+                            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #F8FAFC; border-radius: 5px; border: 1px solid #E5EFF5;">
+                                <tr>
+                                    <td style="padding: 20px;" width="100%">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                                            <tr>
+                                                <td colspan="2" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 6px; padding-top: 8px;"><h2 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 41px; margin: 0; padding-top: 0; padding-bottom: 12px; font-weight: 500;">${result.imported}</h2></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; vertical-align: top; margin: 0; font-weight: 500; text-transform: uppercase;">Imported</td>
+                                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; text-align: right; margin: 0;" align=""right><a href="http://ghost.org" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; font-weight: 500; text-decoration: none; color: #3EB0EF;">View members</a></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                ${iff(result.errors.length > 0, `
+                                <tr>
+                                    <td><hr style="padding: 0; margin: 0; border-color: #E5EFF5;" /></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                                            <tr>
+                                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 6px; padding-top: 8px;"><h2 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 41px; margin: 0; padding-top: 0; padding-bottom: 12px; font-weight: 500;">${result.errors.length}</h2></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; vertical-align: top; font-weight: 500; text-transform: uppercase; ">Errors</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>`, ``)}
+                              </table>
+                          </td>
+                      </tr>
                   </table>
                 </td>
               </tr>
