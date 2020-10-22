@@ -22,6 +22,8 @@ function post() {
     return _.clone(testUtils.DataGenerator.forModel.posts[0]);
 }
 
+const PREVENT_FLAKINESS_TIME = 400;
+
 describe('Stats', function () {
     before(async function () {
         await ghost();
@@ -33,7 +35,7 @@ describe('Stats', function () {
     describe('Post', function () {
         const getPostCount = async function () {
             // wait for global template update.
-            await sleep(200);
+            await sleep(PREVENT_FLAKINESS_TIME);
 
             const res = await request.get('/');
             const total = res.text.match(/Total posts: (\d+)/);
@@ -196,7 +198,7 @@ describe('Stats', function () {
     describe('Member', function () {
         const getMemberCount = async function () {
             // wait for global template update.
-            await sleep(200);
+            await sleep(PREVENT_FLAKINESS_TIME);
 
             const res = await request.get('/');
             const total = res.text.match(/Total members: (\d+)/);
@@ -347,7 +349,7 @@ describe('Stats', function () {
     describe('Tag', function () {
         const getTagCount = async function () {
             // wait for global template update.
-            await sleep(200);
+            await sleep(PREVENT_FLAKINESS_TIME);
 
             const res = await request.get('/');
             const total = res.text.match(/Total tags: (\d+)/);
@@ -435,7 +437,7 @@ describe('Stats', function () {
     describe('Author', function () {
         const getAuthorCount = async function () {
             // wait for global template update.
-            await sleep(200);
+            await sleep(PREVENT_FLAKINESS_TIME);
 
             const res = await request.get('/');
             const total = res.text.match(/Total authors: (\d+)/);
@@ -553,7 +555,7 @@ describe('Stats', function () {
     describe('Age', function () {
         const getSiteAge = async function () {
             // wait for global template update.
-            await sleep(200);
+            await sleep(PREVENT_FLAKINESS_TIME);
 
             const res = await request.get('/');
             const age = res.text.match(/Site age: (\d+)/);
