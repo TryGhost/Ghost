@@ -571,8 +571,6 @@ describe('Stats', function () {
             await testUtils.truncate('posts_authors');
             await testUtils.truncate('posts');
 
-            await request.get('/'); // Load handlebars. Without this, UnhandledPromiseRejectionWarning is thrown.
-
             // Create and remove a post to update global template options.
             const newPost = post();
             newPost.status = 'published';
