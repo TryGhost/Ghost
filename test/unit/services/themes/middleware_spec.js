@@ -5,7 +5,7 @@ const themes = require('../../../../core/frontend/services/themes');
 // is only exposed via themes.getActive()
 const activeTheme = require('../../../../core/frontend/services/themes/active');
 const settingsCache = require('../../../../core/server/services/settings/cache');
-const stats = require('../../../../core/server/services/stats');
+const stats = require('../../../../core/server/services/stats/cache');
 const middleware = themes.middleware;
 
 const sandbox = sinon.createSandbox();
