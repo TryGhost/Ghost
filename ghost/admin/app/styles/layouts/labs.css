@@ -141,7 +141,12 @@
     overflow-y: hidden;
     transition: all 0.2s ease-in-out;
     opacity: 0;
-    margin-top: 18px;
+    margin-top: 16px;
+    margin-bottom: 0;
+}
+
+.gh-members-connect-savecontainer.expanded {
+    margin-bottom: 20px;
 }
 
 .gh-members-connect-savecontainer.expanded {

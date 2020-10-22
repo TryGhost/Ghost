@@ -385,9 +385,20 @@ svg.gh-btn-icon-right {
     color: color-mod(var(--yellow) l(-10%));
 }
 
-.gh-btn-outline {
+.gh-btn-outline,
+.gh-btn-outline:hover {
     background: none;
     box-shadow: none;
+}
+
+.gh-btn-outline.blue {
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+.gh-btn-outline.blue:hover {
+    border-color: color-mod(var(--blue) l(-10%));
+    color: color-mod(var(--blue) l(-10%));
 }
 
 .gh-btn-textfield-group span {
@@ -483,6 +494,10 @@ Usage: CTA buttons grouped together horizontally.
 .gh-btn-link:hover {
     background: none;
     box-shadow: none;
+}
+
+.gh-btn-link.blue {
+    color: var(--blue);
 }
 
 

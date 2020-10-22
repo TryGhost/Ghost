@@ -90,6 +90,10 @@
                             </label>
                         </div>
                     </div>
+                    {{else}}
+                    <div class="gh-portal-setting-no-stripe">
+                        You need to <button class="gh-btn gh-btn-link blue" {{action "openStripeSettings"}}>connect to Stripe</button> to take payments
+                    </div>
                     {{/if}}
                 </div>
                 <div class="gh-portal-setting-section divider-top" onclick={{action "switchToSignupPage"}}>

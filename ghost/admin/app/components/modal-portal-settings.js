@@ -256,6 +256,11 @@ export default ModalComponent.extend({
             this.set('showLeaveSettingsModal', false);
         },
 
+        openStripeSettings() {
+            this.model.openStripeSettings();
+            this.closeModal();
+        },
+
         leaveSettings() {
             this.closeModal();
         }
