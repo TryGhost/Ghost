@@ -420,7 +420,13 @@ module.exports = {
     },
 
     importCSV: {
-        statusCode: 201,
+        statusCode(result) {
+            if (result && result.meta && result.meta.stats && result.meta.stats.imported !== null) {
+                return 201;
+            } else {
+                return 202;
+            }
+        },
         permissions: {
             method: 'add'
         },
@@ -443,7 +449,6 @@ module.exports = {
                 const importLabelModel = await models.Label.findOne({name: importLabel});
                 return {
                     meta: {
-                        background_job: false,
                         stats: {
                             imported: result.imported,
                             invalid: result.errors
@@ -457,6 +462,8 @@ module.exports = {
                     const result = await membersService.importer.perform(job.id);
                     const emailContent = membersService.importer.generateCompletionEmail(result);
                     const errorCSV = membersService.importer.generateErrorCSV(result);
+
+                    console.log({errorCSV});
 
                     try {
                         await ghostMailer.send({
@@ -476,11 +483,7 @@ module.exports = {
                     }
                 });
 
-                return {
-                    meta: {
-                        background_job: true
-                    }
-                };
+                return {};
             }
         }
     },
