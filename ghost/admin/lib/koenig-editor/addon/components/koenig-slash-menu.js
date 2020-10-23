@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
+import snippetIcon from '../utils/snippet-icon';
 import {CARD_MENU} from '../options/cards';
 import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
@@ -69,7 +70,7 @@ export default class KoenigSlashMenuComponent extends Component {
             snippets.forEach((snippet) => {
                 snippetsSection.items.push({
                     label: snippet.name,
-                    icon: 'koenig/kg-card-type-snippet-text',
+                    icon: snippetIcon(snippet),
                     type: 'snippet',
                     matches: [snippet.name.toLowerCase()]
                 });
