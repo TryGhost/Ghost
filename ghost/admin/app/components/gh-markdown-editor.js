@@ -9,6 +9,9 @@ import {isEmpty, typeOf} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
+/* eslint-disable ghost/ember/no-side-effects */
+// bug in eslint-plugin-ember?
+
 export default Component.extend(ShortcutsMixin, {
 
     config: service(),

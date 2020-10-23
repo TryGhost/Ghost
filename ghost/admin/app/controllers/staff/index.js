@@ -27,12 +27,10 @@ export default Controller.extend({
     sortedActiveUsers: sort('activeUsers', 'userOrder'),
     sortedSuspendedUsers: sort('suspendedUsers', 'userOrder'),
 
+    filteredInvites: computed.filterBy('invites', 'isNew', false),
+
     invites: computed(function () {
         return this.store.peekAll('invite');
-    }),
-
-    filteredInvites: computed('invites.@each.isNew', function () {
-        return this.invites.filterBy('isNew', false);
     }),
 
     allUsers: computed(function () {
