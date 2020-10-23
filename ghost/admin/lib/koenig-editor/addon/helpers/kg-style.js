@@ -9,11 +9,11 @@ export function kgStyle([style], options) {
     switch (style) {
     // Card menu
     case 'cardmenu':
-        cssClass = 'koenig-cardmenu absolute top-0 flex flex-column mt0 mr0 mb3 ml0 pa4 overflow-y-auto bg-white br3 shadow-3 ttn f7 normal';
+        cssClass = 'koenig-cardmenu absolute top-0 flex flex-column mt0 mr0 mb3 ml0 pb4 overflow-y-auto bg-white br3 shadow-3 ttn f7 normal';
         break;
 
     case 'cardmenu-card':
-        cssClass = 'flex items-center h19 br3 midgrey ba b--transparent hover-darkgrey kg-cardmenu-card-hover pt1 anim-fast';
+        cssClass = 'flex items-center middarkgrey ba b--transparent hover-darkgrey kg-cardmenu-card-hover pl4 pr4 pt2 pb2 anim-fast';
         break;
 
     case 'cardmenu-icon':
@@ -21,7 +21,7 @@ export function kgStyle([style], options) {
         break;
 
     case 'cardmenu-label':
-        cssClass = 'f-supersmall tracked-1 fw3 ma0 ml2';
+        cssClass = 'f-7 tracked-1 fw4 ma0 ml4';
         break;
 
     // Container cards
