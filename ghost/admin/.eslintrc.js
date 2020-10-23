@@ -18,9 +18,16 @@ module.exports = {
     rules: {
         'no-shadow': ['error'],
 
-        // octane 🏎
-        'ghost/ember/classic-decorator-hooks': 'error',
-        'ghost/ember/classic-decorator-no-classic-methods': 'error',
+        // TODO: migrate away from accessing controller in routes
+        'ghost/ember/no-controller-access-in-routes': 'off',
+
+        // TODO: enable once we're fully on octane 🏎
+        'ghost/ember/no-assignment-of-untracked-properties-used-in-tracking-contexts': 'off',
+        'ghost/ember/no-actions-hash': 'off',
+        'ghost/ember/no-classic-classes': 'off',
+        'ghost/ember/no-classic-components': 'off',
+        'ghost/ember/require-tagless-components': 'off',
+        'ghost/ember/no-component-lifecycle-hooks': 'off',
 
         // disable linting of `this.get` until there's a reliable autofix
         'ghost/ember/use-ember-get-and-set': 'off',

@@ -7,6 +7,7 @@ import {
     isUnsupportedMediaTypeError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+// eslint-disable-next-line ghost/ember/no-computed-properties-in-native-classes
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
