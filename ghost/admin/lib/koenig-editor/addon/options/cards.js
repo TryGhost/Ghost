@@ -129,14 +129,6 @@ export const CARD_MENU = [
             params: ['url']
         },
         {
-            label: 'Instagram',
-            icon: 'koenig/kg-card-type-instagram',
-            matches: ['instagram'],
-            type: 'card',
-            replaceArg: 'embed',
-            params: ['url']
-        },
-        {
             label: 'Unsplash',
             icon: 'koenig/kg-card-type-unsplash',
             iconClass: 'kg-card-type-unsplash',
