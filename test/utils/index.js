@@ -526,18 +526,53 @@ const clearBruteData = function clearBruteData() {
     return db.knex('brute').truncate();
 };
 
+const retry = function (count, interval, fn) {
+    return new Promise((resolve, reject) => {
+        const tryFn = function () {
+            const handleErr = function (e) {
+                count = count - 1;
+
+                if (count === 0) {
+                    reject(e);
+                } else {
+                    setTimeout(function () {
+                        tryFn();
+                    }, interval);
+                }
+            };
+
+            try {
+                const result = fn();
+
+                if (result.then) { // isPromise?
+                    result.then(val => resolve(val))
+                        .catch(e => handleErr(e));
+                } else {
+                    resolve(result);
+                }
+            } catch (e) {
+                handleErr(e);
+            }
+        };
+
+        tryFn();
+    });
+};
+
 const truncate = function truncate(tableName) {
     if (config.get('database:client') === 'sqlite3') {
         return db.knex(tableName).truncate();
     }
 
-    return db.knex.raw('SET FOREIGN_KEY_CHECKS=0;')
-        .then(function () {
-            return db.knex(tableName).truncate();
-        })
-        .then(function () {
-            return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
-        });
+    return retry(5, 1000, function () {
+        return db.knex.raw('SET FOREIGN_KEY_CHECKS=0;')
+            .then(function () {
+                return db.knex(tableName).truncate();
+            })
+            .then(function () {
+                return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
+            });
+    });
 };
 
 // we must always try to delete all tables
@@ -1099,6 +1134,7 @@ module.exports = {
     setup: setup,
     createUser: createUser,
     createPost: createPost,
+    retry,
 
     /**
      * renderObject:    res.render(view, dbResponse)

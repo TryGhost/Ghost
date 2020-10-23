@@ -42,11 +42,11 @@ async function updateMembers() {
 }
 
 async function updatePosts() {
+    cache.set('total_tags', await countTags());
+    cache.set('total_authors', await countAuthors());
     cache.set('total_posts', (await db.knex('posts').where({status: 'published'}).count())[0]['count(*)']);
     cache.set('total_members_posts', (await db.knex('posts').where({visibility: 'members', status: 'published'}).count())[0]['count(*)']);
     cache.set('total_paid_members_posts', (await db.knex('posts').where({visibility: 'paid', status: 'published'}).count())[0]['count(*)']);
-    cache.set('total_tags', await countTags());
-    cache.set('total_authors', await countAuthors());
 }
 
 async function updateSiteCreatedDate() {

@@ -2,6 +2,7 @@ const supertest = require('supertest');
 const _ = require('lodash');
 const moment = require('moment');
 const should = require('should');
+const Bluebird = require('bluebird');
 
 const testUtils = require('../../utils');
 const localUtils = require('../api/canary/admin/utils');
@@ -13,16 +14,14 @@ const authorContext = testUtils.context.owner;
 let request;
 
 function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
+    return Bluebird.delay(ms);
 }
 
 function post() {
     return _.clone(testUtils.DataGenerator.forModel.posts[0]);
 }
 
-const PREVENT_FLAKINESS_TIME = 400;
+const PREVENT_FLAKINESS_TIME = 200;
 
 describe('Stats', function () {
     before(async function () {
