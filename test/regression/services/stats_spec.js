@@ -21,7 +21,7 @@ function post() {
     return _.clone(testUtils.DataGenerator.forModel.posts[0]);
 }
 
-const PREVENT_FLAKINESS_TIME = 200;
+const PREVENT_FLAKINESS_TIME = 400;
 
 describe('Stats', function () {
     before(async function () {
