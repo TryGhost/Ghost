@@ -9,7 +9,7 @@ export function kgStyle([style], options) {
     switch (style) {
     // Card menu
     case 'cardmenu':
-        cssClass = 'koenig-cardmenu absolute top-0 flex flex-column mt0 mr0 mb3 ml0 pb4 overflow-y-auto bg-white br3 shadow-3 ttn f7 normal';
+        cssClass = 'koenig-cardmenu absolute top-0 flex flex-column mt0 mr0 mb3 ml0 overflow-y-auto bg-white br3 shadow-3 ttn f7 normal';
         break;
 
     case 'cardmenu-card':
