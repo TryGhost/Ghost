@@ -865,6 +865,12 @@
     top: -10px;
 }
 
+.koenig-cardmenu:after {
+    content: "";
+    padding: calc(1.6rem / 2);
+    display: block;
+}
+
 /* Cards
 /* --------------------------------------------------------------- */
 
