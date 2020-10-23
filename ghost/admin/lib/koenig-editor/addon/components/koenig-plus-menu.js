@@ -50,7 +50,7 @@ export default Component.extend({
             snippets.forEach((snippet) => {
                 snippetsSection.items.push({
                     label: snippet.name,
-                    icon: 'koenig/kg-card-type-bookmark',
+                    icon: 'koenig/kg-card-type-snippet-text',
                     type: 'snippet',
                     matches: [snippet.name.toLowerCase()]
                 });

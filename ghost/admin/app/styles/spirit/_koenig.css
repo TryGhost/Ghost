@@ -856,8 +856,9 @@
 
 /* Chrome has a bug with its scrollbars on this element which has been reported here: https://bugs.chromium.org/p/chromium/issues/detail?id=697381 */
 .koenig-cardmenu {
-    width: 272px;
-    max-height: 580px;
+    width: 312px;
+    max-height: 440px;
+    padding-top: 0;
     background-clip: padding-box;
     z-index: 9999999; /* have to compete with codemirror */
     left: -16px;
@@ -895,7 +896,6 @@
     box-sizing: border-box;
     border: 1px solid var(--whitegrey);
     background: var(--white);
-    border-radius: 5px;
 }
 
 .koenig-editor__editor .kg-bookmark-container {
