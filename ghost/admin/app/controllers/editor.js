@@ -102,6 +102,7 @@ export default Controller.extend({
     showReAuthenticateModal: false,
     showEmailPreviewModal: false,
     showUpgradeModal: false,
+    showDeleteSnippetModal: false,
     hostLimitError: null,
     // koenig related properties
     wordcount: null,
@@ -310,6 +311,14 @@ export default Controller.extend({
                 snippetRecord.rollbackAttributes();
                 throw error;
             });
+        },
+
+        toggleDeleteSnippetModal(snippet) {
+            this.set('snippetToDelete', snippet);
+        },
+
+        deleteSnippet(snippet) {
+            return snippet.destroyRecord();
         }
     },
 

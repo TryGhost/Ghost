@@ -72,7 +72,12 @@ export default class KoenigSlashMenuComponent extends Component {
                     label: snippet.name,
                     icon: snippetIcon(snippet),
                     type: 'snippet',
-                    matches: [snippet.name.toLowerCase()]
+                    matches: [snippet.name.toLowerCase()],
+                    deleteClicked: (event) => {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        this.args.deleteSnippet(snippet);
+                    }
                 });
             });
 
@@ -303,7 +308,7 @@ export default class KoenigSlashMenuComponent extends Component {
 
     _handleWindowMousedown(event) {
         // clicks outside the menu should always close
-        if (!event.target.closest(`#${this.containerElement.id}`)) {
+        if (!event.target.closest(`#${this.containerElement.id}, .fullscreen-modal`)) {
             this._hideMenu();
 
         // clicks on the menu but not on a button should be ignored so that the
