@@ -71,10 +71,12 @@ module.exports = function apiRoutes() {
     router.get('/users/slug/:slug', mw.authAdminApi, http(apiCanary.users.read));
     // NOTE: We don't expose any email addresses via the public api.
     router.get('/users/email/:email', mw.authAdminApi, http(apiCanary.users.read));
+    router.get('/users/:id/token', mw.authAdminApi, http(apiCanary.users.readToken));
 
     router.put('/users/password', mw.authAdminApi, http(apiCanary.users.changePassword));
     router.put('/users/owner', mw.authAdminApi, http(apiCanary.users.transferOwnership));
     router.put('/users/:id', mw.authAdminApi, http(apiCanary.users.edit));
+    router.put('/users/:id/token', mw.authAdminApi, http(apiCanary.users.regenerateToken));
     router.del('/users/:id', mw.authAdminApi, http(apiCanary.users.destroy));
 
     // ## Tags
