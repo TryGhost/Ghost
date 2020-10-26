@@ -334,4 +334,53 @@ describe('User API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
     });
+
+    it('Can read the user\'s Personal Token', async function () {
+        await request
+            .get(localUtils.API.getApiQuery('users/me/token/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.exist(res.body.apiKey);
+                should.exist(res.body.apiKey.id);
+                should.exist(res.body.apiKey.secret);
+            });
+    });
+
+    it('Can\'t read another user\'s Personal Token', async function () {
+        const userNotAdmin = testUtils.existingData.users.find(user => user.email === 'ghost-author@example.com');
+        await request
+            .get(localUtils.API.getApiQuery('users/' + userNotAdmin.id + '/token/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(403)
+            .then((res) => {
+                should.exist(res.body.errors);
+            });
+    });
+
+    it('Can re-generate the user\'s Personal Token', async function () {
+        const {body: {apiKey: {id, secret}}} = await request
+            .get(localUtils.API.getApiQuery('users/me/token/'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        await request
+            .put(localUtils.API.getApiQuery('users/me/token'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.exist(res.body.apiKey);
+                should.exist(res.body.apiKey.id);
+                should.exist(res.body.apiKey.secret);
+
+                should(res.body.id).not.be.equal(id);
+                should(res.body.secret).not.be.equal(secret);
+            });
+    });
 });
