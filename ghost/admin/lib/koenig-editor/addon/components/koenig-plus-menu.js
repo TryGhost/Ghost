@@ -53,7 +53,12 @@ export default Component.extend({
                     label: snippet.name,
                     icon: snippetIcon(snippet),
                     type: 'snippet',
-                    matches: [snippet.name.toLowerCase()]
+                    matches: [snippet.name.toLowerCase()],
+                    deleteClicked: (event) => {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        this.deleteSnippet(snippet);
+                    }
                 });
             });
 
@@ -236,7 +241,9 @@ export default Component.extend({
     },
 
     _handleWindowMousedown(event) {
-        if (!event.target.closest(`#${this.elementId}`)) {
+        if (
+            !event.target.closest(`#${this.elementId}, .fullscreen-modal`)
+        ) {
             this._hideMenu();
         }
     },

@@ -9,6 +9,9 @@
             {{svg-jar "koenig/search"}}
             <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
         </div> --}}
-        <KoenigMenuContent @itemSections={{this.itemSections}} @itemClicked={{action "itemClicked"}} />
+        <KoenigMenuContent
+            @itemSections={{this.itemSections}}
+            @itemClicked={{action "itemClicked"}}
+        />
     </div>
 {{/if}}

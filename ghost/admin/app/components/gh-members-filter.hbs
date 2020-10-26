@@ -8,8 +8,11 @@
             {{svg-jar "arrow-down-small"}}
         </span>
     </GhDropdownButton>
-    <GhDropdown @name="members-label-menu" @tagName="div"
-        @classNames="dropdown-menu dropdown-triangle-top-right dropdown-action">
+    <GhDropdown
+        @name="members-label-menu"
+        @tagName="div"
+        @classNames="dropdown-menu dropdown-triangle-top-right dropdown-action"
+    >
         <ul class="dropdown-content">
             {{#each @availableLabels as |label|}}
                 <li class="{{if (eq @selectedLabel.name label.name) "selected"}}">

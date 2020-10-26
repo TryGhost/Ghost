@@ -804,6 +804,40 @@
     color: var(--darkgrey);
 }
 
+.kg-cardmenu-card-hover .kg-cardmenu-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity ease-in-out 0.15s;
+    padding: 4px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    margin-right: 4px;
+    border-radius: 3px;
+}
+
+.kg-cardmenu-card-hover:hover .kg-cardmenu-action-icon {
+    opacity: 1.0;
+}
+
+.kg-cardmenu-card-hover .kg-cardmenu-action-icon:hover {
+    background: var(--whitegrey-d1);
+}
+
+.kg-cardmenu-card-hover .kg-cardmenu-action-icon svg {
+    margin: 0;
+    height: 1em;
+}
+
+.kg-cardmenu-card-hover .kg-cardmenu-action-icon svg path {
+    fill: var(--midgrey);
+}
+
+.kg-cardmenu-card-hover .kg-cardmenu-action-icon:hover svg path {
+    fill: var(--darkgrey);
+}
+
 /* Padded container housing title + editor canvas, scrollable content */
 .gh-koenig-editor-pane {
     padding: 11vw 92px;
