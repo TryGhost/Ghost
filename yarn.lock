@@ -5400,6 +5400,25 @@ knex@0.21.6:
     uuid "^7.0.3"
     v8flags "^3.2.0"
 
+knex@0.21.7:
+  version "0.21.7"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.7.tgz#c36e957d59504c250c98f39fd3bf6d9815cad636"
+  integrity sha512-f9DHi2nx2jHfza9JErcHxEi0ZLK7+kQhK7XtDIP5ud2k9MYbV5EpwneNJRppSdYAkqXkKeqlHWDcd7OYbLiB9A==
+  dependencies:
+    colorette "1.2.1"
+    commander "^5.1.0"
+    debug "4.1.1"
+    esm "^3.2.25"
+    getopts "2.2.5"
+    interpret "^2.2.0"
+    liftoff "3.1.0"
+    lodash "^4.17.20"
+    pg-connection-string "2.3.0"
+    tarn "^3.0.1"
+    tildify "2.0.0"
+    uuid "^7.0.3"
+    v8flags "^3.2.0"
+
 knex@^0.17:
   version "0.17.6"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.17.6.tgz#80220cf159cd52768d5b29118c70b18aaf5138fe"
@@ -8919,6 +8938,11 @@ tarn@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/tarn/-/tarn-3.0.0.tgz#a4082405216c0cce182b8b4cb2639c52c1e870d4"
   integrity sha512-PKUnlDFODZueoA8owLehl8vLcgtA8u4dRuVbZc92tspDYZixjJL6TqYOmryf/PfP/EBX+2rgNcrj96NO+RPkdQ==
+
+tarn@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/tarn/-/tarn-3.0.1.tgz#ebac2c6dbc6977d34d4526e0a7814200386a8aec"
+  integrity sha512-6usSlV9KyHsspvwu2duKH+FMUhqJnAh6J5J/4MITl8s94iSUQTLkJggdiewKv4RyARQccnigV48Z+khiuVZDJw==
 
 text-table@^0.2.0:
   version "0.2.0"
