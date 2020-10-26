@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const moment = require('moment-timezone');
 const yaml = require('js-yaml');
-
+const Promise = require('bluebird');
 const validation = require('./validation');
 
 const config = require('../../../shared/config');
@@ -88,7 +88,7 @@ const createRedirectsFilePath = (ext) => {
     return path.join(config.getContentPath('data'), `redirects${ext}`);
 };
 
-const getCurrentRedirectsFilePath = async () => {
+const getRedirectsFilePath = async () => {
     const yamlPath = createRedirectsFilePath('.yaml');
     const jsonPath = createRedirectsFilePath('.json');
 
@@ -128,8 +128,10 @@ const getBackupRedirectsFilePath = (filePath) => {
     return path.join(dir, `${name}-${moment().format('YYYY-MM-DD-HH-mm-ss')}${ext}`);
 };
 
+// '.json' is the default here because 'yaml' redirects file format is added later in v3.
+// @TODO: change the default to '.yaml' in v4. It may be even removed if '.json' format is deprecated.
 const setFromFilePath = (filePath, ext = '.json') => {
-    return getCurrentRedirectsFilePath()
+    return getRedirectsFilePath()
         .then((redirectsFilePath) => {
             if (!redirectsFilePath) {
                 return null;
@@ -168,10 +170,13 @@ const setFromFilePath = (filePath, ext = '.json') => {
         });
 };
 
+// @TODO: When yaml has been changed as the default redirects file format,
+// change this like `const defaultRedirectsContent = ''`.
+// Default json content is []. But the default YAML content is an empty string.
 const defaultJsonFileContent = [];
 
 const get = () => {
-    return getCurrentRedirectsFilePath().then((filePath) => {
+    return getRedirectsFilePath().then((filePath) => {
         if (filePath === null) {
             return defaultJsonFileContent;
         }
@@ -184,8 +189,14 @@ const get = () => {
     });
 };
 
+const loadRedirectsFile = () => {
+    const filePath = getCurrentRedirectsFilePathSync();
+    const content = fs.readFileSync(filePath);
+
+    return parseRedirectsFile(content, path.extname(filePath));
+};
+
 module.exports.get = get;
 module.exports.setFromFilePath = setFromFilePath;
-module.exports.getCurrentRedirectsFilePath = getCurrentRedirectsFilePath;
-module.exports.getCurrentRedirectsFilePathSync = getCurrentRedirectsFilePathSync;
-module.exports.parseRedirectsFile = parseRedirectsFile;
+module.exports.getRedirectsFilePath = getRedirectsFilePath;
+module.exports.loadRedirectsFile = loadRedirectsFile;

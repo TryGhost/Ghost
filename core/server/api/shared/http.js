@@ -85,23 +85,35 @@ const http = (apiImpl) => {
                 // CASE: generate headers based on the api ctrl configuration
                 res.set(headers);
 
-                let format;
+                const send = (format) => {
+                    if (format === 'plain') {
+                        debug('plain text response');
+                        return res.send(result);
+                    }
+
+                    debug('json response');
+                    res.json(result || {});
+                };
+
+                let responseFormat;
 
                 if (apiImpl.response){
                     if (typeof apiImpl.response.format === 'function') {
-                        format = apiImpl.response.format();
+                        const apiResponseFormat = apiImpl.response.format();
+
+                        if (apiResponseFormat.then) { // is promise
+                            return apiResponseFormat.then((formatName) => {
+                                send(formatName);
+                            });
+                        } else {
+                            responseFormat = apiResponseFormat;
+                        }
                     } else {
-                        format = apiImpl.response.format;
+                        responseFormat = apiImpl.response.format;
                     }
                 }
 
-                if (format === 'plain') {
-                    debug('plain text response');
-                    return res.send(result);
-                }
-
-                debug('json response');
-                res.json(result || {});
+                send(responseFormat);
             })
             .catch((err) => {
                 req.frameOptions = {

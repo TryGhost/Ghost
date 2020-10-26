@@ -11,7 +11,7 @@ module.exports = {
             disposition: {
                 type: 'file',
                 value() {
-                    return redirects.settings.getCurrentRedirectsFilePath()
+                    return redirects.settings.getRedirectsFilePath()
                         .then((filePath) => {
                             // TODO: Default file type is .json for backward compatibility.
                             // When .yaml becomes default or .json is removed at v4,
@@ -25,8 +25,8 @@ module.exports = {
         },
         permissions: true,
         response: {
-            format() {
-                const filePath = redirects.settings.getCurrentRedirectsFilePathSync();
+            async format() {
+                const filePath = await redirects.settings.getRedirectsFilePath();
 
                 return filePath === null || path.extname(filePath) === '.json' ? 'json' : 'plain';
             }
