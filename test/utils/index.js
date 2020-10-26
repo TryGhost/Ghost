@@ -799,7 +799,7 @@ const teardownDb = function teardownDb() {
 /**
  * Set up the redirects file with the extension you want.
  */
-setupRedirectsFile = (contentFolderForTests, ext) => {
+const setupRedirectsFile = (contentFolderForTests, ext) => {
     const yamlPath = path.join(contentFolderForTests, 'data', 'redirects.yaml');
     const jsonPath = path.join(contentFolderForTests, 'data', 'redirects.json');
 
