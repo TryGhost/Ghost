@@ -12,6 +12,9 @@
         "plugin:ghost/test"
     ],
     "rules": {
+        // TODO: remove this rule once it's turned into "error" in the base plugin
+        "no-shadow": "error",
+
         // these rules were were not previously enforced in our custom rules,
         // they're turned off here because they _are_ enforced in our plugin.
         // TODO: remove these custom rules and fix the problems in test files where appropriate
