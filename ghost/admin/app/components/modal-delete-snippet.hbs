@@ -1,0 +1,20 @@
+<header class="modal-header">
+    <h1>Are you sure?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        Deleting snippet "{{this.snippet.name}}" will make it unavailable to all staff users.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <GhTaskButton
+        @buttonText="Delete Snippet"
+        @successText="Deleted"
+        @task={{this.deleteSnippet}}
+        @taskArgs={{this.snippet}}
+        @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>
