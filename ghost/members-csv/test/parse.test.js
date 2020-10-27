@@ -6,8 +6,7 @@ const csvPath = path.join(__dirname, '/fixtures/');
 describe('parse', function () {
     it('read csv: empty file', async function () {
         const result = await readCSV({
-            path: csvPath + 'empty.csv',
-            columnsToExtract: [{name: 'email', lookup: /email/i}]
+            path: csvPath + 'empty.csv'
         });
 
         should.exist(result);
@@ -16,8 +15,7 @@ describe('parse', function () {
 
     it('read csv: one column', async function () {
         const result = await readCSV({
-            path: csvPath + 'single-column-with-header.csv',
-            columnsToExtract: [{name: 'email', lookup: /email/i}]
+            path: csvPath + 'single-column-with-header.csv'
         });
 
         should.exist(result);
@@ -28,24 +26,21 @@ describe('parse', function () {
 
     it('read csv: two columns, 1 filter', async function () {
         const result = await readCSV({
-            path: csvPath + 'two-columns-with-header.csv',
-            columnsToExtract: [{name: 'email', lookup: /email/i}]
+            path: csvPath + 'two-columns-with-header.csv'
         });
 
         should.exist(result);
         result.length.should.eql(2);
         result[0].email.should.eql('jbloggs@example.com');
         result[1].email.should.eql('test@example.com');
-        should.not.exist(result[0].id);
     });
 
     it('read csv: two columns, 2 filters', async function () {
         const result = await readCSV({
             path: csvPath + 'two-columns-obscure-header.csv',
-            columnsToExtract: [
-                {name: 'email', lookup: /email/i},
-                {name: 'id', lookup: /id/i}
-            ]
+            mapping: {
+                'Email Address': 'email'
+            }
         });
 
         should.exist(result);
@@ -60,9 +55,8 @@ describe('parse', function () {
         const result = await readCSV({
             path: csvPath + 'two-columns-mapping-header.csv',
             mapping: {
-                email: 'correo_electronico',
-                name: 'nombre',
-                id: 'id'
+                correo_electronico: 'email',
+                nombre: 'name'
             }
         });
 
@@ -81,7 +75,7 @@ describe('parse', function () {
         const result = await readCSV({
             path: csvPath + 'two-columns-mapping-header.csv',
             mapping: {
-                email: 'correo_electronico'
+                correo_electronico: 'email'
             }
         });
 
