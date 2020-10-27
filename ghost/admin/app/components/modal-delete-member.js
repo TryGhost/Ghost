@@ -25,7 +25,7 @@ export default ModalComponent.extend({
         }
 
         let firstActiveStripeSubscription = subscriptions.find((subscription) => {
-            return subscription.status === 'active' || subscription.status === 'trialing';
+            return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
         });
 
         return firstActiveStripeSubscription !== undefined;
