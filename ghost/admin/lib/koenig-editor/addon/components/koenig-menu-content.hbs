@@ -12,6 +12,7 @@
                         role="menuitem"
                         title="{{item.label}}"
                         {{on "click" (fn @itemClicked item)}}
+                        {{did-update this.scrollIntoView (eq item @selectedItem)}}
                     >
                         <div class="{{kg-style "cardmenu-icon"}} {{item.iconClass}}" aria-hidden="true">{{svg-jar item.icon class="w7 h7"}}</div>
                         <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
