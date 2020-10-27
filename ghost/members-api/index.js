@@ -87,8 +87,8 @@ module.exports = function MembersApi({
         async get(member) {
             return metadata.getMetadata('stripe', member);
         },
-        async set(data) {
-            return metadata.setMetadata('stripe', data);
+        async set(data, options) {
+            return metadata.setMetadata('stripe', data, options);
         }
     };
     /** @type {StripePaymentProcessor} */
