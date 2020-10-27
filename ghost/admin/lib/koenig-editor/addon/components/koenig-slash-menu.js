@@ -68,17 +68,20 @@ export default class KoenigSlashMenuComponent extends Component {
             };
 
             snippets.forEach((snippet) => {
-                snippetsSection.items.push({
+                let snippetItem = {
                     label: snippet.name,
                     icon: snippetIcon(snippet),
                     type: 'snippet',
-                    matches: [snippet.name.toLowerCase()],
-                    deleteClicked: (event) => {
+                    matches: [snippet.name.toLowerCase()]
+                };
+                if (this.args.deleteSnippet) {
+                    snippetItem.deleteClicked = (event) => {
                         event.preventDefault();
                         event.stopImmediatePropagation();
                         this.args.deleteSnippet(snippet);
-                    }
-                });
+                    };
+                }
+                snippetsSection.items.push(snippetItem);
             });
 
             itemSections.push(snippetsSection);

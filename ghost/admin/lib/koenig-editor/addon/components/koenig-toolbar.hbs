@@ -67,7 +67,7 @@
         </button>
     </li>
 
-    {{#if (enable-developer-experiments)}}
+    {{#if (and @addSnippet (enable-developer-experiments))}}
         {{#unless this.basicOnly}}
             <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
             <li class="ma0 lh-solid">
