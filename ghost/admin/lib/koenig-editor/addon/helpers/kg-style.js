@@ -21,7 +21,7 @@ export function kgStyle([style], options) {
         break;
 
     case 'cardmenu-label':
-        cssClass = 'f-7 tracked-1 fw4 ma0 ml4 flex-grow-1';
+        cssClass = 'f-7 tracked-1 fw4 ma0 ml4 flex-grow-1 truncate';
         break;
 
     // Container cards
