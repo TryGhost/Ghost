@@ -242,7 +242,7 @@ export default Component.extend({
 
     _handleWindowMousedown(event) {
         if (
-            !event.target.closest(`#${this.elementId}, .fullscreen-modal`)
+            !event.target.closest(`#${this.elementId}, .fullscreen-modal-container`)
         ) {
             this._hideMenu();
         }
