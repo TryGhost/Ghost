@@ -13,7 +13,7 @@ export function kgStyle([style], options) {
         break;
 
     case 'cardmenu-card':
-        cssClass = 'flex items-center middarkgrey ba b--transparent hover-darkgrey kg-cardmenu-card-hover pl4 pr4 pt2 pb2 anim-fast';
+        cssClass = 'flex flex-shrink-0 items-center middarkgrey ba b--transparent hover-darkgrey kg-cardmenu-card-hover pl4 pr4 pt2 pb2 anim-fast';
         break;
 
     case 'cardmenu-icon':
