@@ -308,7 +308,7 @@ export default class KoenigSlashMenuComponent extends Component {
 
     _handleWindowMousedown(event) {
         // clicks outside the menu should always close
-        if (!event.target.closest(`#${this.containerElement.id}, .fullscreen-modal`)) {
+        if (!event.target.closest(`#${this.containerElement.id}, .fullscreen-modal-container`)) {
             this._hideMenu();
 
         // clicks on the menu but not on a button should be ignored so that the
