@@ -44,8 +44,7 @@ export default Component.extend({
             let snippetsSection = {
                 title: 'Snippets',
                 items: [],
-                rowLength: 1,
-                developerExperiment: true
+                rowLength: 1
             };
 
             snippets.forEach((snippet) => {
