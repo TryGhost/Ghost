@@ -291,7 +291,7 @@
             {{#if this.canChangePassword}}
                 <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.user.saveNewPassword) on="submit"}}>
                     <div class="pa5">
-                        <fieldset class="user-details-password">
+                        <fieldset class="user-details-form">
                             {{#if this.isOwnProfile}}
                                 <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="password">
                                     <label for="user-password-old">Old Password</label>
@@ -347,6 +347,44 @@
                         </fieldset>
                     </div>
                 </form> {{! change password form }}
+            {{/if}}
+
+            {{#if this.isOwnProfile}}
+                <form class="user-profile">
+                    <div class="pa5">
+                        <fieldset class="user-details-form">
+                            <GhFormGroup>
+                                <label for="personal-token">Personal Token</label>
+                                <GhTextInput
+                                        @id="personal-token"
+                                        @value={{readonly this.personalToken}}
+                                        @readonly
+                                        @type="text"
+                                        onclick="this.select()"
+                                    />
+                                <p>
+                                    Give apps personal access without sharing your email/password.
+                                </p>
+                                {{#if this.personalTokenRegenerated}}
+                                    <p class="green"> Personal Token was successfully regenerated </p>
+                                {{/if}}
+
+                            </GhFormGroup>
+
+                            <div class="form-group">
+                                <button class="gh-btn gh-btn-icon gh-btn-red" {{action "confirmRegenerateTokenModal"}}>
+                                    <span>Regenerate</span>
+                                </button>
+                                {{#if this.showRegenerateTokenModal}}
+                                    <GhFullscreenModal @modal="regenerate-token"
+                                        @confirm={{action "regenerateToken"}}
+                                        @close={{action "cancelRegenerateTokenModal"}}
+                                        @modifier="action wide" />
+                                {{/if}}
+                            </div>
+                        </fieldset>
+                    </div>
+                </form>
             {{/if}}
         </div>
     </section>
