@@ -119,7 +119,8 @@ module.exports = function MembersApi({
 
     const users = Users({
         stripe,
-        Member
+        Member,
+        StripeCustomer
     });
 
     async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, requestSrc = ''}) {

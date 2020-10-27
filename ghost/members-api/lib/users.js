@@ -4,7 +4,8 @@ const common = require('../lib/common');
 
 module.exports = function ({
     stripe,
-    Member
+    Member,
+    StripeCustomer
 }) {
     async function get(data, options) {
         debug(`get id:${data.id} email:${data.email}`);
@@ -127,6 +128,23 @@ module.exports = function ({
         await stripe.updateSubscriptionFromClient(subscriptionUpdate);
     }
 
+    async function linkStripeCustomer(id, member, options) {
+        if (!stripe) {
+            throw new common.errors.BadRequestError({
+                message: 'Cannot link Stripe Customer without a Stripe connection'
+            });
+        }
+        const existingCustomer = await StripeCustomer.findOne({customer_id: id}, options);
+
+        if (existingCustomer) {
+            throw new common.errors.BadRequestError({
+                message: 'Cannot link Stripe Customer already associated with a member'
+            });
+        }
+
+        return stripe.linkStripeCustomer(id, member, options);
+    }
+
     return {
         create,
         update,
@@ -141,7 +159,7 @@ module.exports = function ({
         getStripeCustomer: safeStripe('getCustomer'),
         createStripeCustomer: safeStripe('createCustomer'),
         createComplimentarySubscription: safeStripe('createComplimentarySubscription'),
-        linkStripeCustomer: safeStripe('linkStripeCustomer'),
+        linkStripeCustomer,
         linkStripeCustomerById
     };
 };
