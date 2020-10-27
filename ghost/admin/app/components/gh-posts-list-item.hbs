@@ -17,6 +17,10 @@
                     in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                 {{/if}}
 
+                {{#if (eq @post.email.status "submitted")}}
+                    • Sent to <span class="midgrey-l2 fw5">{{gh-pluralize @post.email.emailCount "member"}}</span>
+                {{/if}}
+                
                 {{#if @post.isScheduled}}
                     – <span class="gh-schedule-time">Will be published {{this.scheduledText}}</span>
                 {{/if}}
