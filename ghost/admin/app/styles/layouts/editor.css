@@ -125,7 +125,7 @@
     color: #1e0fbe;
     font-size: 1.8rem;
     line-height: 2.16rem;
-    text-overflow: ellipses;
+    text-overflow: ellipsis;
     word-wrap: break-word;
 
     -webkit-text-overflow: ellipsis;
