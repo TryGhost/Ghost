@@ -64,6 +64,22 @@ module.exports = function MembersApi({
             return true;
         }
 
+        const firstUnpaidSubscription = await StripeCustomerSubscription.findOne({
+            status: 'unpaid'
+        });
+
+        if (firstUnpaidSubscription) {
+            return true;
+        }
+
+        const firstPastDueSubscription = await StripeCustomerSubscription.findOne({
+            status: 'past_due'
+        });
+
+        if (firstPastDueSubscription) {
+            return true;
+        }
+
         return false;
     }
 
