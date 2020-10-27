@@ -19,9 +19,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "8.0.1",
+    "mocha": "8.2.0",
     "should": "13.2.3",
-    "sinon": "9.0.2"
+    "sinon": "9.2.0"
   },
   "dependencies": {
     "papaparse": "5.3.0"
