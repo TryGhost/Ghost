@@ -12,7 +12,7 @@
     @toggleSection={{action "toggleSection"}}
     @toggleHeaderSection={{action "toggleHeaderSection"}}
     @editLink={{action "editLink"}}
-    @addSnippet={{this.addSnippet}}
+    @addSnippet={{this.addSnippetIfPossible}}
 />
 
 {{!-- pop-up link hover toolbar --}}
@@ -86,7 +86,7 @@
             deselectCard=(action "deselectCard" card)
             editCard=(action "editCard" card)
             deleteCard=(action "deleteCard" card)
-            saveAsSnippet=(action "saveCardAsSnippet" card)
+            saveAsSnippet=this.saveCardAsSnippetIfPossible
             moveCursorToPrevSection=(action "moveCursorToPrevSection" card)
             moveCursorToNextSection=(action "moveCursorToNextSection" card)
             addParagraphAfterCard=(action "addParagraphAfterCard" card)

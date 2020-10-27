@@ -4,8 +4,8 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
+import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
-import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
 import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
@@ -145,6 +145,14 @@ export default Controller.extend({
 
     snippets: computed('_snippets.@each.isNew', function () {
         return this._snippets.reject(snippet => snippet.get('isNew'));
+    }),
+
+    canManageSnippets: computed('session.user.{isOwnerOrAdmin,isEditor}', function () {
+        let {user} = this.session;
+        if (user.get('isOwnerOrAdmin') || user.get('isEditor')) {
+            return true;
+        }
+        return false;
     }),
 
     _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
@@ -290,37 +298,37 @@ export default Controller.extend({
 
         updateWordCount(counts) {
             this.set('wordCount', counts);
-        },
-
-        saveSnippet(snippet) {
-            let snippetRecord = this.store.createRecord('snippet', snippet);
-            return snippetRecord.save().then(() => {
-                this.notifications.closeAlerts('snippet.save');
-                this.notifications.showNotification(
-                    `Snippet saved as "${snippet.name}"`,
-                    {type: 'success'}
-                );
-                return snippetRecord;
-            }).catch((error) => {
-                if (!snippetRecord.errors.isEmpty) {
-                    this.notifications.showAlert(
-                        `Snippet save failed: ${snippetRecord.errors.messages.join('. ')}`,
-                        {type: 'error', key: 'snippet.save'}
-                    );
-                }
-                snippetRecord.rollbackAttributes();
-                throw error;
-            });
-        },
-
-        toggleDeleteSnippetModal(snippet) {
-            this.set('snippetToDelete', snippet);
-        },
-
-        deleteSnippet(snippet) {
-            return snippet.destroyRecord();
         }
     },
+
+    saveSnippet: action(function (snippet) {
+        let snippetRecord = this.store.createRecord('snippet', snippet);
+        return snippetRecord.save().then(() => {
+            this.notifications.closeAlerts('snippet.save');
+            this.notifications.showNotification(
+                `Snippet saved as "${snippet.name}"`,
+                {type: 'success'}
+            );
+            return snippetRecord;
+        }).catch((error) => {
+            if (!snippetRecord.errors.isEmpty) {
+                this.notifications.showAlert(
+                    `Snippet save failed: ${snippetRecord.errors.messages.join('. ')}`,
+                    {type: 'error', key: 'snippet.save'}
+                );
+            }
+            snippetRecord.rollbackAttributes();
+            throw error;
+        });
+    }),
+
+    toggleDeleteSnippetModal: action(function (snippet) {
+        this.set('snippetToDelete', snippet);
+    }),
+
+    deleteSnippet: action(function (snippet) {
+        return snippet.destroyRecord();
+    }),
 
     /* Public tasks ----------------------------------------------------------*/
 
@@ -613,11 +621,11 @@ export default Controller.extend({
                 let membersResponse = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
                 this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
             }
-
-            yield this.store.query('snippet', {limit: 'all'});
         } catch (error) {
             this.set('memberCount', 0);
         }
+
+        yield this.store.query('snippet', {limit: 'all'});
     }).restartable(),
 
     /* Public methods --------------------------------------------------------*/
