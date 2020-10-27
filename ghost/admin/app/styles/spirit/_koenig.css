@@ -899,9 +899,10 @@
     top: -10px;
 }
 
+/*Firefox has a bug with padding-bottom being ignored when using overflow:auto which has been reported here: https://bugzilla.mozilla.org/show_bug.cgi?id=748518. Below solution works cross browsers*/
 .koenig-cardmenu:after {
     content: "";
-    padding: calc(1.6rem / 2);
+    padding: .8rem;
     display: block;
 }
 
