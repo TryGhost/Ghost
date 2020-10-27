@@ -145,6 +145,15 @@ module.exports = function ({
         return stripe.linkStripeCustomer(id, member, options);
     }
 
+    async function setComplimentarySubscription(member, options) {
+        if (!stripe) {
+            throw new common.errors.BadRequestError({
+                message: 'Cannot link create Complimentary Subscription without a Stripe connection'
+            });
+        }
+        return stripe.setComplimentarySubscription(member, options);
+    }
+
     return {
         create,
         update,
@@ -152,7 +161,7 @@ module.exports = function ({
         get,
         destroy,
         updateSubscription,
-        setComplimentarySubscription: safeStripe('setComplimentarySubscription'),
+        setComplimentarySubscription,
         setComplimentarySubscriptionById,
         cancelComplimentarySubscription: safeStripe('cancelComplimentarySubscription'),
         cancelStripeSubscriptions: safeStripe('cancelComplimentarySubscription'),
