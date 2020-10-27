@@ -192,16 +192,16 @@ module.exports = class StripePaymentProcessor {
         };
     }
 
-    async linkStripeCustomer(id, member) {
+    async linkStripeCustomer(id, member, options) {
         const customer = await retrieve(this._stripe, 'customers', id);
 
-        await this._updateCustomer(member, customer);
+        await this._updateCustomer(member, customer, options);
 
         debug(`Linking customer:${id} subscriptions`, JSON.stringify(customer.subscriptions));
 
         if (customer.subscriptions && customer.subscriptions.data) {
             for (const subscription of customer.subscriptions.data) {
-                await this._updateSubscription(subscription);
+                await this._updateSubscription(subscription, options);
             }
         }
 
@@ -292,8 +292,8 @@ module.exports = class StripePaymentProcessor {
         });
     }
 
-    async setComplimentarySubscription(member) {
-        const subscriptions = await this.getActiveSubscriptions(member);
+    async setComplimentarySubscription(member, options) {
+        const subscriptions = await this.getActiveSubscriptions(member, options);
 
         // NOTE: Because we allow for multiple Complimentary plans, need to take into account currently availalbe
         //       plan currencies so that we don't end up giving a member complimentary subscription in wrong currency.
@@ -308,7 +308,11 @@ module.exports = class StripePaymentProcessor {
         const complimentaryFilter = plan => (plan.nickname === 'Complimentary' && plan.currency === complimentaryCurrency);
         const complimentaryPlan = this._plans.find(complimentaryFilter);
 
-        const customer = await this._customerForMemberCheckoutSession(member);
+        if (!complimentaryPlan) {
+            throw new Error('Could not find Complimentary plan');
+        }
+
+        const customer = await this._customerForMemberCheckoutSession(member, options);
 
         if (!subscriptions.length) {
             const subscription = await create(this._stripe, 'subscriptions', {
@@ -318,7 +322,7 @@ module.exports = class StripePaymentProcessor {
                 }]
             });
 
-            await this._updateSubscription(subscription);
+            await this._updateSubscription(subscription, options);
         } else {
             // NOTE: we should only ever have 1 active subscription, but just in case there is more update is done on all of them
             for (const subscription of subscriptions) {
@@ -327,7 +331,7 @@ module.exports = class StripePaymentProcessor {
                     plan: complimentaryPlan.id
                 });
 
-                await this._updateSubscription(updatedSubscription);
+                await this._updateSubscription(updatedSubscription, options);
             }
         }
     }
@@ -425,7 +429,7 @@ module.exports = class StripePaymentProcessor {
         return null;
     }
 
-    async _updateCustomer(member, customer) {
+    async _updateCustomer(member, customer, options = {}) {
         debug(`Attaching customer to member ${member.get('email')} ${customer.id}`);
         await this.storage.set({
             customer: {
@@ -434,17 +438,17 @@ module.exports = class StripePaymentProcessor {
                 name: customer.name,
                 email: customer.email
             }
-        });
+        }, options);
     }
 
-    async _updateSubscription(subscription) {
+    async _updateSubscription(subscription, options) {
         const payment = subscription.default_payment_method;
         if (typeof payment === 'string') {
             debug(`Fetching default_payment_method for subscription ${subscription.id}`);
             const subscriptionWithPayment = await retrieve(this._stripe, 'subscriptions', subscription.id, {
                 expand: ['default_payment_method']
             });
-            return this._updateSubscription(subscriptionWithPayment);
+            return this._updateSubscription(subscriptionWithPayment, options);
         }
 
         const mappedSubscription = {
@@ -472,11 +476,11 @@ module.exports = class StripePaymentProcessor {
 
         await this.storage.set({
             subscription: mappedSubscription
-        });
+        }, options);
     }
 
-    async _customerForMemberCheckoutSession(member) {
-        const metadata = await this.storage.get(member);
+    async _customerForMemberCheckoutSession(member, options) {
+        const metadata = await this.storage.get(member, options);
 
         for (const data of metadata.customers) {
             try {
@@ -494,7 +498,7 @@ module.exports = class StripePaymentProcessor {
             email: member.get('email')
         });
 
-        await this._updateCustomer(member, customer);
+        await this._updateCustomer(member, customer, options);
 
         return customer;
     }
