@@ -1,7 +1,7 @@
 {{#each @itemSections as |section sectionIndex|}}
     {{#if section.items}}
         {{#if (or (not section.developerExperiment) (enable-developer-experiments))}}
-            <div class="flex flex-column justify-center {{unless (eq sectionIndex 0) "mt3"}} mb2 pl4 pr4 pt3 midlightgrey ttu f-supersmall fw5 tracked-3" style="min-width: calc(100% - 3.2rem); {{unless (eq sectionIndex 0) "border-top: 1px solid #e5eff5;"}}">
+            <div class="flex flex-column justify-center flex-shrink-0 {{unless (eq sectionIndex 0) "mt3"}} mb2 pl4 pr4 pt3 midlightgrey ttu f-supersmall fw5 tracked-3" style="min-width: calc(100% - 3.2rem); {{unless (eq sectionIndex 0) "border-top: 1px solid #e5eff5;"}}">
                 {{section.title}}
             </div>
             {{#each section.items as |item|}}
