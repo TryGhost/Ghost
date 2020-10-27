@@ -72,6 +72,10 @@ input {
     font-weight: 400;
 }
 
+.form-group p.green {
+    color: var(--green);
+}
+
 .form-group h3 {
     margin-bottom: 1.6em;
     font-size: 1.5rem;

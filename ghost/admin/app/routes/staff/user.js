@@ -20,6 +20,13 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
             } else if (isEditor && !isOwnProfile && !user.get('isAuthorOrContributor')) {
                 this.transitionTo('staff');
             }
+
+            if (isOwnProfile) {
+                this.store.queryRecord('api-key', {id: 'me'}).then((apiKey) => {
+                    this.controller.set('personalToken', apiKey.id + ':' + apiKey.secret);
+                    this.controller.set('personalTokenRegenerated', false);
+                });
+            }
         });
     },
 

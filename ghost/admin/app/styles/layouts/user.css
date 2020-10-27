@@ -73,12 +73,12 @@
 }
 
 .user-details-bottom,
-.user-details-password {
+.user-details-form {
     max-width: 540px;
     margin: 2vw auto 0;
 }
 
-.user-details-password {
+.user-details-form {
     border-top: 1px solid var(--lightgrey);
     padding-top: 4vw;
     margin-bottom: -2vw;
