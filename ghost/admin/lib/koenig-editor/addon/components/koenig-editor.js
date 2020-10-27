@@ -233,6 +233,14 @@ export default Component.extend({
         }, options);
     }),
 
+    addSnippetIfPossible: computed('saveSnippet', function () {
+        return this.saveSnippet ? this.addSnippet : undefined;
+    }),
+
+    saveCardAsSnippetIfPossible: computed('saveSnippet', function () {
+        return this.saveSnippet ? this.saveCardAsSnippet : undefined;
+    }),
+
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
@@ -618,12 +626,6 @@ export default Component.extend({
             this.deleteCard(card, cursorMovement);
         },
 
-        saveCardAsSnippet(card) {
-            let section = this.getSectionFromCard(card);
-            this.set('snippetRect', card.component.element.getBoundingClientRect());
-            this.set('snippetRange', section.toRange());
-        },
-
         moveCursorToPrevSection(card) {
             let section = this.getSectionFromCard(card);
 
@@ -679,6 +681,12 @@ export default Component.extend({
 
         this.set('snippetRect', null);
         this.set('snippetRange', selectedRange);
+    }),
+
+    saveCardAsSnippet: action(function (card) {
+        let section = this.getSectionFromCard(card);
+        this.set('snippetRect', card.component.element.getBoundingClientRect());
+        this.set('snippetRange', section.toRange());
     }),
 
     cancelAddSnippet: action(function () {

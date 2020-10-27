@@ -82,8 +82,8 @@
             @onEditorCreated={{action "setKoenigEditor"}}
             @onWordCountChange={{action "updateWordCount"}}
             @snippets={{this.snippets}}
-            @saveSnippet={{action "saveSnippet"}}
-            @deleteSnippet={{action "toggleDeleteSnippetModal"}}
+            @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
+            @deleteSnippet={{if this.canManageSnippets this.toggleDeleteSnippetModal}}
         />
 
         <div class="absolute flex items-center br3 bg-white {{if editor.headerClass "right-4 bottom-4" "right-6 bottom-6"}}">
@@ -139,8 +139,8 @@
         <GhFullscreenModal
             @modal="delete-snippet"
             @model={{this.snippetToDelete}}
-            @confirm={{action "deleteSnippet"}}
-            @close={{action "toggleDeleteSnippetModal"}}
+            @confirm={{this.deleteSnippet}}
+            @close={{this.toggleDeletePostModal}}
             @modifier="action wide"
         />
     {{/if}}

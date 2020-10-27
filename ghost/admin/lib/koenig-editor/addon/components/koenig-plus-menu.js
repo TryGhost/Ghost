@@ -49,17 +49,20 @@ export default Component.extend({
             };
 
             snippets.forEach((snippet) => {
-                snippetsSection.items.push({
+                let snippetItem = {
                     label: snippet.name,
                     icon: snippetIcon(snippet),
                     type: 'snippet',
-                    matches: [snippet.name.toLowerCase()],
-                    deleteClicked: (event) => {
+                    matches: [snippet.name.toLowerCase()]
+                };
+                if (this.deleteSnippet) {
+                    snippetItem.deleteClicked = (event) => {
                         event.preventDefault();
                         event.stopImmediatePropagation();
                         this.deleteSnippet(snippet);
-                    }
-                });
+                    };
+                }
+                snippetsSection.items.push(snippetItem);
             });
 
             itemSections.push(snippetsSection);
