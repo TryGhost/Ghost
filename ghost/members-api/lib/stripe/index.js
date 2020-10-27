@@ -341,7 +341,7 @@ module.exports = class StripePaymentProcessor {
         const subscriptions = await this.getSubscriptions(member);
 
         return subscriptions.filter((subscription) => {
-            return subscription.status === 'active' || subscription.status === 'trialing';
+            return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
         });
     }
 
