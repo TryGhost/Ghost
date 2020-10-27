@@ -5846,10 +5846,10 @@ ember-cli-string-utils@^1.0.0, ember-cli-string-utils@^1.1.0:
   resolved "https://registry.yarnpkg.com/ember-cli-string-utils/-/ember-cli-string-utils-1.1.0.tgz#39b677fc2805f55173735376fcef278eaa4452a1"
   integrity sha1-ObZ3/CgF9VFzc1N2/O8njqpEUqE=
 
-ember-cli-terser@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-terser/-/ember-cli-terser-4.0.0.tgz#01d2f1a3090833d1c895fea34ec0b4106a293f3a"
-  integrity sha512-N9PBVreF7041l7ggxdhrivK1suh1EgURuz3PmLIi1jdDhf/WVVkCAWfriFP3HeFUwAjX4qxHrgFR2Pb5va9Vxw==
+ember-cli-terser@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-terser/-/ember-cli-terser-4.0.1.tgz#0da0b8f2b09989e8c992b207553ddec1bbb65915"
+  integrity sha512-vvp0uVl8reYeW9EZjSXRPR3Bq7y4u9CYlUdI7j/WzMPDj3/gUHU4Z7CHYOCrftrClQvFfqO2eXmHwDA6F7SLug==
   dependencies:
     broccoli-terser-sourcemap "^4.1.0"
 
