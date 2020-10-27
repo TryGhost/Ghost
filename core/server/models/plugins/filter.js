@@ -27,33 +27,36 @@ const RELATIONS = {
     }
 };
 
-const EXPANSIONS = [{
-    key: 'primary_tag',
-    replacement: 'tags.slug',
-    expansion: 'posts_tags.sort_order:0+tags.visibility:public'
-}, {
-    key: 'primary_author',
-    replacement: 'authors.slug',
-    expansion: 'posts_authors.sort_order:0+authors.visibility:public'
-}, {
-    key: 'authors',
-    replacement: 'authors.slug'
-}, {
-    key: 'author',
-    replacement: 'authors.slug'
-}, {
-    key: 'tag',
-    replacement: 'tags.slug'
-}, {
-    key: 'tags',
-    replacement: 'tags.slug'
-}, {
-    key: 'label',
-    replacement: 'labels.slug'
-}, {
-    key: 'labels',
-    replacement: 'labels.slug'
-}];
+const EXPANSIONS = {
+    posts: [{
+        key: 'primary_tag',
+        replacement: 'tags.slug',
+        expansion: 'posts_tags.sort_order:0+tags.visibility:public'
+    }, {
+        key: 'primary_author',
+        replacement: 'authors.slug',
+        expansion: 'posts_authors.sort_order:0+authors.visibility:public'
+    }, {
+        key: 'authors',
+        replacement: 'authors.slug'
+    }, {
+        key: 'author',
+        replacement: 'authors.slug'
+    }, {
+        key: 'tag',
+        replacement: 'tags.slug'
+    }, {
+        key: 'tags',
+        replacement: 'tags.slug'
+    }],
+    members: [{
+        key: 'label',
+        replacement: 'labels.slug'
+    }, {
+        key: 'labels',
+        replacement: 'labels.slug'
+    }]
+};
 
 const filter = function filter(Bookshelf) {
     const Model = Bookshelf.Model.extend({
@@ -70,6 +73,8 @@ const filter = function filter(Bookshelf) {
          */
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
+
+            const expansions = EXPANSIONS[this.tableName];
 
             let custom = options.filter;
             let extra = this.extraFilters(options);
@@ -94,7 +99,7 @@ const filter = function filter(Bookshelf) {
                 this.query((qb) => {
                     nql(custom, {
                         relations: RELATIONS,
-                        expansions: EXPANSIONS,
+                        expansions: expansions,
                         overrides: overrides,
                         defaults: defaults,
                         transformer: transformer
