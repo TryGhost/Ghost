@@ -19,7 +19,7 @@
     )
 )}}
 
-{{#if (or this.toolbar this.saveAsSnippet)}}
+{{#if (or this.toolbar (and this.saveAsSnippet (not this.isEditing)))}}
     <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}} @instantClose={{this.koenigUi.inputHasFocus}}>
         {{#each this.toolbar.items as |item|}}
             {{#if item.divider}}
@@ -38,7 +38,7 @@
             {{/if}}
         {{/each}}
 
-        {{#if this.saveAsSnippet}}
+        {{#if (and this.saveAsSnippet (not this.isEditing))}}
             {{#if this.toolbar.items}}
                 <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
             {{/if}}
