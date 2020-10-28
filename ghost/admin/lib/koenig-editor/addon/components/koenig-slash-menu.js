@@ -3,11 +3,38 @@ import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
 import snippetIcon from '../utils/snippet-icon';
 import {CARD_MENU} from '../options/cards';
 import {action} from '@ember/object';
+import {isArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {tracked} from '@glimmer/tracking';
 
 const Y_OFFSET = 16;
+
+const createItemMatcher = (query) => {
+    // match everything before a space to a card. Keeps the relevant
+    // card selected when providing attributes to a card, eg:
+    // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
+    let card = query.split(/\s/)[0].replace(/^\//, '');
+
+    return (item) => {
+        // match every item before anything is typed
+        if (!query) {
+            return true;
+        }
+
+        // standard exact matching for items with a matches array
+        if (isArray(item.matches)) {
+            return card ? item.matches.any(match => match.indexOf(card) === 0) : true;
+        }
+
+        // custom per-item matching, eg. snippets match any part of their title
+        if (typeof item.matches === 'function') {
+            return item.matches(query);
+        }
+
+        return false;
+    };
+};
 
 export default class KoenigSlashMenuComponent extends Component {
     @tracked itemSections = [];
@@ -49,14 +76,12 @@ export default class KoenigSlashMenuComponent extends Component {
     }
 
     get selectedItem() {
-        return this.itemMap[this.selectedRowIndex][this.selectedColumnIndex];
+        return this.itemMap[this.selectedRowIndex]?.[this.selectedColumnIndex];
     }
 
     @action
     updateItemSections() {
-        let {query} = this;
         let {snippets} = this.args;
-
         let itemSections = [...CARD_MENU];
 
         if (snippets?.length) {
@@ -71,7 +96,7 @@ export default class KoenigSlashMenuComponent extends Component {
                     label: snippet.name,
                     icon: snippetIcon(snippet),
                     type: 'snippet',
-                    matches: [snippet.name.toLowerCase()]
+                    matches: query => snippet.name.toLowerCase().indexOf(query) > -1
                 };
                 if (this.args.deleteSnippet) {
                     snippetItem.deleteClicked = (event) => {
@@ -86,26 +111,18 @@ export default class KoenigSlashMenuComponent extends Component {
             itemSections.push(snippetsSection);
         }
 
-        // match everything before a space to a card. Keeps the relevant
-        // card selected when providing attributes to a card, eg:
-        // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
-        let card = query.split(/\s/)[0].replace(/^\//, '');
+        let itemMatcher = createItemMatcher(this.query);
 
         let matchedItems = itemSections.map((section) => {
-            // show all items before anything is typed
-            if (!card) {
-                return section;
-            }
-
             // show icons where there's a match of the begining of one of the
             // "item.matches" strings
-            let matches = section.items.filter(item => item.matches.any(match => match.indexOf(card) === 0));
+            let matches = section.items.filter(itemMatcher);
             if (matches.length > 0) {
                 return Object.assign({}, section, {items: matches});
             }
         }).compact();
 
-        if (query !== this._lastQuery) {
+        if (this.query !== this._lastQuery) {
             this.selectedRowIndex = 0;
             this.selectedColumnIndex = 0;
         }
