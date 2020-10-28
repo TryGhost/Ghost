@@ -614,9 +614,13 @@ const configureGrunt = function (grunt) {
                 }]
             });
 
+            if (!grunt.option('skip-update')) {
+                grunt.task
+                    .run('update_submodules:pinned')
+                    .run('subgrunt:init');
+            }
+
             grunt.task
-                .run('update_submodules:pinned')
-                .run('subgrunt:init')
                 .run('clean:built')
                 .run('clean:tmp')
                 .run('prod')
