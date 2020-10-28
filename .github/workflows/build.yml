@@ -1,0 +1,49 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+jobs:
+  zip:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Set up Git
+        run: |
+          git config --global pull.rebase true
+          git config --global user.name "Ghost CI"
+          git config --global user.email "ghost@example.com"
+
+      - run: yarn
+      - run: grunt master --upstream=origin
+
+      - run: echo "ghost_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        working-directory: core/client
+
+      - run: git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"
+
+      - run: npm version minor
+      - run: npm version minor
+        working-directory: core/client
+
+      - run: grunt release --skip-update
+
+      - run: |
+          for file in *; do
+            basename="${file%.*}"
+            extension="${file##*.}"
+            mv "$file" "$basename-$ghost_hash-$ghost_admin_hash.$extension"
+          done
+        working-directory: .dist/release
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ghost-latest
+          path: .dist/release/*
+          retention-days: 7
