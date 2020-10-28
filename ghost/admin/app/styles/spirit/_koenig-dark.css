@@ -62,6 +62,22 @@
     fill: var(--darkgrey);
 }
 
+.kg-cardmenu-card-hover svg [data-selector="bg"] {
+    fill: var(--lightgrey-d2);
+}
+
+.kg-cardmenu-card-hover svg [data-selector="fold"] {
+    fill: var(--midlightgrey-l2);
+}
+
+.kg-cardmenu-card-hover svg [data-selector="line"] {
+    fill: var(--darkgrey);
+}
+
+.kg-cardmenu-card-hover:hover svg [data-selector="bg"] {
+    fill: var(--lightgrey-d2);
+}
+
 
 /* Card styles */
 
