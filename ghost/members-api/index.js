@@ -388,6 +388,7 @@ module.exports = function MembersApi({
                         expand: ['subscriptions.data.default_payment_method']
                     });
                     let member = await users.get({email: customer.email});
+                    const checkoutType = _.get(event, 'data.object.metadata.checkoutType');
                     if (!member) {
                         const metadataName = _.get(event, 'data.object.metadata.name');
                         const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
@@ -402,9 +403,10 @@ module.exports = function MembersApi({
                     }
 
                     await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
-
-                    const emailType = 'signup';
-                    await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, options: {forceEmailType: true}});
+                    if (checkoutType !== 'upgrade') {
+                        const emailType = 'signup';
+                        await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, requestSrc, options: {forceEmailType: true}, tokenData: {}});
+                    }
                 } else if (event.data.object.mode === 'payment') {
                     common.logging.info('Ignoring "payment" mode Checkout Session');
                 }
