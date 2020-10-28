@@ -22,7 +22,7 @@ class MagicLink {
      * @param {object} options
      * @param {MailTransporter} options.transporter
      * @param {TokenProvider<Token, TokenData>} options.tokenProvider
-     * @param {(token: Token, type: string) => URL} options.getSigninURL
+     * @param {(token: Token, type: string, requestSrc?: string) => URL} options.getSigninURL
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
@@ -44,6 +44,7 @@ class MagicLink {
      *
      * @param {object} options
      * @param {string} options.email - The email to send magic link to
+     * @param {string} options.requestSrc - The source magic link was requested from
      * @param {TokenData} options.tokenData - The data for token
      * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @returns {Promise<{token: Token, info: SentMessageInfo}>}
@@ -52,8 +53,9 @@ class MagicLink {
         const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
+        const requestSrc = options.requestSrc;
 
-        const url = this.getSigninURL(token, type);
+        const url = this.getSigninURL(token, type, requestSrc);
 
         const info = await this.transporter.sendMail({
             to: options.email,
