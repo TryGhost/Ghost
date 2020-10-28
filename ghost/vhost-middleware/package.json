@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "mocha": "8.2.0",
-    "supertest": "5.0.0"
+    "supertest": "6.0.0"
   }
 }
