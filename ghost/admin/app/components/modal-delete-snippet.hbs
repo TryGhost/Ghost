@@ -1,11 +1,11 @@
 <header class="modal-header">
-    <h1>Are you sure?</h1>
+    <h1>Confirm snippet deletion</h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <div class="modal-body">
     <p>
-        Deleting snippet "{{this.snippet.name}}" will make it unavailable to all staff users.
+        You're about to delete the "<strong>{{this.snippet.name}}</strong>" snippet. This is permanent, and will delete the snippet for all staff users. It will <strong>not</strong> change any posts where you’ve used this snippet in the past.
     </p>
 </div>
 
