@@ -25,7 +25,7 @@
   "dependencies": {
     "bluebird": "3.7.2",
     "emoji-regex": "9.2.0",
-    "execa": "4.0.3",
+    "execa": "4.1.0",
     "lodash": "4.17.20",
     "request": "2.88.2",
     "request-promise": "4.2.6"
