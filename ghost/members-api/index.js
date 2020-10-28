@@ -121,7 +121,7 @@ module.exports = function MembersApi({
         Member
     });
 
-    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}}) {
+    async function sendEmailWithMagicLink({email, requestedType, requestSrc, tokenData, options = {forceEmailType: false}}) {
         let type = requestedType;
         if (!options.forceEmailType) {
             const member = await users.get({email});
@@ -131,7 +131,7 @@ module.exports = function MembersApi({
                 type = 'signup';
             }
         }
-        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email}, tokenData)});
+        return magicLinkService.sendMagicLink({email, type, requestSrc, tokenData: Object.assign({email}, tokenData)});
     }
 
     function getMagicLink(email) {
@@ -214,7 +214,7 @@ module.exports = function MembersApi({
     };
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
-        const {email, emailType, oldEmail} = req.body;
+        const {email, emailType, oldEmail, requestSrc} = req.body;
 
         if (!email) {
             res.writeHead(400);
@@ -236,11 +236,11 @@ module.exports = function MembersApi({
                 if (member) {
                     const tokenData = _.pick(req.body, ['oldEmail']);
                     const forceEmailType = oldEmail ? true : false;
-                    await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, options: {forceEmailType}});
+                    await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
-                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType});
+                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc});
             }
             res.writeHead(201);
             return res.end('Created.');
