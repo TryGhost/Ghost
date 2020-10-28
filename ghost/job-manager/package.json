@@ -24,7 +24,7 @@
     "sinon": "9.2.1"
   },
   "dependencies": {
-    "fastq": "1.8.0",
+    "fastq": "1.9.0",
     "p-wait-for": "3.1.0"
   }
 }
