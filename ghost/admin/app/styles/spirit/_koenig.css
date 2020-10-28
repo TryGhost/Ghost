@@ -810,11 +810,15 @@
     justify-content: center;
     opacity: 0;
     transition: opacity ease-in-out 0.15s;
-    padding: 4px;
+    padding: 5px;
     margin-top: -2px;
     margin-bottom: -2px;
-    margin-right: 4px;
+    margin-right: 8px;
     border-radius: 3px;
+}
+
+.kg-cardmenu-card-hover:hover svg [data-selector="bg"] {
+    fill: #fff;
 }
 
 .kg-cardmenu-card-hover:hover .kg-cardmenu-action-icon {
@@ -831,11 +835,11 @@
 }
 
 .kg-cardmenu-card-hover .kg-cardmenu-action-icon svg path {
-    fill: var(--midgrey);
+    fill: var(--red);
 }
 
 .kg-cardmenu-card-hover .kg-cardmenu-action-icon:hover svg path {
-    fill: var(--darkgrey);
+    fill: var(--red);
 }
 
 /* Padded container housing title + editor canvas, scrollable content */
