@@ -35,7 +35,7 @@ describe('MagicLink', function () {
             const {token} = await service.sendMagicLink(args);
 
             should.ok(options.getSigninURL.calledOnce);
-            should.ok(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit'));
+            should.ok(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit', ''));
 
             should.ok(options.getText.calledOnce);
             should.ok(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
