@@ -205,7 +205,7 @@ function handleDataAttributes({siteUrl}) {
                 method: 'DELETE'
             }).then(function (res) {
                 if (res.ok) {
-                    window.location.reload();
+                    window.location.replace(siteUrl);
                 } else {
                     el.addEventListener('click', clickHandler);
                     el.classList.remove('loading');
