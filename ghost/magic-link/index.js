@@ -53,7 +53,7 @@ class MagicLink {
         const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
-        const requestSrc = options.requestSrc;
+        const requestSrc = options.requestSrc || '';
 
         const url = this.getSigninURL(token, type, requestSrc);
 
