@@ -98,7 +98,8 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     email,
                     oldEmail,
                     emailType,
-                    labels
+                    labels,
+                    requestSrc: 'portal'
                 })
             }).then(function (res) {
                 if (res.ok) {
@@ -124,10 +125,20 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async checkoutPlan({plan, checkoutCancelUrl, checkoutSuccessUrl, email: customerEmail, name}) {
+        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, metadata = {}}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+            if (!successUrl) {
+                const checkoutSuccessUrl = new URL(siteUrl);
+                checkoutSuccessUrl.searchParams.set('portal-stripe', 'success');
+                successUrl = checkoutSuccessUrl.href;
+            }
 
+            if (!cancelUrl) {
+                const checkoutCancelUrl = new URL(siteUrl);
+                checkoutCancelUrl.searchParams.set('portal-stripe', 'cancel');
+                cancelUrl = checkoutCancelUrl.href;
+            }
             return makeRequest({
                 url,
                 method: 'POST',
@@ -138,10 +149,11 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     plan: plan,
                     identity: identity,
                     metadata: {
-                        name
+                        name,
+                        ...metadata
                     },
-                    successUrl: checkoutSuccessUrl,
-                    cancelUrl: checkoutCancelUrl,
+                    successUrl,
+                    cancelUrl,
                     customerEmail: customerEmail
                 })
             }).then(function (res) {
@@ -163,10 +175,20 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async editBilling() {
+        async editBilling({successUrl, cancelUrl}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
+            if (!successUrl) {
+                const checkoutSuccessUrl = new URL(siteUrl);
+                checkoutSuccessUrl.searchParams.set('portal-stripe', 'success');
+                successUrl = checkoutSuccessUrl.href;
+            }
 
+            if (!cancelUrl) {
+                const checkoutCancelUrl = new URL(siteUrl);
+                checkoutCancelUrl.searchParams.set('portal-stripe', 'cancel');
+                cancelUrl = checkoutCancelUrl.href;
+            }
             return makeRequest({
                 url,
                 method: 'POST',
@@ -174,7 +196,9 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    identity: identity
+                    identity: identity,
+                    successUrl,
+                    cancelUrl
                 })
             }).then(function (res) {
                 if (!res.ok) {

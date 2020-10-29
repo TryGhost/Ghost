@@ -51,9 +51,9 @@ export default function NotificationParser({billingOnly = false} = {}) {
         return null;
     }
     const qsParams = new URLSearchParams(qs);
-    const action = qsParams.get('action');
+    const action = qsParams.get('action') || qsParams.get('portal-action');
     const successStatus = qsParams.get('success');
-    const stripeStatus = qsParams.get('stripe');
+    const stripeStatus = qsParams.get('stripe') || qsParams.get('portal-stripe');
     let notificationData = null;
 
     if (stripeStatus) {
