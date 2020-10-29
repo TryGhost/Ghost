@@ -28,19 +28,11 @@ jobs:
 
       - run: git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"
 
-      - run: npm version minor
-      - run: npm version minor
+      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
+      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
         working-directory: core/client
 
       - run: grunt release --skip-update
-
-      - run: |
-          for file in *; do
-            basename="${file%.*}"
-            extension="${file##*.}"
-            mv "$file" "$basename-$ghost_hash-$ghost_admin_hash.$extension"
-          done
-        working-directory: .dist/release
 
       - uses: actions/upload-artifact@v2
         with:
