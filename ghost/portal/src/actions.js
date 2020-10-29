@@ -114,7 +114,10 @@ async function checkoutPlan({data, state, api}) {
     try {
         const {plan} = data;
         await api.member.checkoutPlan({
-            plan
+            plan,
+            metadata: {
+                checkoutType: 'upgrade'
+            }
         });
     } catch (e) {
         return {
