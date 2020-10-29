@@ -119,7 +119,7 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 onKeyDown={e => onKeyDown(e, name)}
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
-                tabindex={tabindex}
+                tabIndex={tabindex}
                 autoComplete={autocomplete}
                 autoCorrect={autocorrect}
                 autoCapitalize={autocapitalize}

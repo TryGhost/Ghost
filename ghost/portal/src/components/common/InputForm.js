@@ -17,7 +17,7 @@ const FormInput = ({field, onChange, onBlur = () => { }, onKeyDown = () => {}}) 
                 onKeyDown={onKeyDown}
                 onChange={e => onChange(e, field)}
                 onBlur={e => onBlur(e, field)}
-                tabindex={field.tabindex}
+                tabIndex={field.tabindex}
                 errorMessage={field.errorMessage}
             />
         </>
