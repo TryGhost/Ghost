@@ -215,7 +215,7 @@ module.exports = function MembersApi({
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
         const {email, emailType, oldEmail, requestSrc} = req.body;
-
+        let forceEmailType = false;
         if (!email) {
             res.writeHead(400);
             return res.end('Bad Request.');
@@ -229,18 +229,18 @@ module.exports = function MembersApi({
                         message: 'This email is already associated with a member'
                     });
                 }
+                forceEmailType = true;
             }
 
             if (!allowSelfSignup) {
                 const member = oldEmail ? await users.get({oldEmail}) : await users.get({email});
                 if (member) {
                     const tokenData = _.pick(req.body, ['oldEmail']);
-                    const forceEmailType = oldEmail ? true : false;
                     await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
-                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc});
+                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: { forceEmailType }});
             }
             res.writeHead(201);
             return res.end('Created.');
