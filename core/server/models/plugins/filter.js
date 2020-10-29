@@ -24,6 +24,11 @@ const RELATIONS = {
         joinTable: 'members_labels',
         joinFrom: 'member_id',
         joinTo: 'label_id'
+    },
+    posts_meta: {
+        tableName: 'posts_meta',
+        type: 'oneToOne',
+        joinFrom: 'post_id'
     }
 };
 
@@ -66,7 +71,7 @@ const filter = function filter(Bookshelf) {
         enforcedFilters() {},
         defaultFilters() {},
         extraFilters() {},
-
+        filterExpansions() {},
         /**
          * Method which makes the necessary query builder calls (through knex) for the filters set on this model
          * instance.
@@ -74,7 +79,15 @@ const filter = function filter(Bookshelf) {
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
 
-            const expansions = EXPANSIONS[this.tableName];
+            const expansions = [];
+
+            if (EXPANSIONS[this.tableName]) {
+                expansions.push(...EXPANSIONS[this.tableName]);
+            }
+
+            if (this.filterExpansions()) {
+                expansions.push(...this.filterExpansions());
+            }
 
             let custom = options.filter;
             let extra = this.extraFilters(options);
