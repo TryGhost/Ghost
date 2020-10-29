@@ -125,7 +125,7 @@ export default class PopupNotification extends React.Component {
         const {type} = popupNotification || {};
         if (e.animationName === 'popupnotification-slideout') {
             if (type === 'stripe:billing-update') {
-                clearURLParams(['stripe']);
+                clearURLParams(['stripe', 'portal-stripe']);
             }
             this.context.onAction('clearPopupNotification');
         }

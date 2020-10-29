@@ -132,13 +132,7 @@ export default class App extends React.Component {
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
 
-        // const stripeParam = this.getStripeUrlParam();
         let page = '';
-
-        // /** Set page for magic link popup on stripe success*/
-        // if (!member && stripeParam === 'success') {
-        //     page = 'magiclink';
-        // }
 
         return {
             member,
@@ -306,7 +300,7 @@ export default class App extends React.Component {
     updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
         const {site: linkSite, ...restLinkData} = this.fetchLinkData();
-        this.setState({
+        const updatedState = {
             site: {
                 ...this.state.site,
                 ...(linkSite || {}),
@@ -314,13 +308,14 @@ export default class App extends React.Component {
             },
             ...restLinkData,
             ...restPreviewData
-        });
+        };
+        this.setState(updatedState);
     }
 
     /**Fetch Stripe param from site url after redirect from Stripe page*/
     getStripeUrlParam() {
         const url = new URL(window.location);
-        return url.searchParams.get('stripe');
+        return (url.searchParams.get('stripe') || url.searchParams.get('portal-stripe'));
     }
 
     /**Get Portal page from Link/Data-attribute path*/
