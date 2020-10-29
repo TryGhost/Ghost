@@ -212,6 +212,14 @@ p.gh-members-list-email {
     border-bottom-right-radius: 0px !important;
 }
 
+.dropdown.members-label-list {
+    width: 225px;
+}
+
+.dropdown.members-label-list .dropdown-label {
+    width: 205px;
+}
+
 
 @media (max-width: 1100px) {
     .gh-members-chart-summary-data {
