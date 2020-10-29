@@ -6,6 +6,7 @@ const models = require('../../models');
 const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
+const updateEmail = require('./emails/updateEmail');
 const SingleUseTokenProvider = require('./SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 
@@ -93,22 +94,19 @@ function createApiInstance(config) {
                         `;
                 case 'updateEmail':
                     return `
-                        Hey there,
+                            Hey there,
 
-                        You're one tap away from updating your email for ${siteTitle} — please confirm this is as your new email with this link:
+                            Please confirm your email address with this link:
 
-                        ${url}
+                            ${url}
 
-                        For your security, the link will expire in 24 hours time.
+                            For your security, the link will expire in 24 hours time.
 
-                        All the best!
-                        The team at ${siteTitle}
+                            ---
 
-                        ---
-
-                        Sent to ${email}
-                        If you did not make this request, you can simply delete this message.
-                        `;
+                            Sent to ${email}
+                            If you did not make this request, you can simply delete this message. This email address will not be used.
+                            `;
                 case 'signin':
                 default:
                     return `
@@ -142,7 +140,7 @@ function createApiInstance(config) {
                 case 'signup':
                     return signupEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'updateEmail':
-                    return subscribeEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return updateEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
                 default:
                     return signinEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
