@@ -240,7 +240,7 @@ module.exports = function MembersApi({
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
-                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: { forceEmailType }});
+                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
             }
             res.writeHead(201);
             return res.end('Created.');
