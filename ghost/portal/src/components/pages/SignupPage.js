@@ -358,7 +358,7 @@ class SignupPage extends React.Component {
                 brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
-                tabindex='3'
+                tabIndex='3'
             />
         );
     }
