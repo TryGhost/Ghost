@@ -36,6 +36,12 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
+          name: ghost-canary
+          path: .dist/release/*
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v2
+        with:
           name: ghost-latest
           path: .dist/release/*
           retention-days: 7
