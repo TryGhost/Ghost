@@ -121,7 +121,7 @@ module.exports = function MembersApi({
         Member
     });
 
-    async function sendEmailWithMagicLink({email, requestedType, requestSrc, tokenData, options = {forceEmailType: false}}) {
+    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, requestSrc = ''}) {
         let type = requestedType;
         if (!options.forceEmailType) {
             const member = await users.get({email});
@@ -389,6 +389,7 @@ module.exports = function MembersApi({
                     });
                     let member = await users.get({email: customer.email});
                     const checkoutType = _.get(event, 'data.object.metadata.checkoutType');
+                    const requestSrc = _.get(event, 'data.object.metadata.requestSrc') || '';
                     if (!member) {
                         const metadataName = _.get(event, 'data.object.metadata.name');
                         const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
