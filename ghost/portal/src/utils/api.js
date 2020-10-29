@@ -117,7 +117,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 method: 'DELETE'
             }).then(function (res) {
                 if (res.ok) {
-                    window.location.reload();
+                    window.location.replace(siteUrl);
                     return 'Success';
                 } else {
                     throw new Error('Failed to signout');
