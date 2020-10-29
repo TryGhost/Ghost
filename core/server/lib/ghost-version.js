@@ -8,7 +8,7 @@ let _private = {};
 _private.compose = function compose(type) {
     switch (type) {
     case 'pre':
-        return plainVersion + '-' + semver.prerelease(version)[0] + (semver.prerelease(version)[1] ? '.' + semver.prerelease(version)[1] : '');
+        return plainVersion + '-' + semver.prerelease(version).join('.');
     default:
         return version;
     }
