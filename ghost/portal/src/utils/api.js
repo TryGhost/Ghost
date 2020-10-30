@@ -125,7 +125,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, metadata = {}}) {
+        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, metadata = {}} = {}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
             if (!successUrl) {
@@ -175,7 +175,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async editBilling({successUrl, cancelUrl}) {
+        async editBilling({successUrl, cancelUrl} = {}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
             if (!successUrl) {
