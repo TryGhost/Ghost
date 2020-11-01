@@ -24,36 +24,44 @@ const RELATIONS = {
         joinTable: 'members_labels',
         joinFrom: 'member_id',
         joinTo: 'label_id'
+    },
+    posts_meta: {
+        tableName: 'posts_meta',
+        type: 'oneToOne',
+        joinFrom: 'post_id'
     }
 };
 
-const EXPANSIONS = [{
-    key: 'primary_tag',
-    replacement: 'tags.slug',
-    expansion: 'posts_tags.sort_order:0+tags.visibility:public'
-}, {
-    key: 'primary_author',
-    replacement: 'authors.slug',
-    expansion: 'posts_authors.sort_order:0+authors.visibility:public'
-}, {
-    key: 'authors',
-    replacement: 'authors.slug'
-}, {
-    key: 'author',
-    replacement: 'authors.slug'
-}, {
-    key: 'tag',
-    replacement: 'tags.slug'
-}, {
-    key: 'tags',
-    replacement: 'tags.slug'
-}, {
-    key: 'label',
-    replacement: 'labels.slug'
-}, {
-    key: 'labels',
-    replacement: 'labels.slug'
-}];
+const EXPANSIONS = {
+    posts: [{
+        key: 'primary_tag',
+        replacement: 'tags.slug',
+        expansion: 'posts_tags.sort_order:0+tags.visibility:public'
+    }, {
+        key: 'primary_author',
+        replacement: 'authors.slug',
+        expansion: 'posts_authors.sort_order:0+authors.visibility:public'
+    }, {
+        key: 'authors',
+        replacement: 'authors.slug'
+    }, {
+        key: 'author',
+        replacement: 'authors.slug'
+    }, {
+        key: 'tag',
+        replacement: 'tags.slug'
+    }, {
+        key: 'tags',
+        replacement: 'tags.slug'
+    }],
+    members: [{
+        key: 'label',
+        replacement: 'labels.slug'
+    }, {
+        key: 'labels',
+        replacement: 'labels.slug'
+    }]
+};
 
 const filter = function filter(Bookshelf) {
     const Model = Bookshelf.Model.extend({
@@ -63,13 +71,23 @@ const filter = function filter(Bookshelf) {
         enforcedFilters() {},
         defaultFilters() {},
         extraFilters() {},
-
+        filterExpansions() {},
         /**
          * Method which makes the necessary query builder calls (through knex) for the filters set on this model
          * instance.
          */
         applyDefaultAndCustomFilters: function applyDefaultAndCustomFilters(options) {
             const nql = require('@nexes/nql');
+
+            const expansions = [];
+
+            if (EXPANSIONS[this.tableName]) {
+                expansions.push(...EXPANSIONS[this.tableName]);
+            }
+
+            if (this.filterExpansions()) {
+                expansions.push(...this.filterExpansions());
+            }
 
             let custom = options.filter;
             let extra = this.extraFilters(options);
@@ -94,7 +112,7 @@ const filter = function filter(Bookshelf) {
                 this.query((qb) => {
                     nql(custom, {
                         relations: RELATIONS,
-                        expansions: EXPANSIONS,
+                        expansions: expansions,
                         overrides: overrides,
                         defaults: defaults,
                         transformer: transformer
