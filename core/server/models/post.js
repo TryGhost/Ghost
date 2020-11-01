@@ -99,6 +99,17 @@ Post = ghostBookshelf.Model.extend({
         return [...keys, ...postsMetaKeys];
     },
 
+    filterExpansions: function filterExpansions() {
+        const postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
+
+        return postsMetaKeys.map((pmk) => {
+            return {
+                key: pmk.split('.')[1],
+                replacement: pmk
+            };
+        });
+    },
+
     emitChange: function emitChange(event, options = {}) {
         let eventToTrigger;
         let resourceType = this.get('type');

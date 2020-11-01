@@ -94,10 +94,10 @@
     url-regex "~5.0.0"
     video-extensions "~1.1.0"
 
-"@nexes/mongo-knex@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.3.0.tgz#e0078f8ddf7fcd4d907fe5cf2390644218753cf0"
-  integrity sha512-LgPWH4mR+IWYh1/Y/ob22kVMYVBY2k/evE/QdXYifQcEOd2G0NRggRB7SQX8kLQ024FcjtIMfRXC3UjzFamUcw==
+"@nexes/mongo-knex@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.4.0.tgz#bdaef8d8cefeb9935ab7e3a1f5d0bbcfb764722e"
+  integrity sha512-RyfcK1+WJQ0SM7r0D5fMhKwjggxyrDb8hMaQ1vqfcMe/SE2J/qoSra9+fAdwN8zYRdz6Lovd6fqCaRQ5zFv5ZA==
   dependencies:
     debug "^4.1.0"
     lodash "^4.17.10"
@@ -116,12 +116,12 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha1-oTwCOHP5vBG55OKERJxs++zMgBE=
 
-"@nexes/nql@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.4.0.tgz#5ae28f8d339d56812eb8452ead9a5e5996087efd"
-  integrity sha512-fEsV2aMiPpqBneZosamFLypLAQAp8M5SA5MgeeJKMpHF0dQiHn9ifD556RgaSSY5RgO0gbRGoKypgy0YmyE1KQ==
+"@nexes/nql@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.5.0.tgz#bff22dbd4e2aa697d5c33031675cb100b013a0a4"
+  integrity sha512-skn8cfr0OJFu6HdcLRgBL19bJ2S7pATrgR/RnZR3v4T4iHfAkZ8zzLDMGib+721eFaAURnpGfPittO+RyPAhiQ==
   dependencies:
-    "@nexes/mongo-knex" "0.3.0"
+    "@nexes/mongo-knex" "0.4.0"
     "@nexes/mongo-utils" "0.3.0"
     "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
