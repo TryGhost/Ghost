@@ -114,13 +114,6 @@ describe('Basic Members Routes', function () {
             sinon.restore();
         });
 
-        describe('Static files', function () {
-            it('should not serve members js file', function () {
-                return request.get('/public/members.js')
-                    .expect(404);
-            });
-        });
-
         describe('Routes', function () {
             it('should not serve webhook endpoint', function () {
                 return request.post('/members/webhooks/stripe')
