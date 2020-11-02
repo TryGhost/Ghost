@@ -1534,10 +1534,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.30":
-  version "0.2.30"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.30.tgz#62962b16ec3cc04e5e98401829be841ad553de39"
-  integrity sha512-J23CHdmEKAincg8QO8bxGAE5f9hqc3QE2PtqYCFK7Hxmar0uKsGzBftgAb+tnu/3TWQ0z2YohO1RZ3vLHWZChw==
+"@tryghost/timezone-data@0.2.31":
+  version "0.2.31"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.31.tgz#8e0ea697a84dafa553eb56931140bae6ac1c26c1"
+  integrity sha512-TF7m1wCVi2BcR7hSwzxrABGgthqz361okgxNa5d33mw7w30WFWMh87xXspz4awByPtHMIm7jNq5rQMfGe3SlWA==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
