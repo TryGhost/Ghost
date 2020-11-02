@@ -7,14 +7,22 @@ const order = function order(Bookshelf) {
         parseOrderOption: function (orderQueryString, withRelated) {
             let orderAttributes;
             let result;
-            let rules;
+            let rules = [];
 
             orderAttributes = this.orderAttributes();
             if (withRelated && withRelated.indexOf('count.posts') > -1) {
                 orderAttributes.push('count.posts');
             }
             result = {};
-            rules = orderQueryString.split(',');
+
+            // CASE: repeat order query parameter keys are present
+            if (_.isArray(orderQueryString)) {
+                orderQueryString.forEach((qs) => {
+                    rules.push(...qs.split(','));
+                });
+            } else {
+                rules = orderQueryString.split(',');
+            }
 
             _.each(rules, function (rule) {
                 let match;
