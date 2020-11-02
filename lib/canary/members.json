@@ -33,6 +33,9 @@
         "comped": {
           "type": "boolean"
         },
+        "stripe_customer_id": {
+          "type": "string"
+        },
         "id": {
           "strip": true
         },
