@@ -382,14 +382,14 @@
   dependencies:
     "@tryghost/errors" "^0.2.4"
 
-"@tryghost/admin-api-schema@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.2.0.tgz#6f266352e213e8fb60c42824b350673356346cf3"
-  integrity sha512-gA9GxdhbkcTUBB5BOQ9R2ws9BVrqFkRhKIpxo71jhua9T1oJaLmvC85m1ju6p+ITQ1TH4WOio21Si2akPiKUUA==
+"@tryghost/admin-api-schema@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.3.0.tgz#01c5cc30e4ff38b05f4231beadb4a964d7f1e601"
+  integrity sha512-53YZHL/spsRcKwtFjpd+pKeLgDRSaxUzKLpG5rnDA0y6W+NjCbnSKqZT8u4eriRJUZ4Ajkr4LW3/gXIfj07GtA==
   dependencies:
     "@tryghost/errors" "0.2.4"
     bluebird "^3.5.3"
-    ghost-ignition "4.2.2"
+    ghost-ignition "4.2.3"
     lodash "^4.17.11"
 
 "@tryghost/bootstrap-socket@0.2.2":
