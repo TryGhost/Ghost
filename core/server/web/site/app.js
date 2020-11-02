@@ -100,10 +100,6 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.get('/public/members.js', shared.middlewares.labs.members,
         mw.servePublicFile('public/members.js', 'application/javascript', constants.ONE_YEAR_S));
 
-    // /public/members.min.js
-    siteApp.get('/public/members.min.js', shared.middlewares.labs.members,
-        mw.servePublicFile('public/members.min.js', 'application/javascript', constants.ONE_YEAR_S));
-
     // Serve sitemap.xsl file
     siteApp.use(mw.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
 

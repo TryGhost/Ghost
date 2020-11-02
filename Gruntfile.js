@@ -284,17 +284,6 @@ const configureGrunt = function (grunt) {
             }
         },
 
-        uglify: {
-            prod: {
-                options: {
-                    sourceMap: false
-                },
-                files: {
-                    'core/server/public/members.min.js': 'core/server/public/members.js'
-                }
-            }
-        },
-
         postcss: {
             prod: {
                 options: {
