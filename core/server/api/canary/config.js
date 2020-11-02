@@ -20,8 +20,7 @@ module.exports = {
                 clientExtensions: config.get('clientExtensions') || {},
                 enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
                 stripeDirect: config.get('stripeDirect'),
-                mailgunIsConfigured: config.get('bulkEmail') && config.get('bulkEmail').mailgun,
-                portal: config.get('portal')
+                mailgunIsConfigured: config.get('bulkEmail') && config.get('bulkEmail').mailgun
             };
             if (billingUrl) {
                 response.billingUrl = billingUrl;
