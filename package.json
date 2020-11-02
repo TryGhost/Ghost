@@ -104,7 +104,7 @@
     "jsonwebtoken": "8.5.1",
     "juice": "7.0.0",
     "keypair": "1.0.1",
-    "knex": "0.21.8",
+    "knex": "0.21.11",
     "knex-migrator": "3.5.0",
     "lodash": "4.17.20",
     "mailgun-js": "0.22.0",
