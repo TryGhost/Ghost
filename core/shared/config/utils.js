@@ -50,17 +50,17 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
 exports.getContentPath = function getContentPath(type) {
     switch (type) {
     case 'images':
-        return path.join(this.get('paths:contentPath'), 'images/');
+        return path.join(path.dirname(require.main.filename),this.get('paths:contentPath'), 'images/');
     case 'themes':
-        return path.join(this.get('paths:contentPath'), 'themes/');
+        return path.join(path.dirname(require.main.filename),this.get('paths:contentPath'), 'themes/');
     case 'adapters':
-        return path.join(this.get('paths:contentPath'), 'adapters/');
+        return path.join(path.dirname(require.main.filename),this.get('paths:contentPath'), 'adapters/');
     case 'logs':
-        return path.join(this.get('paths:contentPath'), 'logs/');
+        return path.join(path.dirname(require.main.filename),this.get('paths:contentPath'), 'logs/');
     case 'data':
-        return path.join(this.get('paths:contentPath'), 'data/');
+        return path.join(path.dirname(require.main.filename),this.get('paths:contentPath'), 'data/');
     case 'settings':
-        return path.join(this.get('paths:contentPath'), 'settings/');
+        return path.join(path.dirname(require.main.filename),this.get('paths:contentPath'), 'settings/');
     default:
         throw new Error('getContentPath was called with: ' + type);
     }
