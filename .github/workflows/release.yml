@@ -15,6 +15,10 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.18.0'
+
       - run: yarn
       - run: grunt release --skip-tests
       - run: npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
