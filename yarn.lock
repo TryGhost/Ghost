@@ -603,10 +603,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/string@0.1.13":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.13.tgz#3b021e98799094553bea0a82d5fb8ad72a1c78bb"
-  integrity sha512-V7HMndfqUrluiYM/N8UsepAPcGATcaMC4DJOORQN95PEPSOWHVp4Yb9R1CUtzOGcTb4ZWsh4JM+kE8XFoUhmkA==
+"@tryghost/string@0.1.14":
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.14.tgz#e799151eb5af62b47634403e0c10c48709b2a118"
+  integrity sha512-lzZgGdLEOy2YY8mAebSkP4Y9MgzH/Ef5ADDW8Z31dv8PJILfRG7vuXWwr/SKUmV6mzETyxKTnO9CIbLExaC8VQ==
   dependencies:
     unidecode "^0.1.8"
 
