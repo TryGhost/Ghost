@@ -1,6 +1,6 @@
 <div class="flex flex-column b--whitegrey bt mb5">
 
-    {{#if (and this.feature.labs.members (or (enable-developer-experiments) this.config.portal))}}
+    {{#if this.feature.labs.members}}
     <div class="gh-setting-header">Portal</div>
     <section class="flex flex-column br3 shadow-1 bg-grouped-table mt1 pa5 relative gh-settings-portal-section">
         <div class="gh-setting-last gh-setting-first relative">
