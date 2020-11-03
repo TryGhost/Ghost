@@ -17,6 +17,7 @@ const defaultSettingsKeys = [
     'description',
     'logo',
     'icon',
+    'accent_color',
     'cover_image',
     'facebook',
     'twitter',

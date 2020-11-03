@@ -64,7 +64,8 @@ const defaultSettingsKeys = [
     'unsplash',
     'shared_views',
     'active_timezone',
-    'default_locale'
+    'default_locale',
+    'accent_color'
 ];
 
 describe('Settings API (v3)', function () {
