@@ -370,7 +370,7 @@
             "redirects": {
                 "missingFile": "Please select a JSON file.",
                 "invalidFile": "Please select a valid JSON file to import.",
-                "yamlParse": "The parsed result of the YAML file is a plain string. Please check the format of your redirects file."
+                "yamlParse": "YAML output cannot be a plain string. Check the format of your YAML file."
             },
             "resource": {
                 "resourceNotFound": "{resource} not found."
