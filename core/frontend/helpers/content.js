@@ -8,7 +8,7 @@
 //
 // Dev flag feature: In case of restricted content access for member-only posts, shows CTA box
 
-const {templates, hbs, config, SafeString} = require('../services/proxy');
+const {templates, hbs, SafeString} = require('../services/proxy');
 const downsize = require('downsize');
 const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;
@@ -42,7 +42,7 @@ module.exports = function content(options = {}) {
         this.html = '';
     }
 
-    if (!this.access && (!!config.get('enableDeveloperExperiments') || !!config.get('portal'))) {
+    if (!_.isUndefined(this.access) && !this.access) {
         return restrictedCta.apply(self, args);
     }
 

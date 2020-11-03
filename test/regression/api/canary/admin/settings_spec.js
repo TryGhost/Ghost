@@ -64,7 +64,8 @@ const defaultSettingsKeyTypes = [
     {key: 'unsplash', type: 'blog'},
     {key: 'shared_views', type: 'blog'},
     {key: 'active_timezone', type: 'blog'},
-    {key: 'default_locale', type: 'blog'}
+    {key: 'default_locale', type: 'blog'},
+    {key: 'accent_color', type: 'blog'}
 ];
 
 describe('Settings API (canary)', function () {

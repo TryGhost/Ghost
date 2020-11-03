@@ -6,7 +6,6 @@ const gating = require('./post-gating');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
-const config = require('../../../../../../../shared/config');
 const mega = require('../../../../../../services/mega');
 
 const mapUser = (model, frame) => {
@@ -104,15 +103,8 @@ const mapSettings = (attrs, frame) => {
     //      fields completely.
     if (_.isArray(attrs)) {
         attrs = _.filter(attrs, (o) => {
-            if (o.key === 'accent_color' && !config.get('enableDeveloperExperiments') && !config.get('portal')) {
-                return false;
-            }
             return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
         });
-    } else {
-        if (!config.get('enableDeveloperExperiments') && !config.get('portal')) {
-            delete attrs.accent_color;
-        }
     }
 
     return attrs;
