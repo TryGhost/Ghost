@@ -1,7 +1,6 @@
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../../shared/url-utils');
-const config = require('../../../shared/config');
 
 const site = {
     docName: 'site',
@@ -17,11 +16,6 @@ const site = {
                 url: urlUtils.urlFor('home', true),
                 version: ghostVersion.safe
             };
-
-            // accent_color is currently an experimental feature
-            if (!config.get('enableDeveloperExperiments') && !config.get('portal')) {
-                delete response.accent_color;
-            }
 
             return response;
         }
