@@ -42,7 +42,7 @@ module.exports = function content(options = {}) {
         this.html = '';
     }
 
-    if (!this.access && labs.isSet('members')) {
+    if (!_.isUndefined(this.access) && !this.access) {
         return restrictedCta.apply(self, args);
     }
 
