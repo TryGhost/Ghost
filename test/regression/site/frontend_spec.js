@@ -498,341 +498,345 @@ describe('Frontend Routing', function () {
     });
 
     // TODO: convert to unit tests
-    describe('Redirects (use redirects.json from test/utils/fixtures/data)', function () {
-        let ghostServer;
+    const redirectsFileExts = ['.json', '.yaml'];
 
-        before(function () {
-            configUtils.set('url', 'http://localhost:2370/');
-            urlUtils.stubUrlUtilsFromConfig();
+    redirectsFileExts.forEach((ext) => {
+        describe(`Redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
+            let ghostServer;
 
-            return ghost({forceStart: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
+            before(function () {
+                configUtils.set('url', 'http://localhost:2370/');
+                urlUtils.stubUrlUtilsFromConfig();
+
+                return ghost({forceStart: true, redirectsFileExt: ext})
+                    .then(function (_ghostServer) {
+                        ghostServer = _ghostServer;
+                        request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
+                    });
+            });
+
+            after(function () {
+                configUtils.restore();
+                urlUtils.restore();
+            });
+
+            describe('1 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/post/10/a-nice-blog-post')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/a-nice-blog-post');
+                            doEnd(done)(err, res);
+                        });
                 });
-        });
 
-        after(function () {
-            configUtils.restore();
-            urlUtils.restore();
-        });
-
-        describe('1 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/post/10/a-nice-blog-post')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/a-nice-blog-post');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/post/10/a-nice-blog-post/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/a-nice-blog-post');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('with query params', function (done) {
-                request.get('/topic?something=good')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/?something=good');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('with query params', function (done) {
-                request.get('/post/10/a-nice-blog-post?a=b')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/a-nice-blog-post?a=b');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('with case insensitive', function (done) {
-                request.get('/CaSe-InSeNsItIvE')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/redirected-insensitive');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('with case sensitive', function (done) {
-                request.get('/Case-Sensitive')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/redirected-sensitive');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('defaults to case sensitive', function (done) {
-                request.get('/Default-Sensitive')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/redirected-default');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('should not redirect with case sensitive', function (done) {
-                request.get('/casE-sensitivE')
-                    .end(function (err, res) {
-                        res.headers.location.should.not.eql('/redirected-sensitive');
-                        res.statusCode.should.not.eql(302);
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('should not redirect with default case sensitive', function (done) {
-                request.get('/defaulT-sensitivE')
-                    .end(function (err, res) {
-                        res.headers.location.should.not.eql('/redirected-default');
-                        res.statusCode.should.not.eql(302);
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('2 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/my-old-blog-post/')
-                    .expect(301)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/revamped-url/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/my-old-blog-post')
-                    .expect(301)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/revamped-url/');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('3 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/what/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/what-does-god-say');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/what')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/what-does-god-say');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('4 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/search/label/&&&/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/tag/&&&/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/search/label/&&&/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/tag/&&&/');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('5 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/topic/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/topic')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('6 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/resources/download/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/shubal-stearns');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/resources/download')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/shubal-stearns');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('7 case', function () {
-            it('with trailing slash', function (done) {
-                request.get('/2016/11/welcome.html')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/welcome');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('last case', function () {
-            it('default', function (done) {
-                request.get('/prefix/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/blog/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('with a custom path', function (done) {
-                request.get('/prefix/expect-redirect')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/blog/expect-redirect');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-
-        describe('external url redirect', function () {
-            it('with trailing slash', function (done) {
-                request.get('/external-url/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('https://ghost.org/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('without trailing slash', function (done) {
-                request.get('/external-url')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('https://ghost.org/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('with capturing group', function (done) {
-                request.get('/external-url/docs')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('https://ghost.org/docs');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
-    });
-
-    describe('Subdirectory redirects (use redirects.json from test/utils/fixtures/data)', function () {
-        var ghostServer;
-
-        before(function () {
-            configUtils.set('url', 'http://localhost:2370/blog/');
-            urlUtils.stubUrlUtilsFromConfig();
-
-            return ghost({forceStart: true, subdir: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
+                it('without trailing slash', function (done) {
+                    request.get('/post/10/a-nice-blog-post/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/a-nice-blog-post');
+                            doEnd(done)(err, res);
+                        });
                 });
+
+                it('with query params', function (done) {
+                    request.get('/topic?something=good')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/?something=good');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('with query params', function (done) {
+                    request.get('/post/10/a-nice-blog-post?a=b')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/a-nice-blog-post?a=b');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('with case insensitive', function (done) {
+                    request.get('/CaSe-InSeNsItIvE')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/redirected-insensitive');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('with case sensitive', function (done) {
+                    request.get('/Case-Sensitive')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/redirected-sensitive');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('defaults to case sensitive', function (done) {
+                    request.get('/Default-Sensitive')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/redirected-default');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('should not redirect with case sensitive', function (done) {
+                    request.get('/casE-sensitivE')
+                        .end(function (err, res) {
+                            res.headers.location.should.not.eql('/redirected-sensitive');
+                            res.statusCode.should.not.eql(302);
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('should not redirect with default case sensitive', function (done) {
+                    request.get('/defaulT-sensitivE')
+                        .end(function (err, res) {
+                            res.headers.location.should.not.eql('/redirected-default');
+                            res.statusCode.should.not.eql(302);
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('2 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/my-old-blog-post/')
+                        .expect(301)
+                        .expect('Cache-Control', testUtils.cacheRules.year)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/revamped-url/');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('without trailing slash', function (done) {
+                    request.get('/my-old-blog-post')
+                        .expect(301)
+                        .expect('Cache-Control', testUtils.cacheRules.year)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/revamped-url/');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('3 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/what/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/what-does-god-say');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('without trailing slash', function (done) {
+                    request.get('/what')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/what-does-god-say');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('4 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/search/label/&&&/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/tag/&&&/');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('without trailing slash', function (done) {
+                    request.get('/search/label/&&&/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/tag/&&&/');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('5 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/topic/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('without trailing slash', function (done) {
+                    request.get('/topic')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('6 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/resources/download/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/shubal-stearns');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('without trailing slash', function (done) {
+                    request.get('/resources/download')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/shubal-stearns');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('7 case', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/2016/11/welcome.html')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/welcome');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('last case', function () {
+                it('default', function (done) {
+                    request.get('/prefix/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/blog/');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('with a custom path', function (done) {
+                    request.get('/prefix/expect-redirect')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/blog/expect-redirect');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('external url redirect', function () {
+                it('with trailing slash', function (done) {
+                    request.get('/external-url/')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('https://ghost.org/');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('without trailing slash', function (done) {
+                    request.get('/external-url')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('https://ghost.org/');
+                            doEnd(done)(err, res);
+                        });
+                });
+
+                it('with capturing group', function (done) {
+                    request.get('/external-url/docs')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('https://ghost.org/docs');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
         });
 
-        after(function () {
-            configUtils.restore();
-            urlUtils.restore();
-        });
+        describe(`Subdirectory redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
+            var ghostServer;
 
-        describe('internal url redirect', function () {
-            it('should include the subdirectory', function (done) {
-                request.get('/blog/my-old-blog-post/')
-                    .expect(301)
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/blog/revamped-url/');
-                        doEnd(done)(err, res);
+            before(function () {
+                configUtils.set('url', 'http://localhost:2370/blog/');
+                urlUtils.stubUrlUtilsFromConfig();
+
+                return ghost({forceStart: true, subdir: true, redirectsFileExt: ext})
+                    .then(function (_ghostServer) {
+                        ghostServer = _ghostServer;
+                        request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
                     });
             });
-            it('should work with regex "from" redirects', function (done) {
-                request.get('/blog/capture1/whatever')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('/blog/whatever');
-                        doEnd(done)(err, res);
-                    });
-            });
-        });
 
-        describe('external url redirect', function () {
-            it('should not include the subdirectory', function (done) {
-                request.get('/blog/external-url/docs')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .end(function (err, res) {
-                        res.headers.location.should.eql('https://ghost.org/docs');
-                        doEnd(done)(err, res);
-                    });
+            after(function () {
+                configUtils.restore();
+                urlUtils.restore();
+            });
+
+            describe('internal url redirect', function () {
+                it('should include the subdirectory', function (done) {
+                    request.get('/blog/my-old-blog-post/')
+                        .expect(301)
+                        .expect('Cache-Control', testUtils.cacheRules.year)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/blog/revamped-url/');
+                            doEnd(done)(err, res);
+                        });
+                });
+                it('should work with regex "from" redirects', function (done) {
+                    request.get('/blog/capture1/whatever')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('/blog/whatever');
+                            doEnd(done)(err, res);
+                        });
+                });
+            });
+
+            describe('external url redirect', function () {
+                it('should not include the subdirectory', function (done) {
+                    request.get('/blog/external-url/docs')
+                        .expect(302)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .end(function (err, res) {
+                            res.headers.location.should.eql('https://ghost.org/docs');
+                            doEnd(done)(err, res);
+                        });
+                });
             });
         });
     });

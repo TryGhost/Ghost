@@ -369,7 +369,8 @@
             },
             "redirects": {
                 "missingFile": "Please select a JSON file.",
-                "invalidFile": "Please select a valid JSON file to import."
+                "invalidFile": "Please select a valid JSON file to import.",
+                "yamlParse": "YAML output cannot be a plain string. Check the format of your YAML file."
             },
             "resource": {
                 "resourceNotFound": "{resource} not found."
