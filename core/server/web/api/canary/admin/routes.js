@@ -219,12 +219,18 @@ module.exports = function apiRoutes() {
     router.post('/invites', mw.authAdminApi, http(apiCanary.invites.add));
     router.del('/invites/:id', mw.authAdminApi, http(apiCanary.invites.destroy));
 
-    // ## Redirects (JSON based)
+    // ## Redirects
     // TODO: yaml support has been added to https://github.com/TryGhost/Ghost/issues/11085
-    // The endpoints below are left for backward compatibility.
-    // Maybe their names should be changed to /redirects/file in the next version(v4).
+    // The `/json` endpoints below are left for backward compatibility. They'll be removed in v4.
     router.get('/redirects/json', mw.authAdminApi, http(apiCanary.redirects.download));
     router.post('/redirects/json',
+        mw.authAdminApi,
+        apiMw.upload.single('redirects'),
+        apiMw.upload.validation({type: 'redirects'}),
+        http(apiCanary.redirects.upload)
+    );
+    router.get('/redirects/download', mw.authAdminApi, http(apiCanary.redirects.download));
+    router.post('/redirects/upload',
         mw.authAdminApi,
         apiMw.upload.single('redirects'),
         apiMw.upload.validation({type: 'redirects'}),
