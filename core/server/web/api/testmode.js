@@ -34,7 +34,7 @@ module.exports = function testRoutes() {
                     logging.info('End Slow Job', timeout);
                     resolve();
                 }, timeout);
-            }, {timeout});
+            });
         });
 
         res.sendStatus(202);
