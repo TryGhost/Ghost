@@ -173,7 +173,6 @@ module.exports = {
             type: 'string',
             maxlength: 50,
             nullable: false,
-            defaultTo: '',
             validations: {
                 isIn: [[
                     'array',
