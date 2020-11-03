@@ -65,6 +65,34 @@ describe('Redirects API', function () {
         });
     });
 
+    describe('Download yaml', function () {
+        beforeEach(function () {
+            testUtils.setupRedirectsFile(config.get('paths:contentPath'), '.yaml');
+        });
+
+        afterEach(function () {
+            testUtils.setupRedirectsFile(config.get('paths:contentPath'), '.json');
+        });
+
+        // 'file does not exist' doesn't have to be tested because it always returns .json file.
+        // TODO: But it should be written when the default redirects file type is changed to yaml.
+
+        it('file exists', function () {
+            return request
+                .get(localUtils.API.getApiQuery('redirects/json/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /text\/html/)
+                .expect('Content-Disposition', 'Attachment; filename="redirects.yaml"')
+                .expect(200)
+                .then((res) => {
+                    res.headers['content-disposition'].should.eql('Attachment; filename="redirects.yaml"');
+                    res.headers['content-type'].should.eql('text/html; charset=utf-8');
+
+                    should.deepEqual(res.text, fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/data/redirects.yaml')).toString());
+                });
+        });
+    });
+
     describe('Upload', function () {
         describe('Error cases', function () {
             it('syntax error', function () {
@@ -223,6 +251,174 @@ describe('Redirects API', function () {
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
                     });
             });
+        });
+    });
+
+    describe('Upload yaml', function () {
+        describe('Error cases', function () {
+            it('syntax error', function () {
+                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.yaml'), 'x');
+
+                return request
+                    .post(localUtils.API.getApiQuery('redirects/json/'))
+                    .set('Origin', config.get('url'))
+                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.yaml'))
+                    .expect('Content-Type', /application\/json/)
+                    .expect(400);
+            });
+        });
+
+        describe('Ensure re-registering redirects works', function () {
+            const startGhost = (options) => {
+                return ghost(options)
+                    .then(() => {
+                        request = supertest.agent(config.get('url'));
+                    })
+                    .then(() => {
+                        return localUtils.doAuth(request);
+                    });
+            };
+
+            it('no redirects file exists', function () {
+                return startGhost({redirectsFile: false, forceStart: true})
+                    .then(() => {
+                        return request
+                            .get('/my-old-blog-post/')
+                            .expect(404);
+                    })
+                    .then(() => {
+                        // Provide a redirects file in the root directory of the content test folder
+                        fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-init.yaml'), '302:\n  k: l');
+                    })
+                    .then(() => {
+                        return request
+                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .set('Origin', config.get('url'))
+                            .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.yaml'))
+                            .expect('Content-Type', /application\/json/)
+                            .expect(200);
+                    })
+                    .then((res) => {
+                        res.headers['x-cache-invalidate'].should.eql('/*');
+
+                        return request
+                            .get('/k/')
+                            .expect(302);
+                    })
+                    .then((response) => {
+                        response.headers.location.should.eql('/l');
+
+                        const dataFiles = fs.readdirSync(config.getContentPath('data'));
+                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(1);
+                    });
+            });
+
+            it('override', function () {
+                // We want to test if we can override old redirects.json with new redirects.yaml
+                // That's why we start with .json.
+                return startGhost({forceStart: true, redirectsFileExt: '.json'})
+                    .then(() => {
+                        return request
+                            .get('/my-old-blog-post/')
+                            .expect(301);
+                    })
+                    .then((response) => {
+                        response.headers.location.should.eql('/revamped-url/');
+                    })
+                    .then(() => {
+                        // Provide a second redirects file in the root directory of the content test folder
+                        fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.yaml'), '302:\n  c: d');
+                    })
+                    .then(() => {
+                        // Override redirects file
+                        return request
+                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .set('Origin', config.get('url'))
+                            .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.yaml'))
+                            .expect('Content-Type', /application\/json/)
+                            .expect(200);
+                    })
+                    .then((res) => {
+                        res.headers['x-cache-invalidate'].should.eql('/*');
+
+                        return request
+                            .get('/my-old-blog-post/')
+                            .expect(404);
+                    })
+                    .then(() => {
+                        return request
+                            .get('/c/')
+                            .expect(302);
+                    })
+                    .then((response) => {
+                        response.headers.location.should.eql('/d');
+
+                        // check backup of redirects files
+                        const dataFiles = fs.readdirSync(config.getContentPath('data'));
+                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(2);
+
+                        // Provide another redirects file in the root directory of the content test folder
+                        fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-something.json'), JSON.stringify([{
+                            from: 'e',
+                            to: 'b'
+                        }]));
+                    })
+                    .then(() => {
+                        // the backup is in the format HH:mm:ss, we have to wait minimum a second
+                        return new Promise((resolve) => {
+                            setTimeout(resolve, 1100);
+                        });
+                    })
+                    .then(() => {
+                        // Override redirects file again and ensure the backup file works twice
+                        return request
+                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .set('Origin', config.get('url'))
+                            .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-something.json'))
+                            .expect('Content-Type', /application\/json/)
+                            .expect(200);
+                    })
+                    .then(() => {
+                        return request
+                            .get('/e/')
+                            .expect(302);
+                    })
+                    .then((response) => {
+                        response.headers.location.should.eql('/b');
+
+                        const dataFiles = fs.readdirSync(config.getContentPath('data'));
+                        dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
+                    });
+            });
+        });
+    });
+
+    // TODO: For backward compatibility, we only check if download, upload endpoints work here.
+    // when updating to v4, the old endpoints should be updated to the new ones.
+    // And the tests below should be removed.
+    describe('New endpoints work', function () {
+        it('download', function () {
+            return request
+                .get(localUtils.API.getApiQuery('redirects/download/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /application\/json/)
+                .expect('Content-Disposition', 'Attachment; filename="redirects.json"')
+                .expect(200);
+        });
+
+        it('upload', function () {
+            // Provide a redirects file in the root directory of the content test folder
+            fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-init.json'), JSON.stringify([{
+                from: 'k',
+                to: 'l'
+            }]));
+
+            return request
+                .post(localUtils.API.getApiQuery('redirects/upload/'))
+                .set('Origin', config.get('url'))
+                .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.json'))
+                .expect('Content-Type', /application\/json/)
+                .expect(200);
         });
     });
 });
