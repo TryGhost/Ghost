@@ -86,7 +86,7 @@
             deselectCard=(action "deselectCard" card)
             editCard=(action "editCard" card)
             deleteCard=(action "deleteCard" card)
-            saveAsSnippet=(fn this.saveCardAsSnippetIfPossible card)
+            saveAsSnippet=(if this.saveCardAsSnippetIfPossible (fn this.saveCardAsSnippetIfPossible card))
             moveCursorToPrevSection=(action "moveCursorToPrevSection" card)
             moveCursorToNextSection=(action "moveCursorToNextSection" card)
             addParagraphAfterCard=(action "addParagraphAfterCard" card)

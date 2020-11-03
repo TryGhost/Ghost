@@ -19,39 +19,41 @@
     )
 )}}
 
-{{#if (or this.toolbar (and this.saveAsSnippet (not this.isEditing)))}}
-    <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}} @instantClose={{this.koenigUi.inputHasFocus}}>
-        {{#each this.toolbar.items as |item|}}
-            {{#if item.divider}}
-                <li class="ma0 kg-action-bar-divider bg-darkgrey-d2 h5" role="separator"></li>
-            {{else}}
+{{#let (and this.saveAsSnippet (not this.isEditing)) as |showSnippetIcon|}}
+    {{#if (or this.toolbar showSnippetIcon)}}
+        <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}} @instantClose={{this.koenigUi.inputHasFocus}}>
+            {{#each this.toolbar.items as |item|}}
+                {{#if item.divider}}
+                    <li class="ma0 kg-action-bar-divider bg-darkgrey-d2 h5" role="separator"></li>
+                {{else}}
+                    <li class="ma0 lh-solid">
+                        <button
+                            type="button"
+                            title={{item.title}}
+                            class="dib dim-lite link h9 w9 nudge-top--1 justify-center {{item.buttonClass}}"
+                            onmousedown={{action item.action}}
+                        >
+                            {{#if item.icon}}{{svg-jar item.icon class=(concat item.iconClass (if item.text " mr2") " w4 h4")}} {{/if}}{{item.text}}
+                        </button>
+                    </li>
+                {{/if}}
+            {{/each}}
+
+            {{#if showSnippetIcon}}
+                {{#if this.toolbar.items}}
+                    <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+                {{/if}}
                 <li class="ma0 lh-solid">
                     <button
                         type="button"
-                        title={{item.title}}
-                        class="dib dim-lite link h9 w9 nudge-top--1 justify-center {{item.buttonClass}}"
-                        onmousedown={{action item.action}}
+                        title="Create snippet"
+                        class="dib dim-lite link h9 w9 nudge-top--1"
+                        {{on "click" this.saveAsSnippet}}
                     >
-                        {{#if item.icon}}{{svg-jar item.icon class=(concat item.iconClass (if item.text " mr2") " w4 h4")}} {{/if}}{{item.text}}
+                        {{svg-jar "koenig/kg-snippet" class="w4 h4"}}
                     </button>
                 </li>
             {{/if}}
-        {{/each}}
-
-        {{#if (and this.saveAsSnippet (not this.isEditing))}}
-            {{#if this.toolbar.items}}
-                <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
-            {{/if}}
-            <li class="ma0 lh-solid">
-                <button
-                    type="button"
-                    title="Create snippet"
-                    class="dib dim-lite link h9 w9 nudge-top--1"
-                    {{on "click" this.saveAsSnippet}}
-                >
-                    {{svg-jar "koenig/kg-snippet" class="w4 h4"}}
-                </button>
-            </li>
-        {{/if}}
-    </KgActionBar>
-{{/if}}
+        </KgActionBar>
+    {{/if}}
+{{/let}}
