@@ -160,7 +160,7 @@ module.exports = {
                         {{/if}}
                     </a>
                     {{#if caption}}
-                        <figcaption>{{caption}}</figcaption>
+                        <figcaption>{{{caption}}}</figcaption>
                     {{/if}}
                 </figure>
                 {{#if isEmail}}
