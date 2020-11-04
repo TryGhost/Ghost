@@ -9,6 +9,14 @@ const config = require('../../../shared/config');
 const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
 
+/**
+ * Redirect configuration object
+ * @typedef {Object} RedirectConfig
+ * @property {String} from - Defines the relative incoming URL or pattern (regex)
+ * @property {String} to - Defines where the incoming traffic should be redirected to, which can be a static URL, or a dynamic value using regex (example: "to": "/$1/")
+ * @property {boolean} permanent - Can be defined with true for a permanent HTTP 301 redirect, or false for a temporary HTTP 302 redirect
+ */
+
 const readRedirectsFile = (redirectsPath) => {
     return fs.readFile(redirectsPath, 'utf-8')
         .catch((err) => {
@@ -26,6 +34,13 @@ const readRedirectsFile = (redirectsPath) => {
         });
 };
 
+/**
+ *
+ * @param {String} content serialized JSON or YAML configuration
+ * @param {String} ext one of `.json` or `.yaml` extensions
+ *
+ * @returns {RedirectConfig[]} of parsed redirect config objects
+ */
 const parseRedirectsFile = (content, ext) => {
     if (ext === '.json') {
         let redirects;
@@ -189,6 +204,11 @@ const get = () => {
     });
 };
 
+/**
+ * Syncrounously loads current oncifg file and parses it's content
+ *
+ * @returns {{RedirectConfig[]}} of parsed redirect configurations
+ */
 const loadRedirectsFile = () => {
     const filePath = getCurrentRedirectsFilePathSync();
 
