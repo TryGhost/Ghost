@@ -453,6 +453,13 @@ module.exports = {
             defaultTo: 'pending',
             validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
+        recipient_filter: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'paid',
+            validations: {isIn: [['all', 'free', 'paid']]}
+        },
         error: {type: 'string', maxlength: 2000, nullable: true},
         error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         meta: {type: 'text', maxlength: 65535, nullable: true},
