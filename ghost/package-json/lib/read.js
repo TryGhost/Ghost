@@ -60,7 +60,7 @@ const readPackage = function readPackage(packagePath, packageName) {
 };
 
 const readPackages = function readPackages(packagePath) {
-    return fs.readdir(packagePath)
+    return Promise.resolve(fs.readdir(packagePath))
         .filter(function (packageName) {
             // Filter out things which are not packages by regex
             if (packageName.match(notAPackageRegex)) {
