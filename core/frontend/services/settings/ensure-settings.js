@@ -25,7 +25,7 @@ module.exports = function ensureSettingsFiles(knownSettings) {
         const defaultFileName = `default-${fileName}`;
         const filePath = path.join(contentPath, fileName);
 
-        return fs.readFile(filePath, 'utf8')
+        return Promise.resolve(fs.readFile(filePath, 'utf8'))
             .catch({code: 'ENOENT'}, () => {
                 const defaultFilePath = path.join(defaultSettingsPath, defaultFileName);
                 // CASE: file doesn't exist, copy it from our defaults
