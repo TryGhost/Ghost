@@ -20,8 +20,8 @@ describe('Content API Key Auth', function () {
         this.fakeApiKey = fakeApiKey;
 
         this.apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
-        this.apiKeyStub.returns(new Promise.resolve());
-        this.apiKeyStub.withArgs({secret: fakeApiKey.secret}).returns(new Promise.resolve(fakeApiKey));
+        this.apiKeyStub.returns(Promise.resolve());
+        this.apiKeyStub.withArgs({secret: fakeApiKey.secret}).returns(Promise.resolve(fakeApiKey));
     });
 
     afterEach(function () {

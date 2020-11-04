@@ -12,7 +12,7 @@ const exporter = require('../exporter');
 const writeExportFile = function writeExportFile(exportResult) {
     const filename = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
-    return fs.writeFile(filename, JSON.stringify(exportResult.data)).return(filename);
+    return Promise.resolve(fs.writeFile(filename, JSON.stringify(exportResult.data))).return(filename);
 };
 
 const readBackup = async (filename) => {
