@@ -79,7 +79,8 @@ _private.registerRoutes = () => {
             logging.error(new errors.IncorrectUsageError({
                 message: i18n.t('errors.middleware.redirects.register'),
                 context: err.message,
-                help: 'https://ghost.org/docs/api/handlebars-themes/routing/redirects/'
+                help: 'https://ghost.org/docs/api/handlebars-themes/routing/redirects/',
+                err
             }));
         }
     }
