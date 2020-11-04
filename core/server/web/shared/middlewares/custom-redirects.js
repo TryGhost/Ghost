@@ -75,7 +75,7 @@ _private.registerRoutes = () => {
     } catch (err) {
         if (errors.utils.isIgnitionError(err)) {
             logging.error(err);
-        } else if (err.code !== 'ENOENT') {
+        } else {
             logging.error(new errors.IncorrectUsageError({
                 message: i18n.t('errors.middleware.redirects.register'),
                 context: err.message,
