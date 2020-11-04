@@ -191,6 +191,11 @@ const get = () => {
 
 const loadRedirectsFile = () => {
     const filePath = getCurrentRedirectsFilePathSync();
+
+    if (filePath === null) {
+        return defaultJsonFileContent;
+    }
+
     const content = fs.readFileSync(filePath);
 
     return parseRedirectsFile(content, path.extname(filePath));
