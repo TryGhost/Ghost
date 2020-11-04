@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:roles');
 const canThis = require('../../../../../services/permissions').canThis;
 

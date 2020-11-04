@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const fs = require('fs-extra');
 const path = require('path');

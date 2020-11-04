@@ -12,7 +12,7 @@ module.exports.lookup = function lookup(userData, timeout) {
         return Promise.resolve();
     }
 
-    return request('https:' + gravatarUrl + '&d=404&r=x', {timeout: timeout || 2 * 1000})
+    return Promise.resolve(request('https:' + gravatarUrl + '&d=404&r=x', {timeout: timeout || 2 * 1000}))
         .then(function () {
             gravatarUrl += '&d=mm&r=x';
 

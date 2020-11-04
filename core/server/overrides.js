@@ -23,8 +23,3 @@ const {extract, hasProvider} = require('oembed-parser'); // eslint-disable-line
  *   - be careful when you work with date operations, therefor always wrap a date into moment
  */
 moment.tz.setDefault('UTC');
-
-/**
- * https://github.com/TryGhost/Ghost/issues/9064
- */
-global.Promise = require('bluebird');

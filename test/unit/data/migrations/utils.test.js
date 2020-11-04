@@ -3,11 +3,6 @@ const sinon = require('sinon');
 
 const utils = require('../../../../core/server/data/migrations/utils');
 
-// Get access to the core Promise constructor
-// as global.Promise is overidden by Ghost
-// https://github.com/TryGhost/Ghost/issues/9064
-const Promise = (async () => {})().constructor;
-
 class Deferred {
     constructor() {
         this.promise = new Promise((resolve, reject) => {
