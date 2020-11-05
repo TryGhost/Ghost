@@ -23,6 +23,11 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
+"@breejs/later@4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@breejs/later/-/later-4.0.2.tgz#38c85cc98b717c7a196f87238090adaea01f8c9e"
+  integrity sha512-EN0SlbyYouBdtZis1htdsgGlwFePzkXPwdIeqaBaavxkJT1G2/bitc2LSixjv45z2njXslxlJI1mW2O/Gmrb+A==
+
 "@distributed-systems/callsite@^1.1.0", "@distributed-systems/callsite@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@distributed-systems/callsite/-/callsite-1.1.1.tgz#56a9e1a1d16ae6264ea3f51eea3782848fc27a88"
@@ -429,12 +434,14 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.1.1.tgz#dee0b235f5576681f4c5bbece77e053af93b8820"
-  integrity sha512-z/sWG80vDWTy7o0quyQmDxV2IVQvqFzqYZ5R5+uHX3Sq9u4L42BMLfNpPI83ldY+W+0/fP1vMxjC3mI1vaj/Gg==
+"@tryghost/job-manager@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.1.2.tgz#f22c1a574423567cf028c45ea2fdf29613a073ab"
+  integrity sha512-P3NI7mEA6zDy5FVR9woW10HNmdQbi5SmNM0gG04jwupNmA5RaTGwzBEVPMdws73gCv8psjsnRcEDcOQ1fuPOaw==
   dependencies:
-    fastq "1.8.0"
+    "@breejs/later" "4.0.2"
+    cron-parser "2.17.0"
+    fastq "1.9.0"
     p-wait-for "3.1.0"
 
 "@tryghost/kg-card-factory@2.1.4":
@@ -2172,6 +2179,14 @@ create-error@~0.3.1:
   resolved "https://registry.yarnpkg.com/create-error/-/create-error-0.3.1.tgz#69810245a629e654432bf04377360003a5351a23"
   integrity sha1-aYECRaYp5lRDK/BDdzYAA6U1GiM=
 
+cron-parser@2.17.0:
+  version "2.17.0"
+  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-2.17.0.tgz#5707421a7e0a73ee74675d1c032a2f14123f2cf8"
+  integrity sha512-oTmzVEwlurRe51HqTm4afshVr8Rkxy9kFiWxh5e6SmrY2o9NDYU4S6SduanBZYXLgkLy0skA98y7/tztW/DmjQ==
+  dependencies:
+    is-nan "^1.3.0"
+    moment-timezone "^0.5.31"
+
 cross-spawn@^5.0.1:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-5.1.0.tgz#e8bd0efee58fcff6f8f94510a0a554bbfa235449"
@@ -3409,10 +3424,10 @@ fast-safe-stringify@^2.0.7:
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
-fastq@1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.8.0.tgz#550e1f9f59bbc65fe185cb6a9b4d95357107f481"
-  integrity sha512-SMIZoZdLh/fgofivvIkmknUXyPnvxRE3DhtZ5Me3Mrsk5gyPL42F0xr51TdRXskBxHfMp+07bcYzfsYEsSQA9Q==
+fastq@1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.9.0.tgz#e16a72f338eaca48e91b5c23593bcc2ef66b7947"
+  integrity sha512-i7FVWL8HhVY+CTkwFxkN2mk3h+787ixS5S63eb78diVRc1MCssarHq3W5cj0av7YDSwmaV928RNag+U1etRQ7w==
   dependencies:
     reusify "^1.0.4"
 
@@ -4916,6 +4931,13 @@ is-hexadecimal@^1.0.0:
   resolved "https://registry.yarnpkg.com/is-hexadecimal/-/is-hexadecimal-1.0.4.tgz#cc35c97588da4bd49a8eedd6bc4082d44dcb23a7"
   integrity sha512-gyPJuv83bHMpocVYoqof5VDiZveEoGoFL8m3BXNb2VW8Xs+rz9kqO8LOQ5DH6EsuvilT1ApazU0pyl+ytbPtlw==
 
+is-nan@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/is-nan/-/is-nan-1.3.0.tgz#85d1f5482f7051c2019f5673ccebdb06f3b0db03"
+  integrity sha512-z7bbREymOqt2CCaZVly8aC4ML3Xhfi0ekuOnjO2L8vKdl+CttdVoGZQhd4adMFAsxQ5VeRVwORs4tU8RH+HFtQ==
+  dependencies:
+    define-properties "^1.1.3"
+
 is-number@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-3.0.0.tgz#24fd6201a4782cf50561c810276afc7d12d71195"
@@ -6261,7 +6283,7 @@ module-not-found-error@^1.0.1:
   resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
   integrity sha1-z4tP9PKWQGdNbN0CsOO8UjwrvcA=
 
-moment-timezone@0.5.23, moment-timezone@0.5.28, moment-timezone@0.5.31:
+moment-timezone@0.5.23, moment-timezone@0.5.28, moment-timezone@0.5.31, moment-timezone@^0.5.31:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
