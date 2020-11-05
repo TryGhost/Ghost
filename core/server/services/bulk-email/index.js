@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../lib/common');
