@@ -95,8 +95,21 @@ const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true', limit: 1});
 
-    if (postModel.get('visibility') === 'paid') {
+    const emailRecipientFilter = postModel.get('email_recipient_filter');
+
+    switch (emailRecipientFilter) {
+    case 'paid':
         filterOptions.paid = true;
+        break;
+    case 'free':
+        filterOptions.paid = false;
+        break;
+    case 'all':
+        break;
+    case 'none':
+        throw new Error('Cannot sent email to "none" email_recipient_filter');
+    default:
+        throw new Error(`Unknown email_recipient_filter ${emailRecipientFilter}`);
     }
 
     const startRetrieve = Date.now();
@@ -127,7 +140,8 @@ const addEmail = async (postModel, options) => {
             html: emailData.html,
             plaintext: emailData.plaintext,
             submitted_at: moment().toDate(),
-            track_opens: config.get('enableDeveloperExperiments')
+            track_opens: config.get('enableDeveloperExperiments'),
+            recipient_filter: emailRecipientFilter
         }, knexOptions);
     } else {
         return existing;
@@ -264,13 +278,23 @@ async function sendEmailJob({emailModel, options}) {
 // instantiations and associated processing and event loop blocking
 async function getEmailMemberRows({emailModel, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-    const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, knexOptions);
 
     // TODO: this will clobber a user-assigned filter if/when we allow emails to be sent to filtered member lists
     const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true'});
 
-    if (postModel.get('visibility') === 'paid') {
+    const recipientFilter = emailModel.get('recipient_filter');
+
+    switch (recipientFilter) {
+    case 'paid':
         filterOptions.paid = true;
+        break;
+    case 'free':
+        filterOptions.paid = false;
+        break;
+    case 'all':
+        break;
+    default:
+        throw new Error(`Unknown recipient_filter ${recipientFilter}`);
     }
 
     const startRetrieve = Date.now();
