@@ -633,14 +633,10 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/vhost-middleware@1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.9.tgz#f4db3a8fbad98786eb69e8848c96d14197e6342f"
-  integrity sha512-E4CgU9DmVkoLcNzbeu9yfLg/vKHQXkw01om8MMTYV0LFhwDBXYWUoUSjJn+Il67+/zyjmDCL/l6hl+q+OsQBJg==
-  dependencies:
-    bluebird "3.7.2"
-    ghost-ignition "4.2.2"
-    lodash "4.17.20"
+"@tryghost/vhost-middleware@1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.10.tgz#17818bd1bf2606f56cc11271f4358a86c9b8626f"
+  integrity sha512-88pwLDGY0u1F9tFgTg/6lramGAs8LQDs/o08Km4qocM5sASHmwEAtIaC9kC97gnM3PIpya7Il1IRxVgQUt2yMg==
 
 "@tryghost/zip@1.1.4":
   version "1.1.4"
