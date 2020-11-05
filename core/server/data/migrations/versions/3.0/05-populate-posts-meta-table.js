@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
