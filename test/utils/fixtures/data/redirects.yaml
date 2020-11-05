@@ -1,5 +1,6 @@
 301:
   /my-old-blog-post/: /revamped-url/
+  /test-params/: /result?q=abc
 
 302:
   ^/post/[0-9]+/([a-z0-9\-]+): /$1
