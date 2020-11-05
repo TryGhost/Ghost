@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const logging = require('../../../../../shared/logging');
 
 // settings with new groups

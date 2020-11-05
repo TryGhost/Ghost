@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const commands = require('../../../schema').commands;
 const logging = require('../../../../../shared/logging');
 
