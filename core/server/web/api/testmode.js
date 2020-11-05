@@ -40,5 +40,27 @@ module.exports = function testRoutes() {
         res.sendStatus(202);
     });
 
+    router.get('/schedule/:schedule', (req, res) => {
+        if (!req.params.schedule) {
+            return res.sendStatus(400, 'schedule parameter cannot be mepty');
+        }
+
+        const schedule = req.params.schedule;
+        logging.info('Achedule a Job with schedule of:', schedule);
+
+        jobService.scheduleJob(() => {
+            return new Promise((resolve) => {
+                logging.info('Start scheduled Job');
+
+                setTimeout(() => {
+                    logging.info('End scheduled Job run', schedule);
+                    resolve();
+                }, 20 * 1000);
+            });
+        }, {}, schedule);
+
+        res.sendStatus(202);
+    });
+
     return router;
 };
