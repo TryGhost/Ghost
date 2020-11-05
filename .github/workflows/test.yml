@@ -28,6 +28,41 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  migrations:
+    runs-on: ubuntu-18.04
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    strategy:
+      matrix:
+        DB: ['sqlite3', 'mysql']
+    env:
+      database__client: ${{ matrix.DB }}
+      database__connection__host: 127.0.0.1
+      database__connection__user: root
+      database__connection__password: root
+      database__connection__database: ghost_testing
+    name: Migrations - ${{ matrix.DB }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.10.0'
+
+      - name: Shutdown MySQL
+        run: sudo service mysql stop
+        if: matrix.DB == 'mysql'
+
+      - uses: mirromutth/mysql-action@v1.1
+        if: matrix.DB == 'mysql'
+        with:
+          mysql version: '5.7'
+          mysql database: 'ghost_testing'
+          mysql root password: 'root'
+
+      - run: yarn
+      - run: yarn knex-migrator init
+      - run: yarn knex-migrator rollback --v 3.0 --force
+      - run: yarn knex-migrator migrate --force
+
   test:
     runs-on: ubuntu-18.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
