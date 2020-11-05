@@ -118,6 +118,12 @@ module.exports = {
                     .transacting('settings')
                     .where('key', key)
                     .select('group');
+
+                if (groupResult.length === 0) {
+                    logging.warn(`Could not find group not found for ${key}`);
+                    return;
+                }
+
                 const groupValue = groupResult[0].group;
                 return await options
                     .transacting('settings')
