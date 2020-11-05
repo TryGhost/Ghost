@@ -6,6 +6,7 @@ const ObjectID = require('bson-objectid');
 const errors = require('@tryghost/errors');
 const {events, i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
+const config = require('../../../shared/config');
 const settingsCache = require('../settings/cache');
 const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
@@ -68,6 +69,9 @@ const sendTestEmail = async (postModel, toEmails) => {
         };
     }));
 
+    // enable tracking for previews to match real-world behaviour
+    emailData.track_opens = config.get('enableDeveloperExperiments');
+
     const response = await bulkEmailService.send(emailData, recipients);
 
     if (response instanceof bulkEmailService.FailedBatch) {
@@ -121,7 +125,8 @@ const addEmail = async (postModel, options) => {
             reply_to: emailData.replyTo,
             html: emailData.html,
             plaintext: emailData.plaintext,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            track_opens: config.get('enableDeveloperExperiments')
         }, knexOptions);
     } else {
         return existing;
