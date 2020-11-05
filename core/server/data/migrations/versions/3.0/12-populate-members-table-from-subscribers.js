@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
 const logging = require('../../../../../shared/logging');
