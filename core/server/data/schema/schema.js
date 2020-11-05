@@ -470,6 +470,7 @@ module.exports = {
         reply_to: {type: 'string', maxlength: 2000, nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        track_opens: {type: 'bool', nullable: false, defaultTo: false},
         submitted_at: {type: 'dateTime', nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
