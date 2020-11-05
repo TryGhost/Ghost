@@ -389,10 +389,10 @@
     ghost-ignition "4.2.3"
     lodash "^4.17.11"
 
-"@tryghost/bootstrap-socket@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.2.tgz#e365c75d7822394553077c3bf05a3bbfde986829"
-  integrity sha512-uuC1CiCc7MFzw6CVv+KKZY9w+foZlqGNYm1iLueUsIxc1V/22bAw9STb/lHHIcPWtkTnai1Dco2QpizYUoXrJQ==
+"@tryghost/bootstrap-socket@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.3.tgz#17e93af8b8dd9fa4bda07f0515420ff98c9faa61"
+  integrity sha512-35iscEZMgkZzsCgHz/Y03MhvQYEuZkrvVqQ7ZvcBPF2hnXfZpHlZ+uaa351SUyAB8dQTyuoNNPVKYGb1hmZuFg==
 
 "@tryghost/constants@0.1.1":
   version "0.1.1"
