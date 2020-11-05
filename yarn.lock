@@ -407,7 +407,7 @@
     ghost-ignition "4.2.2"
     lodash "4.17.20"
 
-"@tryghost/errors@^0.2.5":
+"@tryghost/errors@0.2.5", "@tryghost/errors@^0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.5.tgz#4ae49130ec60350dca5a66001605a0e9188d87e3"
   integrity sha512-97ZfqMlFkSQZHHbIq4uGvUc/1otFutgw1pvfPAFXZhEbHqfz6rf2cRToTHtaGLhebKgnzrBIzeVmGwAL63Qxzw==
