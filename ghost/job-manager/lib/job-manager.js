@@ -31,6 +31,8 @@ class JobManager {
      * @param {Object} [data] data to be passed into the job
      */
     addJob(job, data) {
+        this.logging.info('Adding one off job to the queue');
+
         this.queue.push(async () => {
             await job(data);
         }, handler);
