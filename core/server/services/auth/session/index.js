@@ -43,7 +43,7 @@ const ssoAdapter = adapterManager.getAdapter('sso');
 module.exports.createSessionFromToken = sessionFromToken({
     callNextWithError: false,
     createSession: sessionService.createSessionForUser,
-    findUserByLookup: ssoAdapter.getUserForIdentity,
-    getLookupFromToken: ssoAdapter.getIdentityFromCredentials,
-    getTokenFromRequest: ssoAdapter.getRequestCredentials
+    findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
+    getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
+    getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
 });
