@@ -120,7 +120,7 @@ module.exports = {
                     .select('group');
 
                 if (groupResult.length === 0) {
-                    logging.warn(`Could not find group not found for ${key}`);
+                    logging.warn(`Could not find group for ${key}`);
                     return;
                 }
 
