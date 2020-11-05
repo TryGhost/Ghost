@@ -98,6 +98,9 @@ module.exports = {
                 },
                 source: {
                     values: ['html']
+                },
+                send_email_when_published: {
+                    values: [true, false, 'none', 'free', 'paid', 'all']
                 }
             }
         },
@@ -141,6 +144,9 @@ module.exports = {
                 },
                 source: {
                     values: ['html']
+                },
+                send_email_when_published: {
+                    values: [true, false, 'none', 'free', 'paid', 'all']
                 }
             }
         },
@@ -156,7 +162,7 @@ module.exports = {
             let model = await models.Post.edit(frame.data.posts[0], frame.options);
 
             /**Handle newsletter email */
-            if (model.get('send_email_when_published')) {
+            if (model.get('email_recipient_filter') !== 'none') {
                 const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
                 if (postPublished) {
                     let postEmail = model.relations.email;
