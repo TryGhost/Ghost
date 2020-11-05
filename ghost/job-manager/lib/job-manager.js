@@ -30,8 +30,8 @@ class JobManager {
     /**
      * Adds job to queue
      *
-     * @param {Function} job function to be executed in the queue
-     * @param {Object} [data] data to be passed into the job
+     * @param {Function} job - function to be executed in the queue
+     * @param {Object} [data] - data to be passed into the job
      */
     addJob(job, data) {
         this.logging.info('Adding one off job to the queue');
