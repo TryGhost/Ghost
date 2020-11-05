@@ -92,6 +92,11 @@ function send(message, recipientData, replacements) {
             messageData['o:testmode'] = true;
         }
 
+        // enable tracking if turned on for this email
+        if (message.track_opens) {
+            messageData['o:tracking-opens'] = true;
+        }
+
         return new Promise((resolve, reject) => {
             mailgunInstance.messages().send(messageData, (error, body) => {
                 if (error) {
