@@ -11,6 +11,9 @@ const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export default Component.extend({
     clock: service(),
+    feature: service(),
+    settings: service(),
+    config: service(),
 
     backgroundTask: null,
     classNames: 'gh-publishmenu',
@@ -19,7 +22,7 @@ export default Component.extend({
     postStatus: 'draft',
     runningText: null,
     saveTask: null,
-    sendEmailWhenPublished: false,
+    sendEmailWhenPublished: 'none',
     typedDateError: null,
 
     _publishedAtBlogTZ: null,
@@ -30,6 +33,15 @@ export default Component.extend({
     onClose() {},
 
     forcePublishedMenu: reads('post.pastScheduledTime'),
+
+    canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
+        let membersEnabled = this.feature.get('labs.members');
+        let mailgunIsConfigured = this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
+        let isPost = this.post.displayName === 'post';
+        let hasSentEmail = !!this.post.email;
+
+        return membersEnabled && mailgunIsConfigured && isPost && !hasSentEmail;
+    }),
 
     postState: computed('post.{isPublished,isScheduled}', 'forcePublishedMenu', function () {
         if (this.forcePublishedMenu || this.get('post.isPublished')) {
@@ -133,6 +145,14 @@ export default Component.extend({
         }
 
         this._postStatus = this.postStatus;
+        if (this.postStatus === 'draft' && this.canSendEmail) {
+            // Set default newsletter recipients
+            if (this.post.visibility === 'public' || this.post.visibility === 'members') {
+                this.set('sendEmailWhenPublished', 'all');
+            } else {
+                this.set('sendEmailWhenPublished', 'paid');
+            }
+        }
     },
 
     actions: {
@@ -148,6 +168,10 @@ export default Component.extend({
             } else if (saveType === 'publish') {
                 post.set('statusScratch', 'published');
             }
+        },
+
+        setSendEmailWhenPublished(sendEmailWhenPublished) {
+            this.set('sendEmailWhenPublished', sendEmailWhenPublished);
         },
 
         open() {
@@ -286,7 +310,7 @@ export default Component.extend({
         if (
             post.status === 'draft' &&
             !post.email && // email sent previously
-            sendEmailWhenPublished &&
+            sendEmailWhenPublished && sendEmailWhenPublished !== 'none' &&
             !sendEmailConfirmed // set once confirmed so normal save happens
         ) {
             this.openEmailConfirmationModal(dropdown);
@@ -305,9 +329,6 @@ export default Component.extend({
             // will show alert for non-date related failed validations
             post = yield this.saveTask.perform({sendEmailWhenPublished});
 
-            // revert the email checkbox to avoid weird inbetween states
-            this.set('sendEmailWhenPublished', false);
-
             this._cachePublishedAtBlogTZ();
             return post;
         } catch (error) {
@@ -324,7 +345,6 @@ export default Component.extend({
 
     _cleanup() {
         this.set('showConfirmEmailModal', false);
-        this.set('sendEmailWhenPublished', false);
 
         // when closing the menu we reset the publishedAtBlogTZ date so that the
         // unsaved changes made to the scheduled date aren't reflected in the PSM

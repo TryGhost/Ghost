@@ -26,6 +26,7 @@
                 @saveType={{this.saveType}}
                 @setSaveType={{action "setSaveType"}}
                 @setTypedDateError={{action (mut this.typedDateError)}}
+                @setSendEmailWhenPublished={{action "setSendEmailWhenPublished"}}
                 @backgroundTask={{this.backgroundTask}}
                 @memberCount={{this.memberCount}}
                 @sendEmailWhenPublished={{this.sendEmailWhenPublished}} />
@@ -56,6 +57,7 @@
     <GhFullscreenModal
         @modal="confirm-email-send"
         @model={{hash
+            sendEmailWhenPublished=this.sendEmailWhenPublished
             memberCount=this.memberCount
             isScheduled=(eq this.saveType "schedule")
             paidOnly=(eq this.post.visibility "paid")

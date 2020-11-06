@@ -13,9 +13,12 @@
             <p>
                 Your post will be delivered to
                 <strong>
-                    {{#if this.model.paidOnly}}
+                    {{#if (eq this.model.sendEmailWhenPublished 'paid')}}
                         {{!-- TODO: remove editor fallback once editors can query member counts --}}
                         {{if this.session.user.isEditor "all paid members" (gh-pluralize this.paidMemberCount "paid member")}}
+                    {{else if (eq this.model.sendEmailWhenPublished 'free')}}
+                        {{!-- TODO: remove editor fallback once editors can query member counts --}}
+                        {{if this.session.user.isEditor "all free members" (gh-pluralize this.freeMemberCount "free member")}}
                     {{else}}
                         {{!-- TODO: remove editor fallback once editors can query member counts --}}
                         {{if this.session.user.isEditor "all members" (gh-pluralize this.model.memberCount "member")}}

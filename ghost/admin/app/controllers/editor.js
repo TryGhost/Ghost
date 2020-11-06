@@ -371,11 +371,11 @@ export default Controller.extend({
                 }
             }
 
-            // let the adapter know it should use the `?send_email_when_published` QP when saving
+            // let the adapter know it should use the `?email_recipient_filter` QP when saving
             let isPublishing = status === 'published' && !this.post.isPublished;
             let isScheduling = status === 'scheduled' && !this.post.isScheduled;
             if (options.sendEmailWhenPublished && (isPublishing || isScheduling)) {
-                options.adapterOptions = Object.assign({}, options.adapterOptions, {sendEmailWhenPublished: true});
+                options.adapterOptions = Object.assign({}, options.adapterOptions, {sendEmailWhenPublished: options.sendEmailWhenPublished});
             }
         }
 
@@ -875,8 +875,7 @@ export default Controller.extend({
     _showScheduledNotification(delayed) {
         let {
             publishedAtUTC,
-            sendEmailWhenPublished,
-            visibility,
+            emailRecipientFilter,
             previewUrl
         } = this.post;
         let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.get('timezone'));
@@ -884,14 +883,9 @@ export default Controller.extend({
         let title = 'Scheduled';
         let description = ['Will be published'];
 
-        if (sendEmailWhenPublished) {
+        if (emailRecipientFilter && emailRecipientFilter !== 'none') {
             description.push('and delivered to');
-
-            if (visibility === 'paid') {
-                description.push('<span><strong>paid members</strong></span>');
-            } else {
-                description.push('<span><strong>all members</strong></span>');
-            }
+            description.push(`<span><strong>${emailRecipientFilter} members</strong></span>`);
         }
 
         description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Do')}</strong></span>`);
