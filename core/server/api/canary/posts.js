@@ -88,8 +88,7 @@ module.exports = {
         options: [
             'include',
             'formats',
-            'source',
-            'send_email_when_published'
+            'source'
         ],
         validation: {
             options: {
@@ -125,7 +124,7 @@ module.exports = {
             'id',
             'formats',
             'source',
-            'send_email_when_published',
+            'email_recipient_filter',
             'force_rerender',
             // NOTE: only for internal context
             'forUpdate',
@@ -141,6 +140,9 @@ module.exports = {
                 },
                 source: {
                     values: ['html']
+                },
+                email_recipient_filter: {
+                    values: ['none', 'free', 'paid', 'all']
                 }
             }
         },
@@ -149,14 +151,14 @@ module.exports = {
         },
         async query(frame) {
             /**Check host limits for members when send email is true**/
-            if (frame.options.send_email_when_published) {
+            if (frame.options.email_recipient_filter && frame.options.email_recipient_filter !== 'none') {
                 await membersService.checkHostLimit();
             }
 
             let model = await models.Post.edit(frame.data.posts[0], frame.options);
 
             /**Handle newsletter email */
-            if (model.get('send_email_when_published')) {
+            if (model.get('email_recipient_filter') !== 'none') {
                 const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
                 if (postPublished) {
                     let postEmail = model.relations.email;

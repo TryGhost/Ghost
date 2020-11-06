@@ -58,6 +58,7 @@ const expectedProperties = {
         .without('author_id', 'author')
         // pages are not sent as emails
         .without('send_email_when_published')
+        .without('email_recipient_filter')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default

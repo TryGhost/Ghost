@@ -89,6 +89,7 @@ const mapPage = (model, frame) => {
 
     delete jsonModel.email_subject;
     delete jsonModel.send_email_when_published;
+    delete jsonModel.email_recipient_filter;
 
     return jsonModel;
 };
