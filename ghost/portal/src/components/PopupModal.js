@@ -74,6 +74,13 @@ class PopupContent extends React.Component {
         }
     }
 
+    handlePopupClose(e) {
+        e.preventDefault();
+        if (e.target === e.currentTarget) {
+            this.context.onAction('closePopup');
+        }
+    }
+
     renderActivePage() {
         const {page} = this.context;
         getActivePage({page});
@@ -139,7 +146,7 @@ class PopupContent extends React.Component {
         }
 
         return (
-            <div className={'gh-portal-popup-wrapper ' + pageClass}>
+            <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
                 <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle + ' ' + pageClass} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
                     <CookieDisabledBanner message={cookieBannerText} />
                     {this.renderPopupNotification()}
