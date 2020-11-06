@@ -88,8 +88,7 @@ module.exports = {
         options: [
             'include',
             'formats',
-            'source',
-            'send_email_when_published'
+            'source'
         ],
         validation: {
             options: {
@@ -98,9 +97,6 @@ module.exports = {
                 },
                 source: {
                     values: ['html']
-                },
-                send_email_when_published: {
-                    values: [true, false, 'none', 'free', 'paid', 'all']
                 }
             }
         },
