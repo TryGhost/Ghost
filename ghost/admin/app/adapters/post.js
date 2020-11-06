@@ -7,7 +7,7 @@ export default ApplicationAdapter.extend({
         let parsedUrl = new URL(url);
 
         if (snapshot && snapshot.adapterOptions && snapshot.adapterOptions.sendEmailWhenPublished) {
-            parsedUrl.searchParams.append('send_email_when_published', 'true');
+            parsedUrl.searchParams.append('email_recipient_filter', snapshot.adapterOptions.sendEmailWhenPublished);
         }
 
         return parsedUrl.toString();
