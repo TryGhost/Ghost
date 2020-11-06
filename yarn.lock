@@ -379,14 +379,14 @@
   dependencies:
     "@tryghost/errors" "^0.2.5"
 
-"@tryghost/admin-api-schema@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.3.0.tgz#01c5cc30e4ff38b05f4231beadb4a964d7f1e601"
-  integrity sha512-53YZHL/spsRcKwtFjpd+pKeLgDRSaxUzKLpG5rnDA0y6W+NjCbnSKqZT8u4eriRJUZ4Ajkr4LW3/gXIfj07GtA==
+"@tryghost/admin-api-schema@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.4.0.tgz#159ab19de984c509d5f280dda0d95a67e47e3436"
+  integrity sha512-hrcRhrGSsY0SLDZQCHLAPdEhlKenBO2b6ruF/VBbE+Q/HE2hCl8cI+X6nsRhSd8whFyoHLZ+uYTS0WO1MAppuA==
   dependencies:
-    "@tryghost/errors" "0.2.4"
+    "@tryghost/errors" "0.2.5"
     bluebird "^3.5.3"
-    ghost-ignition "4.2.3"
+    ghost-ignition "4.2.4"
     lodash "^4.17.11"
 
 "@tryghost/bootstrap-socket@0.2.3":
@@ -399,20 +399,20 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.2.tgz#542ff9ce1384cba7c00e3dfed6309026c2ec548e"
   integrity sha512-LCkmKpyCkA151Z085ddBMoqOxgIlqzToksYP1eaq6i8rG4HKvuOZx0Sf2af7pu3mzi9OWVmpCv9uURwSOXHf4w==
 
-"@tryghost/errors@0.2.4", "@tryghost/errors@^0.2.3":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.4.tgz#873107f0915667852f86e616a8698eddf7b1f59e"
-  integrity sha512-U0S/oeRCvYDe2Uuzx+D7dKQDW91D24wGm0cP90wf3EOzJH82imYFYgRXT4FZ6ypnraSSC74IFPT/+2Kyp9CnFQ==
-  dependencies:
-    ghost-ignition "4.2.2"
-    lodash "4.17.20"
-
 "@tryghost/errors@0.2.5", "@tryghost/errors@^0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.5.tgz#4ae49130ec60350dca5a66001605a0e9188d87e3"
   integrity sha512-97ZfqMlFkSQZHHbIq4uGvUc/1otFutgw1pvfPAFXZhEbHqfz6rf2cRToTHtaGLhebKgnzrBIzeVmGwAL63Qxzw==
   dependencies:
     ghost-ignition "4.2.4"
+    lodash "4.17.20"
+
+"@tryghost/errors@^0.2.3":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.4.tgz#873107f0915667852f86e616a8698eddf7b1f59e"
+  integrity sha512-U0S/oeRCvYDe2Uuzx+D7dKQDW91D24wGm0cP90wf3EOzJH82imYFYgRXT4FZ6ypnraSSC74IFPT/+2Kyp9CnFQ==
+  dependencies:
+    ghost-ignition "4.2.2"
     lodash "4.17.20"
 
 "@tryghost/helpers@1.1.34":
