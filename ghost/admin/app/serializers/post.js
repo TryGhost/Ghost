@@ -39,6 +39,7 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         delete json.uuid;
         delete json.url;
         delete json.send_email_when_published;
+        delete json.email_recipient_filter;
         // Deprecated property (replaced with data.authors)
         delete json.author;
 

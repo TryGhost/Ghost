@@ -20,7 +20,7 @@
                 {{#if (eq @post.email.status "submitted")}}
                     • Sent to <span class="midgrey-l2 fw5">{{gh-pluralize @post.email.emailCount "member"}}</span>
                 {{/if}}
-                
+
                 {{#if @post.isScheduled}}
                     – <span class="gh-schedule-time">Will be published {{this.scheduledText}}</span>
                 {{/if}}
@@ -49,7 +49,7 @@
             {{/if}}
 
             {{#if this.session.user.isOwnerOrAdmin}}
-                {{#if (or @post.email (and @post.isScheduled @post.sendEmailWhenPublished))}}
+                {{#if (or @post.email (and @post.isScheduled this.sendEmailWhenPublished))}}
                     {{#if (eq @post.email.status "failed")}}
                         <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
                             {{svg-jar "send-email" class="stroke-red"}}

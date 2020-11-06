@@ -9,13 +9,14 @@ export default ModalComponent.extend({
 
     errorMessage: null,
     paidMemberCount: null,
+    freeMemberCount: null,
 
     // Allowed actions
     confirm: () => {},
 
     countPaidMembers: action(function () {
         // TODO: remove editor conditional once editors can query member counts
-        if (this.model.paidOnly && !this.session.get('user.isEditor')) {
+        if (['free', 'paid'].includes(this.model.sendEmailWhenPublished) && !this.session.get('user.isEditor')) {
             this.countPaidMembersTask.perform();
         }
     }),
@@ -23,6 +24,8 @@ export default ModalComponent.extend({
     countPaidMembersTask: task(function* () {
         const result = yield this.store.query('member', {filter: 'subscribed:true', paid: true, limit: 1, page: 1});
         this.set('paidMemberCount', result.meta.pagination.total);
+        const freeMemberCount = this.model.memberCount - result.meta.pagination.total;
+        this.set('freeMemberCount', freeMemberCount);
     }),
 
     confirmAndCheckErrorTask: task(function* () {
