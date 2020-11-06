@@ -150,6 +150,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     identity: identity,
                     metadata: {
                         name,
+                        requestSrc: 'portal',
                         ...metadata
                     },
                     successUrl,
