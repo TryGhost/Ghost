@@ -249,17 +249,20 @@ export default Component.extend({
     },
 
     _setToolbarProperties() {
-        if (this.toolbar || this.saveAsSnippet) {
-            // select the last toolbar in the element because card contents/captions
-            // may have their own toolbar elements
-            let toolbar = this.element.querySelector(':scope > [data-kg-toolbar="true"]');
-            let {width, height} = toolbar.getBoundingClientRect();
+        // select the last toolbar in the element because card contents/captions
+        // may have their own toolbar elements
+        let toolbar = this.element?.querySelector(':scope > [data-kg-toolbar="true"]');
 
-            this.setProperties({
-                toolbarWidth: width,
-                toolbarHeight: height + TICK_HEIGHT
-            });
+        if (!toolbar) {
+            return;
         }
+
+        let {width, height} = toolbar.getBoundingClientRect();
+
+        this.setProperties({
+            toolbarWidth: width,
+            toolbarHeight: height + TICK_HEIGHT
+        });
     },
 
     _showToolbar() {
