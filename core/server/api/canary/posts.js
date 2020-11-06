@@ -124,7 +124,7 @@ module.exports = {
             'id',
             'formats',
             'source',
-            'send_email_when_published',
+            'email_recipient_filter',
             'force_rerender',
             // NOTE: only for internal context
             'forUpdate',
@@ -141,8 +141,8 @@ module.exports = {
                 source: {
                     values: ['html']
                 },
-                send_email_when_published: {
-                    values: [true, false, 'none', 'free', 'paid', 'all']
+                email_recipient_filter: {
+                    values: ['none', 'free', 'paid', 'all']
                 }
             }
         },
@@ -151,7 +151,7 @@ module.exports = {
         },
         async query(frame) {
             /**Check host limits for members when send email is true**/
-            if (frame.options.send_email_when_published) {
+            if (frame.options.email_recipient_filter && frame.options.email_recipient_filter !== 'none') {
                 await membersService.checkHostLimit();
             }
 
