@@ -76,6 +76,7 @@ const mapPost = (model, frame) => {
 
     delete jsonModel.posts_meta;
     delete jsonModel.send_email_when_published;
+    delete jsonModel.email_recipient_filter;
     delete jsonModel.email_subject;
 
     return jsonModel;

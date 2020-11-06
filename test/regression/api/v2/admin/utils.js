@@ -28,6 +28,7 @@ const expectedProperties = {
         .without('author_id', 'author')
         // emails are not supported in API v2
         .without('send_email_when_published')
+        .without('email_recipient_filter')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         .concat('authors', 'tags')
