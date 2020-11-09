@@ -385,7 +385,7 @@
         }
     },
     "newsletter": {
-        "newsletter_show_publish_with_ghost_badge": {
+        "newsletter_show_badge": {
             "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
