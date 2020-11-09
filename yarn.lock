@@ -594,13 +594,13 @@
   dependencies:
     "@tryghost/errors" "^0.2.5"
 
-"@tryghost/social-urls@0.1.15":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.15.tgz#37d7948b161835fa9f82a0f42bcf5c9e2ded4692"
-  integrity sha512-M4j9eBnsmig2OBUslQ262EB/+OgXIzAoyg3ge87urZ5cpv5TtLkjIu2ZMyjT8WnI5XxTMvtiELKklVnDM0tuhA==
+"@tryghost/social-urls@0.1.16":
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.16.tgz#464753df9911dd8cb48c58d84eed8ec7067d3dbb"
+  integrity sha512-XKVvtfWnHYH+PIkWCeR/ZWz00DeS1CQrqvJVE9lwlOoRjzHZtHbgsEdmAAkTj69CINh9O/kegIprsvwSYSIPvQ==
   dependencies:
     bluebird "3.7.2"
-    ghost-ignition "4.2.3"
+    ghost-ignition "4.2.4"
     lodash "4.17.20"
 
 "@tryghost/string@0.1.13":
@@ -3889,25 +3889,6 @@ ghost-ignition@4.2.2:
     nconf "0.10.0"
     prettyjson "1.2.1"
     uuid "8.3.0"
-
-ghost-ignition@4.2.3:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.2.3.tgz#4806d3b19fd1d97da23e99e56929e48148ec6981"
-  integrity sha512-LPZ/yf19gKYslFipbBucW1cXMnl2neR3bzpWg2lkVt1/1g7B92Zv1cqng8ti+mw1W4wZdD28+0o7azApQ5y8ug==
-  dependencies:
-    bunyan "1.8.14"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.2.0"
-    find-root "1.1.0"
-    fs-extra "9.0.1"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.20"
-    moment "2.27.0"
-    nconf "0.10.0"
-    prettyjson "1.2.1"
-    uuid "8.3.1"
 
 ghost-ignition@4.2.4:
   version "4.2.4"
