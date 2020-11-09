@@ -6347,12 +6347,12 @@ ember-invoke-action@^1.5.0:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-load-initializers@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/ember-load-initializers/-/ember-load-initializers-2.1.1.tgz#d1a8bead00bc44222b0ab181840869992beb30f5"
-  integrity sha512-Ho5sBeaZPN3HmZkYkcLrjSBF3DTNmzC5h0DizzDj8cjpnCvaqeofphJDnH41k6kLv/QHMk4pMRISPcwc+bOceQ==
+ember-load-initializers@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/ember-load-initializers/-/ember-load-initializers-2.1.2.tgz#8a47a656c1f64f9b10cecdb4e22a9d52ad9c7efa"
+  integrity sha512-CYR+U/wRxLbrfYN3dh+0Tb6mFaxJKfdyz+wNql6cqTrA0BBi9k6J3AaKXj273TqvEpyyXegQFFkZEiuZdYtgJw==
   dependencies:
-    ember-cli-babel "^7.11.0"
+    ember-cli-babel "^7.13.0"
     ember-cli-typescript "^2.0.2"
 
 ember-load@0.0.17:
