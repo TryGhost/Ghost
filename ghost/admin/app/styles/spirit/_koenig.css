@@ -941,6 +941,7 @@
     box-sizing: border-box;
     border: 1px solid var(--whitegrey);
     background: var(--white);
+    border-radius: 4px;
 }
 
 .koenig-editor__editor .kg-bookmark-container {
