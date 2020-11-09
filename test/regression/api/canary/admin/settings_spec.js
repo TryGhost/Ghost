@@ -1,9 +1,12 @@
 const _ = require('lodash');
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const config = require('../../../../../core/shared/config');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
+const mailService = require('../../../../../core/server/services/mail/index');
+
 const ghost = testUtils.startGhost;
 
 // NOTE: in future iterations these fields should be fetched from a central module.
@@ -534,6 +537,33 @@ describe('Settings API (canary)', function () {
                             localUtils.API.checkResponse(putBody, 'settings');
                         });
                 });
+        });
+
+        describe('Members Email', function () {
+            let send;
+
+            beforeEach(function () {
+                send = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('Sends email correctly', function () {
+                const newEmailData = {
+                    email: 'test-email@gmail.com',
+                    type: 'supportAddressUpdate'
+                };
+
+                return request.post(localUtils.API.getApiQuery('settings/members/email'))
+                    .set('Origin', config.get('url'))
+                    .send(newEmailData)
+                    .expect(200)
+                    .then(function () {
+                        send.calledOnce.should.be.true();
+                    });
+            });
         });
     });
 
