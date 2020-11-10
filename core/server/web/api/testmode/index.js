@@ -1,3 +1,4 @@
+const path = require('path');
 const logging = require('../../../../shared/logging');
 const express = require('../../../../shared/express');
 const jobService = require('../../../services/jobs');
@@ -40,24 +41,29 @@ module.exports = function testRoutes() {
         res.sendStatus(202);
     });
 
-    router.get('/schedule/:schedule', (req, res) => {
+    router.get('/schedule/:schedule/:name*?', (req, res) => {
         if (!req.params.schedule) {
             return res.sendStatus(400, 'schedule parameter cannot be mepty');
         }
 
         const schedule = req.params.schedule;
-        logging.info('Achedule a Job with schedule of:', schedule);
+        logging.info('Achedule a Job with schedule of:', schedule, req.params.name);
 
-        jobService.scheduleJob(() => {
-            return new Promise((resolve) => {
-                logging.info('Start scheduled Job');
+        if (req.params.name) {
+            const jobPath = path.resolve(__dirname, 'jobs', req.params.name);
+            jobService.scheduleJob(schedule, jobPath);
+        } else {
+            jobService.scheduleJob(schedule, () => {
+                return new Promise((resolve) => {
+                    logging.info('Start scheduled Job');
 
-                setTimeout(() => {
-                    logging.info('End scheduled Job run', schedule);
-                    resolve();
-                }, 20 * 1000);
-            });
-        }, {}, schedule);
+                    setTimeout(() => {
+                        logging.info('End scheduled Job run', schedule);
+                        resolve();
+                    }, 20 * 1000);
+                });
+            }, {});
+        }
 
         res.sendStatus(202);
     });
