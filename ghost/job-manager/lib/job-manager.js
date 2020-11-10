@@ -44,11 +44,11 @@ class JobManager {
     /**
      * Schedules recuring job
      *
-     * @param {Function|String} job - function or path to a file defining a job
-     * @param {Object} data - data to be passed into the joba
      * @param {String} when - cron or human readable schedule format
+     * @param {Function|String} job - function or path to a file defining a job
+     * @param {Object} data - data to be passed into the job
      */
-    scheduleJob(job, data, when) {
+    scheduleJob(when, job, data) {
         let schedule;
 
         schedule = later.parse.text(when);

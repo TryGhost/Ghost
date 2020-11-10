@@ -17,7 +17,7 @@ describe('Job Manager', function () {
             const jobManager = new JobManager();
 
             try {
-                jobManager.scheduleJob(() => {}, {}, 'invalid expression');
+                jobManager.scheduleJob('invalid expression', () => {}, {});
             } catch (err) {
                 err.message.should.equal('Invalid schedule format');
             }
