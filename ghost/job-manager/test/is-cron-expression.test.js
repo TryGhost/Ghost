@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const isCronExpression = new require('../lib/is-cron-expression');
+const isCronExpression = require('../lib/is-cron-expression');
 
 describe('Is cron expression', function () {
     it('valid cron expressions', function () {
