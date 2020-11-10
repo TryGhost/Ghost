@@ -1,20 +1,42 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const sinon = require('sinon');
+const delay = require('delay');
 
-const JobManager = new require('../index');
+const JobManager = require('../index');
+const logging = {
+    info: sinon.stub()
+};
 
 describe('Job Manager', function () {
     it('public interface', function () {
-        const jobManager = new JobManager();
+        const jobManager = new JobManager(logging);
 
         should.exist(jobManager.addJob);
         should.exist(jobManager.scheduleJob);
     });
 
+    describe('Add a Job', function () {
+        it('adds a job to a queue', async function () {
+            const spy = sinon.spy();
+            const jobManager = new JobManager(logging);
+
+            jobManager.addJob(spy, 'test data');
+            should(jobManager.queue.idle()).be.false();
+
+            // give time to execute the job
+            await delay(1);
+
+            should(jobManager.queue.idle()).be.true();
+            should(spy.called).be.true();
+            should(spy.args[0][0]).equal('test data');
+        });
+    });
+
     describe('Schedule Job', function () {
-        it ('fails to run for invalid scheduling expression', function () {
-            const jobManager = new JobManager();
+        it('fails to run for invalid scheduling expression', function () {
+            const jobManager = new JobManager(logging);
 
             try {
                 jobManager.scheduleJob('invalid expression', () => {}, {});
