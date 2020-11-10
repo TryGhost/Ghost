@@ -30,14 +30,18 @@ class JobManager {
     /**
      * Adds job to queue
      *
-     * @param {Function} job - function to be executed in the queue
+     * @param {Function|String} job - function or path to a module defining a job
      * @param {Object} [data] - data to be passed into the job
      */
     addJob(job, data) {
         this.logging.info('Adding one off job to the queue');
 
         this.queue.push(async () => {
-            await job(data);
+            if (typeof job === 'function') {
+                await job(data);
+            } else {
+                await require(job)(data);
+            }
         }, handler);
     }
 
@@ -45,8 +49,8 @@ class JobManager {
      * Schedules recuring job
      *
      * @param {String} when - cron or human readable schedule format
-     * @param {Function|String} job - function or path to a file defining a job
-     * @param {Object} data - data to be passed into the job
+     * @param {Function|String} job - function or path to a module defining a job
+     * @param {Object} [data] - data to be passed into the job
      */
     scheduleJob(when, job, data) {
         let schedule;
