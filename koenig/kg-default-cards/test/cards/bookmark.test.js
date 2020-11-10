@@ -18,8 +18,8 @@ describe('Bookmark card', function () {
                     description: 'Description',
                     icon: 'http://example.com/icon.png',
                     thumbnail: 'http://exampple.com/thumbnail.png',
-                    author: 'Author',
-                    publisher: 'Publisher'
+                    publisher: 'Publisher',
+                    author: 'Author'
                 },
                 caption: '<strong>Caption</strong>'
             }
