@@ -422,7 +422,7 @@
                     ]
                 ]
             },
-            "type": "boolean"
+            "type": "string"
         }
     }
 }
