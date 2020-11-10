@@ -107,7 +107,7 @@ const AccountFooter = ({onClose, handleSignout, supportAddress = ''}) => {
     return (
         <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                <li><button className='gh-portal-btn' name='logout' aria-label='logout' onClick={e => handleSignout(e)}>Logout</button></li>
+                <li><button className='gh-portal-btn' name='logout' aria-label='logout' onClick={e => handleSignout(e)}>Sign out</button></li>
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
