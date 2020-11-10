@@ -9,7 +9,7 @@ const JobManager = require('../index');
 describe('Job Manager', function () {
     let logging;
 
-    beforeEach(() => {
+    beforeEach(function () {
         logging = {
             info: sinon.stub(),
             error: sinon.stub()
