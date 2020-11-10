@@ -32,7 +32,7 @@ describe('Compress and Extract should be opposite functions', function () {
     });
 
     it('ensure symlinks work', function (done) {
-        fs.symlink(folderToSymlink, symlinkPath);
+        fs.symlinkSync(folderToSymlink, symlinkPath);
 
         let originalHash;
 
