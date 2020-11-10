@@ -1,6 +1,6 @@
-const logging = require('../../../shared/logging');
-const express = require('../../../shared/express');
-const jobService = require('../../services/jobs');
+const logging = require('../../../../shared/logging');
+const express = require('../../../../shared/express');
+const jobService = require('../../../services/jobs');
 
 /** A bunch of helper routes for testing purposes */
 module.exports = function testRoutes() {
