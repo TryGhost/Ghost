@@ -5,8 +5,9 @@ on:
     branches:
       - master
 jobs:
-  zip:
+  canary:
     runs-on: ubuntu-18.04
+    name: Canary
     steps:
       - uses: actions/checkout@v2
         with:
