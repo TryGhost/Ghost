@@ -387,7 +387,7 @@ class SignupPage extends React.Component {
                     style={{color: brandColor}}
                     onClick={() => onAction('switchPage', {page: 'signin'})}
                 >
-                    Log in
+                    Sign in
                 </button>
             </div>
         );
@@ -442,7 +442,7 @@ class SignupPage extends React.Component {
 
     renderFormHeader() {
         const {site} = this.context;
-        const siteTitle = site.title || 'Site Title';
+        const siteTitle = site.title || '';
 
         return (
             <header className='gh-portal-signup-header'>
