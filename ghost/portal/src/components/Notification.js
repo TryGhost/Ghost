@@ -32,7 +32,7 @@ const NotificationText = ({type, status, context}) => {
     if (type === 'signin' && status === 'success') {
         return (
             <p>
-                Welcome back! You've successfully signed in.
+                Welcome back!<br />You've successfully signed in.
             </p>
         );
     } else if (type === 'signin' && status === 'error') {
