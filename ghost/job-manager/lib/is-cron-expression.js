@@ -1,7 +1,10 @@
-const parser = require('cron-parser');
+const cronValidate = require('cron-validate');
 
 /**
- * Checks if expression follows supported CRON format as follows
+ * Checks if expression follows supported crontab format
+ * reference: https://www.adminschoice.com/crontab-quick-reference
+ * builder: https://crontab.guru/
+ *
  * e.g.:
  *  "2 * * * *" where:
  *
@@ -15,18 +18,14 @@ const parser = require('cron-parser');
  *   │    └──────────────────── minute (0 - 59)
  *   └───────────────────────── second (0 - 59, optional)
  *
- * @param {String} expression in CRON format
+ * @param {String} expression in crontab format (https://www.gnu.org/software/mcron/manual/html_node/Crontab-file.html)
  *
  * @returns {boolean} wheather or not the expression is valid
  */
 const isCronExpression = (expression) => {
-    try {
-        parser.parseExpression(expression);
+    let cronResult = cronValidate(expression);
 
-        return true;
-    } catch (err) {
-        return false;
-    }
+    return cronResult.isValid();
 };
 
 module.exports = isCronExpression;
