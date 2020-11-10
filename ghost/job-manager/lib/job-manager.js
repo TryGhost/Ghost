@@ -1,6 +1,7 @@
 const fastq = require('fastq');
 const later = require('@breejs/later');
 const pWaitFor = require('p-wait-for');
+const errors = require('@tryghost/errors');
 const isCronExpression = require('./is-cron-expression');
 
 const worker = async (task, callback) => {
@@ -14,7 +15,8 @@ const worker = async (task, callback) => {
 
 const handler = (error, result) => {
     if (error) {
-        throw error;
+        // TODO: this handler should not be throwing as this blocks the queue
+        // throw error;
     }
     // Can potentially standardise the result here
     return result;
@@ -37,10 +39,24 @@ class JobManager {
         this.logging.info('Adding one off job to the queue');
 
         this.queue.push(async () => {
-            if (typeof job === 'function') {
-                await job(data);
-            } else {
-                await require(job)(data);
+            try {
+                if (typeof job === 'function') {
+                    await job(data);
+                } else {
+                    await require(job)(data);
+                }
+            } catch (err) {
+                // NOTE: each job should be written in a safe way and handle all errors internally
+                //       if the error is caught here jobs implementaton should be changed
+                this.logging.error(new errors.IgnitionError({
+                    level: 'critical',
+                    errorType: 'UnhandledJobError',
+                    message: 'Processed job threw an unhandled error',
+                    context: (typeof job === 'function') ? 'function' : job,
+                    err
+                }));
+
+                throw err;
             }
         }, handler);
     }

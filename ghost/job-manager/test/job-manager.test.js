@@ -5,11 +5,17 @@ const sinon = require('sinon');
 const delay = require('delay');
 
 const JobManager = require('../index');
-const logging = {
-    info: sinon.stub()
-};
 
 describe('Job Manager', function () {
+    let logging;
+
+    beforeEach(() => {
+        logging = {
+            info: sinon.stub(),
+            error: sinon.stub()
+        };
+    });
+
     it('public interface', function () {
         const jobManager = new JobManager(logging);
 
@@ -31,6 +37,22 @@ describe('Job Manager', function () {
             should(jobManager.queue.idle()).be.true();
             should(spy.called).be.true();
             should(spy.args[0][0]).equal('test data');
+        });
+
+        it('handles failed job gracefully', async function () {
+            const spy = sinon.stub().throws();
+            const jobManager = new JobManager(logging);
+
+            jobManager.addJob(spy, 'test data');
+            should(jobManager.queue.idle()).be.false();
+
+            // give time to execute the job
+            await delay(1);
+
+            should(jobManager.queue.idle()).be.true();
+            should(spy.called).be.true();
+            should(spy.args[0][0]).equal('test data');
+            should(logging.error.called).be.true();
         });
     });
 
