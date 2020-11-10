@@ -1,11 +1,3 @@
-# This test uses a single version of Node.js, the one installed by
-# default on GitHub Actions. You can see this here:
-#
-# https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
-#
-# They may update it when a new LTS is released, so it's important
-# to keep this in mind.
-
 name: Test Suite
 on:
   pull_request:
@@ -20,8 +12,29 @@ jobs:
     name: Production Build
     steps:
       - uses: actions/checkout@v2
+        with:
+          node-version: '12.18.0'
+
       - run: yarn
       - run: grunt shell:ember:prod
+
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  lint:
+    runs-on: ubuntu-18.04
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    name: Lint
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          node-version: '12.18.0'
+
+      - run: yarn
+      - run: yarn lint:js
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -42,8 +55,10 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v2
+        with:
+          node-version: '12.18.0'
+
       - run: yarn
-      - run: yarn lint:js
       - run: yarn test
         env:
           BROWSER: ${{ matrix.browser }}
