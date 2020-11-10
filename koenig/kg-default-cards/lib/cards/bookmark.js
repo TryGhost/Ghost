@@ -123,9 +123,9 @@ module.exports = {
                                                 {{/if}}
                                                 <td valign="middle" class="kg-bookmark-byline--outlook">
                                                     <a href="{{url}}">
-                                                        {{metadata.author}}
-                                                        {{#if metadata.author}}&nbsp;&#x2022;&nbsp;{{/if}}
                                                         {{metadata.publisher}}
+                                                        {{#if metadata.author}}&nbsp;&#x2022;&nbsp;{{/if}}
+                                                        {{metadata.author}}
                                                     </a>
                                                 </td>
                                             </tr>
@@ -149,8 +149,8 @@ module.exports = {
                             <div class="kg-bookmark-description">{{metadata.description}}</div>
                             <div class="kg-bookmark-metadata">
                                 {{#if metadata.icon}}<img class="kg-bookmark-icon" src="{{metadata.icon}}">{{/if}}
-                                {{#if metadata.author}}<span class="kg-bookmark-author">{{metadata.author}}</span>{{/if}}
-                                {{#if metadata.publisher}}<span class="kg-bookmark-publisher">{{metadata.publisher}}</span>{{/if}}
+                                {{#if metadata.publisher}}<span class="kg-bookmark-author">{{metadata.publisher}}</span>{{/if}}
+                                {{#if metadata.author}}<span class="kg-bookmark-publisher">{{metadata.author}}</span>{{/if}}
                             </div>
                         </div>
                         {{#if metadata.thumbnail}}
