@@ -39,13 +39,13 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signin' && status === 'error') {
         return (
             <p>
-                Could not sign in! Login link expired. <a href={signinPortalLink} target="_parent">Click here to retry</a>
+                Could not sign in. Login link expired. <a href={signinPortalLink} target="_parent">Click here to retry</a>
             </p>
         );
     } else if (type === 'signup' && status === 'success') {
         return (
             <p>
-                You've successfully subscribed to <strong>{context.site.title}</strong>
+                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
     } else if (type === 'updateEmail' && status === 'success') {
@@ -63,7 +63,7 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                Could not sign up! Invalid sign up link. <a href={singupPortalLink} target="_parent">Click here to retry</a>
+                Signup error: Invalid link <br /><a href={singupPortalLink} target="_parent">Click here to retry</a>
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
