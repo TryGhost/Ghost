@@ -102,6 +102,14 @@ const post = (attrs, frame) => {
         delete attrs.page;
     }
 
+    if (frame.options.columns && frame.options.columns.includes('email_recipient_filter') && !frame.original.query.fields.includes('email_recipient_filter')) {
+        delete attrs.email_recipient_filter;
+    }
+
+    if (frame.original.query.fields && frame.original.query.fields.length && !frame.original.query.fields.includes('send_email_when_published')) {
+        delete attrs.send_email_when_published;
+    }
+
     if (!attrs.tags) {
         delete attrs.primary_tag;
     }
