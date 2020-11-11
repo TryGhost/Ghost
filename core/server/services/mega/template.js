@@ -1,5 +1,5 @@
 /* eslint indent: warn, no-irregular-whitespace: warn */
-module.exports = ({post, site, templateConfig}) => {
+module.exports = ({post, site, templateSettings}) => {
     const date = new Date();
     return `<!doctype html>
 <html>
@@ -340,6 +340,15 @@ figure blockquote p {
     max-width: 600px !important;
     font-family: Georgia, serif;
     font-size: 18px;
+    line-height: 1.5em;
+    color: #23323D;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5eff5;
+}
+
+.post-content-sans-serif {
+    max-width: 600px !important;
+    font-size: 17px;
     line-height: 1.5em;
     color: #23323D;
     padding-bottom: 20px;
@@ -815,7 +824,7 @@ figure blockquote p {
 }
 
 
-${ templateConfig.showPoweredBy ? `
+${ templateSettings.showBadge ? `
 .footer-powered {
     text-align: center;
     padding-bottom: 40px;
@@ -858,7 +867,7 @@ ${ templateConfig.showPoweredBy ? `
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
 
 
-                                    ${ templateConfig.showSiteHeader ? `
+                                    ${ templateSettings.showSiteHeader ? `
                                     <tr>
                                         <td class="site-info" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
@@ -898,11 +907,10 @@ ${ templateConfig.showPoweredBy ? `
                                     </tr>
                                     ` : ``}
                                     <tr>
-                                        <td class="post-content">
+                                        <td class="${(templateSettings.bodyFontCategory === 'sans_serif') ? `post-content-sans-serif` : `post-content` }">
                                             <!-- POST CONTENT START -->
                                             ${post.html}
                                             <!-- POST CONTENT END -->
-
                                         </td>
                                     </tr>
                                 </table>
@@ -918,7 +926,7 @@ ${ templateConfig.showPoweredBy ? `
                                         <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
 
-                                    ${ templateConfig.showPoweredBy ? `
+                                    ${ templateSettings.showBadge ? `
                                     <tr>
                                         <td class="footer-powered"><a href="https://ghost.org/"><img src="https://static.ghost.org/v3.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Publish with Ghost"></a></td>
                                     </tr>

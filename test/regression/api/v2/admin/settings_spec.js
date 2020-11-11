@@ -63,7 +63,10 @@ const defaultSettingsKeyTypes = [
     {key: 'ghost_head', type: 'blog'},
     {key: 'ghost_foot', type: 'blog'},
     {key: 'active_timezone', type: 'blog'},
-    {key: 'default_locale', type: 'blog'}
+    {key: 'default_locale', type: 'blog'},
+    {key: 'newsletter_show_badge', type: 'newsletter'},
+    {key: 'newsletter_show_header', type: 'newsletter'},
+    {key: 'newsletter_body_font_category', type: 'newsletter'}
 ];
 
 describe('Settings API (v2)', function () {

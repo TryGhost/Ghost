@@ -65,7 +65,10 @@ const defaultSettingsKeyTypes = [
     {key: 'shared_views', type: 'blog'},
     {key: 'active_timezone', type: 'blog'},
     {key: 'default_locale', type: 'blog'},
-    {key: 'accent_color', type: 'blog'}
+    {key: 'accent_color', type: 'blog'},
+    {key: 'newsletter_show_badge', type: 'newsletter'},
+    {key: 'newsletter_show_header', type: 'newsletter'},
+    {key: 'newsletter_body_font_category', type: 'newsletter'}
 ];
 
 describe('Settings API (canary)', function () {
@@ -99,7 +102,6 @@ describe('Settings API (canary)', function () {
 
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
-
                     should.equal(settings.length, defaultSettingsKeyTypes.length);
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
