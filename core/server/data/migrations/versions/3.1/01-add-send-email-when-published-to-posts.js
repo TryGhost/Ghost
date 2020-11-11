@@ -7,7 +7,12 @@ module.exports.up = commands.createColumnMigration({
         return columnExists === true;
     },
     operation: commands.addColumn,
-    operationVerb: 'Adding'
+    operationVerb: 'Adding',
+    columnDefinition: {
+        type: 'bool',
+        nullable: true,
+        defaultTo: false
+    }
 });
 
 module.exports.down = commands.createColumnMigration({
