@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {isEmpty} from '@ember/utils';
 import {or} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -22,6 +23,28 @@ export default Component.extend({
 
     disableEmailOption: computed('memberCount', function () {
         return (this.get('session.user.isOwnerOrAdmin') && this.memberCount === 0);
+    }),
+
+    disableFreeMemberCheckbox: computed('freeMemberCount', function () {
+        return (this.get('session.user.isOwnerOrAdmin') && this.freeMemberCount === 0);
+    }),
+
+    disablePaidMemberCheckbox: computed('paidMemberCount', function () {
+        return (this.get('session.user.isOwnerOrAdmin') && this.paidMemberCount === 0);
+    }),
+
+    freeMemberCountLabel: computed('freeMemberCount', function () {
+        if (this.get('freeMemberCount') !== undefined) {
+            return `(${formatNumber(this.get('freeMemberCount'))})`;
+        }
+        return '';
+    }),
+
+    paidMemberCountLabel: computed('freeMemberCount', function () {
+        if (this.get('freeMemberCount') !== undefined) {
+            return `(${formatNumber(this.get('paidMemberCount'))})`;
+        }
+        return '';
     }),
 
     canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {

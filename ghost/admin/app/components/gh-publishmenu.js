@@ -14,6 +14,8 @@ export default Component.extend({
     feature: service(),
     settings: service(),
     config: service(),
+    session: service(),
+    store: service(),
 
     backgroundTask: null,
     classNames: 'gh-publishmenu',
@@ -153,6 +155,7 @@ export default Component.extend({
                 this.set('sendEmailWhenPublished', 'paid');
             }
         }
+        this.countPaidMembers();
     },
 
     actions: {
@@ -205,6 +208,39 @@ export default Component.extend({
             return true;
         }
     },
+
+    countPaidMembers: action(function () {
+        // TODO: remove editor conditional once editors can query member counts
+        if (!this.session.get('user.isEditor') && this.canSendEmail) {
+            this.countPaidMembersTask.perform();
+        }
+    }),
+
+    countPaidMembersTask: task(function* () {
+        const result = yield this.store.query('member', {filter: 'subscribed:true', paid: true, limit: 1, page: 1});
+        const paidMemberCount = result.meta.pagination.total;
+        const freeMemberCount = this.memberCount - paidMemberCount;
+        this.set('paidMemberCount', paidMemberCount);
+        this.set('freeMemberCount', freeMemberCount);
+
+        if (this.postStatus === 'draft' && this.canSendEmail) {
+            // Set default newsletter recipients
+            if (this.post.visibility === 'public' || this.post.visibility === 'members') {
+                if (paidMemberCount > 0 && freeMemberCount > 0) {
+                    this.set('sendEmailWhenPublished', 'all');
+                } else if (!paidMemberCount && freeMemberCount > 0) {
+                    this.set('sendEmailWhenPublished', 'free');
+                } else if (!freeMemberCount && paidMemberCount > 0) {
+                    this.set('sendEmailWhenPublished', 'paid');
+                } else if (!freeMemberCount && !paidMemberCount) {
+                    this.set('sendEmailWhenPublished', 'none');
+                }
+            } else {
+                const type = paidMemberCount > 0 ? 'paid' : 'none';
+                this.set('sendEmailWhenPublished', type);
+            }
+        }
+    }),
 
     // action is required because <GhFullscreenModal> only uses actions
     confirmEmailSend: action(function () {

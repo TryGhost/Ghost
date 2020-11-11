@@ -17,6 +17,8 @@
                 @saveType={{this.saveType}}
                 @isClosing={{this.isClosing}}
                 @memberCount={{this.memberCount}}
+                @paidMemberCount={{this.paidMemberCount}}
+                @freeMemberCount={{this.freeMemberCount}}
                 @setSaveType={{action "setSaveType"}}
                 @setTypedDateError={{action (mut this.typedDateError)}} />
 
@@ -29,6 +31,8 @@
                 @setSendEmailWhenPublished={{action "setSendEmailWhenPublished"}}
                 @backgroundTask={{this.backgroundTask}}
                 @memberCount={{this.memberCount}}
+                @paidMemberCount={{this.paidMemberCount}}
+                @freeMemberCount={{this.freeMemberCount}}
                 @sendEmailWhenPublished={{this.sendEmailWhenPublished}} />
         {{/if}}
 
