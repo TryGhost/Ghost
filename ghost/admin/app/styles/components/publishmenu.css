@@ -256,3 +256,17 @@
     margin: 15px 0;
     color: var(--midgrey);
 }
+
+.gh-publishmenu-emailcount {
+    color: var(--midlightgrey);
+}
+
+.gh-publishmenu-checkbox-disabled {
+    color: var(--midlightgrey);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.gh-publishmenu-checkbox-disabled p {
+    color: var(--midlightgrey) !important;
+}
