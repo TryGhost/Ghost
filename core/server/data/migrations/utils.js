@@ -266,6 +266,64 @@ function combineTransactionalMigrations(...migrations) {
     };
 }
 
+/**
+ * @param {string} table
+ * @param {string} column
+ * @param {Object} columnDefinition
+ *
+ * @returns {Migration}
+ */
+function createAddColumnMigration(table, column, columnDefinition) {
+    return createTransactionalMigration(
+        // up
+        commands.createColumnMigration({
+            table,
+            column,
+            dbIsInCorrectState: hasColumn => hasColumn === true,
+            operation: commands.addColumn,
+            operationVerb: 'Adding',
+            columnDefinition
+        }),
+        // down
+        commands.createColumnMigration({
+            table,
+            column,
+            dbIsInCorrectState: hasColumn => hasColumn === false,
+            operation: commands.dropColumn,
+            operationVerb: 'Removing'
+        })
+    );
+}
+
+/**
+ * @param {string} table
+ * @param {string} column
+ * @param {Object} columnDefinition
+ *
+ * @returns {Migration}
+ */
+function createDropColumnMigration(table, column, columnDefinition) {
+    return createTransactionalMigration(
+        // up
+        commands.createColumnMigration({
+            table,
+            column,
+            dbIsInCorrectState: hasColumn => hasColumn === false,
+            operation: commands.dropColumn,
+            operationVerb: 'Removing'
+        }),
+        // down
+        commands.createColumnMigration({
+            table,
+            column,
+            dbIsInCorrectState: hasColumn => hasColumn === true,
+            operation: commands.addColumn,
+            operationVerb: 'Adding',
+            columnDefinition
+        })
+    );
+}
+
 module.exports = {
     addTable,
     addPermission,
@@ -274,6 +332,8 @@ module.exports = {
     createTransactionalMigration,
     createNonTransactionalMigration,
     combineTransactionalMigrations,
+    createAddColumnMigration,
+    createDropColumnMigration,
     meta: {
         MIGRATION_USER
     }
