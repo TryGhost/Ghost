@@ -421,7 +421,10 @@
                         "sans_serif"
                     ]
                 ]
-            },
+            }
+        },
+        "newsletter_footer_html": {
+            "defaultValue": "",
             "type": "string"
         }
     }
