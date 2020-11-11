@@ -59,7 +59,9 @@ jobs:
           mysql root password: 'root'
 
       - run: yarn
-      - run: yarn knex-migrator init
+      - run: |
+          node index.js &
+          sleep 10 && { kill $! && wait $!; } 2>/dev/null
       - run: yarn knex-migrator rollback --v 3.0 --force
       - run: yarn knex-migrator migrate --force
 
