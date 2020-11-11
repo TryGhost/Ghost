@@ -108,6 +108,10 @@ module.exports = {
 
         forcePageFilter(frame);
 
+        if (frame.options.columns && frame.options.columns.includes('send_email_when_published')) {
+            frame.options.columns.push('email_recipient_filter');
+        }
+
         /**
          * ## current cases:
          * - context object is empty (functional call, content api access)
@@ -135,6 +139,10 @@ module.exports = {
         debug('read');
 
         forcePageFilter(frame);
+
+        if (frame.options.columns && frame.options.columns.includes('send_email_when_published')) {
+            frame.options.columns.push('email_recipient_filter');
+        }
 
         /**
          * ## current cases:

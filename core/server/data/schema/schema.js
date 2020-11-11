@@ -29,7 +29,6 @@ module.exports = {
             defaultTo: 'public',
             validations: {isIn: [['public', 'members', 'paid']]}
         },
-        send_email_when_published: {type: 'bool', nullable: true, defaultTo: false},
         email_recipient_filter: {
             type: 'string',
             maxlength: 50,
