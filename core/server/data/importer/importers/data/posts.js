@@ -33,6 +33,15 @@ class PostsImporter extends BaseImporter {
                 }
                 delete obj.page;
             }
+
+            if (_.has(obj, 'send_email_when_published')) {
+                if (obj.send_email_when_published) {
+                    obj.email_recipient_filter = obj.visibility === 'paid' ? 'paid' : 'all';
+                } else {
+                    obj.email_recipient_filter = 'none';
+                }
+                delete obj.send_email_when_published;
+            }
         });
     }
 
