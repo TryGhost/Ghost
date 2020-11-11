@@ -35,6 +35,7 @@ const expectedProperties = {
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')
         )
+        .concat('send_email_when_published')
     ,
     user: _(schema.users)
         .keys()

@@ -70,6 +70,8 @@ const author = (attrs, frame) => {
 };
 
 const post = (attrs, frame) => {
+    const columns = frame && frame.options && frame.options.columns || null;
+    const fields = frame && frame.original && frame.original.query && frame.original.query.fields || null;
     if (localUtils.isContentAPI(frame)) {
         // @TODO: https://github.com/TryGhost/Ghost/issues/10335
         // delete attrs.page;
@@ -95,11 +97,19 @@ const post = (attrs, frame) => {
             attrs.og_description = null;
         }
         // NOTE: the visibility column has to be always present in Content API response to perform content gating
-        if (frame.options.columns && frame.options.columns.includes('visibility') && !frame.original.query.fields.includes('visibility')) {
+        if (columns && columns.includes('visibility') && fields && !fields.includes('visibility')) {
             delete attrs.visibility;
         }
     } else {
         delete attrs.page;
+    }
+
+    if (columns && columns.includes('email_recipient_filter') && fields && !fields.includes('email_recipient_filter')) {
+        delete attrs.email_recipient_filter;
+    }
+
+    if (fields && !fields.includes('send_email_when_published')) {
+        delete attrs.send_email_when_published;
     }
 
     if (!attrs.tags) {

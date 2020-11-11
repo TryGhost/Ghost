@@ -44,6 +44,7 @@ const expectedProperties = {
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')
         )
+        .concat('send_email_when_published')
     ,
 
     page: _(schema.posts)
@@ -57,7 +58,6 @@ const expectedProperties = {
         // deprecated
         .without('author_id', 'author')
         // pages are not sent as emails
-        .without('send_email_when_published')
         .without('email_recipient_filter')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
