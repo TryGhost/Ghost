@@ -65,7 +65,10 @@ const defaultSettingsKeys = [
     'shared_views',
     'active_timezone',
     'default_locale',
-    'accent_color'
+    'accent_color',
+    'newsletter_show_badge',
+    'newsletter_show_header',
+    'newsletter_body_font_category'
 ];
 
 describe('Settings API (v3)', function () {

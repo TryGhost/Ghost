@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
-const config = require('../../../shared/config');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
@@ -153,8 +152,12 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
         uppercaseHeadings: false
     });
 
-    const templateConfig = config.get('members:emailTemplate');
-    let htmlTemplate = template({post, site: getSite(), templateConfig});
+    const templateSettings = {
+        showSiteHeader: settingsCache.get('newsletter_show_header'),
+        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
+        showBadge: settingsCache.get('newsletter_show_badge')
+    };
+    let htmlTemplate = template({post, site: getSite(), templateSettings});
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl();
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
