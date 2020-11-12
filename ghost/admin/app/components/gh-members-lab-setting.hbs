@@ -282,7 +282,17 @@
 
     <div class="gh-setting-header">Email</div>
     <section class="flex flex-column br3 shadow-1 bg-grouped-table mt1 pa5">
-        <div class="gh-setting-first">
+        <div class="gh-setting-first relative">
+            <div class="gh-setting-content">
+                <h4 class="gh-setting-title">Email design</h4>
+                <p class="gh-setting-desc pa0 ma0">Customize the look and feel of email newsletters</p>
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn" {{action (toggle "showEmailDesignSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
+            </div>
+        </div>
+
+        <div class="gh-setting">
             <div class="gh-setting-content">
                 <h4 class="gh-setting-title">Email addresses</h4>
                 <p class="gh-setting-desc pa0 ma0">Contact information used for newsletters and member login emails</p>
@@ -461,9 +471,19 @@
         @close={{action "closePortalSettings"}}
         @modifier="full-overlay portal-settings" />
 {{/if}}
+
 {{#if this.showLeaveSettingsModal}}
     <GhFullscreenModal @modal="leave-settings"
         @confirm={{action "leavePortalSettings"}}
         @close={{action "closeLeaveSettingsModal"}}
         @modifier="action wide" />
+{{/if}}
+
+{{#if this.showEmailDesignSettings}}
+    <GhFullscreenModal @modal="email-design-settings"
+        @model={{hash
+            openStripeSettings=(action "openStripeSettings")
+        }}
+        @close={{action "closeEmailDesignSettings"}}
+        @modifier="full-overlay portal-settings" />
 {{/if}}

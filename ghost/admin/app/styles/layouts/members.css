@@ -792,3 +792,247 @@ p.gh-members-import-errordetail:first-of-type {
         padding: 4px;
     }
 }
+
+/* Email newsletter design settings
+/* -------------------------------------------------------- */
+.gh-members-emailsettings-footer {
+    border-top: 1px solid var(--whitegrey);
+    padding-top: 20px;
+    margin-bottom: 4px;
+}
+
+.gh-members-emailsettings-footer .form-group {
+    align-items: flex-start;
+}
+
+.gh-members-emailsettings-promotelabel {
+    display: flex;
+    align-items: flex-start;
+}
+
+.gh-members-emailsettings-promotelabel svg {
+    width: 20px;
+    margin-right: 8px;
+}
+
+.gh-members-emailsettings-promotelabel svg path {
+    stroke: var(--red);
+}
+
+.gh-members-emailsettings-footer .for-switch {
+    margin-top: -2px;
+}
+
+.gh-members-emailpreview-container {
+    width: 100%;
+    max-width: 520px;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 32px auto;
+    box-shadow: 
+        0 0 0 1px rgba(0,0,0,0.02),
+        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+        0 12.5px 10px rgba(0, 0, 0, 0.035),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+        0 100px 80px rgba(0, 0, 0, 0.07);
+    ;
+    color: var(--blackgrey);
+    transform: scale(0.8);
+    transform-origin: top;
+}
+
+.gh-members-emailpreview-container a {
+    color: var(--midgrey);
+    text-decoration: underline;
+}
+
+.gh-members-emailpreview-faux {
+    margin: -32px -32px 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--lightgrey-d1);
+}
+
+.gh-members-emailpreview-faux p {
+    margin: 0;
+    padding: 0;
+    color: var(--midlightgrey);
+}
+
+.gh-members-emailpreview-faux .strong {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-members-emailpreview-faux .dark {
+    color: var(--darkgrey);
+}
+
+.gh-members-emailpreview-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-members-emailpreview-header.hide {
+    display: none;
+}
+
+.gh-members-emailpreview-header img {
+    width: 48px;
+    height: 48px;
+}
+
+.gh-members-emailpreview-header h4 {
+    text-align: center;
+    font-size: 1.6rem;
+    letter-spacing: -0.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 10px 0;
+    color: var(--blackgrey);
+}
+
+.gh-members-emailpreview-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+}
+
+.gh-members-emailpreview-title h2 {
+    font-size: 4.2rem;
+    line-height: 1.1em;
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+    padding: 0 0 10px;
+    color: var(--blackgrey);
+}
+
+.gh-members-emailpreview-title p {
+    margin: 0;
+    padding: 0 0 10px;
+    white-space: nowrap;
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--blackgrey);
+}
+
+.gh-members-emailpreview-title p span {
+    color: var(--midgrey);
+}
+
+.gh-members-emailpreview-title a {
+    text-decoration: none;
+    color: var(--blackgrey);
+}
+
+.gh-members-emailpreview-content {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-members-emailpreview-content p {
+    font-family: Georgia, serif;
+    font-size: 1.8rem;
+    line-height: 1.5em;
+    color: var(--darkgrey-l1);
+    max-width: 560px;
+}
+
+.gh-members-emailpreview-content.sans-serif p {
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
+    font-size: 1.75rem;
+    line-height: 1.5em;
+}
+
+.gh-members-emailpreview-footer {
+    padding: 40px 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gh-members-emailpreview-footercontent {
+    margin: 0 0 10px;
+    max-width: 380px;
+    font-size: 1.15rem;
+    text-align: center;
+    line-height: 1.4em;
+    color: var(--midgrey-l1);
+}
+
+.gh-members-emailpreview-footercontent p {
+    font-size: 1.15rem;
+    text-align: center;
+    line-height: 1.4em;
+    color: var(--midgrey-l1);
+    margin: 0;
+    padding: 0;
+}
+
+.gh-members-emailpreview-footercontent strong {
+    font-weight: 600;
+}
+
+.gh-members-emailpreview-footersite {
+    font-size: 1.15rem;
+    text-align: center;
+    color: var(--blackgrey);
+}
+
+.gh-members-emailpreview-footersite span {
+    color: var(--midgrey-l1);
+}
+
+.gh-members-emailpreview-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 25px;
+}
+
+.gh-members-emailpreview-badge.hide {
+    display: none;
+}
+
+.gh-members-emailpreview-badge a {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 9px 6px 6px;
+    border: none;
+    font-size: 12px;
+    line-height: 12px;
+    letter-spacing: -.3px;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    color: #383838;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.08);
+    cursor: pointer;
+    outline: none;
+    background: var(--white);
+}
+
+.gh-members-emailpreview-badge svg {
+    height: 16px;
+    width: 16px;
+    margin: 0 6px 0 0;
+}
+
+@media (min-height: 1070px) {
+    .gh-members-emailpreview-container {
+        transform: scale(0.9);
+    }
+}
