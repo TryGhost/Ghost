@@ -165,6 +165,161 @@
 }
 
 
+/* Full screen setting modal with preview. Used in e.g. Portal 
+/* settings, Email design settings etc.
+/* ---------------------------------------------------------- */
+.modal-fullsettings {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-fullsettings-body {
+    display: flex;
+    padding: 0;
+    flex-grow: 1;
+}
+
+.modal-fullsettings-body .form-group.space-l {
+    margin-bottom: 1.9em;
+}
+
+.modal-fullsettings-body .for-switch.small {
+    width: 36px !important;
+    height: 22px !important;
+}
+
+.modal-fullsettings-body .gh-select svg {
+    top: 19px;
+    right: 9px;
+}
+
+.modal-fullsettings-body .modal-footer {
+    margin-top: 28px;
+}
+
+.modal-fullsettings-sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 0px 24px 20px;
+    width: 342px;
+}
+
+.modal-fullsettings-sidebar.with-footer {
+    justify-content: space-between;
+}
+
+.modal-fullsettings-topbar {
+    height: 66px;
+}
+
+.modal-fullsettings-heading {
+    display: flex;
+    align-items: center;
+    font-size: 1.9rem;
+    font-weight: 600;
+    padding: 0 24px;
+    margin: 0 -24px 1px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.modal-fullsettings-form {
+    min-width: 292px;
+}
+
+.modal-fullsettings-section {
+    margin: 24px -24px;
+    padding: 0 24px;
+}
+
+.modal-fullsettings-section.first {
+    margin-top: 20px;
+}
+
+.modal-fullsettings-section.divider-top {
+    border-top: 1px solid var(--whitegrey);
+    padding-top: 16px;
+}
+
+.modal-fullsettings-sectionheading {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--midlightgrey);
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+}
+
+.modal-fullsettings-section .form-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.modal-fullsettings-section .form-group p {
+    font-size: 1.25rem !important;
+    line-height: 1.4em;
+}
+
+.modal-fullsettings-section .form-group.vertical {
+    display: block;
+}
+
+.modal-fullsettings-section .form-group.vertical h4 {
+    margin-bottom: 8px;
+}
+
+.modal-fullsettings-section .form-group.vertical p {
+    margin-top: 8px;
+}
+
+.modal-fullsettings-section .gh-select select,
+.modal-fullsettings-section textarea {
+    font-size: 1.4rem;
+}
+
+.modal-fullsettings-radiogroup {
+    margin: 18px 0 0;
+}
+
+.modal-fullsettings-radiogroup .gh-radio {
+    margin-bottom: 14px;
+}
+
+.modal-fullsettings-radiogroup .gh-radio:last-of-type {
+    margin-bottom: 12px;
+}
+
+.modal-fullsettings-radiogroup + p {
+    margin-top: 4px !important;
+    margin-bottom: 28px;
+}
+
+.modal-fullsettings-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0 12px 0 0;
+}
+
+.modal-fullsettings-main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 0 20px 20px;
+    border-left: 1px solid var(--whitegrey);
+}
+
+.modal-fullsettings-preview-container {
+    border: 1px solid var(--whitegrey);
+    border-radius: 5px;
+    overflow: hidden;
+    background: var(--whitegrey-l1);
+    height: calc(100vh - 150px);
+    overflow-y: scroll;
+}
+
 /* Content Modifiers
 /* ---------------------------------------------------------- */
 
