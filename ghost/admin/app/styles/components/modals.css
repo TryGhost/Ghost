@@ -320,6 +320,21 @@
     overflow-y: scroll;
 }
 
+.modal-fullsettings-preview-hidescrollbar {
+    overflow: hidden;
+    height: calc(100vh - 150px);
+    background: var(--whitegrey-l1);
+    border: 1px solid var(--whitegrey);
+    border-radius: 5px;
+}
+
+.modal-fullsettings-preview-hidescrollbar .modal-fullsettings-preview-container {
+    border: none;
+    border-radius: 0;
+    margin: 0 -50px;
+    padding: 0 50px;
+}
+
 /* Content Modifiers
 /* ---------------------------------------------------------- */
 

@@ -101,41 +101,44 @@
                 </div>
             </div>
 
-            <div class="modal-fullsettings-preview-container">
-                <div class="gh-members-emailpreview-container">
-                    <div class="gh-members-emailpreview-faux">
-                        <p>
-                            <span class="strong">Ghost Site</span> &lt;newsletters@ghostsite.com&gt;
-                        </p>
-                        <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
-                    </div>
-                    <div class="gh-members-emailpreview-header {{if (not this.settings.newsletterShowHeader) "hide"}}">
-                        <img src="https://static.ghost.org/v3.0.0/images/ghost-squircle.png" />
-                        <h4>Ghost site</h4>
-                    </div>
-                    <div class="gh-members-emailpreview-title">
-                        <h2>Email newsletter</h2>
-                        <p>
-                            <span>By Jamie Larson – Nov 5 2020 – </span> <a href="javascript:">View online →</a>
-                        </p>
-                    </div>
-                    <div class="gh-members-emailpreview-content {{if (eq this.settings.newsletterBodyFontCategory "sans_serif") "sans-serif"}}">
-                        <p>This is where the contents of your newsletter go. Customise the appearance with the options in the sidebar.</p>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras at auctor tellus, in accumsan magna. Sed vel magna velit. Vivamus commodo laoreet malesuada. Nullam efficitur augue et eros fermentum.</p>
-                    </div>
-                    <div class="gh-members-emailpreview-footer">
-                        <div class="gh-members-emailpreview-footercontent">
-                            {{this.footerText}}
+            <div class="modal-fullsettings-preview-hidescrollbar">
+                <div class="modal-fullsettings-preview-container">
+                    <div class="gh-members-emailpreview-container">
+                        <div class="gh-members-emailpreview-faux">
+                            <p>
+                                <span class="strong">{{this.config.blogTitle}}</span> &lt;newsletters@ghostsite.com&gt;
+                            </p>
+                            <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
                         </div>
-                        <div class="gh-members-emailpreview-footersite">
-                            <span>Ghost Site &copy; – </span> <a href="javascript:">Unsubscribe</a>
+                        <div class="gh-members-emailpreview-header {{if (not this.settings.newsletterShowHeader) "hide"}}">
+                            {{#if this.settings.icon}}
+                                <img src={{this.settings.icon}} />
+                            {{/if}}
+                            <h4>{{this.config.blogTitle}}</h4>
                         </div>
-                    </div>
-                    <div class="gh-members-emailpreview-badge {{if (not this.settings.newsletterShowBadge) "hide"}}">
-                        <a href="https://ghost.org" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 156 156"><g fill="none" fill-rule="evenodd"><rect fill="#15212B" width="156" height="156" rx="27"></rect><g transform="translate(36 36)" fill="#F6F8FA"><path d="M0 71.007A4.004 4.004 0 014 67h26a4 4 0 014 4.007v8.986A4.004 4.004 0 0130 84H4a4 4 0 01-4-4.007v-8.986zM50 71.007A4.004 4.004 0 0154 67h26a4 4 0 014 4.007v8.986A4.004 4.004 0 0180 84H54a4 4 0 01-4-4.007v-8.986z"></path><rect y="34" width="84" height="17" rx="4"></rect><path d="M0 4.007A4.007 4.007 0 014.007 0h41.986A4.003 4.003 0 0150 4.007v8.986A4.007 4.007 0 0145.993 17H4.007A4.003 4.003 0 010 12.993V4.007z"></path><rect x="67" width="17" height="17" rx="4"></rect></g></g></svg> <span>Publish with Ghost</span></a>
+                        <div class="gh-members-emailpreview-title">
+                            <h2>Email newsletter</h2>
+                            <p>
+                                <span>By Jamie Larson – Nov 5 2020 – </span> <a href="javascript:">View online →</a>
+                            </p>
+                        </div>
+                        <div class="gh-members-emailpreview-content {{if (eq this.settings.newsletterBodyFontCategory "sans_serif") "sans-serif"}}">
+                            <p>This is where the contents of your newsletter go. Customise the appearance with the options in the sidebar.</p>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras at auctor tellus, in accumsan magna. Sed vel magna velit. Vivamus commodo laoreet malesuada. Nullam efficitur augue et eros fermentum.</p>
+                        </div>
+                        <div class="gh-members-emailpreview-footer">
+                            <div class="gh-members-emailpreview-footercontent">
+                                {{this.footerText}}
+                            </div>
+                            <div class="gh-members-emailpreview-footersite">
+                                <span>Ghost Site &copy; – </span> <a href="javascript:">Unsubscribe</a>
+                            </div>
+                        </div>
+                        <div class="gh-members-emailpreview-badge {{if (not this.settings.newsletterShowBadge) "hide"}}">
+                            <a href="javascript:"><svg viewBox="0 0 156 156"><g fill="none" fill-rule="evenodd"><rect fill="#15212B" width="156" height="156" rx="27"></rect><g transform="translate(36 36)" fill="#F6F8FA"><path d="M0 71.007A4.004 4.004 0 014 67h26a4 4 0 014 4.007v8.986A4.004 4.004 0 0130 84H4a4 4 0 01-4-4.007v-8.986zM50 71.007A4.004 4.004 0 0154 67h26a4 4 0 014 4.007v8.986A4.004 4.004 0 0180 84H54a4 4 0 01-4-4.007v-8.986z"></path><rect y="34" width="84" height="17" rx="4"></rect><path d="M0 4.007A4.007 4.007 0 014.007 0h41.986A4.003 4.003 0 0150 4.007v8.986A4.007 4.007 0 0145.993 17H4.007A4.003 4.003 0 010 12.993V4.007z"></path><rect x="67" width="17" height="17" rx="4"></rect></g></g></svg> <span>Publish with Ghost</span></a>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
