@@ -1,7 +1,7 @@
-const {createTransactionalMigration} = require('../../utils');
+const {createNonTransactionalMigration} = require('../../utils');
 const commands = require('../../../schema/commands');
 
-module.exports = createTransactionalMigration(
+module.exports = createNonTransactionalMigration(
     commands.createColumnMigration({
         table: 'posts',
         column: 'type',

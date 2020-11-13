@@ -1,6 +1,6 @@
-const {createAddColumnMigration, combineTransactionalMigrations} = require('../../utils');
+const {createAddColumnMigration, combineNonTransactionalMigrations} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
+module.exports = combineNonTransactionalMigrations(
     createAddColumnMigration('emails', 'from', {
         type: 'string',
         maxlength: 191,

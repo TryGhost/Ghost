@@ -1,6 +1,6 @@
-const {combineTransactionalMigrations, createDropColumnMigration} = require('../../utils');
+const {combineNonTransactionalMigrations, createDropColumnMigration} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
+module.exports = combineNonTransactionalMigrations(
     createDropColumnMigration('posts', 'meta_title', {
         type: 'string',
         nullable: true,

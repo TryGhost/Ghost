@@ -1,6 +1,6 @@
-const {combineTransactionalMigrations, createDropColumnMigration} = require('../../utils');
+const {combineNonTransactionalMigrations, createDropColumnMigration} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
+module.exports = combineNonTransactionalMigrations(
     createDropColumnMigration('members', 'password', {
         type: 'string',
         maxlength: 60,

@@ -267,6 +267,31 @@ function combineTransactionalMigrations(...migrations) {
 }
 
 /**
+ * @param {Migration[]} migrations
+ *
+ * @returns {Migration}
+ */
+function combineNonTransactionalMigrations(...migrations) {
+    return {
+        config: {
+            transaction: false
+        },
+        async up(config) {
+            for (const migration of migrations) {
+                await migration.up(config);
+            }
+        },
+        async down(config) {
+            // Down migrations must be run backwards!!
+            const reverseMigrations = migrations.slice().reverse();
+            for (const migration of reverseMigrations) {
+                await migration.down(config);
+            }
+        }
+    };
+}
+
+/**
  * @param {string} table
  * @param {string} column
  * @param {Object} columnDefinition
@@ -274,7 +299,7 @@ function combineTransactionalMigrations(...migrations) {
  * @returns {Migration}
  */
 function createAddColumnMigration(table, column, columnDefinition) {
-    return createTransactionalMigration(
+    return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
             table,
@@ -303,7 +328,7 @@ function createAddColumnMigration(table, column, columnDefinition) {
  * @returns {Migration}
  */
 function createDropColumnMigration(table, column, columnDefinition) {
-    return createTransactionalMigration(
+    return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
             table,
@@ -332,6 +357,7 @@ module.exports = {
     createTransactionalMigration,
     createNonTransactionalMigration,
     combineTransactionalMigrations,
+    combineNonTransactionalMigrations,
     createAddColumnMigration,
     createDropColumnMigration,
     meta: {

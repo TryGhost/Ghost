@@ -1,6 +1,6 @@
-const {combineTransactionalMigrations, createDropColumnMigration} = require('../../utils');
+const {combineNonTransactionalMigrations, createDropColumnMigration} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
+module.exports = combineNonTransactionalMigrations(
     createDropColumnMigration('users', 'ghost_auth_access_token', {
         type: 'string',
         nullable: true,

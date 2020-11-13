@@ -1,6 +1,6 @@
-const {createAddColumnMigration, combineTransactionalMigrations} = require('../../utils');
+const {createAddColumnMigration, combineNonTransactionalMigrations} = require('../../utils');
 
-module.exports = combineTransactionalMigrations(
+module.exports = combineNonTransactionalMigrations(
     createAddColumnMigration('tags', 'og_image', {
         type: 'string',
         maxlength: 2000,
