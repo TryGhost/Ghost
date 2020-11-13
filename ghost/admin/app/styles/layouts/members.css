@@ -840,13 +840,17 @@ p.gh-members-import-errordetail:first-of-type {
         0 100px 80px rgba(0, 0, 0, 0.07);
     ;
     color: var(--blackgrey);
-    transform: scale(0.8);
+    transform: scale(0.85);
     transform-origin: top;
+    pointer-events: none;
+    cursor: auto;
 }
 
 .gh-members-emailpreview-container a {
     color: var(--midgrey);
     text-decoration: underline;
+    pointer-events: none;
+    cursor: auto;
 }
 
 .gh-members-emailpreview-faux {
@@ -886,6 +890,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-header img {
     width: 48px;
     height: 48px;
+    border-radius: 4px;
 }
 
 .gh-members-emailpreview-header h4 {
@@ -1020,8 +1025,9 @@ p.gh-members-import-errordetail:first-of-type {
     background: #fff;
     border-radius: 5px;
     box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.08);
-    cursor: pointer;
+    cursor: auto;
     outline: none;
+    pointer-events: none;
     background: var(--white);
 }
 
