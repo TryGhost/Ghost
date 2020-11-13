@@ -1,48 +1,73 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
+import {tracked} from '@glimmer/tracking';
 
-export default ModalComponent.extend({
-    config: service(),
-    settings: service(),
+export default class ModalEmailDesignSettings extends ModalComponent {
+    @service()
+    settings;
 
-    showHeader: true,
-    showSansSerif: false,
-    showBadge: true,
-    footerText: '',
+    @service()
+    config;
 
-    init() {
-        this._super(...arguments);
-    },
+    @tracked
+    showHeader = this.settings.get('newsletterShowHeader');
 
-    actions: {
-        toggleShowHeader(showHeader) {
-            this.settings.set('newsletterShowHeader', showHeader);
-        },
+    @tracked
+    bodyFontCategory = this.settings.get('newsletterBodyFontCategory');
 
-        setTypography(typography) {
-            if (typography === 'serif') {
-                this.settings.set('newsletterBodyFontCategory', 'serif');
-            } else {
-                this.settings.set('newsletterBodyFontCategory', 'sans_serif');
-            }
-        },
+    @tracked
+    showBadge = this.settings.get('newsletterShowBadge');
 
-        toggleBadge(showBadge) {
-            this.settings.set('newsletterShowBadge', showBadge);
-        },
+    @tracked
+    footerHtml = this.settings.get('newsletterFooterHtml');
 
-        confirm() {
-            return this.saveTask.perform();
-        },
+    @action
+    setShowHeader(event) {
+        this.showHeader = event.target.checked;
+    }
 
-        leaveSettings() {
-            this.closeModal();
+    @action
+    setBodyFontCategory(value) {
+        this.bodyFontCategory = value;
+    }
+
+    @action
+    stopPropagation(event) {
+        event.stopPropagation();
+    }
+
+    @action
+    setShowBadge(event) {
+        this.showBadge = event.target.checked;
+    }
+
+    @action
+    setFooterHtml(event) {
+        this.footerHtml = event.target.value;
+    }
+
+    @action
+    confirm() {
+        this.saveSettings.perform();
+    }
+
+    @task({drop: true})
+    *saveSettings() {
+        if (this.showHeader !== null) {
+            this.settings.set('newsletterShowHeader', this.showHeader);
         }
-    },
-
-    saveTask: task(function* () {
+        if (this.bodyFontCategory !== null) {
+            this.settings.set('newsletterBodyFontCategory', this.bodyFontCategory);
+        }
+        if (this.showBadge !== null) {
+            this.settings.set('newsletterShowBadge', this.showBadge);
+        }
+        if (this.footerHtml !== null) {
+            this.settings.set('newsletterFooterHtml', this.footerHtml);
+        }
         yield this.settings.save();
         this.closeModal();
-    }).drop()
-});
+    }
+}
