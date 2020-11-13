@@ -116,15 +116,15 @@
                 </div>
             </div>
 
-            <div class="modal-fullsettings-preview-hidescrollbar">
-                <div class="modal-fullsettings-preview-container">
-                    <div class="gh-members-emailpreview-container">
-                        <div class="gh-members-emailpreview-faux">
-                            <p>
-                                <span class="strong">{{this.config.blogTitle}}</span> &lt;{{this.settings.membersFromAddress}}&gt;
-                            </p>
-                            <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
-                        </div>
+            <div class="modal-fullsettings-preview-container gh-members-emailpreview">
+                <div class="gh-members-emailpreview-container">
+                    <div class="gh-members-emailpreview-faux">
+                        <p>
+                            <span class="strong">{{this.config.blogTitle}}</span> &lt;{{this.settings.membersFromAddress}}&gt;
+                        </p>
+                        <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
+                    </div>
+                    <div class="gh-members-emailpreview-contents">
                         <div class="gh-members-emailpreview-header {{if (not this.showHeader) "hide"}}">
                             {{#if this.settings.icon}}
                                 <img src={{this.settings.icon}} />
