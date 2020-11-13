@@ -68,7 +68,8 @@ const defaultSettingsKeyTypes = [
     {key: 'accent_color', type: 'blog'},
     {key: 'newsletter_show_badge', type: 'newsletter'},
     {key: 'newsletter_show_header', type: 'newsletter'},
-    {key: 'newsletter_body_font_category', type: 'newsletter'}
+    {key: 'newsletter_body_font_category', type: 'newsletter'},
+    {key: 'newsletter_footer_content', type: 'newsletter'}
 ];
 
 describe('Settings API (canary)', function () {

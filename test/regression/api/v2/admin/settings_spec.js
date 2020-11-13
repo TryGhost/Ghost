@@ -66,6 +66,7 @@ const defaultSettingsKeyTypes = [
     {key: 'default_locale', type: 'blog'},
     {key: 'newsletter_show_badge', type: 'newsletter'},
     {key: 'newsletter_show_header', type: 'newsletter'},
+    {key: 'newsletter_footer_content', type: 'newsletter'},
     {key: 'newsletter_body_font_category', type: 'newsletter'}
 ];
 
