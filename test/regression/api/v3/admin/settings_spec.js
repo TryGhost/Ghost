@@ -68,7 +68,8 @@ const defaultSettingsKeys = [
     'accent_color',
     'newsletter_show_badge',
     'newsletter_show_header',
-    'newsletter_body_font_category'
+    'newsletter_body_font_category',
+    'newsletter_footer_content'
 ];
 
 describe('Settings API (v3)', function () {
