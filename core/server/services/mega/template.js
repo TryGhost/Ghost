@@ -527,8 +527,16 @@ figure blockquote p {
     margin-top: 20px;
     text-align: center;
     font-size: 13px;
-    padding-bottom: 40px;
-    padding-top: 50px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    line-height: 1.5em;
+}
+
+.footer a {
+    color: #738a94;
+    text-decoration: underline;
 }
 
 /* -------------------------------------
@@ -828,6 +836,7 @@ figure blockquote p {
 ${ templateSettings.showBadge ? `
 .footer-powered {
     text-align: center;
+    padding-top: 25px;
     padding-bottom: 40px;
 }
 
@@ -921,7 +930,7 @@ ${ templateSettings.showBadge ? `
                         <!-- END MAIN CONTENT AREA -->
 
                         <tr>
-                            <td class="wrapper" align="center">
+                            <td class="wrapper" align="center" style="padding-top: 40px; padding-bottom: 30px;">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     ${iff(!!templateSettings.footerContent, `<tr><td class="footer">${templateSettings.footerContent}</td></tr>`, '')}
                                     <tr>
