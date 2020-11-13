@@ -21,7 +21,7 @@ export default class ModalEmailDesignSettings extends ModalComponent {
     showBadge = this.settings.get('newsletterShowBadge');
 
     @tracked
-    footerHtml = this.settings.get('newsletterFooterHtml');
+    footerContent = this.settings.get('newsletterFooterContent');
 
     @action
     setShowHeader(event) {
@@ -44,8 +44,8 @@ export default class ModalEmailDesignSettings extends ModalComponent {
     }
 
     @action
-    setFooterHtml(event) {
-        this.footerHtml = event.target.value;
+    setFooterContent(event) {
+        this.footerContent = event.target.value;
     }
 
     @action
@@ -64,8 +64,8 @@ export default class ModalEmailDesignSettings extends ModalComponent {
         if (this.showBadge !== null) {
             this.settings.set('newsletterShowBadge', this.showBadge);
         }
-        if (this.footerHtml !== null) {
-            this.settings.set('newsletterFooterHtml', this.footerHtml);
+        if (this.footerContent !== null) {
+            this.settings.set('newsletterFooterContent', this.footerContent);
         }
         yield this.settings.save();
         this.closeModal();
