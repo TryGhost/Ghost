@@ -823,12 +823,18 @@ p.gh-members-import-errordetail:first-of-type {
     margin-top: -2px;
 }
 
+.gh-members-emailpreview {
+    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
 .gh-members-emailpreview-container {
     width: 100%;
     max-width: 520px;
     background: #fff;
     border-radius: 12px;
-    padding: 32px;
+    padding: 0;
     margin: 32px auto;
     box-shadow: 
         0 0 0 1px rgba(0,0,0,0.02),
@@ -844,6 +850,7 @@ p.gh-members-import-errordetail:first-of-type {
     transform-origin: top;
     pointer-events: none;
     cursor: auto;
+    overflow: hidden;
 }
 
 .gh-members-emailpreview-container a {
@@ -854,8 +861,12 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-faux {
-    margin: -32px -32px 16px;
-    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0;
+    height: 78px;
+    padding: 0 24px;
     border-bottom: 1px solid var(--lightgrey-d1);
     background: var(--white);
     border-top-left-radius: 12px;
@@ -876,6 +887,14 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-faux .dark {
     color: var(--darkgrey);
+}
+
+.gh-members-emailpreview-contents {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin: 0 -50px;
+    padding: 0 74px 30px;
+    max-height: calc(100vh - 66px - 64px - 60px);
 }
 
 .gh-members-emailpreview-header {
