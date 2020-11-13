@@ -53,8 +53,8 @@
                             <h4 class="modal-fullsettings-title">Footer content</h4>
                             <GhTextarea
                                 @name="footer"
-                                @value={{readonly this.footerHtml}}
-                                @input={{this.setFooterHtml}}
+                                @value={{readonly this.footerContent}}
+                                @input={{this.setFooterContent}}
                                 {{!-- The modal listens for key events to close, this stops the textarea from triggering them--}}
                                 {{on "keydown" this.stopPropagation}}
                                 {{on "keypress" this.stopPropagation}}
@@ -143,7 +143,7 @@
                         </div>
                         <div class="gh-members-emailpreview-footer">
                             <div class="gh-members-emailpreview-footercontent">
-                                {{this.footerHtml}}
+                                {{this.footerContent}}
                             </div>
                             <div class="gh-members-emailpreview-footersite">
                                 <span>Ghost Site &copy; – </span> <a href="javascript:">Unsubscribe</a>
