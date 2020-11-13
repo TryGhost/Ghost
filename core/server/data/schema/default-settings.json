@@ -423,7 +423,7 @@
                 ]
             }
         },
-        "newsletter_footer_html": {
+        "newsletter_footer_content": {
             "defaultValue": "",
             "type": "string"
         }

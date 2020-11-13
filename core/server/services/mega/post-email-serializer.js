@@ -156,7 +156,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
         showSiteHeader: settingsCache.get('newsletter_show_header'),
         bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
         showBadge: settingsCache.get('newsletter_show_badge'),
-        footerHtml: settingsCache.get('newsletter_footer_html')
+        footerContent: settingsCache.get('newsletter_footer_content')
     };
     let htmlTemplate = template({post, site: getSite(), templateSettings});
     if (options.isBrowserPreview) {

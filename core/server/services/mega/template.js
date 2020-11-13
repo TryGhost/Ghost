@@ -923,7 +923,7 @@ ${ templateSettings.showBadge ? `
                         <tr>
                             <td class="wrapper" align="center">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    ${iff(!!templateSettings.footerHtml, `<tr><td class="footer">${templateSettings.footerHtml}</td></tr>`, '')}
+                                    ${iff(!!templateSettings.footerContent, `<tr><td class="footer">${templateSettings.footerContent}</td></tr>`, '')}
                                     <tr>
                                         <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
