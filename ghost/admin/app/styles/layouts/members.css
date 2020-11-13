@@ -826,7 +826,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-container {
     width: 100%;
     max-width: 520px;
-    background: var(--white);
+    background: #fff;
     border-radius: 12px;
     padding: 32px;
     margin: 32px auto;
@@ -857,6 +857,9 @@ p.gh-members-import-errordetail:first-of-type {
     margin: -32px -32px 16px;
     padding: 16px 24px;
     border-bottom: 1px solid var(--lightgrey-d1);
+    background: var(--white);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
 .gh-members-emailpreview-faux p {
@@ -880,7 +883,7 @@ p.gh-members-import-errordetail:first-of-type {
     flex-direction: column;
     align-items: center;
     padding: 40px 0;
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid #e5eff5;
 }
 
 .gh-members-emailpreview-header.hide {
@@ -900,7 +903,7 @@ p.gh-members-import-errordetail:first-of-type {
     font-weight: 700;
     text-transform: uppercase;
     margin: 10px 0;
-    color: var(--blackgrey);
+    color: #15212A;
 }
 
 .gh-members-emailpreview-title {
@@ -917,7 +920,7 @@ p.gh-members-import-errordetail:first-of-type {
     text-align: center;
     margin: 0;
     padding: 0 0 10px;
-    color: var(--blackgrey);
+    color: #15212A;
 }
 
 .gh-members-emailpreview-title p {
@@ -929,7 +932,7 @@ p.gh-members-import-errordetail:first-of-type {
     letter-spacing: 0.2px;
     text-transform: uppercase;
     text-align: center;
-    color: var(--blackgrey);
+    color: #15212A;
 }
 
 .gh-members-emailpreview-title p span {
@@ -938,19 +941,19 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-title a {
     text-decoration: none;
-    color: var(--blackgrey);
+    color: #15212A;
 }
 
 .gh-members-emailpreview-content {
     padding-bottom: 20px;
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid #e5eff5;
 }
 
 .gh-members-emailpreview-content p {
     font-family: Georgia, serif;
     font-size: 1.8rem;
     line-height: 1.5em;
-    color: var(--darkgrey-l1);
+    color: #15212A;
     max-width: 560px;
 }
 
@@ -1028,7 +1031,7 @@ p.gh-members-import-errordetail:first-of-type {
     cursor: auto;
     outline: none;
     pointer-events: none;
-    background: var(--white);
+    background: #fff;
 }
 
 .gh-members-emailpreview-badge svg {

@@ -551,3 +551,7 @@ input:focus,
 .gh-import-member-select select {
     background: none !important;
 }
+
+.modal-fullsettings-preview-container {
+    background: #1D252B;
+}
