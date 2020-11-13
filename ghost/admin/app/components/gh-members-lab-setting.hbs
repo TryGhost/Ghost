@@ -480,10 +480,9 @@
 {{/if}}
 
 {{#if this.showEmailDesignSettings}}
-    <GhFullscreenModal @modal="email-design-settings"
-        @model={{hash
-            openStripeSettings=(action "openStripeSettings")
-        }}
-        @close={{action "closeEmailDesignSettings"}}
-        @modifier="full-overlay portal-settings" />
+    <GhFullscreenModal @modifier="full-overlay portal-settings">
+        <ModalEmailDesignSettings
+            @closeModal={{action "closeEmailDesignSettings"}}
+        />
+    </GhFullscreenModal>
 {{/if}}
