@@ -1,55 +1,15 @@
-const commands = require('../../../schema').commands;
+const {combineNonTransactionalMigrations, createDropColumnMigration} = require('../../utils');
 
-module.exports = {
-
-    up: commands.createColumnMigration({
-        table: 'members',
-        column: 'password',
-        dbIsInCorrectState(hasColumn) {
-            return hasColumn === false;
-        },
-        operation: commands.dropColumn,
-        operationVerb: 'Dropping'
-    }, {
-        table: 'members',
-        column: 'name',
-        dbIsInCorrectState(hasColumn) {
-            return hasColumn === false;
-        },
-        operation: commands.dropColumn,
-        operationVerb: 'Dropping'
+module.exports = combineNonTransactionalMigrations(
+    createDropColumnMigration('members', 'password', {
+        type: 'string',
+        maxlength: 60,
+        nullable: true
     }),
-
-    down: commands.createColumnMigration({
-        table: 'members',
-        column: 'password',
-        dbIsInCorrectState(hasColumn) {
-            return hasColumn === true;
-        },
-        operation: commands.addColumn,
-        operationVerb: 'Adding',
-        columnDefinition: {
-            type: 'string',
-            maxlength: 60,
-            nullable: true
-        }
-    }, {
-        table: 'members',
-        column: 'name',
-        dbIsInCorrectState(hasColumn) {
-            return hasColumn === true;
-        },
-        operation: commands.addColumn,
-        operationVerb: 'Adding',
-        columnDefinition: {
-            type: 'string',
-            maxlength: 191,
-            nullable: false,
-            defaultTo: ''
-        }
-    }),
-
-    config: {
-        transaction: true
-    }
-};
+    createDropColumnMigration('members', 'name', {
+        type: 'string',
+        maxlength: 191,
+        nullable: false,
+        defaultTo: ''
+    })
+);

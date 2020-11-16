@@ -162,9 +162,7 @@ function createColumnMigration(...migrations) {
         }
     }
 
-    return async function columnMigration(options) {
-        const conn = options.transacting || options.connection;
-
+    return async function columnMigration(conn) {
         for (const migration of migrations) {
             await runColumnMigration(conn, migration);
         }

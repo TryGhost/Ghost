@@ -1,25 +1,8 @@
-const commands = require('../../../schema').commands;
+const {createAddColumnMigration} = require('../../utils');
 
-module.exports.up = commands.createColumnMigration({
-    table: 'emails',
-    column: 'error_data',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding'
+module.exports = createAddColumnMigration('emails', 'error_data', {
+    type: 'text',
+    maxlength: 1000000000,
+    fieldtype: 'long',
+    nullable: true
 });
-
-module.exports.down = commands.createColumnMigration({
-    table: 'emails',
-    column: 'error_data',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Removing'
-});
-
-module.exports.config = {
-    transaction: true
-};
