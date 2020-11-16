@@ -85,7 +85,7 @@ function unknownProvider(url) {
 }
 
 function knownProvider(url) {
-    return extract(url, {maxwidth: 1280}).catch((err) => {
+    return extract(url).catch((err) => {
         return Promise.reject(new errors.InternalServerError({
             message: err.message
         }));
