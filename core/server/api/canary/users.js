@@ -157,6 +157,20 @@ module.exports = {
 
                 return models.Post.destroyByAuthor(frame.options)
                     .then(() => {
+                        return models.ApiKey.destroy({
+                            ...frame.options,
+                            require: true,
+                            destroyBy: {
+                                user_id: frame.options.id
+                            }
+                        }).catch((err) => {
+                            if (err instanceof models.ApiKey.NotFoundError) {
+                                return; //Do nothing here as it's ok
+                            }
+                            throw err;
+                        });
+                    })
+                    .then(() => {
                         return models.User.destroy(Object.assign({status: 'all'}, frame.options));
                     })
                     .then(() => filename);
