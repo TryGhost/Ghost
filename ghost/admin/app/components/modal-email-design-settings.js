@@ -34,18 +34,23 @@ export default class ModalEmailDesignSettings extends ModalComponent {
     }
 
     @action
-    stopPropagation(event) {
-        event.stopPropagation();
-    }
-
-    @action
     setShowBadge(event) {
         this.showBadge = event.target.checked;
     }
 
     @action
-    setFooterContent(event) {
-        this.footerContent = event.target.value;
+    setFooterContent(value) {
+        this.footerContent = value;
+    }
+
+    @action
+    handleInputFocus() {
+        this._removeShortcuts();
+    }
+
+    @action
+    handleInputBlur() {
+        this._setupShortcuts();
     }
 
     @action

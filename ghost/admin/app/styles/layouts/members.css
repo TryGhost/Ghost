@@ -795,6 +795,12 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
+.gh-members-emailsettings-footer-input {
+    border: 1px solid var(--whitegrey);
+    padding: 0 6px 6px 6px;
+    height: 80px;
+}
+
 .gh-members-emailsettings-footer {
     border-top: 1px solid var(--whitegrey);
     padding-top: 20px;

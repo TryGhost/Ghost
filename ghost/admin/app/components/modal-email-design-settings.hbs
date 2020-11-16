@@ -51,14 +51,13 @@
                     <div class="modal-fullsettings-section">
                         <GhFormGroup @classNames="vertical">
                             <h4 class="modal-fullsettings-title">Footer content</h4>
-                            <GhTextarea
+                            <KoenigBasicHtmlInput
                                 @name="footer"
-                                @value={{readonly this.footerContent}}
-                                @input={{this.setFooterContent}}
-                                {{!-- The modal listens for key events to close, this stops the textarea from triggering them--}}
-                                {{on "keydown" this.stopPropagation}}
-                                {{on "keypress" this.stopPropagation}}
-                                {{on "keyup" this.stopPropagation}}
+                                @html={{this.footerContent}}
+                                @class="miw-100 form-text gh-members-emailsettings-footer-input"
+                                @onChange={{this.setFooterContent}}
+                                @onFocus={{this.handleInputFocus}}
+                                @onBlur={{this.handleInputBlur}}
                             />
                             <p>Extra content to show at the bottom of all emails</p>
                         </GhFormGroup>
@@ -143,7 +142,7 @@
                         </div>
                         <div class="gh-members-emailpreview-footer">
                             <div class="gh-members-emailpreview-footercontent">
-                                {{this.footerContent}}
+                                {{{this.footerContent}}}
                             </div>
                             <div class="gh-members-emailpreview-footersite">
                                 <span>Ghost Site &copy; – </span> <a href="javascript:">Unsubscribe</a>

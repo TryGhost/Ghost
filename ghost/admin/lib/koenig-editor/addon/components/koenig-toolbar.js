@@ -176,6 +176,10 @@ export default Component.extend({
         // we only care about the left mouse button
         if (event.which === 1) {
             this._isMouseDown = true;
+            // prevent mousedown on toolbar buttons losing editor focus before the following click event can trigger the buttons behaviour
+            if (this.element.contains(event.target)) {
+                event.preventDefault();
+            }
         }
     },
 
