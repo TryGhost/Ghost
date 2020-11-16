@@ -386,7 +386,7 @@
     },
     "newsletter": {
         "newsletter_show_badge": {
-            "defaultValue": "false",
+            "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [
