@@ -12,7 +12,8 @@ describe('Unit: canary/utils/validators/input/pages', function () {
 
     describe('add', function () {
         const apiConfig = {
-            docName: 'pages'
+            docName: 'pages',
+            method: 'add'
         };
 
         describe('required fields', function () {
@@ -25,7 +26,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -40,7 +41,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -55,7 +56,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -71,7 +72,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -88,7 +89,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -172,7 +173,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                         return validators.input.pages.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
-                                (err instanceof errors.ValidationError).should.be.true();
+                                err.errorType.should.equal('ValidationError');
                             });
                     });
 
@@ -198,7 +199,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -220,7 +221,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -247,7 +248,8 @@ describe('Unit: canary/utils/validators/input/pages', function () {
 
     describe('edit', function () {
         const apiConfig = {
-            docName: 'pages'
+            docName: 'pages',
+            method: 'edit'
         };
 
         describe('required fields', function () {
@@ -260,7 +262,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -275,7 +277,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -291,7 +293,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -327,7 +329,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -349,7 +351,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 

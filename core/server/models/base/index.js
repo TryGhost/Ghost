@@ -855,6 +855,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return filteredCollection;
     },
 
+    getFilteredCollectionQuery: function getFilteredCollectionQuery(options) {
+        const filteredCollection = this.getFilteredCollection(options);
+        const filteredCollectionQuery = filteredCollection.query();
+
+        if (options.transacting) {
+            filteredCollectionQuery.transacting(options.transacting);
+            if (options.forUpdate) {
+                filteredCollectionQuery.forUpdate();
+            }
+        }
+
+        return filteredCollectionQuery;
+    },
+
     /**
      * ### Find All
      * Fetches all the data for a particular model

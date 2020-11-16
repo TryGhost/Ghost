@@ -1,8 +1,11 @@
+const _ = require('lodash');
 const {URL} = require('url');
 const mailgun = require('mailgun-js');
 const logging = require('../../../shared/logging');
 const configService = require('../../../shared/config');
 const settingsCache = require('../settings/cache');
+
+const BATCH_SIZE = 1000;
 
 function createMailgun(config) {
     const baseUrl = new URL(config.baseUrl);
@@ -31,16 +34,76 @@ function getInstance() {
     if (!hasMailgunConfig && !hasMailgunSetting) {
         logging.warn(`Bulk email service is not configured`);
     } else {
-        try {
-            let mailgunConfig = hasMailgunConfig ? bulkEmailConfig.mailgun : bulkEmailSetting;
-            return createMailgun(mailgunConfig);
-        } catch (err) {
-            logging.warn(`Bulk email service is not configured`);
-        }
+        let mailgunConfig = hasMailgunConfig ? bulkEmailConfig.mailgun : bulkEmailSetting;
+        return createMailgun(mailgunConfig);
     }
     return null;
 }
 
+// recipients format:
+// {
+//     'test@example.com': {
+//         name: 'Test User',
+//         unique_id: '12345abcde',
+//         unsubscribe_url: 'https://example.com/unsub/me'
+//     }
+// }
+function send(message, recipientData, replacements) {
+    if (recipientData.length > BATCH_SIZE) {
+        // err - too many recipients
+    }
+
+    let messageData = {};
+
+    try {
+        const bulkEmailConfig = configService.get('bulkEmail');
+        const mailgunInstance = getInstance();
+
+        const messageContent = _.pick(message, 'html', 'plaintext');
+
+        // update content to use Mailgun variable syntax for replacements
+        replacements.forEach((replacement) => {
+            messageContent[replacement.format] = messageContent[replacement.format].replace(
+                replacement.match,
+                `%recipient.${replacement.id}%`
+            );
+        });
+
+        messageData = {
+            toAddresses: Object.keys(recipientData),
+            from: message.from,
+            'h:Reply-To': message.replyTo,
+            'recipient-variables': recipientData,
+            html: messageContent.html,
+            text: messageContent.plaintext
+        };
+
+        if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
+            messageData['o:tag'] = [bulkEmailConfig.mailgun.tag, 'bulk-email'];
+        }
+
+        if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.testmode) {
+            messageData['o:testmode'] = true;
+        }
+
+        return new Promise((resolve, reject) => {
+            mailgunInstance.messages().send(messageData, (error, body) => {
+                if (error) {
+                    return reject(error);
+                }
+
+                return resolve({
+                    id: body.id
+                });
+            });
+        });
+    } catch (error) {
+        return Promise.reject({error, messageData});
+    }
+}
+
 module.exports = {
-    getInstance: getInstance
+    BATCH_SIZE,
+    getInstance,
+    send
 };
