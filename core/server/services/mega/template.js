@@ -836,7 +836,7 @@ figure blockquote p {
 ${ templateSettings.showBadge ? `
 .footer-powered {
     text-align: center;
-    padding-top: 25px;
+    padding-top: 70px;
     padding-bottom: 40px;
 }
 
@@ -930,8 +930,8 @@ ${ templateSettings.showBadge ? `
                         <!-- END MAIN CONTENT AREA -->
 
                         <tr>
-                            <td class="wrapper" align="center" style="padding-top: 40px; padding-bottom: 30px;">
-                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <td class="wrapper" align="center">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
                                     ${iff(!!templateSettings.footerContent, `<tr><td class="footer">${templateSettings.footerContent}</td></tr>`, '')}
                                     <tr>
                                         <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
