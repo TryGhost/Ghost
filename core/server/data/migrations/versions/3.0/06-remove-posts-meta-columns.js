@@ -1,191 +1,44 @@
-const commands = require('../../../schema').commands;
+const {combineNonTransactionalMigrations, createDropColumnMigration} = require('../../utils');
 
-module.exports.up = commands.createColumnMigration({
-    table: 'posts',
-    column: 'meta_title',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'meta_description',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'og_image',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'og_title',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'og_description',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'twitter_image',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'twitter_title',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-},
-{
-    table: 'posts',
-    column: 'twitter_description',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === false;
-    },
-    operation: commands.dropColumn,
-    operationVerb: 'Dropping'
-});
-
-module.exports.down = commands.createColumnMigration({
-    table: 'posts',
-    column: 'meta_title',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+module.exports = combineNonTransactionalMigrations(
+    createDropColumnMigration('posts', 'meta_title', {
         type: 'string',
         nullable: true,
         maxlength: 2000
-    }
-},
-{
-    table: 'posts',
-    column: 'meta_description',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'meta_description', {
         type: 'string',
         nullable: true,
         maxlength: 2000
-    }
-},
-{
-    table: 'posts',
-    column: 'og_image',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'og_image', {
         type: 'string',
         nullable: true,
         maxlength: 2000
-    }
-},
-{
-    table: 'posts',
-    column: 'og_title',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'og_title', {
         type: 'string',
         nullable: true,
         maxlength: 300
-    }
-},
-{
-    table: 'posts',
-    column: 'og_description',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'og_description', {
         type: 'string',
         nullable: true,
         maxlength: 500
-    }
-},
-{
-    table: 'posts',
-    column: 'twitter_image',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'twitter_image', {
         type: 'string',
         nullable: true,
         maxlength: 2000
-    }
-},
-{
-    table: 'posts',
-    column: 'twitter_title',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'twitter_title', {
         type: 'string',
         nullable: true,
         maxlength: 300
-    }
-},
-{
-    table: 'posts',
-    column: 'twitter_description',
-    dbIsInCorrectState(columnExists) {
-        return columnExists === true;
-    },
-    operation: commands.addColumn,
-    operationVerb: 'Adding',
-    columnDefinition: {
+    }),
+    createDropColumnMigration('posts', 'twitter_description', {
         type: 'string',
         nullable: true,
         maxlength: 500
-    }
-});
-
-module.exports.config = {
-    transaction: true
-};
+    })
+);

@@ -1,97 +1,54 @@
-const commands = require('../../../schema').commands;
+const {createAddColumnMigration, combineNonTransactionalMigrations} = require('../../utils');
 
-const newColumns = [{
-    column: 'og_image',
-    columnDefinition: {
+module.exports = combineNonTransactionalMigrations(
+    createAddColumnMigration('tags', 'og_image', {
         type: 'string',
         maxlength: 2000,
         nullable: true
-    }
-}, {
-    column: 'og_title',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'og_title', {
         type: 'string',
         maxlength: 300,
         nullable: true
-    }
-}, {
-    column: 'og_description',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'og_description', {
         type: 'string',
         maxlength: 500,
         nullable: true
-    }
-}, {
-    column: 'twitter_image',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'twitter_image', {
         type: 'string',
         maxlength: 2000,
         nullable: true
-    }
-}, {
-    column: 'twitter_title',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'twitter_title', {
         type: 'string',
         maxlength: 300,
         nullable: true
-    }
-}, {
-    column: 'twitter_description',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'twitter_description', {
         type: 'string',
         maxlength: 500,
         nullable: true
-    }
-}, {
-    column: 'codeinjection_head',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'codeinjection_head', {
         type: 'text',
         maxlength: 65535,
         nullable: true
-    }
-}, {
-    column: 'codeinjection_foot',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'codeinjection_foot', {
         type: 'text',
         maxlength: 65535,
         nullable: true
-    }
-}, {
-    column: 'canonical_url',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'canonical_url', {
         type: 'string',
         maxlength: 2000,
         nullable: true
-    }
-}, {
-    column: 'accent_color',
-    columnDefinition: {
+    }),
+    createAddColumnMigration('tags', 'accent_color', {
         type: 'string',
         maxlength: 50,
         nullable: true
-    }
-}];
-
-module.exports = {
-    config: {
-        transaction: true
-    },
-
-    up: commands.createColumnMigration(...newColumns.map((column) => {
-        return Object.assign({}, column, {
-            table: 'tags',
-            dbIsInCorrectState: hasColumn => hasColumn === true,
-            operation: commands.addColumn,
-            operationVerb: 'Adding'
-        });
-    })),
-
-    down: commands.createColumnMigration(...newColumns.map((column) => {
-        return Object.assign({}, column, {
-            table: 'tags',
-            dbIsInCorrectState: hasColumn => hasColumn === false,
-            operation: commands.dropColumn,
-            operationVerb: 'Removing'
-        });
-    }))
-};
+    })
+);
