@@ -552,6 +552,12 @@ input:focus,
     background: none !important;
 }
 
-.modal-fullsettings-preview-container {
+.modal-fullsettings-preview-container,
+.fullscreen-modal-email-preview .gh-pe-mobile-container,
+.fullscreen-modal-email-preview .gh-pe-desktop-container {
     background: #1D252B;
+}
+
+.gh-pe-mobile-bezel {
+    background: #2b373e;
 }
