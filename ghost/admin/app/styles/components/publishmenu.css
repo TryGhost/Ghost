@@ -257,16 +257,38 @@
     color: var(--midgrey);
 }
 
+.gh-publishmenu-send-to-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.gh-publishmenu-send-to-option p {
+    color: var(--darkgrey);
+    margin: 0;
+}
+
+.gh-publishmenu-send-to-option .for-switch {
+    line-height: 1;
+}
+
+.gh-publishmenu-send-to-option .for-switch label {
+    margin: 0;
+    width: 38px !important;
+    height: 22px !important;
+}
+
 .gh-publishmenu-emailcount {
     color: var(--midlightgrey);
 }
 
 .gh-publishmenu-checkbox-disabled {
     color: var(--midlightgrey);
-    opacity: 0.75;
+    opacity: 0.6;
     pointer-events: none;
 }
 
 .gh-publishmenu-checkbox-disabled p {
-    color: var(--midlightgrey) !important;
+    color: var(--midgrey) !important;
 }
