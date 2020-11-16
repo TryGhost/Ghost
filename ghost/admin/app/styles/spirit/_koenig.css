@@ -800,10 +800,6 @@
     background: var(--whitegrey-l1);
 }
 
-.kg-cardmenu-card-selected div {
-    color: var(--darkgrey);
-}
-
 .kg-cardmenu-card-hover .kg-cardmenu-action-icon {
     display: flex;
     align-items: center;
@@ -813,6 +809,7 @@
     padding: 5px;
     margin-top: -2px;
     margin-bottom: -2px;
+    margin-left: auto;
     margin-right: 8px;
     border-radius: 3px;
 }
@@ -895,7 +892,7 @@
 /* Chrome has a bug with its scrollbars on this element which has been reported here: https://bugs.chromium.org/p/chromium/issues/detail?id=697381 */
 .koenig-cardmenu {
     width: 312px;
-    max-height: 440px;
+    max-height: 376px;
     padding-top: 0;
     background-clip: padding-box;
     z-index: 9999999; /* have to compete with codemirror */

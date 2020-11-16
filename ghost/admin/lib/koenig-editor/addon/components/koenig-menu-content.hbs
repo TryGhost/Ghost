@@ -15,7 +15,10 @@
                         {{did-update this.scrollIntoView (eq item @selectedItem)}}
                     >
                         <div class="{{kg-style "cardmenu-icon"}} {{item.iconClass}}" aria-hidden="true">{{svg-jar item.icon class="w7 h7"}}</div>
-                        <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
+                        <div class="{{kg-style "cardmenu-text"}}">
+                            <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
+                            <div class="{{kg-style "cardmenu-desc"}}">{{item.desc}}</div>
+                        </div>
                         {{#if item.deleteClicked}}
                             <span class="kg-cardmenu-action-icon" {{on "click" item.deleteClicked}}>{{svg-jar "trash"}}</span>
                         {{/if}}

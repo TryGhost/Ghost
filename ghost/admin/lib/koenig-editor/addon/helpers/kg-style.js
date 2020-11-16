@@ -20,8 +20,16 @@ export function kgStyle([style], options) {
         cssClass = 'flex items-center';
         break;
 
+    case 'cardmenu-text':
+        cssClass = 'flex flex-column';
+        break;
+
     case 'cardmenu-label':
-        cssClass = 'f-7 tracked-1 fw4 ma0 ml4 flex-grow-1 truncate';
+        cssClass = 'f8 lh-heading darkgrey tracked-1 fw4 ma0 ml4 flex-grow-1 truncate';
+        break;
+
+    case 'cardmenu-desc':
+        cssClass = 'f-small lh-heading tracked-1 fw4 ma0 ml4 flex-grow-1 midlightgrey truncate';
         break;
 
     // Container cards

@@ -52,6 +52,7 @@ export const CARD_MENU = [
         items: [{
             label: 'Image',
             icon: 'koenig/kg-card-type-image',
+            desc: 'Upload, or embed with /image [url]',
             iconClass: 'kg-card-type-native',
             matches: ['image', 'img'],
             type: 'card',
@@ -64,6 +65,7 @@ export const CARD_MENU = [
         {
             label: 'Markdown',
             icon: 'koenig/kg-card-type-markdown',
+            desc: 'Insert a Markdown editor card',
             iconClass: 'kg-card-type-native',
             matches: ['markdown', 'md'],
             type: 'card',
@@ -72,6 +74,7 @@ export const CARD_MENU = [
         {
             label: 'HTML',
             icon: 'koenig/kg-card-type-html',
+            desc: 'Insert a raw HTML card',
             iconClass: 'kg-card-type-native',
             matches: ['html'],
             type: 'card',
@@ -80,6 +83,7 @@ export const CARD_MENU = [
         {
             label: 'Gallery',
             icon: 'koenig/kg-card-type-gallery',
+            desc: 'Create an image gallery',
             iconClass: 'kg-card-type-native',
             matches: ['gallery'],
             type: 'card',
@@ -88,6 +92,7 @@ export const CARD_MENU = [
         {
             label: 'Divider',
             icon: 'koenig/kg-card-type-divider',
+            desc: 'Insert a dividing line',
             iconClass: 'kg-card-type-native',
             matches: ['divider', 'horizontal-rule', 'hr'],
             type: 'card',
@@ -96,6 +101,7 @@ export const CARD_MENU = [
         {
             label: 'Bookmark',
             icon: 'koenig/kg-card-type-bookmark',
+            desc: 'Embed a link as a visual bookmark',
             matches: ['bookmark'],
             type: 'card',
             replaceArg: 'bookmark',
@@ -104,6 +110,7 @@ export const CARD_MENU = [
         {
             label: 'Email',
             icon: 'koenig/kg-card-type-email',
+            desc: 'Only visible when delivered by email',
             matches: ['email'],
             type: 'card',
             replaceArg: 'email'
@@ -115,6 +122,7 @@ export const CARD_MENU = [
         items: [{
             label: 'YouTube',
             icon: 'koenig/kg-card-type-youtube',
+            desc: '/youtube [video url]',
             matches: ['youtube'],
             type: 'card',
             replaceArg: 'embed',
@@ -123,6 +131,7 @@ export const CARD_MENU = [
         {
             label: 'Twitter',
             icon: 'koenig/kg-card-type-twitter',
+            desc: '/twitter [tweet url]',
             matches: ['twitter'],
             type: 'card',
             replaceArg: 'embed',
@@ -131,6 +140,7 @@ export const CARD_MENU = [
         {
             label: 'Unsplash',
             icon: 'koenig/kg-card-type-unsplash',
+            desc: '/unsplash [search-term or url]',
             iconClass: 'kg-card-type-unsplash',
             matches: ['unsplash'],
             type: 'card',
@@ -143,6 +153,7 @@ export const CARD_MENU = [
         {
             label: 'Vimeo',
             icon: 'koenig/kg-card-type-vimeo',
+            desc: '/vimeo [video url]',
             matches: ['vimeo'],
             type: 'card',
             replaceArg: 'embed',
@@ -151,6 +162,7 @@ export const CARD_MENU = [
         {
             label: 'CodePen',
             icon: 'koenig/kg-card-type-codepen',
+            desc: '/codepen [video url]',
             iconClass: 'kg-card-type-codepen',
             matches: ['codepen'],
             type: 'card',
@@ -160,6 +172,7 @@ export const CARD_MENU = [
         {
             label: 'Spotify',
             icon: 'koenig/kg-card-type-spotify',
+            desc: '/spotify [track or playlist url]',
             matches: ['spotify'],
             type: 'card',
             replaceArg: 'embed',
@@ -168,6 +181,7 @@ export const CARD_MENU = [
         {
             label: 'SoundCloud',
             icon: 'koenig/kg-card-type-soundcloud',
+            desc: '/soundcloud [track or playlist url]',
             matches: ['soundcloud'],
             type: 'card',
             replaceArg: 'embed',
@@ -176,6 +190,7 @@ export const CARD_MENU = [
         {
             label: 'Other...',
             icon: 'koenig/kg-card-type-other',
+            desc: '/embed [url]',
             iconClass: 'kg-card-type-native',
             matches: ['embed'],
             type: 'card',
