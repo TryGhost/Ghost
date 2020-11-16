@@ -17,6 +17,8 @@ html {
 export default ModalComponent.extend({
     ghostPaths: service(),
     ajax: service(),
+    settings: service(),
+    config: service(),
 
     type: 'desktop',
     html: '',
