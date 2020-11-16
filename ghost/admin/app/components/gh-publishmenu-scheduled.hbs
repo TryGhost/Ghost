@@ -31,35 +31,45 @@
     {{#if (and canSendEmail showSendEmail)}}
         {{#unless this.post.email}}
             <section class="gh-publishmenu-section">
-                <div class="gh-publishmenu-radio gh-publishmenu-email">
+                <div class="gh-publishmenu-email">
                     {{#if this.backgroundLoader.isRunning}}
                         <div class="gh-loading-spinner" style="zoom: 50%"></div>
                     {{else}}
                         <div class="gh-publishmenu-email-label">
-                        <label class="gh-publishmenu-radio-label mb3 midgrey pe-none">Send by email to</label>
-                            <div class="form-group for-checkbox mb0">
-                                <label class="checkbox gh-publishmenu-checkbox-disabled" for="free-members">
-                                    <input
-                                        type="checkbox"
-                                        checked={{this.sendEmailToFreeMembersWhenPublished}}
-                                        disabled={{this.disableEmailOption}}
-                                        class="gh-input post-settings-featured"
-                                        data-test-checkbox="free-members"
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                    <p>Free members <span class="gh-publishmenu-emailcount">{{this.freeMemberCountLabel}}</span></p>
-                                </label>
-                                <label class="checkbox gh-publishmenu-checkbox-disabled" for="paid-members">
-                                    <input
-                                        type="checkbox"
-                                        checked={{this.sendEmailToPaidMembersWhenPublished}}
-                                        disabled={{this.disableEmailOption}}
-                                        class="gh-input post-settings-featured"
-                                        data-test-checkbox="paid-members"
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                    <p>Paid members <span class="gh-publishmenu-emailcount">{{this.paidMemberCountLabel}}</span></p>
-                                </label>
+                        <label class="gh-publishmenu-radio-label mb3 pe-none">Send by email to</label>
+                            <div class="form-group">
+                                <div class="gh-publishmenu-send-to-option gh-publishmenu-checkbox-disabled">
+                                    <p>Free members</p>
+                                    <div class="for-switch small">
+                                        <label class="switch" for="send-email-to-free">
+                                            <input 
+                                                id="send-email-to-free" 
+                                                type="checkbox"
+                                                checked={{this.sendEmailToFreeMembersWhenPublished}}
+                                                disabled={{this.disableEmailOption}}
+                                                class="gh-input post-settings-featured"
+                                                data-test-checkbox="free-members"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="gh-publishmenu-send-to-option gh-publishmenu-checkbox-disabled">
+                                    <p>Paid members</p>
+                                    <div class="for-switch small">
+                                        <label class="switch" for="send-email-to-paid">
+                                            <input 
+                                                id="send-email-to-paid" 
+                                                type="checkbox"
+                                                checked={{this.sendEmailToPaidMembersWhenPublished}}
+                                                disabled={{this.disableEmailOption}}
+                                                class="gh-input post-settings-featured"
+                                                data-test-checkbox="paid-members"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     {{/if}}
