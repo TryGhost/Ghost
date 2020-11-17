@@ -158,9 +158,9 @@ class SignupPage extends React.Component {
 
         // Handle the default plan if not set
         const plans = this.getPlans();
-        const queryPlan = pageQuery ? (new URLSearchParams(pageQuery)).get('plan') : '';
-        if (['monthly', 'yearly'].includes(queryPlan) && hasPlan({site, plan: queryPlan})) {
-            this.context.onAction('signup', {plan: capitalize(queryPlan)});
+
+        if (['monthly', 'yearly'].includes(pageQuery) && hasPlan({site, plan: pageQuery})) {
+            this.context.onAction('signup', {plan: capitalize(pageQuery)});
         }
         const selectedPlan = this.state.plan;
         const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
