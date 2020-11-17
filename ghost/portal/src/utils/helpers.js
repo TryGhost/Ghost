@@ -84,6 +84,25 @@ export function hasOnlyFreePlan({site = {}}) {
     return !plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free');
 }
 
+export function hasPlan({site = {}, plan}) {
+    const plans = getSitePlans({site});
+    if (plan === 'free') {
+        return !plans || plans.length === 0 || plans.find(p => p.type === 'free');
+    } else if (plan === 'monthly') {
+        return plans && plans.length > 0 && plans.find(p => p.type === 'month');
+    } else if (plan === 'yearly') {
+        return plans && plans.length > 0 && plans.find(p => p.type === 'year');
+    }
+    return false;
+}
+
+export function capitalize(str) {
+    if (typeof str !== 'string' || !str) {
+        return '';
+    }
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function getSitePlans({site = {}, includeFree = true}) {
     const {
         plans,
