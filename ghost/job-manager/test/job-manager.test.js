@@ -12,6 +12,7 @@ describe('Job Manager', function () {
     beforeEach(function () {
         logging = {
             info: sinon.stub(),
+            warn: sinon.stub(),
             error: sinon.stub()
         };
     });
@@ -65,6 +66,20 @@ describe('Job Manager', function () {
             } catch (err) {
                 err.message.should.equal('Invalid schedule format');
             }
+        });
+    });
+
+    describe('Shutdown', function () {
+        it('gracefully shuts down synchronous jobs', async function () {
+            const jobManager = new JobManager(logging);
+
+            jobManager.addJob(require('./jobs/timed-job'), 200);
+
+            should(jobManager.queue.idle()).be.false();
+
+            await jobManager.shutdown();
+
+            should(jobManager.queue.idle()).be.true();
         });
     });
 });
