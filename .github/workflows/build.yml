@@ -30,7 +30,7 @@ jobs:
       - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         working-directory: core/client
 
-      - run: git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"
+      - run: if [ -n "$(git status --porcelain)" ]; then git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"; fi
 
       - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
       - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
