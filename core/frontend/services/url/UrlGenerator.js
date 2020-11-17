@@ -161,17 +161,7 @@ class UrlGenerator {
 
         // CASE 1: route has no custom filter, it will own the resource for sure
         // CASE 2: find out if my filter matches the resource
-        if (!this.filter) {
-            this.urls.add({
-                url: url,
-                generatorId: this.uid,
-                resource: resource
-            });
-
-            resource.reserve();
-            this._resourceListeners(resource);
-            return true;
-        } else if (this.nql.queryJSON(resource.data)) {
+        if ((!this.filter) || (this.nql.queryJSON(resource.data))) {
             this.urls.add({
                 url: url,
                 generatorId: this.uid,
