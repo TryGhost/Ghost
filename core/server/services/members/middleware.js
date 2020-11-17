@@ -132,20 +132,28 @@ const createSessionFromMagicLink = async function (req, res, next) {
         }
     });
 
-    // We need to include the subdirectory,
-    // members is already removed from the path by express because it's a mount path
-    let redirectPath = `${urlUtils.getSubdir()}${req.path}`;
-
     try {
-        await membersService.ssr.exchangeTokenForSession(req, res);
+        const member = await membersService.ssr.exchangeTokenForSession(req, res);
+        const subscriptions = member && member.stripe && member.stripe.subscriptions || [];
+
+        let redirectPath = '/';
+        if (req.query.action === 'signup') {
+            if (subscriptions.find(sub => ['active', 'trailing'].includes(sub.status))) {
+                redirectPath = settingsCache.get('members_paid_signup_redirect');
+            } else {
+                redirectPath = settingsCache.get('members_free_signup_redirect');
+            }
+        }
 
         // Do a standard 302 redirect, with success=true
         searchParams.set('success', true);
+        res.redirect(`${urlUtils.getSubdir()}${redirectPath}?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);
+
+        // Do a standard 302 redirect to the homepage, with success=false
         searchParams.set('success', false);
-    } finally {
-        res.redirect(`${redirectPath}?${searchParams.toString()}`);
+        res.redirect(`${urlUtils.getSubdir()}?${searchParams.toString()}`);
     }
 };
 
