@@ -1,3 +1,4 @@
+const {chunk} = require('lodash');
 const {createTransactionalMigration} = require('../../utils');
 const logging = require('../../../../../shared/logging');
 
@@ -17,13 +18,20 @@ module.exports = createTransactionalMigration(
             .select('id')
             .where('visibility', 'public')).map(row => row.id);
 
-        await connection('emails')
-            .update('recipient_filter', 'paid')
-            .whereIn('post_id', paidPostIds);
+        const paidPostIdChunks = chunk(paidPostIds, 999);
+        const membersAndPublicPostIdChunks = chunk(membersPostIds.concat(publicPostIds), 999);
 
-        await connection('emails')
-            .update('recipient_filter', 'all')
-            .whereIn('post_id', membersPostIds.concat(publicPostIds));
+        for (const paidPostIdsChunk of paidPostIdChunks) {
+            await connection('emails')
+                .update('recipient_filter', 'paid')
+                .whereIn('post_id', paidPostIdsChunk);
+        }
+
+        for (const membersAndPublicPostIdsChunk of membersAndPublicPostIdChunks) {
+            await connection('emails')
+                .update('recipient_filter', 'all')
+                .whereIn('post_id', membersAndPublicPostIdsChunk);
+        }
     },
 
     async function down(connection) {
