@@ -39,6 +39,8 @@ const defaultSettingsKeys = [
     'members_from_address',
     'members_support_address',
     'members_reply_address',
+    'members_free_signup_redirect',
+    'members_paid_signup_redirect',
     'stripe_product_name',
     'stripe_plans',
     'stripe_secret_key',
