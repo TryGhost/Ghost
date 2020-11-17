@@ -19,7 +19,7 @@ module.exports = createTransactionalMigration(
             .where('visibility', 'public')).map(row => row.id);
 
         // Umm? Well... The current version of SQLite3 bundled with Ghost supports
-        // a maximum of 999 variables, we use one variable for the UPDATE value
+        // a maximum of 999 variables, we use one variable for the SET value
         // and so we're left with 998 for our WHERE IN clause values
         const chunkSize = 998;
         const paidPostIdChunks = chunk(paidPostIds, chunkSize);
