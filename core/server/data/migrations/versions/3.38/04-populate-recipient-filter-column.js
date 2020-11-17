@@ -1,3 +1,4 @@
+const {chunk} = require('lodash');
 const {createTransactionalMigration} = require('../../utils');
 const logging = require('../../../../../shared/logging');
 
@@ -17,13 +18,24 @@ module.exports = createTransactionalMigration(
             .select('id')
             .where('visibility', 'public')).map(row => row.id);
 
-        await connection('emails')
-            .update('recipient_filter', 'paid')
-            .whereIn('post_id', paidPostIds);
+        // Umm? Well... The current version of SQLite3 bundled with Ghost supports
+        // a maximum of 999 variables, we use one variable for the SET value
+        // and so we're left with 998 for our WHERE IN clause values
+        const chunkSize = 998;
+        const paidPostIdChunks = chunk(paidPostIds, chunkSize);
+        const membersAndPublicPostIdChunks = chunk(membersPostIds.concat(publicPostIds), chunkSize);
 
-        await connection('emails')
-            .update('recipient_filter', 'all')
-            .whereIn('post_id', membersPostIds.concat(publicPostIds));
+        for (const paidPostIdsChunk of paidPostIdChunks) {
+            await connection('emails')
+                .update('recipient_filter', 'paid')
+                .whereIn('post_id', paidPostIdsChunk);
+        }
+
+        for (const membersAndPublicPostIdsChunk of membersAndPublicPostIdChunks) {
+            await connection('emails')
+                .update('recipient_filter', 'all')
+                .whereIn('post_id', membersAndPublicPostIdsChunk);
+        }
     },
 
     async function down(connection) {
