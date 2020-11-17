@@ -505,12 +505,8 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // email_recipient_filter is read-only and should only be set using a query param when publishing/scheduling
-        if (this.hasChanged('status') && (newStatus === 'published' || newStatus === 'scheduled')) {
-            if (typeof options.email_recipient_filter === 'undefined') {
-                this.set('email_recipient_filter', 'none');
-            } else {
-                this.set('email_recipient_filter', options.email_recipient_filter);
-            }
+        if (options.email_recipient_filter && options.email_recipient_filter !== 'none' && this.hasChanged('status') && (newStatus === 'published' || newStatus === 'scheduled')) {
+            this.set('email_recipient_filter', options.email_recipient_filter);
         }
 
         // ensure draft posts have the email_recipient_filter reset unless an email has already been sent
