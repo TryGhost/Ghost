@@ -96,12 +96,13 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, popupNotification, lastPage} = await this.fetchData();
+            const {site, member, page, showPopup, popupNotification, lastPage, pageQuery} = await this.fetchData();
             this.setState({
                 site,
                 member,
                 page,
                 lastPage,
+                pageQuery,
                 showPopup,
                 popupNotification,
                 action: 'init:success',
@@ -222,7 +223,7 @@ export default class App extends React.Component {
 
     /** Fetch state from Portal Links */
     fetchLinkData() {
-        const [path] = window.location.hash.substr(1).split('?');
+        const [path, pathQuery] = window.location.hash.substr(1).split('?');
         const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
@@ -231,6 +232,7 @@ export default class App extends React.Component {
             return {
                 showPopup: true,
                 ...(page ? {page} : {}),
+                ...(pathQuery ? {pageQuery: pathQuery} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
@@ -375,7 +377,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from data/state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, popupNotification} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification} = this.state;
         const contextPage = this.getContextPage({page, member});
         const contextMember = this.getContextMember({page: contextPage, member});
         return {
@@ -383,6 +385,7 @@ export default class App extends React.Component {
             action,
             brandColor: this.getAccentColor(),
             page: contextPage,
+            pageQuery,
             member: contextMember,
             lastPage,
             showPopup,
