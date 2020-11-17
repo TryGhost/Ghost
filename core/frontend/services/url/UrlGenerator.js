@@ -142,7 +142,7 @@ class UrlGenerator {
 
     /**
      * @description Try to own a resource and generate it's url if so.
-     * @param {Resource} resource
+     * @param {import('./Resource')} resource - instance of the Resource class
      * @returns {boolean}
      * @private
      */
