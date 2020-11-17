@@ -145,11 +145,13 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
 
         if (apiKey.get('user_id')) {
             // fetch the user and store it on the request for later checks and logging
-            models.User.findOne({id: apiKey.get('user_id')}).then((user) => {
+            return models.User.findOne(
+                {id: apiKey.get('user_id'), status: 'active'},
+                {require: true}
+            ).then((user) => {
                 req.user = user;
                 next();
             });
-            return;
         }
 
         // store the api key on the request for later checks and logging
