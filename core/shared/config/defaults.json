@@ -33,7 +33,7 @@
         "paymentProcessors": [],
         "emailTemplate": {
             "showSiteHeader": true,
-            "showPoweredBy": false
+            "showPoweredBy": true
         }
     },
     "logging": {

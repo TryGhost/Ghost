@@ -38,7 +38,7 @@ module.exports = createTransactionalMigration(
         logging.info('Updating newsletter_show_badge setting to default "false"');
         await connection('settings')
             .update({
-                value: 'false'
+                value: 'true'
             })
             .where({
                 key: 'newsletter_show_badge'
