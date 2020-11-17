@@ -18,8 +18,12 @@ module.exports = createTransactionalMigration(
             .select('id')
             .where('visibility', 'public')).map(row => row.id);
 
-        const paidPostIdChunks = chunk(paidPostIds, 999);
-        const membersAndPublicPostIdChunks = chunk(membersPostIds.concat(publicPostIds), 999);
+        // Umm? Well... The current version of SQLite3 bundled with Ghost supports
+        // a maximum of 999 variables, we use one variable for the UPDATE value
+        // and so we're left with 998 for our WHERE IN clause values
+        const chunkSize = 998;
+        const paidPostIdChunks = chunk(paidPostIds, chunkSize);
+        const membersAndPublicPostIdChunks = chunk(membersPostIds.concat(publicPostIds), chunkSize);
 
         for (const paidPostIdsChunk of paidPostIdChunks) {
             await connection('emails')
