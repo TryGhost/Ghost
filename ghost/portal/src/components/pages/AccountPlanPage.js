@@ -110,7 +110,7 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
     let planStartDate = getDateString(subscription.current_period_end);
     const currentActivePlan = getMemberActivePlan({member});
     if (currentActivePlan.type !== plan.type) {
-        planStartDate = 'today';
+        planStartDate = 'immediately';
     }
     const planStartMessage = `${plan.currency}${plan.price}/${plan.type} – Starting ${planStartDate}`;
     if (type === 'changePlan') {

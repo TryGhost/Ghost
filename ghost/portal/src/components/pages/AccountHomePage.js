@@ -107,7 +107,7 @@ const AccountFooter = ({onClose, handleSignout, supportAddress = ''}) => {
     return (
         <footer className='gh-portal-account-footer'>
             <ul className='gh-portal-account-footermenu'>
-                <li><button className='gh-portal-btn' name='logout' aria-label='logout' onClick={e => handleSignout(e)}>Sign out</button></li>
+                <li><button className='gh-portal-btn' name='logout' aria-label='logout' onClick={e => handleSignout(e)}>Logout</button></li>
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
@@ -175,7 +175,7 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
         return (
             <section>
                 <div className='gh-portal-list-detail'>
-                    <h3>Billing info</h3>
+                    <h3>Billing Info</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
                 <button className='gh-portal-btn gh-portal-btn-list' onClick={e => onEditBilling(e)}>{label}</button>
@@ -247,7 +247,7 @@ const SubscribeButton = ({site, action, openSubscribe, brandColor}) => {
     return (
         <ActionButton
             isRunning={isRunning}
-            label="View plans"
+            label="Upgrade now"
             onClick={() => openSubscribe()}
             brandColor={brandColor}
             style={{width: '100%'}}
@@ -256,6 +256,8 @@ const SubscribeButton = ({site, action, openSubscribe, brandColor}) => {
 };
 
 const AccountWelcome = ({member, action, site, openSubscribe, brandColor}) => {
+    const {name, firstname, email} = member;
+    const {title: siteTitle} = site;
     const {is_stripe_configured: isStripeConfigured} = site;
 
     if (!isStripeConfigured) {
@@ -263,21 +265,15 @@ const AccountWelcome = ({member, action, site, openSubscribe, brandColor}) => {
     }
 
     if (member.paid) {
-        const subscription = getMemberSubscription({member});
-        const currentPeriodEnd = subscription.current_period_end;
-        if (subscription.cancel_at_period_end) {
-            return null;
-        }
-        return (
-            <div className='gh-portal-section'>
-                <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will renew on {getDateString(currentPeriodEnd)}</p>
-            </div>
-        );
+        return null;
     }
 
     return (
         <div className='gh-portal-section'>
-            <p className='gh-portal-text-center gh-portal-free-ctatext'>You currently have a free membership, upgrade to a paid subscription for full access.</p>
+            <p className='gh-portal-text-center gh-portal-free-ctatext'>
+                Hey <strong>{firstname || name || email}! </strong>
+                You are subscribed to free updates from <strong>{siteTitle}</strong>, but you don't have a paid subscription to unlock full access
+            </p>
             <SubscribeButton action={action} site={site} openSubscribe={openSubscribe} brandColor={brandColor} />
         </div>
     );
@@ -307,7 +303,9 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
         }
         const currentPeriodEnd = subscription.current_period_end;
         return (
-            <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will expire on {getDateString(currentPeriodEnd)}</p>
+            <p className="gh-portal-expire-warning">
+                Your subscription will expire on {getDateString(currentPeriodEnd)}.
+            </p>
         );
     };
 

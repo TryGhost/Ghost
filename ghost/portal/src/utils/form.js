@@ -4,7 +4,7 @@ export const FormInputError = ({field}) => {
     if (field.required && !field.value) {
         switch (field.name) {
         case 'name':
-            return `Enter your name`;
+            return `What should we call you?`;
         
         case 'email':
             return `Enter your email address`;

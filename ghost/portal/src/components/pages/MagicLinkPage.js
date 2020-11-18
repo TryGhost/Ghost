@@ -31,9 +31,9 @@ export default class MagicLinkPage extends React.Component {
             <section className='gh-portal-inbox-notification'>
                 <header className='gh-portal-header'>
                     <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' />
-                    <h2>We've sent you a login link!</h2>
+                    <h2>Check your inbox!</h2>
                 </header>
-                <p>If the email doesn't arrive in 3 minutes, be sure to check your spam folder!</p>
+                <p>Check your inbox and click on the login link to complete the signin.</p>
             </section>
         );
     }
