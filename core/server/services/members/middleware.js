@@ -146,15 +146,24 @@ const createSessionFromMagicLink = async function (req, res, next) {
             }
         }
 
+        if (!redirectPath.startsWith('/')) {
+            redirectPath = '/' + redirectPath;
+        }
+
+        if (!redirectPath.endsWith('/')) {
+            redirectPath = redirectPath + '/';
+        }
+
         // Do a standard 302 redirect, with success=true
         searchParams.set('success', true);
         res.redirect(`${urlUtils.getSubdir()}${redirectPath}?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);
 
+        const redirectPath = '/';
         // Do a standard 302 redirect to the homepage, with success=false
         searchParams.set('success', false);
-        res.redirect(`${urlUtils.getSubdir()}?${searchParams.toString()}`);
+        res.redirect(`${urlUtils.getSubdir()}${redirectPath}?${searchParams.toString()}`);
     }
 };
 
