@@ -62,12 +62,14 @@ export default class App extends React.Component {
     setupCustomTriggerButton() {
         // Handler for custom buttons
         this.clickHandler = (event) => {
+            event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath);
+            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
 
-            event.preventDefault();
-            this.onAction('openPopup', {page, pageQuery});
+            if (page) {
+                this.onAction('openPopup', {page, pageQuery});
+            }
         };
         const customTriggerSelector = '[data-portal]';
         const popupCloseClass = 'gh-members-popup-close';
@@ -227,7 +229,7 @@ export default class App extends React.Component {
         const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath);
+            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             return {
                 showPopup: true,
