@@ -6,7 +6,8 @@ const CURRENCY_SYMBOLS = {
     cad: '$',
     gbp: '£',
     eur: '€',
-    inr: '₹'
+    inr: '₹',
+    chf: 'CHF'
 };
 
 const StripeCustomerSubscription = ghostBookshelf.Model.extend({
