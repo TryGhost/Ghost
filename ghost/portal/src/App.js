@@ -16,7 +16,7 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.paid,
-    page: 'accountPlan'
+    page: 'accountHome'
 };
 export default class App extends React.Component {
     constructor(props) {
@@ -62,14 +62,12 @@ export default class App extends React.Component {
     setupCustomTriggerButton() {
         // Handler for custom buttons
         this.clickHandler = (event) => {
-            event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
+            const pageFromPath = this.getPageFromPath(pagePath);
 
-            if (page) {
-                this.onAction('openPopup', {page, pageQuery});
-            }
+            event.preventDefault();
+            this.onAction('openPopup', {page: pageFromPath});
         };
         const customTriggerSelector = '[data-portal]';
         const popupCloseClass = 'gh-members-popup-close';
@@ -98,13 +96,12 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, popupNotification, lastPage, pageQuery} = await this.fetchData();
+            const {site, member, page, showPopup, popupNotification, lastPage} = await this.fetchData();
             this.setState({
                 site,
                 member,
                 page,
                 lastPage,
-                pageQuery,
                 showPopup,
                 popupNotification,
                 action: 'init:success',
@@ -229,12 +226,11 @@ export default class App extends React.Component {
         const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
+            const page = this.getPageFromPath(pagePath);
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             return {
                 showPopup: true,
                 ...(page ? {page} : {}),
-                ...(pageQuery ? {pageQuery} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
@@ -337,41 +333,6 @@ export default class App extends React.Component {
         }
     }
 
-    /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path) {
-        if (path === 'signup') {
-            return {
-                page: 'signup'
-            };
-        } else if (path === 'signup/monthly') {
-            return {
-                page: 'signup',
-                pageQuery: 'monthly'
-            };
-        } else if (path === 'signup/yearly') {
-            return {
-                page: 'signup',
-                pageQuery: 'yearly'
-            };
-        } else if (path === 'signin') {
-            return {
-                page: 'signin'
-            };
-        } else if (path === 'account') {
-            return {
-                page: 'accountHome'
-            };
-        } else if (path === 'account/plans') {
-            return {
-                page: 'accountPlan'
-            };
-        } else if (path === 'account/profile') {
-            return {
-                page: 'accountProfile'
-            };
-        }
-    }
-
     /**Get Accent color from site data, fallback to default*/
     getAccentColor() {
         const {accent_color: accentColor = '#3db0ef'} = this.state.site || {};
@@ -414,7 +375,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from data/state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification} = this.state;
+        const {site, member, action, page, lastPage, showPopup, popupNotification} = this.state;
         const contextPage = this.getContextPage({page, member});
         const contextMember = this.getContextMember({page: contextPage, member});
         return {
@@ -422,7 +383,6 @@ export default class App extends React.Component {
             action,
             brandColor: this.getAccentColor(),
             page: contextPage,
-            pageQuery,
             member: contextMember,
             lastPage,
             showPopup,

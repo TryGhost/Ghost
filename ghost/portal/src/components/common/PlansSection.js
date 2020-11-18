@@ -20,7 +20,6 @@ export const PlanSectionStyles = `
         border-right: 1px solid var(--grey10);
         padding: 16px 10px;
         cursor: pointer;
-        user-select: none;
     }
 
     .gh-portal-plans-container.disabled .gh-portal-plan-section {
@@ -262,7 +261,6 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
         const isChecked = selectedPlan === name;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         const planDetails = {};
-        let displayName = '';
         switch (name) {
         case 'Free':
             planDetails.feature = 'Free preview';
@@ -272,7 +270,6 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             planDetails.feature = 'Full access';
             break;
         case 'Yearly':
-            displayName = 'Annually';
             planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
             break;
 
@@ -282,7 +279,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
         return (
             <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
                 <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
-                <h4 className='gh-portal-plan-name'>{displayName || name}</h4>
+                <h4 className='gh-portal-plan-name'>{name}</h4>
                 <PriceLabel name={name} currency={currency} price={price} />
                 <div className='gh-portal-plan-featurewrapper'>
                     <div className='gh-portal-plan-feature'>

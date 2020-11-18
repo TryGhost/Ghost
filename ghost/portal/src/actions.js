@@ -17,8 +17,7 @@ function togglePopup({state}) {
 function openPopup({data}) {
     return {
         showPopup: true,
-        page: data.page,
-        ...(data.pageQuery ? {pageQuery: data.pageQuery} : {})
+        page: data.page
     };
 }
 
@@ -37,7 +36,6 @@ function closePopup({state}) {
     return {
         showPopup: false,
         lastPage: null,
-        pageQuery: '',
         popupNotification: null,
         page: state.page === 'magiclink' ? '' : state.page
     };

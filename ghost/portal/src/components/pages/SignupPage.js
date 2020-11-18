@@ -5,7 +5,7 @@ import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
-import {capitalize, getSitePlans, hasOnlyFreePlan, hasPlan} from '../../utils/helpers';
+import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -149,7 +149,7 @@ class SignupPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member, site, pageQuery = ''} = this.context;
+        const {member} = this.context;
         if (member) {
             this.context.onAction('switchPage', {
                 page: 'accountHome'
@@ -158,10 +158,6 @@ class SignupPage extends React.Component {
 
         // Handle the default plan if not set
         const plans = this.getPlans();
-
-        if (['monthly', 'yearly'].includes(pageQuery) && hasPlan({site, plan: pageQuery})) {
-            this.context.onAction('signup', {plan: capitalize(pageQuery)});
-        }
         const selectedPlan = this.state.plan;
         const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
         if (defaultSelectedPlan !== selectedPlan) {
@@ -391,7 +387,7 @@ class SignupPage extends React.Component {
                     style={{color: brandColor}}
                     onClick={() => onAction('switchPage', {page: 'signin'})}
                 >
-                    Sign in
+                    Log in
                 </button>
             </div>
         );
@@ -446,7 +442,7 @@ class SignupPage extends React.Component {
 
     renderFormHeader() {
         const {site} = this.context;
-        const siteTitle = site.title || '';
+        const siteTitle = site.title || 'Site Title';
 
         return (
             <header className='gh-portal-signup-header'>
