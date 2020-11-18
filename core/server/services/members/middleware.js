@@ -140,18 +140,18 @@ const createSessionFromMagicLink = async function (req, res, next) {
         const action = req.query.action || req.query['portal-action'];
         if (action === 'signup') {
             if (subscriptions.find(sub => ['active', 'trialing'].includes(sub.status))) {
-                redirectPath = settingsCache.get('members_paid_signup_redirect');
+                redirectPath = settingsCache.get('members_paid_signup_redirect') || '/';
             } else {
-                redirectPath = settingsCache.get('members_free_signup_redirect');
+                redirectPath = settingsCache.get('members_free_signup_redirect') || '/';
             }
-        }
 
-        if (!redirectPath.startsWith('/')) {
-            redirectPath = '/' + redirectPath;
-        }
+            if (!redirectPath.startsWith('/')) {
+                redirectPath = '/' + redirectPath;
+            }
 
-        if (!redirectPath.endsWith('/')) {
-            redirectPath = redirectPath + '/';
+            if (!redirectPath.endsWith('/')) {
+                redirectPath = redirectPath + '/';
+            }
         }
 
         // Do a standard 302 redirect, with success=true
