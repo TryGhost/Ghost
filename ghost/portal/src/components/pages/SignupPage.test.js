@@ -14,7 +14,7 @@ const setup = (overrides) => {
     const emailInput = utils.getByLabelText(/email/i);
     const nameInput = utils.getByLabelText(/name/i);
     const submitButton = utils.queryByRole('button', {name: 'Continue'});
-    const signinButton = utils.queryByRole('button', {name: 'Log in'});
+    const signinButton = utils.queryByRole('button', {name: 'Sign in'});
     return {
         nameInput,
         emailInput,
