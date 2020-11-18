@@ -53,7 +53,8 @@ function haxGetMembersPriceData() {
         CAD: '$',
         GBP: '£',
         EUR: '€',
-        INR: '₹'
+        INR: '₹',
+        JPY: '¥'
     };
     const defaultPriceData = {
         monthly: 0,

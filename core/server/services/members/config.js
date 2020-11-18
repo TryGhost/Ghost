@@ -65,7 +65,8 @@ class MembersConfigProvider {
             CAD: '$',
             GBP: '£',
             EUR: '€',
-            INR: '₹'
+            INR: '₹',
+            JPY: '¥'
         };
 
         const defaultPriceData = {
