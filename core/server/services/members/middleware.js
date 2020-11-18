@@ -137,7 +137,8 @@ const createSessionFromMagicLink = async function (req, res, next) {
         const subscriptions = member && member.stripe && member.stripe.subscriptions || [];
 
         let redirectPath = '/';
-        if (req.query.action === 'signup') {
+        const action = req.query.action || req.query['portal-action'];
+        if (action === 'signup') {
             if (subscriptions.find(sub => ['active', 'trailing'].includes(sub.status))) {
                 redirectPath = settingsCache.get('members_paid_signup_redirect');
             } else {
