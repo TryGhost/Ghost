@@ -15,7 +15,7 @@ const NotificationStyles = `
         top: 12px;
         right: 12px;
         width: 100%;
-        padding: 10px 44px 12px 20px;
+        padding: 14px 44px 18px 20px;
         max-width: 380px;
         min-height: 66px;
         font-size: 1.3rem;
@@ -39,6 +39,7 @@ const NotificationStyles = `
     .gh-portal-notification p {
         flex-grow: 1;
         font-size: 1.4rem;
+        line-height: 1.5em;
         text-align: left;
         margin: 0;
         padding: 0 0 0 40px;
@@ -62,7 +63,7 @@ const NotificationStyles = `
 
     .gh-portal-notification-icon {
         position: absolute;
-        top: 17px;
+        top: calc(50% - 14px);
         left: 17px;
         width: 28px;
         height: 28px;
