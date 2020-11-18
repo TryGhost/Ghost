@@ -378,6 +378,16 @@
   dependencies:
     "@tryghost/errors" "^0.2.4"
 
+"@tryghost/admin-api-schema@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.0.0.tgz#7da26b8589fc75b73ea2ef8e744a8d9b2d41d7f1"
+  integrity sha512-FDEw4oEX3AsPugBbHT/1RuDqcyvPZhrwum+2mfk1OW9buw10opERFzhAdZz+Jrf4C8WAuoMXFk7BLm4xi30+9w==
+  dependencies:
+    "@tryghost/errors" "0.2.4"
+    bluebird "^3.5.3"
+    ghost-ignition "4.2.2"
+    lodash "^4.17.11"
+
 "@tryghost/bootstrap-socket@0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.2.tgz#e365c75d7822394553077c3bf05a3bbfde986829"
@@ -396,19 +406,19 @@
     ghost-ignition "4.2.2"
     lodash "4.17.20"
 
-"@tryghost/helpers@1.1.30":
-  version "1.1.30"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.30.tgz#239286b06a912a275ece61ed1989e05d5de117fb"
-  integrity sha512-tzVBh07CQh8Cd2bBQhMpVV1oKEAqVtZz4OyOScJTCPqNqCUkCEwnaZi209Cj7dit/MoMmB/mCFxwnZHbR2TrZA==
+"@tryghost/helpers@1.1.31":
+  version "1.1.31"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.31.tgz#2a1ae5e2eb6b9175445e14949657ad17a5bcb5ac"
+  integrity sha512-PzW+H6sdHbVGa0lAw0zM6nRMlm+tSby0EqqIgN8+/NsolBTp4kZgu+kTs94kUzEwM8t3P5Ee3Le40pJH5kRpZw==
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.7.3":
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.3.tgz#47830f21908db2fb77c7171fd0a6aa205277df01"
-  integrity sha512-LrUEHfbo+xS0YEq8iQfOYsrz2NQUk1sBoMm4Q/ne/Q30Ti19DokddeZnON4/ITiZPwUy7F7pbiEYC/DN4EFFJg==
+"@tryghost/html-to-mobiledoc@0.7.4":
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.4.tgz#06bb081a98690ded48a9b63e1cc397ad33dd03ae"
+  integrity sha512-UhIxISQbJ3g6qpgL55ZF0VDAgk5nmtzs3+R+jQJZW3aGJY3crDBmynApo4LujQafevdhvja0luUfZ6JiQ9f2mw==
   dependencies:
-    "@tryghost/kg-parser-plugins" "1.0.6"
+    "@tryghost/kg-parser-plugins" "1.0.8"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.4.0"
 
@@ -436,10 +446,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-2.1.2.tgz#36ea77165cb8ddaf676389b53ca66d66205a7cb6"
   integrity sha512-G5vdMxUFe9YBC8vUZM81kn1R6Sb/Cv8wuwsAXhwTYg/W5cj8ZDHt6iCUV16z1bml5uY+xf4uQPIPzoI1rZP0mA==
 
-"@tryghost/kg-clean-basic-html@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.6.tgz#8106cbde961163fc143728b89a3294b94a46ea22"
-  integrity sha512-aA/8+RzGF9SXr2todtuJFGtB29GmudsS0Eb2pNNSLJ5IkLndR2JUZ3mSYdeOjW3mLI8xbKykRC8AYyfMwziqWw==
+"@tryghost/kg-clean-basic-html@^1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.8.tgz#b00f0a04cc61859ee78d79d58ac6971114554cd7"
+  integrity sha512-10ioIrQyMkUE66xFcKUBt6/ejzr5LvmcFIHOwHsOZzxtjWMooNR06EVBjrPM98Pvc05+GAnK+4Lv4BaFgLfy5A==
 
 "@tryghost/kg-default-atoms@2.0.2":
   version "2.0.2"
@@ -474,12 +484,12 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-1.0.6.tgz#8655a61255d7860ed02a43f6c48ff6e17be91d06"
-  integrity sha512-18x2ORsXj6A74EqpoT4C6C/JIAeuleN/LfBCQkEhwgMOBqerV5OeRXFwFreVNVoeYZ/LSZ7kgoP2RHzwSI80WQ==
+"@tryghost/kg-parser-plugins@1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-1.0.8.tgz#ffd1ed0b1ca1806ab643b3686ee214b02588661c"
+  integrity sha512-6FGmGqh8RRgfm6KhGu8hyEQ2lfhQ5yIOfvJydGBkaesSVQDiBqqRQGCybhZdvIIeNHGBkNMZgHcCqa4Q4+4EUQ==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^1.0.6"
+    "@tryghost/kg-clean-basic-html" "^1.0.8"
 
 "@tryghost/magic-link@0.6.0", "@tryghost/magic-link@^0.6.0":
   version "0.6.0"
@@ -491,10 +501,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.31.0":
-  version "0.31.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.31.0.tgz#f71185d8f636f43645345880e762b40ec9823415"
-  integrity sha512-dwXTM9hEiznd98yw9EKDBe4LZtOcS542tp6MA7m9YSrNy9yWWr/h+lSUvQC18BXhON2zDUPjylON75FOMKAURA==
+"@tryghost/members-api@0.32.0":
+  version "0.32.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.32.0.tgz#f6697698a7da7ad4e06651971a94965badf4117e"
+  integrity sha512-645Yuhfa4SxVUr6i8GMnxMAzoFGDZTEKVHlwJ9NCRlohVU6JYwWV7rN60lWCzftoJtzYw/FZI7G0cBEJQs0YKw==
   dependencies:
     "@tryghost/magic-link" "^0.6.0"
     bluebird "^3.5.4"
@@ -573,19 +583,26 @@
   dependencies:
     "@tryghost/errors" "^0.2.4"
 
-"@tryghost/social-urls@0.1.12":
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.12.tgz#9b8ccb900483171153f907e849f6d1354d4c7c2b"
-  integrity sha512-1cZC/rM7RICRkuRwC8yVZxMcqbYgQHXw37+XtIfunwX1OYnA+XE4FzxjY1jcn5sC5l/Ii/bZJfdbHdl3EjNOGg==
+"@tryghost/social-urls@0.1.13":
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.13.tgz#99ca348be9aec59d35d6bc9593928f71fce5559f"
+  integrity sha512-NQxCafH79te4sA3o49TME4ZqInd692k2iETGD/CEA4mvAp5Pus5QdcwbhfgwIZfpwsKbVa0Ik1l3VtU4JjlgQA==
   dependencies:
     bluebird "3.7.2"
     ghost-ignition "4.2.2"
-    lodash "4.17.19"
+    lodash "4.17.20"
 
 "@tryghost/string@0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.11.tgz#259e101a6fa7d08870e5c3b12091f62eb61c3725"
   integrity sha512-k7Ix+Qd+oTVgFP45Y/EfU38HsJ1GLp04FU6ImlghsrA+3X4a+Prh+CJMTsDxISLjO5a4OCPFcmxCZBH8ueoOTw==
+  dependencies:
+    unidecode "^0.1.8"
+
+"@tryghost/string@0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.12.tgz#f9fe04e301dac3117d7924c3e0692f406f23c24b"
+  integrity sha512-HqMlCj4LzzEF/AQKojHwwfcA4Pnx8ZmVaXXH3W+iatSPzbSR6Gk8xkb0EhwRXWZogwOM1C6eRgKnbVFw8Oi1+g==
   dependencies:
     unidecode "^0.1.8"
 
@@ -8333,10 +8350,10 @@ simple-swizzle@^0.2.2:
     rai "~0.1.11"
     xoauth2 "~0.1.8"
 
-sinon@9.0.3:
-  version "9.0.3"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-9.0.3.tgz#bffc3ec28c936332cd2a41833547b9eed201ecff"
-  integrity sha512-IKo9MIM111+smz9JGwLmw5U1075n1YXeAq8YeSFlndCLhAL5KGn6bLgu7b/4AYHTV/LcEMcRm2wU2YiL55/6Pg==
+sinon@9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-9.1.0.tgz#4afc90707c8e360fe051398eed2d3b197980ffc3"
+  integrity sha512-9zQShgaeylYH6qtsnNXlTvv0FGTTckuDfHBi+qhgj5PvW2r2WslHZpgc3uy3e/ZAoPkqaOASPi+juU6EdYRYxA==
   dependencies:
     "@sinonjs/commons" "^1.7.2"
     "@sinonjs/fake-timers" "^6.0.1"

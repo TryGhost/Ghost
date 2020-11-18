@@ -12,7 +12,8 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
 
     describe('add', function () {
         const apiConfig = {
-            docName: 'webhooks'
+            docName: 'webhooks',
+            method: 'add'
         };
 
         describe('required fields', function () {
@@ -25,7 +26,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -40,7 +41,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -55,7 +56,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -71,7 +72,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -88,7 +89,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -176,7 +177,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                         return validators.input.webhooks.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
-                                (err instanceof errors.ValidationError).should.be.true();
+                                err.errorType.should.equal('ValidationError');
                             });
                     });
 
@@ -188,7 +189,8 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
 
     describe('edit', function () {
         const apiConfig = {
-            docName: 'webhooks'
+            docName: 'webhooks',
+            method: 'edit'
         };
 
         describe('required fields', function () {
@@ -201,7 +203,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -216,7 +218,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
@@ -232,7 +234,7 @@ describe('Unit: canary/utils/validators/input/webhooks', function () {
                 return validators.input.webhooks.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof errors.ValidationError).should.be.true();
+                        err.errorType.should.equal('ValidationError');
                     });
             });
 
