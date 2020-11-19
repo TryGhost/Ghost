@@ -253,7 +253,7 @@ class SignupPage extends React.Component {
             is_stripe_configured: isStripeConfigured,
             portal_plans: portalPlans
         } = this.context.site;
-
+        const {pageQuery} = this.context;
         const plansData = [];
         const discount = CalculateDiscount(plans.monthly, plans.yearly);
         const stripePlans = [
@@ -276,7 +276,7 @@ class SignupPage extends React.Component {
             plansData.push({type: 'free', price: 0, currency: plans.currency_symbol, name: 'Free'});
         }
 
-        if (isStripeConfigured) {
+        if (isStripeConfigured && pageQuery !== 'free') {
             stripePlans.forEach((plan) => {
                 if (portalPlans === undefined || portalPlans.includes(plan.name.toLowerCase())) {
                     plansData.push(plan);
@@ -326,9 +326,9 @@ class SignupPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, site, brandColor} = this.context;
+        const {action, site, brandColor, pageQuery} = this.context;
 
-        const availablePlans = getSitePlans({site});
+        const availablePlans = getSitePlans({site, pageQuery});
         if (availablePlans.length === 0) {
             return null;
         }
@@ -365,8 +365,8 @@ class SignupPage extends React.Component {
     }
 
     renderPlans() {
-        const {site} = this.context;
-        const plansData = getSitePlans({site});
+        const {site, pageQuery} = this.context;
+        const plansData = getSitePlans({site, pageQuery});
         return (
             <>
                 <PlansSection
@@ -396,8 +396,8 @@ class SignupPage extends React.Component {
 
     renderForm() {
         const fields = this.getInputFields({state: this.state});
-        const {site} = this.context;
-        const availablePlans = getSitePlans({site});
+        const {site, pageQuery} = this.context;
+        const availablePlans = getSitePlans({site, pageQuery});
         if (availablePlans.length === 0) {
             return (
                 <section>
