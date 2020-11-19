@@ -1,8 +1,11 @@
+const path = require('path');
 const fastq = require('fastq');
 const later = require('@breejs/later');
+const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
 const errors = require('@tryghost/errors');
 const isCronExpression = require('./is-cron-expression');
+const assembleBreeJob = require('./assemble-bree-job');
 
 const worker = async (task, callback) => {
     try {
@@ -25,7 +28,13 @@ const handler = (error, result) => {
 class JobManager {
     constructor(logging) {
         this.queue = fastq(this, worker, 1);
-        this.schedule = [];
+
+        this.bree = new Bree({
+            root: false, // set this to `false` to prevent requiring a root directory of jobs
+            hasSeconds: true, // precission is needed to avoid task ovelaps after immidiate execution
+            logger: logging
+        });
+
         this.logging = logging;
     }
 
@@ -67,9 +76,18 @@ class JobManager {
      * @param {String} when - cron or human readable schedule format
      * @param {Function|String} job - function or path to a module defining a job
      * @param {Object} [data] - data to be passed into the job
+     * @param {String} [name] - job name
      */
-    scheduleJob(when, job, data) {
+    scheduleJob(when, job, data, name) {
         let schedule;
+
+        if (!name) {
+            if (typeof job === 'string') {
+                name = path.parse(job).name;
+            } else {
+                throw new Error('Name parameter should be present if job is a function');
+            }
+        }
 
         schedule = later.parse.text(when);
 
@@ -83,21 +101,16 @@ class JobManager {
 
         this.logging.info(`Scheduling job. Next run on: ${later.schedule(schedule).next()}`);
 
-        const cancelInterval = later.setInterval(() => {
-            this.logging.info(`Scheduled job added to the queue.`);
-            this.addJob(job, data);
-        }, schedule);
-
-        this.schedule.push(cancelInterval);
+        const breeJob = assembleBreeJob(when, job, data, name);
+        this.bree.add(breeJob);
+        return this.bree.start(name);
     }
 
     /**
      * @param {import('p-wait-for').Options} [options]
      */
     async shutdown(options) {
-        this.schedule.forEach((cancelHandle) => {
-            cancelHandle.clear();
-        });
+        await this.bree.stop();
 
         if (this.queue.idle()) {
             return;
