@@ -154,9 +154,12 @@ const createSessionFromMagicLink = async function (req, res, next) {
             }
         }
 
-        // Do a standard 302 redirect, with success=true
-        searchParams.set('success', true);
-        res.redirect(`${urlUtils.getSubdir()}${redirectPath}?${searchParams.toString()}`);
+        if (redirectPath === '/') {
+            searchParams.set('success', true);
+            redirectPath = redirectPath + '?' + searchParams.toString();
+        }
+
+        res.redirect(`${urlUtils.getSubdir()}${redirectPath}`);
     } catch (err) {
         logging.warn(err.message);
 
