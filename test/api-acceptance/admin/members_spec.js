@@ -461,7 +461,7 @@ describe('Members API', function () {
         // get the start date
         let currentRangeDate = moment.tz(siteTimezone).subtract(days - 1, 'days');
         // get the end date but ignore today because we want to set that value ourselves
-        let endDate = moment.tz(siteTimezone);
+        let endDate = moment.tz(siteTimezone).subtract(1, 'hour');
 
         const output = {};
         let dateStr;
