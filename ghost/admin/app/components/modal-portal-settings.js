@@ -176,6 +176,14 @@ export default ModalComponent.extend({
             this.settings.set('portalName', showSignupName);
         },
 
+        setPaidSignupRedirect(event) {
+            this.settings.set('membersPaidSignupRedirect', event.target.value);
+        },
+
+        setFreeSignupRedirect(event) {
+            this.settings.set('membersFreeSignupRedirect', event.target.value);
+        },
+
         confirm() {
             return this.saveTask.perform();
         },
