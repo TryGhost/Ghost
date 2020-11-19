@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {capitalize, createPopupNotification, hasPlan, isComplimentaryMember} from './utils/helpers';
+import {capitalize, createPopupNotification, hasPlan, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -112,6 +112,7 @@ export default class App extends React.Component {
             };
 
             if (!member && ['monthly', 'yearly'].includes(pageQuery) && hasPlan({site, plan: pageQuery})) {
+                removePortalLinkFromUrl();
                 this.onAction('signup', {plan: capitalize(pageQuery)});
             }
 
