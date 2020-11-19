@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, isComplimentaryMember} from './utils/helpers';
+import {capitalize, createPopupNotification, hasPlan, isComplimentaryMember} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -99,7 +99,7 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery} = await this.fetchData();
-            this.setState({
+            const state = {
                 site,
                 member,
                 page,
@@ -109,7 +109,13 @@ export default class App extends React.Component {
                 popupNotification,
                 action: 'init:success',
                 initStatus: 'success'
-            });
+            };
+
+            if (!member && ['monthly', 'yearly'].includes(pageQuery) && hasPlan({site, plan: pageQuery})) {
+                this.onAction('signup', {plan: capitalize(pageQuery)});
+            }
+
+            this.setState(state);
 
             // Listen to preview mode changes
             this.hashHandler = () => {
@@ -232,7 +238,7 @@ export default class App extends React.Component {
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             return {
-                showPopup: true,
+                showPopup: ['monthly', 'yearly'].includes(pageQuery) ? false : true,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
                 ...(lastPage ? {lastPage} : {})
@@ -370,6 +376,7 @@ export default class App extends React.Component {
                 page: 'accountProfile'
             };
         }
+        return {};
     }
 
     /**Get Accent color from site data, fallback to default*/
