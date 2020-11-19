@@ -103,7 +103,7 @@ export function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function getSitePlans({site = {}, includeFree = true}) {
+export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
     const {
         plans,
         allow_self_signup: allowSelfSignup,
@@ -141,8 +141,9 @@ export function getSitePlans({site = {}, includeFree = true}) {
             name: 'Free'
         });
     }
+    const showOnlyFree = pageQuery === 'free' && hasPlan({site, plan: 'free'});
 
-    if (isStripeConfigured) {
+    if (isStripeConfigured && !showOnlyFree) {
         stripePlans.forEach((plan) => {
             if (portalPlans.includes(plan.name.toLowerCase())) {
                 plansData.push(plan);

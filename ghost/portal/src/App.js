@@ -350,6 +350,11 @@ export default class App extends React.Component {
             return {
                 page: 'signup'
             };
+        } else if (path === 'signup/free') {
+            return {
+                page: 'signup',
+                pageQuery: 'free'
+            };
         } else if (path === 'signup/monthly') {
             return {
                 page: 'signup',
