@@ -32,6 +32,7 @@ class JobManager {
         this.bree = new Bree({
             root: false, // set this to `false` to prevent requiring a root directory of jobs
             hasSeconds: true, // precission is needed to avoid task ovelaps after immidiate execution
+            outputWorkerMetadata: true,
             logger: logging
         });
 

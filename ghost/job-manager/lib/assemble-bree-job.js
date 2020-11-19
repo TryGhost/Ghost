@@ -4,8 +4,7 @@ const assemble = (when, job, data, name) => {
     const breeJob = {
         name: name,
         // NOTE: both function and path syntaxes work with 'path' parameter
-        path: job,
-        outputWorkerMetadata: true
+        path: job
     };
 
     if (data) {
