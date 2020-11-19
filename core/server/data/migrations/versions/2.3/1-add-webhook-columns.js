@@ -1,48 +1,45 @@
-const Promise = require('bluebird');
-const logging = require('../../../../../shared/logging');
-const commands = require('../../../schema').commands;
-const table = 'webhooks';
-const newColumnNames = [
-    'name',
-    'secret',
-    'api_version',
-    'integration_id',
-    'status',
-    'last_triggered_at',
-    'last_triggered_status',
-    'last_triggered_error'
-];
+const {createAddColumnMigration, combineNonTransactionalMigrations} = require('../../utils');
 
-function printResult(operation, columnName) {
-    return `${operation} column ${columnName} in ${table} table`;
-}
-
-module.exports.up = (options) => {
-    const connection = options.connection;
-    return Promise.map(newColumnNames, (newColumnName) => {
-        return connection.schema.hasColumn(table, newColumnName)
-            .then((exists) => {
-                if (exists) {
-                    logging.warn(printResult('Adding', newColumnName));
-                    return;
-                }
-                logging.info(printResult('Adding', newColumnName));
-                return commands.addColumn(table, newColumnName, connection);
-            });
-    });
-};
-
-module.exports.down = (options) => {
-    const connection = options.connection;
-    return Promise.map(newColumnNames, (newColumnName) => {
-        return connection.schema.hasColumn(table, newColumnName)
-            .then((exists) => {
-                if (!exists) {
-                    logging.warn(printResult('Dropping', newColumnName));
-                    return;
-                }
-                logging.info(printResult('Dropping', newColumnName));
-                return commands.dropColumn(table, newColumnName, connection);
-            });
-    });
-};
+module.exports = combineNonTransactionalMigrations(
+    createAddColumnMigration('webhooks', 'name', {
+        type: 'string',
+        maxlength: 191,
+        nullable: true
+    }),
+    createAddColumnMigration('webhooks', 'secret', {
+        type: 'string',
+        maxlength: 191,
+        nullable: true
+    }),
+    createAddColumnMigration('webhooks', 'api_version', {
+        type: 'string',
+        maxlength: 50,
+        nullable: false,
+        defaultTo: 'v2'
+    }),
+    createAddColumnMigration('webhooks', 'integration_id', {
+        type: 'string',
+        maxlength: 24,
+        nullable: true
+    }),
+    createAddColumnMigration('webhooks', 'status', {
+        type: 'string',
+        maxlength: 50,
+        nullable: false,
+        defaultTo: 'available'
+    }),
+    createAddColumnMigration('webhooks', 'last_triggered_at', {
+        type: 'dateTime',
+        nullable: true
+    }),
+    createAddColumnMigration('webhooks', 'last_triggered_status', {
+        type: 'string',
+        maxlength: 50,
+        nullable: true
+    }),
+    createAddColumnMigration('webhooks', 'last_triggered_error', {
+        type: 'string',
+        maxlength: 50,
+        nullable: true
+    })
+);
