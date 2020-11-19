@@ -60,12 +60,22 @@
 }
 
 .gh-portal-settings-sidebar {
-    padding: 0px 24px 20px;
+    padding: 0;
+    width: 342px;
+}
+
+.gh-portal-form-wrapper {
+    overflow: hidden;
     width: 342px;
 }
 
 .gh-portal-settings-form {
     min-width: 292px;
+    margin: 0 -80px 0 0 !important;
+    padding: 4px 100px 0 20px;
+    max-height: calc(100vh - 60px - 66px);
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .gh-portal-settings .form-group.space-l {
@@ -95,6 +105,10 @@
 .gh-portal-setting-section {
     margin: 12px -24px;
     padding: 0 28px;
+}
+
+.gh-portal-setting-section p {
+    line-height: 1.5em;
 }
 
 .gh-portal-setting-section.divider-top {
@@ -357,6 +371,7 @@
     border-radius: 5px;
     overflow: hidden;
     background: #EDF0F2;
+    max-height: calc(100vh - 60px - 66px - 20px);
 }
 
 .gh-portal-preview-container.hide {
@@ -511,4 +526,8 @@
     border: 1px solid var(--whitegrey);
     border-radius: 4px;
     color: var(--midgrey);
+}
+
+.gh-portal-setting-section.redirects p {
+    margin-top: 16px;
 }
