@@ -594,10 +594,10 @@
     bluebird "3.7.2"
     lodash "4.17.20"
 
-"@tryghost/session-service@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.10.tgz#f086602d593d50f6211afabcad68b75c563918e5"
-  integrity sha512-Xjt21TOkEHPpeETYzGMr4YKiTAe7B/4b7fN1gHcoyJL96dk9nJ4uiFTnpNp8DMVqDj809aoHTsQcAallf75gWg==
+"@tryghost/session-service@0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.11.tgz#d2e75ef68f91fc2d9f0a5120d0d6a84107618ed5"
+  integrity sha512-NehH9X1hMERCeXuZRBuiWpxFmKL3ImBx9H6jzVYL78cgEwaq2ZKhrngZ7WFOaV+AdOJwK+ls/pMKEXezlqj1jA==
   dependencies:
     "@tryghost/errors" "^0.2.5"
 
