@@ -664,10 +664,10 @@
     extract-zip "2.0.0"
     fs-extra "9.0.1"
 
-"@tryghost/zip@1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.5.tgz#385cd2822a8e05165538f3cd82bec5b59b3b4377"
-  integrity sha512-vAZDLkPru0rStnOQ+GjSahni3QSX+1Yd6nkKYTKkrMkno5SzvhlrTJZcw/SW7JiTjGosZOoSShpI5q5vmqhWDQ==
+"@tryghost/zip@1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.6.tgz#95ad124d0d7313616043a6464f0dc5120fddd5a6"
+  integrity sha512-jWeqT+hmWy9A+xFBrBU618jUNe8V1KPQ3tQ0jvT7oup9zcvd7z+S31fRAm10S16LE09y8TFKs4HOskO+AumjGg==
   dependencies:
     archiver "4.0.1"
     bluebird "3.7.2"
