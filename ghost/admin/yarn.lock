@@ -1287,7 +1287,7 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@glimmer/component@1.0.2", "@glimmer/component@^1.0.1":
+"@glimmer/component@1.0.2", "@glimmer/component@^1.0.1", "@glimmer/component@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@glimmer/component/-/component-1.0.2.tgz#679307972d29a849225c13062ab11c779956ff60"
   integrity sha512-st6YroDjkvUeYWE36NglNG9hXmJOuOI8t44UEp1tufGc4B1L/CTlt1ziQGkaxkhY7/o2r0ZCcWHvf5bpq838YQ==
@@ -1374,7 +1374,7 @@
     handlebars "^4.0.13"
     simple-html-tokenizer "^0.5.8"
 
-"@glimmer/tracking@^1.0.0", "@glimmer/tracking@^1.0.1":
+"@glimmer/tracking@^1.0.1", "@glimmer/tracking@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@glimmer/tracking/-/tracking-1.0.2.tgz#4fe9ca89e3f4a2ae8e37c8bd8e4ea0d886d9abbf"
   integrity sha512-9Vp04TM2IDTShGFdxccfvnmcaj4NwqLrwbOXm4iju5KL/WkeB8mqoCSLtO3kUg+80DqU0pKE8tR460lQP8CutA==
@@ -5701,7 +5701,7 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@5.3.1, ember-cli-htmlbars@^5.1.2, ember-cli-htmlbars@^5.2.0:
+ember-cli-htmlbars@5.3.1, ember-cli-htmlbars@^5.1.2, ember-cli-htmlbars@^5.2.0, ember-cli-htmlbars@^5.3.1:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-5.3.1.tgz#61793964fc2599ce750db9e972ab55c6dd177c48"
   integrity sha512-ZjQTt44euDoqLvUkWbt1svgNCXgLzOztEbc2qqYMQvhQig416LMrWK7l3SSbNU+BtLD5UIxmwvLfF1tsO2CVyA==
@@ -6487,17 +6487,17 @@ ember-power-datepicker@0.8.0:
     ember-decorators "^6.1.1"
     ember-power-calendar "^0.15.0"
 
-ember-power-select@4.0.6:
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-4.0.6.tgz#52d1a9c8ddb2137d587dc575d4f566818c742655"
-  integrity sha512-qk3yKT7RpcwihrB6COGwRJ3BjXcoj11seOAkZM4a5cPn+kHx5+UC0wqesyuT0Tkynuj0RvHNxUwWb+Z5D6SE4w==
+ember-power-select@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-4.1.0.tgz#0897ae56ed96835b2393452b3303126407d468b7"
+  integrity sha512-HJQDQq8riUUtrfrN69yRIOCx8hsLPGmA6/pAn8BOnmL+N+86It8d/xRpXrZBQw/Dw9cnj9EQp2Vqi0PhPBBhGg==
   dependencies:
-    "@glimmer/component" "^1.0.1"
-    "@glimmer/tracking" "^1.0.0"
+    "@glimmer/component" "^1.0.2"
+    "@glimmer/tracking" "^1.0.2"
     ember-assign-helper "^0.3.0"
     ember-basic-dropdown "^3.0.11"
-    ember-cli-babel "^7.21.0"
-    ember-cli-htmlbars "^5.2.0"
+    ember-cli-babel "^7.22.1"
+    ember-cli-htmlbars "^5.3.1"
     ember-cli-typescript "^3.1.4"
     ember-concurrency ">=1.0.0 <3"
     ember-concurrency-decorators "^2.0.0"
