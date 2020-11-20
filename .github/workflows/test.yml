@@ -64,7 +64,7 @@ jobs:
       - run: yarn
       - run: |
           node index.js &
-          sleep 10 && { kill $! && wait $!; } 2>/dev/null
+          sleep 20 && { kill $! && wait $!; } 2>/dev/null
       - run: yarn knex-migrator rollback --v 3.0 --force
       - run: yarn knex-migrator migrate --force
 
