@@ -328,9 +328,13 @@
                 </div>
             </div>
 
-            <div class="gh-portal-preview-container {{if (not this.showLinksPage) "hide"}}">
-                <GhPortalLinks />
+            {{#if this.showLinksPage}}
+            <div class="gh-portal-preview-wrapper">
+                <div class="gh-portal-preview-container">
+                    <GhPortalLinks />
+                </div>
             </div>
+            {{/if}}
 
             <div class="gh-portal-preview-container {{if this.showLinksPage "hide"}}">
                 <div class="gh-portal-site-frame-cover"> </div>
