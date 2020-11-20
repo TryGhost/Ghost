@@ -251,60 +251,48 @@
                             {{/if}}
                         {{/if}}
                     </div>
-                    <div class="gh-portal-setting-section divider-top">
-                        <h4 class="gh-portal-setting-sectionheading">Links</h4>
-                        <GhFormGroup>
-                            <div class="flex w-100 justify-between items-center">
-                                <h4 class="gh-portal-setting-title">Show Portal</h4>
-                                <div {{action (toggle "isShowModalLink" this)}} class="blue pointer f8"> {{if this.isShowModalLink "Data Attribute" "Link"}} </div>
-                            </div>
-                            <div class="flex items-center justify-center mt1 gh-show-modal-link-form relative">
-                                <div class="gh-portal-page-url-container">
-                                    <div class="page-url-label">
-                                        {{#if this.isShowModalLink}}
-                                            <span class="page-url-disabled">{{this.siteUrl}}/</span><span>{{this.showModalLinkOrAttribute}}</span>
-                                        {{else}}
-                                            {{this.showModalLinkOrAttribute}}
-                                        {{/if}}
-                                    </div>
-                                    <button type="button" {{action (perform this.copyLinkOrAttribute)}} class="gh-portal-setting-copy">
-                                        {{#if this.copyLinkOrAttribute.isRunning}}
-                                            {{svg-jar "check-circle" class="w4 v-mid mr1 stroke-darkgrey"}} Copied
-                                        {{else}}
-                                            <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-                                        {{/if}}
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <span onclick={{action "switchPreviewPage" "links"}} class="blue pointer f7">Show more</span>
-                            </div>
-                        </GhFormGroup>
-                    </div>
                     <div class="gh-portal-setting-section redirects divider-top">
-                        <h4 class="gh-portal-setting-sectionheading">Redirects</h4>
-                        <GhFormGroup @classNames="mt5">
-                            <h4 class="gh-portal-setting-title">After free signup</h4>
+                        <h4 class="gh-portal-setting-sectionheading">Welcome page</h4>
+                        <GhFormGroup
+                            @errors={{settings.errors}}
+                            @hasValidated={{settings.hasValidated}}
+                            @property="membersFreeSignupRedirect"
+                            @classNames="mt5"
+                        >
+                            <h4 class="gh-portal-setting-title">For free signups</h4>
                             <div class="flex items-center mt2">
-                                <GhTextInput
+                                <GhUrlInput
                                     @value={{readonly this.settings.membersFreeSignupRedirect}}
-                                    @type="text"
-                                    @input={{action "setFreeSignupRedirect"}}
+                                    @baseUrl={{readonly this.siteUrl}}
+                                    @setResult={{action "setFreeSignupRedirect"}}
                                 />
                             </div>
+                            <GhErrorMessage
+                                @errors={{settings.errors}}
+                                @property="membersFreeSignupRedirect"
+                            />
                         </GhFormGroup>
                         {{#if (and this.isStripeConfigured (or this.isMonthlyChecked this.isYearlyChecked))}}
-                        <GhFormGroup @classNames="space-l pb5">
-                            <h4 class="gh-portal-setting-title">After paid signup</h4>
+                        <GhFormGroup
+                            @errors={{settings.errors}}
+                            @hasValidated={{settings.hasValidated}}
+                            @property="membersPaidSignupRedirect"
+                            @classNames="space-l pb5"
+                        >
+                            <h4 class="gh-portal-setting-title">For paid signups</h4>
 
                             <div class="flex items-center mt2">
-                                <GhTextInput
+                                <GhUrlInput
                                     @value={{readonly this.settings.membersPaidSignupRedirect}}
-                                    @type="text"
-                                    @input={{action "setPaidSignupRedirect"}}
+                                    @baseUrl={{readonly this.siteUrl}}
+                                    @setResult={{action "setPaidSignupRedirect"}}
                                 />
                             </div>
-                            <p>URLs to redirect members after signing up. Leave them empty to redirect to homepage.</p>
+                            <GhErrorMessage
+                                @errors={{settings.errors}}
+                                @property="membersPaidSignupRedirect"
+                            />
+                            <p>Members will be sent to these URLs after successful signup. If empty, the homepage will be used.</p>
                         </GhFormGroup>
                         {{/if}}
                     </div>
