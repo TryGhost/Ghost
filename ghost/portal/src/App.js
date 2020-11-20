@@ -67,6 +67,11 @@ export default class App extends React.Component {
             const pagePath = (target && target.dataset.portal);
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
 
+            if (this.state.initStatus === 'success' && !this.state.member && ['monthly', 'yearly'].includes(pageQuery) && hasPlan({site: this.state.site, plan: pageQuery})) {
+                removePortalLinkFromUrl();
+                this.onAction('signup', {plan: capitalize(pageQuery)});
+            }
+
             if (page) {
                 this.onAction('openPopup', {page, pageQuery});
             }
