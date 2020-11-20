@@ -198,10 +198,6 @@ export const PlanSectionStyles = `
         transition: all 0.2s ease-in-out;
     }
 
-    .gh-portal-plan-section:not(.checked):hover::before {
-        opacity: 0.5;
-    }
-
     .gh-portal-plans-container.disabled .gh-portal-plan-section:not(.checked):hover::before {
         opacity: 0;
     }
