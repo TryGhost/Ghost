@@ -311,6 +311,7 @@ export default class App extends React.Component {
     updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
         const {site: linkSite, ...restLinkData} = this.fetchLinkData();
+
         const updatedState = {
             site: {
                 ...this.state.site,
@@ -320,6 +321,12 @@ export default class App extends React.Component {
             ...restLinkData,
             ...restPreviewData
         };
+
+        if (!this.state.member && ['monthly', 'yearly'].includes(updatedState.pageQuery) && hasPlan({site: updatedState.site, plan: updatedState.pageQuery})) {
+            removePortalLinkFromUrl();
+            this.onAction('signup', {plan: capitalize(updatedState.pageQuery)});
+        }
+
         this.setState(updatedState);
     }
 
