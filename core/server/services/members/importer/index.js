@@ -248,10 +248,13 @@ function getMemberData({members, labels, importSetLabels, createdBy}) {
 
         let createdAt = member.created_at === '' ? undefined : member.created_at;
 
+        // fixes a formatting issue where inserted dates are showing up as ints and not date times...
+        const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+
         if (createdAt) {
-            createdAt = moment(createdAt).toDate();
+            createdAt = moment(createdAt).format(dateFormat);
         } else {
-            createdAt = new Date();
+            createdAt = moment().format(dateFormat);
         }
 
         const memberToInsert = {
