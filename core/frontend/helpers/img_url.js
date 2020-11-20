@@ -34,18 +34,18 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     }
 
     // CASE: if you pass an external image, there is nothing we want to do to it!
+    // Unless it contains a width parameter
     const isInternalImage = detectInternalImage(requestedImageUrl);
     if (!isInternalImage) {
         // If it's an external link that specifies width (eg. unsplash), update the width
         if (
-            /&w=[\d]+/.test(requestedImageUrl) ||
-            /&amp;w&#x3D;[\d]+/.test(requestedImageUrl)
+            /[&\?]w=[\d]+[&.*]?$/.test(requestedImageUrl) 
         ) {
             const {requestedSize, imageSizes} = getImageSizeOptions(options);
             const {width} = imageSizes[requestedSize];
             return requestedImageUrl
                 .replace(/&w=[\d]+/, '&w=' + width)
-                .replace(/&amp;w&#x3D;[\d]+/, '&amp;w&#x3D;' + width);
+                .replace(/\?w=[\d]+/, '?w=' + width);
         }
         return requestedImageUrl;
     }
