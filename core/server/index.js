@@ -10,6 +10,7 @@
 require('./overrides');
 
 const debug = require('ghost-ignition').debug('boot:init');
+const path = require('path');
 const Promise = require('bluebird');
 const config = require('../shared/config');
 const {events, i18n} = require('./lib/common');
@@ -69,6 +70,17 @@ function initialiseServices() {
     });
 }
 
+function initializeRecurringJobs() {
+    const jobsService = require('./services/jobs');
+
+    jobsService.scheduleJob(
+        'every 1 minute',
+        path.resolve(__dirname, 'services', 'email-analytics', 'jobs', 'fetch-latest.js'),
+        undefined,
+        'email-analytics-fetch-latest'
+    );
+}
+
 /**
  * - initialise models
  * - initialise i18n
@@ -124,6 +136,9 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
 
                 return initialiseServices()
                     .then(() => {
+                        initializeRecurringJobs();
+                    })
+                    .then(() => {
                         return ghostServer;
                     });
             }
@@ -145,6 +160,9 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
                         config.set('maintenance:enabled', false);
                         logging.info('Blog is out of maintenance mode.');
                         return GhostServer.announceServerReadiness();
+                    })
+                    .then(() => {
+                        initializeRecurringJobs();
                     })
                     .catch((err) => {
                         return GhostServer.announceServerReadiness(err)
