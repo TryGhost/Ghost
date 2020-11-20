@@ -12,8 +12,8 @@ export const handleAuthActions = ({qsParams, action, status}) => {
 };
 
 export const handleStripeActions = ({status, billingOnly}) => {
-    if (!billingOnly && ['success'].includes(status)) {
-        const statusVal = status === 'success' ? 'success' : 'warning';
+    if (!billingOnly && ['portal-success'].includes(status)) {
+        const statusVal = status === 'portal-success' ? 'success' : 'warning';
         return {
             type: 'stripe:checkout',
             status: statusVal,
@@ -22,8 +22,8 @@ export const handleStripeActions = ({status, billingOnly}) => {
         };
     }
 
-    if (billingOnly && ['billing-update-success', 'billing-update-cancel'].includes(status)) {
-        const statusVal = status === 'billing-update-success' ? 'success' : 'warning';
+    if (billingOnly && ['portal-billing-update-success', 'portal-billing-update-cancel'].includes(status)) {
+        const statusVal = status === 'portal-billing-update-success' ? 'success' : 'warning';
         return {
             type: 'stripe:billing-update',
             status: statusVal,
@@ -53,7 +53,7 @@ export default function NotificationParser({billingOnly = false} = {}) {
     const qsParams = new URLSearchParams(qs);
     const action = qsParams.get('portal-action');
     const successStatus = qsParams.get('success');
-    const stripeStatus = qsParams.get('stripe') || qsParams.get('portal-stripe');
+    const stripeStatus = qsParams.get('stripe');
     let notificationData = null;
 
     if (stripeStatus) {
