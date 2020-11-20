@@ -39,7 +39,7 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     if (!isInternalImage) {
         // If it's an external link that specifies width (eg. unsplash), update the width
         if (
-            /[&\?]w=[\d]+[&.*]?$/.test(requestedImageUrl) 
+            /[&?]w=[\d]+[&.*]?$/.test(requestedImageUrl) 
         ) {
             const {requestedSize, imageSizes} = getImageSizeOptions(options);
             const {width} = imageSizes[requestedSize];
