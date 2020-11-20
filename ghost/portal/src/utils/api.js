@@ -130,13 +130,13 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
             if (!successUrl) {
                 const checkoutSuccessUrl = new URL(siteUrl);
-                checkoutSuccessUrl.searchParams.set('portal-stripe', 'success');
+                checkoutSuccessUrl.searchParams.set('stripe', 'portal-success');
                 successUrl = checkoutSuccessUrl.href;
             }
 
             if (!cancelUrl) {
                 const checkoutCancelUrl = new URL(siteUrl);
-                checkoutCancelUrl.searchParams.set('portal-stripe', 'cancel');
+                checkoutCancelUrl.searchParams.set('stripe', 'portal-cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
             return makeRequest({
@@ -181,13 +181,13 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
             if (!successUrl) {
                 const checkoutSuccessUrl = new URL(siteUrl);
-                checkoutSuccessUrl.searchParams.set('portal-stripe', 'success');
+                checkoutSuccessUrl.searchParams.set('stripe', 'portal-billing-update-success');
                 successUrl = checkoutSuccessUrl.href;
             }
 
             if (!cancelUrl) {
                 const checkoutCancelUrl = new URL(siteUrl);
-                checkoutCancelUrl.searchParams.set('portal-stripe', 'cancel');
+                checkoutCancelUrl.searchParams.set('stripe', 'portal-billing-update-cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
             return makeRequest({
