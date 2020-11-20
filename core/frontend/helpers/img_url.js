@@ -37,6 +37,7 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     // Unless it contains a width parameter
     const isInternalImage = detectInternalImage(requestedImageUrl);
     if (!isInternalImage) {
+        console.log(requestedImageUrl)
         // If it's an external link that specifies width (eg. unsplash), update the width
         if (
             /[&?]w=[\d]+[&.*]?$/.test(requestedImageUrl) 
