@@ -188,9 +188,9 @@ export default class Notification extends React.Component {
         const type = this.state.type;
         const deleteParams = [];
         if (['signin', 'signup'].includes(type)) {
-            deleteParams.push('action', 'portal-action', 'success');
+            deleteParams.push('portal-action', 'success');
         } else if (['stripe:checkout'].includes(type)) {
-            deleteParams.push('stripe', 'portal-stripe');
+            deleteParams.push('stripe');
         }
         clearURLParams(deleteParams);
         this.setState({
