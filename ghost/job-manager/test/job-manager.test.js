@@ -100,11 +100,13 @@ describe('Job Manager', function () {
 
             await delay(1); // let the job execution kick in
 
-            should(Object.keys(jobManager.bree.workers).length).equal(1);
+            should(Object.keys(jobManager.bree.workers).length).equal(0);
+            should(Object.keys(jobManager.bree.timeouts).length).equal(0);
+            should(Object.keys(jobManager.bree.intervals).length).equal(1);
 
             await jobManager.shutdown();
 
-            should(Object.keys(jobManager.bree.workers).length).equal(0);
+            should(Object.keys(jobManager.bree.intervals).length).equal(0);
         });
     });
 });
