@@ -1,5 +1,4 @@
 const logging = require('../../../../shared/logging');
-const emailAnalyticsService = require('../');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 
@@ -9,6 +8,16 @@ const MAX_EVENTS = 3000;
 
 (async () => {
     try {
+        const models = require('../../../models');
+        const settingsService = require('../../settings');
+
+        // must be initialized before emailAnalyticsService is required otherwise
+        // requires are in the wrong order and settingsCache will always be empty
+        await models.init();
+        await settingsService.init();
+
+        const emailAnalyticsService = require('../');
+
         const fetchStartDate = new Date();
         logging.info('Starting email analytics fetch of latest events');
         const eventStats = await emailAnalyticsService.fetchLatest({maxEvents: MAX_EVENTS});

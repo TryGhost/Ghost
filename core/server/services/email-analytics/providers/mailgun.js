@@ -10,9 +10,9 @@ const DEFAULT_TAGS = ['bulk-email'];
 function createMailgunInstance(config, settings, logging) {
     const bulkEmailConfig = config.get('bulkEmail');
     const bulkEmailSetting = {
-        apiKey: settings.get('mailgun_api_key'),
-        domain: settings.get('mailgun_domain'),
-        baseUrl: settings.get('mailgun_base_url')
+        apiKey: settings.mailgun_api_key,
+        domain: settings.mailgun_domain,
+        baseUrl: settings.mailgun_base_url
     };
     const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
     const hasMailgunSetting = !!(bulkEmailSetting && bulkEmailSetting.apiKey && bulkEmailSetting.baseUrl && bulkEmailSetting.domain);
@@ -79,10 +79,15 @@ class EmailAnalyticsMailgunProvider {
     }
 
     async _fetchPages(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
+        if (!this.mailgun) {
+            this.logging.warn(`Bulk email service is not configured`);
+            return;
+        }
+
         const result = new EventProcessingResult();
 
         let page = await this.mailgun.events().get(mailgunOptions);
-        let events = page.items.map(this.normalizeEvent);
+        let events = page && page.items && page.items.map(this.normalizeEvent) || [];
 
         pagesLoop:
         while (events.length !== 0) {
