@@ -126,6 +126,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
         },
 
         async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, metadata = {}} = {}) {
+            const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
             if (!successUrl) {
@@ -135,7 +136,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             }
 
             if (!cancelUrl) {
-                const checkoutCancelUrl = new URL(siteUrl);
+                const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
                 checkoutCancelUrl.searchParams.set('stripe', 'portal-cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
@@ -177,6 +178,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
         },
 
         async editBilling({successUrl, cancelUrl} = {}) {
+            const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
             if (!successUrl) {
@@ -186,7 +188,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             }
 
             if (!cancelUrl) {
-                const checkoutCancelUrl = new URL(siteUrl);
+                const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
                 checkoutCancelUrl.searchParams.set('stripe', 'portal-billing-update-cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
