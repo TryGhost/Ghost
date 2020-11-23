@@ -4,7 +4,10 @@ const assemble = (when, job, data, name) => {
     const breeJob = {
         name: name,
         // NOTE: both function and path syntaxes work with 'path' parameter
-        path: job
+        path: job,
+        // NOTE: avoids executing job immidiately after initialization
+        // can remove it when https://github.com/breejs/bree/issues/50 is fixed
+        timeout: false
     };
 
     if (data) {
