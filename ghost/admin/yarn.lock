@@ -6476,10 +6476,10 @@ ember-power-calendar@^0.15.0:
     ember-element-helper "^0.2.0"
     ember-truth-helpers "^2.1.0"
 
-ember-power-datepicker@0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.8.0.tgz#7bac7b1d6d17138f8d303c8f1cd2455d9cbe8199"
-  integrity sha512-C12ZXH6/pBJm09s5LQgpw7cn0RJouwCOcGzUTKyfgnHVX/DhHpl08I665VFlzM6hkn8SE9hV8eznnGF4eRHAFg==
+ember-power-datepicker@0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.8.1.tgz#add31b521890b47d57fd243d5337be9073be2b25"
+  integrity sha512-Y1+PYfCPooVzjRkBfZ/QQH0aE5hpV3rS2Cyj13mzoZ+pFuyQEigvI2C4H5//ckSk2Kc9Uj+d+0lzq7P+Ymf3Tw==
   dependencies:
     ember-basic-dropdown "^3.0.1"
     ember-cli-babel "^7.18.0"
