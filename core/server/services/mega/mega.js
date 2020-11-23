@@ -7,7 +7,6 @@ const ObjectID = require('bson-objectid');
 const errors = require('@tryghost/errors');
 const {events, i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
-const config = require('../../../shared/config');
 const settingsCache = require('../settings/cache');
 const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
