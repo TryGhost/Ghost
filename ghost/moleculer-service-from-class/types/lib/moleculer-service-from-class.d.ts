@@ -22,7 +22,7 @@ export = createMoleculerServiceSchema;
 declare function createMoleculerServiceSchema<Type extends {
     _init(): Promise<void>;
 }>({ Service, name, serviceDeps, staticDeps, forceSingleton, version }: {
-    Service: new (arg1: object) => Type;
+    Service: Class<Type>;
     name: string;
     serviceDeps?: {
         [x: string]: ServiceDefinition;
@@ -32,7 +32,7 @@ declare function createMoleculerServiceSchema<Type extends {
     };
     forceSingleton?: boolean;
     version?: string;
-}): import("moleculer").ServiceSchema<import("moleculer").ServiceSettingSchema>;
+}): moleculer.ServiceSchema;
 declare namespace createMoleculerServiceSchema {
     export { Service, Class, ServiceDefinition };
 }
@@ -44,4 +44,5 @@ type ServiceDefinition = {
     name: string;
     version: string;
 };
+import moleculer = require("moleculer");
 type Service = any;
