@@ -124,7 +124,10 @@ class GhostServer {
                     });
 
                     // Output job queue length every 5 seconds
-                    setInterval(() => logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`), 5000);
+                    setInterval(() => {
+                        logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`);
+                        logging.warn(`${Object.keys(jobService.bree.workers).length} workers registered. Scheduled jobs: ${Object.keys(jobService.bree.intervals).length}`);
+                    }, 5000);
                 }
 
                 return GhostServer.announceServerReadiness()
