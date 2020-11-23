@@ -91,7 +91,8 @@ module.exports = function MembersApi({
             return metadata.setMetadata('stripe', data);
         }
     };
-    const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage, common.logging) : null;
+    /** @type {StripePaymentProcessor} */
+    const stripe = (paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage, common.logging) : null);
 
     async function ensureStripe(_req, res, next) {
         if (!stripe) {
@@ -261,7 +262,7 @@ module.exports = function MembersApi({
             return res.end('Bad Request.');
         }
 
-        // NOTE: never allow "Complimenatry" plan to be subscribed to from the client
+        // NOTE: never allow "Complimentary" plan to be subscribed to from the client
         if (plan.toLowerCase() === 'complimentary') {
             res.writeHead(400);
             return res.end('Bad Request.');
@@ -273,7 +274,7 @@ module.exports = function MembersApi({
                 email = null;
             } else {
                 const claims = await decodeToken(identity);
-                email = claims.sub;
+                email = claims && claims.sub;
             }
         } catch (err) {
             res.writeHead(401);
@@ -317,7 +318,7 @@ module.exports = function MembersApi({
                 email = null;
             } else {
                 const claims = await decodeToken(identity);
-                email = claims.sub;
+                email = claims && claims.sub;
             }
         } catch (err) {
             res.writeHead(401);
@@ -424,12 +425,33 @@ module.exports = function MembersApi({
 
     middleware.updateSubscription.use(ensureStripe, body.json(), async function (req, res) {
         const identity = req.body.identity;
-        const cancelAtPeriodEnd = req.body.cancel_at_period_end;
-        const planName = req.body.planName;
         const subscriptionId = req.params.id;
+        const cancelAtPeriodEnd = req.body.cancel_at_period_end;
+        const cancellationReason = req.body.cancellation_reason;
+        const planName = req.body.planName;
 
-        let member;
+        if (cancelAtPeriodEnd === undefined && planName === undefined) {
+            throw new common.errors.BadRequestError({
+                message: 'Updating subscription failed!',
+                help: 'Request should contain "cancel_at_period_end" or "planName" field.'
+            });
+        }
 
+        if ((cancelAtPeriodEnd === undefined || cancelAtPeriodEnd === false) && cancellationReason !== undefined) {
+            throw new common.errors.BadRequestError({
+                message: 'Updating subscription failed!',
+                help: '"cancellation_reason" field requires the "cancel_at_period_end" field to be true.'
+            });
+        }
+
+        if (cancellationReason && cancellationReason.length > 500) {
+            throw new common.errors.BadRequestError({
+                message: 'Updating subscription failed!',
+                help: '"cancellation_reason" field can be a maximum of 500 characters.'
+            });
+        }
+
+        let email;
         try {
             if (!identity) {
                 throw new common.errors.BadRequestError({
@@ -438,25 +460,21 @@ module.exports = function MembersApi({
             }
 
             const claims = await decodeToken(identity);
-            const email = claims.sub;
-            member = email ? await users.get({email}, {withRelated: ['stripeSubscriptions']}) : null;
-
-            if (!member) {
-                throw new common.errors.BadRequestError({
-                    message: 'Updating subscription failed! Could not find member'
-                });
-            }
+            email = claims && claims.sub;
         } catch (err) {
             res.writeHead(401);
             return res.end('Unauthorized');
         }
-        // Don't allow removing subscriptions that don't belong to the member
-        const plan = planName && stripe.findPlanByNickname(planName);
-        if (planName && !plan) {
+
+        const member = email ? await users.get({email}, {withRelated: ['stripeSubscriptions']}) : null;
+
+        if (!member) {
             throw new common.errors.BadRequestError({
-                message: 'Updating subscription failed! Could not find plan'
+                message: 'Updating subscription failed! Could not find member'
             });
         }
+
+        // Don't allow removing subscriptions that don't belong to the member
         const subscription = member.related('stripeSubscriptions').models.find(
             subscription => subscription.get('subscription_id') === subscriptionId
         );
@@ -465,24 +483,25 @@ module.exports = function MembersApi({
             return res.end('No permission');
         }
 
-        if (cancelAtPeriodEnd === undefined && planName === undefined) {
-            throw new common.errors.BadRequestError({
-                message: 'Updating subscription failed!',
-                help: 'Request should contain "cancel" or "plan" field.'
-            });
-        }
-        const subscriptionUpdate = {
-            id: subscription.get('subscription_id')
+        const subscriptionUpdateData = {
+            id: subscriptionId
         };
         if (cancelAtPeriodEnd !== undefined) {
-            subscriptionUpdate.cancel_at_period_end = !!(cancelAtPeriodEnd);
+            subscriptionUpdateData.cancel_at_period_end = cancelAtPeriodEnd;
+            subscriptionUpdateData.cancellation_reason = cancellationReason;
         }
 
-        if (plan) {
-            subscriptionUpdate.plan = plan.id;
+        if (planName !== undefined) {
+            const plan = stripe.findPlanByNickname(planName);
+            if (!plan) {
+                throw new common.errors.BadRequestError({
+                    message: 'Updating subscription failed! Could not find plan'
+                });
+            }
+            subscriptionUpdateData.plan = plan.id;
         }
 
-        await stripe.updateSubscriptionFromClient(subscriptionUpdate);
+        await stripe.updateSubscriptionFromClient(subscriptionUpdateData);
 
         res.writeHead(204);
         res.end();
