@@ -510,7 +510,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.10"
 
-"@tryghost/magic-link@0.6.1", "@tryghost/magic-link@^0.6.1":
+"@tryghost/magic-link@0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.6.1.tgz#47eb501b054a388f6ee897df406c65cf4cd093c3"
   integrity sha512-KsKa/bspRYfaiVOqvbILlMWNZ5E8xM7a2tBom2ujUdu0KDgx8t7uyhNF0ai6Qa2TppIwyMhofnWWdIsMUzavXg==
@@ -520,17 +520,27 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.34.2":
-  version "0.34.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.34.2.tgz#039208e5510a050ce7faa7e90ef2758101b037f4"
-  integrity sha512-R3T+E2GdHnXY1vRaHkqen63Hr2AGEuWiuXW+lczIACRwV7KlptMpnIKfLr8NF951eykIw7HQc6fF1PxkrUi0jg==
+"@tryghost/magic-link@^0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.6.2.tgz#a429870a41b640dc51ba640747f4da002aa52163"
+  integrity sha512-cCCcwlN+hHxKSyxk2D9fIgfXKo2iLOyM5A/U011d/QcqJbCaVv9QYn6HgfWoz40vgV6xEmHrMGLPn4SapLBZZw==
   dependencies:
-    "@tryghost/magic-link" "^0.6.1"
+    bluebird "^3.5.5"
+    ghost-ignition "4.2.4"
+    jsonwebtoken "^8.5.1"
+    lodash "^4.17.15"
+
+"@tryghost/members-api@0.35.0":
+  version "0.35.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.35.0.tgz#413de8614ba431aaaa683425ab633084eefc010f"
+  integrity sha512-8N9npMF01B5463NCcKlN9Rli+8nfde2OS2/vw4VJqDdNqgMnoZTyJh43iRqTZbDNH4/47tFAm0fHwyfRdsJ3nA==
+  dependencies:
+    "@tryghost/magic-link" "^0.6.2"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "4.2.2"
+    ghost-ignition "4.2.4"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     leaky-bucket "2.2.0"
