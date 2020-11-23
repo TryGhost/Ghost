@@ -59,6 +59,7 @@ const defaultSettingsKeys = [
     'mailgun_api_key',
     'mailgun_domain',
     'mailgun_base_url',
+    'email_track_opens',
     'amp',
     'amp_gtag_id',
     'labs',
