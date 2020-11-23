@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const urlUtils = require('../../../../core/shared/url-utils');
 const membersService = require('../../../../core/server/services/members');
 const membersMiddleware = require('../../../../core/server/services/members/middleware');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
@@ -22,6 +23,7 @@ describe('Members Service Middleware', function () {
             membersService.ssr.exchangeTokenForSession = sinon.stub();
 
             sinon.stub(urlUtils, 'getSubdir').returns('/blah');
+            sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
         });
 
         afterEach(function () {
@@ -29,9 +31,7 @@ describe('Members Service Middleware', function () {
         });
 
         it('calls next if url does not include a token', async function () {
-            // This recreates what express does, note: members is mounted so path will be /
             req.url = '/members';
-            req.path = '/';
             req.query = {};
 
             // Call the middleware
@@ -43,9 +43,7 @@ describe('Members Service Middleware', function () {
         });
 
         it('redirects correctly on success', async function () {
-            // This recreates what express does, note: members is mounted so path will be /
             req.url = '/members?token=test&action=signup';
-            req.path = '/';
             req.query = {token: 'test', action: 'signup'};
 
             // Fake token handling success
@@ -61,9 +59,7 @@ describe('Members Service Middleware', function () {
         });
 
         it('redirects correctly on failure', async function () {
-            // This recreates what express does, note: members is mounted so path will be /
             req.url = '/members?token=test&action=signup';
-            req.path = '/';
             req.query = {token: 'test', action: 'signup'};
 
             // Fake token handling failure
@@ -76,6 +72,52 @@ describe('Members Service Middleware', function () {
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=false');
+        });
+
+        it('redirects to custom redirect on signup', async function () {
+            req.url = '/members?token=test&action=signup';
+            req.query = {token: 'test', action: 'signup'};
+
+            sinon.stub(settingsCache, 'get')
+                .withArgs('members_free_signup_redirect')
+                .returns('https://custom.com/redirect');
+
+            // Fake token handling failure
+            membersService.ssr.exchangeTokenForSession.resolves();
+
+            // Call the middleware
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            // Check behaviour
+            next.calledOnce.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.firstCall.args[0].should.eql('https://custom.com/redirect/');
+        });
+
+        it('redirects to custom redirect on signup', async function () {
+            req.url = '/members?token=test&action=signup';
+            req.query = {token: 'test', action: 'signup'};
+
+            sinon.stub(settingsCache, 'get')
+                .withArgs('members_paid_signup_redirect')
+                .returns('https://custom.com/paid');
+
+            // Fake token handling failure
+            membersService.ssr.exchangeTokenForSession.resolves({
+                stripe: {
+                    subscriptions: [{
+                        status: 'active'
+                    }]
+                }
+            });
+
+            // Call the middleware
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            // Check behaviour
+            next.calledOnce.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
         });
     });
 });
