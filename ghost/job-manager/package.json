@@ -27,7 +27,7 @@
   "dependencies": {
     "@breejs/later": "4.0.2",
     "bree": "3.4.0",
-    "cron-validate": "1.4.0",
+    "cron-validate": "1.4.1",
     "fastq": "1.9.0",
     "p-wait-for": "3.1.0"
   }
