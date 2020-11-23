@@ -50,7 +50,7 @@ module.exports = function testRoutes() {
         logging.info('Achedule a Job with schedule of:', schedule, req.params.name);
 
         if (req.params.name) {
-            const jobPath = path.resolve(__dirname, 'jobs', req.params.name);
+            const jobPath = path.resolve(__dirname, 'jobs', `${req.params.name}.js`);
             jobService.scheduleJob(schedule, jobPath);
         } else {
             jobService.scheduleJob(schedule, () => {
