@@ -12,6 +12,7 @@ jobs:
     name: Production Build
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: '12.18.0'
 
@@ -30,6 +31,7 @@ jobs:
     name: Lint
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: '12.18.0'
 
@@ -55,6 +57,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
           node-version: '12.18.0'
 
