@@ -453,6 +453,7 @@ module.exports = class StripePaymentProcessor {
             subscription_id: subscription.id,
             status: subscription.status,
             cancel_at_period_end: subscription.cancel_at_period_end,
+            cancellation_reason: subscription.metadata && subscription.metadata.cancellation_reason || null,
             current_period_end: new Date(subscription.current_period_end * 1000),
             start_date: new Date(subscription.start_date * 1000),
             default_payment_card_last4: payment && payment.card && payment.card.last4 || null,
