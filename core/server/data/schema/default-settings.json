@@ -353,6 +353,14 @@
         "mailgun_base_url": {
             "defaultValue": null,
             "type": "string"
+        },
+        "email_track_opens": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "amp": {
