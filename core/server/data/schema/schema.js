@@ -416,6 +416,7 @@ module.exports = {
         plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         status: {type: 'string', maxlength: 50, nullable: false},
         cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
+        cancellation_reason: {type: 'string', maxlength: 500, nullable: true},
         current_period_end: {type: 'dateTime', nullable: false},
         start_date: {type: 'dateTime', nullable: false},
         default_payment_card_last4: {type: 'string', maxlength: 4, nullable: true},
