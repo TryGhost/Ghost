@@ -251,11 +251,12 @@ module.exports = class StripePaymentProcessor {
     }
 
     async updateSubscriptionFromClient(subscription) {
-        const updatedSubscription = await update(
-            this._stripe, 'subscriptions',
-            subscription.id,
-            _.pick(subscription, ['plan', 'cancel_at_period_end'])
-        );
+        /** @type {Object} */
+        const data = _.pick(subscription, ['plan', 'cancel_at_period_end']);
+        data.metadata = {
+            cancellation_reason: subscription.cancellation_reason || null
+        };
+        const updatedSubscription = await update(this._stripe, 'subscriptions', subscription.id, data);
         await this._updateSubscription(updatedSubscription);
 
         return updatedSubscription;
@@ -497,7 +498,7 @@ module.exports = class StripePaymentProcessor {
         return customer;
     }
 
-    async getSetupIntent(id, options) {
+    async getSetupIntent(id, options = {}) {
         return retrieve(this._stripe, 'setupIntents', id, options);
     }
 
@@ -505,7 +506,7 @@ module.exports = class StripePaymentProcessor {
         return create(this._stripe, 'customers', options);
     }
 
-    async getCustomer(id, options) {
+    async getCustomer(id, options = {}) {
         return retrieve(this._stripe, 'customers', id, options);
     }
 };
