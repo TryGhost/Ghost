@@ -2,7 +2,7 @@ import Component from '@ember/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import {action} from '@ember/object';
 import {computed} from '@ember/object';
-import {reads} from '@ember/object/computed';
+import {or, reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -35,6 +35,8 @@ export default Component.extend({
     onClose() {},
 
     forcePublishedMenu: reads('post.pastScheduledTime'),
+
+    hasEmailPermission: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
     canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
         let membersEnabled = this.feature.get('labs.members');
@@ -147,7 +149,7 @@ export default Component.extend({
         }
 
         this._postStatus = this.postStatus;
-        if (this.postStatus === 'draft' && this.canSendEmail) {
+        if (this.postStatus === 'draft' && this.canSendEmail && this.hasEmailPermission) {
             // Set default newsletter recipients
             if (this.post.visibility === 'public' || this.post.visibility === 'members') {
                 this.set('sendEmailWhenPublished', 'all');
@@ -223,7 +225,7 @@ export default Component.extend({
         this.set('paidMemberCount', paidMemberCount);
         this.set('freeMemberCount', freeMemberCount);
 
-        if (this.postStatus === 'draft' && this.canSendEmail) {
+        if (this.postStatus === 'draft' && this.canSendEmail && this.hasEmailPermission) {
             // Set default newsletter recipients
             if (this.post.visibility === 'public' || this.post.visibility === 'members') {
                 if (paidMemberCount > 0 && freeMemberCount > 0) {
