@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/moleculer-service-from-class",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/moleculer-service-from-class",
   "author": "Ghost Foundation",
   "license": "MIT",
