@@ -565,10 +565,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-session-from-token@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.10.tgz#4a9ce00e00128716d8616167a44032e10f083e48"
-  integrity sha512-OFY/q0b1CUqcpjS8H8Pp4/yy0RGpIa56N9puTYTZd2/Wm1KQ0HoEKwdttYA1Yy8H61lsainKVM+acLONcT4xcg==
+"@tryghost/mw-session-from-token@0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.11.tgz#a8b2e4e565b61f9291b0ec46c747ac0af9a9ee7e"
+  integrity sha512-MZufYBRxUKUHbeCQlvBcrmPuhHDJKZBL+DLImQm+MXpGMvz+qSC6B9yV3XK/aJmbvBD3NST/ImubQIhkYKeoow==
 
 "@tryghost/pretty-cli@1.2.10":
   version "1.2.10"
