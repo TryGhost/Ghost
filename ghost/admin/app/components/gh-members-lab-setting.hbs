@@ -292,7 +292,7 @@
             </div>
         </div>
 
-        <div class="{{if this.mailgunIsConfigured "gh-setting-last" "gh-setting"}}">
+        <div class="gh-setting">
             <div class="gh-setting-content">
                 <h4 class="gh-setting-title">Email addresses</h4>
                 <p class="gh-setting-desc pa0 ma0">Contact information used for newsletters and member login emails</p>
@@ -387,6 +387,21 @@
                 </div>
             </div>
         {{/liquid-if}}
+
+        <div class="{{if this.mailgunIsConfigured "gh-setting-last" "gh-setting"}}">
+            <div class="gh-setting-content">
+                <h4 class="gh-setting-title">Enable newsletter open-rate analytics</h4>
+                <p class="gh-setting-desc pa0 ma0 mb1">Track how many members are readings your emails</p>
+            </div>
+            <div class="gh-setting-action">
+                <div class="for-switch">
+                    <label class="switch" for="email-track-opens" {{on "click" (action "toggleEmailTrackOpens")}}>
+                        <input type="checkbox" checked={{this.emailTrackOpens}} class="gh-input" {{on "click" (action "toggleEmailTrackOpens")}} name="email-track-opens" data-test-checkbox="email-track-opens">
+                        <span class="input-toggle-component mt1"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
 
         {{#unless this.mailgunIsConfigured}}
             <div class="gh-setting-last">
