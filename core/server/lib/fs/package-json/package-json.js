@@ -1,0 +1,179 @@
+const _ = require('lodash');
+const Promise = require('bluebird');
+const fs = require('fs-extra');
+const join = require('path').join;
+const errors = require('@tryghost/errors');
+
+const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
+const packageJSONPath = 'package.json';
+
+/**
+ * # Package Utils
+ *
+ * Ghost has / is in the process of gaining support for several different types of sub-packages:
+ * - Themes: have always been packages, but we're going to lean more heavily on npm & package.json in future
+ * - Adapters: replace fundamental pieces like storage, will become npm modules
+ *
+ * These utils facilitate loading, reading, managing etc, packages from the file system.
+ */
+module.exports = class PackageJson {
+    constructor(i18n) {
+        this.i18n = i18n;
+    }
+
+    /**
+     * ### Filter Packages
+     * Normalizes packages read by read-packages so that the themes module can use them.
+     * Iterates over each package and return an array of objects which are simplified representations of the package
+     * with 3 properties:
+     * - `name`    - the package name
+     * - `package` - contents of the package.json or false if there isn't one
+     * - `active`  - set to true if this package is active
+     * This data structure is used for listings of packages provided over the API and as such
+     * deliberately combines multiple sources of information in order to be efficient.
+     *
+     * TODO: simplify the package.json representation to contain only fields we use
+     *
+     * @param   {object}            packages    as returned by read-packages
+     * @param   {array/string}      active      as read from the settings object
+     * @returns {Array}                         of objects with useful info about themes
+     */
+    filter(packages, active) {
+        // turn active into an array if it isn't one, so this function can deal with lists and one-offs
+        if (!Array.isArray(active)) {
+            active = [active];
+        }
+
+        return _.reduce(packages, function (result, pkg, key) {
+            let item = {};
+            if (!key.match(notAPackageRegex)) {
+                item = {
+                    name: key,
+                    package: pkg['package.json'] || false,
+                    active: _.indexOf(active, key) !== -1
+                };
+
+                result.push(item);
+            }
+
+            return result;
+        }, []);
+    }
+
+    /**
+     * Parse package.json and validate it has
+     * all the required fields
+     */
+    parse(path) {
+        const self = this;
+
+        return fs.readFile(path)
+            .catch(function () {
+                const err = new Error(self.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
+                err.context = path;
+
+                return Promise.reject(err);
+            })
+            .then(function (source) {
+                let hasRequiredKeys;
+                let json;
+                let err;
+
+                try {
+                    json = JSON.parse(source);
+
+                    hasRequiredKeys = json.name && json.version;
+
+                    if (!hasRequiredKeys) {
+                        err = new Error(self.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing'));
+                        err.context = path;
+                        err.help = self.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
+
+                        return Promise.reject(err);
+                    }
+
+                    return json;
+                } catch (parseError) {
+                    err = new Error(self.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed'));
+                    err.context = path;
+                    err.help = self.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
+
+                    return Promise.reject(err);
+                }
+            });
+    }
+
+    /**
+     * Recursively read directory and find the packages in it
+     *
+     * @returns {object}
+     */
+    processPackage(absolutePath, packageName) {
+        const pkg = {
+            name: packageName,
+            path: absolutePath
+        };
+        return this.parse(join(absolutePath, packageJSONPath))
+            .then(function gotPackageJSON(packageJSON) {
+                pkg['package.json'] = packageJSON;
+                return pkg;
+            })
+            .catch(function noPackageJSON() {
+                // ignore invalid package.json for now,
+                // because Ghost does not rely/use them at the moment
+                // in the future, this .catch() will need to be removed,
+                // so that error is thrown on invalid json syntax
+                pkg['package.json'] = null;
+                return pkg;
+            });
+    }
+
+    readPackage(packagePath, packageName) {
+        const self = this;
+        const absolutePath = join(packagePath, packageName);
+        return fs.stat(absolutePath)
+            .then(function (stat) {
+                if (!stat.isDirectory()) {
+                    return {};
+                }
+
+                return self.processPackage(absolutePath, packageName)
+                    .then(function gotPackage(pkg) {
+                        const res = {};
+                        res[packageName] = pkg;
+                        return res;
+                    });
+            })
+            .catch(function (err) {
+                return Promise.reject(new errors.NotFoundError({
+                    message: 'Package not found',
+                    err: err,
+                    help: 'path: ' + packagePath,
+                    context: 'name: ' + packageName
+                }));
+            });
+    }
+
+    readPackages(packagePath) {
+        const self = this;
+
+        return Promise.resolve(fs.readdir(packagePath))
+            .filter(function (packageName) {
+                // Filter out things which are not packages by regex
+                if (packageName.match(notAPackageRegex)) {
+                    return;
+                }
+                // Check the remaining items to ensure they are a directory
+                return fs.stat(join(packagePath, packageName)).then(function (stat) {
+                    return stat.isDirectory();
+                });
+            })
+            .map(function readPackageJson(packageName) {
+                const absolutePath = join(packagePath, packageName);
+                return self.processPackage(absolutePath, packageName);
+            })
+            .then(function (packages) {
+                return _.keyBy(packages, 'name');
+            });
+    }
+};

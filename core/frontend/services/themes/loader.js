@@ -4,8 +4,8 @@ const packageJSON = require('../../../server/lib/fs/package-json');
 const themeList = require('./list');
 
 const loadAllThemes = function loadAllThemes() {
-    return packageJSON.read
-        .all(config.getContentPath('themes'))
+    return packageJSON
+        .readPackages(config.getContentPath('themes'))
         .then(function updateThemeList(themes) {
             debug('loading themes', Object.keys(themes));
 
@@ -14,8 +14,8 @@ const loadAllThemes = function loadAllThemes() {
 };
 
 const loadOneTheme = function loadOneTheme(themeName) {
-    return packageJSON.read
-        .one(config.getContentPath('themes'), themeName)
+    return packageJSON
+        .readPackage(config.getContentPath('themes'), themeName)
         .then(function (readThemes) {
             debug('loaded one theme', themeName);
             return themeList.set(themeName, readThemes[themeName]);
