@@ -68,6 +68,7 @@ export default Component.extend({
     mailgunIsConfigured: reads('config.mailgunIsConfigured'),
 
     allowSelfSignup: reads('settings.membersAllowFreeSignup'),
+    emailTrackOpens: reads('settings.emailTrackOpens'),
 
     /** OLD **/
     stripeDirectPublicKey: reads('settings.stripePublishableKey'),
@@ -197,6 +198,13 @@ export default Component.extend({
 
         setSupportAddress(supportAddress) {
             this.setEmailAddress('supportAddress', supportAddress);
+        },
+
+        toggleEmailTrackOpens(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            this.set('settings.emailTrackOpens', !this.get('emailTrackOpens'));
         },
 
         toggleSelfSignup() {
