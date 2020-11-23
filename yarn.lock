@@ -548,10 +548,10 @@
     node-jose "^1.1.3"
     stripe "^7.4.0"
 
-"@tryghost/members-csv@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.3.2.tgz#ec447bafb0f801509f281725d452995233c21439"
-  integrity sha512-n3M4nKrXvpWcwtEdSU15KTO2izQh994ByYT6vgSpka7pqQAG92COZ7ZkqssJEDPJEK1Fus4P1fPKeEzwQ8SUjw==
+"@tryghost/members-csv@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.3.3.tgz#cb29ad3d9c8f6efa3d8d9bce5934abdc6e21367b"
+  integrity sha512-ZOvAWpC8cNoIxC/phcytdb7V3JN/eCnUe6JfVQlgwe0rwtrlD8yN+ysqTmv7eBLjvh1B9K2tToKbMg5ARas8tw==
   dependencies:
     papaparse "5.3.0"
 
