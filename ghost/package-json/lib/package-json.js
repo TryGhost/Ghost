@@ -64,43 +64,42 @@ module.exports = class PackageJson {
      * Parse package.json and validate it has
      * all the required fields
      */
-    parse(path) {
-        const self = this;
+    async parse(path) {
+        let source;
+        let json;
 
-        return fs.readFile(path)
-            .catch(function () {
-                const err = new Error(self.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
-                err.context = path;
+        try {
+            source = await fs.readFile(path);
+        } catch (readError) {
+            const err = new Error(this.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
+            err.context = path;
+            err.err = readError;
 
-                return Promise.reject(err);
-            })
-            .then(function (source) {
-                let hasRequiredKeys;
-                let json;
-                let err;
+            return Promise.reject(err);
+        }
 
-                try {
-                    json = JSON.parse(source);
+        try {
+            json = JSON.parse(source);
+        } catch (parseError) {
+            const err = new Error(this.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed'));
+            err.context = path;
+            err.err = parseError;
+            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
 
-                    hasRequiredKeys = json.name && json.version;
+            return Promise.reject(err);
+        }
 
-                    if (!hasRequiredKeys) {
-                        err = new Error(self.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing'));
-                        err.context = path;
-                        err.help = self.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
+        const hasRequiredKeys = json.name && json.version;
 
-                        return Promise.reject(err);
-                    }
+        if (!hasRequiredKeys) {
+            const err = new Error(this.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing'));
+            err.context = path;
+            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
 
-                    return json;
-                } catch (parseError) {
-                    err = new Error(self.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed'));
-                    err.context = path;
-                    err.help = self.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
+            return Promise.reject(err);
+        }
 
-                    return Promise.reject(err);
-                }
-            });
+        return json;
     }
 
     /**
@@ -108,50 +107,47 @@ module.exports = class PackageJson {
      *
      * @returns {object}
      */
-    processPackage(absolutePath, packageName) {
+    async processPackage(absolutePath, packageName) {
         const pkg = {
             name: packageName,
             path: absolutePath
         };
-        return this.parse(join(absolutePath, packageJSONPath))
-            .then(function gotPackageJSON(packageJSON) {
-                pkg['package.json'] = packageJSON;
-                return pkg;
-            })
-            .catch(function noPackageJSON() {
-                // ignore invalid package.json for now,
-                // because Ghost does not rely/use them at the moment
-                // in the future, this .catch() will need to be removed,
-                // so that error is thrown on invalid json syntax
-                pkg['package.json'] = null;
-                return pkg;
-            });
+
+        try {
+            const packageJSON = await this.parse(join(absolutePath, packageJSONPath));
+            pkg['package.json'] = packageJSON;
+        } catch (err) {
+            // ignore invalid package.json for now,
+            // because Ghost does not rely/use them at the moment
+            // in the future, this .catch() will need to be removed,
+            // so that error is thrown on invalid json syntax
+            pkg['package.json'] = null;
+        }
+
+        return pkg;
     }
 
-    readPackage(packagePath, packageName) {
-        const self = this;
+    async readPackage(packagePath, packageName) {
         const absolutePath = join(packagePath, packageName);
-        return fs.stat(absolutePath)
-            .then(function (stat) {
-                if (!stat.isDirectory()) {
-                    return {};
-                }
 
-                return self.processPackage(absolutePath, packageName)
-                    .then(function gotPackage(pkg) {
-                        const res = {};
-                        res[packageName] = pkg;
-                        return res;
-                    });
-            })
-            .catch(function (err) {
-                return Promise.reject(new errors.NotFoundError({
-                    message: 'Package not found',
-                    err: err,
-                    help: 'path: ' + packagePath,
-                    context: 'name: ' + packageName
-                }));
-            });
+        try {
+            const stat = await fs.stat(absolutePath);
+            if (!stat.isDirectory()) {
+                return {};
+            }
+
+            const pkg = await this.processPackage(absolutePath, packageName);
+            const res = {};
+            res[packageName] = pkg;
+            return res;
+        } catch (err) {
+            return Promise.reject(new errors.NotFoundError({
+                message: 'Package not found',
+                err: err,
+                help: 'path: ' + packagePath,
+                context: 'name: ' + packageName
+            }));
+        }
     }
 
     readPackages(packagePath) {
