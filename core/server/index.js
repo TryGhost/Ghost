@@ -71,6 +71,11 @@ function initialiseServices() {
 }
 
 function initializeRecurringJobs() {
+    // we don't want to kick off scheduled/recurring jobs that will interfere with tests
+    if (process.env.NODE_ENV === 'testing') {
+        return;
+    }
+
     const jobsService = require('./services/jobs');
 
     jobsService.scheduleJob(
