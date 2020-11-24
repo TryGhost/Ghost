@@ -8,32 +8,41 @@ const {parentPort} = require('worker_threads');
 const MAX_EVENTS = 3000;
 
 (async () => {
-    const models = require('../../../models');
-    const settingsService = require('../../settings');
+    try {
+        const models = require('../../../models');
+        const settingsService = require('../../settings');
 
-    // must be initialized before emailAnalyticsService is required otherwise
-    // requires are in the wrong order and settingsCache will always be empty
-    await models.init();
-    await settingsService.init();
+        // must be initialized before emailAnalyticsService is required otherwise
+        // requires are in the wrong order and settingsCache will always be empty
+        await models.init();
+        await settingsService.init();
 
-    const emailAnalyticsService = require('../');
+        const emailAnalyticsService = require('../');
 
-    const fetchStartDate = new Date();
-    logging.info('Starting email analytics fetch of latest events');
-    const eventStats = await emailAnalyticsService.fetchLatest({maxEvents: MAX_EVENTS});
-    logging.info(`Finished fetching ${eventStats.totalEvents} analytics events in ${Date.now() - fetchStartDate}ms`);
+        const fetchStartDate = new Date();
+        logging.info('Starting email analytics fetch of latest events');
+        const eventStats = await emailAnalyticsService.fetchLatest({maxEvents: MAX_EVENTS});
+        logging.info(`Finished fetching ${eventStats.totalEvents} analytics events in ${Date.now() - fetchStartDate}ms`);
 
-    const aggregateStartDate = new Date();
-    logging.info(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
-    await emailAnalyticsService.aggregateStats(eventStats);
-    logging.info(`Finished aggregating email analytics in ${Date.now() - aggregateStartDate}ms`);
+        const aggregateStartDate = new Date();
+        logging.info(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
+        await emailAnalyticsService.aggregateStats(eventStats);
+        logging.info(`Finished aggregating email analytics in ${Date.now() - aggregateStartDate}ms`);
 
-    if (parentPort) {
-        parentPort.postMessage('done');
-    } else {
+        if (parentPort) {
+            parentPort.postMessage('done');
+        } else {
+            // give the logging pipes time finish writing before exit
+            setTimeout(() => {
+                process.exit(0);
+            }, 1000);
+        }
+    } catch (error) {
+        logging.error(error);
+
         // give the logging pipes time finish writing before exit
         setTimeout(() => {
-            process.exit(0);
+            process.exit(1);
         }, 1000);
     }
 })();
