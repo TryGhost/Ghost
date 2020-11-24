@@ -78,9 +78,23 @@ function InputError({message, style}) {
     );
 }
 
-function InputField({name, id, label, hideLabel, type, value, placeholder, disabled, onChange, onBlur, onKeyDown, tabindex, errorMessage}) {
+function InputField({
+    name,
+    id,
+    label,
+    hideLabel,
+    type,
+    value,
+    placeholder,
+    disabled,
+    onChange = () => {},
+    onBlur = () => {},
+    onKeyDown = () => {},
+    tabindex,
+    maxlength,
+    errorMessage
+}) {
     id = id || `input-${name}`;
-    onBlur = onBlur || function (){};
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
     if (isCookiesDisabled()) {
@@ -120,6 +134,7 @@ function InputField({name, id, label, hideLabel, type, value, placeholder, disab
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
                 tabIndex={tabindex}
+                maxlength={maxlength}
                 autoComplete={autocomplete}
                 autoCorrect={autocorrect}
                 autoCapitalize={autocapitalize}

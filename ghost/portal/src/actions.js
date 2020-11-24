@@ -162,9 +162,9 @@ async function updateSubscription({data, state, api}) {
 
 async function cancelSubscription({data, state, api}) {
     try {
-        const {subscriptionId, cancelAtPeriodEnd} = data;
+        const {subscriptionId, cancelAtPeriodEnd, cancellationReason} = data;
         await api.member.updateSubscription({
-            subscriptionId, cancelAtPeriodEnd
+            subscriptionId, cancelAtPeriodEnd, cancellationReason
         });
         const member = await api.member.sessionData();
         const action = 'cancelSubscription:success';
