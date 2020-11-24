@@ -111,7 +111,9 @@ const AccountFooter = ({onClose, handleSignout, supportAddress = ''}) => {
             </ul>
             <div className='gh-portal-account-footerright'>
                 <ul className='gh-portal-account-footermenu'>
-                    <li><a className='gh-portal-btn gh-portal-btn-branded' href={supportAddressMail}>Contact support</a></li>
+                    <li><a className='gh-portal-btn gh-portal-btn-branded' href={supportAddressMail} onClick={() => {
+                        supportAddressMail && window.open(supportAddressMail);
+                    }}>Contact support</a></li>
                 </ul>
             </div>
         </footer>

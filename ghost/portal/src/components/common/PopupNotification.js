@@ -107,7 +107,9 @@ const NotificationText = ({message, site}) => {
         );
     }
     return (
-        <p> An unexpected error occured. Please try again or <a href={supportAddressMail}>contact support</a> if the error persists.</p>
+        <p> An unexpected error occured. Please try again or <a href={supportAddressMail} onClick={() => {
+            supportAddressMail && window.open(supportAddressMail);
+        }}>contact support</a> if the error persists.</p>
     );
 };
 
