@@ -172,6 +172,14 @@
                                         {{/if}}
                                     </td>
                                 </tr>
+                                {{#if subscription.cancellationReason}}
+                                    <tr>
+                                        <td class="gh-member-stripe-label">Cancellation reason</td>
+                                        <td class="gh-member-stripe-data">
+                                            <span class="gh-member-stripe-cancellation-reason">{{subscription.cancellationReason}}</span>
+                                        </td>
+                                    </tr>
+                                {{/if}}
                                 <tr>
                                     <td class="gh-member-stripe-label">Next renewal date</td>
                                     <td class="gh-member-stripe-data">
