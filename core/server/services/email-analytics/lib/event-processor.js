@@ -210,19 +210,16 @@ class EmailAnalyticsEventProcessor {
             return event.memberId;
         }
 
-        const emailId = this._getEmailId(event);
+        const emailId = await this._getEmailId(event);
 
-        if (event.providerId) {
-            if (this.memberIdCache[event.recipientEmail]) {
-                return this.memberIdCache[event.recipientEmail];
-            }
-
-            const [result] = await this.db.knex('email_recipients')
-                .select('member_id')
+        if (emailId && event.recipientEmail) {
+            const {memberId} = await this.db.knex('email_recipients')
+                .select('member_id as memberId')
                 .where('member_email', event.recipientEmail)
-                .where('email_id', emailId);
+                .where('email_id', emailId)
+                .first() || {};
 
-            return result.member_id;
+            return memberId;
         }
     }
 }
