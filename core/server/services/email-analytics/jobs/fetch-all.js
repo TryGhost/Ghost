@@ -1,11 +1,21 @@
 const logging = require('../../../../shared/logging');
-const emailAnalyticsService = require('../');
+const {parentPort} = require('worker_threads');
 
 // one-off job to fetch all available events and re-process them idempotently
 // NB. can be a _very_ long job for sites with many members and frequent emails
 
 (async () => {
     try {
+        const models = require('../../../models');
+        const settingsService = require('../../settings');
+
+        // must be initialized before emailAnalyticsService is required otherwise
+        // requires are in the wrong order and settingsCache will always be empty
+        await models.init();
+        await settingsService.init();
+
+        const emailAnalyticsService = require('../');
+
         const fetchStartDate = new Date();
         logging.info('Starting email analytics fetch of all available events');
         const eventStats = await emailAnalyticsService.fetchAll();
@@ -16,16 +26,20 @@ const emailAnalyticsService = require('../');
         await emailAnalyticsService.aggregateStats(eventStats);
         logging.info(`Finished aggregating email analytics in ${Date.now() - aggregateStartDate}ms`);
 
-        // give the logging pipes time finish writing before exit
-        setTimeout(() => {
-            process.exit(0);
-        }, 2000);
+        if (parentPort) {
+            parentPort.postMessage('done');
+        } else {
+            // give the logging pipes time finish writing before exit
+            setTimeout(() => {
+                process.exit(0);
+            }, 1000);
+        }
     } catch (error) {
         logging.error(error);
 
         // give the logging pipes time finish writing before exit
         setTimeout(() => {
             process.exit(1);
-        }, 2000);
+        }, 1000);
     }
 })();

@@ -1,4 +1,5 @@
 const logging = require('../../../../shared/logging');
+const { parentPort } = require('worker_threads');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 
@@ -28,16 +29,20 @@ const MAX_EVENTS = 3000;
         await emailAnalyticsService.aggregateStats(eventStats);
         logging.info(`Finished aggregating email analytics in ${Date.now() - aggregateStartDate}ms`);
 
-        // give the logging pipes time finish writing before exit
-        setTimeout(() => {
-            process.exit(0);
-        }, 2000);
+        if (parentPort) {
+            parentPort.postMessage('done');
+        } else {
+            // give the logging pipes time finish writing before exit
+            setTimeout(() => {
+                process.exit(0);
+            }, 1000);
+        }
     } catch (error) {
         logging.error(error);
 
         // give the logging pipes time finish writing before exit
         setTimeout(() => {
             process.exit(1);
-        }, 2000);
+        }, 1000);
     }
 })();
