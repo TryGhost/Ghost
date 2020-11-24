@@ -1,6 +1,6 @@
 # Job Manager
 
-A manager for tasks that have to be performed asynchronously, optionally recurring, scheduled or one-off in their nature.
+A manager for jobs (aka tasks) that have to be performed asynchronously, optionally recurring, scheduled or one-off in their nature. The job queue is manage in memory without additional dependencies.
 
 ## Install
 
