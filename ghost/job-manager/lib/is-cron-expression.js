@@ -23,7 +23,12 @@ const cronValidate = require('cron-validate');
  * @returns {boolean} wheather or not the expression is valid
  */
 const isCronExpression = (expression) => {
-    let cronResult = cronValidate(expression);
+    let cronResult = cronValidate(expression, {
+        preset: 'default', // second field not supported in default preset
+        override: {
+            useSeconds: true // override preset option
+        }
+    });
 
     return cronResult.isValid();
 };
