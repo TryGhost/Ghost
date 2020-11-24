@@ -35,8 +35,10 @@ const mapPost = (model, frame) => {
 
     url.forPost(model.id, jsonModel, frame);
 
-    if (utils.isContentAPI(frame)) {
-        // Content api v2 still expects page prop
+    if (utils.isContentAPI(frame) || utils.isPreviewFrame(frame)) {
+        // Content api v2 still expects page prop,
+        // Generic preview handler needs to distinguish between
+        // page or post for /edit redirect
         if (!frame.options.columns || frame.options.columns.includes('page')) {
             if (jsonModel.type === 'page') {
                 jsonModel.page = true;

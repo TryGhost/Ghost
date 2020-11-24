@@ -101,7 +101,11 @@ const post = (attrs, frame) => {
             delete attrs.visibility;
         }
     } else {
-        delete attrs.page;
+        // Generic preview handler needs to distinguish between
+        // page or post for /edit redirect
+        if (!localUtils.isPreviewFrame(frame)) {
+            delete attrs.page;
+        }
     }
 
     if (columns && columns.includes('email_recipient_filter') && fields && !fields.includes('email_recipient_filter')) {

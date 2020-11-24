@@ -38,8 +38,10 @@ const mapPost = (model, frame) => {
 
     extraAttrs.forPost(frame, model, jsonModel);
 
-    if (utils.isContentAPI(frame)) {
-        // Content api v2 still expects page prop
+    if (utils.isContentAPI(frame) || utils.isPreviewFrame(frame)) {
+        // Content api v2 still expects page prop,
+        // Generic preview handler needs to distinguish between
+        // page or post for /edit redirect
         if (jsonModel.type === 'page') {
             jsonModel.page = true;
         }

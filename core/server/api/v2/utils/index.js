@@ -26,6 +26,10 @@ module.exports = {
         return frame.apiType === 'content';
     },
 
+    isPreviewFrame: (frame) => {
+        return frame.docName === 'preview';
+    },
+
     // @TODO: Remove, not used.
     isAdminAPIKey: (frame) => {
         return frame.options.context && Object.keys(frame.options.context).length !== 0 && frame.options.context.api_key &&
