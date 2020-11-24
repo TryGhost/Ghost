@@ -221,7 +221,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 throw err;
             });
         },
-        async updateSubscription({subscriptionId, planName, cancelAtPeriodEnd}) {
+        async updateSubscription({subscriptionId, planName, cancelAtPeriodEnd, cancellationReason}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'subscriptions'}) + subscriptionId + '/';
             return makeRequest({
@@ -232,6 +232,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 },
                 body: JSON.stringify({
                     cancel_at_period_end: cancelAtPeriodEnd,
+                    cancellation_reason: cancellationReason,
                     identity: identity,
                     planName
                 })
