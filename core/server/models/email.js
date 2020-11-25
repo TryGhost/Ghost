@@ -9,15 +9,10 @@ const Email = ghostBookshelf.Model.extend({
             uuid: uuid.v4(),
             status: 'pending',
             recipient_filter: 'paid',
-            stats: JSON.stringify({
-                delivered: 0,
-                failed: 0,
-                opened: 0,
-                clicked: 0,
-                unsubscribed: 0,
-                complaints: 0
-            }),
-            track_opens: false
+            track_opens: false,
+            delivered_count: 0,
+            opened_count: 0,
+            failed_count: 0
         };
     },
 

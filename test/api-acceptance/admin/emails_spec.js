@@ -33,15 +33,6 @@ describe('Email API', function () {
                 should.exist(jsonResponse.emails);
                 jsonResponse.emails.should.have.length(1);
                 localUtils.API.checkResponse(jsonResponse.emails[0], 'email');
-
-                const stats = JSON.parse(jsonResponse.emails[0].stats);
-
-                should.exist(stats.delivered);
-                should.exist(stats.failed);
-                should.exist(stats.opened);
-                should.exist(stats.clicked);
-                should.exist(stats.unsubscribed);
-                should.exist(stats.complaints);
             });
     });
 });
