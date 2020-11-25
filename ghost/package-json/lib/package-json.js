@@ -63,6 +63,8 @@ module.exports = class PackageJson {
     /**
      * Parse package.json and validate it has
      * all the required fields
+     *
+     * @param {string} path
      */
     async parse(path) {
         let source;
@@ -105,6 +107,8 @@ module.exports = class PackageJson {
     /**
      * Recursively read directory and find the packages in it
      *
+     * @param {string} absolutePath
+     * @param {string} packageName
      * @returns {object}
      */
     async processPackage(absolutePath, packageName) {
@@ -127,6 +131,10 @@ module.exports = class PackageJson {
         return pkg;
     }
 
+    /**
+     * @param {string} packagePath
+     * @param {string} packageName
+     */
     async readPackage(packagePath, packageName) {
         const absolutePath = join(packagePath, packageName);
 
@@ -150,6 +158,9 @@ module.exports = class PackageJson {
         }
     }
 
+    /**
+     * @param {string} packagePath
+     */
     readPackages(packagePath) {
         const self = this;
 
