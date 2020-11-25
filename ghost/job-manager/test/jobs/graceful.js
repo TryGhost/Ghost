@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
 const setTimeoutPromise = require('util').promisify(setTimeout);
-const threads = require('bthreads');
+const {isMainThread, parentPort} = require('bthreads');
 
 let shutdown = false;
 
-if (!threads.isMainThread) {
-    threads.parentPort.on('message', (message) => {
+if (!isMainThread) {
+    parentPort.on('message', (message) => {
         console.log(`paret message received: ${message}`);
         if (message === 'cancel') {
             shutdown = true;
@@ -26,7 +26,15 @@ if (!threads.isMainThread) {
 
             await setTimeoutPromise(100); // async cleanup imitation
 
-            process.exit(0);
+            if (parentPort) {
+                // preferred method of shutting down the worker
+                // it signals job manager about finished job and the thread
+                // is later terminated through `terminate()` method allowing
+                // for unfinished pipes to flush (e.g. loggers)
+                parentPort.postMessage('done');
+            } else {
+                process.exit(0);
+            }
         }
     }
 })();
