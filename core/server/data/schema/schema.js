@@ -463,9 +463,10 @@ module.exports = {
         },
         error: {type: 'string', maxlength: 2000, nullable: true},
         error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
-        meta: {type: 'text', maxlength: 65535, nullable: true},
-        stats: {type: 'text', maxlength: 65535, nullable: true},
         email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        delivered_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        opened_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        failed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         subject: {type: 'string', maxlength: 300, nullable: true},
         from: {type: 'string', maxlength: 2000, nullable: true},
         reply_to: {type: 'string', maxlength: 2000, nullable: true},
@@ -498,9 +499,15 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         batch_id: {type: 'string', maxlength: 24, nullable: false, references: 'email_batches.id'},
         processed_at: {type: 'dateTime', nullable: true},
+        delivered_at: {type: 'dateTime', nullable: true, index: true},
+        opened_at: {type: 'dateTime', nullable: true, index: true},
+        failed_at: {type: 'dateTime', nullable: true, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
-        member_name: {type: 'string', maxlength: 191, nullable: true}
+        member_name: {type: 'string', maxlength: 191, nullable: true},
+        '@@INDEXES@@': [
+            ['email_id', 'member_email']
+        ]
     },
     tokens: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
