@@ -122,7 +122,7 @@
     "moment-timezone": "0.5.23",
     "multer": "1.4.2",
     "mysql": "2.18.1",
-    "nconf": "0.10.0",
+    "nconf": "0.11.0",
     "netjet": "1.4.0",
     "node-jose": "2.0.0",
     "nodemailer": "0.7.1",
