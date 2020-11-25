@@ -31,7 +31,7 @@
         </section>
 
         <div class="gh-setting-header gh-first-header">AMP configuration</div>
-        <div class="flex flex-column br4 shadow-1 bg-grouped-table pa8 mt2">
+        <div class="flex flex-column br4 shadow-1 bg-grouped-table pa5 mt2">
             <div class="gh-setting-first">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Enable AMP</div>
@@ -53,8 +53,8 @@
                     </div>
                 </div>
             </div>
-            {{#liquid-if this.settings.amp}}
-            <div class="gh-setting-last">
+            {{#liquid-if this.settings.amp class="nl5 nr5"}}
+            <div class="gh-setting-last gh-setting-amp-liquid">
                 <div class="gh-setting-content gh-setting-content--no-action">
                     <div class="gh-setting-title">Google Analytics Tracking ID</div>
                     <div class="gh-setting-desc">Tracks AMP traffic in Google Analytics, find your ID <a href="https://ghost.org/faq/how-to-find-your-google-analytics-tracking-id/">here</a></div>
