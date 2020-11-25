@@ -107,6 +107,34 @@ describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
                 attrs.html.should.eql('');
             });
 
+            it('should hide content attributes when visibility is "paid" and member has cancelled subscription', function () {
+                const attrs = {
+                    visibility: 'paid',
+                    plaintext: 'I see dead people',
+                    html: '<p>What\'s the matter?</p>'
+                };
+
+                const frame = {
+                    options: {},
+                    original: {
+                        context: {
+                            member: {
+                                stripe: {
+                                    subscriptions: [{
+                                        status: 'canceled'
+                                    }]
+                                }
+                            }
+                        }
+                    }
+                };
+
+                gating.forPost(attrs, frame);
+
+                attrs.plaintext.should.eql('');
+                attrs.html.should.eql('');
+            });
+
             it('should NOT hide content attributes when visibility is "paid" and member has a subscription', function () {
                 const attrs = {
                     visibility: 'paid',
@@ -115,11 +143,14 @@ describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
                 };
 
                 const frame = {
+                    options: {},
                     original: {
                         context: {
                             member: {
                                 stripe: {
-                                    subscriptions: ['I pay money dollaz']
+                                    subscriptions: [{
+                                        status: 'active'
+                                    }]
                                 }
                             }
                         }

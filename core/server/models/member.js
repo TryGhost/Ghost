@@ -45,7 +45,7 @@ const Member = ghostBookshelf.Model.extend({
             'customer_id',
             'id',
             'customer_id'
-        ).query('whereIn', 'status', ['active', 'trialing', 'past_due', 'unpaid']);
+        );
     },
 
     serialize(options) {
