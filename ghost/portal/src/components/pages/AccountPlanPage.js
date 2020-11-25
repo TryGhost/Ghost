@@ -4,7 +4,6 @@ import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
-import InputField from '../common/InputField';
 import {getDateString} from '../../utils/date-time';
 import {getMemberActivePlan, getMemberSubscription, getPlanFromSubscription, getSitePlans, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
 
@@ -158,7 +157,8 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
         return (
             <div className="gh-portal-cancellation-form">
                 <p>If you cancel your subscription now, you will continue to have access until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
-                <InputField
+                <textarea
+                    className='gh-portal-input'
                     key='cancellation_reason'
                     label='Cancellation reason'
                     type='text'
@@ -166,7 +166,16 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
                     placeholder='Tell us why you are cancelling'
                     value={reason}
                     onChange={e => setReason(e.target.value)}
+                    rows="2"
                     maxlength="500"
+                    style={{
+                        width: '100%',
+                        maxWidth: '100%',
+                        height: '50px',
+                        maxHeight: '50px',
+                        minHeight: '40px',
+                        padding: '6px 12px'
+                    }}
                 />
                 <ActionButton
                     onClick={e => onConfirm(e, reason)}
