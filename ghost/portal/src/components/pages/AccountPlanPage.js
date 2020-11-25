@@ -24,6 +24,13 @@ export const AccountPlanPageStyles = `
     .gh-portal-cancellation-form .gh-portal-input-section {
         margin-bottom: 20px;
     }
+
+    .gh-portal-cancellation-form .gh-portal-input {
+        resize: none;
+        width: 100%;
+        height: 62px;
+        padding: 6px 12px;
+    }
 `;
 
 const React = require('react');
@@ -157,26 +164,23 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
         return (
             <div className="gh-portal-cancellation-form">
                 <p>If you cancel your subscription now, you will continue to have access until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
-                <textarea
-                    className='gh-portal-input'
-                    key='cancellation_reason'
-                    label='Cancellation reason'
-                    type='text'
-                    name='cancellation_reason'
-                    placeholder='Tell us why you are cancelling'
-                    value={reason}
-                    onChange={e => setReason(e.target.value)}
-                    rows="2"
-                    maxlength="500"
-                    style={{
-                        width: '100%',
-                        maxWidth: '100%',
-                        height: '50px',
-                        maxHeight: '50px',
-                        minHeight: '40px',
-                        padding: '6px 12px'
-                    }}
-                />
+                <section className='gh-portal-input-section'>
+                    <div className='gh-portal-input-labelcontainer'>
+                        <label className='gh-portal-input-label'>Cancellation reason</label>
+                    </div>
+                    <textarea
+                        className='gh-portal-input'
+                        key='cancellation_reason'
+                        label='Cancellation reason'
+                        type='text'
+                        name='cancellation_reason'
+                        placeholder=''
+                        value={reason}
+                        onChange={e => setReason(e.target.value)}
+                        rows="2"
+                        maxlength="500"
+                    />
+                </section>
                 <ActionButton
                     onClick={e => onConfirm(e, reason)}
                     isRunning={isRunning}
