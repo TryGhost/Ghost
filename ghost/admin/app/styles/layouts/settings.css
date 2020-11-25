@@ -896,3 +896,12 @@ p.theme-validation-details {
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
 }
+
+.gh-setting-amp-liquid {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.gh-setting-unsplash-checkbox {
+    margin-bottom: 0;
+}
