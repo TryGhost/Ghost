@@ -165,7 +165,7 @@
                                 <tr>
                                     <td class="gh-member-stripe-label">Status</td>
                                     <td class="gh-member-stripe-data">
-                                        {{#if subscription.cancelAtPeriodEnd}}
+                                        {{#if (and subscription.cancelAtPeriodEnd (not-eq subscription.status 'canceled'))}}
                                             <span class="gh-member-cancels-on-label">Cancels on {{subscription.validUntil}}</span>
                                         {{else}}
                                             <span class="gh-member-stripe-status">{{subscription.statusLabel}}</span>
