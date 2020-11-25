@@ -1,5 +1,6 @@
 const logging = require('../../../../shared/logging');
 const {parentPort} = require('worker_threads');
+const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
 
 // one-off job to fetch all available events and re-process them idempotently
 // NB. can be a _very_ long job for sites with many members and frequent emails
@@ -17,14 +18,18 @@ const {parentPort} = require('worker_threads');
         const emailAnalyticsService = require('../');
 
         const fetchStartDate = new Date();
-        logging.info('Starting email analytics fetch of all available events');
+        debug('Starting email analytics fetch of all available events');
         const eventStats = await emailAnalyticsService.fetchAll();
-        logging.info(`Finished fetching ${eventStats.totalEvents} analytics events in ${Date.now() - fetchStartDate}ms`);
+        const fetchEndDate = new Date();
+        debug(`Finished fetching ${eventStats.totalEvents} analytics events in ${fetchEndDate - fetchStartDate}ms`);
 
         const aggregateStartDate = new Date();
-        logging.info(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
+        debug(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
         await emailAnalyticsService.aggregateStats(eventStats);
-        logging.info(`Finished aggregating email analytics in ${Date.now() - aggregateStartDate}ms`);
+        const aggregateEndDate = new Date();
+        debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
+
+        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
 
         if (parentPort) {
             parentPort.postMessage('done');

@@ -1,11 +1,8 @@
 const logging = require('../../../../shared/logging');
 const {parentPort} = require('worker_threads');
+const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-latest');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
-
-// pass `maxEvents` option when fetching analytics to help timebox the job so that we don't have
-// long-running jobs preventing orderly shutdown (note: Mailgun fetches 300 events per page)
-const MAX_EVENTS = 3000;
 
 (async () => {
     try {
@@ -20,14 +17,18 @@ const MAX_EVENTS = 3000;
         const emailAnalyticsService = require('../');
 
         const fetchStartDate = new Date();
-        logging.info('Starting email analytics fetch of latest events');
-        const eventStats = await emailAnalyticsService.fetchLatest({maxEvents: MAX_EVENTS});
-        logging.info(`Finished fetching ${eventStats.totalEvents} analytics events in ${Date.now() - fetchStartDate}ms`);
+        debug('Starting email analytics fetch of latest events');
+        const eventStats = await emailAnalyticsService.fetchLatest();
+        const fetchEndDate = new Date();
+        debug(`Finished fetching ${eventStats.totalEvents} analytics events in ${fetchEndDate - fetchStartDate}ms`);
 
         const aggregateStartDate = new Date();
-        logging.info(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
+        debug(`Starting email analytics aggregation for ${eventStats.emailIds.length} emails`);
         await emailAnalyticsService.aggregateStats(eventStats);
-        logging.info(`Finished aggregating email analytics in ${Date.now() - aggregateStartDate}ms`);
+        const aggregateEndDate = new Date();
+        debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
+
+        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
 
         if (parentPort) {
             parentPort.postMessage('done');
