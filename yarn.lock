@@ -379,10 +379,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tryghost/adapter-manager@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.2.tgz#ba9d3c261f2cea4c29af198c015ea9cf3d30290b"
-  integrity sha512-Mm8xgTPJKm01gHTNTCVQ4JJVIAihYXh91lZMlXvNNABmyMxsQacV0EU3rg4ahz8/B/UgAqlzvOJBCu9ldUQ2Vg==
+"@tryghost/adapter-manager@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.3.tgz#9976b4ddb7017ab371e6de9c5bfcec7a75031b88"
+  integrity sha512-jeR4OHlHfbAfC87aAHGV2aa+zMhKO6+++HXDNHfQcWYUJoasNhjDJg5k6B4INzBgJAMip1E2Jt8QXsmIx7H4Gw==
   dependencies:
     "@tryghost/errors" "^0.2.5"
 
