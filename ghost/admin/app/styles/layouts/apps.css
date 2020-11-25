@@ -390,3 +390,56 @@
 .new-webhook-cell:hover {
     background: var(--whitegrey-l2);
 }
+
+/* Zapier templates */
+/* ---------------------------------------------------------- */
+.gh-settings-zapier-templates .apps-grid-cell:hover {
+    background: var(--white);
+}
+
+.zapier-template-link:hover {
+    border-color: #f04600;
+}
+
+.zapier-template-link span {
+    transition: all 0.2s ease;
+    transition-property: color;
+}
+
+.zapier-template-link:hover span {
+    color: #f04600;
+}
+
+.gh-settings-zapier-templates .apps-card-app-title {
+    margin-left: 8px;
+    white-space: unset;
+}
+
+.gh-settings-zapier-templates .apps-card-app {
+    height: 68px;
+}
+
+.gh-settings-zapier-templates .gh-card-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.zapier-footer,
+.zapier-footer a {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.zapier-footer figure {
+    margin: 0 0 2px;
+    width: 47px;
+    height: 47px;
+    background-position: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 15%;
+}

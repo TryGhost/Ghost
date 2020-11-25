@@ -94,7 +94,7 @@
             <table class="ma0 mt5" style="table-layout: fixed">
                 <tbody>
                     <tr>
-                        <td class="pa3 pl0 fw7 f8 w35 v-top">Content API Key</td>
+                        <td class="pa3 pl0 fw7 f8 w35 v-top">Content API key</td>
                         <td class="pa0 bb b--lightgrey">
                             <div class="pt3 pb3 relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey truncate" data-test-text="content-key">
@@ -119,7 +119,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="pa3 pl0 w50 fw7 f8 w35 v-top">Admin API Key</td>
+                        <td class="pa3 pl0 w50 fw7 f8 w35 v-top">Admin API key</td>
                         <td class="pa0 bb b--lightgrey">
                             <div class="pt3 pb3 relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey truncate" data-test-text="admin-key">
@@ -139,7 +139,7 @@
                                 </div>
                             </div>
                             {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
-                                <div class="green nt3 mb2"> Admin API Key was successfully regenerated </div>
+                                <div class="green nt3 mb2"> Admin API key was successfully regenerated </div>
                             {{/if}}
                         </td>
                     </tr>
@@ -234,7 +234,7 @@
         </table>
     </div>
     <button class="gh-btn gh-btn-red gh-btn-icon mb15 mt15" {{action "confirmIntegrationDeletion"}}>
-        <span> Delete Integration </span>
+        <span> Delete integration </span>
     </button>
 </section>
 
