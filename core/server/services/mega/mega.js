@@ -70,7 +70,7 @@ const sendTestEmail = async (postModel, toEmails) => {
     }));
 
     // enable tracking for previews to match real-world behaviour
-    emailData.track_opens = settingsCache.get('email_track_opens');
+    emailData.track_opens = !!settingsCache.get('email_track_opens');
 
     const response = await bulkEmailService.send(emailData, recipients);
 
@@ -139,7 +139,7 @@ const addEmail = async (postModel, options) => {
             html: emailData.html,
             plaintext: emailData.plaintext,
             submitted_at: moment().toDate(),
-            track_opens: settingsCache.get('email_track_opens'),
+            track_opens: !!settingsCache.get('email_track_opens'),
             recipient_filter: emailRecipientFilter
         }, knexOptions);
     } else {
