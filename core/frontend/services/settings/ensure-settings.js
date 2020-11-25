@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const Promise = require('bluebird');
 const path = require('path');
 const debug = require('ghost-ignition').debug('frontend:services:settings:ensure-settings');
-const {i18n} = require('../../../server/lib/common');
+const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 
