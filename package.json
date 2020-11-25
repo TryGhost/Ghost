@@ -49,7 +49,7 @@
     "@tryghost/errors": "0.2.5",
     "@tryghost/helpers": "1.1.34",
     "@tryghost/image-transform": "1.0.3",
-    "@tryghost/job-manager": "0.3.1",
+    "@tryghost/job-manager": "0.3.2",
     "@tryghost/kg-card-factory": "2.1.4",
     "@tryghost/kg-default-atoms": "2.0.2",
     "@tryghost/kg-default-cards": "3.0.1",
