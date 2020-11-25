@@ -32,7 +32,7 @@ By default, the script adds a default floating trigger button on the bottom righ
 
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specfic [page](https://github.com/TryGhost/Portal/blob/master/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
-The script also adds custom class names to this element for open and close state of popup - `gh-members-popup-open` and `gh-members-popup-close`, allowing devs to update its UI based on popup state.
+The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
 ## Basic Setup
 
