@@ -150,10 +150,10 @@ module.exports = class PackageJson {
         }
     }
 
-    async readPackages(packagePath) {
-        const dirContents = await fs.readdir(packagePath);
+    readPackages(packagePath) {
+        const self = this;
 
-        const packageNames = dirContents
+        return Promise.resolve(fs.readdir(packagePath))
             .filter(function (packageName) {
                 // Filter out things which are not packages by regex
                 if (packageName.match(notAPackageRegex)) {
@@ -163,14 +163,13 @@ module.exports = class PackageJson {
                 return fs.stat(join(packagePath, packageName)).then(function (stat) {
                     return stat.isDirectory();
                 });
-            });
-
-        const packages = await Promise.all(packageNames
-            .map((packageName) => {
+            })
+            .map(function readPackageJson(packageName) {
                 const absolutePath = join(packagePath, packageName);
-                return this.processPackage(absolutePath, packageName);
-            }));
-
-        return _.keyBy(packages, 'name');
+                return self.processPackage(absolutePath, packageName);
+            })
+            .then(function (packages) {
+                return _.keyBy(packages, 'name');
+            });
     }
 };
