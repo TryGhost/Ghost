@@ -22,6 +22,12 @@ class EmailAnalyticsService {
     async fetchAll() {
         const result = new EventProcessingResult();
 
+        const emailCount = await this.db.knex('emails').count();
+        if (emailCount <= 0) {
+            debug('fetchAll: skipping - no emails to track');
+            return result;
+        }
+
         const startFetch = new Date();
         debug('fetchAll: starting');
         for (const [, provider] of Object.entries(this.providers)) {
