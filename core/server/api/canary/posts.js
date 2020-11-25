@@ -159,10 +159,32 @@ module.exports = {
                 await membersService.checkHostLimit();
             }
 
-            let model = await models.Post.edit(frame.data.posts[0], frame.options);
-
+            let model;
             if (!frame.options.email_recipient_filter && frame.options.send_email_when_published) {
-                frame.options.email_recipient_filter = model.get('visibility') === 'paid' ? 'paid' : 'all';
+                await models.Base.transaction(async (transacting) => {
+                    const options = {
+                        ...frame.options,
+                        transacting
+                    };
+
+                    /**
+                     * 1. We need to edit the post first in order to know what the visibility is.
+                     * 2. We can only pass the email_recipient_filter when we change the status.
+                     *
+                     * So, we first edit the post as requested, with all information except the status,
+                     * from there we can determine what the email_recipient_filter should be and then finish
+                     * the edit, with the status and the email_recipient_filter option.
+                     */
+                    const status = frame.data.posts[0].status;
+                    delete frame.data.posts[0].status;
+                    const interimModel = await models.Post.edit(frame.data.posts[0], options);
+                    frame.data.posts[0].status = status;
+
+                    options.email_recipient_filter = interimModel.get('visibility') === 'paid' ? 'paid' : 'all';
+
+                    model = await models.Post.edit(frame.data.posts[0], options);
+                });
+            } else {
                 model = await models.Post.edit(frame.data.posts[0], frame.options);
             }
 
