@@ -65,6 +65,15 @@ To prevent complications around failed job retries and and handling of specific 
 3. Job **parameters** should be **kept to the minimum**. When passing large amounts of data around performance can suffer from slow JSON serialization. Also, storage size restrictions that can arise if there is a need to store parameters in the future.Job parameters should be kept to only information that is needed to retrieve the rest of information from somewhere else. For example, it's recommended to pass in only an *id* of the resource that could be fetched from the data storage during job execution or pass in a file path which could be read during execution.
 4. Scheduled **job execution time should not overlap**. It's up to the registering service to assure job execution time does not ecceed time between subsequent scheduled jobs. For example, if job is scheduled to run every 5 minutes it should always run under 5 minutes, otherwise next scheduled job would fail to start.
 
+### Offloaded (scheduled) jobs lifecycle
+
+Offloaded (scheduled) jobs are running on dedicated worker threads which makes their lifecycle a bit different to "on the same event loop" jobs:
+1. When **starting** a job it's only sharing ENV variables with it's parent process. The job itself is run on an independent JavaScript execution thread. The script has to re-initialize any modules it will use. For example it should take care of: model layer initialization, cache initialization, etc.
+2. When **finishing** work in a job prefer to signal successful termination by sending 'done' message to the parent thread: `parentPort.postMessage('done')` ([example use](https://github.com/TryGhost/Ghost-Utils/blob/0e423f6c5c69b08d81d470f49de95654d8cc90e3/packages/job-manager/test/jobs/graceful.js#L33-L37)). Finishing work this way terminates the thread through [worker.terminate()]((https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_worker_terminate)), which logs termination in parent process and flushes any pipes opened in thread.
+3. Jobs that have iterative nature, or need cleanup before interrupting work should allow for **graceful shutdown** by listening on `'cancel'` message coming from parent thread ([example use](https://github.com/TryGhost/Ghost-Utils/blob/0e423f6c5c69b08d81d470f49de95654d8cc90e3/packages/job-manager/test/jobs/graceful.js#L12-L16)).
+4. When **exceptions occur** and expected outcome is to terminate current job, leave the exception unhandled allowing it to bubble up to the job manager. Unhandled exceptions [terminate current thread](https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_event_error) and allow for next scheduled job execution to happen.
+
+For more nuances on job structure best practices check [bree documentation](https://github.com/breejs/bree#writing-jobs-with-promises-and-async-await).
 ## Develop
 
 This is a mono repository, managed with [lerna](https://lernajs.io/).
