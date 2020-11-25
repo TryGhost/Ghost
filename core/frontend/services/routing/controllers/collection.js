@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:routing:controllers:collection');
-const {i18n} = require('../../../../server/lib/common');
+const {i18n} = require('../../proxy');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const urlService = require('../../url');
