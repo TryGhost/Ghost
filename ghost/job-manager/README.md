@@ -74,6 +74,22 @@ Offloaded (scheduled) jobs are running on dedicated worker threads which makes t
 4. When **exceptions occur** and expected outcome is to terminate current job, leave the exception unhandled allowing it to bubble up to the job manager. Unhandled exceptions [terminate current thread](https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_event_error) and allow for next scheduled job execution to happen.
 
 For more nuances on job structure best practices check [bree documentation](https://github.com/breejs/bree#writing-jobs-with-promises-and-async-await).
+
+### Job script quirks
+
+⚠️ to ensure worker thread back compatibility and correct inter-thread communication use [btrheads](https://github.com/chjj/bthreads) polyfill instead of native [worker_threads](https://nodejs.org/api/worker_threads.html#worker_threads) module in job scripts.
+
+Instead of: 
+```js
+const {isMainThread, parentPort} = require('worker_threads');
+```
+use 
+```js
+const {isMainThread, parentPort} = require('bthreads');
+```
+
+It should be possible to use native `worker_threads` module once Node v10 [hits EOL](https://nodejs.org/en/about/releases/) (2021-04-30).
+
 ## Develop
 
 This is a mono repository, managed with [lerna](https://lernajs.io/).
