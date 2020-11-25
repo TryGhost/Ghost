@@ -9,7 +9,7 @@ class EmailAnalyticsEventProcessor {
         this.providerIdEmailIdMap = {};
     }
 
-    process(event) {
+    async process(event) {
         if (event.type === 'delivered') {
             return this.handleDelivered(event);
         }
