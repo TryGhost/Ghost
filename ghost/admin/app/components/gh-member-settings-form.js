@@ -33,7 +33,7 @@ export default Component.extend({
         let subscriptions = this.member.get('stripe');
         if (subscriptions && subscriptions.length > 0) {
             return subscriptions.map((subscription) => {
-                const statusLabel = subscription.status === 'past_due' ? 'Past due' : subscription.status;
+                const statusLabel = subscription.status ? subscription.status.replace('_', ' ') : '';
                 return {
                     id: subscription.id,
                     customer: subscription.customer,
