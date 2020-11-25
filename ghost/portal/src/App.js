@@ -77,7 +77,7 @@ export default class App extends React.Component {
             }
         };
         const customTriggerSelector = '[data-portal]';
-        const popupCloseClass = 'gh-members-popup-close';
+        const popupCloseClass = 'gh-portal-close';
         this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
         this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.classList.add(popupCloseClass);
@@ -89,8 +89,8 @@ export default class App extends React.Component {
 
     /** Handle portal class set on custom trigger buttons */
     handleCustomTriggerClassUpdate() {
-        const popupOpenClass = 'gh-members-popup-open';
-        const popupCloseClass = 'gh-members-popup-close';
+        const popupOpenClass = 'gh-portal-open';
+        const popupCloseClass = 'gh-portal-close';
         this.customTriggerButtons.forEach((customButton) => {
             const elAddClass = this.state.showPopup ? popupOpenClass : popupCloseClass;
             const elRemoveClass = this.state.showPopup ? popupCloseClass : popupOpenClass;
