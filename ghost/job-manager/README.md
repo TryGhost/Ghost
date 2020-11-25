@@ -40,6 +40,8 @@ jobManager.scheduleJob('every 5 minutes', './path/to/jobs/check-emails.js', {}, 
 jobManager.scheduleJob('0 1/5 * * * *', './path/to/jobs/check-emails.js', {}, 'email-checker-cron');
 ```
 
+For other examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/examples) directory.
+
 ### Job types and definitions
 
 Job manager's instance accepts a "job" as a parameter in it's `addJob` and `scheduleJob` methods. Both methods should be used based on the nature of jobs they are going to run.
@@ -54,7 +56,7 @@ Jobs can be defined in multiple ways depending on the method they will be regist
 
 Short, non-blocking, asap executed jobs - should come through `addJob` method. Those can be standard [JavaScript function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) or a path to a module that exports a function as default.
 
-Scheduled job can be registered through `scheduleJob` method. Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation.
+Scheduled job can be registered through `scheduleJob` method. Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/jobs).
 
 ### Job rules of thumb
 To prevent complications around failed job retries and and handling of specific job states here are some rules that should be followed for all scheduled jobs:
