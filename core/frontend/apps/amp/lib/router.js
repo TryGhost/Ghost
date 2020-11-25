@@ -3,7 +3,7 @@ const express = require('../../../../shared/express');
 const ampRouter = express.Router('amp');
 
 // Dirty requires
-const {i18n} = require('../../../../server/lib/common');
+const {i18n} = require('../../../services/proxy');
 const errors = require('@tryghost/errors');
 
 const urlService = require('../../../services/url');
