@@ -25,17 +25,17 @@ module.exports = createNonTransactionalMigration(
     },
 
     async function down(knex) {
-        let hasIndex = true;
+        let missingIndex = false;
 
         if (knex.client.config.client === 'sqlite3') {
             const result = await knex.raw(`select * from sqlite_master where type = 'index' and tbl_name = 'email_recipients' and name = 'email_recipients_email_id_member_email_index'`);
-            hasIndex = result.length === 0;
+            missingIndex = result.length === 0;
         } else {
             const result = await knex.raw(`show index from email_recipients where Key_name = 'email_recipients_email_id_member_email_index'`);
-            hasIndex = result[0].length === 0;
+            missingIndex = result[0].length === 0;
         }
 
-        if (!hasIndex) {
+        if (missingIndex) {
             logging.info('Skipping drop of composite index on email_recipients for [email_id, member_email] - does not exist');
             return;
         }
