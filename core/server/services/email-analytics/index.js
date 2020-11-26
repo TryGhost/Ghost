@@ -8,11 +8,5 @@ module.exports = new EmailAnalyticsService({
     config,
     logging,
     db,
-    get settings() {
-        return {
-            mailgun_api_key: settings.get('mailgun_api_key'),
-            mailgun_domain: settings.get('mailgun_domain'),
-            mailgun_base_url: settings.get('mailgun_base_url')
-        };
-    }
+    settings
 });
