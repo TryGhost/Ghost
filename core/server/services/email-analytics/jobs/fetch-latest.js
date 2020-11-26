@@ -4,6 +4,28 @@ const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-latest
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 
+// Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
+// where it left off on next run
+function cancel() {
+    logging.info('Email analytics fetch-latest job cancelled before completion');
+
+    if (parentPort) {
+        parentPort.postMessage('cancelled');
+    } else {
+        setTimeout(() => {
+            process.exit(0);
+        }, 1000);
+    }
+}
+
+if (parentPort) {
+    parentPort.once('message', (message) => {
+        if (message === 'cancel') {
+            return cancel();
+        }
+    });
+}
+
 (async () => {
     try {
         const models = require('../../../models');

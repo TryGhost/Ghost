@@ -5,6 +5,26 @@ const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
 // one-off job to fetch all available events and re-process them idempotently
 // NB. can be a _very_ long job for sites with many members and frequent emails
 
+function cancel() {
+    logging.info('Email analytics fetch-all job cancelled before completion');
+
+    if (parentPort) {
+        parentPort.postMessage('cancelled');
+    } else {
+        setTimeout(() => {
+            process.exit(0);
+        }, 1000);
+    }
+}
+
+if (parentPort) {
+    parentPort.once('message', (message) => {
+        if (message === 'cancel') {
+            return cancel();
+        }
+    });
+}
+
 (async () => {
     try {
         const models = require('../../../models');
