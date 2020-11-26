@@ -17,7 +17,7 @@ const packageJSONPath = 'package.json';
  * These utils facilitate loading, reading, managing etc, packages from the file system.
  */
 module.exports = class PackageJson {
-    constructor(i18n) {
+    constructor({i18n}) {
         this.i18n = i18n;
     }
 

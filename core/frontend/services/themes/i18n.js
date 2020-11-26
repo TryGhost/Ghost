@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const {i18n, events} = require('../../../server/lib/common');
+const {I18n, events} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../../../server/services/settings/cache');
 const config = require('../../../shared/config');
@@ -8,7 +8,7 @@ const jp = require('jsonpath');
 
 const isNil = require('lodash/isNil');
 
-class ThemeI18n extends i18n.I18n {
+class ThemeI18n extends I18n {
     constructor(locale) {
         super(locale);
     }

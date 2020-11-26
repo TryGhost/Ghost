@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const themeList = require('./list');
 const active = require('./active');
-const packageJSON = require('../../../server/lib/fs/package-json');
+const {packageJSON} = require('../../../server/lib/common');
 const settingsCache = require('../../../server/services/settings/cache');
 
 /**
