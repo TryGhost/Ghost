@@ -1,5 +1,5 @@
 const logging = require('../../../../shared/logging');
-const {parentPort} = require('worker_threads');
+const {parentPort} = require('bthreads');
 const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
 
 // one-off job to fetch all available events and re-process them idempotently

@@ -1,5 +1,5 @@
 const logging = require('../../../../shared/logging');
-const {parentPort} = require('worker_threads');
+const {parentPort} = require('bthreads');
 const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-latest');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
