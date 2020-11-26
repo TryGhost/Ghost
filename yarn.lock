@@ -1375,6 +1375,11 @@ boolean@^3.0.2:
   resolved "https://registry.yarnpkg.com/boolean/-/boolean-3.0.2.tgz#df1baa18b6a2b0e70840475e1d93ec8fe75b2570"
   integrity sha512-RwywHlpCRc3/Wh81MiCKun4ydaIFyW5Ea6JbL6sRCVx5q5irDw7pMXBUFYF/jArQ6YrG36q0kpovc9P/Kd3I4g==
 
+bottlejs@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/bottlejs/-/bottlejs-2.0.0.tgz#c1770ac9c6ca435b13e8c4da71ed779b8cd398e8"
+  integrity sha512-Qhz5dd1YPTOHw0gZ1a1WpJ/oEWsq09BMMbxczeAPgubISij+ZFfah7wfOlHFeFQpWLQkS9TGz5C54tV6v0BlFA==
+
 brace-expansion@^1.1.7:
   version "1.1.11"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.11.tgz#3c7fcbf529d87226f3d2f52b966ff5271eb441dd"

@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('themes:loader');
 const config = require('../../../shared/config');
-const packageJSON = require('../../../server/lib/fs/package-json');
+const {packageJSON} = require('../../../server/lib/common');
 const themeList = require('./list');
 
 const loadAllThemes = function loadAllThemes() {
