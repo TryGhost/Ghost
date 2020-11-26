@@ -5,6 +5,12 @@
  */
 process.env.BLUEBIRD_DEBUG = 0;
 
+/**
+ * Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
+ * https://github.com/mapbox/node-sqlite3/issues/1386
+ */
+process.env.BTHREADS_BACKEND = 'child_process';
+
 const moment = require('moment-timezone');
 
 /**
