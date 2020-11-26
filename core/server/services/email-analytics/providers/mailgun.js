@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const mailgunJs = require('mailgun-js');
 const moment = require('moment');
 const EventProcessingResult = require('../lib/event-processing-result');
