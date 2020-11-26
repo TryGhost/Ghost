@@ -1,4 +1,8 @@
-<li class="gh-list-row gh-posts-list-item" ...attributes>
+<li class="gh-list-row gh-posts-list-item"
+    {{on "mouseover" this.mouseOver}}
+    {{on "mouseleave" this.mouseLeave}}
+    ...attributes
+>
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-featured" @title="Edit this post">
         {{#if @post.isFeatured}}
             <span data-tooltip="Featured" class="dib pl1 pr1 nr1 nl1">{{svg-jar "star-filled" class="fill-blue w3 h3"}}</span>
@@ -17,21 +21,48 @@
                     in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                 {{/if}}
 
-                {{#if (eq @post.email.status "submitted")}}
-                    • Sent to <span class="midgrey-l2 fw5">{{gh-pluralize @post.email.emailCount "member"}}</span>
-                {{/if}}
+                 • {{gh-format-post-time @post.updatedAtUTC draft=true}}
 
-                {{#if @post.isScheduled}}
-                    – <span class="gh-schedule-time">Will be published {{this.scheduledText}}</span>
-                {{/if}}
             </span>
         </p>
     </LinkTo>
 
+    {{#if (eq @post.displayName "post")}}
+        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients" @title="Edit this post">
+            <div class="flex fw4">
+                {{#if (or @post.email @post.willEmail)}}
+                    {{#if (eq @post.email.status "submitted")}}
+                        <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
+                            <span class="f7 darkgrey fw6 gh-content-email-stats">{{@post.email.emailCount}}</span>
+                            <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
+                        </span>
+                    {{/if}}
+                {{/if}}
+            </div>
+        </LinkTo>
+    {{/if}}
+
+    {{#if (eq @post.displayName "post")}}
+        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens" @title="Edit this post">
+            {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
+                <div class="flex">
+                    <span class="f7 darkgrey fw6 gh-content-email-stats">
+                        {{#if this.isHovered}}
+                            {{@post.email.openedCount}}
+                        {{else}}
+                            {{@post.email.openRate}}%&nbsp;
+                        {{/if}}
+                    </span>
+                    <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
+                </div>
+            {{/if}}
+        </LinkTo>
+    {{/if}}
+
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status" @title="Edit this post">
         <div class="flex items-center">
             {{#if @post.isScheduled}}
-            <span class="gh-content-status-draft gh-badge nowrap">
+            <span class="gh-content-status-draft gh-badge nowrap" title="Scheduled" data-tooltip="{{this.scheduledText}} to {{capitalize @post.emailRecipientFilter}} members">
                 Scheduled
             </span>
             {{/if}}
@@ -47,30 +78,6 @@
                 Published
             </span>
             {{/if}}
-
-            {{#if this.session.user.isOwnerOrAdmin}}
-                {{#if (or @post.email (and @post.isScheduled this.sendEmailWhenPublished))}}
-                    {{#if (eq @post.email.status "failed")}}
-                        <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
-                            {{svg-jar "send-email" class="stroke-red"}}
-                        </span>
-                    {{else}}
-                        {{#if @post.isScheduled}}
-                            <span title="To be send by email" data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
-                                {{svg-jar "send-email" class="stroke-green-d2"}}
-                            </span>
-                        {{else}}
-                            <span title="Sent by email" data-tooltip="Sent by email" class="gh-content-status-emailed">
-                                {{svg-jar "send-email" class="stroke-midgrey"}}
-                            </span>
-                        {{/if}}
-                    {{/if}}
-                {{/if}}
-            {{/if}}
         </div>
-    </LinkTo>
-
-    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-updated" @title="Edit this post">
-        <span class="nowrap">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
     </LinkTo>
 </li>
