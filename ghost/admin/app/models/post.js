@@ -149,6 +149,10 @@ export default Model.extend(Comparable, ValidationEngine, {
     internalTags: filterBy('tags', 'isInternal', true),
     isScheduled: equal('status', 'scheduled'),
 
+    willEmail: computed('emailRecipientFilter', function () {
+        return this.emailRecipientFilter !== 'none';
+    }),
+
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
         let uuid = this.uuid;

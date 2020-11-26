@@ -160,12 +160,13 @@
     padding-left: 10px;
 }
 
-.gh-posts-status-header {
-    width: 160px;
+.gh-posts-sends-header,
+.gh-posts-opens-header {
+    width: 120px;
 }
 
-.gh-posts-lastupdate-header {
-    width: 160px;
+.gh-posts-status-header {
+    width: 140px;
 }
 
 .gh-post-list-title {
@@ -179,7 +180,9 @@
 }
 
 .gh-post-list-updated,
-.gh-post-list-author {
+.gh-post-list-author,
+.gh-post-list-recipients,
+.gh-post-list-opens {
     color: var(--middarkgrey);
     font-size: 1.3rem;
 }
@@ -201,7 +204,7 @@
     color: var(--middarkgrey);
 }
 
-.gh-schedule-time {
+.gh-schedule-plan {
     color: var(--green-d1);
 }
 
@@ -217,6 +220,10 @@
 
 .gh-content-entry-meta .gh-badge {
     margin-right: 3px;
+}
+
+.gh-content-email-stats-mobile {
+    display: none;
 }
 
 .gh-content-status-draft,
@@ -340,9 +347,10 @@
         padding: 20px 28px 4px;
     }
 
-    .gh-post-list-status {
+    .gh-post-list-status,
+    .gh-post-list-recipients,
+    .gh-post-list-opens {
         display: inline-block;
-        order: 3;
         border: none;
         padding: 0 4px 20px 28px;
         font-size: 1.3rem;
@@ -352,9 +360,21 @@
         text-overflow: ellipsis;
     }
 
+    .gh-post-list-status {
+        order: 3;
+    }
+
+    .gh-post-list-recipients {
+        order: 4;
+    }
+
+    .gh-post-list-opens {
+        order: 5;
+    }
+
     .gh-post-list-updated {
         display: inline-block;
-        order: 4;
+        order: 6;
         border: none;
         padding: 0 4px 20px;
         font-size: 1.3rem;
@@ -366,7 +386,7 @@
 
     .gh-post-list-author {
         display: inline-block;
-        order: 5;
+        order: 7;
         border: none;
         padding: 0 4px 20px 0;
         font-size: 1.3rem;
@@ -383,6 +403,14 @@
     .gh-post-headers,
     .gh-post-list-actions {
         display: none;
+    }
+
+    .gh-content-email-stats {
+        display: none;
+    }
+
+    .gh-content-email-stats-mobile {
+        display: inherit;
     }
 
     .post-header {
