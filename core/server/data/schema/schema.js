@@ -467,6 +467,7 @@ module.exports = {
         delivered_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         opened_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         failed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        open_rate: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0, validations: {isLength: {min: 0, max: 100}}},
         subject: {type: 'string', maxlength: 300, nullable: true},
         from: {type: 'string', maxlength: 2000, nullable: true},
         reply_to: {type: 'string', maxlength: 2000, nullable: true},

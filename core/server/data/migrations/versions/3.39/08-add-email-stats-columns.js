@@ -18,5 +18,11 @@ module.exports = combineNonTransactionalMigrations(
         unsigned: true,
         nullable: false,
         defaultTo: 0
+    }),
+    createAddColumnMigration('emails', 'open_rate', {
+        type: 'integer',
+        unsigned: true,
+        nullable: false,
+        defaultTo: 0
     })
 );
