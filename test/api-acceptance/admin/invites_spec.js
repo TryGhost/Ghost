@@ -5,22 +5,14 @@ const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const mailService = require('../../../core/server/services/mail');
 const localUtils = require('./utils');
-const ghost = testUtils.startGhost;
-
-let request;
 
 describe('Invites API', function () {
-    let ghostServer;
+    let request;
 
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'invites');
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request, 'invites');
     });
 
     beforeEach(function () {
@@ -31,67 +23,53 @@ describe('Invites API', function () {
         sinon.restore();
     });
 
-    it('Can fetch all invites', function (done) {
-        request.get(localUtils.API.getApiQuery('invites/'))
+    it('Can fetch all invites', async function () {
+        const res = await request.get(localUtils.API.getApiQuery('invites/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(200);
 
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.invites);
-                jsonResponse.invites.should.have.length(2);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.invites);
+        jsonResponse.invites.should.have.length(2);
 
-                localUtils.API.checkResponse(jsonResponse, 'invites');
-                localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+        localUtils.API.checkResponse(jsonResponse, 'invites');
+        localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-                jsonResponse.invites[0].status.should.eql('sent');
-                jsonResponse.invites[0].email.should.eql('test1@ghost.org');
-                jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
+        jsonResponse.invites[0].status.should.eql('sent');
+        jsonResponse.invites[0].email.should.eql('test1@ghost.org');
+        jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
 
-                jsonResponse.invites[1].status.should.eql('sent');
-                jsonResponse.invites[1].email.should.eql('test2@ghost.org');
-                jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
+        jsonResponse.invites[1].status.should.eql('sent');
+        jsonResponse.invites[1].email.should.eql('test2@ghost.org');
+        jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
 
-                mailService.GhostMailer.prototype.send.called.should.be.false();
-
-                done();
-            });
+        mailService.GhostMailer.prototype.send.called.should.be.false();
     });
 
-    it('Can read an invitation by id', function (done) {
-        request.get(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
+    it('Can read an invitation by id', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(200);
 
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.invites);
-                jsonResponse.invites.should.have.length(1);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.invites);
+        jsonResponse.invites.should.have.length(1);
 
-                localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+        localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-                mailService.GhostMailer.prototype.send.called.should.be.false();
-
-                done();
-            });
+        mailService.GhostMailer.prototype.send.called.should.be.false();
     });
 
-    it('Can add a new invite', function (done) {
-        request
+    it('Can add a new invite', async function () {
+        const res = await request
             .post(localUtils.API.getApiQuery('invites/'))
             .set('Origin', config.get('url'))
             .send({
@@ -99,42 +77,29 @@ describe('Invites API', function () {
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(201);
 
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.invites);
-                jsonResponse.invites.should.have.length(1);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.invites);
+        jsonResponse.invites.should.have.length(1);
 
-                localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-                jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
+        localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+        jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
 
-                mailService.GhostMailer.prototype.send.called.should.be.true();
+        mailService.GhostMailer.prototype.send.called.should.be.true();
 
-                should.exist(res.headers.location);
-                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
-
-                done();
-            });
+        should.exist(res.headers.location);
+        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
     });
 
-    it('Can destroy an existing invite', function (done) {
-        request.del(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
+    it('Can destroy an existing invite', async function () {
+        await request.del(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
             .set('Origin', config.get('url'))
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(204);
 
-                mailService.GhostMailer.prototype.send.called.should.be.false();
-                done();
-            });
+        mailService.GhostMailer.prototype.send.called.should.be.false();
     });
 });
