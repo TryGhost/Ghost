@@ -1,3 +1,5 @@
+const config = require('../shared/config');
+
 /**
  * If we enable bluebird debug logs we see a huge memory usage.
  * You can reproduce by removing this line and import a big database export into Ghost.
@@ -9,7 +11,10 @@ process.env.BLUEBIRD_DEBUG = 0;
  * Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
  * https://github.com/mapbox/node-sqlite3/issues/1386
  */
-process.env.BTHREADS_BACKEND = 'child_process';
+const isSQLite = config.get('database:client') === 'sqlite3';
+if (isSQLite) {
+    process.env.BTHREADS_BACKEND = 'child_process';
+}
 
 const moment = require('moment-timezone');
 
