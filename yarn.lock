@@ -449,10 +449,10 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.3.2.tgz#e8d9cd54949a1b8afd61aeb6bf6bc18102a5f295"
-  integrity sha512-7GaKTtoY+1zQ3m+4DEKGqLZe3k5+A2TPpBSYAEQWON6DN2yIXm0yq+kDVcxdJ4qdFJKXdwWi1SNpOnrnQllByg==
+"@tryghost/job-manager@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.3.3.tgz#7d7cbfb82f697dedbaf839f5941bfc8017decdea"
+  integrity sha512-4vpdTRG1ZBV98Q92p9GiADdwhz5I7B7u6vY4yKJ94BVrctvPUae4FfiVPBGZ4ckn3zBWMp8nWFkXSylXsockgw==
   dependencies:
     "@breejs/later" "4.0.2"
     bree "4.0.0"
