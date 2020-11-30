@@ -6,49 +6,42 @@ const testUtils = require('../../utils');
 const localUtils = require('../../regression/api/canary/admin/utils');
 const config = require('../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
-
-let request;
-
 describe('Labels API', function () {
+    let request;
+
     after(function () {
         sinon.restore();
     });
 
-    before(function () {
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request);
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request);
     });
 
-    it('Can add', function () {
+    it('Can add', async function () {
         const label = {
             name: 'test'
         };
 
-        return request
+        const res = await request
             .post(localUtils.API.getApiQuery(`labels/`))
             .send({labels: [label]})
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.labels);
+            .expect(201);
 
-                jsonResponse.labels.should.have.length(1);
-                jsonResponse.labels[0].name.should.equal(label.name);
-                jsonResponse.labels[0].slug.should.equal(label.name);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.labels);
 
-                should.exist(res.headers.location);
-                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('labels/')}${res.body.labels[0].id}/`);
-            });
+        jsonResponse.labels.should.have.length(1);
+        jsonResponse.labels[0].name.should.equal(label.name);
+        jsonResponse.labels[0].slug.should.equal(label.name);
+
+        should.exist(res.headers.location);
+        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('labels/')}${res.body.labels[0].id}/`);
     });
 });

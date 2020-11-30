@@ -9,9 +9,6 @@ const localUtils = require('./utils');
 const publicSettings = require('../../../core/server/services/settings/public');
 const defaultSettings = require('../../../core/server/data/schema').defaultSettings;
 
-const ghost = testUtils.startGhost;
-let request;
-
 const defaultSettingsKeys = [
     'title',
     'description',
@@ -40,72 +37,70 @@ const defaultSettingsKeys = [
 ];
 
 describe('Settings Content API', function () {
-    before(function () {
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            }).then(function () {
-                return testUtils.initFixtures('api_keys');
-            });
+    let request;
+
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await testUtils.initFixtures('api_keys');
     });
 
-    it('Can request settings', function () {
+    it('Can request settings', async function () {
         const key = localUtils.getValidKey();
-        return request.get(localUtils.API.getApiQuery(`settings/?key=${key}`))
+        const res = await request.get(localUtils.API.getApiQuery(`settings/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                res.headers.vary.should.eql('Accept-Encoding');
-                should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+            .expect(200);
 
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.settings);
-                should.exist(jsonResponse.meta);
+        res.headers.vary.should.eql('Accept-Encoding');
+        should.exist(res.headers['access-control-allow-origin']);
+        should.not.exist(res.headers['x-cache-invalidate']);
 
-                jsonResponse.settings.should.be.an.Object();
-                const settings = jsonResponse.settings;
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.settings);
+        should.exist(jsonResponse.meta);
 
-                // Verify we have the right keys for settings
-                const publicProperties = _.filter(_.values(publicSettings), (o) => {
-                    return (o !== 'brand');
-                });
+        jsonResponse.settings.should.be.an.Object();
+        const settings = jsonResponse.settings;
 
-                const flattenedPublicSettings = [];
-                _.each(defaultSettings, function each(_settings) {
-                    _.each(_settings, function eachSetting(setting) {
-                        const flags = setting.flags || '';
-                        if (setting.group === 'site' || (flags.includes('PUBLIC'))) {
-                            flattenedPublicSettings.push(setting);
-                        }
-                    });
-                });
+        // Verify we have the right keys for settings
+        const publicProperties = _.filter(_.values(publicSettings), (o) => {
+            return (o !== 'brand');
+        });
 
-                // settings.should.have.properties(publicProperties);
-                // Object.keys(settings).length.should.equal(22);
-                Object.keys(settings).should.deepEqual(defaultSettingsKeys);
-                // Verify that we are returning the defaults for each value
-                _.forEach(settings, (value, settingsKey) => {
-                    // `url` does not come from the settings cache
-                    if (settingsKey === 'url') {
-                        should(value).eql(`${config.get('url')}/`);
-                        return;
-                    }
-
-                    let defaultKey = _.findKey(publicSettings, v => v === settingsKey);
-                    let defaultValue = _.find(flattenedPublicSettings, setting => setting.key === defaultKey).defaultValue;
-
-                    // Convert empty strings to null
-                    defaultValue = defaultValue || null;
-
-                    if (defaultKey === 'navigation' || defaultKey === 'secondary_navigation') {
-                        defaultValue = JSON.parse(defaultValue);
-                    }
-
-                    should(value).eql(defaultValue);
-                });
+        const flattenedPublicSettings = [];
+        _.each(defaultSettings, function each(_settings) {
+            _.each(_settings, function eachSetting(setting) {
+                const flags = setting.flags || '';
+                if (setting.group === 'site' || (flags.includes('PUBLIC'))) {
+                    flattenedPublicSettings.push(setting);
+                }
             });
+        });
+
+        // settings.should.have.properties(publicProperties);
+        // Object.keys(settings).length.should.equal(22);
+        Object.keys(settings).should.deepEqual(defaultSettingsKeys);
+        // Verify that we are returning the defaults for each value
+        _.forEach(settings, (value, settingsKey) => {
+            // `url` does not come from the settings cache
+            if (settingsKey === 'url') {
+                should(value).eql(`${config.get('url')}/`);
+                return;
+            }
+
+            let defaultKey = _.findKey(publicSettings, v => v === settingsKey);
+            let defaultValue = _.find(flattenedPublicSettings, setting => setting.key === defaultKey).defaultValue;
+
+            // Convert empty strings to null
+            defaultValue = defaultValue || null;
+
+            if (defaultKey === 'navigation' || defaultKey === 'secondary_navigation') {
+                defaultValue = JSON.parse(defaultValue);
+            }
+
+            should(value).eql(defaultValue);
+        });
     });
 });

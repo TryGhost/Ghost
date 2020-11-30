@@ -6,137 +6,113 @@ const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 
-const ghost = testUtils.startGhost;
-let request;
-
 describe('Pages API', function () {
-    let ghostServer;
-    let ownerCookie;
+    let request;
 
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'users:extra', 'posts');
-            })
-            .then(function (cookie) {
-                ownerCookie = cookie;
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request, 'users:extra', 'posts');
     });
 
-    it('Can retrieve all pages', function (done) {
-        request.get(localUtils.API.getApiQuery('pages/'))
+    it('Can retrieve all pages', async function () {
+        const res = await request.get(localUtils.API.getApiQuery('pages/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(200);
 
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.pages);
-                localUtils.API.checkResponse(jsonResponse, 'pages');
-                jsonResponse.pages.should.have.length(2);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.pages);
+        localUtils.API.checkResponse(jsonResponse, 'pages');
+        jsonResponse.pages.should.have.length(2);
 
-                localUtils.API.checkResponse(jsonResponse.pages[0], 'page');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
+        localUtils.API.checkResponse(jsonResponse.pages[0], 'page');
+        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+        _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
 
-                // Absolute urls by default
-                jsonResponse.pages[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
-                jsonResponse.pages[1].url.should.eql(`${config.get('url')}/static-page-test/`);
-
-                done();
-            });
+        // Absolute urls by default
+        jsonResponse.pages[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
+        jsonResponse.pages[1].url.should.eql(`${config.get('url')}/static-page-test/`);
     });
 
-    it('Can add a page', function () {
+    it('Can add a page', async function () {
         const page = {
             title: 'My Page',
             page: false,
             status: 'published'
         };
 
-        return request.post(localUtils.API.getApiQuery('pages/'))
+        const res = await request.post(localUtils.API.getApiQuery('pages/'))
             .set('Origin', config.get('url'))
             .send({pages: [page]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then((res) => {
-                res.body.pages.length.should.eql(1);
+            .expect(201);
 
-                localUtils.API.checkResponse(res.body.pages[0], 'page');
-                should.exist(res.headers['x-cache-invalidate']);
+        res.body.pages.length.should.eql(1);
 
-                should.exist(res.headers.location);
-                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
+        localUtils.API.checkResponse(res.body.pages[0], 'page');
+        should.exist(res.headers['x-cache-invalidate']);
 
-                return models.Post.findOne({
-                    id: res.body.pages[0].id
-                }, testUtils.context.internal);
-            })
-            .then((model) => {
-                model.get('title').should.eql(page.title);
-                model.get('status').should.eql(page.status);
-                model.get('type').should.eql('page');
-            });
+        should.exist(res.headers.location);
+        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${res.body.pages[0].id}/`);
+
+        const model = await models.Post.findOne({
+            id: res.body.pages[0].id
+        }, testUtils.context.internal);
+
+        model.get('title').should.eql(page.title);
+        model.get('status').should.eql(page.status);
+        model.get('type').should.eql('page');
     });
 
-    it('Can update a page', function () {
+    it('Can update a page', async function () {
         const page = {
             title: 'updated page',
             page: false
         };
 
-        return request
+        const res = await request
             .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/`))
             .set('Origin', config.get('url'))
-            .expect(200)
-            .then((res) => {
-                page.updated_at = res.body.pages[0].updated_at;
+            .expect(200);
 
-                return request.put(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id))
-                    .set('Origin', config.get('url'))
-                    .send({pages: [page]})
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200);
-            })
-            .then((res) => {
-                should.exist(res.headers['x-cache-invalidate']);
-                localUtils.API.checkResponse(res.body.pages[0], 'page');
+        page.updated_at = res.body.pages[0].updated_at;
 
-                return models.Post.findOne({
-                    id: res.body.pages[0].id
-                }, testUtils.context.internal);
-            })
-            .then((model) => {
-                model.get('type').should.eql('page');
-            });
+        const res2 = await request.put(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id))
+            .set('Origin', config.get('url'))
+            .send({pages: [page]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.exist(res2.headers['x-cache-invalidate']);
+        localUtils.API.checkResponse(res2.body.pages[0], 'page');
+
+        const model = await models.Post.findOne({
+            id: res2.body.pages[0].id
+        }, testUtils.context.internal);
+
+        model.get('type').should.eql('page');
     });
 
-    it('Cannot get page via posts endpoint', function () {
-        return request.get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[5].id}/`))
+    it('Cannot get page via posts endpoint', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[5].id}/`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404);
     });
 
-    it('Cannot update page via posts endpoint', function () {
+    it('Cannot update page via posts endpoint', async function () {
         const page = {
             title: 'fails',
             updated_at: new Date().toISOString()
         };
 
-        return request.put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id))
+        await request.put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[5].id))
             .set('Origin', config.get('url'))
             .send({posts: [page]})
             .expect('Content-Type', /json/)
@@ -144,14 +120,13 @@ describe('Pages API', function () {
             .expect(404);
     });
 
-    it('Can delete a page', function () {
-        return request.del(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id))
+    it('Can delete a page', async function () {
+        const res = await request.del(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id))
             .set('Origin', config.get('url'))
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(204)
-            .then((res) => {
-                res.body.should.be.empty();
-                res.headers['x-cache-invalidate'].should.eql('/*');
-            });
+            .expect(204);
+
+        res.body.should.be.empty();
+        res.headers['x-cache-invalidate'].should.eql('/*');
     });
 });
