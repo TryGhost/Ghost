@@ -50,6 +50,7 @@ function haxGetMembersPriceData() {
     const CURRENCY_SYMBOLS = {
         USD: '$',
         AUD: '$',
+        NZD: '$',
         CAD: '$',
         GBP: '£',
         EUR: '€',
