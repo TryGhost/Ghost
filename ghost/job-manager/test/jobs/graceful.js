@@ -30,11 +30,17 @@ if (!isMainThread) {
             await setTimeoutPromise(100); // async cleanup imitation
 
             if (parentPort) {
-                // preferred method of shutting down the worker
+                // `done' is a preferred method of shutting down the worker
                 // it signals job manager about finished job and the thread
                 // is later terminated through `terminate()` method allowing
                 // for unfinished pipes to flush (e.g. loggers)
+                //
+                // 'cancelled' is an allternative method to signal job was terminated
+                // because of parent initiated reason (e.g.: parent process interuption)
+                // differs from 'done' by producing different
+                // logging - shows the job was cancelle instead of completing
                 parentPort.postMessage('done');
+                // parentPort.postMessage('cancelled');
             } else {
                 process.exit(0);
             }
