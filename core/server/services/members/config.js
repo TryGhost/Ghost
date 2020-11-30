@@ -62,6 +62,7 @@ class MembersConfigProvider {
         const CURRENCY_SYMBOLS = {
             USD: '$',
             AUD: '$',
+            NZD: '$',
             CAD: '$',
             GBP: '£',
             EUR: '€',
