@@ -137,7 +137,7 @@ module.exports = class MembersCSVImporter {
                     ...resultAccumulator,
                     errors: [...resultAccumulator.errors, {
                         ...row,
-                        error
+                        error: {message: error.message}
                     }]
                 };
             }
