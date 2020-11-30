@@ -26,6 +26,13 @@ describe('Oembed API', function () {
             });
     });
 
+    beforeEach(function () {
+        // ensure sure we're not network dependent
+        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
+            return Promise.resolve({address: '123.123.123.123'});
+        });
+    });
+
     afterEach(function () {
         sinon.restore();
         nock.cleanAll();
@@ -490,11 +497,13 @@ describe('Oembed API', function () {
         });
 
         it('skips fetching url that resolves to private IP', function (done) {
+            dnsPromises.lookup.restore();
             sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
                 if (hostname === 'page.com') {
                     return Promise.resolve({address: '192.168.0.1'});
+                } else {
+                    return Promise.resolve({address: '123.123.123.123'});
                 }
-                return dnsPromises.lookup.wrappedMethod.apply(this, arguments);
             });
 
             const pageMock = nock('http://page.com')
@@ -525,11 +534,13 @@ describe('Oembed API', function () {
         });
 
         it('aborts fetching if a redirect resolves to private IP', function (done) {
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+            dnsPromises.lookup.restore();
+            sinon.stub(dnsPromises, 'lookup').callsFake(async function (hostname) {
                 if (hostname === 'page.com') {
                     return Promise.resolve({address: '192.168.0.1'});
+                } else {
+                    return Promise.resolve({address: '123.123.123.123'});
                 }
-                return dnsPromises.lookup.wrappedMethod.apply(this, arguments);
             });
 
             const redirectMock = nock('http://redirect.com')
@@ -565,11 +576,13 @@ describe('Oembed API', function () {
         });
 
         it('skips fetching <link rel="alternate"> if it resolves to a private IP', function (done) {
+            dnsPromises.lookup.restore();
             sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
                 if (hostname === 'oembed.com') {
                     return Promise.resolve({address: '192.168.0.1'});
+                } else {
+                    return Promise.resolve({address: '123.123.123.123'});
                 }
-                return dnsPromises.lookup.wrappedMethod.apply(this, arguments);
             });
 
             const pageMock = nock('http://page.com')
