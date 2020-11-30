@@ -8,7 +8,7 @@ const routeMatch = require('path-match')();
  * @description Query API for a single entry/resource.
  * @param {String} postUrl
  * @param {Object} routerOptions
- * @param {Objec†} locals
+ * @param {Object} locals
  * @returns {*}
  */
 function entryLookup(postUrl, routerOptions, locals) {
