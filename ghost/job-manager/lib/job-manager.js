@@ -100,7 +100,7 @@ class JobManager {
             throw new Error('Invalid schedule format');
         }
 
-        this.logging.info(`Scheduling job. Next run on: ${later.schedule(schedule).next()}`);
+        this.logging.info(`Scheduling job ${name} at ${when}. Next run on: ${later.schedule(schedule).next()}`);
 
         const breeJob = assembleBreeJob(when, job, data, name);
         this.bree.add(breeJob);
