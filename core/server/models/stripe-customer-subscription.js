@@ -3,6 +3,7 @@ const ghostBookshelf = require('./base');
 const CURRENCY_SYMBOLS = {
     usd: '$',
     aud: '$',
+    nzd: '$',
     cad: '$',
     gbp: '£',
     eur: '€',
