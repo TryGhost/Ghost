@@ -40,7 +40,7 @@ class JobManager {
     }
 
     /**
-     * Adds job to queue
+     * Adds job to queue in current even loop
      *
      * @param {Function|String} job - function or path to a module defining a job
      * @param {Object} [data] - data to be passed into the job
@@ -72,7 +72,7 @@ class JobManager {
     }
 
     /**
-     * Schedules recuring job
+     * Schedules recuring job offloaded to per-job event-loop (thread or a process)
      *
      * @param {String} when - cron or human readable schedule format
      * @param {Function|String} job - function or path to a module defining a job
