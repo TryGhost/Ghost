@@ -93,7 +93,7 @@ class JobManager {
         schedule = later.parse.text(when);
 
         if (isCronExpression(when)) {
-            schedule = later.parse.cron(when);
+            schedule = later.parse.cron(when, true);
         }
 
         if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
