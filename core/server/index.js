@@ -79,8 +79,13 @@ function initializeRecurringJobs() {
     const jobsService = require('./services/jobs');
 
     if (config.get('backgroundJobs:emailAnalytics')) {
+        // use a random seconds value to avoid spikes to external APIs on the minute
+        const s = Math.floor(Math.random() * 60); // 0-59
+        // run every 2 minutes, either on 1,3,5... or 2,4,6...
+        const m = Math.floor(Math.random() * 2) + 1; // 1-2
+
         jobsService.scheduleJob(
-            'every 1 minute',
+            `${s} ${m}/2 * * * *`,
             path.resolve(__dirname, 'services', 'email-analytics', 'jobs', 'fetch-latest.js'),
             undefined,
             'email-analytics-fetch-latest'
