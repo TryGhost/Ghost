@@ -106,6 +106,14 @@ describe('DB API', function () {
             });
     });
 
+    it('fails when triggering an export from unknown filename ', function () {
+        return request.get(localUtils.API.getApiQuery('db/?filename=this_file_is_not_here.json'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(404);
+    });
+
     it('import should fail without file', function () {
         return request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
