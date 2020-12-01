@@ -43,6 +43,12 @@ class EmailAnalyticsService {
         const result = new EventProcessingResult();
         const lastTimestamp = await this.getLastSeenEventTimestamp();
 
+        const emailCount = await this.db.knex('emails').count();
+        if (emailCount <= 0) {
+            debug('fetchAll: skipping - no emails to track');
+            return result;
+        }
+
         const startFetch = new Date();
         debug('fetchLatest: starting');
         providersLoop:
