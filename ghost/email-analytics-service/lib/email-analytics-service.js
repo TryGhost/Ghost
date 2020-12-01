@@ -22,8 +22,8 @@ class EmailAnalyticsService {
     async fetchAll() {
         const result = new EventProcessingResult();
 
-        const emailCount = await this.db.knex('emails').count();
-        if (emailCount <= 0) {
+        const [emailCount] = await this.db.knex('emails').count('id as count');
+        if (emailCount && emailCount.count <= 0) {
             debug('fetchAll: skipping - no emails to track');
             return result;
         }
@@ -43,8 +43,8 @@ class EmailAnalyticsService {
         const result = new EventProcessingResult();
         const lastTimestamp = await this.getLastSeenEventTimestamp();
 
-        const emailCount = await this.db.knex('emails').count();
-        if (emailCount <= 0) {
+        const [emailCount] = await this.db.knex('emails').count('id as count');
+        if (emailCount && emailCount.count <= 0) {
             debug('fetchLatest: skipping - no emails to track');
             return result;
         }
