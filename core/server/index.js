@@ -78,12 +78,14 @@ function initializeRecurringJobs() {
 
     const jobsService = require('./services/jobs');
 
-    jobsService.scheduleJob(
-        'every 1 minute',
-        path.resolve(__dirname, 'services', 'email-analytics', 'jobs', 'fetch-latest.js'),
-        undefined,
-        'email-analytics-fetch-latest'
-    );
+    if (config.get('backgroundJobs:emailAnalytics')) {
+        jobsService.scheduleJob(
+            'every 1 minute',
+            path.resolve(__dirname, 'services', 'email-analytics', 'jobs', 'fetch-latest.js'),
+            undefined,
+            'email-analytics-fetch-latest'
+        );
+    }
 }
 
 /**

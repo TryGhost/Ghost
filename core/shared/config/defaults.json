@@ -115,5 +115,8 @@
     "adminFrameProtection": true,
     "sendWelcomeEmail": true,
     "stripeDirect": false,
-    "enableStripePromoCodes": false
+    "enableStripePromoCodes": false,
+    "backgroundJobs": {
+        "emailAnalytics": true
+    }
 }
