@@ -45,7 +45,7 @@ class EmailAnalyticsService {
 
         const emailCount = await this.db.knex('emails').count();
         if (emailCount <= 0) {
-            debug('fetchAll: skipping - no emails to track');
+            debug('fetchLatest: skipping - no emails to track');
             return result;
         }
 
