@@ -204,6 +204,7 @@ async function handleUnsubscribeRequest(req) {
         return memberModel.toJSON();
     } catch (err) {
         throw new errors.InternalServerError({
+            err,
             message: 'Failed to unsubscribe member'
         });
     }
