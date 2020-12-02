@@ -2,7 +2,12 @@ const util = require('util');
 const setTimeoutPromise = util.promisify(setTimeout);
 
 const passTime = async (ms) => {
-    await setTimeoutPromise(ms);
+    if (Number.isInteger(ms)) {
+        await setTimeoutPromise(ms);
+    } else {
+        await setTimeoutPromise(ms.ms);
+    }
+
     return 'done';
 };
 
