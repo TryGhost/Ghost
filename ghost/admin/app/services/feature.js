@@ -51,6 +51,7 @@ export default Service.extend({
     lazyLoader: service(),
 
     members: feature('members'),
+    emailAnalytics: feature('emailAnalytics'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
 
     _user: null,

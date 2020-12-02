@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhPostsListItemComponent extends Component {
+    @service feature;
     @service session;
     @service settings;
 
