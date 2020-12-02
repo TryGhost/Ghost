@@ -1,5 +1,6 @@
 const logging = require('../../../../shared/logging');
 const {parentPort} = require('bthreads');
+const sentry = require('../../../../shared/sentry');
 const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
 
 // one-off job to fetch all available events and re-process them idempotently
@@ -61,6 +62,7 @@ if (parentPort) {
         }
     } catch (error) {
         logging.error(error);
+        sentry.captureException(error);
 
         // give the logging pipes time finish writing before exit
         setTimeout(() => {
