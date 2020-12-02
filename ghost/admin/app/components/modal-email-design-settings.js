@@ -1,4 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import moment from 'moment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -7,6 +8,9 @@ import {tracked} from '@glimmer/tracking';
 export default class ModalEmailDesignSettings extends ModalComponent {
     @service()
     settings;
+
+    @service()
+    session;
 
     @service()
     config;
@@ -22,6 +26,9 @@ export default class ModalEmailDesignSettings extends ModalComponent {
 
     @tracked
     footerContent = this.settings.get('newsletterFooterContent');
+
+    @tracked
+    currentDate = moment().format('D MMM YYYY');
 
     @action
     setShowHeader(event) {
