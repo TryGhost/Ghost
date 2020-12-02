@@ -74,7 +74,7 @@ class JobManager {
     /**
      * Schedules recuring job offloaded to per-job event-loop (thread or a process)
      *
-     * @param {String} when - cron or human readable schedule format
+     * @param {String | Date} when - Date, cron or human readable schedule format
      * @param {Function|String} job - function or path to a module defining a job
      * @param {Object} [data] - data to be passed into the job
      * @param {String} [name] - job name
@@ -90,17 +90,21 @@ class JobManager {
             }
         }
 
-        schedule = later.parse.text(when);
+        if (!(when instanceof Date)) {
+            if (isCronExpression(when)) {
+                schedule = later.parse.cron(when, true);
+            } else {
+                schedule = later.parse.text(when);
+            }
 
-        if (isCronExpression(when)) {
-            schedule = later.parse.cron(when, true);
+            if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
+                throw new Error('Invalid schedule format');
+            }
+
+            this.logging.info(`Scheduling job ${name} at ${when}. Next run on: ${later.schedule(schedule).next()}`);
+        } else {
+            this.logging.info(`Scheduling job ${name} at ${when}`);
         }
-
-        if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
-            throw new Error('Invalid schedule format');
-        }
-
-        this.logging.info(`Scheduling job ${name} at ${when}. Next run on: ${later.schedule(schedule).next()}`);
 
         const breeJob = assembleBreeJob(when, job, data, name);
         this.bree.add(breeJob);

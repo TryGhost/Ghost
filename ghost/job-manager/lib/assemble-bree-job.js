@@ -15,7 +15,11 @@ const assemble = (when, job, data, name) => {
         });
     }
 
-    if (isCronExpression(when)) {
+    if (when instanceof Date) {
+        Object.assign(breeJob, {
+            date: when
+        });
+    } else if (isCronExpression(when)) {
         Object.assign(breeJob, {
             cron: when
         });
