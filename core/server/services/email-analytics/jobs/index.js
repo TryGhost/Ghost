@@ -10,6 +10,7 @@ module.exports = {
     async scheduleRecurringJobs() {
         if (
             !hasScheduled &&
+            config.get('emailAnalytics') &&
             config.get('backgroundJobs:emailAnalytics') &&
             !process.env.NODE_ENV.match(/^testing/)
         ) {
