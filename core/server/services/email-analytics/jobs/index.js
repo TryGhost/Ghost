@@ -18,7 +18,7 @@ module.exports = {
             // processer usage from many sites spinning up threads can be high
             const emailCount = await models.Email
                 .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
-                .whereNot('status', 'failed')
+                .where('status', '<>', 'failed')
                 .count();
 
             if (emailCount > 0) {
