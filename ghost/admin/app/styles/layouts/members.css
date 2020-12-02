@@ -795,10 +795,81 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
+.gh-email-design-typography .gh-radio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 12px;
+}
+
+.gh-email-design-typography .gh-radio-content {
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+    margin: 0 -32px 0 0;
+}
+
+.gh-email-design-typography .active .gh-radio-content {
+    border: 1px solid transparent;
+    box-shadow: 0px 0px 0px 2px var(--blue);
+}
+
+.gh-email-design-typography .gh-radio-button {
+    margin-right: 12px;
+    opacity: 0;
+}
+
+.gh-email-design-typography .gh-radio-label {
+    padding: 12px 12px 12px 14px;
+    display: flex;
+    align-items: center;
+}
+
+.gh-email-design-typography .gh-radio-label .sample {
+    display: block;
+    font-size: 3.2rem;
+    margin-right: 10px;
+    font-weight: 600;
+    width: 44px;
+    text-align: center;
+}
+
+.gh-email-design-typography .gh-radio-label .description h4 {
+    font-size: 1.3rem;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4em;
+}
+
+.gh-email-design-typography .gh-radio-label.serif .description h4 {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 1.3rem;
+}
+
+.gh-email-design-typography .gh-radio-label .description p {
+    font-size: 1.2rem !important;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-email-design-typography .gh-radio-label.serif .description p {
+    font-size: 1.25rem !important;
+    margin: 0;
+    padding: 0;
+}
+
 .gh-members-emailsettings-footer-input {
     border: 1px solid var(--whitegrey);
-    padding: 0 6px 6px 6px;
-    height: 80px;
+    padding: 0 12px 6px 12px;
+    height: 120px;
+    border-radius: 4px;
+}
+
+.gh-members-emailsettings-footer-input p {
+    color: var(--darkgrey);
+    font-size: 1.4rem !important;
+    line-height: 1.5em !important;
 }
 
 .gh-members-emailsettings-footer {
@@ -816,6 +887,10 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: flex-start;
 }
 
+.gh-members-emailsettings-promotelabel p {
+    margin-right: 20px;
+}
+
 .gh-members-emailsettings-promotelabel svg {
     width: 20px;
     margin-right: 8px;
@@ -830,14 +905,19 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview {
-    overflow: hidden;
-    overflow-y: hidden;
-    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 32px;
+}
+
+.gh-members-emailpreview:after {
+    content: "\00a0";
+    display: block;
+    height: 32px;
+    width: 100%;
 }
 
 .gh-members-emailpreview-container {
-    width: 100%;
-    max-width: 520px;
     background: #fff;
     border-radius: 12px;
     padding: 0;
@@ -852,11 +932,9 @@ p.gh-members-import-errordetail:first-of-type {
         0 100px 80px rgba(0, 0, 0, 0.07);
     ;
     color: var(--blackgrey);
-    transform: scale(0.85);
-    transform-origin: top;
-    pointer-events: none;
     cursor: auto;
-    overflow: hidden;
+    width: 100%;
+    max-width: 700px;
 }
 
 .gh-members-emailpreview-container a {
@@ -896,19 +974,17 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-contents {
-    overflow-x: hidden;
-    overflow-y: scroll;
-    margin: 0 -50px;
-    padding: 0 74px 30px;
-    max-height: calc(100vh - 66px - 64px - 60px);
+    padding: 0 50px;
+    margin: 0 20px;
 }
 
 .gh-members-emailpreview-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 0;
+    padding: 50px 0;
     border-bottom: 1px solid #e5eff5;
+    margin-bottom: -10px;
 }
 
 .gh-members-emailpreview-header.hide {
@@ -919,6 +995,8 @@ p.gh-members-import-errordetail:first-of-type {
     width: 48px;
     height: 48px;
     border-radius: 4px;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
 .gh-members-emailpreview-header h4 {
@@ -927,7 +1005,6 @@ p.gh-members-import-errordetail:first-of-type {
     letter-spacing: -0.1px;
     font-weight: 700;
     text-transform: uppercase;
-    margin: 10px 0;
     color: #15212A;
 }
 
@@ -935,7 +1012,7 @@ p.gh-members-import-errordetail:first-of-type {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 0;
+    padding: 50px 0 40px;
 }
 
 .gh-members-emailpreview-title h2 {
@@ -979,7 +1056,8 @@ p.gh-members-import-errordetail:first-of-type {
     font-size: 1.8rem;
     line-height: 1.5em;
     color: #15212A;
-    max-width: 560px;
+    max-width: 600px;
+    width: 100%;
 }
 
 .gh-members-emailpreview-content.sans-serif p {
@@ -989,26 +1067,25 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-footer {
-    padding: 40px 0 20px;
+    padding: 40px 0 0;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 .gh-members-emailpreview-footercontent {
-    margin: 0 0 10px;
-    max-width: 380px;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     text-align: center;
-    line-height: 1.4em;
-    color: var(--midgrey-l1);
+    line-height: 1.5em;
+    color: #738a94;
+    padding: 10px 30px;
 }
 
 .gh-members-emailpreview-footercontent p {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     text-align: center;
-    line-height: 1.4em;
-    color: var(--midgrey-l1);
+    line-height: 1.5em;
+    color: #738a94;
     margin: 0;
     padding: 0;
 }
@@ -1018,20 +1095,21 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailpreview-footersite {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     text-align: center;
-    color: var(--blackgrey);
+    color: #738a94;
+    padding: 10px 30px 60px;
 }
 
 .gh-members-emailpreview-footersite span {
-    color: var(--midgrey-l1);
+    color: #738a94;
 }
 
 .gh-members-emailpreview-badge {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 0 25px;
+    padding: 10px 0 40px;
 }
 
 .gh-members-emailpreview-badge.hide {

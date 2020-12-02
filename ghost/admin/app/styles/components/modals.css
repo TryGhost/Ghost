@@ -202,7 +202,7 @@
     display: flex;
     flex-direction: column;
     padding: 0px 24px 20px;
-    width: 342px;
+    width: 362px;
 }
 
 .modal-fullsettings-sidebar.with-footer {
@@ -258,7 +258,7 @@
     margin-bottom: 0;
 }
 
-.modal-fullsettings-section .form-group p {
+.modal-fullsettings-section .form-group > p {
     font-size: 1.25rem !important;
     line-height: 1.4em;
 }

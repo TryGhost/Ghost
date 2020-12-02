@@ -27,30 +27,42 @@
                     <div class="modal-fullsettings-section">
                         <GhFormGroup @classNames="vertical">
                             <h4 class="modal-fullsettings-title">Typography</h4>
-                            <div class="modal-fullsettings-radiogroup">
+                            <div class="modal-fullsettings-radiogroup gh-email-design-typography">
                                 <div class="gh-radio {{if (eq this.bodyFontCategory "serif") "active"}}"
                                     {{on "click" (fn this.setBodyFontCategory "serif")}}
                                     >
-                                    <div class="gh-radio-button"></div>
                                     <div class="gh-radio-content">
-                                        <div class="gh-radio-label">Serif</div>
+                                        <div class="gh-radio-label serif">
+                                            <span class="sample">Aa</span>
+                                            <div class="description">
+                                                <h4>Elegant serif</h4>
+                                                <p>Beautiful lines with great readability</p>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="gh-radio-button"></div>
                                 </div>
                                 <div class="gh-radio {{if (eq this.bodyFontCategory "sans_serif") "active"}}"
                                     {{on "click" (fn this.setBodyFontCategory "sans_serif")}}
                                     >
-                                    <div class="gh-radio-button"></div>
                                     <div class="gh-radio-content">
-                                        <div class="gh-radio-label">Sans-serif</div>
+                                        <div class="gh-radio-label sans-serif">
+                                            <span class="sample">Aa</span>
+                                            <div class="description">
+                                                <h4>Clean sans-serif</h4>
+                                                <p>A more minimal style with sharp lines</p>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="gh-radio-button"></div>
                                 </div>
                             </div>
-                            <p>Font style for the email body contents</p>
+                            {{!-- <p>Font style for the email body content</p> --}}
                         </GhFormGroup>
                     </div>
                     <div class="modal-fullsettings-section">
                         <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title">Footer</h4>
+                            <h4 class="modal-fullsettings-title pt4">Email footer</h4>
                             <KoenigBasicHtmlInput
                                 @name="footer"
                                 @html={{this.footerContent}}
@@ -59,7 +71,7 @@
                                 @onFocus={{this.handleInputFocus}}
                                 @onBlur={{this.handleInputBlur}}
                             />
-                            <p>Extra content to show at the bottom of all emails</p>
+                            <p>Any extra information or legal text</p>
                         </GhFormGroup>
                     </div>
                 </fieldset>
@@ -131,21 +143,22 @@
                             <h4>{{this.config.blogTitle}}</h4>
                         </div>
                         <div class="gh-members-emailpreview-title">
-                            <h2>Email newsletter</h2>
+                            <h2>Your email newsletter</h2>
                             <p>
-                                <span>By Jamie Larson – Nov 5 2020 – </span> <a href="javascript:">View online →</a>
+                                <span>By {{if this.session.user.name this.session.user.name this.session.user.email}} – {{this.currentDate}} – </span> <a href="javascript:">View online →</a>
                             </p>
                         </div>
                         <div class="gh-members-emailpreview-content {{if (eq this.bodyFontCategory "sans_serif") "sans-serif"}}">
-                            <p>This is where the contents of your newsletter go. Customise the appearance with the options in the sidebar.</p>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras at auctor tellus, in accumsan magna. Sed vel magna velit. Vivamus commodo laoreet malesuada. Nullam efficitur augue et eros fermentum.</p>
+                            <p>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
+                            <p>Over there on the left you’ll see some settings that allow you to customise the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                            <p>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
                         </div>
                         <div class="gh-members-emailpreview-footer">
                             <div class="gh-members-emailpreview-footercontent">
                                 {{{this.footerContent}}}
                             </div>
                             <div class="gh-members-emailpreview-footersite">
-                                <span>Ghost Site &copy; – </span> <a href="javascript:">Unsubscribe</a>
+                                <span>{{this.config.blogTitle}} &copy; – </span> <a href="javascript:">Unsubscribe</a>
                             </div>
                         </div>
                         <div class="gh-members-emailpreview-badge {{if (not this.showBadge) "hide"}}">
