@@ -220,6 +220,10 @@ async function pendingEmailHandler(emailModel, options) {
         return;
     }
 
+    // make sure recurring background analytics jobs are running once we have emails
+    const emailAnalyticsJobs = require('../email-analytics/jobs');
+    emailAnalyticsJobs.scheduleRecurringJobs();
+
     return jobService.addJob(sendEmailJob, {emailModel});
 }
 
