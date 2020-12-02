@@ -17,8 +17,8 @@ module.exports = {
             // don't register email analytics job if we have no emails,
             // processer usage from many sites spinning up threads can be high
             const emailCount = await models.Email
-                .where('status', 'submitted')
                 .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
+                .whereNot('status', 'failed')
                 .count();
 
             if (emailCount > 0) {
