@@ -10,7 +10,6 @@
 require('./overrides');
 
 const debug = require('ghost-ignition').debug('boot:init');
-const path = require('path');
 const Promise = require('bluebird');
 const config = require('../shared/config');
 const {events, i18n} = require('./lib/common');
@@ -70,26 +69,15 @@ function initialiseServices() {
     });
 }
 
-function initializeRecurringJobs() {
+async function initializeRecurringJobs() {
     // we don't want to kick off scheduled/recurring jobs that will interfere with tests
     if (process.env.NODE_ENV.match(/^testing/)) {
         return;
     }
 
-    const jobsService = require('./services/jobs');
-
     if (config.get('backgroundJobs:emailAnalytics')) {
-        // use a random seconds value to avoid spikes to external APIs on the minute
-        const s = Math.floor(Math.random() * 60); // 0-59
-        // run every 2 minutes, either on 1,3,5... or 2,4,6...
-        const m = Math.floor(Math.random() * 2) + 1; // 1-2
-
-        jobsService.scheduleJob(
-            `${s} ${m}/2 * * * *`,
-            path.resolve(__dirname, 'services', 'email-analytics', 'jobs', 'fetch-latest.js'),
-            undefined,
-            'email-analytics-fetch-latest'
-        );
+        const emailAnalyticsJobs = require('./services/email-analytics/jobs');
+        await emailAnalyticsJobs.scheduleRecurringJobs();
     }
 }
 
