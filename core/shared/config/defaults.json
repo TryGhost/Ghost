@@ -116,6 +116,7 @@
     "sendWelcomeEmail": true,
     "stripeDirect": false,
     "enableStripePromoCodes": false,
+    "emailAnalytics": true,
     "backgroundJobs": {
         "emailAnalytics": true
     }
