@@ -90,7 +90,7 @@
 .gh-pe-desktop-container .gh-pe-emailclient-mockup {
     flex-grow: 1;
     overflow: hidden;
-    max-width: 640px;
+    max-width: 740px;
     width: 100%;
     padding: 0;
     background: var(--white);
