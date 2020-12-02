@@ -48,6 +48,7 @@ const ORDERS = [{
 }];
 
 export default Controller.extend({
+    feature: service(),
     session: service(),
     store: service(),
 

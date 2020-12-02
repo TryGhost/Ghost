@@ -32,8 +32,10 @@
                 <li class="gh-list-row header">
                     <div class="gh-list-header no-padding">{{!--Favorite indicator column: no header--}}</div>
                     <div class="gh-list-header gh-posts-title-header">Title</div>
-                    <div class="gh-list-header gh-posts-sends-header">Sends</div>
-                    <div class="gh-list-header gh-posts-opens-header">Opens</div>
+                    {{#if this.feature.emailAnalytics}}
+                        <div class="gh-list-header gh-posts-sends-header">Sends</div>
+                        <div class="gh-list-header gh-posts-opens-header">Opens</div>
+                    {{/if}}
                     <div class="gh-list-header gh-posts-status-header">Status</div>
                 </li>
             {{/if}}
