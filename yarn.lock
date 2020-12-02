@@ -8316,10 +8316,10 @@ safe-timers@^1.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sanitize-html@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.1.2.tgz#184fed43bb186e633c63a7769dfff29392b753a1"
-  integrity sha512-i/h+fJal+609o6GlWFpQmAL7E5ZL4rrb0QwbDKQue2uift+4WKMe/HViRGawP4Q/UgswdDKxMqjDRrKPtCpBMg==
+sanitize-html@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.2.0.tgz#56c3f3284d49a1a4f89d287672183a1d8d0d65bd"
+  integrity sha512-UXd7Rjb5qJHixoUtBLZflfEsJ2kzFsLaKBcWUBTr3G0gXRpZqkzqhIxY79Kl4oju7N4YHTM5TnBtw4scsxyj8A==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
