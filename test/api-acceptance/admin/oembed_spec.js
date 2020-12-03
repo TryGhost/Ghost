@@ -62,7 +62,7 @@ describe('Oembed API', function () {
 
     describe('type: bookmark', function () {
         it('can fetch a bookmark with ?type=bookmark', async function () {
-            const pageMock = nock('https://example.com')
+            const pageMock = nock('http://example.com')
                 .get('/')
                 .reply(
                     200,
@@ -70,7 +70,7 @@ describe('Oembed API', function () {
                     {'content-type': 'text/html'}
                 );
 
-            const url = encodeURIComponent('https://example.com');
+            const url = encodeURIComponent('http://example.com');
             const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -79,12 +79,12 @@ describe('Oembed API', function () {
 
             pageMock.isDone().should.be.true();
             res.body.type.should.eql('bookmark');
-            res.body.url.should.eql('https://example.com');
+            res.body.url.should.eql('http://example.com');
             res.body.metadata.title.should.eql('TESTING');
         });
 
         it('falls back to bookmark without ?type=embed and no oembed metatag', async function () {
-            const pageMock = nock('https://example.com')
+            const pageMock = nock('http://example.com')
                 .get('/')
                 .times(2) // 1st = oembed metatag check, 2nd = metascraper
                 .reply(
@@ -93,7 +93,7 @@ describe('Oembed API', function () {
                     {'content-type': 'text/html'}
                 );
 
-            const url = encodeURIComponent('https://example.com');
+            const url = encodeURIComponent('http://example.com');
             const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -102,12 +102,12 @@ describe('Oembed API', function () {
 
             pageMock.isDone().should.be.true();
             res.body.type.should.eql('bookmark');
-            res.body.url.should.eql('https://example.com');
+            res.body.url.should.eql('http://example.com');
             res.body.metadata.title.should.eql('TESTING');
         });
 
         it('errors with useful message when title is unavailable', async function () {
-            const pageMock = nock('https://example.com')
+            const pageMock = nock('http://example.com')
                 .get('/')
                 .reply(
                     200,
@@ -115,7 +115,7 @@ describe('Oembed API', function () {
                     {'content-type': 'text/html'}
                 );
 
-            const url = encodeURIComponent('https://example.com');
+            const url = encodeURIComponent('http://example.com');
             const res = await request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
