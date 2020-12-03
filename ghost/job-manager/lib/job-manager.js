@@ -74,12 +74,12 @@ class JobManager {
     /**
      * Schedules recuring job offloaded to per-job event-loop (thread or a process)
      *
-     * @param {String | Date} when - Date, cron or human readable schedule format
+     * @param {String | Date} at - Date, cron or human readable schedule format
      * @param {Function|String} job - function or path to a module defining a job
      * @param {Object} [data] - data to be passed into the job
      * @param {String} [name] - job name
      */
-    scheduleJob(when, job, data, name) {
+    scheduleJob(at, job, data, name) {
         let schedule;
 
         if (!name) {
@@ -90,23 +90,23 @@ class JobManager {
             }
         }
 
-        if (!(when instanceof Date)) {
-            if (isCronExpression(when)) {
-                schedule = later.parse.cron(when, true);
+        if (!(at instanceof Date)) {
+            if (isCronExpression(at)) {
+                schedule = later.parse.cron(at, true);
             } else {
-                schedule = later.parse.text(when);
+                schedule = later.parse.text(at);
             }
 
             if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
                 throw new Error('Invalid schedule format');
             }
 
-            this.logging.info(`Scheduling job ${name} at ${when}. Next run on: ${later.schedule(schedule).next()}`);
+            this.logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
         } else {
-            this.logging.info(`Scheduling job ${name} at ${when}`);
+            this.logging.info(`Scheduling job ${name} at ${at}`);
         }
 
-        const breeJob = assembleBreeJob(when, job, data, name);
+        const breeJob = assembleBreeJob(at, job, data, name);
         this.bree.add(breeJob);
         return this.bree.start(name);
     }
