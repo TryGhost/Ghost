@@ -1,3 +1,4 @@
+const {isMainThread, parentPort, workerData} = require('bthreads');
 const util = require('util');
 const setTimeoutPromise = util.promisify(setTimeout);
 
@@ -7,8 +8,15 @@ const passTime = async (ms) => {
     } else {
         await setTimeoutPromise(ms.ms);
     }
-
-    return 'done';
 };
 
-module.exports = passTime;
+if (isMainThread) {
+    module.exports = passTime;
+} else {
+    (async () => {
+        await passTime(workerData.ms);
+        parentPort.postMessage('done');
+        // alternative way to signal "finished" work (not recommended)
+        // process.exit();
+    })();
+}
