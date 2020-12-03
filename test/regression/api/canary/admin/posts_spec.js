@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
@@ -180,6 +181,74 @@ describe('Posts API', function () {
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
                     done();
+                });
+        });
+
+        it('can order by email open rate', async function () {
+            try {
+                await testUtils.createEmailedPost({
+                    postOptions: {
+                        post: {
+                            slug: '80-open-rate'
+                        }
+                    },
+                    emailOptions: {
+                        email: {
+                            email_count: 100,
+                            opened_count: 80,
+                            track_opens: true
+                        }
+                    }
+                });
+
+                await testUtils.createEmailedPost({
+                    postOptions: {
+                        post: {
+                            slug: '60-open-rate'
+                        }
+                    },
+                    emailOptions: {
+                        email: {
+                            email_count: 100,
+                            opened_count: 60,
+                            track_opens: true
+                        }
+                    }
+                });
+            } catch (err) {
+                if (_.isArray(err)) {
+                    throw err[0];
+                }
+                throw err;
+            }
+
+            await request.get(localUtils.API.getApiQuery('posts/?order=email.open_rate%20DESC'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    localUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(15);
+
+                    jsonResponse.posts[0].slug.should.equal('80-open-rate', 'DESC 1st');
+                    jsonResponse.posts[1].slug.should.equal('60-open-rate', 'DESC 2nd');
+
+                    localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                });
+
+            await request.get(localUtils.API.getApiQuery('posts/?order=email.open_rate%20ASC'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    jsonResponse.posts[0].slug.should.equal('60-open-rate', 'ASC 1st');
+                    jsonResponse.posts[1].slug.should.equal('80-open-rate', 'ASC 2nd');
                 });
         });
     });
