@@ -27,6 +27,23 @@ export default Component.extend({
         return formatTextReplacementHtml(this.payload.html);
     }),
 
+    toolbar: computed('isEditing', function () {
+        if (this.isEditing) {
+            return false;
+        }
+
+        return {
+            items: [{
+                buttonClass: 'fw4 flex items-center white',
+                icon: 'koenig/kg-edit',
+                iconClass: 'fill-white',
+                title: 'Edit',
+                text: '',
+                action: run.bind(this, this.editCard)
+            }]
+        };
+    }),
+
     init() {
         this._super(...arguments);
         this.registerComponent(this);
