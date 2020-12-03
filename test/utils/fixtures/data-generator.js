@@ -748,6 +748,14 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createEmail(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(createBasic(newObj), {
+            submitted_at: new Date()
+        });
+    }
+
     const posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -951,8 +959,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     const emails = [
-        createBasic(DataGenerator.Content.emails[0]),
-        createBasic(DataGenerator.Content.emails[1])
+        createEmail(DataGenerator.Content.emails[0]),
+        createEmail(DataGenerator.Content.emails[1])
     ];
 
     const members = [
@@ -1010,6 +1018,7 @@ DataGenerator.forKnex = (function () {
         createInvite,
         createWebhook,
         createIntegration,
+        createEmail,
 
         invites,
         posts,
