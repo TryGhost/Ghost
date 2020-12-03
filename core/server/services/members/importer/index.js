@@ -3,6 +3,7 @@ const moment = require('moment-timezone');
 const path = require('path');
 const fs = require('fs-extra');
 const membersCSV = require('@tryghost/members-csv');
+const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
 
@@ -155,8 +156,17 @@ module.exports = class MembersCSVImporter {
         };
     }
 
+    getSite() {
+        const publicSettings = this._settingsCache.getPublic();
+        return Object.assign({}, publicSettings, {
+            url: urlUtils.urlFor('home', true)
+        });
+    }
+
     generateCompletionEmail(result) {
-        return emailTemplate(result);
+        let site = this.getSite();
+        site.membersUrl = site.url + `ghost/members`;
+        return emailTemplate({result, site});
     }
 
     generateErrorCSV(result) {

@@ -1,5 +1,5 @@
 const iff = (cond, yes, no) => cond ? yes : no;
-module.exports = (result) => `
+module.exports = ({result, site}) => `
 <!doctype html>
 <html>
   <head>
@@ -142,7 +142,7 @@ module.exports = (result) => `
                                           </tr>
                                           <tr>
                                               <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; margin: 0; font-weight: 500;">Imported</td>
-                                              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; text-align: right; margin: 0;" align=""right><a href="http://ghost.org" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; font-weight: 500; text-decoration: none; color: #3EB0EF; white-space: nowrap;">View members</a></td>
+                                              <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; text-align: right; margin: 0;" align=""right><a href="${site.membersUrl}" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; font-weight: 500; text-decoration: none; color: #3EB0EF; white-space: nowrap;">View members</a></td>
                                           </tr>
                                       </table>
                                   </td>
