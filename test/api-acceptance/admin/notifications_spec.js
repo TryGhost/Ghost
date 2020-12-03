@@ -4,24 +4,16 @@ const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
 
-const ghost = testUtils.startGhost;
-let request;
-
 describe('Notifications API', function () {
-    let ghostServer;
+    let request;
 
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request);
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request);
     });
 
-    it('Can add notification', function () {
+    it('Can add notification', async function () {
         const newNotification = {
             type: 'info',
             message: 'test notification',
@@ -29,33 +21,32 @@ describe('Notifications API', function () {
             id: 'customId'
         };
 
-        return request.post(localUtils.API.getApiQuery('notifications/'))
+        const res = await request.post(localUtils.API.getApiQuery('notifications/'))
             .set('Origin', config.get('url'))
             .send({notifications: [newNotification]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then(function (res) {
-                const jsonResponse = res.body;
+            .expect(201);
 
-                should.exist(jsonResponse.notifications);
+        const jsonResponse = res.body;
 
-                localUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
+        should.exist(jsonResponse.notifications);
 
-                jsonResponse.notifications[0].type.should.equal(newNotification.type);
-                jsonResponse.notifications[0].message.should.equal(newNotification.message);
-                jsonResponse.notifications[0].status.should.equal('alert');
-                jsonResponse.notifications[0].dismissible.should.be.true();
-                should.exist(jsonResponse.notifications[0].location);
-                jsonResponse.notifications[0].location.should.equal('bottom');
-                jsonResponse.notifications[0].id.should.be.a.String();
+        localUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
 
-                should.exist(res.headers.location);
-                res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('notifications/')}${res.body.notifications[0].id}/`);
-            });
+        jsonResponse.notifications[0].type.should.equal(newNotification.type);
+        jsonResponse.notifications[0].message.should.equal(newNotification.message);
+        jsonResponse.notifications[0].status.should.equal('alert');
+        jsonResponse.notifications[0].dismissible.should.be.true();
+        should.exist(jsonResponse.notifications[0].location);
+        jsonResponse.notifications[0].location.should.equal('bottom');
+        jsonResponse.notifications[0].id.should.be.a.String();
+
+        should.exist(res.headers.location);
+        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('notifications/')}${res.body.notifications[0].id}/`);
     });
 
-    it('Can delete notification', function () {
+    it('Can delete notification', async function () {
         const newNotification = {
             type: 'info',
             message: 'test notification',
@@ -64,43 +55,34 @@ describe('Notifications API', function () {
         };
 
         // create the notification that is to be deleted
-        return request.post(localUtils.API.getApiQuery('notifications/'))
+        const res = await request.post(localUtils.API.getApiQuery('notifications/'))
             .set('Origin', config.get('url'))
             .send({notifications: [newNotification]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then(function (res) {
-                const jsonResponse = res.body;
+            .expect(201);
 
-                should.exist(jsonResponse.notifications);
-                localUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
-                jsonResponse.notifications.length.should.eql(1);
+        const jsonResponse = res.body;
 
-                jsonResponse.notifications[0].type.should.equal(newNotification.type);
-                jsonResponse.notifications[0].message.should.equal(newNotification.message);
-                jsonResponse.notifications[0].status.should.equal(newNotification.status);
+        should.exist(jsonResponse.notifications);
+        localUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
+        jsonResponse.notifications.length.should.eql(1);
 
-                return jsonResponse.notifications[0];
-            })
-            .then((notification) => {
-                return request.del(localUtils.API.getApiQuery(`notifications/${notification.id}/`))
-                    .set('Origin', config.get('url'))
-                    .expect(204)
-                    .then(function (res) {
-                        res.body.should.be.empty();
+        jsonResponse.notifications[0].type.should.equal(newNotification.type);
+        jsonResponse.notifications[0].message.should.equal(newNotification.message);
+        jsonResponse.notifications[0].status.should.equal(newNotification.status);
 
-                        return notification;
-                    });
-            })
-            .then((notification) => {
-                return request.get(localUtils.API.getApiQuery(`notifications/`))
-                    .set('Origin', config.get('url'))
-                    .expect(200)
-                    .then(function (res) {
-                        const deleted = res.body.notifications.filter(n => n.id === notification.id);
-                        deleted.should.be.empty();
-                    });
-            });
+        const notification = jsonResponse.notifications[0];
+
+        const res2 = await request.del(localUtils.API.getApiQuery(`notifications/${notification.id}/`))
+            .set('Origin', config.get('url'))
+            .expect(204);
+        res2.body.should.be.empty();
+
+        const res3 = await request.get(localUtils.API.getApiQuery(`notifications/`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+        const deleted = res3.body.notifications.filter(n => n.id === notification.id);
+        deleted.should.be.empty();
     });
 });

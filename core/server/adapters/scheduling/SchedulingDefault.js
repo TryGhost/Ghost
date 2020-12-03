@@ -14,7 +14,7 @@ const request = require('../../lib/request');
  *
  * "node-cron" did not perform well enough and we really just needed a simple time management.
 
- * @param {Objec†} options
+ * @param {Object} options
  * @constructor
  */
 function SchedulingDefault(options) {

@@ -204,6 +204,7 @@ async function handleUnsubscribeRequest(req) {
         return memberModel.toJSON();
     } catch (err) {
         throw new errors.InternalServerError({
+            err,
             message: 'Failed to unsubscribe member'
         });
     }
@@ -219,6 +220,10 @@ async function pendingEmailHandler(emailModel, options) {
     if (emailModel.get('status') !== 'pending') {
         return;
     }
+
+    // make sure recurring background analytics jobs are running once we have emails
+    const emailAnalyticsJobs = require('../email-analytics/jobs');
+    emailAnalyticsJobs.scheduleRecurringJobs();
 
     return jobService.addJob(sendEmailJob, {emailModel});
 }

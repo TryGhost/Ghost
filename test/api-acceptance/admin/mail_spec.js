@@ -6,22 +6,13 @@ const config = require('../../../core/shared/config');
 const mailService = require('../../../core/server/services/mail');
 const localUtils = require('./utils');
 
-const ghost = testUtils.startGhost;
-
-let request;
-
 describe('Mail API', function () {
-    let ghostServer;
+    let request;
 
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'invites');
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request, 'invites');
     });
 
     beforeEach(function () {
@@ -32,8 +23,8 @@ describe('Mail API', function () {
         sinon.restore();
     });
 
-    it('Can send mail', function () {
-        return request
+    it('Can send mail', async function () {
+        const res = await request
             .post(localUtils.API.getApiQuery('mail/'))
             .set('Origin', config.get('url'))
             .send({
@@ -47,19 +38,18 @@ describe('Mail API', function () {
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
+            .expect(200);
 
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.mail);
-                should.exist(jsonResponse.mail[0].message);
-                should.exist(jsonResponse.mail[0].status);
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
 
-                jsonResponse.mail[0].status.should.eql({message: 'sent'});
-                jsonResponse.mail[0].message.subject.should.eql('testemail');
-                mailService.GhostMailer.prototype.send.called.should.be.true();
-            });
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.mail);
+        should.exist(jsonResponse.mail[0].message);
+        should.exist(jsonResponse.mail[0].status);
+
+        jsonResponse.mail[0].status.should.eql({message: 'sent'});
+        jsonResponse.mail[0].message.subject.should.eql('testemail');
+        mailService.GhostMailer.prototype.send.called.should.be.true();
     });
 });
