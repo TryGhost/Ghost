@@ -446,7 +446,7 @@ module.exports = {
 
             if (job.batches <= 0) {
                 const result = await membersService.importer.perform(job.id);
-                const importLabelModel = await models.Label.findOne({name: importLabel});
+                const importLabelModel = await models.Label.findOne(importLabel);
                 return {
                     meta: {
                         stats: {
