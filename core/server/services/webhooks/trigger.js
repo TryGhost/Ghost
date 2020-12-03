@@ -82,7 +82,7 @@ module.exports = (event, model) => {
                             retry: 5
                         };
 
-                        logging.info(`Trigger Webhook for  "${webhook.get('event')}" with url "${url}".`);
+                        logging.info(`Triggering webhook for "${webhook.get('event')}" with url "${url}"`);
 
                         request(url, opts)
                             .then(response.onSuccess(webhook))
