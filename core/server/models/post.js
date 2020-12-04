@@ -109,8 +109,11 @@ Post = ghostBookshelf.Model.extend({
                 // *1.0 is needed on one of the columns to prevent sqlite from
                 // performing integer division rounding and always giving 0.
                 // Order by emails.track_opens desc first so we always tracked emails
-                // before untracked emails in the posts list
-                orderByRaw: `emails.track_opens desc, emails.opened_count * 1.0 / emails.email_count * 100 ${direction}`,
+                // before untracked emails in the posts list.
+                orderByRaw: `
+                    emails.track_opens desc,
+                    emails.opened_count * 1.0 / emails.email_count * 100 ${direction},
+                    posts.created_at desc`,
                 eagerLoad: 'email.open_rate'
             };
         }
