@@ -55,7 +55,7 @@ module.exports = ({result, site}) => `
       }
       table[class=body] p[class=small],
       table[class=body] a[class=small] {
-        font-size: 11px !important;
+        font-size: 12x !important;
       }
     }
     /* -------------------------------------
@@ -143,6 +143,13 @@ module.exports = ({result, site}) => `
                       </td>
                     </tr>
                   </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-top: 80px; padding-bottom: 10px;">
+                    <div class="footer">
+                      <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #738A94; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;">This email was sent to {recipient@example.com} by ${site.url}</p>
+                    </div>
                 </td>
               </tr>
 
