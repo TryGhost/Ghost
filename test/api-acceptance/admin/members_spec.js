@@ -261,49 +261,6 @@ describe('Members API', function () {
             .expect(404);
     });
 
-    it('Can validate import data', async function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestAdd@test.com'
-        };
-
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/validate`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.not.exist(jsonResponse.members);
-    });
-
-    it('Fails to validate import data when stripe_customer_id is present but Stripe is not connected', async function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestAdd@test.com',
-            stripe_customer_id: 'cus_XXXXX'
-        };
-
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/upload/validate`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.errors);
-        jsonResponse.errors[0].message.should.match(/Missing Stripe connection/i);
-        jsonResponse.errors[0].context.should.match(/no Stripe account connected/i);
-    });
-
     it('Can export CSV', async function () {
         const res = await request
             .get(localUtils.API.getApiQuery(`members/upload/`))
@@ -349,7 +306,7 @@ describe('Members API', function () {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
+            .expect(202);
 
         should.not.exist(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;

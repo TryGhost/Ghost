@@ -11,116 +11,8 @@ const jobsService = require('../../services/jobs');
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
 const db = require('../../data/db');
-const _ = require('lodash');
 
 const ghostMailer = new GhostMailer();
-
-const sanitizeInput = async (members) => {
-    const validationErrors = [];
-    let invalidCount = 0;
-
-    const jsonSchema = require('./utils/validators/utils/json-schema');
-
-    let invalidValidationCount = 0;
-    try {
-        await jsonSchema.validate({
-            docName: 'members',
-            method: 'upload'
-        }, {
-            data: members
-        });
-    } catch (error) {
-        if (error.errorDetails && error.errorDetails.length) {
-            const jsonPointerIndexRegex = /\[(?<index>\d+)\]/;
-
-            let invalidRecordIndexes = error.errorDetails.map((errorDetail) => {
-                if (errorDetail.dataPath) {
-                    const key = errorDetail.dataPath.split('.').pop();
-                    const [, index] = errorDetail.dataPath.match(jsonPointerIndexRegex);
-                    validationErrors.push(new errors.ValidationError({
-                        message: i18n.t('notices.data.validation.index.schemaValidationFailed', {
-                            key
-                        }),
-                        context: `${key} ${errorDetail.message}`,
-                        errorDetails: `${errorDetail.dataPath} with value ${members[index][key]}`
-                    }));
-
-                    return Number(index);
-                }
-            });
-
-            invalidRecordIndexes = _.uniq(invalidRecordIndexes);
-            invalidRecordIndexes = invalidRecordIndexes.filter(index => (index !== undefined));
-
-            invalidRecordIndexes.forEach((index) => {
-                members[index] = undefined;
-            });
-            members = members.filter(record => (record !== undefined));
-            invalidValidationCount += invalidRecordIndexes.length;
-        }
-    }
-
-    invalidCount += invalidValidationCount;
-
-    const stripeIsConnected = membersService.config.isStripeConnected();
-    const hasStripeConnectedMembers = members.find(member => (member.stripe_customer_id || member.comped));
-
-    if (!stripeIsConnected && hasStripeConnectedMembers) {
-        let nonFilteredMembersCount = members.length;
-        members = members.filter(member => !(member.stripe_customer_id || member.comped));
-
-        const stripeConnectedMembers = (nonFilteredMembersCount - members.length);
-        if (stripeConnectedMembers) {
-            invalidCount += stripeConnectedMembers;
-            validationErrors.push(new errors.ValidationError({
-                message: i18n.t('errors.api.members.stripeNotConnected.message'),
-                context: i18n.t('errors.api.members.stripeNotConnected.context'),
-                help: i18n.t('errors.api.members.stripeNotConnected.help')
-            }));
-        }
-    }
-
-    const customersMap = members.reduce((acc, member) => {
-        if (member.stripe_customer_id && member.stripe_customer_id !== 'undefined') {
-            if (acc[member.stripe_customer_id]) {
-                acc[member.stripe_customer_id] += 1;
-            } else {
-                acc[member.stripe_customer_id] = 1;
-            }
-        }
-
-        return acc;
-    }, {});
-
-    const toRemove = [];
-    for (const key in customersMap) {
-        if (customersMap[key] > 1) {
-            toRemove.push(key);
-        }
-    }
-
-    let sanitized = members.filter((member) => {
-        return !(toRemove.includes(member.stripe_customer_id));
-    });
-
-    const duplicateStripeCustomersCount = (members.length - sanitized.length);
-    if (duplicateStripeCustomersCount) {
-        validationErrors.push(new errors.ValidationError({
-            message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
-            context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
-            help: i18n.t('errors.api.members.duplicateStripeCustomerIds.help')
-        }));
-    }
-
-    invalidCount += duplicateStripeCustomersCount;
-
-    return {
-        sanitized,
-        invalidCount,
-        validationErrors,
-        duplicateStripeCustomersCount
-    };
-};
 
 module.exports = {
     docName: 'members',
@@ -463,24 +355,18 @@ module.exports = {
                     const emailContent = membersService.importer.generateCompletionEmail(result);
                     const errorCSV = membersService.importer.generateErrorCSV(result);
 
-                    console.log({errorCSV});
-
-                    try {
-                        await ghostMailer.send({
-                            to: emailRecipient,
-                            subject: importLabel.name,
-                            html: emailContent,
-                            forceTextContent: true,
-                            attachments: [{
-                                filename: `${importLabel.name}.csv`,
-                                contents: errorCSV,
-                                contentType: 'text/csv',
-                                contentDisposition: 'attachment'
-                            }]
-                        });
-                    } catch (err) {
-                        console.log(err);
-                    }
+                    await ghostMailer.send({
+                        to: emailRecipient,
+                        subject: importLabel.name,
+                        html: emailContent,
+                        forceTextContent: true,
+                        attachments: [{
+                            filename: `${importLabel.name}.csv`,
+                            contents: errorCSV,
+                            contentType: 'text/csv',
+                            contentDisposition: 'attachment'
+                        }]
+                    });
                 });
 
                 return {};
