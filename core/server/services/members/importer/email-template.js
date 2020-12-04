@@ -148,7 +148,7 @@ module.exports = ({result, site, data}) => `
               <tr>
                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-top: 80px; padding-bottom: 10px;">
                     <div class="footer">
-                      <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #738A94; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;">This email was sent to {recipient@example.com} by ${site.url}</p>
+                      <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #738A94; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;">This email was sent from <a href="${site.url}" style="color: #738A94;">${site.domain}</a> to <a href="mailto:${data.emailRecipient}" style="color: #738A94;">${data.emailRecipient}</a></p>
                     </div>
                 </td>
               </tr>

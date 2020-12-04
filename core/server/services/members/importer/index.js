@@ -158,14 +158,18 @@ module.exports = class MembersCSVImporter {
 
     getSite() {
         const publicSettings = this._settingsCache.getPublic();
+        const siteUrl = urlUtils.urlFor('home', true);
+        const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const siteDomain = (domain && domain[1]);
         return Object.assign({}, publicSettings, {
-            url: urlUtils.urlFor('home', true)
+            url: siteUrl,
+            domain: siteDomain,
+            membersUrl: siteUrl + `ghost/members`
         });
     }
 
     generateCompletionEmail(result, data) {
         let site = this.getSite();
-        site.membersUrl = site.url + `ghost/members`;
         return emailTemplate({result, site, data});
     }
 
