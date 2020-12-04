@@ -163,10 +163,10 @@ module.exports = class MembersCSVImporter {
         });
     }
 
-    generateCompletionEmail(result) {
+    generateCompletionEmail(result, data) {
         let site = this.getSite();
         site.membersUrl = site.url + `ghost/members`;
-        return emailTemplate({result, site});
+        return emailTemplate({result, site, data});
     }
 
     generateErrorCSV(result) {

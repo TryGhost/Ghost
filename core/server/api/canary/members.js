@@ -352,7 +352,9 @@ module.exports = {
                 const emailRecipient = frame.user.get('email');
                 jobsService.addJob(async () => {
                     const result = await membersService.importer.perform(job.id);
-                    const emailContent = membersService.importer.generateCompletionEmail(result);
+                    const emailContent = membersService.importer.generateCompletionEmail(result, {
+                        emailRecipient
+                    });
                     const errorCSV = membersService.importer.generateErrorCSV(result);
 
                     await ghostMailer.send({

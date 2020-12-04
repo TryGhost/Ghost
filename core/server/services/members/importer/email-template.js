@@ -1,5 +1,5 @@
-const iff = (cond, yes, no) => cond ? yes : no;
-module.exports = ({result, site}) => `
+const iff = (cond, yes, no) => (cond ? yes : no);
+module.exports = ({result, site, data}) => `
 <!doctype html>
 <html>
   <head>
