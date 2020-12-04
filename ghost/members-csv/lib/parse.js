@@ -25,7 +25,7 @@ module.exports = (path, mapping, defaultLabels = []) => {
                     }
                 }
 
-                if (header === 'subscribed_to_emails') {
+                if (header === 'subscribed') {
                     return value.toLowerCase() !== 'false';
                 }
 
