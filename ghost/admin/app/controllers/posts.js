@@ -45,9 +45,6 @@ const ORDERS = [{
 }, {
     name: 'Recently updated',
     value: 'updated_at desc'
-}, {
-    name: 'Open rate',
-    value: 'email.open_rate desc'
 }];
 
 export default Controller.extend({
@@ -72,6 +69,13 @@ export default Controller.extend({
         this.availableOrders = ORDERS;
         this.availableVisibilities = VISIBILITIES;
         this.setProperties(DEFAULT_QUERY_PARAMS.posts);
+
+        if (this.feature.get('emailAnalytics')) {
+            this.availableOrders.push({
+                name: 'Open rate',
+                value: 'email.open_rate desc'
+            });
+        }
     },
 
     postsInfinityModel: alias('model'),
