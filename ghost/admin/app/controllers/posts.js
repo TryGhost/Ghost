@@ -45,6 +45,9 @@ const ORDERS = [{
 }, {
     name: 'Recently updated',
     value: 'updated_at desc'
+}, {
+    name: 'Open rate',
+    value: 'email.open_rate desc'
 }];
 
 export default Controller.extend({
