@@ -1,0 +1,36 @@
+name: Push Docker Image
+on:
+  push:
+    branches:
+      - traP
+      - traP-*
+env:
+  IMAGE_NAME: ghost
+jobs:
+  image:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set IMAGE_TAG env (non traP branch)
+        run: echo "IMAGE_TAG=${GITHUB_REF:11}" >> $GITHUB_ENV
+        if: github.ref != 'refs/heads/traP'
+      - name: Set IMAGE_TAG env (traP branch)
+        run: echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+        if: github.ref == 'refs/heads/traP'
+      - uses: actions/checkout@v2
+      - name: checkout submodules
+        run: git submodule update --init
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: traptitech
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/traptitech/ghost:${{ env.IMAGE_TAG }}
