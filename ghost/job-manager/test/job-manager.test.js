@@ -20,7 +20,7 @@ describe('Job Manager', function () {
     });
 
     it('public interface', function () {
-        const jobManager = new JobManager(logging);
+        const jobManager = new JobManager({logging});
 
         should.exist(jobManager.addJob);
         should.exist(jobManager.scheduleJob);
@@ -29,7 +29,7 @@ describe('Job Manager', function () {
     describe('Add a Job', function () {
         it('adds a job to a queue', async function () {
             const spy = sinon.spy();
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             jobManager.addJob(spy, 'test data');
             should(jobManager.queue.idle()).be.false();
@@ -44,7 +44,7 @@ describe('Job Manager', function () {
 
         it('handles failed job gracefully', async function () {
             const spy = sinon.stub().throws();
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             jobManager.addJob(spy, 'test data');
             should(jobManager.queue.idle()).be.false();
@@ -61,7 +61,7 @@ describe('Job Manager', function () {
 
     describe('Schedule a Job', function () {
         it('fails to schedule for invalid scheduling expression', function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             try {
                 jobManager.scheduleJob('invalid expression', 'jobName', {});
@@ -71,7 +71,7 @@ describe('Job Manager', function () {
         });
 
         it('fails to schedule for no job name', function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             try {
                 jobManager.scheduleJob('invalid expression', () => {}, {});
@@ -81,7 +81,7 @@ describe('Job Manager', function () {
         });
 
         it('schedules a job using date format', async function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
             const timeInTenSeconds = new Date(Date.now() + 10);
             const jobPath = path.resolve(__dirname, './jobs/simple.js');
 
@@ -115,7 +115,7 @@ describe('Job Manager', function () {
         });
 
         it('schedules a job to run immediately', async function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
             const clock = FakeTimers.install({now: Date.now()});
 
             const jobPath = path.resolve(__dirname, './jobs/simple.js');
@@ -144,7 +144,7 @@ describe('Job Manager', function () {
         });
 
         it('fails to schedule a job with the same name to run immediately one after another', async function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
             const clock = FakeTimers.install({now: Date.now()});
 
             const jobPath = path.resolve(__dirname, './jobs/simple.js');
@@ -169,19 +169,34 @@ describe('Job Manager', function () {
 
             should(jobManager.bree.workers['job-now']).type('undefined');
 
-            // note: job name resolves to [Object object], test can be made more precise
-            //       once that is fixed in Bree.
             (() => {
                 jobManager.scheduleJob(undefined, jobPath, undefined, 'job-now');
-            }).should.throw('Job #1 has a duplicate job name of [object Object]');
+            }).should.throw('Job #1 has a duplicate job name of job-now');
 
             clock.uninstall();
+        });
+
+        it('uses custom error handler when job fails', async function (){
+            let job = function namedJob() {
+                throw new Error('job error');
+            };
+            const spyHandler = sinon.spy();
+            const jobManager = new JobManager({logging, errorHandler: spyHandler});
+
+            jobManager.scheduleJob(undefined, job, undefined, 'will-fail');
+
+            // give time to execute the job
+            await delay(100);
+
+            should(spyHandler.called).be.true();
+            should(spyHandler.args[0][0].message).equal('job error');
+            should(spyHandler.args[1][1].name).equal('will-fail');
         });
     });
 
     describe('Remove a Job', function () {
         it('removes a scheduled job from the queue', async function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             const timeInTenSeconds = new Date(Date.now() + 10);
             const jobPath = path.resolve(__dirname, './jobs/simple.js');
@@ -197,7 +212,7 @@ describe('Job Manager', function () {
 
     describe('Shutdown', function () {
         it('gracefully shuts down a synchronous jobs', async function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             jobManager.addJob(require('./jobs/timed-job'), 200);
 
@@ -209,7 +224,7 @@ describe('Job Manager', function () {
         });
 
         it('gracefully shuts down an interval job', async function () {
-            const jobManager = new JobManager(logging);
+            const jobManager = new JobManager({logging});
 
             jobManager.scheduleJob('every 5 seconds', path.resolve(__dirname, './jobs/graceful.js'));
 

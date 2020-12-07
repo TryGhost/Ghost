@@ -26,14 +26,20 @@ const handler = (error, result) => {
 };
 
 class JobManager {
-    constructor(logging) {
+    /**
+     * @param {Object} options
+     * @param {Object} [options.logging] - custom logging handler, defaults to console
+     * @param {Function} [options.errorHandler] - custom job error handler
+     */
+    constructor({logging, errorHandler}) {
         this.queue = fastq(this, worker, 1);
 
         this.bree = new Bree({
             root: false, // set this to `false` to prevent requiring a root directory of jobs
             hasSeconds: true, // precission is needed to avoid task ovelaps after immidiate execution
             outputWorkerMetadata: true,
-            logger: logging
+            logger: logging,
+            errorHandler: errorHandler
         });
 
         this.logging = logging;
