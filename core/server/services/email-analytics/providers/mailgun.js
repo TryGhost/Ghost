@@ -107,7 +107,7 @@ class EmailAnalyticsMailgunProvider {
             }
 
             page = await mailgun.get(page.paging.next.replace('https://api.mailgun.net/v3', ''));
-            events = page.items.map(this.normalizeEvent);
+            events = page && page.items && page.items.map(this.normalizeEvent) || [];
         }
 
         return result;
