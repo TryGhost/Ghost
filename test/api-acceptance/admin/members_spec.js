@@ -306,7 +306,7 @@ describe('Members API', function () {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(202);
+            .expect(201);
 
         should.not.exist(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
