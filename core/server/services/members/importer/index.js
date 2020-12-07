@@ -61,7 +61,7 @@ module.exports = class MembersCSVImporter {
         const batchSize = 2;
 
         const siteTimezone = this._settingsCache.get('timezone');
-        const currentTime = moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm:ss');
+        const currentTime = moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm:ss.SSS');
         const outputFileName = `Members Import ${currentTime}.csv`;
         const outputFilePath = path.join(this._storagePath, '/', outputFileName);
 
