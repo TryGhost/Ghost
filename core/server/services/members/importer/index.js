@@ -156,21 +156,11 @@ module.exports = class MembersCSVImporter {
         };
     }
 
-    getSite() {
-        const publicSettings = this._settingsCache.getPublic();
-        const siteUrl = urlUtils.urlFor('home', true);
-        const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        const siteDomain = (domain && domain[1]);
-        return Object.assign({}, publicSettings, {
-            url: siteUrl,
-            domain: siteDomain,
-            membersUrl: siteUrl + `ghost/members`
-        });
-    }
-
     generateCompletionEmail(result, data) {
-        let site = this.getSite();
-        return emailTemplate({result, site, data});
+        const siteUrl = new URL(urlUtils.urlFor('home', null, true));
+        const membersUrl = new URL('members', urlUtils.urlFor('admin', null, true));
+        membersUrl.searchParams.set('label', data.importLabelModel.slug);
+        return emailTemplate({result, siteUrl, membersUrl, ...data});
     }
 
     generateErrorCSV(result) {

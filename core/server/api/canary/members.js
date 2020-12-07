@@ -338,7 +338,7 @@ module.exports = {
 
             if (job.batches <= Infinity) {
                 const result = await membersService.importer.perform(job.id);
-                const importLabelModel = await models.Label.findOne(importLabel);
+                const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
                 return {
                     meta: {
                         stats: {
@@ -352,8 +352,10 @@ module.exports = {
                 const emailRecipient = frame.user.get('email');
                 jobsService.addJob(async () => {
                     const result = await membersService.importer.perform(job.id);
+                    const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
                     const emailContent = membersService.importer.generateCompletionEmail(result, {
-                        emailRecipient
+                        emailRecipient,
+                        importLabel: importLabelModel.toJSON()
                     });
                     const errorCSV = membersService.importer.generateErrorCSV(result);
 
