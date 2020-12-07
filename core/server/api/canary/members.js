@@ -336,7 +336,7 @@ module.exports = {
                 createdBy: frame.user.id
             });
 
-            if (job.batches <= 0) {
+            if (job.batches <= Infinity) {
                 const result = await membersService.importer.perform(job.id);
                 const importLabelModel = await models.Label.findOne(importLabel);
                 return {
