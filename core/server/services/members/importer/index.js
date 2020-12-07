@@ -159,7 +159,9 @@ module.exports = class MembersCSVImporter {
     generateCompletionEmail(result, data) {
         const siteUrl = new URL(urlUtils.urlFor('home', null, true));
         const membersUrl = new URL('members', urlUtils.urlFor('admin', null, true));
-        membersUrl.searchParams.set('label', data.importLabelModel.slug);
+        if (data.importLabel) {
+            membersUrl.searchParams.set('label', data.importLabel.slug);
+        }
         return emailTemplate({result, siteUrl, membersUrl, ...data});
     }
 
