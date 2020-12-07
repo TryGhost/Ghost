@@ -937,7 +937,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         if (options.order) {
-            options.order = itemCollection.parseOrderOption(options.order, options.withRelated);
+            const {order, orderRaw, eagerLoad} = itemCollection.parseOrderOption(options.order, options.withRelated);
+            options.orderRaw = orderRaw;
+            options.order = order;
+            options.eagerLoad = eagerLoad;
         } else if (options.autoOrder) {
             options.orderRaw = options.autoOrder;
         } else if (this.orderDefaultRaw) {

@@ -72,6 +72,10 @@ Post = ghostBookshelf.Model.extend({
         posts_meta: {
             targetTableName: 'posts_meta',
             foreignKey: 'post_id'
+        },
+        email: {
+            targetTableName: 'emails',
+            foreignKey: 'post_id'
         }
     },
 
@@ -97,6 +101,22 @@ Post = ghostBookshelf.Model.extend({
         let postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
 
         return [...keys, ...postsMetaKeys];
+    },
+
+    orderRawQuery: function orderRawQuery(field, direction, withRelated) {
+        if (field === 'email.open_rate' && withRelated && withRelated.indexOf('email') > -1) {
+            return {
+                // *1.0 is needed on one of the columns to prevent sqlite from
+                // performing integer division rounding and always giving 0.
+                // Order by emails.track_opens desc first so we always tracked emails
+                // before untracked emails in the posts list.
+                orderByRaw: `
+                    emails.track_opens desc,
+                    emails.opened_count * 1.0 / emails.email_count * 100 ${direction},
+                    posts.created_at desc`,
+                eagerLoad: 'email.open_rate'
+            };
+        }
     },
 
     filterExpansions: function filterExpansions() {

@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "3.39.0",
+  "version": "3.39.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.5.0",
-    "@sentry/node": "5.28.0",
+    "@sentry/node": "5.29.0",
     "@tryghost/adapter-manager": "0.2.3",
     "@tryghost/admin-api-schema": "1.4.0",
     "@tryghost/bootstrap-socket": "0.2.3",
@@ -146,7 +146,7 @@
     "@lodder/grunt-postcss": "3.0.0",
     "coffeescript": "2.5.1",
     "cssnano": "4.1.10",
-    "eslint": "7.14.0",
+    "eslint": "7.15.0",
     "eslint-plugin-ghost": "2.0.0",
     "grunt": "1.3.0",
     "grunt-bg-shell": "2.3.3",

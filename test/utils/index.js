@@ -122,6 +122,14 @@ fixtures = {
         });
     },
 
+    insertEmailedPosts: function insertEmailedPosts({postCount = 2} = {}) {
+        const posts = [];
+
+        for (let i = 0; i < postCount; i++) {
+            posts.push(DataGenerator.forKnex.createGenericPost);
+        }
+    },
+
     insertExtraPosts: function insertExtraPosts(max) {
         let lang;
         let status;
@@ -749,6 +757,19 @@ const createPost = function createPost(options) {
     return models.Post.add(post, module.exports.context.internal);
 };
 
+const createEmail = function createEmail(options) {
+    const email = DataGenerator.forKnex.createEmail(options.email);
+    return models.Email.add(email, module.exports.context.internal);
+};
+
+const createEmailedPost = async function createEmailedPost({postOptions, emailOptions}) {
+    const post = await createPost(postOptions);
+    emailOptions.email.post_id = post.id;
+    const email = await createEmail(emailOptions);
+
+    return {post, email};
+};
+
 /**
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
@@ -1131,6 +1152,7 @@ module.exports = {
     setup: setup,
     createUser: createUser,
     createPost: createPost,
+    createEmailedPost,
 
     /**
      * renderObject:    res.render(view, dbResponse)
