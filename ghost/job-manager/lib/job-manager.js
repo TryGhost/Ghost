@@ -112,6 +112,21 @@ class JobManager {
     }
 
     /**
+     * Removes a job from sqcheduled (offloaded) jobs queue.
+     * There is no way to remove jovs from in-line (same event loop) jobs
+     * added through `addJob` method.
+     * The method will throw an Error if job with provided name does not exist.
+     *
+     * NOTE: current implementation does not guarante running job termination
+     *       for details see https://github.com/breejs/bree/pull/64
+     *
+     * @param {String} name - job name
+     */
+    async removeJob(name) {
+        await this.bree.remove(name);
+    }
+
+    /**
      * @param {import('p-wait-for').Options} [options]
      */
     async shutdown(options) {

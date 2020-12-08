@@ -59,7 +59,7 @@ describe('Job Manager', function () {
         });
     });
 
-    describe('Schedule Job', function () {
+    describe('Schedule a Job', function () {
         it('fails to schedule for invalid scheduling expression', function () {
             const jobManager = new JobManager(logging);
 
@@ -112,6 +112,22 @@ describe('Job Manager', function () {
             should(jobManager.bree.workers['job-in-ten']).type('undefined');
 
             clock.uninstall();
+        });
+    });
+
+    describe('Remove a Job', function () {
+        it('removes a scheduled job from the queue', async function () {
+            const jobManager = new JobManager(logging);
+
+            const timeInTenSeconds = new Date(Date.now() + 10);
+            const jobPath = path.resolve(__dirname, './jobs/simple.js');
+
+            jobManager.scheduleJob(timeInTenSeconds, jobPath, null, 'job-in-ten');
+            jobManager.bree.config.jobs[0].name.should.equal('job-in-ten');
+
+            await jobManager.removeJob('job-in-ten');
+
+            should(jobManager.bree.config.jobs[0]).be.undefined;
         });
     });
 
