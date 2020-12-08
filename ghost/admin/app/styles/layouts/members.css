@@ -121,7 +121,13 @@ p.gh-members-list-email {
     margin: -2px 0 -1px;
 }
 
+.gh-members-list-open-rate,
+.gh-members-list-geolocation {
+    width: 120px;
+}
+
 .gh-members-list-subscribed-at {
+    width: 240px;
     margin-right: -8px;
     padding-right: 0;
 }
@@ -324,15 +330,26 @@ p.gh-members-list-email {
         padding-bottom: 16px;
     }
 
+    .gh-members-list-open-rate {
+        display: inline-block;
+        width: auto;
+        margin-top: -16px;
+        padding: 0 0 0 64px;
+    }
+
+    .gh-members-list-open-rate::after {
+        content: "open rate •";
+    }
+
     .gh-members-list-geolocation {
         display: inline-block;
-        padding: 0 0 0 64px;
-        margin-top: -16px;
         width: auto;
+        margin-top: -16px;
+        padding: 0 0 0 4px;
     }
 
     .gh-members-list-geolocation::after {
-        content: "–";
+        content: "•";
     }
 
     .gh-members-geolocation-noname {
