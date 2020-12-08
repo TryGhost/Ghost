@@ -48,7 +48,7 @@ export default Component.extend({
     /* computed properties -------------------------------------------------- */
 
     cleanHTML: computed('html', function () {
-        return cleanBasicHtml(this.html);
+        return cleanBasicHtml(this.html || '');
     }),
 
     // merge in named options with any passed in `options` property data-bag
@@ -392,7 +392,7 @@ export default Component.extend({
                 return '';
             }
 
-            let html = firstParagraph.innerHTML;
+            let html = firstParagraph.innerHTML || '';
             return cleanBasicHtml(html);
         }
     }
