@@ -358,7 +358,7 @@ module.exports = {
                     const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
                     const emailContent = membersService.importer.generateCompletionEmail(result, {
                         emailRecipient,
-                        importLabel: importLabelModel.toJSON()
+                        importLabel: importLabelModel ? importLabelModel.toJSON() : null
                     });
                     const errorCSV = membersService.importer.generateErrorCSV(result);
 
