@@ -100,7 +100,8 @@ function serializeMember(member, options) {
         labels: json.labels,
         stripe: json.stripe,
         avatar_image: json.avatar_image,
-        comped: comped
+        comped: comped,
+        email_open_rate: json.email_open_rate
     };
 }
 
@@ -144,6 +145,7 @@ function createSerializer(debugString, serialize) {
  * @prop {null|SerializedMemberStripeData} stripe
  * @prop {string} avatar_image
  * @prop {boolean} comped
+ * @prop {number} email_open_rate
  */
 
 /**
