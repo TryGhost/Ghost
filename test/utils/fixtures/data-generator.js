@@ -314,12 +314,14 @@ DataGenerator.Content = {
         },
         {
             id: ObjectId.generate(),
-            email: 'member2@test.com'
+            email: 'member2@test.com',
+            email_open_rate: 50
         },
         {
             id: ObjectId.generate(),
             email: 'paid@test.com',
-            name: 'Egon Spengler'
+            name: 'Egon Spengler',
+            email_open_rate: 80
         },
         {
             id: ObjectId.generate(),
