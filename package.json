@@ -134,7 +134,7 @@
     "semver": "7.3.4",
     "stoppable": "1.1.0",
     "tough-cookie": "4.0.0",
-    "uuid": "8.3.1",
+    "uuid": "8.3.2",
     "validator": "6.3.0",
     "xml": "1.0.1"
   },
