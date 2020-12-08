@@ -126,15 +126,24 @@ module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
                             <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">Your member import is complete</p>
                           </td>
                       </tr>
+                    ${iff(result.imported === 0 && result.errors.length === 0, `
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">No members were added.</p>
+                      </td>
+                    </tr>
+                    `, ``)}
+                    ${iff(result.imported > 0, `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
                           <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">A total of <strong style="font-weight: 600;">${result.imported}</strong> ${iff(result.imported === 1, 'person', 'people')} were successfully added or updated in your list of members, and now have access to your site.</p>
                       </td>
-                    </tr>
+                    </tr>`, ``)}
                     ${iff(result.errors.length > 0, `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 24px; padding-bottom: 10px;">
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;"><strong style="font-weight: 600;">${result.errors.length}</strong> ${iff(result.errors.length === 1, `member was`, `members were`)} skipped due to errors. We attached a validated CSV file in this email with the complete list of errors so that you can fix them and re-upload the CSV to complete the import.</p>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;">
+                        ${iff(result.imported === 0, `No members were added.`, `<strong style="font-weight: 600;">${result.errors.length}</strong> ${iff(result.errors.length === 1, `member was`, `members were`)} skipped due to errors.`)} We attached a validated CSV file in this email with the complete list of errors so that you can fix them and re-upload the CSV to complete the import.</p>
                       </td>
                     </tr>`, '')}
                     <tr>
