@@ -1,5 +1,6 @@
 class EmailAnalyticsStatsAggregator {
-    constructor({logging, db}) {
+    constructor({options, logging, db}) {
+        this.options = Object.assign({openRateEmailThreshold: 5}, options);
         this.logging = logging || console;
         this.db = db;
     }
@@ -12,8 +13,23 @@ class EmailAnalyticsStatsAggregator {
         }).where('id', emailId);
     }
 
-    async aggregateMember(/*memberId*/) {
-        // TODO: decide on aggregation algorithm when only certain emails have open tracking
+    async aggregateMember(memberId) {
+        const {trackedEmailCount} = await this.db.knex('email_recipients')
+            .select(this.db.knex.raw('COUNT(email_recipients.id) as trackedEmailCount'))
+            .leftJoin('emails', 'email_recipients.email_id', 'emails.id')
+            .where('email_recipients.member_id', memberId)
+            .where('emails.track_opens', true)
+            .first() || {};
+
+        if (trackedEmailCount >= this.options.openRateEmailThreshold) {
+            await this.db.knex('members')
+                .update({
+                    email_open_rate: this.db.knex.raw(`(
+                        (SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL) * 1.0 / ? * 100)
+                    `, [memberId, trackedEmailCount])
+                })
+                .where('id', memberId);
+        }
     }
 }
 

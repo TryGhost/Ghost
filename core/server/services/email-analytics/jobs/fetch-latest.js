@@ -51,7 +51,7 @@ if (parentPort) {
         const aggregateEndDate = new Date();
         debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
 
-        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
+        logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails and ${eventStats.memberIds.length} members in ${aggregateEndDate - fetchStartDate}ms`);
 
         if (parentPort) {
             parentPort.postMessage('done');
