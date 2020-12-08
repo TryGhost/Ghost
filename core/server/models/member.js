@@ -227,6 +227,14 @@ const Member = ghostBookshelf.Model.extend({
         }
     },
 
+    orderRawQuery(field, direction) {
+        if (field === 'email_open_rate') {
+            return {
+                orderByRaw: `members.email_open_rate IS NOT NULL DESC, members.email_open_rate ${direction}`
+            };
+        }
+    },
+
     toJSON(unfilteredOptions) {
         const options = Member.filterOptions(unfilteredOptions, 'toJSON');
         const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
