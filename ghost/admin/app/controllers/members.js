@@ -32,7 +32,8 @@ export default class MembersController extends Controller {
     queryParams = [
         'label',
         {paidParam: 'paid'},
-        {searchParam: 'search'}
+        {searchParam: 'search'},
+        {orderParam: 'order'}
     ];
 
     @tracked members = A([]);
@@ -40,6 +41,7 @@ export default class MembersController extends Controller {
     @tracked searchParam = '';
     @tracked paidParam = null;
     @tracked label = null;
+    @tracked orderParam = null;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
     @tracked showDeleteMembersModal = false;
@@ -83,6 +85,27 @@ export default class MembersController extends Controller {
         return !this.searchParam && !this.paidParam && !this.label;
     }
 
+    get availableOrders() {
+        // don't return anything if email analytics is disabled because
+        // we don't want to show an order dropdown with only a single option
+
+        if (this.feature.get('emailAnalytics')) {
+            return [{
+                name: 'Newest',
+                value: null
+            }, {
+                name: 'Open rate',
+                value: 'email_open_rate'
+            }];
+        }
+
+        return [];
+    }
+
+    get selectedOrder() {
+        return this.availableOrders.find(order => order.value === this.orderParam);
+    }
+
     get availableLabels() {
         let labels = this._availableLabels
             .filter(label => !label.isNew)
@@ -122,6 +145,11 @@ export default class MembersController extends Controller {
         this.fetchLabelsTask.perform();
         this.membersStats.invalidate();
         this.membersStats.fetch();
+    }
+
+    @action
+    changeOrder(order) {
+        this.orderParam = order.value;
     }
 
     @action
@@ -221,7 +249,7 @@ export default class MembersController extends Controller {
     @task({restartable: true})
     *fetchMembersTask(params) {
         // params is undefined when called as a "refresh" of the model
-        let {label, paidParam, searchParam} = typeof params === 'undefined' ? this : params;
+        let {label, paidParam, searchParam, orderParam} = typeof params === 'undefined' ? this : params;
 
         if (!searchParam) {
             this.resetSearch();
@@ -234,10 +262,12 @@ export default class MembersController extends Controller {
         let forceReload = !params
             || label !== this._lastLabel
             || paidParam !== this._lastPaidParam
-            || searchParam !== this._lastSearchParam;
+            || searchParam !== this._lastSearchParam
+            || orderParam !== this._orderParam;
         this._lastLabel = label;
         this._lastPaidParam = paidParam;
         this._lastSearchParam = searchParam;
+        this._lastOrderParam = orderParam;
 
         // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
         // keeps navigation between list->details->list snappy
@@ -251,11 +281,12 @@ export default class MembersController extends Controller {
             const labelFilter = label ? `label:'${label}'+` : '';
             const paidQuery = paidParam ? {paid: paidParam} : {};
             const searchQuery = searchParam ? {search: searchParam} : {};
+            const order = orderParam ? `${orderParam} desc` : `created_at desc`;
 
             query = Object.assign({
+                order,
                 limit: range.length,
                 page: range.page,
-                order: 'created_at desc',
                 filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
             }, paidQuery, searchQuery, query);
 

@@ -54,3 +54,19 @@
         {{#if paidParam.name}}{{paidParam.name}}{{else}}<span class="red">Unknown paid status</span>{{/if}}
     </PowerSelect>
 </div>
+
+<div class="gh-contenfilter-menu gh-contentfilter-sort" data-test-select="members-order">
+    <PowerSelect
+        @selected={{@selectedOrder}}
+        @options={{@availableOrders}}
+        @searchEnabled={{false}}
+        @onChange={{@onOrderChange}}
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @matchTriggerWidth={{false}}
+        as |order|
+    >
+        {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}
+    </PowerSelect>
+</div>
