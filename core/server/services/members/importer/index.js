@@ -58,7 +58,7 @@ module.exports = class MembersCSVImporter {
      * @returns {Promise<{id: JobID, batches: number}>} - A promise resolving to the id of the MemberImport Job
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
-        const batchSize = 2;
+        const batchSize = 1;
 
         const siteTimezone = this._settingsCache.get('timezone');
         const currentTime = moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm:ss.SSS');

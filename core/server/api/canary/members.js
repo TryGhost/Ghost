@@ -336,7 +336,10 @@ module.exports = {
                 createdBy: frame.user.id
             });
 
-            if (job.batches <= 100) {
+            const mappedFields = Object.values(frame.data.mapping);
+            const hasStripeFieldsMapped = mappedFields.includes('stripe_customer_id') || mappedFields.includes('complimentary_plan');
+
+            if (job.batches <= 1000 && !hasStripeFieldsMapped) {
                 const result = await membersService.importer.perform(job.id);
                 const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
                 return {
