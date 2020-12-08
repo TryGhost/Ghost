@@ -108,11 +108,17 @@ module.exports = class MembersCSVImporter {
             };
 
             try {
-                const existingMember = await membersApi.members.get({email: row.email}, options);
+                const existingMember = await membersApi.members.get({email: row.email}, {
+                    ...options,
+                    withRelated: ['labels']
+                });
                 let member;
                 if (existingMember) {
-                    // @TODO handle labels correctly?
-                    member = await membersApi.members.update(row, {
+                    const existingLabels = existingMember.related('labels') ? existingMember.related('labels').toJSON() : [];
+                    member = await membersApi.members.update({
+                        ...row,
+                        labels: existingLabels.concat(row.labels)
+                    }, {
                         ...options,
                         id: existingMember.id
                     });
