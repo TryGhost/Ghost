@@ -146,4 +146,26 @@ describe('Request', function () {
             err.body.should.match(/AWFUL_ERROR/);
         });
     });
+
+    it('[failure] should timeout when taking too long', function () {
+        const url = 'http://some-website.com/endpoint/';
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0'
+            },
+            timeout: 1,
+            retry: 0 // got retries by default so we're disabling this behavior
+        };
+
+        nock('http://some-website.com')
+            .get('/endpoint/')
+            .delay(20)
+            .reply(200, 'Response body');
+
+        return request(url, options).then(() => {
+            throw new Error('Should have timed out');
+        }, (err) => {
+            err.code.should.be.equal('ETIMEDOUT');
+        });
+    });
 });
