@@ -15,6 +15,8 @@ export default Model.extend(ValidationEngine, {
     labels: hasMany('label', {embedded: 'always', async: false}),
     comped: attr('boolean', {defaultValue: false}),
     geolocation: attr('json-string'),
+    emailCount: attr('number'),
+    emailOpenedCount: attr('number'),
     emailOpenRate: attr('number'),
 
     ghostPaths: service(),

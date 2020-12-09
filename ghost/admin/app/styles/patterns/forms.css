@@ -89,6 +89,12 @@ input {
     max-width: 100%;
 }
 
+.form-group.pa5 {
+    max-width: 100%;
+    padding-left: calc(var(--grid-size) * 5);
+    padding-right: calc(var(--grid-size) * 5);
+}
+
 .form-group.mb0 {
     margin-bottom: 0;
 }

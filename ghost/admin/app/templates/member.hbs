@@ -26,44 +26,6 @@
     </GhCanvasHeader>
 
     <form class="mb10 member-basic-info-form">
-        <div class="flex items-center mb10 bt b--lightgrey-d1 pt8">
-            {{#if (or this.member.name this.member.email)}}
-                <GhMemberAvatar
-                    @member={{this.member}}
-                    @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
-                    @containerClass="w20 h20 mr4 gh-member-detail-avatar"
-                />
-            {{else}}
-                <div class="flex items-center justify-center br-100 w18 h18 mr4 gh-new-member-avatar">
-                    <span class="gh-member-avatar-label f-subheadline fw4 lh-zero tracked-1">N</span>
-                </div>
-            {{/if}}
-            <div>
-                <h3 class="f2 fw6 ma0 pa0">
-                    {{or this.member.name this.member.email}}
-                </h3>
-                <p class="f7 pa0 ma0 midlightgrey-d1">
-                    {{#if (and this.member.name this.member.email)}}
-                        <span class="darkgrey fw5">{{this.member.email}}</span>
-                    {{/if}}
-                </p>
-                {{#unless this.member.isNew}}
-                <p class="f7 pa0 ma0 midgrey-d1 {{if this.member.name "nudge-bottom--2"}}">
-                    {{#if this.member.geolocation}}
-                        {{#if (eq this.member.geolocation.country_code "US")}}
-                            {{this.member.geolocation.region}}, US
-                        {{else}}
-                            {{this.member.geolocation.country}}
-                        {{/if}}
-                    {{else}}
-                        Unknown location
-                    {{/if}}
-                    – Created on {{this.subscribedAt}}
-                </p>
-                {{/unless}}
-            </div>
-        </div>
-
         <GhMemberSettingsForm
             @member={{this.member}}
             @scratchMember={{this.scratchMember}}
