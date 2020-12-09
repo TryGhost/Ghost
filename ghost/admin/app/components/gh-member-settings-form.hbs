@@ -19,7 +19,7 @@
                     </h3>
                     <p class="f7 pa0 ma0 midlightgrey-d1">
                         {{#if (and this.member.name this.member.email)}}
-                            <span class="darkgrey fw5"><a href="mailto:{{this.member.email}}">{{this.member.email}}</a></span>
+                            <a href="mailto:{{this.member.email}}" class="darkgrey fw5">{{this.member.email}}</a>
                         {{/if}}
                     </p>
                     {{#unless this.member.isNew}}
