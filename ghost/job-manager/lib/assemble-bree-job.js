@@ -19,11 +19,11 @@ const assemble = (when, job, data, name) => {
         Object.assign(breeJob, {
             date: when
         });
-    } else if (isCronExpression(when)) {
+    } else if (when && isCronExpression(when)) {
         Object.assign(breeJob, {
             cron: when
         });
-    } else {
+    } else if (when !== undefined) {
         Object.assign(breeJob, {
             interval: when
         });

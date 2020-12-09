@@ -1,1 +1,1 @@
-setInterval(() => process.exit(0), 100);
+setInterval(() => process.exit(0), 10);
