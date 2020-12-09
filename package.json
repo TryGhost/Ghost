@@ -42,7 +42,7 @@
   "dependencies": {
     "@nexes/nql": "0.5.0",
     "@sentry/node": "5.29.0",
-    "@tryghost/adapter-manager": "0.2.3",
+    "@tryghost/adapter-manager": "0.2.4",
     "@tryghost/admin-api-schema": "1.4.1",
     "@tryghost/bootstrap-socket": "0.2.3",
     "@tryghost/constants": "0.1.2",
