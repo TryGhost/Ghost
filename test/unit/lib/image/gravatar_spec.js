@@ -1,21 +1,11 @@
 const should = require('should');
-const nock = require('nock');
-const configUtils = require('../../../utils/configUtils');
-const gravatar = require('../../../../core/server/lib/image/gravatar');
+const Gravatar = require('../../../../core/server/lib/image/gravatar');
 
 describe('lib/image: gravatar', function () {
-    beforeEach(function () {
-        configUtils.set('privacy:useGravatar', true);
-    });
-
-    afterEach(function () {
-        configUtils.restore();
-    });
-
     it('can successfully lookup a gravatar url', function (done) {
-        nock('https://www.gravatar.com')
-            .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=404&r=x')
-            .reply(200);
+        const gravatar = new Gravatar({config: {
+            isPrivacyDisabled: () => false
+        }, request: () => {}});
 
         gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
             should.exist(result);
@@ -27,9 +17,11 @@ describe('lib/image: gravatar', function () {
     });
 
     it('can handle a non existant gravatar', function (done) {
-        nock('https://www.gravatar.com')
-            .get('/avatar/3a2963a39ebba98fb0724a1db2f13d63?s=250&d=404&r=x')
-            .reply(404);
+        const gravatar = new Gravatar({config: {
+            isPrivacyDisabled: () => false
+        }, request: () => {
+            return Promise.reject({statusCode: 404});
+        }});
 
         gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
             should.exist(result);
@@ -39,15 +31,14 @@ describe('lib/image: gravatar', function () {
         }).catch(done);
     });
 
-    it('will timeout', function (done) {
-        nock('https://www.gravatar.com')
-            .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=404&r=x')
-            .delay(15)
-            .reply(200);
+    it('will timeout', function () {
+        const delay = 42;
+        const gravatar = new Gravatar({config: {
+            isPrivacyDisabled: () => false
+        }, request: (url, options) => {
+            options.timeout.should.eql(delay);
+        }});
 
-        gravatar.lookup({email: 'exists@example.com'}, 10).then(function (result) {
-            should.not.exist(result);
-            done();
-        }).catch(done);
+        gravatar.lookup({email: 'exists@example.com'}, delay);
     });
 });
