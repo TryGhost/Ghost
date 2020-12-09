@@ -38,6 +38,9 @@ jobManager.scheduleJob('every 5 minutes', './path/to/jobs/check-emails.js', {}, 
 // job needs execution outside parent event loop
 // for cron builder check https://crontab.guru/ (first value is seconds)
 jobManager.scheduleJob('0 1/5 * * * *', './path/to/jobs/check-emails.js', {}, 'email-checker-cron');
+
+// register a job to un immediately
+jobManager.scheduleJob(undefined, './path/to/jobs/check-emails.js', {}, 'email-checker-now');
 ```
 
 For other examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/examples) directory.
