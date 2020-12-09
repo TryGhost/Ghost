@@ -38,7 +38,9 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         });
 
-        getImageDimensions.__set__('imageSizeCache', sizeOfStub);
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
@@ -89,7 +91,9 @@ describe('getImageDimensions', function () {
 
         sizeOfStub.returns({});
 
-        getImageDimensions.__set__('imageSizeCache', sizeOfStub);
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
@@ -133,7 +137,9 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         });
 
-        getImageDimensions.__set__('imageSizeCache', sizeOfStub);
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
@@ -185,7 +191,9 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         });
 
-        getImageDimensions.__set__('imageSizeCache', sizeOfStub);
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
 
         getImageDimensions(metaData).then(function (result) {
             should.exist(result);
