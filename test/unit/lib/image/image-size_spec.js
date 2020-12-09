@@ -10,10 +10,10 @@ const storage = require('../../../../core/server/adapters/storage');
 
 describe('lib/image: image size', function () {
     let imageSize;
-    let sizeOf;
     let sizeOfSpy;
-    let probeSizeOf;
+    let revertSizeOf;
     let probeSizeOfSpy;
+    let revertProbeSizeOf;
     let originalStoragePath;
 
     // use a 1x1 gif in nock responses because it's really small and easy to work with
@@ -22,16 +22,18 @@ describe('lib/image: image size', function () {
     beforeEach(function () {
         imageSize = rewire('../../../../core/server/lib/image/image-size');
 
-        sizeOf = imageSize.__get__('sizeOf');
-        sizeOfSpy = sinon.spy(sizeOf);
+        sizeOfSpy = sinon.spy(imageSize.__get__('sizeOf'));
+        revertSizeOf = imageSize.__set__('sizeOf', sizeOfSpy);
 
-        probeSizeOf = imageSize.__get__('probeSizeOf');
-        probeSizeOfSpy = sinon.spy(probeSizeOf);
+        probeSizeOfSpy = sinon.spy(imageSize.__get__('probeSizeOf'));
+        revertProbeSizeOf = imageSize.__set__('probeSizeOf', probeSizeOfSpy);
 
         originalStoragePath = storage.getStorage().storagePath;
     });
 
     afterEach(function () {
+        revertSizeOf();
+        revertProbeSizeOf();
         sinon.restore();
         configUtils.restore();
         storage.getStorage().storagePath = originalStoragePath;
@@ -56,8 +58,8 @@ describe('lib/image: image size', function () {
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                probeSizeOfSpy.should.have.been.called;
-                sizeOfSpy.should.not.have.been.called;
+                probeSizeOfSpy.called.should.be.true();
+                sizeOfSpy.called.should.be.false();
 
                 requestMock.isDone().should.be.true();
                 should.exist(res);
@@ -81,8 +83,8 @@ describe('lib/image: image size', function () {
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                sizeOfSpy.should.have.been.called;
-                probeSizeOfSpy.should.not.have.been.called;
+                sizeOfSpy.called.should.be.true();
+                probeSizeOfSpy.called.should.be.false();
 
                 requestMock.isDone().should.be.true();
                 should.exist(res);
@@ -106,7 +108,7 @@ describe('lib/image: image size', function () {
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                probeSizeOfSpy.should.have.been.called;
+                probeSizeOfSpy.called.should.be.true();
                 requestMock.isDone().should.be.true();
                 should.exist(res);
                 res.width.should.be.equal(expectedImageObject.width);
@@ -156,7 +158,7 @@ describe('lib/image: image size', function () {
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                probeSizeOfSpy.should.have.been.called;
+                probeSizeOfSpy.called.should.be.true();
                 requestMock.isDone().should.be.true();
                 should.exist(res);
                 res.width.should.be.equal(expectedImageObject.width);
@@ -179,7 +181,7 @@ describe('lib/image: image size', function () {
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                probeSizeOfSpy.should.have.been.called;
+                probeSizeOfSpy.called.should.be.true();
                 requestMock.isDone().should.be.true();
                 should.exist(res);
                 res.width.should.be.equal(expectedImageObject.width);
@@ -208,7 +210,7 @@ describe('lib/image: image size', function () {
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                probeSizeOfSpy.should.have.been.called;
+                probeSizeOfSpy.called.should.be.true();
                 requestMock.isDone().should.be.true();
                 secondRequestMock.isDone().should.be.true();
                 should.exist(res);
@@ -220,25 +222,25 @@ describe('lib/image: image size', function () {
         });
 
         it('[success] can handle redirect (image-size)', function (done) {
-            const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.gif';
+            const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.ico';
             const expectedImageObject = {
                 height: 1,
-                url: 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.gif',
+                url: 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.ico',
                 width: 1
             };
 
             const requestMock = nock('http://noimagehere.com')
-                .get('/files/f/feedough/x/11/1540353_20925115.gif')
+                .get('/files/f/feedough/x/11/1540353_20925115.ico')
                 .reply(301, null, {
-                    location: 'http://someredirectedurl.com/files/f/feedough/x/11/1540353_20925115.gif'
+                    location: 'http://someredirectedurl.com/files/f/feedough/x/11/1540353_20925115.ico'
                 });
 
             const secondRequestMock = nock('http://someredirectedurl.com')
-                .get('/files/f/feedough/x/11/1540353_20925115.gif')
+                .get('/files/f/feedough/x/11/1540353_20925115.ico')
                 .reply(200, GIF1x1);
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                sizeOfSpy.should.have.been.called;
+                sizeOfSpy.called.should.be.true();
                 requestMock.isDone().should.be.true();
                 secondRequestMock.isDone().should.be.true();
                 should.exist(res);
@@ -292,31 +294,33 @@ describe('lib/image: image size', function () {
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
-                    probeSizeOfSpy.should.have.been.called;
+                    probeSizeOfSpy.called.should.be.true();
                     requestMock.isDone().should.be.true();
                     should.exist(err);
                     err.errorType.should.be.equal('NotFoundError');
                     err.message.should.be.equal('Image not found.');
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] can handle an error with statuscode not 200 (image-size)', function (done) {
-            const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.gif';
+            const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.ico';
 
             const requestMock = nock('http://noimagehere.com')
-                .get('/files/f/feedough/x/11/1540353_20925115.gif')
+                .get('/files/f/feedough/x/11/1540353_20925115.ico')
                 .reply(404);
 
             imageSize.getImageSizeFromUrl(url)
                 .catch(function (err) {
-                    sizeOfSpy.should.have.been.called;
+                    probeSizeOfSpy.called.should.be.false();
+                    // 404 will abort before sizeOf is called
+                    sizeOfSpy.called.should.be.false();
                     requestMock.isDone().should.be.true();
                     should.exist(err);
                     err.errorType.should.be.equal('NotFoundError');
                     err.message.should.be.equal('Image not found.');
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] handles invalid URL', function (done) {
@@ -328,7 +332,7 @@ describe('lib/image: image size', function () {
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('URL empty or invalid.');
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] will timeout', function (done) {
@@ -347,7 +351,7 @@ describe('lib/image: image size', function () {
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('Request timed out.');
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] returns error if \`probe-image-size`\ module throws error', function (done) {
@@ -366,7 +370,7 @@ describe('lib/image: image size', function () {
                     err.errorType.should.be.equal('InternalServerError');
                     err.error.should.be.equal('probe-image-size could not find dimensions');
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] returns error if \`image-size`\ module throws error', function (done) {
@@ -392,7 +396,7 @@ describe('lib/image: image size', function () {
                     err.errorType.should.be.equal('InternalServerError');
                     err.error.should.be.equal('image-size could not find dimensions');
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] returns error if request errors', function (done) {
@@ -409,7 +413,7 @@ describe('lib/image: image size', function () {
                     err.errorType.should.be.equal('InternalServerError');
                     err.message.should.be.equal('Unknown Request error.');
                     done();
-                });
+                }).catch(done);
         });
     });
 
@@ -510,7 +514,7 @@ describe('lib/image: image size', function () {
                     should.exist(err);
                     (err instanceof errors.NotFoundError).should.eql(true);
                     done();
-                });
+                }).catch(done);
         });
 
         it('[failure] returns error if \`image-size`\ module throws error', function (done) {
@@ -532,7 +536,7 @@ describe('lib/image: image size', function () {
                     should.exist(err);
                     err.error.should.be.equal('image-size could not find dimensions');
                     done();
-                });
+                }).catch(done);
         });
     });
 });

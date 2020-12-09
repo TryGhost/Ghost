@@ -30,6 +30,52 @@ describe('Members API', function () {
             });
     });
 
+    it('Can order by email_open_rate', async function () {
+        await request
+            .get(localUtils.API.getApiQuery('members/?order=email_open_rate%20desc'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.members);
+                localUtils.API.checkResponse(jsonResponse, 'members');
+                jsonResponse.members.should.have.length(4);
+
+                jsonResponse.members[0].email.should.equal('paid@test.com');
+                jsonResponse.members[0].email_open_rate.should.equal(80);
+                jsonResponse.members[1].email.should.equal('member2@test.com');
+                jsonResponse.members[1].email_open_rate.should.equal(50);
+                jsonResponse.members[2].email.should.equal('member1@test.com');
+                should.equal(null, jsonResponse.members[2].email_open_rate);
+                jsonResponse.members[3].email.should.equal('trialing@test.com');
+                should.equal(null, jsonResponse.members[3].email_open_rate);
+            });
+
+        await request
+            .get(localUtils.API.getApiQuery('members/?order=email_open_rate%20asc'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                const jsonResponse = res.body;
+                localUtils.API.checkResponse(jsonResponse, 'members');
+                jsonResponse.members.should.have.length(4);
+
+                jsonResponse.members[0].email.should.equal('member2@test.com');
+                jsonResponse.members[0].email_open_rate.should.equal(50);
+                jsonResponse.members[1].email.should.equal('paid@test.com');
+                jsonResponse.members[1].email_open_rate.should.equal(80);
+                jsonResponse.members[2].email.should.equal('member1@test.com');
+                should.equal(null, jsonResponse.members[2].email_open_rate);
+                jsonResponse.members[3].email.should.equal('trialing@test.com');
+                should.equal(null, jsonResponse.members[3].email_open_rate);
+            });
+    });
+
     it('Can search by case-insensitive name', function () {
         return request
             .get(localUtils.API.getApiQuery('members/?search=egg'))

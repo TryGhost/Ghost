@@ -449,10 +449,10 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.3.4":
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.3.4.tgz#0f7811c350fac64f89e080b9119b183039f1f04c"
-  integrity sha512-/b0ETTfR3ggnU/iZzDr9T88FqH/or9QHj9BZZ4E5sYP4LTzz7KQnh7Cx156tPIPI/VkiVStbd3Mixy9LvfpL9w==
+"@tryghost/job-manager@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.4.0.tgz#52a26b88561a717046389a8bf242cd38783d074e"
+  integrity sha512-4s6AGQGL3r9QinnqUVtE0rT37DbJ6j3OlX5kQ3WoIt1eZssKxHTIR9QfcQJ5amxjdhUgd/tYCi8jjXQcaXD7oQ==
   dependencies:
     "@breejs/later" "4.0.2"
     bree "4.0.0"
@@ -5238,6 +5238,14 @@ js-yaml@3.14.0, js-yaml@^3.13.1, js-yaml@~3.14.0:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
+js-yaml@3.14.1:
+  version "3.14.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.14.1.tgz#dae812fdb3825fa306609a8717383c50c36a0537"
+  integrity sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==
+  dependencies:
+    argparse "^1.0.7"
+    esprima "^4.0.0"
+
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
@@ -5386,10 +5394,10 @@ jwa@^1.4.1:
     ecdsa-sig-formatter "1.0.11"
     safe-buffer "^5.0.1"
 
-jwks-rsa@1.11.0:
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.11.0.tgz#c7160a1457d7aab2da0148253854948c51baf87a"
-  integrity sha512-G7ZgXZ3dlGbOUBQwgF+U/SVzOlI9KxJ9Uzp61bue2S5TV0h7c+kJRCl3bEPkC5PVmeu7/h82B3uQALVJMjzt/Q==
+jwks-rsa@1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-1.12.0.tgz#6bfa20c6673abf15c2ff0806edc0a15b3f2f5969"
+  integrity sha512-6zKwlhnGQo+KivArZQThGoxrliRZgyC8s6yXDFSNRiMEVm+4jv07nBkVPFoaN/rEX0b47GKm5MSyBmuzGjj6wg==
   dependencies:
     "@types/express-jwt" "0.0.42"
     axios "^0.19.2"
@@ -9535,6 +9543,11 @@ uuid@8.3.1:
   version "8.3.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.1.tgz#2ba2e6ca000da60fce5a196954ab241131e05a31"
   integrity sha512-FOmRr+FmWEIG8uhZv6C2bTgEVXsHk08kE7mPlrBbEe+c3r9pjceVPgupIfNIhc4yx55H69OXANrUaSuu9eInKg==
+
+uuid@8.3.2:
+  version "8.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 uuid@^3.0.0, uuid@^3.2.1, uuid@^3.3.2, uuid@^3.3.3:
   version "3.4.0"
