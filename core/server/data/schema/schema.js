@@ -378,6 +378,8 @@ module.exports = {
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
         subscribed: {type: 'bool', nullable: true, defaultTo: true},
+        email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
+        email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
