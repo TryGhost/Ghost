@@ -368,7 +368,7 @@ module.exports = {
                         html: emailContent,
                         forceTextContent: true,
                         attachments: [{
-                            filename: `${importLabel.name}.csv`,
+                            filename: `${importLabel.name} - Errors.csv`,
                             contents: errorCSV,
                             contentType: 'text/csv',
                             contentDisposition: 'attachment'
