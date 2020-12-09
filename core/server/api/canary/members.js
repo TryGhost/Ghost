@@ -6,8 +6,6 @@ const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const models = require('../../models');
 const membersService = require('../../services/members');
-const doImport = require('../../services/members/importer');
-const memberLabelsImporter = require('../../services/members/importer/labels');
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
@@ -593,102 +591,6 @@ module.exports = {
         }
     },
 
-    importCSVBatched: {
-        statusCode: 201,
-        permissions: {
-            method: 'add'
-        },
-        async query(frame) {
-            let imported = {
-                count: 0
-            };
-            let invalid = {
-                count: 0,
-                errors: []
-            };
-            let duplicateStripeCustomerIdCount = 0;
-
-            // NOTE: redacted copy from models.Base module
-            const contextUser = (options) => {
-                options = options || {};
-                options.context = options.context || {};
-
-                if (options.context.user || models.Base.Model.isExternalUser(options.context.user)) {
-                    return options.context.user;
-                } else if (options.context.integration) {
-                    return models.Base.Model.internalUser;
-                }
-            };
-
-            const createdBy = contextUser(frame.options);
-
-            let {allLabels, importSetLabels, importLabel} = await memberLabelsImporter.handleAllLabels(
-                frame.data.labels,
-                frame.data.members,
-                settingsCache.get('timezone'),
-                frame.options
-            );
-
-            return Promise.resolve().then(async () => {
-                const {sanitized, invalidCount, validationErrors, duplicateStripeCustomersCount} = await sanitizeInput(frame.data.members);
-                invalid.count += invalidCount;
-                duplicateStripeCustomerIdCount = duplicateStripeCustomersCount;
-
-                if (validationErrors.length) {
-                    invalid.errors.push(...validationErrors);
-                }
-
-                return doImport({
-                    members: sanitized,
-                    labels: allLabels,
-                    importSetLabels,
-                    createdBy
-                });
-            }).then(async (result) => {
-                invalid.errors = invalid.errors.concat(result.invalid.errors);
-                invalid.count += result.invalid.count;
-                imported.count += result.imported.count;
-                // NOTE: grouping by context because messages can contain unique data like "customer_id"
-                const groupedErrors = _.groupBy(invalid.errors, 'context');
-                const uniqueErrors = _.uniqBy(invalid.errors, 'context');
-
-                const outputErrors = uniqueErrors.map((error) => {
-                    let errorGroup = groupedErrors[error.context];
-                    let errorCount = errorGroup.length;
-
-                    if (error.message === i18n.t('errors.api.members.duplicateStripeCustomerIds.message')) {
-                        errorCount = duplicateStripeCustomerIdCount;
-                    }
-
-                    // NOTE: filtering only essential error information, so API doesn't leak more error details than it should
-                    return {
-                        message: error.message,
-                        context: error.context,
-                        help: error.help,
-                        count: errorCount
-                    };
-                });
-
-                invalid.errors = outputErrors;
-
-                if (imported.count === 0 && importLabel && importLabel.generated) {
-                    await models.Label.destroy(Object.assign({}, {id: importLabel.id}, frame.options));
-                    importLabel = null;
-                }
-
-                return {
-                    meta: {
-                        stats: {
-                            imported,
-                            invalid
-                        },
-                        import_label: importLabel
-                    }
-                };
-            });
-        }
-    },
-
     stats: {
         options: [
             'days'
@@ -809,9 +711,3 @@ module.exports = {
         }
     }
 };
-// NOTE: remove below condition once batched import is production ready,
-//       remember to swap out current importCSV method when doing so
-if (config.get('enableDeveloperExperiments')) {
-    module.exports.importCSV = module.exports.importCSVBatched;
-    delete module.exports.importCSVBatched;
-}
