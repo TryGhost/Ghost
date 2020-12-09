@@ -315,8 +315,8 @@ describe('Members API', function () {
         should.exist(jsonResponse.meta);
         should.exist(jsonResponse.meta.stats);
 
-        jsonResponse.meta.stats.imported.count.should.equal(2);
-        jsonResponse.meta.stats.invalid.count.should.equal(0);
+        jsonResponse.meta.stats.imported.should.equal(2);
+        jsonResponse.meta.stats.invalid.length.should.equal(0);
         jsonResponse.meta.import_label.name.should.match(/^Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
 
         const importLabel = jsonResponse.meta.import_label;
