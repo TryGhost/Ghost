@@ -42,6 +42,18 @@
           "labels": {
             "$ref": "members.canary#/definitions/member-labels"
           },
+          "email_count": {
+            "strip": true
+          },
+          "email_opened_count": {
+            "strip": true
+          },
+          "email_open_rate": {
+            "strip": true
+          },
+          "email_recipients": {
+            "strip": true
+          },
           "created_at": {
             "strip": true
           },
