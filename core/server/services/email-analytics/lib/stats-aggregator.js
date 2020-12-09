@@ -21,15 +21,20 @@ class EmailAnalyticsStatsAggregator {
             .where('emails.track_opens', true)
             .first() || {};
 
+        const updateQuery = {
+            email_count: this.db.knex.raw('(SELECT COUNT(id) FROM email_recipients WHERE member_id = ?)', [memberId]),
+            email_opened_count: this.db.knex.raw('(SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL)', [memberId])
+        };
+
         if (trackedEmailCount >= this.options.openRateEmailThreshold) {
-            await this.db.knex('members')
-                .update({
-                    email_open_rate: this.db.knex.raw(`(
-                        (SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL) * 1.0 / ? * 100)
-                    `, [memberId, trackedEmailCount])
-                })
-                .where('id', memberId);
+            updateQuery.email_open_rate = this.db.knex.raw(`(
+                (SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL) * 1.0 / ? * 100)
+            `, [memberId, trackedEmailCount]);
         }
+
+        await this.db.knex('members')
+            .update(updateQuery)
+            .where('id', memberId);
     }
 }
 
