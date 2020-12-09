@@ -113,6 +113,70 @@ describe('Job Manager', function () {
 
             clock.uninstall();
         });
+
+        it('schedules a job to run immediately', async function () {
+            const jobManager = new JobManager(logging);
+            const clock = FakeTimers.install({now: Date.now()});
+
+            const jobPath = path.resolve(__dirname, './jobs/simple.js');
+            jobManager.scheduleJob(undefined, jobPath, undefined, 'job-now');
+
+            should(jobManager.bree.timeouts['job-now']).type('object');
+
+            // allow scheduler to pick up the job
+            clock.tick(1);
+
+            should(jobManager.bree.workers['job-now']).type('object');
+
+            const promise = new Promise((resolve, reject) => {
+                jobManager.bree.workers['job-now'].on('error', reject);
+                jobManager.bree.workers['job-now'].on('exit', (code) => {
+                    should(code).equal(0);
+                    resolve();
+                });
+            });
+
+            await promise;
+
+            should(jobManager.bree.workers['job-now']).type('undefined');
+
+            clock.uninstall();
+        });
+
+        it('fails to schedule a job with the same name to run immediately one after another', async function () {
+            const jobManager = new JobManager(logging);
+            const clock = FakeTimers.install({now: Date.now()});
+
+            const jobPath = path.resolve(__dirname, './jobs/simple.js');
+            jobManager.scheduleJob(undefined, jobPath, undefined, 'job-now');
+
+            should(jobManager.bree.timeouts['job-now']).type('object');
+
+            // allow scheduler to pick up the job
+            clock.tick(1);
+
+            should(jobManager.bree.workers['job-now']).type('object');
+
+            const promise = new Promise((resolve, reject) => {
+                jobManager.bree.workers['job-now'].on('error', reject);
+                jobManager.bree.workers['job-now'].on('exit', (code) => {
+                    should(code).equal(0);
+                    resolve();
+                });
+            });
+
+            await promise;
+
+            should(jobManager.bree.workers['job-now']).type('undefined');
+
+            // note: job name resolves to [Object object], test can be made more precise
+            //       once that is fixed in Bree.
+            (() => {
+                jobManager.scheduleJob(undefined, jobPath, undefined, 'job-now');
+            }).should.throw('Job #1 has a duplicate job name of [object Object]');
+
+            clock.uninstall();
+        });
     });
 
     describe('Remove a Job', function () {
