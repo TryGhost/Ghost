@@ -25,73 +25,12 @@ describe('Integration: Service: member-import-validator', function () {
     it('checks correct data without Stripe customer', async function () {
         let service = this.owner.lookup('service:member-import-validator');
 
-        const {validationErrors, mapping} = await service.check([{
+        const mapping = await service.check([{
             name: 'Rish',
             email: 'validemail@example.com'
         }]);
 
-        expect(validationErrors.length).to.equal(0);
         expect(mapping.email).to.equal('email');
-    });
-
-    it('returns validation error when no data is provided', async function () {
-        let service = this.owner.lookup('service:member-import-validator');
-
-        const {validationErrors} = await service.check([]);
-
-        expect(validationErrors.length).to.equal(1);
-        expect(validationErrors[0].message).to.equal('File is empty, nothing to import. Please select a different file.');
-    });
-
-    it('returns validation error for data with stripe_customer_id but no connected Stripe', async function () {
-        this.owner.register('service:membersUtils', Service.extend({
-            isStripeEnabled: false
-        }));
-
-        let service = this.owner.lookup('service:member-import-validator');
-
-        const {validationErrors, mapping} = await service.check([{
-            name: 'Kevin',
-            email: 'goodeamil@example.com',
-            stripe_customer_id: 'cus_XXXX'
-        }]);
-
-        expect(validationErrors.length).to.equal(1);
-        expect(validationErrors[0].message).to.equal('Missing Stripe connection');
-        expect(mapping.name).to.equal('name');
-        expect(mapping.email).to.equal('email');
-        expect(mapping.stripe_customer_id).to.equal('stripe_customer_id');
-    });
-
-    it('returns validation error for no valid emails', async function () {
-        this.owner.register('service:membersUtils', Service.extend({
-            isStripeEnabled: false
-        }));
-
-        let service = this.owner.lookup('service:member-import-validator');
-
-        const {validationErrors} = await service.check([{
-            email: 'invalid_email'
-        }]);
-
-        expect(validationErrors.length).to.equal(1);
-        expect(validationErrors[0].message).to.equal('No email addresses found in the uploaded CSV.');
-    });
-
-    it('ignores validation for invalid email', async function () {
-        this.owner.register('service:membersUtils', Service.extend({
-            isStripeEnabled: false
-        }));
-
-        let service = this.owner.lookup('service:member-import-validator');
-
-        const {validationErrors} = await service.check([{
-            email: 'invalid_email'
-        }, {
-            email: 'email@example.com'
-        }]);
-
-        expect(validationErrors.length).to.equal(0);
     });
 
     describe('data sampling method', function () {
@@ -205,7 +144,6 @@ describe('Integration: Service: member-import-validator', function () {
             }]);
 
             expect(result.email).to.equal('correo_electronico');
-            expect(result.stripe_customer_id).to.equal('stripe_id');
         });
 
         it('correctly detects variation of "name" mapping', async function () {

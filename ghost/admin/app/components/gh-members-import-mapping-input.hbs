@@ -1,4 +1,4 @@
-<span class="gh-select gh-import-member-select {{unless this.mapTo "unmapped"}}">
+<span class="gh-select gh-import-member-select {{if @disabled "disabled"}} {{unless this.mapTo "unmapped"}}">
     <OneWaySelect @value={{this.mapTo}}
         @options={{this.availableFields}}
         @optionValuePath="value"
@@ -8,6 +8,7 @@
         @promptIsSelectable={{true}}
         @prompt="Not imported"
         @update={{action "updateMapping"}}
+        @disabled={{@disabled}}
     />
     {{svg-jar "arrow-down-small"}}
 </span>

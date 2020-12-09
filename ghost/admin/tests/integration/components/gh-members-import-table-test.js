@@ -1,38 +1,21 @@
 import hbs from 'htmlbars-inline-precompile';
-import {click, find, findAll, render} from '@ember/test-helpers';
+import {click, findAll, render} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-members-import-table', function () {
     setupRenderingTest();
-    const mockMapping = {
-        mapping: {},
-        get: (key) => {
-            return key;
-        }
-    };
-
-    it('renders empty without data', async function () {
-        await render(hbs`
-            <GhMembersImportTable />
-        `);
-
-        expect(find('table')).to.exist;
-        expect(findAll('table thead th').length).to.equal(3);
-        expect(findAll('table tbody tr').length).to.equal(1);
-        expect(find('table tbody').textContent).to.match(/No data/);
-    });
 
     it('renders members data with all the properties', async function () {
         this.set('importData', [{
             name: 'Kevin',
             email: 'kevin@example.com'
         }]);
-        this.set('mapping', mockMapping);
+        this.set('setMapping', () => {});
 
         await render(hbs`
-            <GhMembersImportTable @importData={{this.importData}} @mapping={{this.mapping}}/>
+            <GhMembersImportTable @data={{this.importData}} @setMapping={{this.setMapping}}/>
         `);
 
         expect(findAll('table tbody tr').length).to.equal(2);
@@ -52,10 +35,10 @@ describe('Integration: Component: gh-members-import-table', function () {
             name: 'Rish',
             email: 'rish@example.com'
         }]);
-        this.set('mapping', mockMapping);
+        this.set('setMapping', () => {});
 
         await render(hbs`
-            <GhMembersImportTable @importData={{this.importData}} @mapping={{this.mapping}}/>
+            <GhMembersImportTable @data={{this.importData}} @setMapping={{this.setMapping}}/>
         `);
 
         expect(findAll('table tbody tr').length).to.equal(2);

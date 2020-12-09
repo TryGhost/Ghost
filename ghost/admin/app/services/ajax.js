@@ -144,6 +144,19 @@ export function isEmailError(errorOrStatus, payload) {
 
 /* end: custom error types */
 
+export class AcceptedResponse {
+    constructor(data) {
+        this.data = data;
+    }
+}
+
+export function isAcceptedResponse(errorOrStatus) {
+    if (errorOrStatus === 202) {
+        return true;
+    }
+    return false;
+}
+
 let ajaxService = AjaxService.extend({
     session: service(),
 
@@ -198,6 +211,8 @@ let ajaxService = AjaxService.extend({
             return new HostLimitError(payload);
         } else if (this.isEmailError(status, headers, payload)) {
             return new EmailError(payload);
+        } else if (this.isAcceptedResponse(status)) {
+            return new AcceptedResponse(payload);
         }
 
         let isGhostRequest = GHOST_REQUEST.test(request.url);
@@ -264,6 +279,10 @@ let ajaxService = AjaxService.extend({
 
     isEmailError(status, headers, payload) {
         return isEmailError(status, payload);
+    },
+
+    isAcceptedResponse(status) {
+        return isAcceptedResponse(status);
     }
 });
 

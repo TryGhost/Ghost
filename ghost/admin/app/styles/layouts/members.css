@@ -527,7 +527,39 @@ textarea.gh-member-details-textarea {
 /* ---------------------------------------------------------- */
 
 .fullscreen-modal-import-members {
-    max-width: 640px;
+    max-width: unset !important;
+}
+
+.gh-member-import-wrapper {
+    width: 420px;
+}
+
+.gh-member-import-wrapper.wide {
+    width: 580px;
+}
+
+.gh-member-import-wrapper .gh-btn.disabled,
+.gh-member-import-wrapper .gh-btn.disabled:hover {
+    cursor: auto !important;
+    opacity: 0.6 !important;
+}
+
+.gh-member-import-wrapper .gh-btn.disabled span,
+.gh-member-import-wrapper .gh-btn.disabled span:hover {
+    cursor: auto !important;
+    pointer-events: none;
+}
+
+.gh-member-import-wrapper .gh-token-input .ember-power-select-trigger[aria-disabled=true],
+.gh-member-import-wrapper .gh-token-input .ember-power-select-trigger-multiple-input:disabled {
+    background: var(--whitegrey-l2);
+}
+
+@media (max-width: 600px) {
+    .gh-member-import-wrapper,
+    .gh-member-import-wrapper.wide {
+        width: calc(100vw - 128px);
+    }
 }
 
 .gh-members-import-uploader {
@@ -545,6 +577,7 @@ textarea.gh-member-details-textarea {
     min-height: 182px;
     justify-content: center;
     align-items: center;
+    margin-bottom: -20px;
 }
 
 .gh-members-import-spinner .gh-loading-content {
@@ -593,6 +626,27 @@ p.gh-members-import-errorcontext {
     line-height: 1.3em;
     margin: 0;
     font-weight: 400;
+}
+
+.gh-members-import-mapping .error {
+    color: var(--red);
+}
+
+.gh-members-import-mappingwrapper.error {
+    position: relative;
+}
+
+.gh-members-import-mappingwrapper.error::before {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid red;
+    z-index: 9999;
+    pointer-events: none;
 }
 
 .gh-members-import-scrollarea {
@@ -778,8 +832,12 @@ p.gh-members-import-errordetail:first-of-type {
     overflow-wrap: break-word;
 }
 
+.gh-member-import-resultcontainer {
+    margin-bottom: 28px;
+}
+
 .gh-member-import-result-summary {
-    padding: 20px;
+    flex-basis: 50%;
 }
 
 .gh-member-import-result-summary h2 {
@@ -790,9 +848,42 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-member-import-result-summary p {
-    margin: -2px 0 0;
+    color: var(--darkgrey);
+    margin: 0;
     padding: 0;
-    color: var(--midlightgrey);
+    line-height: 1.6em;
+    margin-bottom: 12px;
+}
+
+.gh-member-import-result-summary p strong {
+    font-size: 1.5rem;
+}
+
+.gh-member-import-errorlist {
+    width: 100%;
+    margin: 8px 0 28px;
+}
+
+.gh-member-import-errorlist h4 {
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--whitegrey);
+    padding-bottom: 8px;
+    margin-top: 0px;
+    color: var(--midgrey);
+}
+
+.gh-member-import-errorlist p {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--midlightgrey-d2);
+    padding: 0;
+    margin-bottom: 6px;
+}
+
+.gh-member-import-resultcontainer hr {
+    margin: 24px -32px;
+    border-color: var(--whitegrey);
 }
 
 .gh-member-import-nodata span {
@@ -801,6 +892,26 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     justify-content: center;
     color: var(--midgrey);
+}
+
+.gh-member-import-icon-members {
+    color: var(--green);
+}
+
+.gh-member-import-icon-members path,
+.gh-member-import-icon-members circle {
+    stroke-width: 0.85px;
+}
+
+.gh-member-import-icon-confetti {
+    color: var(--purple);
+    margin-left: 12px;
+}
+
+.gh-member-import-icon-confetti path,
+.gh-member-import-icon-confetti circle,
+.gh-member-import-icon-confetti ellipse {
+    stroke-width: 0.85px;
 }
 
 /* Fixing Firefox's select padding */
