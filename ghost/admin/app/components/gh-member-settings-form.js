@@ -56,6 +56,9 @@ export default Component.extend({
     actions: {
         setProperty(property, value) {
             this.setProperty(property, value);
+        },
+        setLabels(labels) {
+            this.member.set('labels', labels);
         }
     },
 

@@ -101,7 +101,7 @@
         <div class="pa5 pt6 pb6">
             <GhFormGroup>
                 <label for="label-input">Labels</label>
-                <GhMemberLabelInput @member={{this.member}} @triggerId="label-input" />
+                <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" />
             </GhFormGroup>
             <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0">
                 <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>

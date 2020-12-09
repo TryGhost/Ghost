@@ -1,8 +1,5 @@
-import MemberImportError from 'ghost-admin/errors/member-import-error';
 import Service, {inject as service} from '@ember/service';
 import validator from 'validator';
-import {formatNumber} from 'ghost-admin/helpers/format-number';
-import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {isEmpty} from '@ember/utils';
 
 export default Service.extend({
@@ -10,69 +7,10 @@ export default Service.extend({
     membersUtils: service(),
     ghostPaths: service(),
 
-    async check(data) {
-        if (!data || !data.length) {
-            return {
-                validationErrors: [new MemberImportError({
-                    message: 'File is empty, nothing to import. Please select a different file.'
-                })]
-            };
-        }
-
+    check(data) {
         let sampledData = this._sampleData(data);
         let mapping = this._detectDataTypes(sampledData);
-
-        let validationErrors = [];
-
-        const hasStripeIds = !!mapping.stripe_customer_id;
-        const hasEmails = !!mapping.email;
-
-        if (hasStripeIds) {
-            // check can be done on whole set as it won't be too slow
-            const {totalCount, duplicateCount} = this._checkStripeIds(data, mapping);
-
-            if (!this.membersUtils.isStripeEnabled) {
-                validationErrors.push(new MemberImportError({
-                    message: `Missing Stripe connection`,
-                    context: `${ghPluralize(totalCount, 'Stripe customer')} won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`,
-                    type: 'warning'
-                }));
-            } else {
-                let stripeSeverValidation = await this._checkStripeServer(sampledData, mapping);
-                if (stripeSeverValidation !== true) {
-                    validationErrors.push(new MemberImportError({
-                        message: 'Wrong Stripe account',
-                        context: `The CSV contains Stripe customers from a different Stripe account. These members will not be imported. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`,
-                        type: 'warning'
-                    }));
-                }
-            }
-
-            if (duplicateCount) {
-                validationErrors.push(new MemberImportError({
-                    message: `Duplicate Stripe ID <span class="fw4">(${formatNumber(duplicateCount)})</span>`,
-                    type: 'warning'
-                }));
-            }
-        }
-
-        if (!hasEmails) {
-            validationErrors.push(new MemberImportError({
-                message: 'No email addresses found in the uploaded CSV.'
-            }));
-        } else {
-            // check can be done on whole set as it won't be too slow
-            const {emptyCount} = this._checkEmails(data, mapping);
-
-            if (emptyCount) {
-                validationErrors.push(new MemberImportError({
-                    message: `Missing email address <span class="fw4">(${formatNumber(emptyCount)})</span>`,
-                    type: 'warning'
-                }));
-            }
-        }
-
-        return {validationErrors, mapping};
+        return mapping;
     },
 
     /**
@@ -141,15 +79,12 @@ export default Service.extend({
             'name',
             'note',
             'subscribed_to_emails',
-            'stripe_customer_id',
-            'complimentary_plan',
             'labels',
             'created_at'
         ];
 
         const autoDetectedTypes = [
-            'email',
-            'stripe_customer_id'
+            'email'
         ];
 
         let mapping = {};
@@ -167,11 +102,6 @@ export default Service.extend({
                     continue;
                 }
 
-                if (!mapping.stripe_customer_id && value && value.startsWith && value.startsWith('cus_')) {
-                    mapping.stripe_customer_id = key;
-                    continue;
-                }
-
                 if (!mapping.name && /name/.test(key)) {
                     mapping.name = key;
                     continue;
@@ -186,99 +116,5 @@ export default Service.extend({
         }
 
         return mapping;
-    },
-
-    _containsRecordsWithStripeId(validatedSet) {
-        let memberWithStripeId = validatedSet.find(m => !!(m.stripe_customer_id));
-        return !!memberWithStripeId;
-    },
-
-    _checkEmails(validatedSet, mapping) {
-        let emptyCount = 0;
-
-        validatedSet.forEach((member) => {
-            let emailValue = member[mapping.email];
-            if (!emailValue) {
-                emptyCount += 1;
-            }
-        });
-
-        return {emptyCount};
-    },
-
-    _countStripeRecors(validatedSet, mapping) {
-        let count = 0;
-
-        validatedSet.forEach((member) => {
-            if (!isEmpty(member[mapping.stripe_customer_id])) {
-                count += 1;
-            }
-        });
-
-        return count;
-    },
-
-    _checkStripeIds(validatedSet, mapping) {
-        let totalCount = 0;
-        let duplicateCount = 0;
-
-        validatedSet.reduce((acc, member) => {
-            let stripeCustomerIdValue = member[mapping.stripe_customer_id];
-
-            if (stripeCustomerIdValue && stripeCustomerIdValue !== 'undefined') {
-                totalCount += 1;
-
-                if (acc[stripeCustomerIdValue]) {
-                    acc[stripeCustomerIdValue] += 1;
-                    duplicateCount += 1;
-                } else {
-                    acc[stripeCustomerIdValue] = 1;
-                }
-            }
-
-            return acc;
-        }, {});
-
-        return {totalCount, duplicateCount};
-    },
-
-    _checkContainsStripeIDs(validatedSet) {
-        let result = true;
-
-        if (!this.membersUtils.isStripeEnabled) {
-            validatedSet.forEach((member) => {
-                if (member.stripe_customer_id) {
-                    result = false;
-                }
-            });
-        }
-
-        return result;
-    },
-
-    async _checkStripeServer(validatedSet, mapping) {
-        const url = this.ghostPaths.get('url').api('members/upload/validate');
-        const mappedValidatedSet = validatedSet.map((entry) => {
-            return {
-                stripe_customer_id: entry[mapping.stripe_customer_id]
-            };
-        });
-
-        let response;
-        try {
-            response = await this.ajax.post(url, {
-                data: {
-                    members: mappedValidatedSet
-                }
-            });
-        } catch (e) {
-            return false;
-        }
-
-        if (response.errors) {
-            return false;
-        }
-
-        return true;
     }
 });

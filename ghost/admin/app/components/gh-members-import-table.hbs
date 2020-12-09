@@ -19,7 +19,7 @@
             <tr>
                 <td class="middarkgrey table-cell-field"><span>{{row.key}}</span></td>
                 <td class="middarkgrey table-cell-data {{unless row.value "empty-cell"}}"><span>{{row.value}}</span></td>
-                <td><span><GhMembersImportMappingInput @updateMapping={{this.updateMapping}} @mapFrom={{row.key}} @mapTo={{row.mapTo}} /></span></td>
+                <td><span><GhMembersImportMappingInput @updateMapping={{this.updateMapping}} @mapFrom={{row.key}} @mapTo={{row.mapTo}} @disabled={{@disabled}} /></span></td>
             </tr>
         {{else}}
             <tr>

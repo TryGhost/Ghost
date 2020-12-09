@@ -1,100 +1,91 @@
-import Component from '@ember/component';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {sort} from '@ember/object/computed';
+import {tracked} from '@glimmer/tracking';
 
-export default Component.extend({
+export default class GhMemberLabelInput extends Component {
+    @service
+    store;
 
-    store: service(),
+    @tracked
+    selectedLabels = [];
 
-    // public attrs
-    member: null,
-    labelName: '',
+    get availableLabels() {
+        return this._availableLabels.toArray().sort((labelA, labelB) => {
+            return labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true});
+        });
+    }
 
-    // internal attrs
-    _availableLabels: null,
-
-    selectedLabels: computed.reads('member.labels'),
-
-    availableLabels: sort('_availableLabels.[]', function (labelA, labelB) {
-        // ignorePunctuation means the # in label names is ignored
-        return labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true});
-    }),
-
-    availableLabelNames: computed('availableLabels.@each.name', function () {
-        return this.availableLabels.map(label => label.name.toLowerCase());
-    }),
-
-    init() {
-        this._super(...arguments);
+    constructor(...args) {
+        super(...args);
         // perform a background query to fetch all users and set `availableLabels`
         // to a live-query that will be immediately populated with what's in the
         // store and be updated when the above query returns
         this.store.query('label', {limit: 'all'});
-        this.set('_availableLabels', this.store.peekAll('label'));
-    },
+        this._availableLabels = this.store.peekAll('label');
+        this.selectedLabels = this.args.labels || [];
+    }
 
-    willDestroyElement() {
-        // NOTE: cleans up labels store in case they were not persisted, this avoids unsaved labels
-        //       from appearing on different input instances when unsaved
-        this.get('_availableLabels').forEach((label) => {
+    get availableLabelNames() {
+        return this.availableLabels.map(label => label.name.toLowerCase());
+    }
+
+    willDestroy() {
+        this._availableLabels.forEach((label) => {
             if (label.get('isNew')) {
                 this.store.deleteRecord(label);
             }
         });
-    },
+    }
 
-    actions: {
-        matchLabels(labelName, term) {
-            return labelName.toLowerCase() === term.trim().toLowerCase();
-        },
+    @action
+    hideCreateOptionOnMatchingLabel(term) {
+        return !this.availableLabelNames.includes(term.toLowerCase());
+    }
 
-        hideCreateOptionOnMatchingLabel(term) {
-            return !this.availableLabelNames.includes(term.toLowerCase());
-        },
+    @action
+    updateLabels(newLabels) {
+        let currentLabels = this.selectedLabels;
 
-        updateLabels(newLabels) {
-            let currentLabels = this.get('member.labels');
-
-            // destroy new+unsaved labels that are no longer selected
-            currentLabels.forEach(function (label) {
-                if (!newLabels.includes(label) && label.get('isNew')) {
-                    label.destroyRecord();
-                }
-            });
-
-            // update labels
-            return this.set('member.labels', newLabels);
-        },
-
-        createLabel(labelName) {
-            let currentLabels = this.get('member.labels');
-            let currentLabelNames = currentLabels.map(label => label.get('name').toLowerCase());
-            let labelToAdd;
-
-            labelName = labelName.trim();
-
-            // abort if label is already selected
-            if (currentLabelNames.includes(labelName.toLowerCase())) {
-                return;
+        // destroy new+unsaved labels that are no longer selected
+        currentLabels.forEach(function (label) {
+            if (!newLabels.includes(label) && label.get('isNew')) {
+                label.destroyRecord();
             }
+        });
 
-            // find existing label if there is one
-            labelToAdd = this._findLabelByName(labelName);
+        // update labels
+        this.selectedLabels = newLabels;
+        this.args.onChange(newLabels);
+    }
 
-            // create new label if no match
-            if (!labelToAdd) {
-                labelToAdd = this.store.createRecord('label', {
-                    name: labelName
-                });
-            }
+    @action
+    createLabel(labelName) {
+        let currentLabels = this.selectedLabels;
+        let currentLabelNames = currentLabels.map(label => label.get('name').toLowerCase());
+        let labelToAdd;
 
-            // push label onto member relationship
-            return currentLabels.pushObject(labelToAdd);
+        labelName = labelName.trim();
+
+        // abort if label is already selected
+        if (currentLabelNames.includes(labelName.toLowerCase())) {
+            return;
         }
-    },
 
-    // methods
+        // find existing label if there is one
+        labelToAdd = this._findLabelByName(labelName);
+
+        // create new label if no match
+        if (!labelToAdd) {
+            labelToAdd = this.store.createRecord('label', {
+                name: labelName
+            });
+        }
+
+        // push label onto member relationship
+        currentLabels.pushObject(labelToAdd);
+        this.args.onChange(currentLabels);
+    }
 
     _findLabelByName(name) {
         let withMatchingName = function (label) {
@@ -102,4 +93,4 @@ export default Component.extend({
         };
         return this.availableLabels.find(withMatchingName);
     }
-});
+}

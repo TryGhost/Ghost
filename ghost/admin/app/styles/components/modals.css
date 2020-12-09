@@ -131,6 +131,31 @@
     letter-spacing: 0.2px;
 }
 
+.modal-header.icon-center {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 124px;
+}
+
+.modal-header.icon-center svg {
+    width: 66px;
+    height: 66px;
+}
+
+.modal-header.icon-center h1 {
+    margin: 20px 0 8px;
+    padding: 0;
+}
+
+.modal-header.icon-center .gh-loading-content {
+    position: relative;
+    padding: 8px 0;
+    height: 62px;
+}
+
 .modal-body {
     position: relative;
 }
