@@ -127,7 +127,7 @@ p.gh-members-list-email {
 }
 
 .gh-members-list-subscribed-at {
-    width: 240px;
+    width: 220px;
     margin-right: -8px;
     padding-right: 0;
 }
@@ -269,7 +269,7 @@ p.gh-members-list-email {
     }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
     .members-list .gh-list-header, .gh-list-hidecell-m {
         display: none;
     }
@@ -337,8 +337,8 @@ p.gh-members-list-email {
         padding: 0 0 0 64px;
     }
 
-    .gh-members-list-open-rate::after {
-        content: "open rate •";
+    .gh-members-list-open-rate-mobile::after {
+        content: " open rate •";
     }
 
     .gh-members-list-geolocation {
