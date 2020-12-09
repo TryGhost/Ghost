@@ -1,13 +1,11 @@
-import $ from 'jquery';
 import Pretender from 'pretender';
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import {click, find, findAll, render, settled, triggerEvent, waitFor} from '@ember/test-helpers';
+import {click, find, findAll, render, waitFor} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
-import {run} from '@ember/runloop';
 import {setupRenderingTest} from 'ember-mocha';
 
 const notificationsStub = Service.extend({
@@ -178,34 +176,16 @@ describe('Integration: Component: modal-import-members-test', function () {
         expect(showAPIError.called).to.be.false;
     });
 
-    it('handles drag over/leave', async function () {
-        await render(hbs`{{modal-import-members}}`);
-
-        run(() => {
-            // eslint-disable-next-line new-cap
-            let dragover = $.Event('dragover', {
-                dataTransfer: {
-                    files: []
-                }
-            });
-            $(find('.gh-image-uploader')).trigger(dragover);
-        });
-
-        await settled();
-
-        expect(find('.gh-image-uploader').classList.contains('-drag-over'), 'has drag-over class').to.be.true;
-
-        await triggerEvent('.gh-image-uploader', 'dragleave');
-
-        expect(find('.gh-image-uploader').classList.contains('-drag-over'), 'has drag-over class').to.be.false;
-    });
-
     it('validates extension by default', async function () {
-        stubSuccessfulUpload(server);
+        stubFailedUpload(server, 415);
 
         await render(hbs`{{modal-import-members}}`);
 
-        await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.txt'});
+        await fileUpload('input[type="file"]', ['name,email\r\nmembername,memberemail@example.com'], {name: 'test.csv'});
+
+        // Wait for async CSV parsing to finish
+        await waitFor('table', {timeout: 50});
+        await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file type you uploaded is not supported/);
