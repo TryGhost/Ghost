@@ -103,7 +103,8 @@ function serializeMember(member, options) {
         comped: comped,
         email_count: json.email_count,
         email_opened_count: json.email_opened_count,
-        email_open_rate: json.email_open_rate
+        email_open_rate: json.email_open_rate,
+        email_recipients: json.email_recipients
     };
 }
 
@@ -150,6 +151,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_count
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
+ * @prop {null|SerializedEmailRecipient[]} email_recipients
  */
 
 /**
@@ -178,6 +180,48 @@ function createSerializer(debugString, serialize) {
  * @prop {number} plan.amount
  * @prop {string} plan.currency
  * @prop {string} plan.currency_symbol
+ */
+
+/**
+ * @typedef {Object} SerializedEmailRecipient
+ *
+ * @prop {string} id
+ * @prop {string} email_id
+ * @prop {string} batch_id
+ * @prop {string} processed_at
+ * @prop {string} delivered_at
+ * @prop {string} opened_at
+ * @prop {string} failed_at
+ * @prop {string} member_uuid
+ * @prop {string} member_email
+ * @prop {string} member_name
+ * @prop {SerializedEmail[]} email
+ */
+
+/**
+ * @typedef {Object} SerializedEmail
+ *
+ * @prop {string} id
+ * @prop {string} post_id
+ * @prop {string} uuid
+ * @prop {string} status
+ * @prop {string} recipient_filter
+ * @prop {null|string} error
+ * @prop {string} error_data
+ * @prop {number} email_count
+ * @prop {number} delivered_count
+ * @prop {number} opened_count
+ * @prop {number} failed_count
+ * @prop {string} subject
+ * @prop {string} from
+ * @prop {string} reply_to
+ * @prop {string} html
+ * @prop {string} plaintext
+ * @prop {boolean} track_opens
+ * @prop {string} created_at
+ * @prop {string} created_by
+ * @prop {string} updated_at
+ * @prop {string} updated_by
  */
 
 /**
