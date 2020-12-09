@@ -429,42 +429,6 @@ module.exports = {
         }
     },
 
-    validateImport: {
-        permissions: {
-            method: 'add'
-        },
-        headers: {},
-        async query(frame) {
-            const importedMembers = frame.data.members;
-
-            await Promise.map(importedMembers, (async (entry) => {
-                if (entry.stripe_customer_id) {
-                    if (!membersService.config.isStripeConnected()) {
-                        throw new errors.ValidationError({
-                            message: i18n.t('errors.api.members.stripeNotConnected.message', {
-                                id: entry.stripe_customer_id
-                            }),
-                            context: i18n.t('errors.api.members.stripeNotConnected.context'),
-                            help: i18n.t('errors.api.members.stripeNotConnected.help')
-                        });
-                    }
-
-                    try {
-                        await membersService.api.members.getStripeCustomer(entry.stripe_customer_id);
-                    } catch (error) {
-                        throw new errors.ValidationError({
-                            message: `Member not imported. ${error.message}`,
-                            context: i18n.t('errors.api.members.stripeCustomerNotFound.context'),
-                            help: i18n.t('errors.api.members.stripeCustomerNotFound.help')
-                        });
-                    }
-                }
-            }));
-
-            return null;
-        }
-    },
-
     importCSV: {
         statusCode: 201,
         permissions: {
