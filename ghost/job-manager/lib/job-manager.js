@@ -90,7 +90,7 @@ class JobManager {
             }
         }
 
-        if (!(at instanceof Date)) {
+        if (at && !(at instanceof Date)) {
             if (isCronExpression(at)) {
                 schedule = later.parse.cron(at, true);
             } else {
@@ -102,8 +102,10 @@ class JobManager {
             }
 
             this.logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
-        } else {
+        } else if (at !== undefined) {
             this.logging.info(`Scheduling job ${name} at ${at}`);
+        } else {
+            this.logging.info(`Scheduling job ${name} to run immediately`);
         }
 
         const breeJob = assembleBreeJob(at, job, data, name);
