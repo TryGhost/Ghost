@@ -191,6 +191,7 @@ button, .btn-base {
     content: attr(data-tooltip);
     text-align: center;
     font-size: 1.3rem;
+    font-weight: 400;
     letter-spacing: 0.2px;
     transform: translate(-50%, 5px);
 }
