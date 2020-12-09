@@ -1,6 +1,7 @@
 const MembersSSR = require('@tryghost/members-ssr');
 
 const MembersConfigProvider = require('./config');
+const MembersCSVImporter = require('./importer');
 const createMembersApiInstance = require('./api');
 const createMembersSettingsInstance = require('./settings');
 const {events} = require('../../lib/common');
@@ -90,7 +91,9 @@ const membersService = {
         getMembersApi: () => membersService.api
     }),
 
-    stripeConnect: require('./stripe-connect')
+    stripeConnect: require('./stripe-connect'),
+
+    importer: new MembersCSVImporter({storagePath: config.getContentPath('data')}, settingsCache, () => membersApi)
 };
 
 module.exports = membersService;
