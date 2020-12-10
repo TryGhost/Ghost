@@ -6,7 +6,7 @@ class MemberActivity {
     eventProperties = {
         sent: {
             icon: 'send-email',
-            iconClass: 'green-d2',
+            iconClass: 'midgrey',
             tooltip: 'Sent email'
         },
         opened: {
