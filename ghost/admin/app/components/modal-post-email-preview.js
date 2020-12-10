@@ -2,6 +2,7 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import {action} from '@ember/object';
 import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
+import {timeout} from 'ember-concurrency';
 
 const INJECTED_CSS = `
 html::-webkit-scrollbar {
@@ -32,10 +33,11 @@ export default ModalComponent.extend({
         }
     },
 
-    renderEmailPreview: action(async function renderEmailPreview() {
+    renderEmailPreview: action(async function renderEmailPreview(iframe) {
         await this._fetchEmailData();
+        // avoid timing issues when _fetchEmailData didn't perform any async ops
+        await timeout(100);
 
-        let iframe = this.element.querySelector('iframe');
         if (iframe) {
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
@@ -50,12 +52,16 @@ export default ModalComponent.extend({
             return {html, subject};
         }
 
-        if (this.post.email) {
-            // use sent email
+        // model is an email
+        if (this.model.html && this.model.subject) {
+            html = this.model.html;
+            subject = this.model.subject;
+        // model is a post with an existing email
+        } else if (this.post.email) {
             html = this.post.email.html;
             subject = this.post.email.subject;
+        // model is a post, fetch email preview
         } else {
-            // fetch email preview
             let url = this.get('ghostPaths.url').api('/email_preview/posts', this.post.id);
             let response = await this.ajax.request(url);
             let [emailPreview] = response.email_previews;
