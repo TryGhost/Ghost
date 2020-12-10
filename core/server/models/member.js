@@ -17,11 +17,12 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['labels', 'stripeCustomers'],
+    relationships: ['labels', 'stripeCustomers', 'email_recipients'],
 
     relationshipBelongsTo: {
         labels: 'labels',
-        stripeCustomers: 'members_stripe_customers'
+        stripeCustomers: 'members_stripe_customers',
+        email_recipients: 'email_recipients'
     },
 
     labels: function labels() {
@@ -48,6 +49,10 @@ const Member = ghostBookshelf.Model.extend({
             'id',
             'customer_id'
         );
+    },
+
+    email_recipients() {
+        return this.hasMany('EmailRecipient', 'member_id', 'id');
     },
 
     serialize(options) {

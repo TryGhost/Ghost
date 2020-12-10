@@ -13,6 +13,7 @@ const {i18n} = require('../../lib/common');
 const db = require('../../data/db');
 
 const ghostMailer = new GhostMailer();
+const allowedIncludes = ['email_recipients'];
 
 module.exports = {
     docName: 'members',
@@ -51,15 +52,35 @@ module.exports = {
     },
 
     read: {
+        options: [
+            'include'
+        ],
         headers: {},
         data: [
             'id',
             'email'
         ],
-        validation: {},
+        validation: {
+            options: {
+                include: {
+                    values: allowedIncludes
+                }
+            }
+        },
         permissions: true,
         async query(frame) {
-            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
+            const defaultWithRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
+
+            if (!frame.options.withRelated) {
+                frame.options.withRelated = defaultWithRelated;
+            } else {
+                frame.options.withRelated = frame.options.withRelated.concat(defaultWithRelated);
+            }
+
+            if (frame.options.withRelated.includes('email_recipients')) {
+                frame.options.withRelated.push('email_recipients.email');
+            }
+
             let model = await membersService.api.members.get(frame.data, frame.options);
 
             if (!model) {
