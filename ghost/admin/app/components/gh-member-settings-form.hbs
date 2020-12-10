@@ -152,7 +152,7 @@
                                             <table class="gh-member-stripe-table">
                                                 <tr>
                                                     <td class="gh-member-stripe-label">Stripe subscription ID</td>
-                                                    <td class="gh-member-stripe-data">
+                                                    <td class="gh-member-stripe-data gh-member-stripe-id">
                                                         <a href="https://dashboard.stripe.com/subscriptions/{{subscription.id}}" target="_blank" rel="noopener"
                                                             data-tooltip="View on Stripe">
                                                             {{subscription.id}}
@@ -223,7 +223,7 @@
                                             <table class="gh-member-stripe-table">
                                                 <tr>
                                                     <td class="gh-member-stripe-label">Stripe customer ID</td>
-                                                    <td class="gh-member-stripe-data">
+                                                    <td class="gh-member-stripe-data gh-member-stripe-id">
                                                         <a href="https://dashboard.stripe.com/customers/{{subscription.customer.id}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">
                                                             {{subscription.customer.id}}
                                                         </a>
@@ -241,7 +241,7 @@
                                                 </tr>
                                                 <tr>
                                                     <td class="gh-member-stripe-label">Email</td>
-                                                    <td class="gh-member-stripe-data">
+                                                    <td class="gh-member-stripe-data gh-member-stripe-email">
                                                         {{#if subscription.customer.email}}
                                                             {{subscription.customer.email}}
                                                         {{else}}
