@@ -79,7 +79,7 @@ function serializeMember(member, options) {
              * @param {SerializedMemberStripeSubscription} sub
              */
             function (sub) {
-                return sub.plan.nickname === 'Complimentary';
+                return sub.plan.nickname === 'Complimentary' && sub.status === 'active';
             }
         );
         if (hasCompedSubscription) {
