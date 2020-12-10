@@ -396,12 +396,18 @@ textarea.gh-member-details-textarea {
     max-width: 100%;
     min-width: auto;
     min-height: 50px;
-    height: 156px;
+    height: 154px;
 }
 
 .gh-member-info-icon {
     width: 18px;
     height: 18px;
+}
+
+.gh-member-email-stats {
+    font-size: 3.6rem;
+    color: var(--darkgrey);
+    line-height: 4.0rem;
 }
 
 .gh-member-header-stripeinfo {
@@ -411,17 +417,21 @@ textarea.gh-member-details-textarea {
     min-height: 24px;
 }
 
-.gh-member-header-stripeinfo h4 {
-    margin: 0 12px 0 0;
-    padding: 0;
-}
-
 .gh-member-stripe-info {
     border-bottom: 1px solid var(--whitegrey);
 }
 
 .gh-member-stripe-info:last-of-type {
     border-bottom: none;
+}
+
+.gh-member-btn-stripe-toggle {
+    box-shadow: 0 2px 5px -3px rgba(0,0,0,.12), 0 0 1px rgba(0, 0, 0, .13);    
+}
+
+.gh-member-btn-stripe-toggle:hover {
+    box-shadow: 0 3px 5px -3px rgba(0,0,0,.13), 0 0 1px rgba(0, 0, 0, .13);
+
 }
 
 .gh-member-stripe-table {
@@ -438,7 +448,6 @@ textarea.gh-member-details-textarea {
 .gh-member-stripe-label {
     color: var(--midgrey-d1);
     white-space: nowrap;
-    width: 200px;
 }
 
 .gh-members-subscribed-checkbox,
@@ -490,12 +499,50 @@ textarea.gh-member-details-textarea {
     color: color-mod(var(--blue) l(-7%) saturation(-10%));
 }
 
+@media (max-width: 1320px) {
+    .gh-member-settings {
+        flex-direction: column;
+    }
+}
+
 .gh-member-settings-primary {
-    flex-basis: 740px;
+    flex-basis: 800px;
 }
 
 .gh-member-settings-secondary {
-    flex-basis: 408px;
+    flex-basis: 348px;
+}
+
+@media (max-width: 1320px) and (min-width: 740px) {
+    .gh-member-settings-secondary {
+        flex-direction: row;
+    }
+
+    .gh-member-label-stripe {
+        display: none;
+    }
+
+    .gh-member-stripe {
+        margin-top: 3.2rem;
+        margin-left: 2rem;
+    }
+}
+
+@media (max-width: 1320px) {
+    .gh-member-settings-primary,
+    .gh-member-settings-secondary {
+        flex-basis: initial;
+        width: 100%;
+    }
+
+    .gh-member-details,
+    .gh-member-feed {
+        margin-right: 0;
+    }
+    
+    .gh-member-internal-info {
+        margin-top: 3.2rem;
+    }
 }
 
 .gh-member-cancelstripe-checkbox {
@@ -522,6 +569,49 @@ textarea.gh-member-details-textarea {
     border-color: color-mod(var(--red) l(-5%));
     background: var(--red);
 }
+
+.gh-member-feed-row {
+    display: flex;
+    padding: 0 2rem;
+}
+
+.gh-member-feed-row:hover {
+    background: var(--whitegrey-l2);
+}
+
+.gh-member-feed-activity {
+    display: flex;
+    align-items: center;
+}
+
+.gh-member-feed-activity svg {
+    width: 16px;
+    margin-right: 1rem;
+}
+
+.gh-member-feed-title {
+    display: table-cell;
+    padding: 10px 0;
+    vertical-align: middle;
+    color: var(--darkgrey);
+}
+
+.gh-member-feed-title:hover {
+    color: var(--blue-d2);
+}
+
+.gh-member-feed-date {
+    margin-left: auto;
+    padding: 10px 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.gh-member-btn-expandfeed span {
+    height: 25px;
+    line-height: 25px;
+}
+
 
 /* Import modal
 /* ---------------------------------------------------------- */

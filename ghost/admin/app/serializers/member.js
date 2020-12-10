@@ -5,7 +5,8 @@ import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     attrs: {
         createdAtUTC: {key: 'created_at'},
-        labels: {embedded: 'always'}
+        labels: {embedded: 'always'},
+        emailRecipients: {embedded: 'always'}
     },
 
     serialize(/*snapshot, options*/) {

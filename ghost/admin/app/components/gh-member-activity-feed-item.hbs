@@ -1,0 +1,9 @@
+<div class="gh-member-feed-row" ...attributes>
+    <span class="gh-member-feed-activity midgrey" data-tooltip={{@activity.tooltip}}>{{svg-jar @activity.icon}}</span>
+    {{#if @activity.action}}
+        <button type="button" class="gh-member-feed-title" {{on "click" @activity.action}}>{{@activity.message}}</button>
+    {{else}}
+        <span class="gh-member-feed-title">{{@activity.message}}</span>
+    {{/if}}
+    <span class="gh-member-feed-date">{{moment-format @activity.timestamp "D MMM YYYY"}}</span>
+</div>
