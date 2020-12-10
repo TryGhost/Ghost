@@ -12,12 +12,14 @@ export default Model.extend(ValidationEngine, {
     createdAtUTC: attr('moment-utc'),
     stripe: attr('member-subscription'),
     subscribed: attr('boolean', {defaultValue: true}),
-    labels: hasMany('label', {embedded: 'always', async: false}),
     comped: attr('boolean', {defaultValue: false}),
     geolocation: attr('json-string'),
     emailCount: attr('number', {defaultValue: 0}),
     emailOpenedCount: attr('number', {defaultValue: 0}),
     emailOpenRate: attr('number'),
+
+    labels: hasMany('label', {embedded: 'always', async: false}),
+    emailRecipients: hasMany('emailRecipient', {embedded: 'always', async: false}),
 
     ghostPaths: service(),
     ajax: service(),

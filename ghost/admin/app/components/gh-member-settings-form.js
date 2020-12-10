@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import moment from 'moment';
+import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {gt} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -13,6 +14,8 @@ export default Component.extend({
     ghostPaths: service(),
     ajax: service(),
     store: service(),
+
+    stripeDetailsType: 'subscription',
 
     // Allowed actions
     setProperty: () => {},
@@ -61,6 +64,10 @@ export default Component.extend({
             this.member.set('labels', labels);
         }
     },
+
+    changeStripeDetailsType: action(function (type) {
+        this.set('stripeDetailsType', type);
+    }),
 
     cancelSubscription: task(function* (subscriptionId) {
         let url = this.get('ghostPaths.url').api('members', this.member.get('id'), 'subscriptions', subscriptionId);
