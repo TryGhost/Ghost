@@ -873,7 +873,7 @@ p.gh-members-import-errordetail:first-of-type {
     color: var(--midgrey);
 }
 
-.gh-member-import-errorlist p {
+.gh-member-import-errorlist ul li {
     font-size: 13px;
     font-weight: 400;
     color: var(--midlightgrey-d2);
@@ -892,10 +892,6 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     justify-content: center;
     color: var(--midgrey);
-}
-
-.gh-member-import-icon-members {
-    color: var(--green);
 }
 
 .gh-member-import-icon-members path,

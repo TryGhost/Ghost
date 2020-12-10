@@ -29,6 +29,7 @@ export default class CsvFileMapping extends Component {
                 } else {
                     this.fileData = [];
                 }
+                this.args.setFileData(this.fileData);
             }
         });
     }
