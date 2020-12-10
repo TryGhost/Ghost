@@ -379,10 +379,11 @@ module.exports = {
                         importLabel: importLabelModel ? importLabelModel.toJSON() : null
                     });
                     const errorCSV = membersService.importer.generateErrorCSV(result);
+                    const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
 
                     await ghostMailer.send({
                         to: emailRecipient,
-                        subject: importLabel.name,
+                        subject: emailSubject,
                         html: emailContent,
                         forceTextContent: true,
                         attachments: [{
