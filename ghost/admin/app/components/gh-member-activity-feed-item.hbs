@@ -1,5 +1,5 @@
 <div class="gh-member-feed-row" ...attributes>
-    <span class="gh-member-feed-activity midgrey" data-tooltip={{@activity.tooltip}}>{{svg-jar @activity.icon}}</span>
+    <span class="gh-member-feed-activity midgrey" data-tooltip={{@activity.tooltip}}>{{svg-jar @activity.icon class=@activity.iconClass}}</span>
     {{#if @activity.action}}
         <button type="button" class="gh-member-feed-title" {{on "click" @activity.action}}>{{@activity.message}}</button>
     {{else}}

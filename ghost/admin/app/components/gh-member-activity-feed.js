@@ -6,18 +6,22 @@ class MemberActivity {
     eventProperties = {
         sent: {
             icon: 'send-email',
+            iconClass: 'green-d2',
             tooltip: 'Sent email'
         },
         opened: {
             icon: 'eye',
+            iconClass: 'green-d2',
             tooltip: 'Opened email'
         },
         failed: {
             icon: 'cross-circle',
+            iconClass: 'red-d2',
             tooltip: 'Email delivery failed'
         },
         unsubscribed: {
             icon: 'unsubscribed',
+            iconClass: 'red-d2',
             message: 'Automatically unsubscribed due to permanent delivery failure'
         }
     }
@@ -28,6 +32,10 @@ class MemberActivity {
 
     get icon() {
         return this.eventProperties[this.event].icon;
+    }
+
+    get iconClass() {
+        return this.eventProperties[this.event].iconClass;
     }
 
     get tooltip() {
