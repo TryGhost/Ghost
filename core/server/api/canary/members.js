@@ -336,7 +336,7 @@ module.exports = {
                 createdBy: frame.user.id
             });
 
-            if (job.batches <= 0 && !job.metadata.hasStripeData) {
+            if (job.batches <= 500 && !job.metadata.hasStripeData) {
                 const result = await membersService.importer.perform(job.id);
                 const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
                 return {
