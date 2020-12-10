@@ -1,5 +1,11 @@
 const should = require('should');
-const packageJSON = require('../../../../../core/server/lib/fs/package-json');
+const PackageJSON = require('../../../../../core/server/lib/fs/package-json/package-json');
+
+const packageJSON = new PackageJSON({
+    i18n: {
+        t: key => key
+    }
+});
 
 describe('lib/fs/package-json', function () {
     // @TODO: introduce some non-theme package examples
