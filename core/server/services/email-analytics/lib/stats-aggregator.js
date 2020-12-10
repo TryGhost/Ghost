@@ -27,8 +27,8 @@ class EmailAnalyticsStatsAggregator {
         };
 
         if (trackedEmailCount >= this.options.openRateEmailThreshold) {
-            updateQuery.email_open_rate = this.db.knex.raw(`(
-                (SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL) * 1.0 / ? * 100)
+            updateQuery.email_open_rate = this.db.knex.raw(`
+                ROUND(((SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL) * 1.0 / ? * 100), 0)
             `, [memberId, trackedEmailCount]);
         }
 
