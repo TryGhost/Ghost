@@ -336,7 +336,7 @@ module.exports = {
                 createdBy: frame.user.id
             });
 
-            if (job.batches <= 500 && !job.metadata.hasStripeData) {
+            if (job.batches <= 0 && !job.metadata.hasStripeData) {
                 const result = await membersService.importer.perform(job.id);
                 const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
                 return {
@@ -358,10 +358,11 @@ module.exports = {
                         importLabel: importLabelModel ? importLabelModel.toJSON() : null
                     });
                     const errorCSV = membersService.importer.generateErrorCSV(result);
+                    const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
 
                     await ghostMailer.send({
                         to: emailRecipient,
-                        subject: importLabel.name,
+                        subject: emailSubject,
                         html: emailContent,
                         forceTextContent: true,
                         attachments: [{
