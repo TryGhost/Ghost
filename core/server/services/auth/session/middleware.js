@@ -2,7 +2,6 @@ function SessionMiddleware({sessionService}) {
     async function createSession(req, res, next) {
         try {
             await sessionService.createSessionForUser(req, res, req.user);
-            res.sendStatus(201);
         } catch (err) {
             next(err);
         }
@@ -11,7 +10,6 @@ function SessionMiddleware({sessionService}) {
     async function destroySession(req, res, next) {
         try {
             await sessionService.destroyCurrentSession(req);
-            res.sendStatus(204);
         } catch (err) {
             next(err);
         }

@@ -13,7 +13,7 @@ const adapterManager = new AdapterManager({
 
 adapterManager.registerAdapter('storage', require('ghost-storage-base'));
 adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/SchedulingBase'));
-adapterManager.registerAdapter('sso', require('../../adapters/sso/Base'));
+adapterManager.registerAdapter('sso', require('../../adapters/sso/SSOBase'));
 
 module.exports = {
     getAdapter(adapterType) {

@@ -1,6 +1,4 @@
-const adapterManager = require('../../adapter-manager');
 const createSessionService = require('@tryghost/session-service');
-const sessionFromToken = require('@tryghost/mw-session-from-token');
 const createSessionMiddleware = require('./middleware');
 
 const expressSession = require('./express-session');
@@ -37,13 +35,3 @@ const sessionService = createSessionService({
 });
 
 module.exports = createSessionMiddleware({sessionService});
-
-const ssoAdapter = adapterManager.getAdapter('sso');
-// Looks funky but this is a "custom" piece of middleware
-module.exports.createSessionFromToken = sessionFromToken({
-    callNextWithError: false,
-    createSession: sessionService.createSessionForUser,
-    findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
-    getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
-    getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter)
-});

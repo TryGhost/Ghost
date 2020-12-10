@@ -46,21 +46,30 @@ describe('v3 Session controller', function () {
             });
         });
 
-        it('it returns a function that calls req.brute.reset, sets req.user and calls createSession if the check works', function () {
+        it('it returns a function that calls req.brute.reset, sets req.user and calls createSession if the check works', function (done) {
             const fakeReq = {
                 brute: {
                     reset: sinon.stub().callsArg(0)
                 }
             };
-            const fakeRes = {};
+            const fakeRes = {
+                sendStatus(statusCode) {
+                    try {
+                        should.equal(statusCode, 201);
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
+                }
+            };
             const fakeNext = () => {};
             const fakeUser = models.User.forge({});
             sinon.stub(models.User, 'check')
                 .resolves(fakeUser);
 
-            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
+            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession').resolves();
 
-            return sessionController.add({data: {
+            sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
             }}).then((fn) => {
@@ -73,7 +82,7 @@ describe('v3 Session controller', function () {
                 should.equal(createSessionStubCall.args[0], fakeReq);
                 should.equal(createSessionStubCall.args[1], fakeRes);
                 should.equal(createSessionStubCall.args[2], fakeNext);
-            });
+            }).catch(done);
         });
 
         it('it returns a function that calls req.brute.reset and calls next if reset errors', function () {
@@ -105,20 +114,29 @@ describe('v3 Session controller', function () {
     });
 
     describe('#delete', function () {
-        it('returns a function that calls destroySession', function () {
+        it('returns a function that calls destroySession', function (done) {
             const fakeReq = {};
-            const fakeRes = {};
+            const fakeRes = {
+                sendStatus(statusCode) {
+                    try {
+                        should.equal(statusCode, 204);
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
+                }
+            };
             const fakeNext = () => {};
-            const destroySessionStub = sinon.stub(sessionServiceMiddleware, 'destroySession');
+            const destroySessionStub = sinon.stub(sessionServiceMiddleware, 'destroySession').resolves();
 
-            return sessionController.delete().then((fn) => {
+            sessionController.delete().then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 const destroySessionStubCall = destroySessionStub.getCall(0);
                 should.equal(destroySessionStubCall.args[0], fakeReq);
                 should.equal(destroySessionStubCall.args[1], fakeRes);
                 should.equal(destroySessionStubCall.args[2], fakeNext);
-            });
+            }).catch(done);
         });
     });
 

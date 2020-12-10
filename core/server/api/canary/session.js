@@ -34,7 +34,9 @@ const session = {
                         return next(err);
                     }
                     req.user = user;
-                    auth.session.createSession(req, res, next);
+                    auth.session.createSession(req, res, next).then(function () {
+                        res.sendStatus(201);
+                    });
                 });
             });
         }).catch(async (err) => {
@@ -58,7 +60,9 @@ const session = {
     },
     delete() {
         return Promise.resolve((req, res, next) => {
-            auth.session.destroySession(req, res, next);
+            auth.session.destroySession(req, res, next).then(function () {
+                res.sendStatus(204);
+            });
         });
     }
 };

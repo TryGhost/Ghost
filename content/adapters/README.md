@@ -14,9 +14,14 @@ By default Ghost will schedule your posts using a pure JavaScript solution.
 It doesn't use `cron` or similar.
 This default adapter can be found in `core/server/adapters/scheduling/SchedulingDefault.js`.
 
+### Authentication
+By default Ghost will authenticate your access using a simple E-mail / Password solution.
+A Single Sign-on (SSO) adapter can be added to provide additional authentication strategies.
+
 ### Custom Adapter
-To override any of the default adapters, you have to add a folder (`content/adapters/storage` or `content/adapters/scheduling`) and copy your adapter to it.
+To override any of the default adapters, you have to add a folder (`content/adapters/sso`, `content/adapters/storage` or `content/adapters/scheduling`) and copy your adapter to it.
 
 Please follow our detailed guides:
 https://ghost.org/docs/concepts/storage-adapters/
 https://ghost.org/docs/concepts/custom-schedulers/
+https://ghost.org/docs/concepts/sso-adapters/

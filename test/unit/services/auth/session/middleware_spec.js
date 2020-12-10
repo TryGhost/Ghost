@@ -24,9 +24,7 @@ describe('Session Service', function () {
     };
 
     const fakeRes = function fakeRes() {
-        return {
-            sendStatus() {}
-        };
+        return {};
     };
 
     describe('createSession', function () {
@@ -42,16 +40,13 @@ describe('Session Service', function () {
             req.ip = '127.0.0.1';
             req.user = models.User.forge({id: 23});
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function () {
-                    should.equal(req.session.origin, 'http://ghost.org');
-                    done();
-                });
-
-            sessionMiddleware.createSession(req, res);
+            sessionMiddleware.createSession(req, res).then(() => {
+                should.equal(req.session.origin, 'http://ghost.org');
+                done();
+            }).catch(done);
         });
 
-        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
+        it('sets req.session.user_id,origin,user_agent,ip', function (done) {
             const req = fakeReq();
             const res = fakeRes();
 
@@ -62,17 +57,32 @@ describe('Session Service', function () {
             req.ip = '127.0.0.1';
             req.user = models.User.forge({id: 23});
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function (statusCode) {
-                    should.equal(req.session.user_id, 23);
-                    should.equal(req.session.origin, 'http://host.tld');
-                    should.equal(req.session.user_agent, 'bububang');
-                    should.equal(req.session.ip, '127.0.0.1');
-                    should.equal(statusCode, 201);
-                    done();
-                });
+            sessionMiddleware.createSession(req, res).then(() => {
+                should.equal(req.session.user_id, 23);
+                should.equal(req.session.origin, 'http://host.tld');
+                should.equal(req.session.user_agent, 'bububang');
+                should.equal(req.session.ip, '127.0.0.1');
+                done();
+            }).catch(done);
+        });
 
-            sessionMiddleware.createSession(req, res);
+        it('calls next with BadRequestError if no origin', function (done) {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            sinon.stub(req, 'get')
+                .withArgs('origin').returns('null')
+                .withArgs('referrer').returns('');
+
+            req.ip = '127.0.0.1';
+            req.user = models.User.forge({id: 23});
+
+            sessionMiddleware.createSession(req, res, function next(err) {
+                should.equal(err.errorType, 'BadRequestError');
+                done();
+            }).then(() => {
+                should.not.exist(req.session.ip);
+            }).catch(done);
         });
     });
 
@@ -85,13 +95,10 @@ describe('Session Service', function () {
                     fn();
                 });
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function () {
-                    should.equal(destroyStub.callCount, 1);
-                    done();
-                });
-
-            sessionMiddleware.destroySession(req, res);
+            sessionMiddleware.destroySession(req, res).then(() => {
+                should.equal(destroyStub.callCount, 1);
+                done();
+            }).catch(done);
         });
 
         it('calls next with InternalServerError if destroy errors', function (done) {
@@ -105,23 +112,7 @@ describe('Session Service', function () {
             sessionMiddleware.destroySession(req, res, function next(err) {
                 should.equal(err.errorType, 'InternalServerError');
                 done();
-            });
-        });
-
-        it('calls sendStatus with 204 if destroy does not error', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn();
-                });
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function (status) {
-                    should.equal(status, 204);
-                    done();
-                });
-
-            sessionMiddleware.destroySession(req, res);
+            }).catch(done);
         });
     });
 });

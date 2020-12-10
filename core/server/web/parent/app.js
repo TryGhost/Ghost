@@ -47,7 +47,8 @@ module.exports = function setupParentApp(options = {}) {
     const backendApp = express('backend');
     backendApp.use('/ghost/api', require('../api')());
     backendApp.use('/ghost/.well-known', require('../well-known')());
-    backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
+    backendApp.use('/ghost/sso', require('../sso.js')());
+    backendApp.use('/ghost', require('../admin')());
 
     // ADMIN + API
     // with a separate admin url only serve on that host, otherwise serve on all hosts

@@ -10,6 +10,7 @@ describe('parent app', function () {
     let apiSpy;
     let parentApp;
     let adminSpy;
+    let ssoSpy;
     let wellKnownSpy;
     let siteSpy;
     let gatewaySpy;
@@ -25,6 +26,7 @@ describe('parent app', function () {
         vhostSpy = sinon.spy();
         apiSpy = sinon.spy();
         adminSpy = sinon.spy();
+        ssoSpy = sinon.spy();
         wellKnownSpy = sinon.spy();
         siteSpy = sinon.spy();
         gatewaySpy = sinon.spy();
@@ -35,6 +37,7 @@ describe('parent app', function () {
             '../../../shared/express': expressStub,
             '../api': apiSpy,
             '../admin': adminSpy,
+            '../sso': ssoSpy,
             '../well-known': wellKnownSpy,
             '../site': siteSpy
         });
@@ -54,12 +57,14 @@ describe('parent app', function () {
 
             use.calledWith('/ghost/api').should.be.true();
             use.calledWith('/ghost/.well-known').should.be.true();
+            use.calledWith('/ghost/sso').should.be.true();
             use.calledWith('/ghost').should.be.true();
             use.calledWith('/content/images').should.be.false();
 
             apiSpy.called.should.be.true();
             wellKnownSpy.called.should.be.true();
             adminSpy.called.should.be.true();
+            ssoSpy.called.should.be.true();
             siteSpy.called.should.be.true();
 
             vhostSpy.calledTwice.should.be.true();

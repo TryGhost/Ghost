@@ -19,7 +19,7 @@
     },
     "adapters": {
         "sso": {
-            "active": "Default"
+            "active": "SSODefault"
         }
     },
     "storage": {
