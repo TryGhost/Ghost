@@ -4,6 +4,12 @@ const EmailRecipient = ghostBookshelf.Model.extend({
     tableName: 'email_recipients',
     hasTimestamps: false,
 
+    relationships: ['email'],
+
+    relationshipBelongsTo: {
+        email: 'emails'
+    },
+
     email() {
         return this.belongsTo('Email', 'email_id');
     },
