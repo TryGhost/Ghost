@@ -445,6 +445,12 @@ textarea.gh-member-details-textarea {
     padding: 5px 12px 5px 0;
 }
 
+.gh-member-stripe-id,
+.gh-member-stripe-email {
+    display: inline-block;
+    word-break: break-all;
+}
+
 .gh-member-stripe-label {
     color: var(--midgrey-d1);
     white-space: nowrap;
@@ -499,7 +505,7 @@ textarea.gh-member-details-textarea {
     color: color-mod(var(--blue) l(-7%) saturation(-10%));
 }
 
-@media (max-width: 1320px) {
+@media (max-width: 1240px) {
     .gh-member-settings {
         flex-direction: column;
     }
@@ -513,7 +519,7 @@ textarea.gh-member-details-textarea {
     flex-basis: 348px;
 }
 
-@media (max-width: 1320px) and (min-width: 740px) {
+@media (max-width: 1240px) and (min-width: 740px) {
     .gh-member-settings-secondary {
         flex-direction: row;
     }
@@ -528,7 +534,7 @@ textarea.gh-member-details-textarea {
     }
 }
 
-@media (max-width: 1320px) {
+@media (max-width: 1240px) {
     .gh-member-settings-primary,
     .gh-member-settings-secondary {
         flex-basis: initial;
@@ -594,6 +600,7 @@ textarea.gh-member-details-textarea {
     padding: 10px 0;
     vertical-align: middle;
     color: var(--darkgrey);
+    text-align: left;
 }
 
 .gh-member-feed-title:hover {
