@@ -55,7 +55,6 @@ module.exports = class SSOBase {
             logging.error(err);
         }).then(function () {
             debug('Successful SSO authentication', req.session);
-            console.log('Successful SSO authentication', req.session);
             // avoids a circular dependency
             const urlUtils = require('../../../shared/url-utils');
             res.redirect(urlUtils.urlFor('admin', false));
