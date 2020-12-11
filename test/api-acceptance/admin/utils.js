@@ -115,6 +115,9 @@ const expectedProperties = {
     email: _(schema.emails)
         .keys(),
     email_preview: ['html', 'subject', 'plaintext'],
+    email_recipient: _(schema.email_recipients)
+        .keys()
+        .filter(key => key.indexOf('@@') === -1),
     snippet: _(schema.snippets).keys()
 };
 

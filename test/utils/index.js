@@ -22,6 +22,7 @@ const routingService = require('../../core/frontend/services/routing');
 const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
+const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const imageLib = require('../../core/server/lib/image');
 const web = require('../../core/server/web');
 const permissions = require('../../core/server/services/permissions');
@@ -501,6 +502,27 @@ fixtures = {
         });
     },
 
+    insertEmailsAndRecipients: function insertEmailsAndRecipients() {
+        return Promise.each(_.cloneDeep(DataGenerator.forKnex.emails), function (email) {
+            return models.Email.add(email, module.exports.context.internal);
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.email_batches), function (emailBatch) {
+                return models.EmailBatch.add(emailBatch, module.exports.context.internal);
+            });
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.email_recipients), (emailRecipient) => {
+                return models.EmailRecipient.add(emailRecipient, module.exports.context.internal);
+            });
+        }).then(function () {
+            const toAggregate = {
+                emailIds: DataGenerator.forKnex.emails.map(email => email.id),
+                memberIds: DataGenerator.forKnex.members.map(member => member.id)
+            };
+
+            return emailAnalyticsService.aggregateStats(toAggregate);
+        });
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, module.exports.context.internal);
@@ -575,6 +597,9 @@ toDoList = {
     },
     members: function insertMembersAndLabels() {
         return fixtures.insertMembersAndLabels();
+    },
+    'members:emails': function insertEmailsAndRecipients() {
+        return fixtures.insertEmailsAndRecipients();
     },
     posts: function insertPostsAndTags() {
         return fixtures.insertPostsAndTags();
