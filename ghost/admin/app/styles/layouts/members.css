@@ -612,6 +612,7 @@ textarea.gh-member-details-textarea {
     padding: 10px 0;
     color: var(--midgrey);
     font-size: 1.3rem;
+    text-align: right;
 }
 
 .gh-member-btn-expandfeed span {
