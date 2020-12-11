@@ -5,7 +5,7 @@
                 <GhMemberActivityFeedItem @activity={{activity}} />
             {{/each}}
 
-            {{#liquid-if this.isShowingAll}}
+            {{#liquid-if this.isShowingAll class="show-overflow"}}
                 {{#each this.remainingActivities as |activity|}}
                     <GhMemberActivityFeedItem @activity={{activity}} />
                 {{/each}}
