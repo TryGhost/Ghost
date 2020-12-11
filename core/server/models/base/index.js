@@ -172,13 +172,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
     permittedAttributes: function permittedAttributes() {
-        return _.keys(schema.tables[this.tableName]);
+        return _.keys(schema.tables[this.tableName])
+            .filter(key => key.indexOf('@@') === -1);
     },
 
     // Ghost ordering handling, allows to order by permitted attributes by default and can be overriden on specific model level
     orderAttributes: function orderAttributes() {
         return Object.keys(schema.tables[this.tableName])
-            .map(key => `${this.tableName}.${key}`);
+            .map(key => `${this.tableName}.${key}`)
+            .filter(key => key.indexOf('@@') === -1);
     },
 
     // When loading an instance, subclasses can specify default to fetch
@@ -354,7 +356,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                  *
                  * Happens after validation to ensure we don't set fields which are not nullable on db level.
                  */
-                _.each(Object.keys(schema.tables[this.tableName]), (columnKey) => {
+                _.each(Object.keys(schema.tables[this.tableName]).filter(key => key.indexOf('@@') === -1), (columnKey) => {
                     if (model.get(columnKey) === undefined) {
                         model.set(columnKey, null);
                     }

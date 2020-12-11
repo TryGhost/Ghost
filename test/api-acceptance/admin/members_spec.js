@@ -20,7 +20,7 @@ describe('Members API', function () {
     before(async function () {
         await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'members');
+        await localUtils.doAuth(request, 'members', 'members:emails');
         sinon.stub(labs, 'isSet').withArgs('members').returns(true);
     });
 
@@ -121,6 +121,25 @@ describe('Members API', function () {
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(1);
         localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+    });
+
+    it('Can read and include email_recipients', async function () {
+        const res = await request
+            .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.members);
+        jsonResponse.members.should.have.length(1);
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['stripe', 'email_recipients']);
+        jsonResponse.members[0].email_recipients.length.should.equal(1);
+        localUtils.API.checkResponse(jsonResponse.members[0].email_recipients[0], 'email_recipient', ['email']);
+        localUtils.API.checkResponse(jsonResponse.members[0].email_recipients[0].email, 'email');
     });
 
     it('Can add', async function () {
