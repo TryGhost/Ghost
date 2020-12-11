@@ -194,6 +194,7 @@ button, .btn-base {
     font-weight: 400;
     line-height: 1.4em;
     letter-spacing: 0.2px;
+    text-transform: initial;
     transform: translate(-50%, 5px);
 }
 
