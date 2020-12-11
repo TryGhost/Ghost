@@ -556,3 +556,18 @@ img {
     animation: fade-out 0.5s;
     animation-fill-mode: forwards;
 }
+
+/*
+ * liquid-fire normally hides overflow so that the container size can grow to
+ * reveal it's contents but that hidden overflow will cut off tooltips or other
+ * floating elements. Adding class="show-overflow" adjusts behaviour to only
+ * hide overflow whilst animation is in progress
+ */
+.liquid-container.show-overflow,
+.liquid-container.show-overflow .liquid-child {
+    overflow: visible;
+}
+.liquid-container.show-overflow.liquid-animating,
+.liquid-container.show-overflow.liquid-animating .liquid-child {
+    overflow: hidden;
+}
