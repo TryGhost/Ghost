@@ -105,7 +105,7 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate scheduled=true}}`);
-        expect(this.element).to.have.trimmed.text(`at ${expectedTime} (UTC) Tomorrow`);
+        expect(this.element).to.have.trimmed.text(`at ${expectedTime} (UTC) tomorrow`);
     });
 
     it('returns correct format if post was published prior to yesterday', async function () {
