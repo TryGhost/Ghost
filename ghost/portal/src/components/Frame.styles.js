@@ -21,7 +21,7 @@ import {PopupNotificationStyles} from './common/PopupNotification';
 const FrameStyles = `
     .gh-portal-main-title {
         text-align: center;
-        color: var(--grey1);
+        color: var(--grey0);
         line-height: 1.35em;
     }
 
