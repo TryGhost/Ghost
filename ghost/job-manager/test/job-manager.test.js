@@ -186,11 +186,14 @@ describe('Job Manager', function () {
             jobManager.scheduleJob(undefined, job, undefined, 'will-fail');
 
             // give time to execute the job
-            await delay(100);
+            // has to be this long because in Node v10 the communication is
+            // done through processes, which takes longer comparing to worker_threads
+            // can be reduced to 100 when Node v10 support is dropped
+            await delay(600);
 
             should(spyHandler.called).be.true();
             should(spyHandler.args[0][0].message).equal('job error');
-            should(spyHandler.args[1][1].name).equal('will-fail');
+            should(spyHandler.args[0][1].name).equal('will-fail');
         });
     });
 
