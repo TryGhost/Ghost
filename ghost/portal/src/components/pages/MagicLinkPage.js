@@ -42,7 +42,7 @@ export default class MagicLinkPage extends React.Component {
         return (
             <>
                 <div
-                    style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}}
+                    style={{color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer'}}
                     onClick={() => this.context.onAction('switchPage', {page: 'signin'})}
                 >
                     Back to Log in

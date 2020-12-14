@@ -16,7 +16,7 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.paid,
-    page: 'accountPlan'
+    page: 'signup'
 };
 export default class App extends React.Component {
     constructor(props) {
@@ -399,8 +399,8 @@ export default class App extends React.Component {
 
     /**Get Accent color from site data, fallback to default*/
     getAccentColor() {
-        const {accent_color: accentColor = '#3db0ef'} = this.state.site || {};
-        return accentColor || '#3db0ef';
+        const {accent_color: accentColor = '#1d1d1d'} = this.state.site || {};
+        return accentColor || '#1d1d1d';
     }
 
     /**Get final page set in App context from state data*/
