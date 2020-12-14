@@ -510,10 +510,10 @@
     chalk "4.1.0"
     sywac "1.3.0"
 
-"@tryghost/promise@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.2.tgz#c420aee02732738c655718f68591bf9e43cd9b24"
-  integrity sha512-u6Y3tk+9U7v0KrngOI8FnCdfMvt+7s3lGrKWAFPuL79+s2NKR8na8G35fVjEJz8Xi3bdzBW53xx1gFv3QHaBFg==
+"@tryghost/promise@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.3.tgz#3143f58e4548e77b3173803bb7a2b62cdc9512d7"
+  integrity sha512-bANt1J5WqZZoFI8+25gkPEiVVY7hsGy4EwCe0Sl4mW7aKuejwxVJxDoFIWdWxe2D1yOuXe7TO4dY+hP+GJQ0HQ==
   dependencies:
     bluebird "3.7.2"
 
