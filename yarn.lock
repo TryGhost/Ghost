@@ -589,6 +589,16 @@
     extract-zip "2.0.0"
     fs-extra "9.0.1"
 
+"@tryghost/zip@1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.7.tgz#8aa721158087f7bb7d031337513aa03f7a489233"
+  integrity sha512-FAb7f7sOSUPaCrxtyRRk1yhl3EHTdypFbcLqv69W67Su/eMb2YDTJ7JwC2Jowy9fTnLa+aM/f3PeTOJepCQmGQ==
+  dependencies:
+    archiver "4.0.1"
+    bluebird "3.7.2"
+    extract-zip "2.0.0"
+    fs-extra "9.0.1"
+
 "@types/body-parser@*":
   version "1.19.0"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.19.0.tgz#0685b3c47eb3006ffed117cdd55164b61f80538f"
