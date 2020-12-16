@@ -25,7 +25,7 @@
         </section>
     </GhCanvasHeader>
 
-    <form class="mb14 member-basic-info-form">
+    <form class="member-basic-info-form">
         <GhMemberSettingsForm
             @member={{this.member}}
             @scratchMember={{this.scratchMember}}
@@ -34,14 +34,16 @@
     </form>
 
     {{#unless this.member.isNew}}
-        <button
-            type="button"
-            class="gh-btn gh-btn-red gh-btn-icon mt3"
-            {{on "click" this.toggleDeleteMemberModal}}
-            data-test-button="delete-member"
-        >
-            <span>Delete member</span>
-        </button>
+        <div class="w-60">
+            <button
+                type="button"
+                class="gh-btn gh-btn-red gh-btn-icon mt14"
+                {{on "click" this.toggleDeleteMemberModal}}
+                data-test-button="delete-member"
+            >
+                <span>Delete member</span>
+            </button>
+        </div>
     {{/unless}}
 </section>
 

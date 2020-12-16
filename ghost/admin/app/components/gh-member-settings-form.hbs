@@ -1,137 +1,129 @@
-<div class="flex items-start mt2 gh-member-settings">
-    <div class="flex-auto flex flex-column gh-member-settings-primary">
-        <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column justify-between items-stretch mr6 gh-member-details">
-            <div>
-                <div class="flex items-center pa5 pb3">
-                    {{#if (or this.member.name this.member.email)}}
-                        <GhMemberAvatar
-                            @member={{this.member}}
-                            @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
-                            @containerClass="w20 h20 mr4 gh-member-detail-avatar"
-                        />
-                    {{else}}
-                        <div class="flex items-center justify-center br-100 w18 h18 mr4 gh-new-member-avatar">
-                            <span class="gh-member-avatar-label f-subheadline fw4 lh-zero tracked-1">N</span>
-                        </div>
-                    {{/if}}
-                    <div>
-                        <h3 class="f2 fw6 ma0 pa0">
-                            {{or this.member.name this.member.email}}
-                        </h3>
-                        <p class="f7 pa0 ma0 midlightgrey-d1">
-                            {{#if (and this.member.name this.member.email)}}
-                                <a href="mailto:{{this.member.email}}" class="darkgrey fw5">{{this.member.email}}</a>
-                            {{/if}}
-                        </p>
-                        {{#unless this.member.isNew}}
-                        <p class="f7 pa0 ma0 midgrey {{if this.member.name "nudge-bottom--2"}}">
-                            {{#if this.member.geolocation}}
-                                {{#if (and (eq this.member.geolocation.country_code "US") @member.geolocation.region)}}
-                                    {{this.member.geolocation.region}}, US
-                                {{else}}
-                                    {{or this.member.geolocation.country "Unknown location"}}
-                                {{/if}}
+<div class="mt2 pb2 gh-member-settings" ...attributes>
+    <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column justify-between items-stretch gh-member-details">
+        <div>
+            <div class="flex items-center pa5 pb3">
+                {{#if (or this.member.name this.member.email)}}
+                    <GhMemberAvatar
+                        @member={{this.member}}
+                        @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
+                        @containerClass="w20 h20 mr4 gh-member-detail-avatar"
+                    />
+                {{else}}
+                    <div class="flex items-center justify-center br-100 w18 h18 mr4 gh-new-member-avatar">
+                        <span class="gh-member-avatar-label f-subheadline fw4 lh-zero tracked-1">N</span>
+                    </div>
+                {{/if}}
+                <div>
+                    <h3 class="f2 fw6 ma0 pa0">
+                        {{or this.member.name this.member.email}}
+                    </h3>
+                    <p class="f7 pa0 ma0 midlightgrey-d1">
+                        {{#if (and this.member.name this.member.email)}}
+                            <a href="mailto:{{this.member.email}}" class="darkgrey fw5">{{this.member.email}}</a>
+                        {{/if}}
+                    </p>
+                    {{#unless this.member.isNew}}
+                    <p class="f7 pa0 ma0 midgrey {{if this.member.name "nudge-bottom--2"}}">
+                        {{#if this.member.geolocation}}
+                            {{#if (and (eq this.member.geolocation.country_code "US") @member.geolocation.region)}}
+                                {{this.member.geolocation.region}}, US
                             {{else}}
-                                Unknown location
+                                {{or this.member.geolocation.country "Unknown location"}}
                             {{/if}}
-                            – Created on {{moment-format @member.createdAtUTC "D MMM YYYY"}}
-                        </p>
-                        {{/unless}}
-                    </div>
+                        {{else}}
+                            Unknown location
+                        {{/if}}
+                        – Created on {{moment-format @member.createdAtUTC "D MMM YYYY"}}
+                    </p>
+                    {{/unless}}
                 </div>
-
-                <div class="flex mb5 pa5 pt3 bb b--whitegrey">
-                    <div class="flex-auto flex flex-column justify-center items-start">
-                        <div class="f8 fw5 midgrey">Emails received</div>
-                        <div class="gh-member-email-stats">{{@member.emailCount}}</div>
-                    </div>
-                    <div class="flex-auto flex flex-column justify-center items-start">
-                        <div class="f8 fw5 midgrey">Emails opened</div>
-                        <div class="gh-member-email-stats">{{@member.emailOpenedCount}}</div>
-                    </div>
-                    <div class="flex-auto flex flex-column justify-center items-start">
-                        <div class="f8 fw5 midgrey">Avg. open rate</div>
-                        <div class="gh-member-email-stats">
-                            {{#if (is-empty @member.emailOpenRate)}}
-                                <span data-tooltip="Insufficient data available">–</span>
-                            {{else}}
-                                {{@member.emailOpenRate}}%
-                            {{/if}}
-                        </div>
-                    </div>
-                </div>
-
-                    <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width pl5 pr5">
-                        <label for="member-name">Name</label>
-                        <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
-                            @focus-out={{action "setProperty" "name" this.scratchMember.name}} />
-                        <GhErrorMessage @errors={{member.errors}} @property="name" />
-                    </GhFormGroup>
-
-                    <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width pl5 pr5">
-                        <label for="member-email">Email</label>
-                        <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
-                            @autocapitalize="off" @autocorrect="off" @autocomplete="off"
-                            @focus-out={{action "setProperty" "email" this.scratchMember.email}} />
-                        <GhErrorMessage @errors={{this.member.errors}} @property="email" />
-                    </GhFormGroup>
             </div>
 
-            <div class="pa5 pb6 bt b--whitegrey">
-                <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h4 class="gh-setting-title">Subscribed to newsletter</h4>
-                            <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
-                        </div>
-                        <div class="for-switch">
-                            <label class="switch" for="subscribed-checkbox">
-                                <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
-                                    @name="subscribed" />
-                                <span class="input-toggle-component"></span>
-                            </label>
-                        </div>
+            <div class="flex mb5 pa5 pt3 bb b--whitegrey">
+                <div class="flex-auto flex flex-column justify-center items-start">
+                    <div class="f8 fw5 midgrey">Emails received</div>
+                    <div class="gh-member-email-stats">{{@member.emailCount}}</div>
+                </div>
+                <div class="flex-auto flex flex-column justify-center items-start">
+                    <div class="f8 fw5 midgrey">Emails opened</div>
+                    <div class="gh-member-email-stats">{{@member.emailOpenedCount}}</div>
+                </div>
+                <div class="flex-auto flex flex-column justify-center items-start">
+                    <div class="f8 fw5 midgrey">Avg. open rate</div>
+                    <div class="gh-member-email-stats">
+                        {{#if (is-empty @member.emailOpenRate)}}
+                            <span data-tooltip="Insufficient data available">–</span>
+                        {{else}}
+                            {{@member.emailOpenRate}}%
+                        {{/if}}
                     </div>
+                </div>
+            </div>
+
+                <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width pl5 pr5">
+                    <label for="member-name">Name</label>
+                    <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
+                        @focus-out={{action "setProperty" "name" this.scratchMember.name}} data-test-input="member-name" />
+                    <GhErrorMessage @errors={{member.errors}} @property="name" />
                 </GhFormGroup>
-            </div>
+
+                <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width pl5 pr5">
+                    <label for="member-email">Email</label>
+                    <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
+                        @autocapitalize="off" @autocorrect="off" @autocomplete="off"
+                        @focus-out={{action "setProperty" "email" this.scratchMember.email}} data-test-input="member-email"/>
+                    <GhErrorMessage @errors={{this.member.errors}} @property="email" />
+                </GhFormGroup>
         </div>
 
-        <div class="flex justify-between mt8 mr6">
-            <h4 class="midlightgrey f-small fw5 ttu">Member activity</h4>
+        <div class="pa5 pb6 bt b--whitegrey">
+            <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="gh-setting-title">Subscribed to newsletter</h4>
+                        <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch" for="subscribed-checkbox">
+                            <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
+                                @name="subscribed" data-test-checkbox="member-subscribed" />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
+            </GhFormGroup>
         </div>
-        <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
-
     </div>
 
-    <div class="flex flex-column flex-auto gh-member-settings-secondary">
-        <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-member-internal-info">
-            <div class="pa5">
-                <GhFormGroup>
-                    <label for="label-input">Labels</label>
-                 <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" />
-                </GhFormGroup>
-                <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0">
-                    <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
-                    <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
-                        @value={{this.scratchMember.note}} @focus-out={{action "setProperty" "note" this.scratchMember.note}} />
-                    <GhErrorMessage @errors={{this.member.errors}} @property="note" />
-                    <p> Maximum: <b>500</b> characters. You’ve used
-                        {{gh-count-down-characters this.scratchMember.note 500}}</p>
-                </GhFormGroup>
-            </div>
+    <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-member-internal-info">
+        <div class="pa5">
+            <GhFormGroup @classNames="gh-member-labels">
+                <label for="label-input">Labels</label>
+                <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" data-test-input="" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0 gh-member-note">
+                <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
+                <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
+                    @value={{this.scratchMember.note}} @focus-out={{action "setProperty" "note" this.scratchMember.note}} data-test-input="member-note" />
+                <GhErrorMessage @errors={{this.member.errors}} @property="note" />
+                <p> Maximum: <b>500</b> characters. You’ve used
+                    {{gh-count-down-characters this.scratchMember.note 500}}</p>
+            </GhFormGroup>
         </div>
+    </div>
 
-        {{#if this.canShowStripeInfo}}
+    {{#if this.canShowStripeInfo}}
+        <div class="gh-member-stripe">
             <h4 class="midlightgrey f-small fw5 ttu mt8 gh-member-label-stripe">Stripe info</h4>
 
             {{#if this.isLoading}}
-                <div class="pa20 br4 shadow-1 bg-grouped-table mt2 gh-member-stripe">
+                <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
                     <div class="flex justify-center flex-auto">
                         <div class="gh-loading-spinner"> </div>
                     </div>
                 </div>
             {{else}}
-                <div class="br4 shadow-1 bg-grouped-table mt2 gh-member-stripe">
+                <div class="br4 shadow-1 bg-grouped-table mt2">
                     {{#if this.subscriptions}}
                         <div class="gh-member-header-stripeinfo">
                             <div class="flex items-center justify-between gh-btn-group w-100 ma5 mb0">
@@ -150,7 +142,7 @@
                                     <div class="flex-auto">
                                         {{#if (eq this.stripeDetailsType "subscription")}}
                                             <table class="gh-member-stripe-table">
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Stripe subscription ID</td>
                                                     <td class="gh-member-stripe-data gh-member-stripe-id">
                                                         <a href="https://dashboard.stripe.com/subscriptions/{{subscription.id}}" target="_blank" rel="noopener"
@@ -159,7 +151,7 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Plan</td>
                                                     <td class="gh-member-stripe-data">
                                                         {{subscription.plan.nickname}}
@@ -168,7 +160,7 @@
                                                         </span>
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Status</td>
                                                     <td class="gh-member-stripe-data">
                                                         {{#if (and subscription.cancelAtPeriodEnd (not-eq subscription.status 'canceled'))}}
@@ -179,14 +171,14 @@
                                                     </td>
                                                 </tr>
                                                 {{#if subscription.cancellationReason}}
-                                                    <tr>
+                                                    <tr class="gh-member-stripe-row">
                                                         <td class="gh-member-stripe-label">Cancellation reason</td>
                                                         <td class="gh-member-stripe-data">
                                                             <span class="gh-member-stripe-cancellation-reason">{{subscription.cancellationReason}}</span>
                                                         </td>
                                                     </tr>
                                                 {{/if}}
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Next renewal date</td>
                                                     <td class="gh-member-stripe-data">
                                                         {{#if subscription.cancelAtPeriodEnd}}
@@ -205,7 +197,7 @@
                                                         @successText=""
                                                         @task={{this.continueSubscription}}
                                                         @taskArgs={{subscription.id}}
-                                                        @class="gh-btn gh-btn-icon gh-member-btn-cancelsub"
+                                                        @class="mt1 mb6 gh-btn gh-btn-icon gh-member-btn-cancelsub"
                                                         data-test-button="continue-subscription"
                                                     />
                                                 {{else}}
@@ -221,7 +213,7 @@
                                             {{/if}}
                                         {{else}}
                                             <table class="gh-member-stripe-table">
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Stripe customer ID</td>
                                                     <td class="gh-member-stripe-data gh-member-stripe-id">
                                                         <a href="https://dashboard.stripe.com/customers/{{subscription.customer.id}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">
@@ -229,7 +221,7 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Name</td>
                                                     <td class="gh-member-stripe-data">
                                                         {{#if subscription.customer.name}}
@@ -239,7 +231,7 @@
                                                         {{/if}}
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Email</td>
                                                     <td class="gh-member-stripe-data gh-member-stripe-email">
                                                         {{#if subscription.customer.email}}
@@ -249,7 +241,7 @@
                                                         {{/if}}
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                <tr class="gh-member-stripe-row">
                                                     <td class="gh-member-stripe-label">Customer since</td>
                                                     <td class="gh-member-stripe-data">
                                                         {{#if subscription.startDate}}
@@ -272,12 +264,12 @@
                     {{/if}}
                     <div class="pa5 pb0 pt4 flex flex-column justify-between bt b--whitegrey">
                         <GhFormGroup @classNames="gh-members-comped-checkbox">
-                            <div class="flex justify-between items-center">
+                            <div class="flex justify-between items-center gh-members-comped">
                                 <div class="mr5">
                                     <h4 class="gh-setting-title">Complimentary premium plan</h4>
                                     <p class="gh-setting-desc">If enabled, member will be placed onto a free of charge premium subscription</p>
                                 </div>
-                                <div class="for-switch">
+                                <div class="for-switch gh-members-comped-switch">
                                     <label class="switch" for="comped-checkbox">
                                         <Input @checked={{this.member.comped}} @type="checkbox" @id="comped-checkbox" @name="comped" />
                                         <span class="input-toggle-component"></span>
@@ -288,6 +280,9 @@
                     </div>
                 </div>
             {{/if}}
-        {{/if}}
-    </div>
+        </div>
+    {{/if}}
+
+    <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
+
 </div>
