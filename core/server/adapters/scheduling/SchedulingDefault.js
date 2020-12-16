@@ -46,14 +46,11 @@ util.inherits(SchedulingDefault, SchedulingBase);
  * A new job get's added when the post scheduler module receives a new model event e.g. "post.scheduled".
  *
  * @param {Object} object
- *                       {
- *                          time: [Number] A unix timestamp
- *                          url:  [String] The full post/page API url to publish it.
- *                          extra: {
- *                              httpMethod: [String] The method of the target API endpoint.
- *                              oldTime:    [Number] The previous published time.
- *                          }
- *                       }
+ * @param {Number} object.time - unix timestamp
+ * @param {String} object.url - full post/page API url to publish the resource.
+ * @param {Object} object.extra
+ * @param {String} object.extra.httpMethod - the method of the target API endpoint.
+ * @param {Number} object.extra.oldTime - the previous published time.
  */
 SchedulingDefault.prototype.schedule = function (object) {
     this._addJob(object);
@@ -65,18 +62,13 @@ SchedulingDefault.prototype.schedule = function (object) {
  * Unscheduling means: scheduled -> draft.
  *
  * @param {Object} object
- *                       {
- *                          time: [Number] A unix timestamp
- *                          url:  [String] The full post/page API url to publish it.
- *                          extra: {
- *                              httpMethod: [String] The method of the target API endpoint.
- *                              oldTime:    [Number] The previous published time.
- *                          }
- *                       }
+ * @param {Number} object.time - unix timestamp
+ * @param {String} object.url - full post/page API url to publish the resource.
+ * @param {Object} object.extra
+ * @param {String} object.extra.httpMethod - the method of the target API endpoint.
+ * @param {Number} object.extra.oldTime - the previous published time.
  * @param {Object} options
- *                      {
- *                          bootstrap: [Boolean]
- *                      }
+ * @param {Boolean} [options.bootstrap]
  */
 SchedulingDefault.prototype.unschedule = function (object, options = {bootstrap: false}) {
     /**
