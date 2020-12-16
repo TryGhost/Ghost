@@ -439,10 +439,15 @@ textarea.gh-member-details-textarea {
     margin: 6px 0 12px;
 }
 
+@media (max-width: 1160px) {
+    .gh-member-stripe-table {
+        max-width: 520px;
+    }
+}
+
 .gh-member-stripe-table td {
     vertical-align: top;
     font-size: 1.3rem;
-    padding: 5px 12px 5px 0;
 }
 
 .gh-member-stripe-id,
@@ -454,6 +459,35 @@ textarea.gh-member-details-textarea {
 .gh-member-stripe-label {
     color: var(--midgrey-d1);
     white-space: nowrap;
+    padding: 5px 12px 5px 0;
+}
+
+.gh-member-stripe-data {
+    padding: 5px 12px 5px 0;
+}
+
+@media (max-width: 1400px) and (min-width: 1160px) {
+    .gh-member-stripe-row {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gh-member-stripe-label {
+        padding-bottom: 0;
+        font-weight: 500;
+    }
+
+    .gh-member-stripe-data {
+        padding-top: 0;
+    }
+    .gh-members-comped {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .gh-members-comped-switch {
+        margin-top: 2rem;
+    }
 }
 
 .gh-members-subscribed-checkbox,
@@ -505,50 +539,50 @@ textarea.gh-member-details-textarea {
     color: color-mod(var(--blue) l(-7%) saturation(-10%));
 }
 
-@media (max-width: 1240px) {
+.gh-member-details,
+.gh-member-feed {
+    float: left;
+    width: 69%;
+}
+
+.gh-member-internal-info,
+.gh-member-stripe {
+    float: right;
+    width: 29%;
+}
+
+@media (max-width: 1160px) {
     .gh-member-settings {
+        display: flex;
         flex-direction: column;
     }
-}
 
-.gh-member-settings-primary {
-    flex-basis: 800px;
-}
-
-.gh-member-settings-secondary {
-    flex-basis: 348px;
-}
-
-@media (max-width: 1240px) and (min-width: 740px) {
-    .gh-member-settings-secondary {
-        flex-direction: row;
-    }
-
-    .gh-member-label-stripe {
-        display: none;
-    }
-
-    .gh-member-stripe {
-        margin-top: 3.2rem;
-        margin-left: 2rem;
-    }
-}
-
-@media (max-width: 1240px) {
-    .gh-member-settings-primary,
-    .gh-member-settings-secondary {
-        flex-basis: initial;
+    .gh-member-settings > div {
+        float: none;
         width: 100%;
     }
 
-    .gh-member-details,
+    .gh-member-details {
+        order: 1;
+    }
+    
     .gh-member-feed {
-        margin-right: 0;
+        order: 4;
     }
     
     .gh-member-internal-info {
+        order: 2;
         margin-top: 3.2rem;
     }
+    
+    .gh-member-stripe {
+        order: 3;
+    }
+}
+
+.gh-member-labels,
+.gh-member-note {
+    max-width: none;
 }
 
 .gh-member-cancelstripe-checkbox {
@@ -609,10 +643,11 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-date {
     margin-left: auto;
-    padding: 10px 0;
+    padding: 10px 0 10px 16px;
     color: var(--midgrey);
     font-size: 1.3rem;
     text-align: right;
+    white-space: nowrap;
 }
 
 .gh-member-btn-expandfeed span {

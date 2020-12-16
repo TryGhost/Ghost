@@ -86,15 +86,15 @@ describe('Acceptance: Members', function () {
             await wait();
 
             // it shows selected member form
-            expect(find('.gh-member-settings-primary input[name="name"]').value, 'loads correct member into form')
+            expect(find('[data-test-input="member-name"]').value, 'loads correct member into form')
                 .to.equal(member1.name);
 
-            expect(find('.gh-member-settings-primary input[name="email"]').value, 'loads correct email into form')
+            expect(find('[data-test-input="member-email"]').value, 'loads correct email into form')
                 .to.equal(member1.email);
 
             // trigger save
-            await fillIn('.gh-member-settings-primary input[name="name"]', 'New Name');
-            await blur('.gh-member-settings-primary input[name="name"]');
+            await fillIn('[data-test-input="member-name"]', 'New Name');
+            await blur('[data-test-input="member-name"]');
 
             await click('[data-test-button="save"]');
 
@@ -144,20 +144,20 @@ describe('Acceptance: Members', function () {
             });
 
             // save new member
-            await fillIn('.gh-member-settings-primary input[name="name"]', 'New Name');
-            await blur('.gh-member-settings-primary input[name="name"]');
+            await fillIn('[data-test-input="member-name"]', 'New Name');
+            await blur('[data-test-input="member-name"]');
 
-            await fillIn('.gh-member-settings-primary input[name="email"]', 'example@domain.com');
-            await blur('.gh-member-settings-primary input[name="email"]');
+            await fillIn('[data-test-input="member-email"]', 'example@domain.com');
+            await blur('[data-test-input="member-email"]');
 
             await click('[data-test-button="save"]');
 
             await wait();
 
-            expect(find('.gh-member-settings-primary input[name="name"]').value, 'name has been preserved')
+            expect(find('[data-test-input="member-name"]').value, 'name has been preserved')
                 .to.equal('New Name');
 
-            expect(find('.gh-member-settings-primary input[name="email"]').value, 'email has been preserved')
+            expect(find('[data-test-input="member-email"]').value, 'email has been preserved')
                 .to.equal('example@domain.com');
         });
     });
