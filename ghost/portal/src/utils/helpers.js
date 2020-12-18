@@ -35,8 +35,11 @@ export function isCookiesDisabled() {
 
 export function getMemberSubscription({member = {}}) {
     if (isPaidMember({member})) {
-        const [subscription] = member.subscriptions || [];
-        return subscription;
+        const subscriptions = member.subscriptions || [];
+        const activeSubscription = subscriptions.find((sub) => {
+            return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.status);
+        });
+        return activeSubscription;
     }
     return null;
 }
