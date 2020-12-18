@@ -340,9 +340,11 @@ export default class AccountPlanPage extends React.Component {
         const {onAction, member} = this.context;
         const {confirmationPlan, selectedPlan} = this.state;
         if (isPaidMember({member})) {
-            const {subscriptions} = member;
-            const subscriptionId = subscriptions[0].id;
-            onAction('updateSubscription', {plan: confirmationPlan.name, subscriptionId, cancelAtPeriodEnd: false});
+            const subscription = getMemberSubscription({member});
+            const subscriptionId = subscription ? subscription.id : '';
+            if (subscriptionId) {
+                onAction('updateSubscription', {plan: confirmationPlan.name, subscriptionId, cancelAtPeriodEnd: false});
+            }
         } else {
             onAction('checkoutPlan', {plan: selectedPlan});
         }
@@ -409,9 +411,9 @@ export default class AccountPlanPage extends React.Component {
     }
 
     getActivePlanName({member}) {
-        if (member && member.paid && member.subscriptions[0]) {
-            const {plan} = member.subscriptions[0];
-            return plan.nickname;
+        const activePlan = getMemberActivePlan({member});
+        if (activePlan) {
+            return activePlan.name;
         }
         return null;
     }
