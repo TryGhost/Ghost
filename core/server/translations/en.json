@@ -499,6 +499,7 @@
                 "unknownProvider": "No provider found for supplied URL."
             },
             "userMessages": {
+                "BookshelfRelationsError": "Database error, cannot {action}.",
                 "InternalServerError": "Internal server error, cannot {action}.",
                 "IncorrectUsageError": "Incorrect usage error, cannot {action}.",
                 "NotFoundError": "Resource not found error, cannot {action}.",
