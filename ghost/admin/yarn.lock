@@ -1534,10 +1534,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.10"
 
-"@tryghost/members-csv@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.4.0.tgz#cd91d1ad4ca3c317cb9c3dbfd27c5414004f901b"
-  integrity sha512-GotwC8geHK7A8qBrXDNU+P9tIBOCYqwqZp2I/60BYgBJT6wEUpxU8KezluZ6fuHsk1fKIBRUk9k5+qi83sQI3A==
+"@tryghost/members-csv@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.4.1.tgz#489c3943168956754752ca9fe118011fa75f2923"
+  integrity sha512-oLp7mMJzfche8dxUtUYu3nvKVpq44iu20EiRiSSx5Q+V6rAkdMl2I/E6beB2gcm6utDkqZRWYwAsxo8qQr6DRg==
   dependencies:
     papaparse "5.3.0"
 
