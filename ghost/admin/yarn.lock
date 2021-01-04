@@ -6180,10 +6180,10 @@ ember-composable-helpers@4.4.1:
     ember-cli-babel "^7.11.1"
     resolve "^1.10.0"
 
-ember-concurrency-decorators@2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/ember-concurrency-decorators/-/ember-concurrency-decorators-2.0.2.tgz#ab2343b6118f4da24d7aa965ba4f7a2f10cc33d9"
-  integrity sha512-tHCACwXDJwlGw7rdOQ4YTxpz1zyvOLB0YK2RVs/rJQuOrSZ5sZx5pblTfBTrHXQc1uY2Uf5/M4yb/orL87dOOw==
+ember-concurrency-decorators@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/ember-concurrency-decorators/-/ember-concurrency-decorators-2.0.3.tgz#2816c9a0283b90ba5340fc5b4e0b92ea91f7d6e3"
+  integrity sha512-r6O34YKI/slyYapVsuOPnmaKC4AsmBSwvgcadbdy+jHNj+mnryXPkm+3hhhRnFdlsKUKdEuXvl43lhjhYRLhhA==
   dependencies:
     "@ember-decorators/utils" "^6.1.0"
     ember-cli-babel "^7.19.0"
