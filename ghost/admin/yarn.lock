@@ -1251,7 +1251,7 @@
     resolve "^1.8.1"
     semver "^7.3.2"
 
-"@embroider/macros@0.33.0":
+"@embroider/macros@0.33.0", "@embroider/macros@^0.33.0":
   version "0.33.0"
   resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-0.33.0.tgz#d5826ea7565bb69b57ba81ed528315fe77acbf9d"
   integrity sha512-nl/1zRn+Wd3MO8Bb+YPqHmFl/2vwQLTsEB6Zt+K9bWXsM/kA+dPCeeCReLN6PbkMP16xxqtNSIrQ8Y49hnWjpg==
@@ -5646,7 +5646,7 @@ ember-cli-babel@7.23.0, ember-cli-babel@^7.0.0, ember-cli-babel@^7.1.0, ember-cl
     rimraf "^3.0.1"
     semver "^5.5.0"
 
-ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.12.0, ember-cli-babel@^6.16.0, ember-cli-babel@^6.3.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.7.2, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
+ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.12.0, ember-cli-babel@^6.16.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.7.2, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
   version "6.18.0"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-6.18.0.tgz#3f6435fd275172edeff2b634ee7b29ce74318957"
   integrity sha512-7ceC8joNYxY2wES16iIBlbPSxwKDBhYwC8drU3ZEvuPDMwVv1KzxCNu1fvxyFEBWhwaRNTUxSCsEVoTd9nosGA==
@@ -5845,17 +5845,18 @@ ember-cli-lodash-subset@^2.0.1:
   resolved "https://registry.yarnpkg.com/ember-cli-lodash-subset/-/ember-cli-lodash-subset-2.0.1.tgz#20cb68a790fe0fde2488ddfd8efbb7df6fe766f2"
   integrity sha1-IMtop5D+D94kiN39jvu332/nZvI=
 
-ember-cli-mirage@1.1.8:
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-1.1.8.tgz#b3874a0f2eb83d8f341416d3a691ff82735c629c"
-  integrity sha512-i0/CNwdyza+o+0RW92i/dEhAqTcyoAJ9jGKKiOLK74RwDG0Bgt5w/CdqKfIFBf/lIGPXHPveneWsyckeSiVr4A==
+ember-cli-mirage@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-2.0.1.tgz#3851c3691f66769ab55c13a2557e69c85ad66b23"
+  integrity sha512-zOepXLwuV4G+DZHQE3h62QQGARtwvgG+Glry+fySQ8VbCo3v/jh8l1JJIluUpPkEVyEyuGHIbjKqi/yQsSjm4Q==
   dependencies:
+    "@embroider/macros" "^0.33.0"
     broccoli-file-creator "^2.1.1"
-    broccoli-funnel "^2.0.2"
-    broccoli-merge-trees "^3.0.2"
+    broccoli-funnel "^3.0.3"
+    broccoli-merge-trees "^4.2.0"
     ember-auto-import "^1.2.19"
     ember-cli-babel "^7.5.0"
-    ember-get-config "^0.2.2"
+    ember-get-config "^0.2.4 || ^0.3.0"
     ember-inflector "^2.0.0 || ^3.0.0"
     lodash-es "^4.17.11"
     miragejs "^0.1.31"
@@ -6331,21 +6332,13 @@ ember-fetch@8.0.2:
     node-fetch "^2.6.0"
     whatwg-fetch "^3.4.0"
 
-ember-get-config@:
+ember-get-config@, "ember-get-config@^0.2.4 || ^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.3.0.tgz#a73a1a87b48d9dde4c66a0e52ed5260b8a48cfbd"
   integrity sha512-0e2pKzwW5lBZ4oJnvu9qHOht4sP1MWz/m3hyz8kpSoMdrlZVf62LDKZ6qfKgy8drcv5YhCMYE6QV7MhnqlrzEQ==
   dependencies:
     broccoli-file-creator "^1.1.1"
     ember-cli-babel "^7.0.0"
-
-ember-get-config@^0.2.2:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.2.4.tgz#118492a2a03d73e46004ed777928942021fe1ecd"
-  integrity sha1-EYSSoqA9c+RgBO13eSiUICH+Hs0=
-  dependencies:
-    broccoli-file-creator "^1.1.1"
-    ember-cli-babel "^6.3.0"
 
 "ember-getowner-polyfill@^1.1.0 || ^2.0.0", ember-getowner-polyfill@^2.0.0, ember-getowner-polyfill@^2.0.1, ember-getowner-polyfill@^2.2.0:
   version "2.2.0"
