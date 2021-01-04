@@ -5507,10 +5507,10 @@ ember-assign-polyfill@^2.5.0, ember-assign-polyfill@^2.6.0:
     ember-cli-babel "^7.20.5"
     ember-cli-version-checker "^2.0.0"
 
-ember-auto-import@1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-1.9.0.tgz#0521f2ce3db11674146587f583837599cd42f1d0"
-  integrity sha512-wvOlAJCR1296C63ttIFl6/hw9NT28uutyO80xOdJCx7Tx3FldKrle5stftp849BPQPb2obU5hFo3ju4qV7KYfA==
+ember-auto-import@1.10.1:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-1.10.1.tgz#6c93a875e494aa0a58b759867d3f20adfd514ae3"
+  integrity sha512-7bOWzPELlVwdWDOkB+phDIjg8BNW+/2RiLLQ+Xa/eIvCLT4ABYhHV5wqW5gs5BnXTDVLfE4ddKZdllnGuPGGDQ==
   dependencies:
     "@babel/core" "^7.1.6"
     "@babel/preset-env" "^7.10.2"
@@ -5520,7 +5520,6 @@ ember-auto-import@1.9.0:
     babel-core "^6.26.3"
     babel-loader "^8.0.6"
     babel-plugin-syntax-dynamic-import "^6.18.0"
-    babel-template "^6.26.0"
     babylon "^6.18.0"
     broccoli-debug "^0.6.4"
     broccoli-node-api "^1.7.0"
