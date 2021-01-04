@@ -7,7 +7,6 @@ const configUtils = require('../../utils/configUtils');
 
 describe('{{t}} helper', function () {
     beforeEach(function () {
-        settingsCache.set('active_theme', {value: 'casper'});
         configUtils.set('paths:contentPath', path.join(__dirname, '../../utils/fixtures/'));
     });
 
@@ -18,7 +17,7 @@ describe('{{t}} helper', function () {
 
     it('theme translation is DE', function () {
         settingsCache.set('lang', {value: 'de'});
-        themeI18n.init();
+        themeI18n.init('casper');
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
@@ -29,7 +28,7 @@ describe('{{t}} helper', function () {
 
     it('theme translation is EN', function () {
         settingsCache.set('lang', {value: 'en'});
-        themeI18n.init();
+        themeI18n.init('casper');
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
@@ -40,7 +39,7 @@ describe('{{t}} helper', function () {
 
     it('[fallback] no theme translation file found for FR', function () {
         settingsCache.set('lang', {value: 'fr'});
-        themeI18n.init();
+        themeI18n.init('casper');
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
@@ -50,9 +49,8 @@ describe('{{t}} helper', function () {
     });
 
     it('[fallback] no theme files at all, use key as translation', function () {
-        settingsCache.set('active_theme', {value: 'casper-1.4'});
         settingsCache.set('lang', {value: 'de'});
-        themeI18n.init();
+        themeI18n.init('casper-1.4');
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}

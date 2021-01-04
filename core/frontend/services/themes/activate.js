@@ -16,7 +16,7 @@ function activate(loadedTheme, checkedTheme, error) {
         active.set(loadedTheme, checkedTheme, error);
         const currentGhostAPI = active.get().engine('ghost-api');
 
-        events.emit('services.themes.activated');
+        events.emit('services.themes.activated', loadedTheme.name);
 
         if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
             events.emit('services.themes.api.changed');
