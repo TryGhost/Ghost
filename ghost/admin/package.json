@@ -33,7 +33,7 @@
     "@tryghost/helpers": "1.1.35",
     "@tryghost/kg-clean-basic-html": "1.0.10",
     "@tryghost/kg-parser-plugins": "1.0.10",
-    "@tryghost/members-csv": "0.4.0",
+    "@tryghost/members-csv": "0.4.1",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/string": "0.1.14",
     "@tryghost/timezone-data": "0.2.33",
