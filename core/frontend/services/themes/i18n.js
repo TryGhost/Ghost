@@ -3,7 +3,7 @@ const {i18n, events} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../../../server/services/settings/cache');
 const config = require('../../../shared/config');
-
+const active = require('./active');
 const jp = require('jsonpath');
 
 const isNil = require('lodash/isNil');
@@ -16,11 +16,12 @@ class ThemeI18n extends i18n.I18n {
     /**
      * Setup i18n support for themes:
      *  - Load correct language file into memory
+     *
+     * @param {String} activeTheme - name of the currently loaded theme
      */
-    init() {
+    init(activeTheme) {
         // This function is called during theme initialization, and when switching language or theme.
         const currentLocale = this._loadLocale();
-        const activeTheme = settingsCache.get('active_theme');
 
         // Reading file for current locale and active theme and keeping its content in memory
         if (activeTheme) {
@@ -101,15 +102,15 @@ let themeI18n = new ThemeI18n();
 //  *  1. you override a theme, which is already active
 //  *  2. The data has not changed, no event is triggered.
 //  */
-events.on('services.themes.activated', function () {
-    themeI18n.init();
+events.on('services.themes.activated', function (activeTheme) {
+    themeI18n.init(activeTheme);
 });
 
 /**
  * When locale changes, we reload theme translations
  */
 events.on('settings.lang.edited', function () {
-    themeI18n.init();
+    themeI18n.init(active.get().name);
 });
 
 module.exports = themeI18n;

@@ -19,7 +19,7 @@ module.exports = {
     init: function initThemes() {
         const activeThemeName = settingsCache.get('active_theme');
 
-        i18n.init();
+        i18n.init(activeThemeName);
 
         debug('init themes', activeThemeName);
 
