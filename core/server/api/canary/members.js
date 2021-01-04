@@ -192,7 +192,7 @@ module.exports = {
                 frame.options.withRelated = ['stripeSubscriptions'];
                 const member = await membersService.api.members.update(frame.data.members[0], frame.options);
 
-                const hasCompedSubscription = !!member.related('stripeSubscriptions').find(subscription => subscription.get('plan_nickname') === 'Complimentary');
+                const hasCompedSubscription = !!member.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
 
                 if (typeof frame.data.members[0].comped === 'boolean') {
                     if (frame.data.members[0].comped && !hasCompedSubscription) {
