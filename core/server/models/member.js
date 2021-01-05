@@ -19,6 +19,14 @@ const Member = ghostBookshelf.Model.extend({
 
     relationships: ['labels', 'stripeCustomers', 'email_recipients'],
 
+    // do not delete email_recipients records when a member is destroyed. Recipient
+    // records are used for analytics and historical records
+    relationshipConfig: {
+        email_recipients: {
+            destroyRelated: false
+        }
+    },
+
     relationshipBelongsTo: {
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
