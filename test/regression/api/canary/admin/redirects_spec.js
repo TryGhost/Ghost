@@ -27,6 +27,16 @@ describe('Redirects API', function () {
             });
     });
 
+    const startGhost = (options) => {
+        return ghost(options)
+            .then(() => {
+                request = supertest.agent(config.get('url'));
+            })
+            .then(() => {
+                return localUtils.doAuth(request);
+            });
+    };
+
     describe('Download', function () {
         afterEach(function () {
             configUtils.config.set('paths:contentPath', originalContentPath);
@@ -133,16 +143,6 @@ describe('Redirects API', function () {
         });
 
         describe('Ensure re-registering redirects works', function () {
-            const startGhost = (options) => {
-                return ghost(options)
-                    .then(() => {
-                        request = supertest.agent(config.get('url'));
-                    })
-                    .then(() => {
-                        return localUtils.doAuth(request);
-                    });
-            };
-
             it('no redirects file exists', function () {
                 return startGhost({redirectsFile: false, forceStart: true})
                     .then(() => {
@@ -269,16 +269,6 @@ describe('Redirects API', function () {
         });
 
         describe('Ensure re-registering redirects works', function () {
-            const startGhost = (options) => {
-                return ghost(options)
-                    .then(() => {
-                        request = supertest.agent(config.get('url'));
-                    })
-                    .then(() => {
-                        return localUtils.doAuth(request);
-                    });
-            };
-
             it('no redirects file exists', function () {
                 return startGhost({redirectsFile: false, forceStart: true})
                     .then(() => {
@@ -390,6 +380,21 @@ describe('Redirects API', function () {
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
                     });
             });
+        });
+    });
+
+    // https://github.com/TryGhost/Ghost/issues/10898
+    describe('Merge querystring', function () {
+        it('toURL param takes precedence, other params pass through', function () {
+            return startGhost({forceStart: true, redirectsFileExt: '.json'})
+                .then(function () {
+                    return request
+                        .get('/test-params/?q=123&lang=js')
+                        .expect(301)
+                        .then(function (res) {
+                            res.headers.location.should.eql('/result?q=abc&lang=js');
+                        });
+                });
         });
     });
 

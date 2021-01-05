@@ -9,6 +9,11 @@
         "to": "/revamped-url/"
     },
     {
+        "permanent": true,
+        "from": "/test-params",
+        "to": "/result?q=abc"
+    },
+    {
         "from": "^\\/what(\\/?)$",
         "to": "/what-does-god-say"
     },
