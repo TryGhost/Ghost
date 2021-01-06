@@ -216,6 +216,7 @@
                                 </section>
                             {{/each}}
                         {{else}}
+
                             <section class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
                                 <div class="flex items-start w-100">
                                     <div class="flex-auto">
@@ -223,16 +224,16 @@
                                             <tr class="gh-member-stripe-row">
                                                 <td class="gh-member-stripe-label">Stripe customer ID</td>
                                                 <td class="gh-member-stripe-data gh-member-stripe-id">
-                                                    <a href="https://dashboard.stripe.com/customers/{{subscription.customer.id}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">
-                                                        {{subscription.customer.id}}
+                                                    <a href="https://dashboard.stripe.com/customers/{{customer.id}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">
+                                                        {{customer.id}}
                                                     </a>
                                                 </td>
                                             </tr>
                                             <tr class="gh-member-stripe-row">
                                                 <td class="gh-member-stripe-label">Name</td>
                                                 <td class="gh-member-stripe-data">
-                                                    {{#if subscription.customer.name}}
-                                                        {{subscription.customer.name}}
+                                                    {{#if customer.name}}
+                                                        {{customer.name}}
                                                     {{else}}
                                                         <span class="midgrey-d1">No name</span>
                                                     {{/if}}
@@ -241,8 +242,8 @@
                                             <tr class="gh-member-stripe-row">
                                                 <td class="gh-member-stripe-label">Email</td>
                                                 <td class="gh-member-stripe-data gh-member-stripe-email">
-                                                    {{#if subscription.customer.email}}
-                                                        {{subscription.customer.email}}
+                                                    {{#if customer.email}}
+                                                        {{customer.email}}
                                                     {{else}}
                                                         <span class="midgrey-d1">No email</span>
                                                     {{/if}}
@@ -251,8 +252,8 @@
                                             <tr class="gh-member-stripe-row">
                                                 <td class="gh-member-stripe-label">Customer since</td>
                                                 <td class="gh-member-stripe-data">
-                                                    {{#if subscription.startDate}}
-                                                        {{subscription.startDate}}
+                                                    {{#if customer.startDate}}
+                                                        {{customer.startDate}}
                                                     {{else}}
                                                         <span class="midgrey-d1">No data</span>
                                                     {{/if}}
