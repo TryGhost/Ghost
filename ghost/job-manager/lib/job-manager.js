@@ -36,7 +36,7 @@ class JobManager {
 
         this.bree = new Bree({
             root: false, // set this to `false` to prevent requiring a root directory of jobs
-            hasSeconds: true, // precission is needed to avoid task ovelaps after immidiate execution
+            hasSeconds: true, // precission is needed to avoid task ovelaps after immediate execution
             outputWorkerMetadata: true,
             logger: logging,
             errorHandler: errorHandler
@@ -46,83 +46,80 @@ class JobManager {
     }
 
     /**
-     * Adds job to queue in current even loop
+     * By default schedules an "offloaded" job. If `offloaded: true` parameter is set,
+     * puts an "inline" immediate job into the queue.
      *
-     * @param {Function|String} job - function or path to a module defining a job
-     * @param {Object} [data] - data to be passed into the job
+     * @param {Object} GhostJob - job options
+     * @prop {Function | String} GhostJob.job - function or path to a module defining a job
+     * @prop {String} [GhostJob.name] - unique job name, if not provided takes function name or job script filename
+     * @prop {String | Date} [GhostJob.at] - Date, cron or human readable schedule format. Manage will do immediate execution if not specified. Not supported for "inline" jobs
+     * @prop {Object} [GhostJob.data] - data to be passed into the job
+     * @prop {Boolean} [GhostJob.offloaded] - creates an "offloaded" job running in a worker thread by default. If set to "false" runs an "inline" job on the same event loop
      */
-    addJob(job, data) {
-        this.logging.info('Adding one off job to the queue');
+    addJob({name, at, job, data, offloaded = true}) {
+        if (offloaded) {
+            this.logging.info('Adding offloaded job to the queue');
+            let schedule;
 
-        this.queue.push(async () => {
-            try {
-                if (typeof job === 'function') {
-                    await job(data);
+            if (!name) {
+                if (typeof job === 'string') {
+                    name = path.parse(job).name;
                 } else {
-                    await require(job)(data);
+                    throw new Error('Name parameter should be present if job is a function');
                 }
-            } catch (err) {
-                // NOTE: each job should be written in a safe way and handle all errors internally
-                //       if the error is caught here jobs implementaton should be changed
-                this.logging.error(new errors.IgnitionError({
-                    level: 'critical',
-                    errorType: 'UnhandledJobError',
-                    message: 'Processed job threw an unhandled error',
-                    context: (typeof job === 'function') ? 'function' : job,
-                    err
-                }));
-
-                throw err;
             }
-        }, handler);
-    }
 
-    /**
-     * Schedules recuring job offloaded to per-job event-loop (thread or a process)
-     *
-     * @param {String | Date} at - Date, cron or human readable schedule format
-     * @param {Function|String} job - function or path to a module defining a job
-     * @param {Object} [data] - data to be passed into the job
-     * @param {String} [name] - job name
-     */
-    scheduleJob(at, job, data, name) {
-        let schedule;
+            if (at && !(at instanceof Date)) {
+                if (isCronExpression(at)) {
+                    schedule = later.parse.cron(at, true);
+                } else {
+                    schedule = later.parse.text(at);
+                }
 
-        if (!name) {
-            if (typeof job === 'string') {
-                name = path.parse(job).name;
+                if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
+                    throw new Error('Invalid schedule format');
+                }
+
+                this.logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
+            } else if (at !== undefined) {
+                this.logging.info(`Scheduling job ${name} at ${at}`);
             } else {
-                throw new Error('Name parameter should be present if job is a function');
-            }
-        }
-
-        if (at && !(at instanceof Date)) {
-            if (isCronExpression(at)) {
-                schedule = later.parse.cron(at, true);
-            } else {
-                schedule = later.parse.text(at);
+                this.logging.info(`Scheduling job ${name} to run immediately`);
             }
 
-            if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
-                throw new Error('Invalid schedule format');
-            }
-
-            this.logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
-        } else if (at !== undefined) {
-            this.logging.info(`Scheduling job ${name} at ${at}`);
+            const breeJob = assembleBreeJob(at, job, data, name);
+            this.bree.add(breeJob);
+            return this.bree.start(name);
         } else {
-            this.logging.info(`Scheduling job ${name} to run immediately`);
-        }
+            this.logging.info('Adding one off inline job to the queue');
 
-        const breeJob = assembleBreeJob(at, job, data, name);
-        this.bree.add(breeJob);
-        return this.bree.start(name);
+            this.queue.push(async () => {
+                try {
+                    if (typeof job === 'function') {
+                        await job(data);
+                    } else {
+                        await require(job)(data);
+                    }
+                } catch (err) {
+                    // NOTE: each job should be written in a safe way and handle all errors internally
+                    //       if the error is caught here jobs implementaton should be changed
+                    this.logging.error(new errors.IgnitionError({
+                        level: 'critical',
+                        errorType: 'UnhandledJobError',
+                        message: 'Processed job threw an unhandled error',
+                        context: (typeof job === 'function') ? 'function' : job,
+                        err
+                    }));
+
+                    throw err;
+                }
+            }, handler);
+        }
     }
 
     /**
-     * Removes a job from sqcheduled (offloaded) jobs queue.
-     * There is no way to remove jovs from in-line (same event loop) jobs
-     * added through `addJob` method.
+     * Removes an "offloaded" job from scheduled jobs queue.
+     * It's NOT yet possible to remove "inline" jobs (will be possible when scheduling is added https://github.com/breejs/bree/issues/68).
      * The method will throw an Error if job with provided name does not exist.
      *
      * NOTE: current implementation does not guarante running job termination
