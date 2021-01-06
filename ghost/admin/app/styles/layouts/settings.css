@@ -417,9 +417,6 @@
 .gh-blognav {
     margin: 0 20px;
 }
-@media (max-width: 600px) {
-    .gh-blognav { margin: 20px 0; }
-}
 
 .gh-blognav-item {
     display: flex;
