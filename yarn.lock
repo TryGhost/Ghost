@@ -457,16 +457,16 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.6.0.tgz#5023f4b37577ac6966bba3608896948f2d030004"
-  integrity sha512-kZh3sAexCkP4WghIskB6ZAJQap8KQWDtcLWRXTzCL1fO6BzOstJgw4gvRMDb2t8peUHhwf34fKbeIKecl5cv0g==
+"@tryghost/job-manager@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.7.0.tgz#ddc193580778d5c46a7dab5affa74abca7d029f3"
+  integrity sha512-m1b7qyEzssa2YeoRtXV5Q2acHp+HUEXquzVgi1yGoxAw6dU994z6MIYPq8JpDTR2XnY2Tw2mghlVfgBQ995sFg==
   dependencies:
     "@breejs/later" "4.0.2"
     bree "4.1.0"
-    cron-validate "1.4.1"
-    fastq "1.9.0"
-    p-wait-for "3.1.0"
+    cron-validate "1.4.2"
+    fastq "1.10.0"
+    p-wait-for "3.2.0"
 
 "@tryghost/kg-card-factory@2.1.4":
   version "2.1.4"
@@ -750,6 +750,11 @@
   integrity sha512-MPtoySlAZQ37VoLaPcTHCu1RWJ4llDkULYZIzOYxlhxBqYPB0RsRlmMU0R6tahtFe27mIdkHV+551ZWV4PLmVw==
   dependencies:
     "@types/node" "*"
+
+"@types/lodash@^4.14.165":
+  version "4.14.167"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.167.tgz#ce7d78553e3c886d4ea643c37ec7edc20f16765e"
+  integrity sha512-w7tQPjARrvdeBkX/Rwg95S592JwxqOjmms3zWQ0XZgSyxSLdzWaYH3vErBhdVS/lRBX7F8aBYcYJYTr5TMGOzw==
 
 "@types/mime@*":
   version "2.0.3"
@@ -2259,7 +2264,14 @@ create-error@~0.3.1:
   resolved "https://registry.yarnpkg.com/create-error/-/create-error-0.3.1.tgz#69810245a629e654432bf04377360003a5351a23"
   integrity sha1-aYECRaYp5lRDK/BDdzYAA6U1GiM=
 
-cron-validate@1.4.1, cron-validate@^1.4.1:
+cron-validate@1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.2.tgz#1ecf9a5689e5697d17c2337bbfd8606bed7d441e"
+  integrity sha512-GdjNeiZjNA9u6BItfhnd1MFPbT86wmJ2/2BwDQyXZY0mb9nhLSeh3PVKk7G185qfUSwbtGNtCLrKI/9pclvGrg==
+  dependencies:
+    yup "0.32.8"
+
+cron-validate@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.1.tgz#d637f677a2f5fa37ed61d265a17af502b02b12d6"
   integrity sha512-83VZ6/I52ybU8lwvrAgjnwR70/1pl867pgE4LbzO+ha+rZOmNMRqMm8vVG9s7a2fpnBQR6/+F7oRiGVfnC+9Ug==
@@ -3554,10 +3566,10 @@ fast-safe-stringify@^2.0.7:
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
-fastq@1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.9.0.tgz#e16a72f338eaca48e91b5c23593bcc2ef66b7947"
-  integrity sha512-i7FVWL8HhVY+CTkwFxkN2mk3h+787ixS5S63eb78diVRc1MCssarHq3W5cj0av7YDSwmaV928RNag+U1etRQ7w==
+fastq@1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.10.0.tgz#74dbefccade964932cdf500473ef302719c652bb"
+  integrity sha512-NL2Qc5L3iQEsyYzweq7qfgy5OtXCmGzGvhElGEd/SoFWEMOEczNh5s5ocaF01HDetxz+p8ecjNPA6cZxxIHmzA==
   dependencies:
     reusify "^1.0.4"
 
@@ -6533,6 +6545,11 @@ nan@^2.12.1, nan@^2.14.0:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
   integrity sha512-isWHgVjnFjh2x2yuJ/tj3JbwoHu3UC2dX5G/88Cm24yB6YopVgxvBObDY7n5xW6ExmFhJpSEQqFPvq9zaXc8Jw==
 
+nanoclone@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/nanoclone/-/nanoclone-0.2.1.tgz#dd4090f8f1a110d26bb32c49ed2f5b9235209ed4"
+  integrity sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==
+
 nanoid@3.1.12, nanoid@^3.1.12:
   version "3.1.12"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.12.tgz#6f7736c62e8d39421601e4a0c77623a97ea69654"
@@ -7111,6 +7128,13 @@ p-wait-for@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/p-wait-for/-/p-wait-for-3.1.0.tgz#9da568a2adda3ea8175a3c43f46a5317e28c0e47"
   integrity sha512-0Uy19uhxbssHelu9ynDMcON6BmMk6pH8551CvxROhiz3Vx+yC4RqxjyIDk2V4ll0g9177RKT++PK4zcV58uJ7A==
+  dependencies:
+    p-timeout "^3.0.0"
+
+p-wait-for@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/p-wait-for/-/p-wait-for-3.2.0.tgz#640429bcabf3b0dd9f492c31539c5718cb6a3f1f"
+  integrity sha512-wpgERjNkLrBiFmkMEjuZJEWKKDrNfHCKA1OhyN1wg1FrLkULbviEy6py1AyJUgZ72YWFbZ38FIpnqvVqAlDUwA==
   dependencies:
     p-timeout "^3.0.0"
 
@@ -10066,6 +10090,19 @@ yup@0.30.0:
     "@babel/runtime" "^7.10.5"
     lodash "^4.17.20"
     lodash-es "^4.17.11"
+    property-expr "^2.0.4"
+    toposort "^2.0.2"
+
+yup@0.32.8:
+  version "0.32.8"
+  resolved "https://registry.yarnpkg.com/yup/-/yup-0.32.8.tgz#16e4a949a86a69505abf99fd0941305ac9adfc39"
+  integrity sha512-SZulv5FIZ9d5H99EN5tRCRPXL0eyoYxWIP1AacCrjC9d4DfP13J1dROdKGfpfRHT3eQB6/ikBl5jG21smAfCkA==
+  dependencies:
+    "@babel/runtime" "^7.10.5"
+    "@types/lodash" "^4.14.165"
+    lodash "^4.17.20"
+    lodash-es "^4.17.11"
+    nanoclone "^0.2.1"
     property-expr "^2.0.4"
     toposort "^2.0.2"
 

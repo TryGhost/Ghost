@@ -371,28 +371,31 @@ module.exports = {
                 };
             } else {
                 const emailRecipient = frame.user.get('email');
-                jobsService.addJob(async () => {
-                    const result = await membersService.importer.perform(job.id);
-                    const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
-                    const emailContent = membersService.importer.generateCompletionEmail(result, {
-                        emailRecipient,
-                        importLabel: importLabelModel ? importLabelModel.toJSON() : null
-                    });
-                    const errorCSV = membersService.importer.generateErrorCSV(result);
-                    const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+                jobsService.addJob({
+                    job: async () => {
+                        const result = await membersService.importer.perform(job.id);
+                        const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
+                        const emailContent = membersService.importer.generateCompletionEmail(result, {
+                            emailRecipient,
+                            importLabel: importLabelModel ? importLabelModel.toJSON() : null
+                        });
+                        const errorCSV = membersService.importer.generateErrorCSV(result);
+                        const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
 
-                    await ghostMailer.send({
-                        to: emailRecipient,
-                        subject: emailSubject,
-                        html: emailContent,
-                        forceTextContent: true,
-                        attachments: [{
-                            filename: `${importLabel.name} - Errors.csv`,
-                            contents: errorCSV,
-                            contentType: 'text/csv',
-                            contentDisposition: 'attachment'
-                        }]
-                    });
+                        await ghostMailer.send({
+                            to: emailRecipient,
+                            subject: emailSubject,
+                            html: emailContent,
+                            forceTextContent: true,
+                            attachments: [{
+                                filename: `${importLabel.name} - Errors.csv`,
+                                contents: errorCSV,
+                                contentType: 'text/csv',
+                                contentDisposition: 'attachment'
+                            }]
+                        });
+                    },
+                    offloaded: false
                 });
 
                 return {};
