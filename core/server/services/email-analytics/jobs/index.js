@@ -27,12 +27,11 @@ module.exports = {
                 // run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc
                 const m = Math.floor(Math.random() * 5); // 0-4
 
-                jobsService.scheduleJob(
-                    `${s} ${m}/5 * * * *`,
-                    path.resolve(__dirname, 'fetch-latest.js'),
-                    undefined,
-                    'email-analytics-fetch-latest'
-                );
+                jobsService.addJob({
+                    at: `${s} ${m}/5 * * * *`,
+                    job: path.resolve(__dirname, 'fetch-latest.js'),
+                    name: 'email-analytics-fetch-latest'
+                });
 
                 hasScheduled = true;
             }
