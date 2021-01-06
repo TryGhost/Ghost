@@ -10,7 +10,7 @@ const logging = require('../../../shared/logging');
 const settingsCache = require('../settings/cache');
 const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
-const jobService = require('../jobs');
+const jobsService = require('../jobs');
 const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
@@ -225,7 +225,11 @@ async function pendingEmailHandler(emailModel, options) {
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     emailAnalyticsJobs.scheduleRecurringJobs();
 
-    return jobService.addJob(sendEmailJob, {emailModel});
+    return jobsService.addJob({
+        job: sendEmailJob,
+        data: {emailModel},
+        offloaded: false
+    });
 }
 
 async function sendEmailJob({emailModel, options}) {
