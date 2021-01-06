@@ -56,6 +56,16 @@ export default Component.extend({
         return null;
     }),
 
+    customer: computed('subscriptions.[]', function () {
+        let customer = this.subscriptions.firstObject?.customer;
+        if (customer) {
+            return Object.assign({}, this.subscriptions.firstObject?.customer, {
+                startDate: this.subscriptions.firstObject?.startDate
+            });
+        }
+        return null;
+    }),
+
     actions: {
         setProperty(property, value) {
             this.setProperty(property, value);
