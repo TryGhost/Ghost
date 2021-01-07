@@ -22,7 +22,10 @@ async function shutdown(signal) {
 }
 
 (async () => {
-    jobManager.scheduleJob('every 10 seconds', path.resolve(__dirname, '../jobs/graceful.js'));
+    jobManager.addJob({
+        at: 'every 10 seconds',
+        job: path.resolve(__dirname, '../jobs/graceful.js')
+    });
 
     await setTimeoutPromise(100); // allow job to get scheduled
 
