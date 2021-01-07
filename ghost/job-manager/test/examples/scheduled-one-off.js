@@ -14,9 +14,14 @@ const isJobQueueEmpty = (bree) => {
 (async () => {
     const dateInTenSeconds = addSeconds(new Date(), 10);
 
-    jobManager.scheduleJob(dateInTenSeconds, path.resolve(__dirname, '../jobs/timed-job.js'), {
-        ms: 2000
-    }, 'one-off-scheduled-job');
+    jobManager.addJob({
+        at: dateInTenSeconds,
+        job: path.resolve(__dirname, '../jobs/timed-job.js'),
+        data: {
+            ms: 2000
+        },
+        name: 'one-off-scheduled-job'
+    });
 
     await pWaitFor(() => (isJobQueueEmpty(jobManager.bree)));
 
