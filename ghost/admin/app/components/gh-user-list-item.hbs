@@ -11,20 +11,20 @@
             </div>
         </div>
         <div class="apps-card-right">
+            {{#if user.isLocked}}
+                <span class="gh-badge locked">{{svg-jar "lock"}}</span>
+            {{/if}}
             <div class="apps-configured">
                 {{#if user.isSuspended}}
                     <span class="gh-badge suspended">Suspended</span>
                 {{else}}
-                    {{#if user.isLocked}}
-                        <span class="gh-badge locked">{{svg-jar "lock"}}</span>
-                    {{/if}}
                     {{#unless this.session.user.isAuthorOrContributor}}
                         {{#each user.roles as |role|}}
                             <span class="gh-badge {{role.lowerCaseName}}" data-test-role-name>{{role.name}}</span>
                         {{/each}}
                     {{/unless}}
                 {{/if}}
-                {{svg-jar "arrow-right"}}
+                {{svg-jar "arrow-right" class="gh-user-arrow-icon"}}
             </div>
         </div>
     </article>

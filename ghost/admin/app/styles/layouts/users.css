@@ -40,6 +40,12 @@
     }
 }
 
+@media (max-width: 600px) {
+    .gh-user-arrow-icon {
+        display: none;
+    }
+}
+
 
 .user-list-item-icon {
     flex-shrink: 0;
@@ -85,7 +91,6 @@
 }
 
 .gh-team .apps-configured {
-    flex-wrap: wrap;
     justify-content: flex-end;
 }
 
