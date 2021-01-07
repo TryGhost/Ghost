@@ -25,45 +25,57 @@ const logging = {
 
 const jobManager = new JobManager(logging);
 
-// register a job "function" with queued execution in parent event loop
-jobManager.addJob(printWord(word) => console.log(word), 'hello');
+// register a job "function" with queued execution in current event loop
+jobManager.addJob({
+    job: printWord(word) => console.log(word),
+    name: 'hello',
+    offloaded: false
+});
 
-// register a job "module" with queued execution in parent even loop
-jobManager.addJob('./path/to/email-module.js', {email: 'send@here.com'});
+// register a job "module" with queued execution in current even loop
+jobManager.addJob({
+    job:'./path/to/email-module.js', 
+    data: {email: 'send@here.com'},
+    offloaded: false
+});
 
-// register recurring job which needs execution outside parent event loop
-jobManager.scheduleJob('every 5 minutes', './path/to/jobs/check-emails.js', {}, 'email-checker');
+// register recurring job which needs execution outside of current event loop
+jobManager.addJob({
+    at: 'every 5 minutes', 
+    job: './path/to/jobs/check-emails.js',
+    name: 'email-checker'
+});
 
 // register recurring job with cron syntax running every 5 minutes
-// job needs execution outside parent event loop
+// job needs execution outside of current event loop
 // for cron builder check https://crontab.guru/ (first value is seconds)
-jobManager.scheduleJob('0 1/5 * * * *', './path/to/jobs/check-emails.js', {}, 'email-checker-cron');
+jobManager.addJob({
+    at: '0 1/5 * * * *', 
+    job: './path/to/jobs/check-emails.js', 
+    name: 'email-checker-cron'
+});
 
-// register a job to un immediately
-jobManager.scheduleJob(undefined, './path/to/jobs/check-emails.js', {}, 'email-checker-now');
+// register a job to un immediately running outside of current even loop
+jobManager.addJob({
+    job: './path/to/jobs/check-emails.js', 
+    name: 'email-checker-now'
+});
 ```
 
-For other examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/examples) directory.
+For more examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/examples) directory.
 
 ### Job types and definitions
-
-Job manager's instance accepts a "job" as a parameter in it's `addJob` and `scheduleJob` methods. Both methods should be used based on the nature of jobs they are going to run. 
 
 There are two types of jobs distinguished based on purpose and environment they run in:
 - **"inline"** - job which is run in the same even loop as the caller. Should be used in situations when there is no even loop blocking operations and no need to manage memory leaks in sandboxed way. Sometimes 
 - **"offloaded"** - job which is executed in separate to caller's event loop. For Node >v12 clients it spawns a [Worker thread](https://nodejs.org/dist/latest-v12.x/docs/api/worker_threads.html#worker_threads_new_worker_filename_options), for older Node runtimes it is executed in separate process through [child_process](https://nodejs.org/docs/latest-v10.x/api/child_process.html). Comparing to **inline** jobs, **offloaded** jobs are safer to execute as they are run on a dedicated thread (or process) acting like a sandbox. These jobs also give better utilization of multi-core CPUs. This type of jobs is useful when there are heavy computations needed to be done blocking the event loop or need a sandboxed environment to run in safely. Example jobs would be: statistical information processing, memory intensive computations (e.g. recursive algorithms), processing that requires blocking I/O operations etc.
 
-`addJob` method should be used to add an **inline** function for execution in FIFO queue. The job should not be computationally intensive and should have small amount of asynchronous operations. The developer should always account that the function will be executed on the **same event loop, thread and process as caller's process**.
+Job manager's instance registers jobs through `addJob` method. The `offloaded` parameter controls if the job is **inline** (executed in the same event loop) or is **offloaded** (executed in worker thread/separate process). By default `offloaded` is set to `true` - creates an "offloaded" job.
 
-`scheduleJob` method should be used to register execution of an **offloaded** job - script defined in a separate file. The job can be scheduled to run immediately, in the future, or in recurring manner. 
+When `offloaded: false` parameter is passed into `addJob` method, job manager registers an **inline** function for execution in FIFO queue. The job should not be computationally intensive and should have small amount of asynchronous operations. The developer should always account that the function will be executed on the **same event loop, thread and process as caller's process**. **inline** jobs should be [JavaScript functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) or a path to a module that exports a function as default. Note, at the moment it's not possible to defined scheduled or recurring **inline** job.
 
-### Jobs
+When skipped or `offloaded: true` parameter is passed into `addJob` method, job manager registers execution of an **offloaded** job. The job can be scheduled to run immediately, in the future, or in recurring manner (through `at` parameter). Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/jobs).
 
-Jobs can be defined in multiple ways depending on the method they will be registered with.
-
-Short **inline**, non-blocking, asap executed jobs - should come through `addJob` method. Such jobs should be [JavaScript function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) or a path to a module that exports a function as default.
-
-**Offloaded** job can be registered through `scheduleJob` method. Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/jobs).
 
 ### Offloaded jobs rules of thumb
 To prevent complications around failed job retries and and handling of specific job states here are some rules that should be followed for all scheduled jobs:
