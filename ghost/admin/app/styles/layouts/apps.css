@@ -216,6 +216,15 @@
     align-items: center;
 }
 
+.apps-card-right svg {
+    margin-left: 15px;
+    height: 14px;
+}
+
+.apps-card-right svg path {
+    fill: var(--midgrey);
+}
+
 .apps-configured {
     display: flex;
     align-items: center;
@@ -260,7 +269,7 @@
 .apps-card-meta {
     display: flex;
     flex-direction: column;
-    padding-right: 70px;
+    padding-right: 40px;
 }
 @media (max-width: 500px) {
     .apps-card-meta {
@@ -306,7 +315,7 @@
 }
 @media (min-width: 600px) and (max-width: 1460px) {
     .apps-card-app-desc {
-        padding-right: 80px;
+        padding-right: 24px;
     }
 }
 
