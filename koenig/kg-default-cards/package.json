@@ -26,7 +26,7 @@
     "mocha": "8.2.1",
     "should": "13.2.3",
     "simple-dom": "1.4.0",
-    "sinon": "9.2.2"
+    "sinon": "9.2.3"
   },
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "^2.0.4",
