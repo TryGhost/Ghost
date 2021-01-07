@@ -369,12 +369,12 @@
   dependencies:
     "@tryghost/errors" "^0.2.6"
 
-"@tryghost/admin-api-schema@1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.4.1.tgz#49b257b328c5eab3aba4d0c2f4762fe7aab80dd2"
-  integrity sha512-9QVI/Oy7HcW0qEkgR5hlOSbGFIH7vLsJpThmI1P+NhpaQmSKyCylAzhgnu6xNKCH9N7JHXgxpRtY70a+r7F3Sg==
+"@tryghost/admin-api-schema@1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-1.4.2.tgz#073a6bfbd33953d11cd49fd57e359c3ed9181be7"
+  integrity sha512-5nSKpaENhlBMg7cURP8S7pH6Bh01LvwD8Scd12TEWLU2CG1l2OuRHnD+rtAh1tWv5giVdxlnfqW8CuFXF/y8bA==
   dependencies:
-    "@tryghost/errors" "0.2.5"
+    "@tryghost/errors" "0.2.6"
     bluebird "^3.5.3"
     ghost-ignition "4.2.4"
     lodash "^4.17.11"
@@ -388,14 +388,6 @@
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.3.tgz#3ec27ec188b17c7ec28e61eeb49271681965cb66"
   integrity sha512-t4o5xS8zv0kdRkWJXldk4e0qwwzwk7cMRwX0cl79V29uZbavjNMGSxJihL+shg3+Lfxi7XSV99JlBo7VQy5IEA==
-
-"@tryghost/errors@0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.5.tgz#4ae49130ec60350dca5a66001605a0e9188d87e3"
-  integrity sha512-97ZfqMlFkSQZHHbIq4uGvUc/1otFutgw1pvfPAFXZhEbHqfz6rf2cRToTHtaGLhebKgnzrBIzeVmGwAL63Qxzw==
-  dependencies:
-    ghost-ignition "4.2.4"
-    lodash "4.17.20"
 
 "@tryghost/errors@0.2.6", "@tryghost/errors@^0.2.6":
   version "0.2.6"
