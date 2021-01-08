@@ -6567,10 +6567,10 @@ nconf@0.10.0, nconf@^0.10.0:
     secure-keys "^1.0.0"
     yargs "^3.19.0"
 
-nconf@0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.11.0.tgz#585fb59ec1360b8179361fb7a2dae4f71cd2ebaa"
-  integrity sha512-c4W7QqYF6p5BC7J/eVTOvtUlQgvS5CgbJ11xgjhSr8yyius7km7xgdIYHkFLR4TWY1HjsFkia/3l5OprGqCHvA==
+nconf@0.11.1:
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.11.1.tgz#9eba51b342f16b424d483c97923abec993f84cbf"
+  integrity sha512-2XY+7x3GwkkTnmkEVxsKykg0GUqCAtBZUA87FwbcUSaYBfaGCeVSf+82zap16j93B21J2AhpxrsF57jio36t0w==
   dependencies:
     async "^1.4.0"
     ini "^1.3.0"
