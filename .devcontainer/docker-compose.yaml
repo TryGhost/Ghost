@@ -1,0 +1,11 @@
+version: '3'
+services:
+  ghost:
+    build: .
+    env_file:
+      - ghost.env
+    volumes:
+      - ../:/ghost
+    ports:
+      - '2368:2368'
+    tty: true

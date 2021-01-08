@@ -124,3 +124,6 @@ test/coverage
 /core/built
 /core/server/web/admin/views/*.html
 /core/server/public/ghost.min.css
+
+#Ignore development container config
+/.devcontainer/ghost.env
