@@ -601,6 +601,13 @@
   dependencies:
     unidecode "^0.1.8"
 
+"@tryghost/string@0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.15.tgz#5a0eacc5af7bcd8c4f450a16d32ef75ddd4674a1"
+  integrity sha512-/8G2dGOUe5sq4cxW0iFv6JukqpZXRYhuY+muPqh2DAKTOnc0fRGS5Tomea685r7baj55VVsDitTMLIWihQmpPg==
+  dependencies:
+    unidecode "^0.1.8"
+
 "@tryghost/url-utils@0.6.24":
   version "0.6.24"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.24.tgz#766e2c1f52e83d82a8ee055edd47c8ac7f98fc8e"
