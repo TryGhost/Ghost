@@ -510,6 +510,38 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
+    // Nested paragraphs in blockquote are currently treated as separate blockquotes,
+    // see [here](https://github.com/bustle/mobiledoc-kit/issues/715). When running migrations,
+    // this is not the desired behaviour and will cause the content to lose the previous semantic.
+    function blockquoteWithChildren(node) {
+        if (node.nodeType !== 1 || node.tagName !== 'BLOCKQUOTE' || node.children.length < 1) {
+            return;
+        }
+
+        const html = [];
+        const children = Array.from(node.children);
+
+        children.forEach((child) => {
+            let nextSibling = child.nextSibling;
+            let previousSibling = child.previousSibling;
+
+            // Only add a soft-break for two sequential paragraphs.
+            // Use the innerHTML only in that case, so Mobiledoc's default behaviour
+            // of creating separate blockquotes doesn't apply.
+            if (child.tagName === 'P' && (nextSibling && nextSibling.tagName === 'P')) {
+                html.push(`${child.innerHTML}<br><br>`);
+            } else if (child.tagName === 'P' && (previousSibling && previousSibling.tagName === 'P')) {
+                html.push(child.innerHTML);
+            } else {
+                html.push(child.outerHTML);
+            }
+        });
+
+        node.innerHTML = html.join('').trim();
+
+        return;
+    }
+
     function tableToHtmlCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'TABLE') {
             return;
@@ -528,6 +560,7 @@ export function createParserPlugins(_options = {}) {
     return [
         mixtapeEmbed,
         kgHtmlCardToCard,
+        blockquoteWithChildren,
         brToSoftBreakAtom,
         removeLeadingNewline,
         kgGalleryCardToCard,
