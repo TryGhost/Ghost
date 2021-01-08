@@ -12,7 +12,7 @@
         <LinkTo @route="member" @model={{@member}}  title="Member details" class="gh-list-data gh-members-list-basic">
             <div class="flex items-center">
                 <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
-                <div>
+                <div class="w-80">
                     <h3 class="ma0 pa0 gh-members-list-name {{if (not @member.name) "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
                     {{#if @member.name}}
                         <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
@@ -22,7 +22,7 @@
         </LinkTo>
 
         {{#if (feature "emailAnalytics")}}
-            <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-open-rate middarkgrey f8">
+            <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-open-rate middarkgrey f8 {{if (not @member.name) "gh-members-list-open-rate-noname"}}">
                 {{#if (not (is-empty @member.emailOpenRate))}}
                     <span class="gh-members-list-open-rate-mobile">{{@member.emailOpenRate}}%</span>
                 {{/if}}
@@ -48,7 +48,7 @@
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
             {{#if @member.createdAtUTC}}
                 {{moment-format @member.createdAtUTC "D MMM YYYY"}}
-                <span class="midlightgrey">({{moment-from-now @member.createdAtUTC}})</span>
+                <span class="midlightgrey gh-members-list-subscribed-moment">({{moment-from-now @member.createdAtUTC}})</span>
             {{/if}}
         </LinkTo>
 
