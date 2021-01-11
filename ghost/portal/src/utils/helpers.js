@@ -163,6 +163,10 @@ export const getMemberEmail = ({member}) => {
     return member.email;
 };
 
+export const getFirstpromoterId = ({site}) => {
+    return (site && site.firstpromoter_id);
+};
+
 export const getMemberName = ({member}) => {
     if (!member) {
         return '';
@@ -175,7 +179,15 @@ export const getSupportAddress = ({site}) => {
     return supportAddress || '';
 };
 
-export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta}) => {
+export const getSiteDomain = ({site}) => {
+    try {
+        return (new URL(site.url)).origin;
+    } catch (e) {
+        return site.url.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    }
+};
+
+export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {
         count = (state.popupNotification.count || 0) + 1;

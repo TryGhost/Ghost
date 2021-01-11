@@ -13,6 +13,9 @@ function addRootDiv() {
 }
 
 function getSiteUrl() {
+    /**
+     * @type {HTMLElement}
+     */
     const scriptTag = document.querySelector('script[data-ghost]');
     if (scriptTag) {
         return scriptTag.dataset.ghost;
@@ -21,7 +24,7 @@ function getSiteUrl() {
 }
 
 function handleTokenUrl() {
-    const url = new URL(window.location);
+    const url = new URL(window.location.href);
     if (url.searchParams.get('token')) {
         url.searchParams.delete('token');
         window.history.replaceState({}, document.title, url.href);

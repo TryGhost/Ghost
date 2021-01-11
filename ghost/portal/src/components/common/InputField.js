@@ -134,7 +134,7 @@ function InputField({
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
                 tabIndex={tabindex}
-                maxlength={maxlength}
+                maxLength={maxlength}
                 autoComplete={autocomplete}
                 autoCorrect={autocorrect}
                 autoCapitalize={autocapitalize}

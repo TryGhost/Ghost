@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {capitalize, createPopupNotification, hasPlan, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
+import {capitalize, createPopupNotification, getFirstpromoterId, getSiteDomain, hasPlan, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -146,7 +146,6 @@ export default class App extends React.Component {
         const {site: linkSiteData, ...restLinkData} = this.fetchLinkData();
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
-
         let page = '';
 
         return {
@@ -270,12 +269,49 @@ export default class App extends React.Component {
             const {siteUrl} = this.props;
             this.GhostApi = setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
+            this.setupFirstPromoter({site, member});
             return {site, member};
         } catch (e) {
             if (hasMode(['dev', 'test'])) {
                 return {};
             }
             throw e;
+        }
+    }
+
+    setupFirstPromoter({site, member}) {
+        const firstPromoterId = getFirstpromoterId({site});
+        const siteDomain = getSiteDomain({site});
+        if (firstPromoterId && siteDomain) {
+            const t = document.createElement('script');
+            t.type = 'text/javascript';
+            t.async = !0;
+            t.src = 'https://cdn.firstpromoter.com/fprom.js';
+            t.onload = t.onreadystatechange = function () {
+                let _t = this.readyState;
+                if (!_t || 'complete' === _t || 'loaded' === _t) {
+                    try {
+                        window.$FPROM.init(firstPromoterId, siteDomain);
+                        if (member) {
+                            const email = member.email;
+                            const uid = member.uuid;
+                            if (window.$FPROM) {
+                                window.$FPROM.trackSignup({email: email, uid: uid});
+                            } else {
+                                const _fprom = window._fprom || [];
+                                window._fprom = _fprom;
+                                _fprom.push(['event', 'signup']);
+                                _fprom.push(['email', email]);
+                                _fprom.push(['uid', uid]);
+                            }
+                        }
+                    } catch (err) {
+                        // Log FP tracking failure
+                    }
+                }
+            };
+            const e = document.getElementsByTagName('script')[0];
+            e.parentNode.insertBefore(t, e);
         }
     }
 
@@ -337,7 +373,7 @@ export default class App extends React.Component {
 
     /**Fetch Stripe param from site url after redirect from Stripe page*/
     getStripeUrlParam() {
-        const url = new URL(window.location);
+        const url = new URL(window.location.href);
         return (url.searchParams.get('stripe') || url.searchParams.get('portal-stripe'));
     }
 
