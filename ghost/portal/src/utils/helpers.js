@@ -4,7 +4,7 @@ export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
     if (path && linkRegex.test(path)) {
-        window.location.hash = '';
+        window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
 }
 
