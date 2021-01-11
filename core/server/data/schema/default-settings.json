@@ -376,6 +376,24 @@
             "type": "string"
         }
     },
+    "firstpromoter": {
+        "firstpromoter": {
+            "defaultValue": "false",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        },
+        "firstpromoter_id": {
+            "defaultValue": null,
+            "type": "string"
+        }
+    },
     "labs": {
         "labs": {
             "defaultValue": "{}",
