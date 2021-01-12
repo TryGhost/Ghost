@@ -37,7 +37,7 @@
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/string": "0.1.14",
     "@tryghost/timezone-data": "0.2.33",
-    "autoprefixer": "10.1.0",
+    "autoprefixer": "10.2.1",
     "babel-eslint": "10.1.0",
     "blueimp-md5": "2.18.0",
     "broccoli-asset-rev": "3.0.0",
