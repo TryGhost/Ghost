@@ -443,10 +443,10 @@
     fastq "1.10.0"
     p-wait-for "3.2.0"
 
-"@tryghost/kg-card-factory@2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-2.1.4.tgz#dafa199c848d3e8f6405e2fa1d323df235fa2093"
-  integrity sha512-xpEGB7wrHrnGasxMI5E8e4n4kppSzRXiNxFNxOI/T9uvXPI1tvZDI6grtml1KECA+Xtx/62yskuZQD2jQc8ung==
+"@tryghost/kg-card-factory@2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-2.1.5.tgz#1ceb953f7fb46424b46d6d5a7ffbe965bf57cc3c"
+  integrity sha512-lpr/eqvnsDrRp39v7p1j3Ehc6C9AD9ya84rmpi5/Cw5YrHjAT3EQsJ3Em0dSoGOH4dSYDHRNeu3lCg3r+a2QdQ==
 
 "@tryghost/kg-clean-basic-html@^1.0.10":
   version "1.0.10"
