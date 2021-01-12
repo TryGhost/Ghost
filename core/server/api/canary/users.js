@@ -1,10 +1,9 @@
-const path = require('path');
 const Promise = require('bluebird');
 const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
-const dbBackup = require('../../data/db/backup');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
+const {destroyUser} = require('../../services/users');
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
 
@@ -148,33 +147,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            const backupPath = await dbBackup.backup();
-            const parsedFileName = path.parse(backupPath);
-            const filename = `${parsedFileName.name}${parsedFileName.ext}`;
-
-            return models.Base.transaction((t) => {
-                frame.options.transacting = t;
-
-                return models.Post.destroyByAuthor(frame.options)
-                    .then(() => {
-                        return models.ApiKey.destroy({
-                            ...frame.options,
-                            require: true,
-                            destroyBy: {
-                                user_id: frame.options.id
-                            }
-                        }).catch((err) => {
-                            if (err instanceof models.ApiKey.NotFoundError) {
-                                return; //Do nothing here as it's ok
-                            }
-                            throw err;
-                        });
-                    })
-                    .then(() => {
-                        return models.User.destroy(Object.assign({status: 'all'}, frame.options));
-                    })
-                    .then(() => filename);
-            }).catch((err) => {
+            return destroyUser(frame.options).catch((err) => {
                 return Promise.reject(new errors.NoPermissionError({
                     err: err
                 }));
