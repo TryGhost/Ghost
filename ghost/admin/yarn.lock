@@ -6279,16 +6279,16 @@ ember-in-element-polyfill@^1.0.0:
     ember-cli-htmlbars "^4.3.1"
     ember-cli-version-checker "^5.0.2"
 
-ember-in-viewport@3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.8.0.tgz#acafd8ecc3928d26b4fe26d9eab19fe722da496c"
-  integrity sha512-GaUdIA83EwyGaZieN8TGN8Z/fjaz7hSeZhZdaRVz6qXe7SohzwekwpM9wJZkxzVTqStoArGMfZTXhOigP3k9Zg==
+ember-in-viewport@3.8.1:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.8.1.tgz#fd8305366d425c3912def49210e63fd582a7e60d"
+  integrity sha512-abzKIa7FiOBz3fLkZ3ZSgxJQf5enGe1IdrLdjfo5HjdyWTq9j+B0lzuZCoOYUuWdoiTiXvT3gDFNqQ5j7ky2kw==
   dependencies:
     ember-auto-import "^1.6.0"
     ember-cli-babel "^7.22.1"
     ember-modifier "^2.1.0"
     fast-deep-equal "^2.0.1"
-    intersection-observer-admin "~0.2.12"
+    intersection-observer-admin "~0.2.13"
     raf-pool "~0.1.4"
 
 ember-in-viewport@~3.7.2:
@@ -8797,7 +8797,7 @@ interpret@~1.1.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-1.1.0.tgz#7ed1b1410c6a0e0f78cf95d3b8440c63f78b8614"
   integrity sha1-ftGxQQxqDg94z5XTuEQMY/eLhhQ=
 
-intersection-observer-admin@~0.2.12:
+intersection-observer-admin@~0.2.12, intersection-observer-admin@~0.2.13:
   version "0.2.13"
   resolved "https://registry.yarnpkg.com/intersection-observer-admin/-/intersection-observer-admin-0.2.13.tgz#00a021695bf5aef8d198204514d2f849fd27d089"
   integrity sha512-REIM59IHXPe9U5eTnowurzzfhgqVkSImZJnOSJZTAJ0LnyJqw8S/eD5s8ZYneQfm9JszhGIBwudF9gF02A3BpQ==
