@@ -109,18 +109,6 @@ class EmailAnalyticsEventProcessor {
                     failed_at: this.db.knex.raw('COALESCE(failed_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
                 });
 
-            // saving via bookshelf triggers label fetch/update which errors and slows down processing
-            await this.db.knex('members')
-                .where('id', '=', this.db.knex('email_recipients')
-                    .select('member_id')
-                    .where('email_id', '=', emailId)
-                    .where('member_email', '=', event.recipientEmail)
-                )
-                .update({
-                    subscribed: false,
-                    updated_at: moment.utc().toDate()
-                });
-
             return {
                 failed: 1,
                 emailIds: [emailId]
