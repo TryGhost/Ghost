@@ -62,7 +62,7 @@ jobManager.addJob({
 });
 ```
 
-For more examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/examples) directory.
+For more examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Utils/tree/master/packages/job-manager/test/examples) directory.
 
 ### Job types and definitions
 
@@ -74,7 +74,7 @@ Job manager's instance registers jobs through `addJob` method. The `offloaded` p
 
 When `offloaded: false` parameter is passed into `addJob` method, job manager registers an **inline** function for execution in FIFO queue. The job should not be computationally intensive and should have small amount of asynchronous operations. The developer should always account that the function will be executed on the **same event loop, thread and process as caller's process**. **inline** jobs should be [JavaScript functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) or a path to a module that exports a function as default. Note, at the moment it's not possible to defined scheduled or recurring **inline** job.
 
-When skipped or `offloaded: true` parameter is passed into `addJob` method, job manager registers execution of an **offloaded** job. The job can be scheduled to run immediately, in the future, or in recurring manner (through `at` parameter). Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Ghost-Utils/tree/master/packages/job-manager/test/jobs).
+When skipped or `offloaded: true` parameter is passed into `addJob` method, job manager registers execution of an **offloaded** job. The job can be scheduled to run immediately, in the future, or in recurring manner (through `at` parameter). Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Utils/tree/master/packages/job-manager/test/jobs).
 
 
 ### Offloaded jobs rules of thumb
@@ -88,8 +88,8 @@ To prevent complications around failed job retries and and handling of specific 
 
 Offloaded jobs are running on dedicated worker threads which makes their lifecycle a bit different to inline jobs:
 1. When **starting** a job it's only sharing ENV variables with it's parent process. The job itself is run on an independent JavaScript execution thread. The script has to re-initialize any modules it will use. For example it should take care of: model layer initialization, cache initialization, etc.
-2. When **finishing** work in a job prefer to signal successful termination by sending 'done' message to the parent thread: `parentPort.postMessage('done')` ([example use](https://github.com/TryGhost/Ghost-Utils/blob/0e423f6c5c69b08d81d470f49de95654d8cc90e3/packages/job-manager/test/jobs/graceful.js#L33-L37)). Finishing work this way terminates the thread through [worker.terminate()]((https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_worker_terminate)), which logs termination in parent process and flushes any pipes opened in thread.
-3. Jobs that have iterative nature, or need cleanup before interrupting work should allow for **graceful shutdown** by listening on `'cancel'` message coming from parent thread ([example use](https://github.com/TryGhost/Ghost-Utils/blob/0e423f6c5c69b08d81d470f49de95654d8cc90e3/packages/job-manager/test/jobs/graceful.js#L12-L16)).
+2. When **finishing** work in a job prefer to signal successful termination by sending 'done' message to the parent thread: `parentPort.postMessage('done')` ([example use](https://github.com/TryGhost/Utils/blob/0e423f6c5c69b08d81d470f49de95654d8cc90e3/packages/job-manager/test/jobs/graceful.js#L33-L37)). Finishing work this way terminates the thread through [worker.terminate()]((https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_worker_terminate)), which logs termination in parent process and flushes any pipes opened in thread.
+3. Jobs that have iterative nature, or need cleanup before interrupting work should allow for **graceful shutdown** by listening on `'cancel'` message coming from parent thread ([example use](https://github.com/TryGhost/Utils/blob/0e423f6c5c69b08d81d470f49de95654d8cc90e3/packages/job-manager/test/jobs/graceful.js#L12-L16)).
 4. When **exceptions** happen and expected outcome is to terminate current job, leave the exception unhandled allowing it to bubble up to the job manager. Unhandled exceptions [terminate current thread](https://nodejs.org/dist/latest-v14.x/docs/api/worker_threads.html#worker_threads_event_error) and allow for next scheduled job execution to happen.
 
 For more nuances on job structure best practices check [bree documentation](https://github.com/breejs/bree#writing-jobs-with-promises-and-async-await).

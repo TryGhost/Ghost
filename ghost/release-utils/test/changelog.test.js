@@ -15,7 +15,7 @@ describe('Changelog', function () {
 
         changelog
             .write({
-                githubRepoPath: `https://github.com/TryGhost/Ghost-Utils`,
+                githubRepoPath: `https://github.com/TryGhost/Utils`,
                 lastVersion: '@tryghost/release-utils@0.6.3'
             })
             .sort()
