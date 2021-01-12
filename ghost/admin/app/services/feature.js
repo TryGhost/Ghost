@@ -126,11 +126,9 @@ export default Service.extend({
 
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
-            $('link[title=light]').prop('disabled', nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
-            $('link[title=light]').prop('disabled', false);
         });
     }
 });
