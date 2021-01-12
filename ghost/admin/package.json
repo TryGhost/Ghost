@@ -35,7 +35,7 @@
     "@tryghost/kg-parser-plugins": "1.1.0",
     "@tryghost/members-csv": "0.4.1",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
-    "@tryghost/string": "0.1.15",
+    "@tryghost/string": "0.1.16",
     "@tryghost/timezone-data": "0.2.34",
     "autoprefixer": "10.2.1",
     "babel-eslint": "10.1.0",
