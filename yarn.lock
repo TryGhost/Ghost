@@ -568,10 +568,10 @@
   dependencies:
     bluebird "3.7.2"
 
-"@tryghost/security@0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.3.tgz#538daca7338275aaa53c82286fc804a3dabfc6b3"
-  integrity sha512-RYv6/H2O6DoGefJFhysZx3ZCjfXZxCz7C4sl+mLs9mk1MPQA/sqU28vVWMOI1Z1sHCfUnHF/T0SUrDGm2A/4Nw==
+"@tryghost/security@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.4.tgz#e5400f7034d697b3397573b825883fb81c135224"
+  integrity sha512-g0EJd6r5fVHqpD6Ihz/l8qQFV1QQ6WionOMOZQDzk3I7Xy/2GyX+yx0ejimxN0zYafX64A60jLPxjyXYMk3TrA==
   dependencies:
     "@tryghost/string" "0.1.14"
     bcryptjs "2.4.3"
