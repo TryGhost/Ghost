@@ -3,6 +3,12 @@ const Promise = require('bluebird');
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 class MembersStats {
+    /**
+     * @param {Object} config
+     * @param {Object} config.db - an instance holding knex connection to the database
+     * @param {Object} config.settingsCache - an instance of the Ghost Settings Cache
+     * @param {Boolean} config.isSQLite - flag identifying if storage is connected to SQLite
+     */
     constructor({db, settingsCache, isSQLite}) {
         this._db = db;
         this._settingsCache = settingsCache;
