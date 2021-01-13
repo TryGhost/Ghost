@@ -93,7 +93,9 @@ const membersService = {
 
     stripeConnect: require('./stripe-connect'),
 
-    importer: new MembersCSVImporter({storagePath: config.getContentPath('data')}, settingsCache, () => membersApi)
+    importer: new MembersCSVImporter({storagePath: config.getContentPath('data')}, settingsCache, () => membersApi),
+
+    stats: require('./stats')
 };
 
 module.exports = membersService;
