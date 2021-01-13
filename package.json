@@ -65,7 +65,7 @@
     "@tryghost/session-service": "0.1.14",
     "@tryghost/social-urls": "0.1.17",
     "@tryghost/string": "0.1.15",
-    "@tryghost/url-utils": "0.6.24",
+    "@tryghost/url-utils": "0.6.25",
     "@tryghost/vhost-middleware": "1.0.11",
     "@tryghost/zip": "1.1.8",
     "ajv": "6.12.6",
