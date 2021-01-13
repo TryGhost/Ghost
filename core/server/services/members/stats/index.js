@@ -1,37 +1,66 @@
 const moment = require('moment-timezone');
 const Promise = require('bluebird');
-const db = require('../../../data/db');
 
-const stats = async ({siteTimezone, days, isSQLite}) => {
-    const dateFormat = 'YYYY-MM-DD HH:mm:ss';
-    const tzOffsetMins = moment.tz(siteTimezone).utcOffset();
-
-    // get total members before other stats because the figure is used multiple times
-    async function getTotalMembers() {
-        const result = await db.knex.raw('SELECT COUNT(id) AS total FROM members');
-        return isSQLite ? result[0].total : result[0][0].total;
+const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+class MembersStats {
+    constructor({db, settingsCache, isSQLite}) {
+        this._db = db;
+        this._settingsCache = settingsCache;
+        this._isSQLite = isSQLite;
     }
-    const totalMembers = await getTotalMembers();
 
-    async function getTotalMembersInRange() {
+    /**
+     * Fetches count of all members
+     */
+    async getTotalMembers() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM members');
+        return this._isSQLite ? result[0].total : result[0][0].total;
+    }
+
+    /**
+     *
+     * @param {Number | String} days  - number of days to fetch of 'all-time' to get for all existing records
+     * @param {Number} totalMembers - number of registered members
+     * @param {String} siteTimezone - site's current timezone
+     */
+    async getTotalMembersInRange({days, totalMembers, siteTimezone}) {
         if (days === 'all-time') {
             return totalMembers;
         }
 
         const startOfRange = moment.tz(siteTimezone).subtract(days - 1, 'days').startOf('day').utc().format(dateFormat);
-        const result = await db.knex.raw('SELECT COUNT(id) AS total FROM members WHERE created_at >= ?', [startOfRange]);
-        return isSQLite ? result[0].total : result[0][0].total;
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM members WHERE created_at >= ?', [startOfRange]);
+        return this._isSQLite ? result[0].total : result[0][0].total;
     }
 
-    async function getTotalMembersOnDatesInRange() {
+    /**
+     * Fetches member signups for current day
+     *
+     * @param {String} siteTimezone - site's current timezone
+     */
+    async getNewMembersToday({siteTimezone}) {
+        const startOfToday = moment.tz(siteTimezone).startOf('day').utc().format(dateFormat);
+        const result = await this._db.knex.raw('SELECT count(id) AS total FROM members WHERE created_at >= ?', [startOfToday]);
+        return this._isSQLite ? result[0].total : result[0][0].total;
+    }
+
+    /**
+     *
+     * @param {Number | String} days  - number of days to fetch of 'all-time' to get for all existing records
+     * @param {Number} totalMembers - number of registered members
+     * @param {String} siteTimezone - site's current timezone
+     */
+    async getTotalMembersOnDatesInRange({days, totalMembers, siteTimezone}) {
         const startOfRange = moment.tz(siteTimezone).subtract(days - 1, 'days').startOf('day').utc().format(dateFormat);
+        const tzOffsetMins = moment.tz(siteTimezone).utcOffset();
+
         let result;
 
-        if (isSQLite) {
+        if (this._isSQLite) {
             const dateModifier = `${Math.sign(tzOffsetMins) === -1 ? '' : '+'}${tzOffsetMins} minutes`;
 
-            result = await db.knex('members')
-                .select(db.knex.raw('DATE(created_at, ?) AS created_at, COUNT(DATE(created_at, ?)) AS count', [dateModifier, dateModifier]))
+            result = await this._db.knex('members')
+                .select(this._db.knex.raw('DATE(created_at, ?) AS created_at, COUNT(DATE(created_at, ?)) AS count', [dateModifier, dateModifier]))
                 .where((builder) => {
                     if (days !== 'all-time') {
                         builder.whereRaw('created_at >= ?', [startOfRange]);
@@ -42,8 +71,8 @@ const stats = async ({siteTimezone, days, isSQLite}) => {
             const hours = (Math.abs(tzOffsetMins) - mins) / 60;
             const utcOffset = `${Math.sign(tzOffsetMins) === -1 ? '-' : '+'}${hours}:${mins < 10 ? '0' : ''}${mins}`;
 
-            result = await db.knex('members')
-                .select(db.knex.raw('DATE(CONVERT_TZ(created_at, \'+00:00\', ?)) AS created_at, COUNT(CONVERT_TZ(created_at, \'+00:00\', ?)) AS count', [utcOffset, utcOffset]))
+            result = await this._db.knex('members')
+                .select(this._db.knex.raw('DATE(CONVERT_TZ(created_at, \'+00:00\', ?)) AS created_at, COUNT(CONVERT_TZ(created_at, \'+00:00\', ?)) AS count', [utcOffset, utcOffset]))
                 .where((builder) => {
                     if (days !== 'all-time') {
                         builder.whereRaw('created_at >= ?', [startOfRange]);
@@ -86,21 +115,25 @@ const stats = async ({siteTimezone, days, isSQLite}) => {
         return output;
     }
 
-    async function getNewMembersToday() {
-        const startOfToday = moment.tz(siteTimezone).startOf('day').utc().format(dateFormat);
-        const result = await db.knex.raw('SELECT count(id) AS total FROM members WHERE created_at >= ?', [startOfToday]);
-        return isSQLite ? result[0].total : result[0][0].total;
+    /**
+     * Fetches member's signup statistics
+     *
+     * @param {Number | String} days  - number of days to fetch of 'all-time' to get for all existing records
+     */
+    async fetch(days) {
+        const siteTimezone = this._settingsCache.get('timezone');
+        const totalMembers = await this.getTotalMembers();
+
+        // perform final calculations in parallel
+        const results = await Promise.props({
+            total: totalMembers,
+            total_in_range: this.getTotalMembersInRange({days, totalMembers, siteTimezone}),
+            total_on_date: this.getTotalMembersOnDatesInRange({days, totalMembers, siteTimezone}),
+            new_today: this.getNewMembersToday({siteTimezone})
+        });
+
+        return results;
     }
+}
 
-    // perform final calculations in parallel
-    const results = await Promise.props({
-        total: totalMembers,
-        total_in_range: getTotalMembersInRange(),
-        total_on_date: getTotalMembersOnDatesInRange(),
-        new_today: getNewMembersToday()
-    });
-
-    return results;
-};
-
-module.exports = stats;
+module.exports = MembersStats;

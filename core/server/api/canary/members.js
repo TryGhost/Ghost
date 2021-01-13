@@ -4,7 +4,6 @@ const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const GhostMailer = require('../../services/mail').GhostMailer;
-const config = require('../../../shared/config');
 const models = require('../../models');
 const membersService = require('../../services/members');
 const jobsService = require('../../services/jobs');
@@ -417,15 +416,9 @@ module.exports = {
             }
         },
         async query(frame) {
-            const siteTimezone = settingsCache.get('timezone');
             const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);
-            const isSQLite = config.get('database:client') === 'sqlite3';
 
-            return await membersService.stats({
-                siteTimezone,
-                days,
-                isSQLite
-            });
+            return await membersService.stats.fetch(days);
         }
     }
 };
