@@ -1551,6 +1551,16 @@ bunyan@1.8.14:
     mv "~2"
     safe-json-stringify "~1"
 
+bunyan@1.8.15:
+  version "1.8.15"
+  resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.15.tgz#8ce34ca908a17d0776576ca1b2f6cbd916e93b46"
+  integrity sha512-0tECWShh6wUysgucJcBAoYegf3JJoZWibxdqhTm7OHPeT42qdjkZ29QCMcKwbgU1kiH+auSIasNRXMLWXafXig==
+  optionalDependencies:
+    dtrace-provider "~0.8"
+    moment "^2.19.3"
+    mv "~2"
+    safe-json-stringify "~1"
+
 busboy@^0.2.11:
   version "0.2.14"
   resolved "https://registry.yarnpkg.com/busboy/-/busboy-0.2.14.tgz#6c2a622efcf47c57bbbe1e2a9c37ad36c7925453"
@@ -2517,19 +2527,19 @@ debug@4.2.0:
   dependencies:
     ms "2.1.2"
 
+debug@4.3.1, debug@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.1.tgz#f0d229c505e0c6d8c49ac553d1b13dc183f6b2ee"
+  integrity sha512-doEwdvm4PCeK4K3RQN2ZC2BYUBaxwLARCqZmMjtF8a51J2Rb0xpVloFRnCODwqjpwnAoao4pelN8l3RJdv3gRQ==
+  dependencies:
+    ms "2.1.2"
+
 debug@^3.1.0, debug@^3.2.6:
   version "3.2.6"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.2.6.tgz#e83d17de16d8a7efb7717edbe5fb10135eee629b"
   integrity sha512-mel+jf7nrtEl5Pn1Qx46zARXKDpBbvzezse7p7LqINmdoIk8PYP5SySaxEmYv6TZ0JyEKA1hsCId6DIhgITtWQ==
   dependencies:
     ms "^2.1.1"
-
-debug@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.1.tgz#f0d229c505e0c6d8c49ac553d1b13dc183f6b2ee"
-  integrity sha512-doEwdvm4PCeK4K3RQN2ZC2BYUBaxwLARCqZmMjtF8a51J2Rb0xpVloFRnCODwqjpwnAoao4pelN8l3RJdv3gRQ==
-  dependencies:
-    ms "2.1.2"
 
 decamelize@^1.1.1, decamelize@^1.2.0:
   version "1.2.0"
@@ -4032,6 +4042,25 @@ ghost-ignition@4.2.4:
     nconf "0.10.0"
     prettyjson "1.2.1"
     uuid "8.3.1"
+
+ghost-ignition@4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.3.0.tgz#2e63f188c9170590864930c7af2ebab0b51f9185"
+  integrity sha512-JpLPGWv+QJjailBrGyW72DXVCRckEpIMRJTI4pvfrt5ljnOiWlWrQADTdpO7D78ba1dW/pG5F2v8f7F/sKpv8Q==
+  dependencies:
+    bunyan "1.8.15"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.3.1"
+    find-root "1.1.0"
+    fs-extra "9.0.1"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.20"
+    moment "2.27.0"
+    nconf "0.10.0"
+    prettyjson "1.2.1"
+    uuid "8.3.2"
 
 ghost-ignition@^2.9.6:
   version "2.9.6"
