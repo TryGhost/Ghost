@@ -10,7 +10,7 @@ module.exports = {
         query(frame) {
             return notifications.browse({
                 user: {
-                    id: frame.user.id
+                    id: frame.user && frame.user.id
                 }
             });
         }
@@ -57,7 +57,7 @@ module.exports = {
             const allNotifications = notifications.destroy({
                 notificationId: frame.options.notification_id,
                 user: {
-                    id: frame.user.id
+                    id: frame.user && frame.user.id
                 }
             });
 
