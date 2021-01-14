@@ -1,4 +1,4 @@
-const notifications = require('../../services/notifications/notifications');
+const {notifications} = require('../../services/notifications');
 const api = require('./index');
 const internalContext = {context: {internal: true}};
 
