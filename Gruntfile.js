@@ -219,7 +219,7 @@ const configureGrunt = function (grunt) {
                     const upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                     grunt.log.writeln('Pulling down the latest master from ' + upstream);
                     return `
-                        git submodule sync
+                        git submodule sync && \
                         git submodule update
 
                         if ! git diff --exit-code --quiet --ignore-submodules=untracked; then
@@ -227,11 +227,16 @@ const configureGrunt = function (grunt) {
                             exit 1
                         fi
 
-                        git checkout master
-                        git pull ${upstream} master
-                        yarn
+                        REMOTE=$(git remote | grep "${upstream}" > /dev/null && echo "${upstream}" || echo "origin")
+
+                        git checkout master && \
+                        git pull $REMOTE master && \
+                        yarn && \
                         git submodule foreach "
-                            git checkout master && git pull ${upstream} master
+                            git checkout master
+
+                            REMOTE=$(git remote | grep "${upstream}" > /dev/null && echo "${upstream}" || echo "origin")
+                            git pull $REMOTE master
                         "
                     `;
                 }
