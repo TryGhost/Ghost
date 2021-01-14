@@ -11,12 +11,12 @@ const packageInfo = require('../../../package.json');
 const api = require('../../../core/server/api').v2;
 
 let updateCheck = rewire('../../../core/server/update-check');
-let NotificationsAPI = rewire('../../../core/server/api/v2/notifications');
+let ghostVersion = rewire('../../../core/server/lib/ghost-version');
 
 describe('Update Check', function () {
     beforeEach(function () {
         updateCheck = rewire('../../../core/server/update-check');
-        NotificationsAPI = rewire('../../../core/server/api/v2/notifications');
+        ghostVersion = rewire('../../../core/server/lib/ghost-version');
     });
 
     afterEach(function () {
@@ -145,14 +145,19 @@ describe('Update Check', function () {
 
     describe('fn: createCustomNotification', function () {
         let currentVersionOrig;
+        let currentVersionFull;
 
         before(function () {
             currentVersionOrig = updateCheck.__get__('ghostVersion.original');
-            updateCheck.__set__('ghostVersion.original', '0.9.0');
+            currentVersionFull = updateCheck.__get__('ghostVersion.original');
+
+            ghostVersion.__set__('original', '0.9.0');
+            ghostVersion.__set__('full', '0.9.0');
         });
 
         after(function () {
-            updateCheck.__set__('ghostVersion.original', currentVersionOrig);
+            ghostVersion.__set__('original', currentVersionOrig);
+            ghostVersion.__set__('full', currentVersionFull);
         });
 
         beforeEach(testUtils.teardownDb);
@@ -170,14 +175,12 @@ describe('Update Check', function () {
                 custom: 0,
                 messages: [{
                     id: uuid.v4(),
-                    version: '0.9.x',
-                    content: '<p>Hey there! This is for 0.9.0 version</p>',
+                    version: '999.9.x',
+                    content: '<p>Hey there! This is for 999.9.0 version</p>',
                     dismissible: true,
                     top: true
                 }]
             };
-
-            NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
             createCustomNotification(notification).then(function () {
                 return api.notifications.browse(testUtils.context.internal);
@@ -213,7 +216,6 @@ describe('Update Check', function () {
                 }]
             };
 
-            NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
             createCustomNotification(notification).then(function () {
                 return api.notifications.browse(testUtils.context.internal);
@@ -239,8 +241,6 @@ describe('Update Check', function () {
                     top: true
                 }]
             };
-
-            NotificationsAPI.__set__('ghostVersion.full', '0.8');
 
             createCustomNotification(notification).then(function () {
                 return api.notifications.browse(testUtils.context.internal);
