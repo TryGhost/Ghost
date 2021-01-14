@@ -216,7 +216,6 @@ describe('Update Check', function () {
                 }]
             };
 
-
             createCustomNotification(notification).then(function () {
                 return api.notifications.browse(testUtils.context.internal);
             }).then(function (results) {
