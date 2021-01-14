@@ -3,14 +3,12 @@
 const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
-const GhostMailer = require('../../services/mail').GhostMailer;
 const models = require('../../models');
 const membersService = require('../../services/members');
-const jobsService = require('../../services/jobs');
+
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
 
-const ghostMailer = new GhostMailer();
 const allowedIncludes = ['email_recipients'];
 
 module.exports = {
@@ -351,53 +349,17 @@ module.exports = {
             const globalLabels = [importLabel].concat(frame.data.labels);
             const pathToCSV = frame.file.path;
             const headerMapping = frame.data.mapping;
-            const job = await membersService.importer.prepare(pathToCSV, headerMapping, globalLabels, {
-                createdBy: frame.user.id
+
+            return membersService.importer.process({
+                pathToCSV,
+                headerMapping,
+                globalLabels,
+                importLabel,
+                LabelModel: models.Label,
+                user: {
+                    email: frame.user.get('email')
+                }
             });
-
-            if (job.batches <= 500 && !job.metadata.hasStripeData) {
-                const result = await membersService.importer.perform(job.id);
-                const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
-                return {
-                    meta: {
-                        stats: {
-                            imported: result.imported,
-                            invalid: result.errors
-                        },
-                        import_label: importLabelModel
-                    }
-                };
-            } else {
-                const emailRecipient = frame.user.get('email');
-                jobsService.addJob({
-                    job: async () => {
-                        const result = await membersService.importer.perform(job.id);
-                        const importLabelModel = result.imported ? await models.Label.findOne(importLabel) : null;
-                        const emailContent = membersService.importer.generateCompletionEmail(result, {
-                            emailRecipient,
-                            importLabel: importLabelModel ? importLabelModel.toJSON() : null
-                        });
-                        const errorCSV = membersService.importer.generateErrorCSV(result);
-                        const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
-
-                        await ghostMailer.send({
-                            to: emailRecipient,
-                            subject: emailSubject,
-                            html: emailContent,
-                            forceTextContent: true,
-                            attachments: [{
-                                filename: `${importLabel.name} - Errors.csv`,
-                                contents: errorCSV,
-                                contentType: 'text/csv',
-                                contentDisposition: 'attachment'
-                            }]
-                        });
-                    },
-                    offloaded: false
-                });
-
-                return {};
-            }
         }
     },
 
