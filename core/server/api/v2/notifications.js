@@ -30,15 +30,17 @@ module.exports = {
                 notifications: frame.data.notifications
             });
 
-            return api.settings.edit({
-                settings: [{
-                    key: 'notifications',
-                    // @NOTE: We always need to store all notifications!
-                    value: allNotifications.concat(notificationsToAdd)
-                }]
-            }, internalContext).then(() => {
-                return notificationsToAdd;
-            });
+            if (notificationsToAdd.length){
+                return api.settings.edit({
+                    settings: [{
+                        key: 'notifications',
+                        // @NOTE: We always need to store all notifications!
+                        value: allNotifications.concat(notificationsToAdd)
+                    }]
+                }, internalContext).then(() => {
+                    return notificationsToAdd;
+                });
+            }
         }
     },
 

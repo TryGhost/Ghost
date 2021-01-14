@@ -107,7 +107,7 @@ class Notifications {
 
         // CASE: nothing to add, skip
         if (!notificationsToAdd.length) {
-            return Promise.resolve();
+            return {allNotifications, notificationsToAdd};
         }
 
         const releaseNotificationsToAdd = notificationsToAdd.filter((notification) => {
