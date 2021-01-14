@@ -5426,10 +5426,10 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jsonpath@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/jsonpath/-/jsonpath-1.0.2.tgz#e6aae681d03e9a77b4651d5d96eac5fc63b1fd13"
-  integrity sha512-rmzlgFZiQPc6q4HDyK8s9Qb4oxBnI5sF61y/Co5PV0lc3q2bIuRsNdueVbhoSHdKM4fxeimphOAtfz47yjCfeA==
+jsonpath@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/jsonpath/-/jsonpath-1.1.0.tgz#ff3e9e4746eae77c11bc09d542e7219333c28055"
+  integrity sha512-CZHwa1sZOf42qkIyK7evwToFXeTB4iplbl6Z9CVwU0wmBQPffL6gtYJXCoeciJoZENMuzaidPjhp2iOLRei4wQ==
   dependencies:
     esprima "1.2.2"
     static-eval "2.0.2"
