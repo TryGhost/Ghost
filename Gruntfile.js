@@ -227,16 +227,23 @@ const configureGrunt = function (grunt) {
                             exit 1
                         fi
 
-                        REMOTE=$(git remote | grep "${upstream}" > /dev/null && echo "${upstream}" || echo "origin")
+                        git checkout master
 
-                        git checkout master && \
-                        git pull $REMOTE master && \
+                        if git config remote.${upstream}.url > /dev/null; then
+                            git pull ${upstream} master
+                        else
+                            git pull origin master
+                        fi
+
                         yarn && \
                         git submodule foreach "
                             git checkout master
 
-                            REMOTE=$(git remote | grep "${upstream}" > /dev/null && echo "${upstream}" || echo "origin")
-                            git pull $REMOTE master
+                            if git config remote.${upstream}.url > /dev/null; then
+                                git pull ${upstream} master
+                            else
+                                git pull origin master
+                            fi
                         "
                     `;
                 }
