@@ -3,10 +3,13 @@ const moment = require('moment-timezone');
 const path = require('path');
 const fs = require('fs-extra');
 const membersCSV = require('@tryghost/members-csv');
+const GhostMailer = require('../../mail').GhostMailer;
 const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
+const jobsService = require('../../jobs');
 
+const ghostMailer = new GhostMailer();
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} config
@@ -208,5 +211,66 @@ module.exports = class MembersCSVImporter {
             };
         });
         return membersCSV.unparse(errorsWithFormattedMessages);
+    }
+
+    /**
+     * Processes CSV file and imports member&label records depending on the size of the imported set
+     *
+     * @param {Object} config
+     * @param {String} config.pathToCSV - path where imported csv with members records is stored
+     * @param {Object} config.headerMapping - mapping of CSV headers to member record fields
+     * @param {Object} [config.globalLabels] - labels to be applied to whole imported members set
+     * @param {Object} config.importLabel -
+     * @param {String} config.importLabel.name - label name
+     * @param {Object} config.user
+     * @param {String} config.user.email - calling user email
+     * @param {Object} config.LabelModel - instance of Ghosts Label model
+     */
+    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel}) {
+        const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
+
+        if (job.batches <= 500 && !job.metadata.hasStripeData) {
+            const result = await this.perform(job.id);
+            const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
+            return {
+                meta: {
+                    stats: {
+                        imported: result.imported,
+                        invalid: result.errors
+                    },
+                    import_label: importLabelModel
+                }
+            };
+        } else {
+            const emailRecipient = user.email;
+            jobsService.addJob({
+                job: async () => {
+                    const result = await this.perform(job.id);
+                    const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
+                    const emailContent = this.generateCompletionEmail(result, {
+                        emailRecipient,
+                        importLabel: importLabelModel ? importLabelModel.toJSON() : null
+                    });
+                    const errorCSV = this.generateErrorCSV(result);
+                    const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+
+                    await ghostMailer.send({
+                        to: emailRecipient,
+                        subject: emailSubject,
+                        html: emailContent,
+                        forceTextContent: true,
+                        attachments: [{
+                            filename: `${importLabel.name} - Errors.csv`,
+                            contents: errorCSV,
+                            contentType: 'text/csv',
+                            contentDisposition: 'attachment'
+                        }]
+                    });
+                },
+                offloaded: false
+            });
+
+            return {};
+        }
     }
 };
