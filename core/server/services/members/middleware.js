@@ -90,6 +90,7 @@ const updateMemberData = async function (req, res) {
 const getMemberSiteData = async function (req, res) {
     const isStripeConfigured = membersService.config.isStripeConnected();
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    const firstpromoterId = settingsCache.get('firstpromoter') ? settingsCache.get('firstpromoter_id') : '';
     const blogDomain = domain && domain[1];
     let supportAddress = settingsCache.get('members_support_address') || 'noreply';
     if (!supportAddress.includes('@')) {
@@ -112,6 +113,7 @@ const getMemberSiteData = async function (req, res) {
         portal_button_icon: settingsCache.get('portal_button_icon'),
         portal_button_signup_text: settingsCache.get('portal_button_signup_text'),
         portal_button_style: settingsCache.get('portal_button_style'),
+        firstpromoter_id: firstpromoterId,
         members_support_address: supportAddress
     };
 
