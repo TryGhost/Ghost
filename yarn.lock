@@ -609,10 +609,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/string@0.1.15":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.15.tgz#5a0eacc5af7bcd8c4f450a16d32ef75ddd4674a1"
-  integrity sha512-/8G2dGOUe5sq4cxW0iFv6JukqpZXRYhuY+muPqh2DAKTOnc0fRGS5Tomea685r7baj55VVsDitTMLIWihQmpPg==
+"@tryghost/string@0.1.16":
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.16.tgz#815d8bbf62daffd6d4291145987f43f8ca98d5b2"
+  integrity sha512-+mRzCCp0LqTIugN6+NFrEfqlG05mMqyCzoLo1C/U4ApMX2HKvCo35A/mWY9vnA3eD99Ivo3Hsc3hfyTYQXOa6w==
   dependencies:
     unidecode "^0.1.8"
 
