@@ -3,7 +3,9 @@ const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
-const {destroyUser} = require('../../services/users');
+const dbBackup = require('../../data/db/backup');
+const UsersService = require('../../services/users');
+const userService = new UsersService({dbBackup, models});
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
 
@@ -147,7 +149,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            return destroyUser(frame.options).catch((err) => {
+            return userService.destroyUser(frame.options).catch((err) => {
                 return Promise.reject(new errors.NoPermissionError({
                     err: err
                 }));
