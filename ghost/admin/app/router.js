@@ -59,6 +59,7 @@ Router.map(function () {
     });
     this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
     this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
+    this.route('settings.integrations.firstpromoter', {path: '/settings/integrations/firstpromoter'});
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
