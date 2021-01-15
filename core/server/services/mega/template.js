@@ -145,7 +145,7 @@ dd {
 blockquote {
     margin: 2em 0;
     padding: 0 25px 0 25px;
-    border-left: #15212A 2px solid;
+    border-left: ${templateSettings.accentColor || '#15212A'} 2px solid;
     font-style: italic;
     font-size: 20px;
     line-height: 1.75em;
