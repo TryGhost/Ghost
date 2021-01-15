@@ -146,16 +146,15 @@ blockquote {
     margin: 2em 0;
     padding: 0 25px 0 25px;
     border-left: ${templateSettings.accentColor || '#15212A'} 2px solid;
-    font-style: italic;
-    font-size: 20px;
-    line-height: 1.75em;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.6em;
     letter-spacing: -0.2px;
 }
 
 blockquote p {
     margin: 0.8em 0;
-    font-size: 1.2em;
-    font-weight: 300;
+    font-size: 1em;
 }
 
 blockquote small {
