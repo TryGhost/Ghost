@@ -1,13 +1,13 @@
 const mailgunJs = require('mailgun-js');
 const moment = require('moment');
-const EventProcessingResult = require('../lib/event-processing-result');
+const {EventProcessingResult} = require('@tryghost/email-analytics-service');
 
 const EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
 const TRUST_THRESHOLD_S = 30 * 60; // 30 minutes
 const DEFAULT_TAGS = ['bulk-email'];
 
-class EmailAnalyticsMailgunProvider {
+class EmailAnalyticsProviderMailgun {
     constructor({config, settings, mailgun, logging = console}) {
         this.config = config;
         this.settings = settings;
@@ -114,11 +114,7 @@ class EmailAnalyticsMailgunProvider {
     }
 
     normalizeEvent(event) {
-        // TODO: clean up the <> surrounding email_batches.provider_id values
         let providerId = event.message && event.message.headers && event.message.headers['message-id'];
-        if (providerId) {
-            providerId = `<${providerId}>`;
-        }
 
         return {
             type: event.event,
@@ -131,4 +127,4 @@ class EmailAnalyticsMailgunProvider {
     }
 }
 
-module.exports = EmailAnalyticsMailgunProvider;
+module.exports = EmailAnalyticsProviderMailgun;

@@ -1,32 +1,24 @@
-const _ = require('lodash');
-const EventProcessingResult = require('./lib/event-processing-result');
-const EventProcessor = require('./lib/event-processor');
-const StatsAggregator = require('./lib/stats-aggregator');
-const defaultProviders = require('./providers');
+const EventProcessingResult = require('./event-processing-result');
 const debug = require('ghost-ignition').debug('services:email-analytics');
 
-// when fetching a batch we should keep a record of which emails have associated
-// events so we only aggregate those that are affected
-
-class EmailAnalyticsService {
-    constructor({config, settings, logging, db, providers, eventProcessor, statsAggregator}) {
+module.exports = class EmailAnalyticsService {
+    constructor({config, settings, queries, eventProcessor, providers, logging}) {
         this.config = config;
         this.settings = settings;
+        this.queries = queries;
+        this.eventProcessor = eventProcessor;
+        this.providers = providers;
         this.logging = logging || console;
-        this.db = db;
-        this.providers = providers || defaultProviders.init({config, settings, logging});
-        this.eventProcessor = eventProcessor || new EventProcessor({db, logging});
-        this.statsAggregator = statsAggregator || new StatsAggregator({db, logging});
     }
 
     async fetchAll() {
-        const result = new EventProcessingResult();
-
-        const [emailCount] = await this.db.knex('emails').count('id as count');
-        if (emailCount && emailCount.count <= 0) {
-            debug('fetchAll: skipping - no emails to track');
+        const shouldFetchStats = await this.queries.shouldFetchStats();
+        if (!shouldFetchStats) {
+            debug('fetchAll: skipping - fetch requirements not met');
             return result;
         }
+
+        const result = new EventProcessingResult();
 
         const startFetch = new Date();
         debug('fetchAll: starting');
@@ -40,14 +32,14 @@ class EmailAnalyticsService {
     }
 
     async fetchLatest({maxEvents = Infinity} = {}) {
-        const result = new EventProcessingResult();
-        const lastTimestamp = await this.getLastSeenEventTimestamp();
-
-        const [emailCount] = await this.db.knex('emails').count('id as count');
-        if (emailCount && emailCount.count <= 0) {
-            debug('fetchLatest: skipping - no emails to track');
+        const shouldFetchStats = await this.queries.shouldFetchStats();
+        if (!shouldFetchStats) {
+            debug('fetchLatest: skipping - fetch requirements not met');
             return result;
         }
+
+        const result = new EventProcessingResult();
+        const lastTimestamp = await this.queries.getLastSeenEventTimestamp();
 
         const startFetch = new Date();
         debug('fetchLatest: starting');
@@ -86,24 +78,10 @@ class EmailAnalyticsService {
     }
 
     aggregateEmailStats(emailId) {
-        return this.statsAggregator.aggregateEmail(emailId);
+        return this.queries.aggregateEmailStats(emailId);
     }
 
     aggregateMemberStats(memberId) {
-        return this.statsAggregator.aggregateMember(memberId);
+        return this.queries.aggregateMemberStats(memberId);
     }
-
-    async getLastSeenEventTimestamp() {
-        const startDate = new Date();
-        // three separate queries is much faster than using max/greatest across columns with coalesce to handle nulls
-        const {maxDeliveredAt} = await this.db.knex('email_recipients').select(this.db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first() || {};
-        const {maxOpenedAt} = await this.db.knex('email_recipients').select(this.db.knex.raw('MAX(opened_at) as maxOpenedAt')).first() || {};
-        const {maxFailedAt} = await this.db.knex('email_recipients').select(this.db.knex.raw('MAX(failed_at) as maxFailedAt')).first() || {};
-        const lastSeenEventTimestamp = _.max([maxDeliveredAt, maxOpenedAt, maxFailedAt]);
-        debug(`getLastSeenEventTimestamp: finished in ${Date.now() - startDate}ms`);
-
-        return lastSeenEventTimestamp;
-    }
-}
-
-module.exports = EmailAnalyticsService;
+};

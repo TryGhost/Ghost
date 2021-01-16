@@ -23,5 +23,9 @@
     "should": "13.2.3",
     "sinon": "9.2.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tryghost/email-analytics-service": "^0.0.0",
+    "mailgun-js": "^0.22.0",
+    "moment": "^2.29.1"
+  }
 }
