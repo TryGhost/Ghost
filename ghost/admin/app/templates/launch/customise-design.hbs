@@ -1,4 +1,5 @@
 <section class="ma19">
-    <GhLaunchWizard::CustomiseDesign />
-    <button type="button" {{on "click" this.next}} data-test-button="wizard-next">Next</button>
+    <GhLaunchWizard::CustomiseDesign
+        @afterComplete={{this.goToNext}}
+    />
 </section>

@@ -6,7 +6,7 @@ export default class LaunchConnectStripeController extends Controller {
     @service router;
 
     @action
-    next() {
+    goToNext() {
         this.router.transitionTo('launch.set-pricing');
     }
 

@@ -6,7 +6,7 @@ export default class LaunchSetPricingController extends Controller {
     @service router;
 
     @action
-    next() {
+    goToNext() {
         this.router.transitionTo('launch.complete');
     }
 

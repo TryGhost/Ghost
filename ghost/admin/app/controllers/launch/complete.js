@@ -6,7 +6,7 @@ export default class LaunchCompleteController extends Controller {
     @service router;
 
     @action
-    next() {
+    finish() {
         this.router.transitionTo('dashboard');
     }
 
