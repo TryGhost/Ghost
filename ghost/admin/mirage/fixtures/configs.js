@@ -1,7 +1,7 @@
 export default [{
     clientExtensions: {},
     database: 'mysql',
-    enableDeveloperExperiments: true,
+    enableDeveloperExperiments: false,
     environment: 'development',
     labs: {},
     mail: 'SMTP',
