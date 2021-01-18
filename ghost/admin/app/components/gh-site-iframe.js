@@ -4,10 +4,13 @@ import {inject as service} from '@ember/service';
 
 export default Component.extend({
     config: service(),
+
     tagName: '',
+
     srcUrl: computed('src', function () {
         return this.src || `${this.config.get('blogUrl')}/`;
     }),
+
     didReceiveAttrs() {
         // reset the src attribute each time the guid changes - allows for
         // a click on the navigation item to reset back to the homepage
