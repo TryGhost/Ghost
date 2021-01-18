@@ -13,6 +13,6 @@ describe('Integration: Component: gh-launch-wizard/customise-design', function (
 
         await render(hbs`<GhLaunchWizard::CustomiseDesign />`);
 
-        expect(this.element.textContent.trim()).to.equal('Customise design');
+        expect(this.element.textContent.trim()).to.have.string('Customise');
     });
 });
