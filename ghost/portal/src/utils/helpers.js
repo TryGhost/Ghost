@@ -181,7 +181,7 @@ export const getSupportAddress = ({site}) => {
 
 export const getSiteDomain = ({site}) => {
     try {
-        return (new URL(site.url)).origin;
+        return ((new URL(site.url)).origin).replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     } catch (e) {
         return site.url.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     }
