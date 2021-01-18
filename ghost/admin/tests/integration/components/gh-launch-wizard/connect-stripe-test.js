@@ -13,6 +13,6 @@ describe('Integration: Component: gh-launch-wizard/connect-stripe', function () 
 
         await render(hbs`<GhLaunchWizard::ConnectStripe />`);
 
-        expect(this.element.textContent.trim()).to.equal('Connect Stripe');
+        expect(this.element.textContent.trim()).to.have.string('Connect Stripe');
     });
 });
