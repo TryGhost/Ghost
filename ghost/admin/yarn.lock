@@ -6193,10 +6193,10 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@8.0.2:
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.2.tgz#9838b9f01e33fcd23550ccf38ae4f1f90cc47113"
-  integrity sha512-BMwm8jLP5LCeT8Jbgz0jA04RsRyt06ZGMaC3Tx2DbHgoWOPlLMfkEKlCFE0dZVW8ZhuICKuyRZTzt4e8GrnnNA==
+ember-fetch@8.0.3:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.3.tgz#f8543794604b711fe18a780a584d253910c861cd"
+  integrity sha512-NDL1xpWxTbp8IX0LqBTk5+TtcMgoueASIcMNVmcWQq5qb38TIH55b9YR4GEgeDpRX8Z6nVG5m+vybM9yFfFQVw==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
     broccoli-concat "^4.2.4"
@@ -6207,9 +6207,9 @@ ember-fetch@8.0.2:
     broccoli-templater "^2.0.1"
     calculate-cache-key-for-tree "^2.0.0"
     caniuse-api "^3.0.0"
-    ember-cli-babel "^7.19.0"
+    ember-cli-babel "^7.23.0"
     ember-cli-typescript "^3.1.3"
-    node-fetch "^2.6.0"
+    node-fetch "^2.6.1"
     whatwg-fetch "^3.4.0"
 
 ember-get-config@, "ember-get-config@^0.2.4 || ^0.3.0":
@@ -10590,7 +10590,7 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-node-fetch@^2.6.0:
+node-fetch@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
