@@ -1,13 +1,15 @@
-const _ = require('lodash');
 const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
-const StripePaymentProcessor = require('./lib/stripe');
-const Tokens = require('./lib/tokens');
-const Users = require('./lib/users');
-const Metadata = require('./lib/metadata');
 const common = require('./lib/common');
-const {getGeolocationFromIP} = require('./lib/geolocation');
+
+const StripeAPIService = require('./lib/services/stripe-api');
+const StripePlansService = require('./lib/services/stripe-plans');
+const StripeWebhookService = require('./lib/services/stripe-webhook');
+const TokenService = require('./lib/services/token');
+const GeolocationSerice = require('./lib/services/geolocation');
+const MemberRepository = require('./lib/repositories/member');
+const RouterController = require('./lib/controllers/router');
 
 module.exports = function MembersApi({
     tokenConfig: {
@@ -39,13 +41,76 @@ module.exports = function MembersApi({
         common.logging.setLogger(logger);
     }
 
-    const {encodeIdentityToken, decodeToken} = Tokens({privateKey, publicKey, issuer});
-    const metadata = Metadata({
+    const stripeConfig = paymentConfig && paymentConfig.stripe || {};
+
+    const stripeAPIService = new StripeAPIService({
+        config: {
+            secretKey: stripeConfig.secretKey,
+            publicKey: stripeConfig.publicKey,
+            appInfo: stripeConfig.appInfo,
+            enablePromoCodes: stripeConfig.enablePromoCodes
+        },
+        logger
+    });
+
+    const stripePlansService = new StripePlansService({
+        stripeAPIService
+    });
+
+    const memberRepository = new MemberRepository({
+        stripeAPIService,
+        stripePlansService,
+        logger,
         Member,
-        StripeWebhook,
         StripeCustomer,
         StripeCustomerSubscription
     });
+
+    const stripeWebhookService = new StripeWebhookService({
+        StripeWebhook,
+        stripeAPIService,
+        memberRepository,
+        sendEmailWithMagicLink
+    });
+
+    const tokenService = new TokenService({
+        privateKey,
+        publicKey,
+        issuer
+    });
+
+    const geolocationService = new GeolocationSerice();
+
+    const magicLinkService = new MagicLink({
+        transporter,
+        tokenProvider,
+        getSigninURL,
+        getText,
+        getHTML,
+        getSubject
+    });
+
+    const routerController = new RouterController({
+        memberRepository,
+        allowSelfSignup,
+        magicLinkService,
+        stripeAPIService,
+        stripePlansService,
+        tokenService,
+        sendEmailWithMagicLink
+    });
+
+    const ready = paymentConfig.stripe ? Promise.all([
+        stripePlansService.configure({
+            product: stripeConfig.product,
+            plans: stripeConfig.plans
+        }),
+        stripeWebhookService.configure({
+            webhookSecret: process.env.WEBHOOK_SECRET,
+            webhookHandlerUrl: stripeConfig.webhookHandlerUrl,
+            webhook: stripeConfig.webhook || {}
+        })
+    ]) : Promise.resolve();
 
     async function hasActiveStripeSubscriptions() {
         const firstActiveSubscription = await StripeCustomerSubscription.findOne({
@@ -83,45 +148,7 @@ module.exports = function MembersApi({
         return false;
     }
 
-    const stripeStorage = {
-        async get(member) {
-            return metadata.getMetadata('stripe', member);
-        },
-        async set(data, options) {
-            return metadata.setMetadata('stripe', data, options);
-        }
-    };
-    /** @type {StripePaymentProcessor} */
-    const stripe = (paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage, common.logging) : null);
-
-    async function ensureStripe(_req, res, next) {
-        if (!stripe) {
-            res.writeHead(400);
-            return res.end('Stripe not configured');
-        }
-        try {
-            await stripe.ready();
-            next();
-        } catch (err) {
-            res.writeHead(500);
-            return res.end('There was an error configuring stripe');
-        }
-    }
-
-    const magicLinkService = new MagicLink({
-        transporter,
-        tokenProvider,
-        getSigninURL,
-        getText,
-        getHTML,
-        getSubject
-    });
-
-    const users = Users({
-        stripe,
-        Member,
-        StripeCustomer
-    });
+    const users = memberRepository;
 
     async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, requestSrc = ''}) {
         let type = requestedType;
@@ -177,7 +204,7 @@ module.exports = function MembersApi({
         if (!member) {
             return null;
         }
-        return encodeIdentityToken({sub: member.email});
+        return tokenService.encodeIdentityToken({sub: member.email});
     }
 
     async function setMemberGeolocationFromIp(email, ip) {
@@ -198,7 +225,7 @@ module.exports = function MembersApi({
         }
 
         // max request time is 500ms so shouldn't slow requests down too much
-        let geolocation = JSON.stringify(await getGeolocationFromIP(ip));
+        let geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(ip));
         if (geolocation) {
             member.geolocation = geolocation;
             await users.update(member, {id: member.id});
@@ -208,147 +235,34 @@ module.exports = function MembersApi({
     }
 
     const middleware = {
-        sendMagicLink: Router(),
-        createCheckoutSession: Router(),
-        createCheckoutSetupSession: Router(),
-        handleStripeWebhook: Router(),
-        updateSubscription: Router({mergeParams: true})
+        sendMagicLink: Router().use(
+            body.json(),
+            (req, res) => routerController.sendMagicLink(req, res)
+        ),
+        createCheckoutSession: Router().use(
+            body.json(),
+            (req, res) => routerController.createCheckoutSession(req, res)
+        ),
+        createCheckoutSetupSession: Router().use(
+            body.json(),
+            (req, res) => routerController.createCheckoutSetupSession(req, res)
+        ),
+        updateSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            (req, res) => routerController.updateSubscription(req, res)
+        ),
+        handleStripeWebhook: Router()
     };
 
-    middleware.sendMagicLink.use(body.json(), async function (req, res) {
-        const {email, emailType, oldEmail, requestSrc} = req.body;
-        let forceEmailType = false;
-        if (!email) {
+    middleware.handleStripeWebhook.use(body.raw({type: 'application/json'}), async function (req, res) {
+        if (!stripeAPIService) {
+            common.logging.error(`Stripe not configured, not handling webhook`);
             res.writeHead(400);
-            return res.end('Bad Request.');
+            return res.end();
         }
-
-        try {
-            if (oldEmail) {
-                const existingMember = await users.get({email});
-                if (existingMember) {
-                    throw new common.errors.BadRequestError({
-                        message: 'This email is already associated with a member'
-                    });
-                }
-                forceEmailType = true;
-            }
-
-            if (!allowSelfSignup) {
-                const member = oldEmail ? await users.get({oldEmail}) : await users.get({email});
-                if (member) {
-                    const tokenData = _.pick(req.body, ['oldEmail']);
-                    await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
-                }
-            } else {
-                const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
-                await sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
-            }
-            res.writeHead(201);
-            return res.end('Created.');
-        } catch (err) {
-            const statusCode = (err && err.statusCode) || 500;
-            common.logging.error(err);
-            res.writeHead(statusCode);
-            return res.end('Internal Server Error.');
-        }
-    });
-
-    middleware.createCheckoutSession.use(ensureStripe, body.json(), async function (req, res) {
-        const plan = req.body.plan;
-        const identity = req.body.identity;
-
-        if (!plan) {
-            res.writeHead(400);
-            return res.end('Bad Request.');
-        }
-
-        // NOTE: never allow "Complimentary" plan to be subscribed to from the client
-        if (plan.toLowerCase() === 'complimentary') {
-            res.writeHead(400);
-            return res.end('Bad Request.');
-        }
-
-        let email;
-        try {
-            if (!identity) {
-                email = null;
-            } else {
-                const claims = await decodeToken(identity);
-                email = claims && claims.sub;
-            }
-        } catch (err) {
-            res.writeHead(401);
-            return res.end('Unauthorized');
-        }
-
-        const member = email ? await users.get({email}, {withRelated: ['stripeSubscriptions']}) : null;
-
-        // Do not allow members already with a subscription to initiate a new checkout session
-        if (member && member.related('stripeSubscriptions').length > 0) {
-            res.writeHead(403);
-            return res.end('No permission');
-        }
-
-        try {
-            const sessionInfo = await stripe.createCheckoutSession(member, plan, {
-                successUrl: req.body.successUrl,
-                cancelUrl: req.body.cancelUrl,
-                customerEmail: req.body.customerEmail,
-                metadata: req.body.metadata
-            });
-
-            res.writeHead(200, {
-                'Content-Type': 'application/json'
-            });
-
-            res.end(JSON.stringify(sessionInfo));
-        } catch (e) {
-            const error = e.message || 'Unable to initiate checkout session';
-            res.writeHead(400);
-            return res.end(error);
-        }
-    });
-
-    middleware.createCheckoutSetupSession.use(ensureStripe, body.json(), async function (req, res) {
-        const identity = req.body.identity;
-
-        let email;
-        try {
-            if (!identity) {
-                email = null;
-            } else {
-                const claims = await decodeToken(identity);
-                email = claims && claims.sub;
-            }
-        } catch (err) {
-            res.writeHead(401);
-            return res.end('Unauthorized');
-        }
-
-        const member = email ? await users.get({email}) : null;
-
-        if (!member) {
-            res.writeHead(403);
-            return res.end('Bad Request.');
-        }
-
-        const sessionInfo = await stripe.createCheckoutSetupSession(member, {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl
-        });
-
-        res.writeHead(200, {
-            'Content-Type': 'application/json'
-        });
-
-        res.end(JSON.stringify(sessionInfo));
-    });
-
-    middleware.handleStripeWebhook.use(ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
         let event;
         try {
-            event = await stripe.parseWebhook(req.body, req.headers['stripe-signature']);
+            event = stripeWebhookService.parseWebhook(req.body, req.headers['stripe-signature']);
         } catch (err) {
             common.logging.error(err);
             res.writeHead(401);
@@ -356,65 +270,7 @@ module.exports = function MembersApi({
         }
         common.logging.info(`Handling webhook ${event.type}`);
         try {
-            if (event.type === 'customer.subscription.deleted') {
-                await stripe.handleCustomerSubscriptionDeletedWebhook(event.data.object);
-            }
-
-            if (event.type === 'customer.subscription.updated') {
-                await stripe.handleCustomerSubscriptionUpdatedWebhook(event.data.object);
-            }
-
-            if (event.type === 'customer.subscription.created') {
-                await stripe.handleCustomerSubscriptionCreatedWebhook(event.data.object);
-            }
-
-            if (event.type === 'invoice.payment_succeeded') {
-                await stripe.handleInvoicePaymentSucceededWebhook(event.data.object);
-            }
-
-            if (event.type === 'invoice.payment_failed') {
-                await stripe.handleInvoicePaymentFailedWebhook(event.data.object);
-            }
-
-            if (event.type === 'checkout.session.completed') {
-                if (event.data.object.mode === 'setup') {
-                    common.logging.info('Handling "setup" mode Checkout Session');
-                    const setupIntent = await stripe.getSetupIntent(event.data.object.setup_intent);
-                    const customer = await stripe.getCustomer(setupIntent.metadata.customer_id);
-                    const member = await users.get({email: customer.email});
-
-                    await stripe.handleCheckoutSetupSessionCompletedWebhook(setupIntent, member);
-                } else if (event.data.object.mode === 'subscription') {
-                    common.logging.info('Handling "subscription" mode Checkout Session');
-                    const customer = await stripe.getCustomer(event.data.object.customer, {
-                        expand: ['subscriptions.data.default_payment_method']
-                    });
-                    let member = await users.get({email: customer.email});
-                    const checkoutType = _.get(event, 'data.object.metadata.checkoutType');
-                    const requestSrc = _.get(event, 'data.object.metadata.requestSrc') || '';
-                    if (!member) {
-                        const metadataName = _.get(event, 'data.object.metadata.name');
-                        const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
-                        const name = metadataName || payerName || null;
-                        member = await users.create({email: customer.email, name});
-                    } else {
-                        const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
-
-                        if (payerName && !member.get('name')) {
-                            await users.update({name: payerName}, {id: member.get('id')});
-                        }
-                    }
-
-                    await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
-                    if (checkoutType !== 'upgrade') {
-                        const emailType = 'signup';
-                        await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, requestSrc, options: {forceEmailType: true}, tokenData: {}});
-                    }
-                } else if (event.data.object.mode === 'payment') {
-                    common.logging.info('Ignoring "payment" mode Checkout Session');
-                }
-            }
-
+            await stripeWebhookService.handleWebhook(event);
             res.writeHead(200);
             res.end();
         } catch (err) {
@@ -422,90 +278,6 @@ module.exports = function MembersApi({
             res.writeHead(400);
             res.end();
         }
-    });
-
-    middleware.updateSubscription.use(ensureStripe, body.json(), async function (req, res) {
-        const identity = req.body.identity;
-        const subscriptionId = req.params.id;
-        const cancelAtPeriodEnd = req.body.cancel_at_period_end;
-        const cancellationReason = req.body.cancellation_reason;
-        const planName = req.body.planName;
-
-        if (cancelAtPeriodEnd === undefined && planName === undefined) {
-            throw new common.errors.BadRequestError({
-                message: 'Updating subscription failed!',
-                help: 'Request should contain "cancel_at_period_end" or "planName" field.'
-            });
-        }
-
-        if ((cancelAtPeriodEnd === undefined || cancelAtPeriodEnd === false) && cancellationReason !== undefined) {
-            throw new common.errors.BadRequestError({
-                message: 'Updating subscription failed!',
-                help: '"cancellation_reason" field requires the "cancel_at_period_end" field to be true.'
-            });
-        }
-
-        if (cancellationReason && cancellationReason.length > 500) {
-            throw new common.errors.BadRequestError({
-                message: 'Updating subscription failed!',
-                help: '"cancellation_reason" field can be a maximum of 500 characters.'
-            });
-        }
-
-        let email;
-        try {
-            if (!identity) {
-                throw new common.errors.BadRequestError({
-                    message: 'Updating subscription failed! Could not find member'
-                });
-            }
-
-            const claims = await decodeToken(identity);
-            email = claims && claims.sub;
-        } catch (err) {
-            res.writeHead(401);
-            return res.end('Unauthorized');
-        }
-
-        const member = email ? await users.get({email}, {withRelated: ['stripeSubscriptions']}) : null;
-
-        if (!member) {
-            throw new common.errors.BadRequestError({
-                message: 'Updating subscription failed! Could not find member'
-            });
-        }
-
-        // Don't allow removing subscriptions that don't belong to the member
-        const subscription = member.related('stripeSubscriptions').models.find(
-            subscription => subscription.get('subscription_id') === subscriptionId
-        );
-        if (!subscription) {
-            res.writeHead(403);
-            return res.end('No permission');
-        }
-
-        const subscriptionUpdateData = {
-            id: subscriptionId
-        };
-        if (cancelAtPeriodEnd !== undefined) {
-            subscriptionUpdateData.cancel_at_period_end = cancelAtPeriodEnd;
-            subscriptionUpdateData.cancellation_reason = cancellationReason;
-        }
-
-        if (planName !== undefined) {
-            const plan = stripe.findPlanByNickname(planName);
-            if (!plan) {
-                throw new common.errors.BadRequestError({
-                    message: 'Updating subscription failed! Could not find plan'
-                });
-            }
-            subscriptionUpdateData.plan = plan.id;
-        }
-
-        await stripe.updateSubscriptionFromClient(subscriptionUpdateData);
-
-        res.writeHead(204);
-        res.end();
     });
 
     const getPublicConfig = function () {
@@ -517,15 +289,11 @@ module.exports = function MembersApi({
 
     const bus = new (require('events').EventEmitter)();
 
-    if (stripe) {
-        stripe.ready().then(() => {
-            bus.emit('ready');
-        }).catch((err) => {
-            bus.emit('error', err);
-        });
-    } else {
-        process.nextTick(() => bus.emit('ready'));
-    }
+    ready.then(() => {
+        bus.emit('ready');
+    }).catch((err) => {
+        bus.emit('error', err);
+    });
 
     return {
         middleware,
