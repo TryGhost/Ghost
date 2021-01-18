@@ -1,0 +1,9 @@
+<button type="button" class="absolute top-6 left-6 w6" title="Previous step" {{on "click" this.goBack}} data-test-button="wizard-back">
+    {{svg-jar "arrow-left"}}
+    <span class="hidden">Go to previous step</span>
+</button>
+
+<section class="ma19">
+    <GhLaunchWizard::SetPricing />
+    <button type="button" {{on "click" this.next}} data-test-button="wizard-next">Finish & launch my site</button>
+</section>
