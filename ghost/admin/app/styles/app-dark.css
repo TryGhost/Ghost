@@ -62,6 +62,7 @@
 @import "layouts/preview-email.css";
 @import "layouts/portal-settings.css";
 @import "layouts/billing.css";
+@import "layouts/fullscreen-wizard.css";
 
 
 :root {
