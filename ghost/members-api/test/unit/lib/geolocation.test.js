@@ -1,5 +1,5 @@
 const nock = require('nock');
-const {getGeolocationFromIP} = require('../../../lib/geolocation');
+const GeolocationService = require('../../../lib/services/geolocation');
 
 const RESPONSE = {
     longitude: '-2.2417',
@@ -19,6 +19,8 @@ const RESPONSE = {
     country_code3: 'GBR'
 };
 
+const service = new GeolocationService();
+
 describe('lib/geolocation', function () {
     describe('getGeolocationFromIP', function () {
         afterEach(function () {
@@ -31,7 +33,7 @@ describe('lib/geolocation', function () {
                 .get('/v1/ip/geo/188.39.113.90.json')
                 .reply(200, RESPONSE);
 
-            const result = await getGeolocationFromIP('188.39.113.90');
+            const result = await service.getGeolocationFromIP('188.39.113.90');
 
             scope.isDone().should.eql(true, 'request was not made');
             should.exist(result, 'nothing was returned');
@@ -43,7 +45,7 @@ describe('lib/geolocation', function () {
                 .get('/v1/ip/geo/2a01%3A4c8%3A43a%3A13c9%3A8d6%3A128e%3A1fd5%3A6aad.json')
                 .reply(200, RESPONSE);
 
-            const result = await getGeolocationFromIP('2a01:4c8:43a:13c9:8d6:128e:1fd5:6aad');
+            const result = await service.getGeolocationFromIP('2a01:4c8:43a:13c9:8d6:128e:1fd5:6aad');
 
             scope.isDone().should.eql(true, 'request was not made');
             should.exist(result, 'nothing was returned');
@@ -52,22 +54,22 @@ describe('lib/geolocation', function () {
 
         it('handles non-IP addresses', async function () {
             let scope = nock('https://get.geojs.io').get('/v1/ip/geo/.json').reply(200, {test: true});
-            let result = await getGeolocationFromIP('');
+            let result = await service.getGeolocationFromIP('');
             scope.isDone().should.eql(false);
             should.equal(undefined, result);
 
             scope = nock('https://get.geojs.io').get('/v1/ip/geo/null.json').reply(200, {test: true});
-            result = await getGeolocationFromIP(null);
+            result = await service.getGeolocationFromIP(null);
             scope.isDone().should.eql(false);
             should.equal(undefined, result);
 
             scope = nock('https://get.geojs.io').get('/v1/ip/geo/undefined.json').reply(200, {test: true});
-            result = await getGeolocationFromIP(undefined);
+            result = await service.getGeolocationFromIP(undefined);
             scope.isDone().should.eql(false);
             should.equal(undefined, result);
 
             scope = nock('https://get.geojs.io').get('/v1/ip/geo/test.json').reply(200, {test: true});
-            result = await getGeolocationFromIP('test');
+            result = await service.getGeolocationFromIP('test');
             scope.isDone().should.eql(false);
             should.equal(undefined, result);
         });
