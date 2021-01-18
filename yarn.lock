@@ -384,10 +384,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.5.tgz#9cb42e2287a57e6132b0a98b21ce36c034cffeb2"
   integrity sha512-h4+rwCwszj5ozih57P0W8NjrN9rit6VuuMfLpSUrpbVmRpWcrvmg3JXhlSyqhe/HjHmPA3wNuqLiMLmN8H/VAA==
 
-"@tryghost/constants@0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.3.tgz#3ec27ec188b17c7ec28e61eeb49271681965cb66"
-  integrity sha512-t4o5xS8zv0kdRkWJXldk4e0qwwzwk7cMRwX0cl79V29uZbavjNMGSxJihL+shg3+Lfxi7XSV99JlBo7VQy5IEA==
+"@tryghost/constants@0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.4.tgz#7b185227fcad0aaa33d02abc9ba629adc8190039"
+  integrity sha512-lFbfNU8jNPUxLQcxXXYzVFZMclJ4fcFoMuhed63xld/DoistWIRrI/dePEYNymG9nbYhDk/4szwdwGJE8ZURIg==
 
 "@tryghost/errors@0.2.6", "@tryghost/errors@^0.2.6":
   version "0.2.6"
