@@ -20,8 +20,10 @@ Router.map(function () {
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
+
     this.route('about');
     this.route('site');
+    this.route('dashboard');
 
     this.route('billing', function () {
         this.route('billing-sub', {path: '/*sub'});

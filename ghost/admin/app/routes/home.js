@@ -1,7 +1,14 @@
 import Route from '@ember/routing/route';
+import {inject as service} from '@ember/service';
 
-export default Route.extend({
+export default class HomeRoute extends Route {
+    @service config;
+
     beforeModel() {
-        this.transitionTo('site');
+        if (this.config.get('enableDeveloperExperiments')) {
+            this.transitionTo('dashboard');
+        } else {
+            this.transitionTo('site');
+        }
     }
-});
+}
