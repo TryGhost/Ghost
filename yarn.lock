@@ -362,12 +362,12 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tryghost/adapter-manager@0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.6.tgz#df78c8d4f18702653f6205387cdb91aa94d6e1b6"
-  integrity sha512-8QZJLCddROxSpzPCjtNyULeefVrs8WMwKc0KgBt+2tfROxavhoy6m757w2xqVxKlkwuH1BjZYdQdoCzrOsDnzA==
+"@tryghost/adapter-manager@0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.7.tgz#a0220926f56a629bced4ae8ec266c0f9d2e55c8d"
+  integrity sha512-8rs1DhMQ3YNtLEQJYhEhEZhT8w4a5PNB9phutup/DYdUyhqHev4I+mNJkenqcxtgSU75+AuLs0WJBosUBSSZ6Q==
   dependencies:
-    "@tryghost/errors" "^0.2.6"
+    "@tryghost/errors" "^0.2.7"
 
 "@tryghost/admin-api-schema@1.4.3":
   version "1.4.3"
@@ -389,7 +389,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.3.tgz#3ec27ec188b17c7ec28e61eeb49271681965cb66"
   integrity sha512-t4o5xS8zv0kdRkWJXldk4e0qwwzwk7cMRwX0cl79V29uZbavjNMGSxJihL+shg3+Lfxi7XSV99JlBo7VQy5IEA==
 
-"@tryghost/errors@0.2.6", "@tryghost/errors@^0.2.6":
+"@tryghost/errors@0.2.6":
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.6.tgz#4554c97a1666e4db323d8c664a4df5a714f77452"
   integrity sha512-hhCAijjK24jeuHbeT0KILSX+6nDOldgxvFfnIGJMdjThuWQGkwHhGaD9hkUXe7F8QgAvTL0J8FVG/f6fs5TwrA==
