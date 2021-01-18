@@ -13,6 +13,6 @@ describe('Integration: Component: gh-launch-wizard/set-pricing', function () {
 
         await render(hbs`<GhLaunchWizard::SetPricing />`);
 
-        expect(this.element.textContent.trim()).to.equal('Set pricing');
+        expect(this.element.textContent.trim()).to.have.string('Set pricing');
     });
 });
