@@ -19,6 +19,10 @@ export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/
 export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
 export const IMAGE_PARAMS = {purpose: 'image'};
 
+export const ICON_EXTENSIONS = ['ico', 'png'];
+export const ICON_MIME_TYPES = 'image/png,image/x-icon';
+export const ICON_PARAMS = {purpose: 'icon'};
+
 export default Component.extend({
     ajax: service(),
     config: service(),

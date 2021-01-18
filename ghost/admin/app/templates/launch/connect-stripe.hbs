@@ -4,6 +4,7 @@
 </button>
 
 <section class="ma19">
-    <GhLaunchWizard::ConnectStripe />
-    <button type="button" {{on "click" this.next}} data-test-button="wizard-next">Next</button>
+    <GhLaunchWizard::ConnectStripe
+        @afterComplete={{this.goToNext}}
+    />
 </section>

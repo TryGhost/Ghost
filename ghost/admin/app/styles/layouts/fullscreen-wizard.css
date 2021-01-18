@@ -6,6 +6,6 @@
     left: 0;
     z-index: 1000;
     height: 100vh;
-    background: white;
+    background: var(--whitegrey);
     overflow: auto;
 }

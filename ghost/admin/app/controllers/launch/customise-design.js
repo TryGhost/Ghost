@@ -6,7 +6,7 @@ export default class LaunchCustomiseDesignController extends Controller {
     @service router;
 
     @action
-    next() {
+    goToNext() {
         this.router.transitionTo('launch.connect-stripe');
     }
 }
