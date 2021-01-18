@@ -1,0 +1,8 @@
+<div class="fullscreen-wizard-container">
+    <button type="button" class="close absolute top-6 right-6 w6" title="Close" {{on "click" this.close}} data-test-button="close-wizard">
+        {{svg-jar "close"}}
+        <span class="hidden">Close</span>
+    </button>
+
+    {{outlet}}
+</div>
