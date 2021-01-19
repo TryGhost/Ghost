@@ -29,7 +29,7 @@ describe('{{pagination}} helper', function () {
             };
         };
 
-        const expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/api/handlebars-themes/helpers/pagination/.';
+        const expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/themes/helpers/pagination/.';
 
         runHelper('not an object').should.throwError(expectedMessage);
         runHelper(function () {

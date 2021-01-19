@@ -10,7 +10,7 @@ const validate = (redirects) => {
     if (!_.isArray(redirects)) {
         throw new errors.ValidationError({
             message: i18n.t('errors.utils.redirectsWrongFormat'),
-            help: 'https://ghost.org/docs/api/handlebars-themes/routing/redirects/'
+            help: 'https://ghost.org/docs/themes/routing/#redirects'
         });
     }
 
@@ -19,7 +19,7 @@ const validate = (redirects) => {
             throw new errors.ValidationError({
                 message: i18n.t('errors.utils.redirectsWrongFormat'),
                 context: redirect,
-                help: 'https://ghost.org/docs/api/handlebars-themes/routing/redirects/'
+                help: 'https://ghost.org/docs/themes/routing/#redirects'
             });
         }
     });

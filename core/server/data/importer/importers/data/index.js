@@ -57,14 +57,14 @@ DataImporter = {
         if (!importData.meta) {
             return Promise.reject(new IncorrectUsageError({
                 message: 'Wrong importer structure. `meta` is missing.',
-                help: 'https://ghost.org/docs/api/migration/#json-file-structure'
+                help: 'https://ghost.org/docs/migration/custom/'
             }));
         }
 
         if (!importData.meta.version) {
             return Promise.reject(new IncorrectUsageError({
                 message: 'Wrong importer structure. `meta.version` is missing.',
-                help: 'https://ghost.org/docs/api/migration/#json-file-structure'
+                help: 'https://ghost.org/docs/migration/custom/'
             }));
         }
 
@@ -73,7 +73,7 @@ DataImporter = {
         if (!semver.valid(importData.meta.version)) {
             return Promise.reject(new IncorrectUsageError({
                 message: 'Detected unsupported file structure.',
-                help: 'Please install Ghost 1.0, import the file and then update your blog to the latest Ghost version.\nVisit https://ghost.org/update/?v=0.1 or ask for help in our https://forum.ghost.org.'
+                help: 'Please install Ghost 1.0, import the file and then update your blog to the latest Ghost version.\nVisit https://ghost.org/docs/update/ or ask for help in our https://forum.ghost.org.'
             }));
         }
 

@@ -35,7 +35,7 @@ module.exports = function cancelLabsWrapper() {
         flagKey: 'members',
         flagName: 'Members',
         helperName: 'cancel_link',
-        helpUrl: 'https://ghost.org/faq/members/'
+        helpUrl: 'https://ghost.org/docs/themes/members/'
     }, () => {
         return cancel_link.apply(self, args);
     });
