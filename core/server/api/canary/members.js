@@ -247,9 +247,12 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            await membersService.api.members.updateSubscription(frame.options.id, {
-                subscriptionId: frame.options.subscription_id,
-                cancelAtPeriodEnd: frame.data.cancel_at_period_end
+            await membersService.api.members.updateSubscription({
+                id: frame.options.id,
+                subscription: {
+                    subscription_id: frame.options.subscription_id,
+                    cancel_at_period_end: frame.data.cancel_at_period_end
+                }
             });
             let model = await membersService.api.members.get({id: frame.options.id}, {
                 withRelated: ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer']
