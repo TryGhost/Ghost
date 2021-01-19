@@ -20,7 +20,7 @@ const packageJSONPath = 'package.json';
  * - Adapters: replace fundamental pieces like storage, will become npm modules
  *
  * These utils facilitate loading, reading, managing etc, packages from the file system.
- * 
+ *
  */
 module.exports = class PackageJson {
     /**
@@ -97,7 +97,7 @@ module.exports = class PackageJson {
             const err = new Error(this.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed'));
             err.context = path;
             err.err = parseError;
-            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
+            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/themes/'});
 
             return Promise.reject(err);
         }
@@ -107,7 +107,7 @@ module.exports = class PackageJson {
         if (!hasRequiredKeys) {
             const err = new Error(this.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing'));
             err.context = path;
-            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/handlebars-themes/'});
+            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/themes/'});
 
             return Promise.reject(err);
         }
