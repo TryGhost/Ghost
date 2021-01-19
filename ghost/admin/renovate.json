@@ -1,7 +1,6 @@
 {
   "extends": [
-    "@tryghost:quietJS",
-    "@tryghost:groupCSS"
+    "@tryghost:quietJS"
   ],
   "ignoreDeps": [
     "ember-drag-drop",
@@ -22,6 +21,10 @@
     {
       "groupName": "ember testing",
       "packageNames": ["ember-mocha", "ember-exam", "testem"]
+    },
+    {
+      "extends": "@tryghost:groupCSS",
+      "enabled": false
     }
   ]
 }
