@@ -67,7 +67,7 @@ const parseRedirectsFile = (content, ext) => {
         if (typeof configYaml === 'string') {
             throw new errors.BadRequestError({
                 message: i18n.t('errors.api.redirects.yamlParse'),
-                help: 'https://ghost.org/docs/api/handlebars-themes/routing/redirects/'
+                help: 'https://ghost.org/docs/themes/routing/#redirects'
             });
         }
 

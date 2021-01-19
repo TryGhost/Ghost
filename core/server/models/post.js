@@ -470,7 +470,7 @@ Post = ghostBookshelf.Model.extend({
             } catch (err) {
                 throw new errors.ValidationError({
                     message: 'Invalid mobiledoc structure.',
-                    help: 'https://ghost.org/docs/concepts/posts/'
+                    help: 'https://ghost.org/docs/publishing/'
                 });
             }
         }

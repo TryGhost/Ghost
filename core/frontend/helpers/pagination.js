@@ -15,7 +15,7 @@ module.exports = function pagination(options) {
         throw new errors.IncorrectUsageError({
             level: 'normal',
             message: i18n.t('warnings.helpers.pagination.invalidData'),
-            help: 'https://ghost.org/docs/api/handlebars-themes/helpers/pagination/'
+            help: 'https://ghost.org/docs/themes/helpers/pagination/'
         });
     }
 
