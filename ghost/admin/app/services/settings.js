@@ -66,10 +66,10 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     },
 
     rollbackAttributes() {
-        return this.content.rollbackAttributes();
+        return this.content?.rollbackAttributes();
     },
 
     changedAttributes() {
-        return this.content.changedAttributes();
+        return this.content?.changedAttributes();
     }
 });
