@@ -501,7 +501,7 @@ const configureGrunt = function (grunt) {
     //
     // Ghost's GitHub repository contains the un-built source code for Ghost. If you're looking for the already
     // built release zips, you can get these from the [release page](https://github.com/TryGhost/Ghost/releases) on
-    // GitHub or from https://ghost.org/download. These zip files are created using the [grunt release](#release)
+    // GitHub or from https://ghost.org/docs/install/. These zip files are created using the [grunt release](#release)
     // task.
     //
     // If you want to work on Ghost core, or you want to use the source files from GitHub, then you have to build
