@@ -232,7 +232,7 @@ export default Controller.extend({
             invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
             message = `Failed to send ${erroredEmails.length} ${invitationsString}`;
             message += Ember.Handlebars.Utils.escapeExpression(erroredEmails.join(', '));
-            message += '. Please check your email configuration, see <a href=\'https://ghost.org/docs/concepts/config/#mail\' target=\'_blank\'>https://ghost.org/docs/concepts/config/#mail</a> for instructions';
+            message += '. Please check your email configuration, see <a href=\'https://ghost.org/docs/config/#mail\' target=\'_blank\'>https://ghost.org/docs/config/#mail</a> for instructions';
 
             message = htmlSafe(message);
             notifications.showAlert(message, {type: 'error', delayed: successCount > 0, key: 'signup.send-invitations.failed'});
