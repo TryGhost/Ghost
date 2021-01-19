@@ -260,6 +260,11 @@ module.exports = function MembersApi({
             res.writeHead(400);
             return res.end();
         }
+
+        if (!req.body || !req.headers['stripe-signature']) {
+            res.writeHead(400);
+            return res.end();
+        }
         let event;
         try {
             event = stripeWebhookService.parseWebhook(req.body, req.headers['stripe-signature']);
