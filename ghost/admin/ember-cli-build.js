@@ -9,7 +9,7 @@ const Funnel = require('broccoli-funnel');
 const environment = EmberApp.env();
 const isProduction = environment === 'production';
 
-const postcssEasyImport = require('postcss-easy-import');
+const postcssImport = require('postcss-import');
 const postcssCustomProperties = require('postcss-custom-properties');
 const postcssColorModFunction = require('postcss-color-mod-function');
 const postcssCustomMedia = require('postcss-custom-media');
@@ -158,7 +158,7 @@ module.exports = function (defaults) {
                 enabled: true,
                 plugins: [
                     {
-                        module: postcssEasyImport,
+                        module: postcssImport,
                         options: {
                             path: ['app/styles']
                         }
