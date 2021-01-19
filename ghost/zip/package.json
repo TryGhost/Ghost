@@ -28,6 +28,6 @@
     "archiver": "4.0.1",
     "bluebird": "3.7.2",
     "extract-zip": "2.0.0",
-    "fs-extra": "9.0.1"
+    "fs-extra": "9.1.0"
   }
 }
