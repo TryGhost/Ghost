@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:api:canary:content:app');
+const debug = require('ghost-ignition').debug('web:api:v4:content:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const express = require('../../../../../shared/express');
@@ -6,8 +6,8 @@ const shared = require('../../../shared');
 const routes = require('./routes');
 
 module.exports = function setupApiApp() {
-    debug('Content API canary setup start');
-    const apiApp = express('canary content');
+    debug('Content API v4 setup start');
+    const apiApp = express('v4 content');
 
     // API middleware
 
@@ -30,7 +30,7 @@ module.exports = function setupApiApp() {
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
     apiApp.use(shared.middlewares.errorHandler.handleJSONResponse);
 
-    debug('Content API canary setup end');
+    debug('Content API v4 setup end');
 
     return apiApp;
 };

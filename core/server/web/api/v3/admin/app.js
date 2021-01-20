@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:canary:admin:app');
+const debug = require('ghost-ignition').debug('web:v3:admin:app');
 const boolParser = require('express-query-boolean');
 const express = require('../../../../../shared/express');
 const bodyParser = require('body-parser');
@@ -7,8 +7,8 @@ const apiMw = require('../../middleware');
 const routes = require('./routes');
 
 module.exports = function setupApiApp() {
-    debug('Admin API canary setup start');
-    const apiApp = express('canary admin');
+    debug('Admin API v3 setup start');
+    const apiApp = express('v3 admin');
 
     // API middleware
 
@@ -36,7 +36,7 @@ module.exports = function setupApiApp() {
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
     apiApp.use(shared.middlewares.errorHandler.handleJSONResponseV2);
 
-    debug('Admin API canary setup end');
+    debug('Admin API v3 setup end');
 
     return apiApp;
 };

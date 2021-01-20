@@ -5,7 +5,7 @@ const jobsService = require('../../../services/jobs');
 
 /** A bunch of helper routes for testing purposes */
 module.exports = function testRoutes() {
-    const router = express.Router('canary admin');
+    const router = express.Router('testmode admin');
 
     router.get('/500', (req, res) => res.sendStatus(500));
     router.get('/400', (req, res) => res.sendStatus(400));

@@ -63,8 +63,8 @@
         "versions": {
             "all": ["v2", "v3", "canary"],
             "canary": {
-                "admin": "canary/admin",
-                "content": "canary/content"
+                "admin": "v4/admin",
+                "content": "v4/content"
             },
             "v3": {
                 "admin": "v3/admin",
