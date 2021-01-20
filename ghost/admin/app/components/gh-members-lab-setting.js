@@ -7,7 +7,7 @@ import {task} from 'ember-concurrency';
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
 
-const CURRENCIES = [
+export const CURRENCIES = [
     {
         label: 'USD - US Dollar', value: 'usd', symbol: '$'
     },
