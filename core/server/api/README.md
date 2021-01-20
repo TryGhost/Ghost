@@ -1,7 +1,8 @@
 # API Versioning
 
 Ghost supports multiple API versions.
-Each version lives in a separate folder e.g. api/v2, api/v3, api/canary etc.
+Each version lives in a separate folder e.g. api/v2, api/v3 etc.
+The api/canary version is an alias to the latest API version.
 Next to the API folders there is a shared folder, which contains shared code, which all API versions use.
 
 ## Stages
