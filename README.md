@@ -1,5 +1,7 @@
 # Admin Api Schema
 
+The package serves as a single source of truth when validating requests coming into Ghost's Admin API endpoints. It uses [JSON Schema](https://json-schema.org/) definitions under the hood to describe expected format of validated data.
+
 ## Install
 
 `npm install @tryghost/admin-api-schema --save`
