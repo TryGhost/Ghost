@@ -1,5 +1,5 @@
 const should = require('should');
-const middleware = require('../../../../../../core/server/web/api/canary/content/middleware');
+const middleware = require('../../../../../../core/server/web/api/v3/content/middleware');
 
 describe('Content Api v3 middleware', function () {
     it('exports an authenticatePublic middleware', function () {

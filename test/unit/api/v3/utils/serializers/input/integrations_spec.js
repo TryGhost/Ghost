@@ -1,5 +1,5 @@
 const should = require('should');
-const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
+const serializers = require('../../../../../../../core/server/api/v3/utils/serializers');
 
 describe('Unit: v3/utils/serializers/input/pages', function () {
     describe('browse', function () {
