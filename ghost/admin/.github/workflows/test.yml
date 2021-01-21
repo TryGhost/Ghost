@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - '4.0'
       - 'renovate/*'
 jobs:
   prod-build:
@@ -20,7 +21,7 @@ jobs:
       - run: grunt shell:ember:prod
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
         with:
           status: ${{ job.status }}
         env:
@@ -39,7 +40,7 @@ jobs:
       - run: yarn lint:js
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
         with:
           status: ${{ job.status }}
         env:
@@ -67,7 +68,7 @@ jobs:
           BROWSER: ${{ matrix.browser }}
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
         with:
           status: ${{ job.status }}
         env:
