@@ -1,6 +1,8 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
             <LinkTo @route="settings.integrations" data-test-link="integrations-back">Integrations</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
             Slack

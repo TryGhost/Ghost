@@ -52,6 +52,8 @@ Router.map(function () {
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
 
+    this.route('settings');
+
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.labs', {path: '/settings/labs'});
     this.route('settings.labs.members', {path: '/settings/labs/members'});
