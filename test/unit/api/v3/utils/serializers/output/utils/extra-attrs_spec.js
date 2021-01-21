@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const extraAttrsUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/extra-attrs');
+const extraAttrsUtil = require('../../../../../../../../core/server/api/v3/utils/serializers/output/utils/extra-attrs');
 
 describe('Unit: v3/utils/serializers/output/utils/extra-attrs', function () {
     const frame = {

@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const utils = require('../../../../../core/server/api/canary/utils');
+const utils = require('../../../../../core/server/api/v3/utils');
 
 describe('Unit: v3/utils/index', function () {
     afterEach(function () {

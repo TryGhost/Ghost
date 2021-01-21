@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/frontend/services/url');
 const urlUtils = require('../../../../../../../../core/shared/url-utils');
-const urlUtil = require('../../../../../../../../core/server/api/v2/utils/serializers/output/utils/url');
+const urlUtil = require('../../../../../../../../core/server/api/v3/utils/serializers/output/utils/url');
 
 describe('Unit: v3/utils/serializers/output/utils/url', function () {
     beforeEach(function () {
@@ -57,8 +57,7 @@ describe('Unit: v3/utils/serializers/output/utils/url', function () {
             urlUtils.htmlRelativeToAbsolute.callCount.should.eql(3);
             urlUtils.htmlRelativeToAbsolute.getCall(0).args.should.eql([
                 'html',
-                'getUrlByResourceId',
-                {assetsOnly: true}
+                'getUrlByResourceId'
             ]);
 
             urlService.getUrlByResourceId.callCount.should.eql(1);

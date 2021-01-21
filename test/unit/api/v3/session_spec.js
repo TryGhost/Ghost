@@ -4,7 +4,7 @@ const {UnauthorizedError} = require('@tryghost/errors');
 
 const models = require('../../../../core/server/models');
 
-const sessionController = require('../../../../core/server/api/canary/session');
+const sessionController = require('../../../../core/server/api/v3/session');
 const sessionServiceMiddleware = require('../../../../core/server/services/auth/session');
 
 describe('v3 Session controller', function () {

@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const mapper = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/mapper');
-const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
+const mapper = require('../../../../../../../core/server/api/v3/utils/serializers/output/utils/mapper');
+const serializers = require('../../../../../../../core/server/api/v3/utils/serializers');
 
 describe('Unit: v3/utils/serializers/output/tags', function () {
     let tagModel;
