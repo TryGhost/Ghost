@@ -22,7 +22,7 @@ describe('Acceptance: Signin', function () {
         await authenticateSession();
         await visit('/signin');
 
-        expect(currentURL(), 'current url').to.equal('/site');
+        expect(currentURL(), 'current url').to.equal('/dashboard');
     });
 
     describe('when attempting to signin', function () {
@@ -92,7 +92,7 @@ describe('Acceptance: Signin', function () {
             await fillIn('[name="identification"]', 'test@example.com');
             await fillIn('[name="password"]', 'thisissupersafe');
             await click('.gh-btn-blue');
-            expect(currentURL(), 'currentURL').to.equal('/site');
+            expect(currentURL(), 'currentURL').to.equal('/dashboard');
         });
     });
 });

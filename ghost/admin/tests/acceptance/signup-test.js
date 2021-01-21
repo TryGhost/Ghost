@@ -167,7 +167,7 @@ describe('Acceptance: Signup', function () {
         // submitting sends correct details and redirects to content screen
         await click('.gh-btn-green');
 
-        expect(currentRouteName()).to.equal('site');
+        expect(currentRouteName()).to.equal('dashboard');
     });
 
     it('redirects if already logged in', async function () {
@@ -185,7 +185,7 @@ describe('Acceptance: Signup', function () {
         // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
         await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
-        expect(currentRouteName()).to.equal('site');
+        expect(currentRouteName()).to.equal('dashboard');
         expect(find('.gh-alert-content').textContent).to.have.string('sign out to register');
     });
 
