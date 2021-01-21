@@ -1,5 +1,57 @@
 /* Settings
 /* ---------------------------------------------------------- */
+.gh-settings-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    background: var(--white);
+    box-shadow: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1);
+    border-radius: .5rem;;
+}
+
+.gh-settings-main-grid .gh-setting-group {
+    display: flex;
+    color: var(--darkgrey);
+    border-top: 1px solid var(--whitegrey);
+    border-left: 1px solid var(--whitegrey);
+    padding: 20px;
+}
+
+.gh-settings-main-grid .gh-setting-group:nth-child(3n-2) {
+    border-left: none;
+}
+
+.gh-settings-main-grid .gh-setting-group:nth-child(-n+3) {
+    border-top: none;
+}
+
+.gh-settings-main-grid .gh-setting-group svg {
+    margin-top: 3px;
+    flex-basis: 48px;
+    max-width: 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.gh-settings-main-grid .gh-setting-group svg path {
+    fill: var(--midgrey);
+}
+
+.gh-settings-main-grid .gh-setting-group div {
+    margin-left: 14px;
+    flex-shrink: 1;
+}
+
+.gh-settings-main-grid .gh-setting-group h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.gh-settings-main-grid .gh-setting-group p {
+    color: var(--midgrey);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5em;
+}
 
 .gh-setting-header {
     margin: 4vw 0 5px 1px;
