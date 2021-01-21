@@ -23,7 +23,6 @@ Router.map(function () {
 
     this.route('about');
     this.route('site');
-    this.route('dashboard');
 
     this.route('billing', function () {
         this.route('billing-sub', {path: '/*sub'});
