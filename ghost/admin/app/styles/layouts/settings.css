@@ -16,6 +16,10 @@
     padding: 20px;
 }
 
+.gh-settings-main-grid .gh-setting-group:hover {
+    background: var(--whitegrey-l2);
+}
+
 .gh-settings-main-grid .gh-setting-group:nth-child(3n-2) {
     border-left: none;
 }
