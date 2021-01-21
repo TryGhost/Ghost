@@ -21,7 +21,7 @@
     right: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     margin: 0;
     padding: 18px 32px;
     border-top-left-radius: 6px;
@@ -35,8 +35,13 @@
 }
 
 .gh-pe-header h2 {
-    width: calc(50vw - 200px);
     margin: 0;
+    margin-right: auto;
+    flex: 1;
+}
+
+.gh-pe-header .gh-btn-group {
+    flex: 1;
 }
 
 .gh-pe-header-border {
@@ -44,7 +49,8 @@
 }
 
 .gh-pe-close {
-    width: calc(50vw - 200px)
+    margin-left: auto;
+    flex: 1;
 }
 
 .modal-content .gh-pe-close button {
@@ -64,18 +70,19 @@
 
 .gh-pe-btn-group button span {
     border: 1px solid var(--whitegrey);
+    border-radius: 0;
 }
 
 .gh-pe-btn-group button:first-of-type span {
     border-right: none;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
 }
 
 .gh-pe-btn-group button:last-of-type span {
     border-left: none;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 .fullscreen-modal-email-preview .gh-pe-desktop-container {
@@ -94,7 +101,7 @@
     width: 100%;
     padding: 0;
     background: var(--white);
-    box-shadow: 
+    box-shadow:
         0 0 0 1px rgba(0,0,0,0.02),
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
         0 6.7px 5.3px rgba(0, 0, 0, 0.028),
@@ -153,7 +160,7 @@
     border-radius: 40px;
     display: flex;
     background: var(--whitegrey-l2);
-    box-shadow: 
+    box-shadow:
         0 0 0 1px rgba(0,0,0,0.02),
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
         0 6.7px 5.3px rgba(0, 0, 0, 0.028),
