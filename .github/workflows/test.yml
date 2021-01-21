@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - '4.0'
       - 3.*
       - 2.x
       - 'renovate/*'
@@ -22,7 +23,7 @@ jobs:
       - run: yarn
       - run: yarn lint
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/4.0')
         with:
           status: ${{ job.status }}
         env:
@@ -107,7 +108,7 @@ jobs:
       - run: grunt test-regression --verbose
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/4.0')
         with:
           status: ${{ job.status }}
         env:
@@ -153,7 +154,7 @@ jobs:
           ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/4.0')
         with:
           status: ${{ job.status }}
         env:
@@ -162,7 +163,7 @@ jobs:
   canary:
     runs-on: ubuntu-18.04
     needs: [lint, migrations, test, ghost-cli]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/4.0')
     name: Canary
     steps:
       - uses: actions/checkout@v2
@@ -180,16 +181,42 @@ jobs:
           git config --global user.email "ghost@example.com"
 
       - run: yarn
-      - run: grunt master --upstream=origin
+      - run: grunt master
+
+      - run: git checkout 4.0 && yarn
+        if: github.ref == 'refs/heads/4.0'
+      - run: git checkout 4.0 && yarn
+        if: github.ref == 'refs/heads/4.0'
+        working-directory: core/client
+
       - run: echo "ghost_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         working-directory: core/client
       - run: if [ -n "$(git status --porcelain)" ]; then git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"; fi
-      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
-      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
+
+      - run: npm version premajor --preid="pre.$ghost_hash.$ghost_admin_hash"
+        if: github.ref == 'refs/heads/4.0'
+      - run: npm version premajor --preid="pre.$ghost_hash.$ghost_admin_hash"
+        if: github.ref == 'refs/heads/4.0'
         working-directory: core/client
+
+      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
+        if: github.ref == 'refs/heads/master'
+      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
+        if: github.ref == 'refs/heads/master'
+        working-directory: core/client
+
       - run: grunt release --skip-update
+
       - uses: actions/upload-artifact@v2
+        if: github.ref == 'refs/heads/4.0'
+        with:
+          name: ghost-4.0-canary
+          path: .dist/release/*
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v2
+        if: github.ref == 'refs/heads/master'
         with:
           name: ghost-canary
           path: .dist/release/*
