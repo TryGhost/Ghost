@@ -4090,6 +4090,25 @@ ghost-ignition@4.3.0:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
+ghost-ignition@4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.0.tgz#5a4022cc90b660ef947b3c0511c4fb4be66ee656"
+  integrity sha512-8I2NbReQIctXmbC3LGbR7C6WaPnimqfmTbngnAJ9WtU5ny8GnqIpApTvctjUD4E8zG0Av931xNW16Nw4c0Jjew==
+  dependencies:
+    bunyan "1.8.15"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.3.1"
+    find-root "1.1.0"
+    fs-extra "9.1.0"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.20"
+    moment "2.27.0"
+    nconf "0.10.0"
+    prettyjson "1.2.1"
+    uuid "8.3.2"
+
 ghost-ignition@^2.9.6:
   version "2.9.6"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.6.tgz#cc8358f0a356bae490e5abeca3c3bda8383352fe"
