@@ -19,13 +19,13 @@ describe('Acceptance: Setup', function () {
         await authenticateSession();
 
         await visit('/setup/one');
-        expect(currentURL()).to.equal('/site');
+        expect(currentURL()).to.equal('/dashboard');
 
         await visit('/setup/two');
-        expect(currentURL()).to.equal('/site');
+        expect(currentURL()).to.equal('/dashboard');
 
         await visit('/setup/three');
-        expect(currentURL()).to.equal('/site');
+        expect(currentURL()).to.equal('/dashboard');
     });
 
     it('redirects to signin if already set up', async function () {
@@ -126,7 +126,7 @@ describe('Acceptance: Setup', function () {
 
             // it redirects to the home / "content" screen
             expect(currentURL(), 'url after submitting invites')
-                .to.equal('/site');
+                .to.equal('/dashboard');
 
             // it displays success alert
             expect(findAll('.gh-alert-green').length, 'number of success alerts')
@@ -334,7 +334,7 @@ describe('Acceptance: Setup', function () {
 
             // it redirects to the home / "content" screen
             expect(currentURL(), 'url after submitting invites')
-                .to.equal('/site');
+                .to.equal('/dashboard');
 
             // it displays success alert
             expect(findAll('.gh-alert-green').length, 'number of success alerts')
