@@ -32,7 +32,6 @@
             </li>
         </ul>
         <ul class="gh-nav-list gh-nav-manage">
-            <li class="gh-nav-list-h">Manage</li>
             <li class="gh-nav-list-new relative">
                 <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
                 <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New post" @title="New post" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
@@ -85,16 +84,11 @@
         </ul>
         {{#if (gh-user-can-admin this.session.user)}}
             <ul class="gh-nav-list gh-nav-settings">
-                <li class="gh-nav-list-h">Settings</li>
-                <li><LinkTo @route="settings.general" data-test-nav="settings">{{svg-jar "settings"}}General</LinkTo></li>
-                <li><LinkTo @route="settings.design" data-test-nav="design">{{svg-jar "paintbrush"}}Design</LinkTo></li>
-                <li><LinkTo @route="settings.code-injection" data-test-nav="code-injection">{{svg-jar "brackets"}}Code injection</LinkTo></li>
-                <li><LinkTo @route="settings.integrations" @current-when={{this.isIntegrationRoute}} data-test-nav="integrations">{{svg-jar "modules"}}Integrations</LinkTo></li>
                 <li class="relative">
                     <button class="gh-secondary-action" title="Toggle Night shift" {{action (toggle "nightShift" this.feature)}}>
                         <span>{{svg-jar "nightshift"}}</span>
                     </button>
-                    <LinkTo @route="settings.labs" data-test-nav="labs">{{svg-jar "labs"}}Labs</LinkTo>
+                    <LinkTo @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}Settings</LinkTo>
                 </li>
                 {{#if this.showBilling}}
                     <li class="relative">
