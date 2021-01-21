@@ -27,7 +27,7 @@ describe('Acceptance: Members', function () {
         await authenticateSession();
         await visit('/members');
 
-        expect(currentURL()).to.equal('/site');
+        expect(currentURL()).to.equal('/dashboard');
         expect(find('[data-test-nav="members"]'), 'sidebar link')
             .to.not.exist;
     });
