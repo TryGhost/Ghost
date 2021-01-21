@@ -43,6 +43,17 @@
     ee-log "^3.0.0"
     section-tests "^1.3.0"
 
+"@elastic/elasticsearch@^7.10.0":
+  version "7.10.0"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.10.0.tgz#da105a9c1f14146f9f2cab4e7026cb7949121b8d"
+  integrity sha512-vXtMAQf5/DwqeryQgRriMtnFppJNLc/R7/R0D8E+wG5/kGM5i7mg+Hi7TM4NZEuXgtzZ2a/Nf7aR0vLyrxOK/w==
+  dependencies:
+    debug "^4.1.1"
+    hpagent "^0.1.1"
+    ms "^2.1.1"
+    pump "^3.0.0"
+    secure-json-parse "^2.1.0"
+
 "@ember-data/rfc395-data@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@ember-data/rfc395-data/-/rfc395-data-0.0.4.tgz#ecb86efdf5d7733a76ff14ea651a1b0ed1f8a843"
@@ -129,6 +140,13 @@
     "@nexes/mongo-utils" "0.3.0"
     "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
+
+"@sam-lord/elasticsearch-bunyan@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@sam-lord/elasticsearch-bunyan/-/elasticsearch-bunyan-0.0.5.tgz#0e79654974b7c7f674c02ea0b3ff79adccea5c9a"
+  integrity sha512-dVRHMjtIdF90teoClns5Wc7ZNfKu55ykOmCfLKZeLAGGaNHnCrmaKAK2i0gL4C6XMNzJpzM+NqkW7u4ck9Dn6g==
+  dependencies:
+    "@elastic/elasticsearch" "^7.10.0"
 
 "@segment/loosely-validate-event@^2.0.0":
   version "2.0.0"
@@ -4090,11 +4108,12 @@ ghost-ignition@4.3.0:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.0.tgz#5a4022cc90b660ef947b3c0511c4fb4be66ee656"
-  integrity sha512-8I2NbReQIctXmbC3LGbR7C6WaPnimqfmTbngnAJ9WtU5ny8GnqIpApTvctjUD4E8zG0Av931xNW16Nw4c0Jjew==
+ghost-ignition@4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.1.tgz#e2d2d3024dc94e5a4ec496dfcf10463cee19e50a"
+  integrity sha512-psmNBcnxcaewzCwS8p2xLY4IyRXOYpIfRLxFVKB/+V6Qgd798SPFURYBPBbcLQnHzOP672UQFv4C/8v7A0y4jg==
   dependencies:
+    "@sam-lord/elasticsearch-bunyan" "^0.0.5"
     bunyan "1.8.15"
     bunyan-loggly "1.4.2"
     caller "1.0.1"
@@ -4581,6 +4600,11 @@ hooker@~0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/hooker/-/hooker-0.2.3.tgz#b834f723cc4a242aa65963459df6d984c5d3d959"
   integrity sha1-uDT3I8xKJCqmWWNFnfbZhMXT2Vk=
+
+hpagent@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/hpagent/-/hpagent-0.1.1.tgz#66f67f16e5c7a8b59a068e40c2658c2c749ad5e2"
+  integrity sha512-IxJWQiY0vmEjetHdoE9HZjD4Cx+mYTr25tR7JCxXaiI3QxW0YqYyM11KyZbHufoa/piWhMb2+D3FGpMgmA2cFQ==
 
 hsl-regex@^1.0.0:
   version "1.0.0"
@@ -8437,6 +8461,11 @@ section-tests@^1.3.0:
     ee-log "^1.1.0"
     ee-types "^2.1.4"
     glob "^7.1.2"
+
+secure-json-parse@^2.1.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/secure-json-parse/-/secure-json-parse-2.2.0.tgz#cc53338a0c59667d22ef5847b11dbfffcb4b8a37"
+  integrity sha512-OYpk8nU1g9+5u6HZ+OOMZVpD037Jo5E9QzdDdQRe6b9ZPWOoB85AenHz5Rd90UwG8zdef69dO0axSosdBsDK9Q==
 
 secure-keys@^1.0.0:
   version "1.0.0"
