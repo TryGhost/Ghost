@@ -18,6 +18,9 @@
     <div class="gh-nav-top">
         <ul class="gh-nav-list gh-nav-main">
             <li class="relative">
+                <LinkTo @route="dashboard" @alt="Dashboard" @title="Dashboard" data-test-nav="dashboard"><span>{{svg-jar "house"}} Dashboard</span></LinkTo>
+            </li>
+            <li class="relative">
                 <span {{action "transitionToOrRefreshSite" on="click"}}>
                     <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
                         {{svg-jar "house"}} View site
