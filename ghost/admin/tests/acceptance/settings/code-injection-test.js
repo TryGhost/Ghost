@@ -69,10 +69,6 @@ describe('Acceptance: Settings - Code-Injection', function () {
             // has correct page title
             expect(document.title, 'page title').to.equal('Settings - Code injection - Test Blog');
 
-            // highlights nav menu
-            expect(find('[data-test-nav="code-injection"]'), 'highlights nav menu item')
-                .to.have.class('active');
-
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
 
             expect(findAll('#ghost-head .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
