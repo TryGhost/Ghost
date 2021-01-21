@@ -3444,7 +3444,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../core/server/api/canary/posts-public');
+                const postsAPI = require('../../../core/server/api/v3/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
