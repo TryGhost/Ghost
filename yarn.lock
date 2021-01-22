@@ -4108,10 +4108,10 @@ ghost-ignition@4.3.0:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.4.1:
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.1.tgz#e2d2d3024dc94e5a4ec496dfcf10463cee19e50a"
-  integrity sha512-psmNBcnxcaewzCwS8p2xLY4IyRXOYpIfRLxFVKB/+V6Qgd798SPFURYBPBbcLQnHzOP672UQFv4C/8v7A0y4jg==
+ghost-ignition@4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.2.tgz#80abad2ec6cf881105d33f38ce1826e8620a54d2"
+  integrity sha512-y/+U8GYBr3XzjzhKiIZh2IUf6oiOUrtW48PTUR+ZwmFYajd0Ej/xpKEKq0JY5Bv1gBBqjCKInSr/LPwcK4zr7Q==
   dependencies:
     "@sam-lord/elasticsearch-bunyan" "^0.0.5"
     bunyan "1.8.15"
