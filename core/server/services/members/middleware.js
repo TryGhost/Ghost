@@ -138,7 +138,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
         const member = await membersService.ssr.exchangeTokenForSession(req, res);
         const subscriptions = member && member.stripe && member.stripe.subscriptions || [];
 
-        const action = req.query.action || req.query['portal-action'];
+        const action = req.query.action;
 
         if (action === 'signup') {
             let customRedirect = '';
