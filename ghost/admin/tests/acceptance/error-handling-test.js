@@ -108,7 +108,7 @@ describe('Acceptance: Error Handling', function () {
         it('handles ember-ajax HTML response', async function () {
             this.server.del('/themes/foo/', htmlErrorResponse);
 
-            await visit('/settings/design');
+            await visit('/settings/theme');
             await click('[data-test-theme-id="foo"] [data-test-theme-delete-button]');
             await click('.fullscreen-modal [data-test-delete-button]');
 
