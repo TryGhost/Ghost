@@ -24,7 +24,7 @@
     "sinon": "9.2.3"
   },
   "dependencies": {
-    "ghost-ignition": "4.4.1",
+    "ghost-ignition": "4.4.2",
     "lodash": "4.17.20"
   }
 }
