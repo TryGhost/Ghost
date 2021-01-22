@@ -79,7 +79,7 @@ function dropUnique(tableName, column, transaction) {
  * https://github.com/tgriesser/knex/issues/1303
  * createTableIfNotExists can throw error if indexes are already in place
  */
-function createTable(table, transaction) {
+function createTable(table, transaction, tableSpec = schema[table]) {
     return (transaction || db.knex).schema.hasTable(table)
         .then(function (exists) {
             if (exists) {
@@ -89,14 +89,14 @@ function createTable(table, transaction) {
             return (transaction || db.knex).schema.createTable(table, function (t) {
                 let tableIndexes = [];
 
-                const columnKeys = _.keys(schema[table]);
+                const columnKeys = _.keys(tableSpec);
                 _.each(columnKeys, function (column) {
                     if (column === '@@INDEXES@@') {
-                        tableIndexes = schema[table]['@@INDEXES@@'];
+                        tableIndexes = tableSpec['@@INDEXES@@'];
                         return;
                     }
 
-                    return addTableColumn(table, t, column);
+                    return addTableColumn(table, t, column, tableSpec[column]);
                 });
 
                 _.each(tableIndexes, function (index) {
