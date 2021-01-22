@@ -11,21 +11,37 @@
 .gh-settings-main-grid .gh-setting-group {
     display: flex;
     color: var(--darkgrey);
-    border-top: 1px solid var(--whitegrey);
-    border-left: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--whitegrey);
+    border-right: 1px solid var(--whitegrey);
     padding: 20px;
 }
 
-.gh-settings-main-grid .gh-setting-group:hover {
+.gh-settings-main-grid a.gh-setting-group:hover {
     background: var(--whitegrey-l2);
 }
 
-.gh-settings-main-grid .gh-setting-group:nth-child(3n-2) {
-    border-left: none;
+.gh-settings-main-grid .gh-setting-group:nth-child(3n) {
+    border-right: none;
 }
 
-.gh-settings-main-grid .gh-setting-group:nth-child(-n+3) {
-    border-top: none;
+.gh-settings-main-grid .gh-setting-group:nth-last-child(-n+3) {
+    border-bottom: none;
+}
+
+.gh-settings-main-grid .gh-setting-group:first-child {
+    border-top-left-radius: .5rem;
+}
+
+.gh-settings-main-grid .gh-setting-group:nth-child(3) {
+    border-top-right-radius: .5rem;
+}
+
+.gh-settings-main-grid .gh-setting-group:nth-last-child(3) {
+    border-bottom-left-radius: .5rem;
+}
+
+.gh-settings-main-grid .gh-setting-group:last-child {
+    border-bottom-right-radius: .5rem;
 }
 
 .gh-settings-main-grid .gh-setting-group svg {

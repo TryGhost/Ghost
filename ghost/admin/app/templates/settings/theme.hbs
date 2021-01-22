@@ -1,0 +1,158 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Theme
+        </h2>
+    </GhCanvasHeader>
+
+    {{#if this.showLeaveSettingsModal}}
+        <GhFullscreenModal @modal="leave-settings"
+            @confirm={{action "leaveSettings"}}
+            @close={{action "toggleLeaveSettingsModal"}}
+            @modifier="action wide" />
+    {{/if}}
+
+    <section class="view-container">
+        <div class="gh-setting-header gh-first-header">Theme Directory</div>
+        <div class="gh-theme-directory-container">
+            <div class="theme-directory">
+                <a class="td-item" href="https://github.com/TryGhost/Massively" target="_blank" rel="noopener noreferrer">
+                    <div class="td-item-screenshot">
+                        <img style="object-fit:contain;" src="assets/img/themes/massively.jpg" alt="Massively Theme" />
+                    </div>
+                    <div class="td-item-desc">
+                        <div>Massively <span>— Free</span></div>
+                    </div>
+                </a>
+                <a class="td-item" href="https://themeforest.net/item/nurui-multipurpose-ghost-blog-theme/22243886" target="_blank" rel="noopener noreferrer">
+                    <div class="td-item-screenshot">
+                        <img style="object-fit:contain;" src="assets/img/themes/nurui.jpg" alt="Nurui Theme" />
+                    </div>
+                    <div class="td-item-desc">
+                        <div>Nurui <span>— Premium</span></div>
+                    </div>
+                </a>
+                <a class="td-item" href="https://themeforest.net/item/pacific-big-bold-photographydriven-theme/19774541" target="_blank" rel="noopener noreferrer">
+                    <div class="td-item-screenshot">
+                        <img style="object-fit:contain;" src="assets/img/themes/pacific.jpg" alt="Pacific Theme" />
+                    </div>
+                    <div class="td-item-desc">
+                        <div>Pacific <span>— Premium</span></div>
+                    </div>
+                </a>
+                <a class="td-item" href="https://www.hauntedthemes.com/" target="_blank" rel="noopener noreferrer">
+                    <div class="td-item-screenshot">
+                        <img style="object-fit:contain;" src="assets/img/themes/farafra.jpg" alt="Farafra Theme" />
+                    </div>
+                    <div class="td-item-desc">
+                        <div>Farafra <span>— Premium</span></div>
+                    </div>
+                </a>
+                <a class="td-item" href="https://themeforest.net/item/valkyrie-a-highly-visual-ghost-blog/22576630" target="_blank" rel="noopener noreferrer">
+                    <div class="td-item-screenshot">
+                        <img style="object-fit:contain;" src="assets/img/themes/valkyrie.jpg" alt="Valkyrie Theme" />
+                    </div>
+                    <div class="td-item-desc">
+                        <div>Valkyrie <span>— Premium</span></div>
+                    </div>
+                </a>
+                <a class="td-item" href="https://themeforest.net/item/sente-magazine-ghost-blog-theme/21019644" target="_blank" rel="noopener noreferrer">
+                    <div class="td-item-screenshot">
+                        <img style="object-fit:contain;" src="assets/img/themes/sente.jpg" alt="Sente Theme" />
+                    </div>
+                    <div class="td-item-desc">
+                        <div>Sente <span>— Premium</span></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="td-cta">
+                <a class="td-cta-box td-cta-marketplace" href="https://ghost.org/marketplace/" target="_blank" rel="noopener">
+                    <div class="td-cta-icon">{{svg-jar "store"}}</div>
+                    <div class="td-cta-content-wrapper">
+                        <div class="td-cta-content">
+                            <h4 class="fw6 f6">Theme Marketplace</h4>
+                            <p>Explore a huge range of free and premium themes for Ghost with a range of design and layout options</p>
+                        </div>
+                        <div class="td-cta-arrow">
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </a>
+                <a class="td-cta-box td-cta-docs" href="https://ghost.org/docs/themes/" target="_blank" rel="noopener">
+                    <div class="td-cta-icon">{{svg-jar "book-open"}}</div>
+                    <div class="td-cta-content-wrapper">
+                        <div class="td-cta-content">
+                            <h4 class="fw6 f6">Developer Docs</h4>
+                            <p>Build your own custom Ghost theme from scratch using our comprehensive Handlebars.js SDK</p>
+                        </div>
+                        <div class="td-cta-arrow">
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="gh-setting-header">Installed Themes</div>
+        <div class="gh-themes-container">
+
+            <GhThemeTable
+                @themes={{this.themes}}
+                @activateTheme={{action "activateTheme"}}
+                @downloadTheme={{action "downloadTheme"}}
+                @deleteTheme={{action "deleteTheme"}} />
+
+            <LinkTo @route="settings.theme.uploadtheme" class="gh-btn gh-btn-green gh-themes-uploadbtn" data-test-upload-theme-button={{true}}>
+                <span>Upload a theme</span>
+            </LinkTo>
+
+
+            {{#if this.showDeleteThemeModal}}
+                <GhFullscreenModal @modal="delete-theme"
+                    @model={{hash
+                        theme=this.themeToDelete
+                        download=(action "downloadTheme" this.themeToDelete)
+                    }}
+                    @close={{action "hideDeleteThemeModal"}}
+                    @confirm={{action "deleteTheme"}}
+                    @modifier="action wide" />
+            {{/if}}
+
+            {{#if this.showThemeWarningsModal}}
+                <GhFullscreenModal @modal="theme-warnings"
+                    @model={{hash
+                        title="Activation successful"
+                        warnings=this.themeWarnings
+                        errors=this.themeErrors
+                        canActivate=true
+                    }}
+                    @close={{action "hideThemeWarningsModal"}}
+                    @modifier="action wide" />
+            {{/if}}
+
+            {{#if this.showThemeErrorsModal}}
+                <GhFullscreenModal @modal="theme-warnings"
+                    @model={{hash
+                        title="Activation failed"
+                        errors=this.themeErrors
+                        fatalErrors=this.themeFatalErrors
+                        canActivate=false
+                    }}
+                    @close={{action "hideThemeWarningsModal"}}
+                    @modifier="action wide" />
+            {{/if}}
+        </div>
+
+    </section>
+</section>
+
+{{outlet}}
+
+<GhTourItem @throbberId="upload-a-theme"
+    @target=".gh-themes-uploadbtn"
+    @throbberAttachment="top middle"
+    @popoverTriangleClass="bottom"
+/>
