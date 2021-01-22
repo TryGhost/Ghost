@@ -314,7 +314,7 @@ describe('Acceptance: Settings - Labs', function () {
         });
 
         it('sets the mailgunBaseUrl to the default', async function () {
-            await visit('/settings/labs/members');
+            await visit('/settings/members');
 
             await click('[data-test-toggle="enable-members"]');
 

@@ -3,8 +3,6 @@
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="settings">Settings</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
-            <LinkTo @route="settings.labs">Labs</LinkTo>
-            <span>{{svg-jar "arrow-right"}}</span>
             Members
         </h2>
         <section class="view-actions">
@@ -21,7 +19,7 @@
     <section class="view-container settings-debug">
 
         {{#if this.session.user.isOwner}}
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2 pa5">
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
             <div class="gh-setting-first gh-setting-last">
                 <div class="gh-members-setting-content">
                     <div class="gh-setting-title">Enable members</div>

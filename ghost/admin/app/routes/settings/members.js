@@ -47,7 +47,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Settings - Labs - Members'
+            titleToken: 'Settings - Members'
         };
     }
 });
