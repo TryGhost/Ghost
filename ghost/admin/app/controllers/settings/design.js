@@ -3,9 +3,15 @@ import $ from 'jquery';
 import Controller from '@ember/controller';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import RSVP from 'rsvp';
+import {
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES
+} from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+
+const ICON_EXTENSIONS = ['ico', 'png'];
 
 export default Controller.extend({
     config: service(),
@@ -13,6 +19,11 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+
+    imageExtensions: IMAGE_EXTENSIONS,
+    imageMimeTypes: IMAGE_MIME_TYPES,
+    iconExtensions: null,
+    iconMimeTypes: 'image/png,image/x-icon',
 
     dirtyAttributes: false,
     newNavItem: null,
@@ -22,6 +33,7 @@ export default Controller.extend({
         this._super(...arguments);
         this.set('newNavItem', NavigationItem.create({isNew: true}));
         this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
+        this.iconExtensions = ICON_EXTENSIONS;
     },
 
     blogUrl: computed('config.blogUrl', function () {
@@ -124,6 +136,38 @@ export default Controller.extend({
         reset() {
             this.set('newNavItem', NavigationItem.create({isNew: true}));
             this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
+        },
+
+        removeImage(image) {
+            // setting `null` here will error as the server treats it as "null"
+            this.settings.set(image, '');
+        },
+
+        /**
+         * Opens a file selection dialog - Triggered by "Upload Image" buttons,
+         * searches for the hidden file input within the .gh-setting element
+         * containing the clicked button then simulates a click
+         * @param  {MouseEvent} event - MouseEvent fired by the button click
+         */
+        triggerFileDialog(event) {
+            // simulate click to open file dialog
+            // using jQuery because IE11 doesn't support MouseEvent
+            $(event.target)
+                .closest('.gh-setting-action')
+                .find('input[type="file"]')
+                .click();
+        },
+
+        /**
+         * Fired after an image upload completes
+         * @param  {string} property - Property name to be set on `this.settings`
+         * @param  {UploadResult[]} results - Array of UploadResult objects
+         * @return {string} The URL that was set on `this.settings.property`
+         */
+        imageUploaded(property, results) {
+            if (results[0]) {
+                return this.settings.set(property, results[0].url);
+            }
         }
     },
 

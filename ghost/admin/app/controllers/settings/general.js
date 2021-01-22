@@ -11,8 +11,6 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-const ICON_EXTENSIONS = ['ico', 'png'];
-
 function randomPassword() {
     let word = generatePassword(6);
     let randomN = Math.floor(Math.random() * 1000);
@@ -29,8 +27,6 @@ export default Controller.extend({
     ui: service(),
 
     availableTimezones: null,
-    iconExtensions: null,
-    iconMimeTypes: 'image/png,image/x-icon',
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
     _scratchFacebook: null,
@@ -38,7 +34,6 @@ export default Controller.extend({
 
     init() {
         this._super(...arguments);
-        this.iconExtensions = ICON_EXTENSIONS;
     },
 
     privateRSSUrl: computed('config.blogUrl', 'settings.publicHash', function () {
