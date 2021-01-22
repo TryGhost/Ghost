@@ -1,0 +1,27 @@
+<div class="flex flex-column h-100">
+    <header class="modal-header gh-pe-header gh-pe-header-border" data-test-modal="preview-email" style="display:flex">
+        <h2 class="f6 fw6">Preview post</h2>
+        <div class="gh-contentfilter gh-btn-group gh-pe-btn-group" style="display:flex;flex-grow:1;justify-content:center">
+            <button type="button" class="gh-btn {{if (eq this.tab "desktop") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "desktop")}}><span>Desktop</span></button>
+            <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "email")}}><span>Email</span></button>
+            <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "social")}}><span>Social</span></button>
+        </div>
+        <div class="gh-pe-close">
+            <button class="close" title="Close" {{on "click" this.close}}>
+                {{svg-jar "close"}}
+            </button>
+        </div>
+    </header>
+
+    {{#if (eq this.tab "desktop")}}
+        <ModalPostPreview::Desktop @post={{@model}} />
+    {{/if}}
+
+    {{#if (eq this.tab "email")}}
+        <ModalPostPreview::Email @post={{@model}} />
+    {{/if}}
+
+    {{#if (eq this.tab "social")}}
+        <ModalPostPreview::Social @post={{@model}} />
+    {{/if}}
+</div>
