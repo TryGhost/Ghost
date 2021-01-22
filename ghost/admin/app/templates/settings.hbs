@@ -6,13 +6,19 @@
     </GhCanvasHeader>
 
     <section class="view-container">
-        {{!-- <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2"> --}}
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.general" data-test-nav="settings">
                 {{svg-jar "page"}}
                 <div>
                     <h4>General</h4>
                     <p>Update basic publication details, and generic site metadata</p>
+                </div>
+            </LinkTo>
+            <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
+                {{svg-jar "paintbrush"}}
+                <div>
+                    <h4>Theme</h4>
+                    <p>Install and update site theme</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.design" data-test-nav="design">
@@ -43,13 +49,15 @@
                     <p>Add code to the header or footer of your publication</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group"o @route="settings.labs" data-test-nav="labs">
+            <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
                 {{svg-jar "labs"}}
                 <div>
                     <h4>Labs</h4>
                     <p>Testing ground for new or experimental features</p>
                 </div>
             </LinkTo>
+            <div class="gh-setting-group"></div>
+            <div class="gh-setting-group"></div>
         </div>
     </section>
 </section>

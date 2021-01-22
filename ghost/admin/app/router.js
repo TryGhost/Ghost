@@ -61,6 +61,9 @@ Router.map(function () {
     this.route('settings.design', {path: '/settings/design'}, function () {
         this.route('uploadtheme');
     });
+    this.route('settings.theme', {path: '/settings/theme'}, function () {
+        this.route('uploadtheme');
+    });
     this.route('settings.integrations', {path: '/settings/integrations'}, function () {
         this.route('new');
     });
