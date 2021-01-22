@@ -90,16 +90,6 @@
                     </button>
                     <LinkTo @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}Settings</LinkTo>
                 </li>
-                {{#if this.showBilling}}
-                    <li class="relative">
-                        <a href="javascript:void(0)" {{action "toggleBillingModal"}} data-test-nav="billing">
-                            {{svg-jar "credit-card"}} View billing
-                        </a>
-                    </li>
-                    <li class="relative gh-nav-pro">
-                        <GhBillingUpdateButton />
-                    </li>
-                {{/if}}
             </ul>
         {{/if}}
 
