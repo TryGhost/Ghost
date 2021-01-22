@@ -98,48 +98,8 @@
                         {{/if}}
                     </div>
                     <div class="gh-portal-setting-section divider-top" onclick={{action "switchToSignupPage"}}>
-                        <h3 class="gh-portal-setting-sectionheading"> Look &amp; Feel </h3>
-                        <GhFormGroup @classNames="flex">
-                            <div class="flex w-100 items-center justify-between">
-                                <h4 class="gh-portal-setting-title">Accent color</h4>
-                                <div class="gh-setting-action">
-                                    <GhFormGroup
-                                        @errors={{settings.errors}}
-                                        @hasValidated={{settings.hasValidated}}
-                                        @property="accentColor"
-                                        @class="input-color-form-group"
-                                    >
-                                        <div class="input-color">
-                                            <GhTextInput
-                                                @name="accent-color"
-                                                @placeholder="abcdef"
-                                                @autocorrect="off"
-                                                @maxlength="6"
-                                                @focus-out={{action "validateAccentColor"}}
-                                                @value={{accentColor}}
-                                                data-test-input="accentColor"
-                                            />
-                                            <div class="color-picker-horizontal-divider"></div>
-                                            <div
-                                                class="color-box-container"
-                                                style={{this.backgroundStyle}}
-                                            >
-                                                <input
-                                                    type="color" name="accent-color" class="color-picker" value="{{this.colorPickerValue}}"
-                                                    oninput={{action "updateAccentColor" value="target.value"}}
-                                                >
-                                            </div>
-                                        </div>
-                                        <GhErrorMessage
-                                            @errors={{settings.errors}}
-                                            @property="accentColor"
-                                            data-test-error="accentColor"
-                                        />
-                                    </GhFormGroup>
-                                </div>
-                            </div>
-                        </GhFormGroup>
-                        <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0pt3 b--whitegrey">
+                        <h3 class="gh-portal-setting-sectionheading">Look & feel</h3>
+                        <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0 pt3 b--whitegrey">
                             <div class="flex justify-between items-center nt2">
                                 <h4 class="gh-portal-setting-title">Show Portal button</h4>
                                 <div class="for-switch small">
