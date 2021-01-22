@@ -4,10 +4,13 @@
         {{#if hasBlock}}
           {{yield}}
         {{else}}
-          {{component this.modalPath
-                      model=this.model
-                      confirm=(action 'confirm')
-                      closeModal=(action 'close')}}
+            {{#let (component this.modalPath) as |ModalComponent|}}
+                <ModalComponent
+                    @model={{this.model}}
+                    @config={{action "confirm"}}
+                    @closeModal={{action "close"}}
+                />
+            {{/let}}
         {{/if}}
     </div>
 </LiquidWormhole>

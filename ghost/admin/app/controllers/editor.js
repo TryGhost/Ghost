@@ -101,6 +101,7 @@ export default Controller.extend({
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
     showEmailPreviewModal: false,
+    showPostPreviewModal: false,
     showUpgradeModal: false,
     showDeleteSnippetModal: false,
     hostLimitError: null,
@@ -270,6 +271,10 @@ export default Controller.extend({
 
         toggleEmailPreviewModal() {
             this.toggleProperty('showEmailPreviewModal');
+        },
+
+        togglePostPreviewModal() {
+            this.toggleProperty('showPostPreviewModal');
         },
 
         toggleReAuthenticateModal() {
