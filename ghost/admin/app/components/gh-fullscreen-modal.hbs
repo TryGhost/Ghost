@@ -7,7 +7,7 @@
             {{#let (component this.modalPath) as |ModalComponent|}}
                 <ModalComponent
                     @model={{this.model}}
-                    @config={{action "confirm"}}
+                    @confirm={{action "confirm"}}
                     @closeModal={{action "close"}}
                 />
             {{/let}}
