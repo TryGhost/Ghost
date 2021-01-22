@@ -10,27 +10,6 @@
     <section class="view-container settings-debug">
         <p class="gh-box gh-box-tip">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
 
-        {{#if this.session.user.isOwner}}
-        <div class="gh-setting-header"></div>
-        <LinkTo @route="settings.labs.members">
-            <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2 pa5 gh-setting-linkrow">
-                <div class="gh-setting-first gh-setting-last">
-                    <div class="gh-setting-content">
-                            <div class="gh-setting-title">Members</div>
-                            <div class="gh-setting-desc">Create registered members and take subscription payments</div>
-                    </div>
-                    <div class="gh-setting-action flex items-center midgrey">
-                        {{#if this.feature.labs.members}}
-                            <span class="gh-badge">Enabled</span>
-                        {{else}}
-                            <span>Configure</span>
-                        {{/if}}
-                        {{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1 nr2 ml2"}}
-                    </div>
-                </div>
-            </div>
-        </LinkTo>
-        {{/if}}
         <div class="gh-setting-header">Migration options</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
             <div class="gh-setting-first">
