@@ -18,7 +18,108 @@
     {{/if}}
 
     <section class="view-container">
-        <div class="gh-setting-header gh-first-header">Navigation</div>
+        <div class="gh-setting-header gh-first-header">Publication identity</div>
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
+            <div class="gh-setting-first" data-test-setting="icon">
+                <GhUploader
+                    @extensions={{this.iconExtensions}}
+                    @paramsHash={{hash purpose="icon"}}
+                    @onComplete={{action "imageUploaded" "icon"}}
+                    as |uploader|
+                >
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Publication icon</div>
+                    <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
+                    {{/each}}
+                </div>
+                <div class="gh-setting-action gh-setting-action-smallimg">
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else if this.settings.icon}}
+                        <img class="blog-icon" src="{{this.settings.icon}}" onclick={{action "triggerFileDialog"}} alt="icon" data-test-icon-img>
+                        <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "icon"}} data-test-delete-image="icon">
+                            <span>delete</span>
+                        </button>
+                    {{else}}
+                        <button type="button" class="gh-btn" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="icon">
+                            <span>Upload Image</span>
+                        </button>
+                    {{/if}}
+                    <div style="display:none">
+                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.iconMimeTypes}} data-test-file-input="icon" />
+                    </div>
+                </div>
+                </GhUploader>
+            </div>
+            <div class="gh-setting" data-test-setting="logo">
+                <GhUploader
+                    @extensions={{this.imageExtensions}}
+                    @onComplete={{action "imageUploaded" "logo"}}
+                    as |uploader|
+                >
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Publication logo</div>
+                    <div class="gh-setting-desc">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="logo">{{or error.context error.message}}</div>
+                    {{/each}}
+                </div>
+                <div class="gh-setting-action gh-setting-action-smallimg">
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else if this.settings.logo}}
+                        <img class="blog-logo" src="{{this.settings.logo}}" onclick={{action "triggerFileDialog"}} alt="logo" data-test-logo-img>
+                        <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "logo"}} data-test-delete-image="logo">
+                            <span>delete</span>
+                        </button>
+                    {{else}}
+                        <button type="button" class="gh-btn" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="logo">
+                            <span>Upload Image</span>
+                        </button>
+                    {{/if}}
+                    <div style="display:none">
+                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} data-test-file-input="logo" />
+                    </div>
+                </div>
+                </GhUploader>
+            </div>
+            <div class="gh-setting-last" data-test-setting="coverImage">
+                <GhUploader
+                    @extensions={{this.imageExtensions}}
+                    @onComplete={{action "imageUploaded" "coverImage"}}
+                    as |uploader|
+                >
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Publication cover</div>
+                    <div class="gh-setting-desc">An optional large background image for your site</div>
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="coverImage">{{or error.context error.message}}</div>
+                    {{/each}}
+                </div>
+                <div class="gh-setting-action gh-setting-action-largeimg">
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else if this.settings.coverImage}}
+                        <img class="blog-cover" src="{{this.settings.coverImage}}" onclick={{action "triggerFileDialog"}} alt="cover photo" data-test-cover-img>
+                        <button type="button" class="gh-setting-action-largeimg-delete" {{action "removeImage" "coverImage"}} data-test-delete-image="coverImage">
+                            <span>delete</span>
+                        </button>
+                    {{else}}
+                        <button type="button" class="gh-btn" onclick={{action "triggerFileDialog"}} data-test-image-upload-btn="coverImage">
+                            <span>Upload Image</span>
+                        </button>
+                    {{/if}}
+                    <div style="display:none">
+                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} data-test-file-input="coverImage" />
+                    </div>
+                </div>
+                </GhUploader>
+            </div>
+        </div>
+
+        <div class="gh-setting-header">Navigation</div>
         <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
             <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
                 <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
