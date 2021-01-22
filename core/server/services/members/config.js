@@ -237,13 +237,12 @@ class MembersConfigProvider {
         };
     }
 
-    getSigninURL(token, type, requestSrc) {
+    getSigninURL(token, type) {
         const siteUrl = this._urlUtils.getSiteUrl();
         const signinURL = new URL(siteUrl);
         signinURL.pathname = path.join(signinURL.pathname, '/members/');
-        const actionParam = requestSrc === 'portal' ? 'portal-action' : 'action';
         signinURL.searchParams.set('token', token);
-        signinURL.searchParams.set(actionParam, type);
+        signinURL.searchParams.set('action', type);
         return signinURL.href;
     }
 }
