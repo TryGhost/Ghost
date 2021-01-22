@@ -51,15 +51,11 @@ module.exports = class MemberRepository {
             });
         }
 
-        // @NOTE: Use _.pick
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at']);
+
         return this._Member.add({
-            labels,
-            email: data.email,
-            name: data.name,
-            note: data.note,
-            subscribed: data.subscribed,
-            geolocation: data.geolocation,
-            created_at: data.created_at
+            ...memberData,
+            labels
         }, options);
     }
 
@@ -128,7 +124,7 @@ module.exports = class MemberRepository {
         });
     }
 
-    async linkStripeCustomer(data) {
+    async linkStripeCustomer(data, options) {
         if (!this._stripeAPIService) {
             return;
         }
@@ -144,29 +140,29 @@ module.exports = class MemberRepository {
             member_id: data.member_id,
             name: customer.name,
             email: customer.email
-        });
+        }, options);
 
         for (const subscription of customer.subscriptions.data) {
             await this.linkSubscription({
                 id: data.member_id,
                 subscription
-            });
+            }, options);
         }
     }
 
-    async linkSubscription(data) {
+    async linkSubscription(data, options) {
         if (!this._stripeAPIService) {
             return;
         }
         const member = await this._Member.findOne({
             id: data.id
-        });
+        }, options);
 
         const customer = await member.related('stripeCustomers').query({
             where: {
                 customer_id: data.subscription.customer
             }
-        }).fetchOne();
+        }).fetchOne(options);
 
         if (!customer) {
             // Maybe just link the customer?
@@ -203,11 +199,12 @@ module.exports = class MemberRepository {
             plan_amount: subscription.plan.amount,
             plan_currency: subscription.plan.currency
         }, {
+            ...options,
             subscription_id: subscription.id
         });
     }
 
-    async updateSubscription(data) {
+    async updateSubscription(data, options) {
         if (!this._stripeAPIService) {
             return;
         }
@@ -219,7 +216,7 @@ module.exports = class MemberRepository {
             where: {
                 subscription_id: data.subscription.subscription_id
             }
-        }).fetchOne();
+        }).fetchOne(options);
 
         if (!subscription) {
             throw new Error('Subscription not found');
@@ -243,15 +240,15 @@ module.exports = class MemberRepository {
         });
     }
 
-    async setComplimentarySubscription(data) {
+    async setComplimentarySubscription(data, options) {
         if (!this._stripeAPIService) {
             return;
         }
         const member = await this._Member.findOne({
             id: data.id
-        });
+        }, options);
 
-        const subscriptions = await member.related('stripeSubscriptions').fetch();
+        const subscriptions = await member.related('stripeSubscriptions').fetch(options);
 
         const activeSubscriptions = subscriptions.models.filter((subscription) => {
             return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status'));
@@ -275,7 +272,7 @@ module.exports = class MemberRepository {
 
         let stripeCustomer;
 
-        await member.related('stripeCustomers').fetch();
+        await member.related('stripeCustomers').fetch(options);
 
         for (const customer of member.related('stripeCustomers').models) {
             try {
@@ -299,7 +296,7 @@ module.exports = class MemberRepository {
                 member_id: data.id,
                 email: stripeCustomer.email,
                 name: stripeCustomer.name
-            });
+            }, options);
         }
 
         if (!subscriptions.length) {
@@ -308,7 +305,7 @@ module.exports = class MemberRepository {
             await this.linkSubscription({
                 id: member.id,
                 subscription
-            });
+            }, options);
         } else {
             // NOTE: we should only ever have 1 active subscription, but just in case there is more update is done on all of them
             for (const subscription of activeSubscriptions) {
@@ -320,7 +317,7 @@ module.exports = class MemberRepository {
                 await this.linkSubscription({
                     id: member.id,
                     subscription: updatedSubscription
-                });
+                }, options);
             }
         }
     }
