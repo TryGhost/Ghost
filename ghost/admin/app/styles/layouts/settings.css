@@ -274,6 +274,62 @@
     margin-top: 25px;
 }
 
+
+/* Design
+/* ---------------------------------------------------------- */
+
+.gh-settings-design .input-color input {
+    position: relative;
+    height: 30px;
+    width: 102px;
+    padding: 3px 4px 3px 44px;
+    font-size: 1.3rem;
+}
+
+.gh-settings-design .input-color::after {
+    top: 5px;
+    left: 34px;
+}
+
+.gh-settings-design .color-picker-horizontal-divider {
+    position: absolute;
+    display: block;
+    content: "";
+    width: 1px;
+    top: 0;
+    left: 29px;
+    bottom: 0;
+    background: color-mod(var(--lightgrey) l(-5%) s(-10%));
+}
+
+.gh-settings-design .input-color input:focus + .color-picker-horizontal-divider {
+    top: 2px;
+    bottom: 2px;
+}
+
+.gh-settings-design .color-box-container {
+    height: 26px;
+    width: 26px;
+    position: absolute;
+    overflow: hidden;
+    top: 2px;
+    left: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.gh-settings-design .color-box-container .color-picker {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    height: 50px;
+}
+
 /* Theme Directory
 /* ---------------------------------------------------------- */
 

@@ -17,7 +17,7 @@
             @modifier="action wide" />
     {{/if}}
 
-    <section class="view-container">
+    <section class="view-container gh-settings-design">
         <div class="gh-setting-header gh-first-header">Publication identity</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
             <div class="gh-setting-first" data-test-setting="icon">
@@ -85,7 +85,7 @@
                 </div>
                 </GhUploader>
             </div>
-            <div class="gh-setting-last" data-test-setting="coverImage">
+            <div class="gh-setting" data-test-setting="coverImage">
                 <GhUploader
                     @extensions={{this.imageExtensions}}
                     @onComplete={{action "imageUploaded" "coverImage"}}
@@ -116,6 +116,50 @@
                     </div>
                 </div>
                 </GhUploader>
+            </div>
+            <div class="gh-setting-last">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Accent color</div>
+                    <div class="gh-setting-desc">Primary color used in your publication theme</div>
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
+                    {{/each}}
+                </div>
+                <div class="gh-setting-action">
+                    <GhFormGroup
+                        @errors={{settings.errors}}
+                        @hasValidated={{settings.hasValidated}}
+                        @property="accentColor"
+                        @class="input-color-form-group"
+                    >
+                        <div class="input-color">
+                            <GhTextInput
+                                @name="accent-color"
+                                @placeholder="abcdef"
+                                @autocorrect="off"
+                                @maxlength="6"
+                                @focus-out={{action "validateAccentColor"}}
+                                @value={{accentColor}}
+                                data-test-input="accentColor"
+                            />
+                            <div class="color-picker-horizontal-divider"></div>
+                            <div
+                                class="color-box-container"
+                                style={{this.backgroundStyle}}
+                            >
+                                <input
+                                    type="color" name="accent-color" class="color-picker" value="{{this.colorPickerValue}}"
+                                    oninput={{action "updateAccentColor" value="target.value"}}
+                                >
+                            </div>
+                        </div>
+                        <GhErrorMessage
+                            @errors={{settings.errors}}
+                            @property="accentColor"
+                            data-test-error="accentColor"
+                        />
+                    </GhFormGroup>
+                </div>
             </div>
         </div>
 

@@ -61,18 +61,6 @@ export default ModalComponent.extend({
         return htmlSafe(`background-color: ${color}`);
     }),
 
-    colorPickerValue: computed('settings.accentColor', function () {
-        return this.get('settings.accentColor') || '#ffffff';
-    }),
-
-    accentColor: computed('settings.accentColor', function () {
-        let color = this.get('settings.accentColor');
-        if (color && color[0] === '#') {
-            return color.slice(1);
-        }
-        return color;
-    }),
-
     showModalLinkOrAttribute: computed('isShowModalLink', function () {
         if (this.isShowModalLink) {
             return `#/portal`;
@@ -214,13 +202,6 @@ export default ModalComponent.extend({
             }
         },
 
-        updateAccentColor(color) {
-            this._validateAccentColor(color);
-        },
-
-        validateAccentColor() {
-            this._validateAccentColor(this.get('accentColor'));
-        },
         setButtonStyle(buttonStyle) {
             this.settings.set('portalButtonStyle', buttonStyle.name);
         },
@@ -318,47 +299,6 @@ export default ModalComponent.extend({
             this.settings.set(type, path);
         } else {
             this.settings.set(type, url.href);
-        }
-    },
-
-    _validateAccentColor(color) {
-        let newColor = color;
-        let oldColor = this.get('settings.accentColor');
-        let errMessage = '';
-
-        // reset errors and validation
-        this.get('settings.errors').remove('accentColor');
-        this.get('settings.hasValidated').removeObject('accentColor');
-
-        if (newColor === '') {
-            // Clear out the accent color
-            run.schedule('afterRender', this, function () {
-                this.settings.set('accentColor', '');
-                this.set('accentColor', '');
-            });
-            return;
-        }
-
-        // accentColor will be null unless the user has input something
-        if (!newColor) {
-            newColor = oldColor;
-        }
-
-        if (newColor[0] !== '#') {
-            newColor = `#${newColor}`;
-        }
-
-        if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
-            this.set('settings.accentColor', '');
-            run.schedule('afterRender', this, function () {
-                this.set('settings.accentColor', newColor);
-                this.set('accentColor', newColor.slice(1));
-            });
-        } else {
-            errMessage = 'The color should be in valid hex format';
-            this.get('settings.errors').add('accentColor', errMessage);
-            this.get('settings.hasValidated').pushObject('accentColor');
-            return;
         }
     },
 

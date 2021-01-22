@@ -8,6 +8,7 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -35,6 +36,18 @@ export default Controller.extend({
         this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
         this.iconExtensions = ICON_EXTENSIONS;
     },
+
+    colorPickerValue: computed('settings.accentColor', function () {
+        return this.get('settings.accentColor') || '#ffffff';
+    }),
+
+    accentColor: computed('settings.accentColor', function () {
+        let color = this.get('settings.accentColor');
+        if (color && color[0] === '#') {
+            return color.slice(1);
+        }
+        return color;
+    }),
 
     blogUrl: computed('config.blogUrl', function () {
         let url = this.get('config.blogUrl');
@@ -168,6 +181,14 @@ export default Controller.extend({
             if (results[0]) {
                 return this.settings.set(property, results[0].url);
             }
+        },
+
+        updateAccentColor(color) {
+            this._validateAccentColor(color);
+        },
+
+        validateAccentColor() {
+            this._validateAccentColor(this.get('accentColor'));
         }
     },
 
@@ -205,6 +226,47 @@ export default Controller.extend({
             }
         }
     }),
+
+    _validateAccentColor(color) {
+        let newColor = color;
+        let oldColor = this.get('settings.accentColor');
+        let errMessage = '';
+
+        // reset errors and validation
+        this.get('settings.errors').remove('accentColor');
+        this.get('settings.hasValidated').removeObject('accentColor');
+
+        if (newColor === '') {
+            // Clear out the accent color
+            run.schedule('afterRender', this, function () {
+                this.settings.set('accentColor', '');
+                this.set('accentColor', '');
+            });
+            return;
+        }
+
+        // accentColor will be null unless the user has input something
+        if (!newColor) {
+            newColor = oldColor;
+        }
+
+        if (newColor[0] !== '#') {
+            newColor = `#${newColor}`;
+        }
+
+        if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
+            this.set('settings.accentColor', '');
+            run.schedule('afterRender', this, function () {
+                this.set('settings.accentColor', newColor);
+                this.set('accentColor', newColor.slice(1));
+            });
+        } else {
+            errMessage = 'The color should be in valid hex format';
+            this.get('settings.errors').add('accentColor', errMessage);
+            this.get('settings.hasValidated').pushObject('accentColor');
+            return;
+        }
+    },
 
     addNewNavItem(item) {
         let navItems = item.isSecondary ? this.get('settings.secondaryNavigation') : this.get('settings.navigation');
