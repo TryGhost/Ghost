@@ -4,6 +4,7 @@ const CURRENCY_SYMBOLS = {
     usd: '$',
     aud: '$',
     cad: '$',
+    mxn: '$',
     gbp: '£',
     eur: '€',
     inr: '₹'
