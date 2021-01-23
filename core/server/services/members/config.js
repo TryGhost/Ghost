@@ -63,6 +63,7 @@ class MembersConfigProvider {
             USD: '$',
             AUD: '$',
             CAD: '$',
+            MXN: '$',
             GBP: '£',
             EUR: '€',
             INR: '₹'
