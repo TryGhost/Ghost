@@ -51,6 +51,7 @@ function haxGetMembersPriceData() {
         USD: '$',
         AUD: '$',
         CAD: '$',
+        MXN: '$',
         GBP: '£',
         EUR: '€',
         INR: '₹'
