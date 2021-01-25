@@ -6,6 +6,7 @@ import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
+import {capitalize} from '@ember/string';
 import {inject as controller} from '@ember/controller';
 import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
@@ -865,7 +866,7 @@ export default Controller.extend({
         let actions, type, path;
 
         if (status === 'published' || status === 'scheduled') {
-            type = this.get('post.displayName') === 'page' ? 'Page' : 'Post';
+            type = capitalize(this.get('post.displayName'));
             path = this.get('post.url');
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         } else {
