@@ -25,6 +25,10 @@ module.exports = class MemberRepository {
         this._logging = logger;
     }
 
+    isActiveSubscriptionStatus(status) {
+        return ['active', 'trialing', 'unpaid', 'past_due'].includes(status);
+    }
+
     async get(data, options) {
         if (data.customer_id) {
             const customer = await this._StripeCustomer.findOne({
@@ -242,7 +246,7 @@ module.exports = class MemberRepository {
         const subscriptions = await member.related('stripeSubscriptions').fetch(options);
 
         const activeSubscriptions = subscriptions.models.filter((subscription) => {
-            return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status'));
+            return this.isActiveSubscriptionStatus(subscription.get('status'));
         });
 
         // NOTE: Because we allow for multiple Complimentary plans, need to take into account currently availalbe
