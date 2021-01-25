@@ -197,6 +197,20 @@ module.exports = class MemberRepository {
             ...options,
             subscription_id: subscription.id
         });
+
+        if (this.isActiveSubscriptionStatus(subscription.status)) {
+            await this._Member.edit({status: 'paid'}, {...options, id: data.id});
+        } else {
+            const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+            let status = 'free';
+            for (const subscription of subscriptions.models) {
+                if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                    status = 'paid';
+                    break;
+                }
+            }
+            await this._Member.edit({status: status}, {...options, id: data.id});
+        }
     }
 
     async updateSubscription(data, options) {
