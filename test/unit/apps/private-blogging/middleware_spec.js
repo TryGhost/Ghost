@@ -267,6 +267,32 @@ describe('Private Blogging', function () {
                 res.redirect.args[0][0].should.be.equal('/');
             });
 
+            it('doLoginToPrivateSite should redirect to the relative path if r param is there', function () {
+                req.body = {password: 'rightpassword'};
+                req.session = {};
+                req.query = {
+                    r: encodeURIComponent('/test')
+                };
+                res.redirect = sinon.spy();
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                res.redirect.called.should.be.true();
+                res.redirect.args[0][0].should.be.equal('/test');
+            });
+
+            it('doLoginToPrivateSite should redirect to "/" if r param is redirecting to another domain than the current instance', function () {
+                req.body = {password: 'rightpassword'};
+                req.session = {};
+                req.query = {
+                    r: encodeURIComponent('http://britney.com//example.com')
+                };
+                res.redirect = sinon.spy();
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                res.redirect.called.should.be.true();
+                res.redirect.args[0][0].should.be.equal('/');
+            });
+
             describe('Bad Password', function () {
                 beforeEach(function () {
                     req.session = {
