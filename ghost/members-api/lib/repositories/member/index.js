@@ -115,15 +115,6 @@ module.exports = class MemberRepository {
         }, options);
     }
 
-    async upsertCustomer(data) {
-        return await this._StripeCustomer.upsert({
-            customer_id: data.customer_id,
-            member_id: data.member_id,
-            name: data.name,
-            email: data.email
-        });
-    }
-
     async linkStripeCustomer(data, options) {
         if (!this._stripeAPIService.configured) {
             throw new Error('Cannot link Stripe Customer with no Stripe Connection');
