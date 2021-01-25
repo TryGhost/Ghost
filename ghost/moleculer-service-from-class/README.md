@@ -43,7 +43,7 @@ class MyAwesomeService {
 
     async myCoolMethod({name}) {
         const NAME = await this._someService.capitalize({string: name});
-        
+
         return `${this._someConfig.greeting}, ${NAME}`;
     }
 }
@@ -110,6 +110,6 @@ Follow the instructions for the top-level repo.
 
 
 
-# Copyright & License 
+# Copyright & License
 
-Copyright (c) 2020 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2021 Ghost Foundation - Released under the [MIT license](LICENSE).

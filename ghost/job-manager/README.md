@@ -34,14 +34,14 @@ jobManager.addJob({
 
 // register a job "module" with queued execution in current even loop
 jobManager.addJob({
-    job:'./path/to/email-module.js', 
+    job:'./path/to/email-module.js',
     data: {email: 'send@here.com'},
     offloaded: false
 });
 
 // register recurring job which needs execution outside of current event loop
 jobManager.addJob({
-    at: 'every 5 minutes', 
+    at: 'every 5 minutes',
     job: './path/to/jobs/check-emails.js',
     name: 'email-checker'
 });
@@ -50,14 +50,14 @@ jobManager.addJob({
 // job needs execution outside of current event loop
 // for cron builder check https://crontab.guru/ (first value is seconds)
 jobManager.addJob({
-    at: '0 1/5 * * * *', 
-    job: './path/to/jobs/check-emails.js', 
+    at: '0 1/5 * * * *',
+    job: './path/to/jobs/check-emails.js',
     name: 'email-checker-cron'
 });
 
 // register a job to un immediately running outside of current even loop
 jobManager.addJob({
-    job: './path/to/jobs/check-emails.js', 
+    job: './path/to/jobs/check-emails.js',
     name: 'email-checker-now'
 });
 ```
@@ -67,7 +67,7 @@ For more examples of JobManager initialization check [test/examples](https://git
 ### Job types and definitions
 
 There are two types of jobs distinguished based on purpose and environment they run in:
-- **"inline"** - job which is run in the same even loop as the caller. Should be used in situations when there is no even loop blocking operations and no need to manage memory leaks in sandboxed way. Sometimes 
+- **"inline"** - job which is run in the same even loop as the caller. Should be used in situations when there is no even loop blocking operations and no need to manage memory leaks in sandboxed way. Sometimes
 - **"offloaded"** - job which is executed in separate to caller's event loop. For Node >v12 clients it spawns a [Worker thread](https://nodejs.org/dist/latest-v12.x/docs/api/worker_threads.html#worker_threads_new_worker_filename_options), for older Node runtimes it is executed in separate process through [child_process](https://nodejs.org/docs/latest-v10.x/api/child_process.html). Comparing to **inline** jobs, **offloaded** jobs are safer to execute as they are run on a dedicated thread (or process) acting like a sandbox. These jobs also give better utilization of multi-core CPUs. This type of jobs is useful when there are heavy computations needed to be done blocking the event loop or need a sandboxed environment to run in safely. Example jobs would be: statistical information processing, memory intensive computations (e.g. recursive algorithms), processing that requires blocking I/O operations etc.
 
 Job manager's instance registers jobs through `addJob` method. The `offloaded` parameter controls if the job is **inline** (executed in the same event loop) or is **offloaded** (executed in worker thread/separate process). By default `offloaded` is set to `true` - creates an "offloaded" job.
@@ -98,11 +98,11 @@ For more nuances on job structure best practices check [bree documentation](http
 
 ⚠️ to ensure worker thread back compatibility and correct inter-thread communication use [btrheads](https://github.com/chjj/bthreads) polyfill instead of native [worker_threads](https://nodejs.org/api/worker_threads.html#worker_threads) module in job scripts.
 
-Instead of: 
+Instead of:
 ```js
 const {isMainThread, parentPort} = require('worker_threads');
 ```
-use 
+use
 ```js
 const {isMainThread, parentPort} = require('bthreads');
 ```
@@ -131,6 +131,6 @@ Follow the instructions for the top-level repo.
 
 
 
-# Copyright & License 
+# Copyright & License
 
-Copyright (c) 2020 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2021 Ghost Foundation - Released under the [MIT license](LICENSE).

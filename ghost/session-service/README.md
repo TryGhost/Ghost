@@ -45,8 +45,8 @@ app.use(async (req, res, next) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const user = await UserModel.verify(req.body); 
-        await sessionService.createSessionForUser(req, res, user); 
+        const user = await UserModel.verify(req.body);
+        await sessionService.createSessionForUser(req, res, user);
         res.redirect('/home');
     } catch (err) {
         return next(err);
@@ -55,7 +55,7 @@ app.post('/login', async (req, res) => {
 
 app.post('/logout', async (req, res) => {
    try {
-        await sessionService.destroyCurrentSession(req, res); 
+        await sessionService.destroyCurrentSession(req, res);
         res.redirect('/login');
     } catch (err) {
         return next(err);
@@ -80,6 +80,6 @@ Follow the instructions for the top-level repo.
 
 
 
-# Copyright & License 
+# Copyright & License
 
-Copyright (c) 2020 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2021 Ghost Foundation - Released under the [MIT license](LICENSE).
