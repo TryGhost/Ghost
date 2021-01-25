@@ -129,7 +129,7 @@
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    {{#if (and this.feature.members (eq this.post.displayName "post") showEmailNewsletter)}}
+                    {{#if (and this.feature.members this.post.isPost) showEmailNewsletter)}}
                         <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
                             <button type="button">
                                 <b>Email newsletter</b>
