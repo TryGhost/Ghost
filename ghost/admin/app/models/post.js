@@ -149,6 +149,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     internalTags: filterBy('tags', 'isInternal', true),
     isScheduled: equal('status', 'scheduled'),
 
+    isPost: equal('displayName', 'post'),
+    isPage: equal('displayName', 'page'),
+
     willEmail: computed('emailRecipientFilter', function () {
         return this.emailRecipientFilter !== 'none';
     }),

@@ -47,10 +47,10 @@ export default Component.extend({
         return '';
     }),
 
-    canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
+    canSendEmail: computed('feature.labs.members', 'post.{isPost,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
         let membersEnabled = this.feature.get('labs.members');
         let mailgunIsConfigured = this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
-        let isPost = this.post.displayName === 'post';
+        let isPost = this.post.isPost;
         let hasSentEmail = !!this.post.email;
 
         return membersEnabled && mailgunIsConfigured && isPost && !hasSentEmail;
