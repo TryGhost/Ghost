@@ -22,7 +22,7 @@
     "folder-hash": "4.0.0",
     "mocha": "8.2.1",
     "should": "13.2.3",
-    "sinon": "9.2.3"
+    "sinon": "9.2.4"
   },
   "dependencies": {
     "archiver": "4.0.1",
