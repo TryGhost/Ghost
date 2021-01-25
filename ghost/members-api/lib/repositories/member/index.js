@@ -299,7 +299,7 @@ module.exports = class MemberRepository {
             }, options);
         }
 
-        if (!subscriptions.length) {
+        if (!activeSubscriptions.length) {
             const subscription = await this._stripeAPIService.createSubscription(stripeCustomer.id, complimentaryPlan.id);
 
             await this.linkSubscription({
