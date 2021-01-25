@@ -232,6 +232,32 @@ describe('Private Blogging', function () {
                     res.redirect.args[0][0].should.be.equal('/');
                 });
 
+                it('authenticateProtection should redirect to the relative path if r param is there', function () {
+                    req.body = {password: 'rightpassword'};
+                    req.session = {};
+                    req.query = {
+                        r: encodeURIComponent('/test')
+                    };
+                    res.redirect = sinon.spy();
+
+                    privateBlogging.authenticateProtection(req, res, next);
+                    res.redirect.called.should.be.true();
+                    res.redirect.args[0][0].should.be.equal('/test');
+                });
+
+                it('authenticateProtection should redirect to "/" if r param is redirecting to another domain than the current instance', function () {
+                    req.body = {password: 'rightpassword'};
+                    req.session = {};
+                    req.query = {
+                        r: encodeURIComponent('http://britney.com//example.com')
+                    };
+                    res.redirect = sinon.spy();
+
+                    privateBlogging.authenticateProtection(req, res, next);
+                    res.redirect.called.should.be.true();
+                    res.redirect.args[0][0].should.be.equal('/');
+                });
+
                 it('filterPrivateRoutes should 404 for /rss/ requests', function () {
                     var salt = Date.now().toString();
                     req.url = req.path = '/rss/';
