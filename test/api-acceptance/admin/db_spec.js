@@ -47,7 +47,7 @@ describe('DB API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.db);
         jsonResponse.db.should.have.length(1);
-        Object.keys(jsonResponse.db[0].data).length.should.eql(34);
+        Object.keys(jsonResponse.db[0].data).length.should.eql(32);
     });
 
     it('Can import a JSON database', async function () {
