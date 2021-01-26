@@ -338,14 +338,12 @@ module.exports = class StripeAPIService {
      */
     async createCheckoutSession(plan, customer, options) {
         const metadata = options.metadata || undefined;
-        const customerEmail = customer ? undefined : options.customerEmail;
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             success_url: options.successUrl,
             cancel_url: options.cancelUrl,
-            customer: customer ? customer.id : undefined,
-            customer_email: customerEmail,
+            customer_email: customer.email || options.customerEmail,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: this._config.enablePromoCodes,
             metadata,
