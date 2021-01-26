@@ -182,10 +182,9 @@ module.exports = class StripeAPIService {
     async getCustomerForMemberCheckoutSession(member) {
         await member.related('stripeCustomers').fetch();
         const customers = member.related('stripeCustomers');
-
-        for (const data of customers) {
+        for (const data of customers.models) {
             try {
-                const customer = await this.getCustomer(data.customer_id);
+                const customer = await this.getCustomer(data.get('customer_id'));
                 if (!customer.deleted) {
                     return customer;
                 }
