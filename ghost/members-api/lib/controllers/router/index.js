@@ -263,7 +263,7 @@ module.exports = class RouterController {
         }
 
         if (!stripeCustomer) {
-            stripeCustomer = await this._stripeAPIService.createCustomer({email: member.email});
+            stripeCustomer = await this._stripeAPIService.createCustomer({email: member.get('email')});
         }
 
         try {
