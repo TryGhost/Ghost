@@ -141,7 +141,10 @@ module.exports = class MembersCSVImporter {
                 }
 
                 if (row.stripe_customer_id) {
-                    await membersApi.members.linkStripeCustomer(row.stripe_customer_id, member, options);
+                    await membersApi.members.linkStripeCustomer({
+                        customer_id: row.stripe_customer_id,
+                        member_id: member.id
+                    }, options);
                 }
                 await trx.commit();
                 return {
