@@ -6,7 +6,7 @@ import {tracked} from '@glimmer/tracking';
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalPostPreviewComponent extends ModalBase {
-    @tracked tab = 'desktop';
+    @tracked tab = 'browser';
 
     @action
     changeTab(tab) {
@@ -16,5 +16,16 @@ export default class ModalPostPreviewComponent extends ModalBase {
     @action
     close() {
         this.closeModal();
+    }
+
+    actions = {
+        confirm() {
+            // noop - needed to override ModalBase.actions.confirm
+        },
+
+        // needed because ModalBase uses .send() for keyboard events
+        closeModal() {
+            this.closeModal();
+        }
     }
 }
