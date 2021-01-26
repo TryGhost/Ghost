@@ -16,7 +16,6 @@ const {events, i18n} = require('./lib/common');
 const logging = require('../shared/logging');
 const migrator = require('./data/db/migrator');
 const urlUtils = require('./../shared/url-utils');
-let parentApp;
 
 // Frontend Components
 const themeService = require('../frontend/services/themes');
@@ -114,7 +113,7 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
     await themeService.init();
     debug('Themes done');
 
-    parentApp = require('./web/parent/app')();
+    const parentApp = require('./web/parent/app')();
     debug('Express Apps done');
 
     ghostServer = new GhostServer(parentApp);
@@ -128,15 +127,12 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
         events.emit('db.ready');
 
         await initialiseServices();
-        initializeRecurringJobs();
-        return ghostServer;
     }
 
     // CASE: migrations required, put blog into maintenance mode
     if (dbState === 4) {
-        logging.info('Blog is in maintenance mode.');
-
         config.set('maintenance:enabled', true);
+        logging.info('Blog is in maintenance mode.');
 
         try {
             await migrator.migrate();
@@ -150,10 +146,6 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
             logging.info('Blog is out of maintenance mode.');
 
             await GhostServer.announceServerReadiness();
-
-            initializeRecurringJobs();
-
-            return ghostServer;
         } catch (err) {
             try {
                 await GhostServer.announceServerReadiness(err);
@@ -165,6 +157,10 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
             }
         }
     }
+
+    initializeRecurringJobs();
+
+    return ghostServer;
 };
 
 /**
