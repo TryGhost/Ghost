@@ -178,7 +178,7 @@ const isDatabaseInitialisationRequired = async () => {
 
     // CASE: db initialisation required, wait till finished
     if (dbState === 2) {
-        return migrator.dbInit();
+        await migrator.dbInit();
     }
 
     // CASE: is db incompatible? e.g. you can't connect a 0.11 database with Ghost 1.0 or 2.0
