@@ -119,7 +119,7 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('Can request settings by type', function () {
+        it('Ignores the deprecated type filter', function () {
             return request.get(localUtils.API.getApiQuery(`settings/?type=theme`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -134,11 +134,13 @@ describe('Settings API (canary)', function () {
 
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
-
-                    Object.keys(settings).length.should.equal(1);
-                    settings[0].key.should.equal('active_theme');
-                    settings[0].value.should.equal('casper');
-                    settings[0].type.should.equal('theme');
+                    // Returns all settings
+                    should.equal(settings.length, defaultSettingsKeyTypes.length);
+                    for (const defaultSetting of defaultSettingsKeyTypes) {
+                        should.exist(settings.find((setting) => {
+                            return setting.key === defaultSetting.key && setting.type === defaultSetting.type;
+                        }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
+                    }
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
@@ -164,53 +166,6 @@ describe('Settings API (canary)', function () {
                     settings[0].key.should.equal('active_theme');
                     settings[0].value.should.equal('casper');
                     settings[0].type.should.equal('theme');
-
-                    localUtils.API.checkResponse(jsonResponse, 'settings');
-                });
-        });
-
-        it('Can request settings by group and by deprecated type', function () {
-            return request.get(localUtils.API.getApiQuery(`settings/?group=theme&type=private`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
-
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.settings);
-                    should.exist(jsonResponse.meta);
-
-                    jsonResponse.settings.should.be.an.Object();
-                    const settings = jsonResponse.settings;
-
-                    Object.keys(settings).length.should.equal(4);
-                    settings[0].key.should.equal('active_theme');
-                    settings[0].value.should.equal('casper');
-                    settings[0].type.should.equal('theme');
-
-                    localUtils.API.checkResponse(jsonResponse, 'settings');
-                });
-        });
-
-        it('Requesting core settings type returns no results', function () {
-            return request.get(localUtils.API.getApiQuery(`settings/?type=core`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    should.not.exist(res.headers['x-cache-invalidate']);
-
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.settings);
-                    should.exist(jsonResponse.meta);
-
-                    jsonResponse.settings.should.be.an.Object();
-                    const settings = jsonResponse.settings;
-
-                    Object.keys(settings).length.should.equal(0);
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });

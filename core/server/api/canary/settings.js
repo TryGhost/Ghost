@@ -14,7 +14,7 @@ module.exports = {
     docName: 'settings',
 
     browse: {
-        options: ['type', 'group'],
+        options: ['group'],
         permissions: true,
         query(frame) {
             let settings = settingsCache.getAll();
