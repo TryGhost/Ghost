@@ -19,6 +19,7 @@
     top: 0;
     left: 0;
     right: 0;
+    min-height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -146,9 +147,9 @@
 }
 
 .fullscreen-modal-email-preview .gh-pe-mobile-container {
-    height: calc(100vh - 140px);
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     align-items: center;
     background: var(--whitegrey-l1);
     padding: 30px 30px 45px;

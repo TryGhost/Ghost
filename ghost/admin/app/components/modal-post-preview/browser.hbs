@@ -1,0 +1,20 @@
+<div class="modal-body modal-preview-email-content gh-pe-desktop-container flex-grow-1 h-auto overflow-auto">
+    <div class="gh-pe-emailclient-mockup">
+        <iframe class="gh-pe-iframe" src={{@post.previewUrl}} style="height: 100%"></iframe>
+    </div>
+</div>
+<div class="flex items-center pa4 pl8 bt b--whitegrey">
+    <span class="mr3 flex-grow-1 nowrap">Share this preview privately</span>
+    <div class="mr3 truncate midlightgrey">
+        {{@post.previewUrl}}
+    </div>
+    <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-green gh-btn-icon">
+        <span>
+            {{#if this.copyPreviewUrl.isRunning}}
+                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+            {{else}}
+                Copy
+            {{/if}}
+        </span>
+    </button>
+</div>

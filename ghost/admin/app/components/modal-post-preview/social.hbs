@@ -1,0 +1,42 @@
+
+<div class="modal-body pa8 flex-grow-1">
+    <div class="gh-og-preview w-40 mb6">
+        {{#if this.facebookImage}}
+            <div class="gh-og-preview-image" style={{background-image-style this.facebookImage}}></div>
+        {{/if}}
+        <div class="gh-og-preview-content">
+            <div class="gh-og-preview-title">{{truncate this.facebookTitle 88}}</div>
+            <div class="gh-og-preview-description">{{truncate this.facebookDescription 300}}</div>
+            <div class="gh-og-preview-footer">
+                <div class="gh-og-preview-footer-left">
+                    {{this.config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{author-names @post.authors}}</span>
+                </div>
+                <div class="gh-og-preview-footer-right">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="gh-twitter-preview w-40 mb6">
+        {{#if this.twitterImage}}
+            <div class="gh-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
+        {{/if}}
+        <div class="gh-twitter-preview-content">
+            <div class="gh-twitter-preview-title">{{this.twitterTitle}}</div>
+            <div class="gh-twitter-preview-description">{{truncate this.twitterDescription 155}}</div>
+            <div class="gh-twitter-preview-footer">
+                <div class="gh-twitter-preview-footer-left">
+                    {{this.config.blogDomain}}
+                </div>
+                <div class="gh-twitter-preview-footer-right">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="seo-preview w-40 mb6">
+        <div class="seo-preview-title">{{truncate this.serpTitle 70}}</div>
+        <div class="seo-preview-link">{{truncate this.serpURL 70}}</div>
+        <div class="seo-preview-description">{{truncate this.serpDescription 300}}</div>
+    </div>
+</div>
