@@ -1,8 +1,10 @@
 <div class="fullscreen-wizard-container">
-    <button type="button" class="close absolute top-6 right-6 w6" title="Close" {{on "click" this.close}} data-test-button="close-wizard">
-        {{svg-jar "close"}}
-        <span class="hidden">Close</span>
-    </button>
+    <div class="mt8 ml20 mr20 flex justify-between-l items-center">
+        <div class="ttu gh-launch-wizard-step-indicator">Step 1</div>
+        <button type="button" class="close gh-btn" title="Close" {{on "click" this.close}} data-test-button="close-wizard">
+            <span>Save and exit</span>
+        </button>
+    </div>
 
     {{outlet}}
 </div>
