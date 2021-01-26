@@ -227,8 +227,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
     color: var(--midgrey);
+    margin-top: 8px;
     text-decoration: none;
     font-size: 13px;
     line-height: 10px;
