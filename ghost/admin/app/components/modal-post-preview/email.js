@@ -1,6 +1,9 @@
 import Component from '@glimmer/component';
+import validator from 'validator';
 import {action} from '@ember/object';
+import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -24,6 +27,15 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     @tracked html = '';
     @tracked subject = '';
+    @tracked emailPreviewAddress = '';
+    @tracked sendPreviewEmailError = '';
+
+    get mailgunIsEnabled() {
+        return this.config.get('mailgunIsConfigured') ||
+            this.settings.get('mailgunApiKey') &&
+            this.settings.get('mailgunDomain') &&
+            this.settings.get('mailgunBaseUrl');
+    }
 
     @action
     async renderEmailPreview(iframe) {
@@ -35,6 +47,46 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
+        }
+    }
+
+    @task({drop: true})
+    *sendPreviewEmailTask() {
+        try {
+            const resourceId = this.post.id;
+            const testEmail = this.emailPreviewAddress.trim();
+
+            if (!validator.isEmail(testEmail)) {
+                this.sendPreviewEmailError = 'Please enter a valid email';
+                return false;
+            }
+            if (!this.mailgunIsEnabled) {
+                this.sendPreviewEmailError = 'Please verify your email settings';
+                return false;
+            }
+            this.sendPreviewEmailError = '';
+
+            const url = this.ghostPaths.url.api('/email_preview/posts', resourceId);
+            const data = {emails: [testEmail]};
+            const options = {
+                data,
+                dataType: 'json'
+            };
+
+            return yield this.ajax.post(url, options);
+        } catch (error) {
+            if (error) {
+                let message = 'Email could not be sent, verify mail settings';
+
+                // grab custom error message if present
+                if (
+                    error.payload && error.payload.errors
+                    && error.payload.errors[0] && error.payload.errors[0].message) {
+                    message = htmlSafe(error.payload.errors[0].message);
+                }
+
+                this.sendPreviewEmailError = message;
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-<div class="modal-body modal-preview-email-content gh-pe-mobile-container">
+<div class="modal-body modal-preview-email-content gh-pe-mobile-container h-auto overflow-auto">
     <div class="gh-pe-mobile-bezel">
         <div class="gh-pe-mobile-screen">
             <div class="gh-pe-emailclient-sender">
@@ -10,4 +10,26 @@
             <iframe class="bn gh-pe-iframe" {{did-insert this.renderEmailPreview}} sandbox="allow-same-origin"></iframe>
         </div>
     </div>
+</div>
+<div class="flex items-center pa4 pl8 bt b--whitegrey">
+    <span class="mr3 flex-grow-1 nowrap">Send a preview newsletter</span>
+    <div class="mr3 truncate midlightgrey">
+        <Input
+            @value={{this.previewEmailAddress}}
+            class="gh-input"
+            placeholder="you@yoursite.com"
+            {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
+        />
+
+        {{#if this.sendPreviewEmailError}}
+            <div class="error"><p class="response">{{this.sendPreviewEmailError}}</p></div>
+        {{/if}}
+    </div>
+    <GhTaskButton
+        @task={{this.sendPreviewEmailTask}}
+        @buttonText="Send"
+        @successText="Sent"
+        @runningText="Sending..."
+        @class="gh-btn gh-btn-green gh-btn-icon"
+    />
 </div>

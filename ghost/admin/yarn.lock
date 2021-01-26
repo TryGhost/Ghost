@@ -6276,6 +6276,16 @@ ember-invoke-action@^1.5.0:
   dependencies:
     ember-cli-babel "^6.6.0"
 
+ember-keyboard@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-6.0.2.tgz#efe260be34621a403a4d4688b038d65b371f6892"
+  integrity sha512-ZGAXYGfN4gxGFRcv3ix2X8HA8j/VluwhlENT9pfbFjAAGtvFz9wzNUJuaq3LS5Ksj+f2oXL5f++tSOrO7Ha1wA==
+  dependencies:
+    ember-cli-babel "^7.22.1"
+    ember-cli-htmlbars "^5.3.1"
+    ember-compatibility-helpers "^1.2.1"
+    ember-modifier "^2.1.0"
+
 ember-load-initializers@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ember-load-initializers/-/ember-load-initializers-2.1.2.tgz#8a47a656c1f64f9b10cecdb4e22a9d52ad9c7efa"
