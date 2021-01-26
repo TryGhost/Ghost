@@ -61,7 +61,7 @@ const exportTable = function exportTable(tableName, options) {
 };
 
 const getSettingsTableData = function getSettingsTableData(settingsData) {
-    return settingsData.filter((setting) => {
+    return settingsData && settingsData.filter((setting) => {
         return !EXCLUDED_SETTING_KEYS.includes(setting.key);
     });
 };
