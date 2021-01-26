@@ -125,8 +125,8 @@ module.exports = class MemberRepository {
     }
 
     async linkStripeCustomer(data, options) {
-        if (!this._stripeAPIService) {
-            return;
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot link Stripe Customer with no Stripe Connection');
         }
         const customer = await this._stripeAPIService.getCustomer(data.customer_id);
 
@@ -151,8 +151,8 @@ module.exports = class MemberRepository {
     }
 
     async linkSubscription(data, options) {
-        if (!this._stripeAPIService) {
-            return;
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot link Stripe Subscription with no Stripe Connection');
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -205,8 +205,8 @@ module.exports = class MemberRepository {
     }
 
     async updateSubscription(data, options) {
-        if (!this._stripeAPIService) {
-            return;
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -241,8 +241,8 @@ module.exports = class MemberRepository {
     }
 
     async setComplimentarySubscription(data, options) {
-        if (!this._stripeAPIService) {
-            return;
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -323,8 +323,8 @@ module.exports = class MemberRepository {
     }
 
     async cancelComplimentarySubscription(data) {
-        if (!this._stripeAPIService) {
-            return;
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot cancel Complimentary Subscription with no Stripe Connection');
         }
 
         const member = await this._Member.findOne({

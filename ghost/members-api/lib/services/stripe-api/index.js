@@ -47,9 +47,14 @@ module.exports = class StripeAPIService {
      */
     constructor({config, logger}) {
         this.logging = logger;
+        this._configured = false;
         if (config.secretKey) {
             this.configure(config);
         }
+    }
+
+    get configured() {
+        return this._configured;
     }
 
     configure(config) {
@@ -61,6 +66,7 @@ module.exports = class StripeAPIService {
         } else {
             this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
         }
+        this._configured = true;
     }
 
     /**

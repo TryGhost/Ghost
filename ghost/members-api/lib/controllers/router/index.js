@@ -33,7 +33,7 @@ module.exports = class RouterController {
     }
 
     async ensureStripe(_req, res, next) {
-        if (!this._stripeAPIService) {
+        if (!this._stripeAPIService.configured) {
             res.writeHead(400);
             return res.end('Stripe not configured');
         }
