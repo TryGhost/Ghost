@@ -12,6 +12,7 @@ const errors = require('ghost-ignition').errors;
  * @param {any} deps.stripeAPIService
  * @param {any} deps.stripePlanService
  * @param {any} deps.tokenService
+ * @param {any} deps.config
  */
 module.exports = class RouterController {
     constructor({
@@ -21,7 +22,8 @@ module.exports = class RouterController {
         stripeAPIService,
         stripePlansService,
         tokenService,
-        sendEmailWithMagicLink
+        sendEmailWithMagicLink,
+        config
     }) {
         this._memberRepository = memberRepository;
         this._allowSelfSignup = allowSelfSignup;
@@ -30,6 +32,7 @@ module.exports = class RouterController {
         this._stripePlansService = stripePlansService;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
+        this._config = config;
     }
 
     async ensureStripe(_req, res, next) {
@@ -172,8 +175,8 @@ module.exports = class RouterController {
         const customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
 
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl
+            successUrl: req.body.successUrl || this._config.billingSuccessUrl,
+            cancelUrl: req.body.cancelUrl || this._config.billingCancelUrl
         });
         const publicKey = this._stripeAPIService.getPublicKey();
         const sessionInfo = {
@@ -222,8 +225,8 @@ module.exports = class RouterController {
         if (!member) {
             const customer = null;
             const session = await this._stripeAPIService.createCheckoutSession(plan, customer, {
-                successUrl: req.body.successUrl,
-                cancelUrl: req.body.cancelUrl,
+                successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
+                cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 customerEmail: req.body.customerEmail,
                 metadata: req.body.metadata
             });
