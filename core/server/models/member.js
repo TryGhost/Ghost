@@ -204,40 +204,6 @@ const Member = ghostBookshelf.Model.extend({
         queryBuilder.orWhere('members.email', 'like', `%${query}%`);
     },
 
-    // TODO: hacky way to filter by members with an active subscription,
-    // replace with a proper way to do this via filter param.
-    // NOTE: assumes members will have a single subscription
-    customQuery: function customQuery(queryBuilder, options) {
-        if (options.paid === true) {
-            queryBuilder.innerJoin(
-                'members_stripe_customers',
-                'members.id',
-                'members_stripe_customers.member_id'
-            );
-            queryBuilder.innerJoin(
-                'members_stripe_customers_subscriptions',
-                function () {
-                    this.on(
-                        'members_stripe_customers.customer_id',
-                        'members_stripe_customers_subscriptions.customer_id'
-                    ).onIn(
-                        'members_stripe_customers_subscriptions.status',
-                        ['active', 'trialing', 'past_due', 'unpaid']
-                    );
-                }
-            );
-        }
-
-        if (options.paid === false) {
-            queryBuilder.leftJoin(
-                'members_stripe_customers',
-                'members.id',
-                'members_stripe_customers.member_id'
-            );
-            queryBuilder.whereNull('members_stripe_customers.member_id');
-        }
-    },
-
     orderRawQuery(field, direction) {
         if (field === 'email_open_rate') {
             return {
@@ -271,8 +237,7 @@ const Member = ghostBookshelf.Model.extend({
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (['findPage', 'findAll'].includes(methodName)) {
-            // TODO: remove 'paid' once it's possible to use in a filter
-            options = options.concat(['search', 'paid']);
+            options = options.concat(['search']);
         }
 
         return options;
