@@ -14,7 +14,9 @@ const EXCLUDED_SETTING_KEYS = [
     'stripe_connect_secret_key',
     'stripe_connect_account_id',
     'stripe_secret_key',
-    'stripe_publishable_key'
+    'stripe_publishable_key',
+    'members_stripe_webhook_id',
+    'members_stripe_webhook_secret'
 ];
 
 const modelOptions = {context: {internal: true}};
