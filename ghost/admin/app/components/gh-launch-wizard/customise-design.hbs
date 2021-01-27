@@ -74,7 +74,7 @@
             </GhUploader>
         </div>
 
-        <div class="mb12" data-test-setting="coverImage">
+        <div class="mb10" data-test-setting="coverImage">
             <GhUploader
                 @extensions={{this.imageExtensions}}
                 @onComplete={{action "imageUploaded" "coverImage"}}
@@ -105,6 +105,52 @@
                 </div>
             </div>
             </GhUploader>
+        </div>
+
+        <div class="mb12" data-test-setting="accentColor">
+            <GhFormGroup
+                @errors={{this.settings.errors}}
+                @hasValidated={{this.settings.hasValidated}}
+                @property="accentColor"
+                @class="input-color-form-group"
+            >
+                <div class="pb4">
+                    <div class="gh-setting-title">Accent color</div>
+                    <div class="gh-setting-desc">Primary color used in your publication theme</div>
+                    <GhErrorMessage
+                        @errors={{this.settings.errors}}
+                        @property="accentColor"
+                        data-test-error="accentColor"
+                    />
+                </div>
+                <div class="input-color">
+                    <input
+                        type="text"
+                        placeholder="abcdef"
+                        name="accent-color"
+                        autocorrect="off"
+                        maxlength="6"
+                        value={{this.accentColor}}
+                        class="gh-input"
+                        {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        {{on "blur" this.updateAccentColor}}
+                        data-test-input="accentColor"
+                    />
+                    <div class="color-picker-horizontal-divider"></div>
+                    <div
+                        class="color-box-container"
+                        style={{this.accentColorBgStlye}}
+                    >
+                        <input
+                            type="color"
+                            name="accent-color"
+                            class="color-picker"
+                            value="{{this.accentColorPickerValue}}"
+                            {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        >
+                    </div>
+                </div>
+            </GhFormGroup>
         </div>
 
         <button type="button" class="gh-btn gh-btn-blue" {{on "click" @afterComplete}} data-test-button="wizard-next"><span>Next step</span></button>
