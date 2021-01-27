@@ -1,7 +1,6 @@
 const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
-const {sequence} = require('@tryghost/promise');
 const config = require('../../shared/config');
 const crypto = require('crypto');
 
@@ -108,7 +107,6 @@ const Member = ghostBookshelf.Model.extend({
 
     onSaving: function onSaving(model, attr, options) {
         let labelsToSave = [];
-        let ops = [];
 
         // CASE: detect lowercase/uppercase label slugs
         if (!_.isUndefined(this.get('labels')) && !_.isNull(this.get('labels'))) {
@@ -129,26 +127,23 @@ const Member = ghostBookshelf.Model.extend({
             this.set('labels', labelsToSave);
         }
 
-        // CASE: Detect existing labels with same case-insensitive name and replace
-        ops.push(function updateLabels() {
-            return ghostBookshelf.model('Label')
-                .findAll(Object.assign({
-                    columns: ['id', 'name']
-                }, _.pick(options, 'transacting')))
-                .then((labels) => {
-                    labelsToSave.forEach((label) => {
-                        let existingLabel = labels.find((lab) => {
-                            return label.name.toLowerCase() === lab.get('name').toLowerCase();
-                        });
-                        label.name = (existingLabel && existingLabel.get('name')) || label.name;
-                    });
-
-                    model.set('labels', labelsToSave);
-                });
-        });
-
         this.handleAttachedModels(model);
-        return sequence(ops);
+
+        // CASE: Detect existing labels with same case-insensitive name and replace
+        return ghostBookshelf.model('Label')
+            .findAll(Object.assign({
+                columns: ['id', 'name']
+            }, _.pick(options, 'transacting')))
+            .then((labels) => {
+                labelsToSave.forEach((label) => {
+                    let existingLabel = labels.find((lab) => {
+                        return label.name.toLowerCase() === lab.get('name').toLowerCase();
+                    });
+                    label.name = (existingLabel && existingLabel.get('name')) || label.name;
+                });
+
+                model.set('labels', labelsToSave);
+            });
     },
 
     handleAttachedModels: function handleAttachedModels(model) {
