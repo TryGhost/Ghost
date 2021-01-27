@@ -35,7 +35,6 @@ const expectedProperties = {
             ..._(schema.posts_meta).keys().without('post_id', 'id')
         )
         .concat('reading_time')
-        .concat('send_email_when_published')
     ,
     author: _(schema.users)
         .keys()
