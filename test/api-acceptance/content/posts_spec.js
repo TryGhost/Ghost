@@ -174,22 +174,6 @@ describe('Posts Content API', function () {
         res.body.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
     });
 
-    it('Can request send_email_when_published calculated field of posts', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&fields=url&fields=send_email_when_published`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        const jsonResponse = res.body;
-
-        should.exist(jsonResponse.posts);
-
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url', 'send_email_when_published']);
-        res.body.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
-        res.body.posts[0].send_email_when_published.should.eql(false);
-    });
-
     it('Can include relations', async function () {
         const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=tags,authors`))
             .set('Origin', testUtils.API.getURL())

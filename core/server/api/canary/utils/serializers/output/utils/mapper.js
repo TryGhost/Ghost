@@ -47,14 +47,6 @@ const mapPost = (model, frame) => {
         gating.forPost(jsonModel, frame);
     }
 
-    if (typeof jsonModel.email_recipient_filter === 'undefined') {
-        jsonModel.send_email_when_published = null;
-    } else if (jsonModel.email_recipient_filter === 'none') {
-        jsonModel.send_email_when_published = false;
-    } else {
-        jsonModel.send_email_when_published = true;
-    }
-
     clean.post(jsonModel, frame);
 
     if (frame.options && frame.options.withRelated) {
@@ -96,7 +88,6 @@ const mapPage = (model, frame) => {
     const jsonModel = mapPost(model, frame);
 
     delete jsonModel.email_subject;
-    delete jsonModel.send_email_when_published;
     delete jsonModel.email_recipient_filter;
 
     return jsonModel;
