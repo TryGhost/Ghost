@@ -19,12 +19,8 @@ const stoppable = require('stoppable');
  * ## GhostServer
  */
 class GhostServer {
-    /**
-     * @constructor
-     * @param {Object} rootApp - parent express instance
-     */
-    constructor(rootApp) {
-        this.rootApp = rootApp;
+    constructor() {
+        this.rootApp = null;
         this.httpServer = null;
 
         // Expose config module for use externally.

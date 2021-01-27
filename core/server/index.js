@@ -80,33 +80,7 @@ async function initializeRecurringJobs() {
     }
 }
 
-/**
- * - initialise models
- * - initialise i18n
- * - load all settings into settings cache (almost every component makes use of this cache)
- * - load active theme
- * - create our express apps (site, admin, api)
- * - start the ghost server
- * - enable maintenance mode if migrations are missing
- */
-const minimalRequiredSetupToStartGhost = async (dbState) => {
-    const settings = require('./services/settings');
-    const jobService = require('./services/jobs');
-    const models = require('./models');
-    const GhostServer = require('./ghost-server');
-
-    let ghostServer;
-
-    // Initialize Ghost core internationalization
-    i18n.init();
-    debug('Default i18n done for core');
-
-    models.init();
-    debug('Models done');
-
-    await settings.init();
-    debug('Settings done');
-
+const initExpressApps = async () => {
     await frontendSettings.init();
     debug('Frontend settings done');
 
@@ -116,7 +90,32 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
     const parentApp = require('./web/parent/app')();
     debug('Express Apps done');
 
-    ghostServer = new GhostServer(parentApp);
+    return parentApp;
+};
+
+/**
+ * - initialise models
+ * - initialise i18n
+ * - start the ghost server
+ * - load all settings into settings cache (almost every component makes use of this cache)
+ * - enable maintenance mode if migrations are missing
+ * - load active theme
+ * - create our express apps (site, admin, api)
+ */
+const minimalRequiredSetupToStartGhost = async (dbState) => {
+    const settings = require('./services/settings');
+    const jobService = require('./services/jobs');
+    const models = require('./models');
+    const GhostServer = require('./ghost-server');
+
+    // Initialize Ghost core internationalization
+    i18n.init();
+    debug('Default i18n done for core');
+
+    models.init();
+    debug('Models done');
+
+    const ghostServer = new GhostServer();
 
     ghostServer.registerCleanupTask(async () => {
         await jobService.shutdown();
@@ -124,6 +123,11 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
 
     // CASE: all good or db was just initialised
     if (dbState === 1 || dbState === 2) {
+        await settings.init();
+        debug('Settings done');
+        const parentApp = await initExpressApps();
+        ghostServer.rootApp = parentApp;
+
         events.emit('db.ready');
 
         await initialiseServices();
@@ -135,9 +139,16 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
         logging.info('Blog is in maintenance mode.');
 
         try {
+            // const delay= ms => new Promise(resolve => setTimeout(resolve ,ms));
             await migrator.migrate();
 
-            await settings.reinit();
+            // await delay(10000);
+            await settings.init();
+            debug('Settings done');
+
+            const parentApp = await initExpressApps();
+            ghostServer.rootApp = parentApp;
+
             events.emit('db.ready');
 
             await initialiseServices();
