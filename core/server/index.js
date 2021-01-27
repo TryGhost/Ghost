@@ -93,6 +93,10 @@ const initExpressApps = async () => {
     return parentApp;
 };
 
+const initMaintenanceApp = () => {
+    return require('./web/maintenance')();
+};
+
 /**
  * - initialise models
  * - initialise i18n
@@ -138,25 +142,26 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
         config.set('maintenance:enabled', true);
         logging.info('Blog is in maintenance mode.');
 
+        ghostServer.rootApp = initMaintenanceApp();
+
         try {
-            // const delay= ms => new Promise(resolve => setTimeout(resolve ,ms));
-            await migrator.migrate();
+            migrator.migrate()
+                .then(async () => {
+                    await settings.init();
+                    debug('Settings done');
 
-            // await delay(10000);
-            await settings.init();
-            debug('Settings done');
+                    const parentApp = await initExpressApps();
+                    ghostServer.swapHttpApp(parentApp);
 
-            const parentApp = await initExpressApps();
-            ghostServer.rootApp = parentApp;
+                    events.emit('db.ready');
 
-            events.emit('db.ready');
+                    await initialiseServices();
 
-            await initialiseServices();
+                    config.set('maintenance:enabled', false);
+                    logging.info('Blog is out of maintenance mode.');
 
-            config.set('maintenance:enabled', false);
-            logging.info('Blog is out of maintenance mode.');
-
-            await GhostServer.announceServerReadiness();
+                    await GhostServer.announceServerReadiness();
+                });
         } catch (err) {
             try {
                 await GhostServer.announceServerReadiness(err);
