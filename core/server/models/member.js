@@ -10,6 +10,7 @@ const Member = ghostBookshelf.Model.extend({
 
     defaults() {
         return {
+            status: 'free',
             subscribed: true,
             uuid: uuid.v4(),
             email_count: 0,

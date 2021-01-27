@@ -61,6 +61,7 @@ const expectedProperties = {
         .concat('avatar_image')
         .concat('comped')
         .concat('labels')
+        .without('status')
     ,
     member_signin_url: ['member_id', 'url'],
     role: _(schema.roles)
