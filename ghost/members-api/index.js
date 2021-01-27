@@ -97,7 +97,13 @@ module.exports = function MembersApi({
         stripeAPIService,
         stripePlansService,
         tokenService,
-        sendEmailWithMagicLink
+        sendEmailWithMagicLink,
+        config: {
+            checkoutSuccessUrl: stripeConfig.checkoutSuccessUrl,
+            checkoutCancelUrl: stripeConfig.checkoutCancelUrl,
+            billingSuccessUrl: stripeConfig.billingSuccessUrl,
+            billingCancelUrl: stripeConfig.billingCancelUrl
+        }
     });
 
     const ready = paymentConfig.stripe ? Promise.all([
