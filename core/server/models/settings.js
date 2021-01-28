@@ -8,7 +8,6 @@ const ghostBookshelf = require('./base');
 const {i18n} = require('../lib/common');
 const errors = require('@tryghost/errors');
 const validation = require('../data/validation');
-const settingsCache = require('../services/settings/cache');
 const internalContext = {context: {internal: true}};
 let Settings;
 let defaultSettings;
