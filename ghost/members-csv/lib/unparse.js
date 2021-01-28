@@ -35,7 +35,7 @@ const unparse = (members) => {
             note: member.note,
             subscribed_to_emails: member.subscribed,
             complimentary_plan: member.comped || member.complimentary_plan,
-            stripe_customer_id: _.get(member, 'stripe.subscriptions[0].customer.id') || member.stripe_customer_id,
+            stripe_customer_id: _.get(member, 'subscriptions[0].customer.id') || member.stripe_customer_id,
             created_at: member.created_at,
             deleted_at: member.deleted_at,
             labels: labels,
