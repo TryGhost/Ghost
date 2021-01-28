@@ -553,10 +553,10 @@
   dependencies:
     ghost-ignition "^4.4.3"
 
-"@tryghost/members-api@0.37.6":
-  version "0.37.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.37.6.tgz#2f8278af9fd418062d61135a8bdbfdcda8ee6709"
-  integrity sha512-1oZzM57Q+ZLylMJKBpu/WoTPq3ccRiB9uL5pOGjb/kJK4oBD7WI1PyqOt/YAkduCfZYEx22QEkPZYb8fuVMeZw==
+"@tryghost/members-api@1.0.0-rc.0":
+  version "1.0.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.0.0-rc.0.tgz#e7769b8e886ea32c975e507268a1677b1af890a2"
+  integrity sha512-gHLwgyXl5wXlvNvtRYA6N4Nqod+oWEIa7g62lpZQCUQFeJkSZT1UKwTCCTs6Rd3CPjxo0QVk5dMb3y1vxLc/mg==
   dependencies:
     "@tryghost/magic-link" "^0.6.5"
     bluebird "^3.5.4"
