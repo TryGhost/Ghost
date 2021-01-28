@@ -553,17 +553,17 @@
   dependencies:
     ghost-ignition "^4.4.3"
 
-"@tryghost/members-api@0.37.7":
-  version "0.37.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.37.7.tgz#95102f775a0647898cf26919eb543a5bd0aa7778"
-  integrity sha512-bE/5MO2OPak3OhJK4piz+U9ocnYRTMM/7zBYIOtTDCvGBmCsEUoChUEHNqHHrcE9Iw/cYcdPPqgtlcGkXbCgug==
+"@tryghost/members-api@1.0.0-rc.0":
+  version "1.0.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.0.0-rc.0.tgz#e7769b8e886ea32c975e507268a1677b1af890a2"
+  integrity sha512-gHLwgyXl5wXlvNvtRYA6N4Nqod+oWEIa7g62lpZQCUQFeJkSZT1UKwTCCTs6Rd3CPjxo0QVk5dMb3y1vxLc/mg==
   dependencies:
-    "@tryghost/magic-link" "^0.6.6"
+    "@tryghost/magic-link" "^0.6.5"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "4.4.3"
+    ghost-ignition "4.4.2"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     leaky-bucket "2.2.0"
