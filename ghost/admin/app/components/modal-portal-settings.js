@@ -9,7 +9,7 @@ import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 const ICON_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
 
-const ICON_MAPPING = [
+export const ICON_MAPPING = [
     {
         icon: 'portal-icon-1',
         value: 'icon-1'
@@ -33,9 +33,11 @@ const ICON_MAPPING = [
 ];
 
 export default ModalComponent.extend({
-    settings: service(),
-    membersUtils: service(),
     config: service(),
+    membersUtils: service(),
+    portal: service(),
+    settings: service(),
+
     page: 'signup',
     iconExtensions: null,
     defaultButtonIcons: null,
@@ -45,6 +47,7 @@ export default ModalComponent.extend({
     showLeaveSettingsModal: false,
     freeSignupRedirect: undefined,
     paidSignupRedirect: undefined,
+
     confirm() {},
 
     allowSelfSignup: alias('settings.membersAllowFreeSignup'),
@@ -69,27 +72,8 @@ export default ModalComponent.extend({
     }),
 
     portalPreviewUrl: computed('buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked', 'settings.{portalName,portalButton,portalButtonSignupText,portalButtonStyle,accentColor}', function () {
-        const baseUrl = this.config.get('blogUrl');
-        const portalBase = '/#/portal/preview';
-        const settingsParam = new URLSearchParams();
-        const signupButtonText = this.settings.get('portalButtonSignupText') || '';
-        settingsParam.append('button', this.settings.get('portalButton'));
-        settingsParam.append('name', this.settings.get('portalName'));
-        settingsParam.append('isFree', this.isFreeChecked);
-        settingsParam.append('isMonthly', this.isMonthlyChecked);
-        settingsParam.append('isYearly', this.isYearlyChecked);
-        settingsParam.append('page', this.page);
-        if (this.buttonIcon) {
-            settingsParam.append('buttonIcon', encodeURIComponent(this.buttonIcon));
-        }
-        settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
-        if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
-            settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
-        }
-        if (this.settings.get('portalButtonStyle')) {
-            settingsParam.append('buttonStyle', encodeURIComponent(this.settings.get('portalButtonStyle')));
-        }
-        return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
+        const options = this.getProperties(['buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked']);
+        return this.portal.getPreviewUrl(options);
     }),
 
     showIconSetting: computed('selectedButtonStyle', function () {
