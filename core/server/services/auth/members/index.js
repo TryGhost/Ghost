@@ -1,18 +1,11 @@
 const jwt = require('express-jwt');
 const membersService = require('../../members');
-const labs = require('../../labs');
 const config = require('../../../../shared/config');
 
 let UNO_MEMBERINO;
 
 module.exports = {
     get authenticateMembersToken() {
-        if (!labs.isSet('members')) {
-            return function (req, res, next) {
-                return next();
-            };
-        }
-
         if (!UNO_MEMBERINO) {
             const url = require('url');
             const {protocol, host} = url.parse(config.get('url'));
