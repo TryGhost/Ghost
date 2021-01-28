@@ -87,9 +87,9 @@ describe('Members API', function () {
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
 
-    it('Can browse with paid', async function () {
+    it('Can filter by paid status', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery('members/?paid=true'))
+            .get(localUtils.API.getApiQuery('members/?filter=status:paid'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

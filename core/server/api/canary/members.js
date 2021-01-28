@@ -34,8 +34,7 @@ module.exports = {
             'order',
             'debug',
             'page',
-            'search',
-            'paid'
+            'search'
         ],
         permissions: true,
         validation: {},
@@ -304,8 +303,7 @@ module.exports = {
         options: [
             'limit',
             'filter',
-            'search',
-            'paid'
+            'search'
         ],
         headers: {
             disposition: {

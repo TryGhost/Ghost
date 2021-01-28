@@ -210,20 +210,6 @@ describe('Member Model', function run() {
     describe('findAll', function () {
         beforeEach(testUtils.setup('members'));
 
-        it('can use custom query', function (done) {
-            Member.findAll().then(function (allResult) {
-                allResult.length.should.equal(4);
-
-                return Member.findAll({paid: true});
-            }).then(function (queryResult) {
-                queryResult.length.should.equal(2);
-                queryResult.models[0].get('email').should.equal('paid@test.com');
-                queryResult.models[1].get('email').should.equal('trialing@test.com');
-
-                done();
-            }).catch(done);
-        });
-
         it('can use search query', function (done) {
             Member.findAll({search: 'egg'}).then(function (queryResult) {
                 queryResult.length.should.equal(1);

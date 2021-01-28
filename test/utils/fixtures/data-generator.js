@@ -311,26 +311,30 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             email: 'member1@test.com',
             name: 'Mr Egg',
-            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340'
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
+            status: 'free'
         },
         {
             id: ObjectId.generate(),
             email: 'member2@test.com',
             email_open_rate: 50,
-            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341'
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
+            status: 'free'
         },
         {
             id: ObjectId.generate(),
             email: 'paid@test.com',
             name: 'Egon Spengler',
             email_open_rate: 80,
-            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342'
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
+            status: 'paid'
         },
         {
             id: ObjectId.generate(),
             email: 'trialing@test.com',
             name: 'Ray Stantz',
-            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343'
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
+            status: 'paid'
         }
     ],
 

@@ -82,7 +82,7 @@ describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
                 attrs.html.should.eql('<p>What\'s the matter?</p>');
             });
 
-            it('should hide content attributes when visibility is "paid" and member has no subscription', function () {
+            it('should hide content attributes when visibility is "paid" and member has status of "free"', function () {
                 const attrs = {
                     visibility: 'paid',
                     plaintext: 'I see dead people',
@@ -93,9 +93,7 @@ describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
                     original: {
                         context: {
                             member: {
-                                stripe: {
-                                    subscriptions: []
-                                }
+                                status: 'free'
                             }
                         }
                     }
@@ -107,35 +105,7 @@ describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
                 attrs.html.should.eql('');
             });
 
-            it('should hide content attributes when visibility is "paid" and member has cancelled subscription', function () {
-                const attrs = {
-                    visibility: 'paid',
-                    plaintext: 'I see dead people',
-                    html: '<p>What\'s the matter?</p>'
-                };
-
-                const frame = {
-                    options: {},
-                    original: {
-                        context: {
-                            member: {
-                                stripe: {
-                                    subscriptions: [{
-                                        status: 'canceled'
-                                    }]
-                                }
-                            }
-                        }
-                    }
-                };
-
-                gating.forPost(attrs, frame);
-
-                attrs.plaintext.should.eql('');
-                attrs.html.should.eql('');
-            });
-
-            it('should NOT hide content attributes when visibility is "paid" and member has a subscription', function () {
+            it('should NOT hide content attributes when visibility is "paid" and member has status of "paid"', function () {
                 const attrs = {
                     visibility: 'paid',
                     plaintext: 'Secret paid content',
@@ -147,11 +117,7 @@ describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
                     original: {
                         context: {
                             member: {
-                                stripe: {
-                                    subscriptions: [{
-                                        status: 'active'
-                                    }]
-                                }
+                                status: 'paid'
                             }
                         }
                     }
