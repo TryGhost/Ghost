@@ -78,6 +78,11 @@ module.exports = class StripeService {
      * @returns {Promise<void>}
      */
     async configure(config) {
+        if (config.mode !== 'production' && this._stripeAPIService.mode === 'live') {
+            const error = new Error('Cannot use live Stripe keys in development mode. Please restart in production mode.');
+            error.fatal = true;
+            throw error;
+        }
         try {
             const product = await this._stripeAPIService.ensureProduct(config.product.name);
             this._product = product;

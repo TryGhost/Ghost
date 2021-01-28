@@ -37,6 +37,12 @@ module.exports = class StripeWebhookService {
             return;
         }
 
+        if (config.mode !== 'production') {
+            const error = new Error('Cannot use remote webhooks in development mode. Please use the WEBHOOK_SECRET environment variable.');
+            error.fatal = true;
+            throw error;
+        }
+
         /** @type {import('stripe').events.EventType[]} */
         const events = [
             'checkout.session.completed',
