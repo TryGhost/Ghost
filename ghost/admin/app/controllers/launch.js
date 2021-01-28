@@ -75,6 +75,7 @@ export default class LaunchController extends Controller {
 
     @action
     updatePreview(url) {
+        console.log({url});
         this.previewSrc = url;
     }
 

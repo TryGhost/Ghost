@@ -6,6 +6,8 @@ import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhLaunchWizardSetPricingComponent extends Component {
+    @service config;
+    @service membersUtils;
     @service settings;
 
     currencies = CURRENCIES;
@@ -34,9 +36,30 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return this.currencies.findBy('value', this.stripePlans.monthly.currency);
     }
 
+    get isFreeChecked() {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return (this.settings.get('membersAllowFreeSignup') && allowedPlans.includes('free'));
+    }
+
+    get isMonthlyChecked() {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return (this.membersUtils.isStripeEnabled && allowedPlans.includes('monthly'));
+    }
+
+    get isYearlyChecked() {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
+    }
+
+    constructor() {
+        super(...arguments);
+        this.updatePreviewUrl();
+    }
+
     willDestroy() {
         // clear any unsaved settings changes when going back/forward/closing
         this.settings.rollbackAttributes();
+        this.args.updatePreview('');
     }
 
     @action
@@ -66,11 +89,22 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         }
 
         this.settings.set('stripePlans', updatedPlans);
+        this.updatePreviewUrl();
     }
 
     @action
-    toggleSelfSignup() {
-        this.settings.set('membersAllowFreeSignup', !this.settings.get('membersAllowFreeSignup'));
+    toggleFreePlan(event) {
+        this.updateAllowedPlan('free', event.target.checked);
+    }
+
+    @action
+    toggleMonthlyPlan(event) {
+        this.updateAllowedPlan('monthly', event.target.checked);
+    }
+
+    @action
+    toggleYearlyPlan(event) {
+        this.updateAllowedPlan('yearly', event.target.checked);
     }
 
     @action
@@ -109,6 +143,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             });
 
             this.settings.set('stripePlans', updatedPlans);
+            this.updatePreviewUrl();
         } catch (err) {
             this.settings.errors.add('stripePlans', err.message);
         } finally {
@@ -126,5 +161,32 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
         yield this.settings.save();
         this.args.nextStep();
+    }
+
+    updateAllowedPlan(plan, isChecked) {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+
+        if (!isChecked) {
+            this.settings.set('portalPlans', allowedPlans.filter(p => p !== plan));
+        } else {
+            allowedPlans.push(plan);
+            this.settings.set('portalPlans', [...allowedPlans]);
+        }
+
+        this.updatePreviewUrl();
+    }
+
+    updatePreviewUrl() {
+        const options = {
+            disableBackground: true,
+            currency: this.selectedCurrency.value,
+            monthlyPrice: this.stripePlans.monthly.amount,
+            yearlyPrice: this.stripePlans.yearly.amount,
+            isMonthly: this.isMonthlyChecked,
+            isYearly: this.isYearlyChecked,
+            isFree: this.isFreeChecked
+        };
+        const url = this.membersUtils.getPortalPreviewUrl(options);
+        this.args.updatePreview(url);
     }
 }
