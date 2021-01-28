@@ -104,11 +104,9 @@ describe('Members Service Middleware', function () {
 
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({
-                stripe: {
-                    subscriptions: [{
-                        status: 'active'
-                    }]
-                }
+                subscriptions: [{
+                    status: 'active'
+                }]
             });
 
             // Call the middleware

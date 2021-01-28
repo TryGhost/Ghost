@@ -91,7 +91,7 @@ describe('Members API', function () {
                 jsonResponse.members.should.have.length(1);
                 jsonResponse.members[0].email.should.equal('member1@test.com');
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
             });
     });
@@ -111,7 +111,7 @@ describe('Members API', function () {
                 jsonResponse.members.should.have.length(1);
                 jsonResponse.members[0].email.should.equal('member2@test.com');
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
             });
     });
@@ -131,7 +131,7 @@ describe('Members API', function () {
                 jsonResponse.members.should.have.length(1);
                 jsonResponse.members[0].email.should.equal('paid@test.com');
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
             });
     });
@@ -234,7 +234,7 @@ describe('Members API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.members);
                         jsonResponse.members.should.have.length(1);
-                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
                         jsonResponse.members[0].name.should.equal(memberToChange.name);
                         jsonResponse.members[0].email.should.equal(memberToChange.email);
                         jsonResponse.members[0].comped.should.equal(memberToChange.comped);
@@ -397,8 +397,8 @@ describe('Members API', function () {
                 should(importedMember1.note).equal(null);
                 importedMember1.subscribed.should.equal(true);
                 importedMember1.comped.should.equal(false);
-                importedMember1.stripe.should.not.be.undefined();
-                importedMember1.stripe.subscriptions.length.should.equal(0);
+                importedMember1.subscriptions.should.not.be.undefined();
+                importedMember1.subscriptions.length.should.equal(0);
 
                 // check label order
                 // 1 unique global + 1 record labels + 1 auto generated label
@@ -464,8 +464,8 @@ describe('Members API', function () {
                 should(importedMember1.note).equal('no need to map me');
                 importedMember1.subscribed.should.equal(true);
                 importedMember1.comped.should.equal(false);
-                importedMember1.stripe.should.not.be.undefined();
-                importedMember1.stripe.subscriptions.length.should.equal(0);
+                importedMember1.subscriptions.should.not.be.undefined();
+                importedMember1.subscriptions.length.should.equal(0);
                 importedMember1.labels.length.should.equal(1); // auto-generated import label
             });
     });
@@ -509,8 +509,8 @@ describe('Members API', function () {
                 should(defaultMember1.note).equal(null);
                 defaultMember1.subscribed.should.equal(true);
                 defaultMember1.comped.should.equal(false);
-                defaultMember1.stripe.should.not.be.undefined();
-                defaultMember1.stripe.subscriptions.length.should.equal(0);
+                defaultMember1.subscriptions.should.not.be.undefined();
+                defaultMember1.subscriptions.length.should.equal(0);
                 defaultMember1.labels.length.should.equal(1); // auto-generated import label
 
                 const defaultMember2 = jsonResponse.members.find(member => (member.email === 'member+defaults_2@example.com'));

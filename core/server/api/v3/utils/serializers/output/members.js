@@ -73,8 +73,12 @@ function serializeMember(member, options) {
     const json = member.toJSON(options);
 
     let comped = false;
-    if (json.stripe && json.stripe.subscriptions) {
-        const hasCompedSubscription = !!json.stripe.subscriptions.find(
+    let stripe = null;
+    if (json.subscriptions) {
+        stripe = {
+            subscriptions: json.subscriptions
+        };
+        const hasCompedSubscription = !!json.subscriptions.find(
             /**
              * @param {SerializedMemberStripeSubscription} sub
              */
@@ -98,7 +102,7 @@ function serializeMember(member, options) {
         created_at: json.created_at,
         updated_at: json.updated_at,
         labels: json.labels,
-        stripe: json.stripe,
+        stripe: stripe,
         avatar_image: json.avatar_image,
         comped: comped,
         email_count: json.email_count,

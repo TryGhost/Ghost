@@ -136,7 +136,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
     try {
         const member = await membersService.ssr.exchangeTokenForSession(req, res);
-        const subscriptions = member && member.stripe && member.stripe.subscriptions || [];
+        const subscriptions = member && member.subscriptions || [];
 
         const action = req.query.action;
 
