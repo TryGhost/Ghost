@@ -1,0 +1,20 @@
+
+
+<div class="gh-browserpreview-previewcontainer" ...attributes>
+    <div class="gh-browserpreview-browser">
+        <div class="tabs">
+            <ul><li></li><li></li><li></li></ul>
+            <div>
+                {{#if @icon}}
+                    <span class="favicon"><img src={{@icon}} alt="icon"></span>
+                {{else}}
+                    <span class="favicon default">{{svg-jar "icon"}}</span>
+                {{/if}}
+                <span class="site-title">{{@title}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="gh-browserpreview-iframecontainer">
+        {{yield}}
+    </div>
+</div>
