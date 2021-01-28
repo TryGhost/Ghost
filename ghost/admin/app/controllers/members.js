@@ -162,14 +162,22 @@ export default class MembersController extends Controller {
         let exportUrl = ghostPaths().url.api('members/upload');
         let downloadParams = new URLSearchParams();
         downloadParams.set('limit', 'all');
+        let filters = [];
         if (this.paidParam !== null) {
-            downloadParams.set('paid', this.paidParam);
+            if (this.paidParam === 'true') {
+                filters.push('status:paid');
+            } else {
+                filters.push('status:free');
+            }
         }
         if (this.label !== null) {
-            downloadParams.set('filter', `label:${this.label}`);
+            filters.push(`label:${this.label}`);
         }
         if (this.searchText !== '') {
             downloadParams.set('search', this.searchText);
+        }
+        if (filters.length) {
+            downloadParams.set('filter', filters.join('+'));
         }
         let iframe = document.getElementById('iframeDownload');
 
@@ -278,8 +286,18 @@ export default class MembersController extends Controller {
         this._startDate = startDate;
 
         this.members = yield this.ellaSparse.array((range = {}, query = {}) => {
-            const labelFilter = label ? `label:'${label}'+` : '';
-            const paidQuery = paidParam ? {paid: paidParam} : {};
+            let filters = [];
+            if (label) {
+                filters.push(`label:'${label}'`);
+            }
+            if (paidParam !== null) {
+                if (paidParam === 'true') {
+                    filters.push('status:paid');
+                } else {
+                    filters.push('status:free');
+                }
+            }
+            filters.push(`created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`);
             const searchQuery = searchParam ? {search: searchParam} : {};
             const order = orderParam ? `${orderParam} desc` : `created_at desc`;
 
@@ -287,8 +305,8 @@ export default class MembersController extends Controller {
                 order,
                 limit: range.length,
                 page: range.page,
-                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
-            }, paidQuery, searchQuery, query);
+                filter: filters.join('+')
+            }, searchQuery, query);
 
             return this.store.query('member', query).then((result) => {
                 return {
@@ -305,12 +323,21 @@ export default class MembersController extends Controller {
     *deleteMembersTask() {
         let {label, paidParam, searchParam} = this;
 
-        let filter = label ? `label:${label}` : '';
-        let paidQuery = paidParam ? {paid: paidParam} : {};
+        let filters = [];
+        if (label) {
+            filters.push(`label:'${label}'`);
+        }
+        if (paidParam !== null) {
+            if (paidParam === 'true') {
+                filters.push('status:paid');
+            } else {
+                filters.push('status:free');
+            }
+        }
         let searchQuery = searchParam ? {search: searchParam} : {};
         let allQuery = !label && !paidParam && !searchParam ? {all: true} : {};
 
-        let query = new URLSearchParams(Object.assign({}, {filter}, paidQuery, searchQuery, allQuery));
+        let query = new URLSearchParams(Object.assign({}, {filter: filters.join('+')}, searchQuery, allQuery));
         let url = `${this.ghostPaths.url.api('members')}?${query}`;
 
         // response contains details of which members failed to be deleted

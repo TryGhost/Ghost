@@ -22,7 +22,7 @@ export default ModalComponent.extend({
     }),
 
     countPaidMembersTask: task(function* () {
-        const result = yield this.store.query('member', {filter: 'subscribed:true', paid: true, limit: 1, page: 1});
+        const result = yield this.store.query('member', {filter: 'subscribed:true+status:paid', limit: 1, page: 1});
         this.set('paidMemberCount', result.meta.pagination.total);
         const freeMemberCount = this.model.memberCount - result.meta.pagination.total;
         this.set('freeMemberCount', freeMemberCount);
