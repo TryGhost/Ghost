@@ -298,25 +298,6 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        let isEdit = (action === 'edit');
-        let isOwner;
-
-        function isChangingMembers() {
-            if (unsafeAttrs && unsafeAttrs.key === 'labs') {
-                let editedValue = JSON.parse(unsafeAttrs.value);
-                if (editedValue.members !== undefined) {
-                    return editedValue.members !== settingsCache.get('labs').members;
-                }
-            }
-        }
-
-        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-
-        if (isEdit && isChangingMembers()) {
-            // Only allow owner to toggle members flag
-            hasUserPermission = isOwner;
-        }
-
         if (hasUserPermission && hasApiKeyPermission) {
             return Promise.resolve();
         }
