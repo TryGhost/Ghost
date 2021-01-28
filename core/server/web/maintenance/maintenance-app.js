@@ -1,7 +1,7 @@
 const compression = require('compression');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
-const debug = require('ghost-ignition').debug('web:admin:app');
+const debug = require('ghost-ignition').debug('maintenance:app');
 
 class MaintenanceApp {
     constructor({logging, i18n, express, viewEngine, compress, views, servePublicFile, serveFavicon}) {
