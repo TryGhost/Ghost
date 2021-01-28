@@ -38,13 +38,12 @@ export default Component.extend({
 
     hasEmailPermission: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
-    canSendEmail: computed('feature.labs.members', 'post.{isPost,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
-        let membersEnabled = this.feature.get('labs.members');
+    canSendEmail: computed('post.{isPost,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
         let mailgunIsConfigured = this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
         let isPost = this.post.isPost;
         let hasSentEmail = !!this.post.email;
 
-        return membersEnabled && mailgunIsConfigured && isPost && !hasSentEmail;
+        return mailgunIsConfigured && isPost && !hasSentEmail;
     }),
 
     postState: computed('post.{isPublished,isScheduled}', 'forcePublishedMenu', function () {

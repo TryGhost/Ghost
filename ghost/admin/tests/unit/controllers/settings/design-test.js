@@ -16,7 +16,7 @@ import {setupTest} from 'ember-mocha';
 //     {"label":"No Protocol","url":"//example.com"}
 // ]`;
 
-describe('Unit: Controller: settings/design', function () {
+describe.skip('Unit: Controller: settings/design', function () {
     setupTest();
 
     it('blogUrl: captures config and ensures trailing slash', function () {

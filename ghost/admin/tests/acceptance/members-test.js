@@ -2,7 +2,7 @@ import moment from 'moment';
 import wait from 'ember-test-helpers/wait';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -40,21 +40,6 @@ describe('Acceptance: Members', function () {
             this.server.create('user', {roles: [role]});
 
             return await authenticateSession();
-        });
-
-        it('shows sidebar link which navigates to members list', async function () {
-            await visit('/settings/members');
-            await click('#labs-members');
-            await visit('/');
-
-            expect(find('[data-test-nav="members"]'), 'sidebar link')
-                .to.exist;
-
-            await click('[data-test-nav="members"]');
-
-            expect(currentURL()).to.equal('/members');
-            expect(currentRouteName()).to.equal('members.index');
-            expect(find('[data-test-screen-title]')).to.have.text('Members');
         });
 
         it('it renders, can be navigated, can edit member', async function () {

@@ -76,7 +76,7 @@
                 {{/unless}}
 
 
-                {{#if (and this.feature.members this.showVisibilityInput)}}
+                {{#if this.showVisibilityInput}}
                     <div class="form-group">
                         <label for="visibility-input">Post access</label>
                         <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
@@ -129,7 +129,7 @@
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    {{#if (and this.feature.members this.post.isPost showEmailNewsletter)}}
+                    {{#if (and this.post.isPost showEmailNewsletter)}}
                         <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
                             <button type="button">
                                 <b>Email newsletter</b>
