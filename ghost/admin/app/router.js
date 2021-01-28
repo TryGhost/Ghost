@@ -21,16 +21,10 @@ Router.map(function () {
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
 
-    this.route('launch', function () {
-        this.route('customise-design');
-        this.route('connect-stripe');
-        this.route('set-pricing');
-        this.route('complete');
-    });
-
     this.route('about');
     this.route('site');
     this.route('dashboard');
+    this.route('launch');
 
     this.route('billing', function () {
         this.route('billing-sub', {path: '/*sub'});

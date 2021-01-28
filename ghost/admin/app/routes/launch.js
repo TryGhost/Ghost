@@ -1,3 +1,3 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
-export default class LaunchRoute extends AuthenticatedRoute { }
+export default class LaunchRoute extends AuthenticatedRoute {}
