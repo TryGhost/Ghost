@@ -37,7 +37,7 @@
             {{/if}}
 
             <section class="view-actions br2 {{unless this.infoMessage "bg-white"}}" style="pointer-events: auto">
-                <button type="button" {{on "click" (action "togglePostPreviewModal")}}>Preview {{this.post.displayName}}</button>
+                <button type="button" class="blue link f8 fw4 tracked-1 mr1 pl3 pr4 br b--lightgrey" {{on "click" (action "togglePostPreviewModal")}}>Preview {{this.post.displayName}}</button>
                 {{#unless this.post.isNew}}
                     {{#if this.session.user.isContributor}}
                         <GhTaskButton @buttonText="Save"
