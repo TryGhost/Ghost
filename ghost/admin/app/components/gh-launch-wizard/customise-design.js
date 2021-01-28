@@ -10,12 +10,9 @@ import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
 export default class GhLaunchWizardCustomiseDesignComponent extends Component {
     @service settings;
-
-    @tracked previewGuid;
 
     iconExtensions = ICON_EXTENSIONS;
     iconMimeTypes = ICON_MIME_TYPES;
@@ -40,7 +37,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
 
     constructor() {
         super(...arguments);
-        this.refreshPreview();
+        this.args.updatePreview('');
     }
 
     @action
@@ -53,7 +50,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
         if (results[0]) {
             this.settings.set(property, results[0].url);
             await this.settings.save();
-            this.refreshPreview();
+            this.args.refreshPreview();
         }
     }
 
@@ -61,7 +58,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
     async removeImage(imageName) {
         this.settings.set(imageName, '');
         await this.settings.save();
-        this.refreshPreview();
+        this.args.refreshPreview();
     }
 
     @action
@@ -81,7 +78,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
             // clear out the accent color
             this.settings.set('accentColor', '');
             await this.settings.save();
-            this.refreshPreview();
+            this.args.refreshPreview();
             return;
         }
 
@@ -101,7 +98,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
 
             this.settings.set('accentColor', newColor);
             await this.settings.save();
-            this.refreshPreview();
+            this.args.refreshPreview();
         } else {
             this.settings.errors.add('accentColor', 'The colour should be in valid hex format');
             this.settings.hasValidated.pushObject('accentColor');
@@ -112,9 +109,5 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
     *debounceUpdateAccentColor(event) {
         yield timeout(500);
         this.updateAccentColor(event);
-    }
-
-    refreshPreview() {
-        this.previewGuid = (new Date()).valueOf();
     }
 }

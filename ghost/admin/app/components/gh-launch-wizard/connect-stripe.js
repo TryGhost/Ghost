@@ -17,6 +17,11 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         return `${this.ghostPaths.url.api('members/stripe_connect')}?mode=${mode}`;
     }
 
+    constructor() {
+        super(...arguments);
+        this.args.updatePreview('');
+    }
+
     willDestroy() {
         // clear any unsaved settings changes when going back/forward/closing
         this.settings.rollbackAttributes();
@@ -59,9 +64,9 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
                 throw error;
             }
+        } else {
+            this.stripeConnectError = 'Paste your secure key to continue';
+            return false;
         }
-
-        // skip when no token supplied
-        this.args.afterComplete();
     }
 }
