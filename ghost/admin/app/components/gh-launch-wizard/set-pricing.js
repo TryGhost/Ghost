@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import {CURRENCIES} from 'ghost-admin/components/gh-members-lab-setting';
+import {CURRENCIES} from 'ghost-admin/components/gh-members-payments-setting';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
