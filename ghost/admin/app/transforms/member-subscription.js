@@ -6,7 +6,7 @@ export default Transform.extend({
     deserialize(serialized) {
         let subscriptions, subscriptionArray;
 
-        subscriptionArray = serialized.subscriptions || [];
+        subscriptionArray = serialized || [];
 
         subscriptions = subscriptionArray.map(itemDetails => MemberSubscription.create(itemDetails));
 
@@ -24,8 +24,6 @@ export default Transform.extend({
             subscriptionArray = [];
         }
 
-        return {
-            subscriptions: subscriptionArray
-        };
+        return subscriptionArray;
     }
 });
