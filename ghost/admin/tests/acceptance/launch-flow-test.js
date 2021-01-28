@@ -12,18 +12,6 @@ describe('Acceptance: Launch flow', function () {
     it('is not accessible when logged out', async function () {
         await visit('/launch');
         expect(currentURL()).to.equal('/signin');
-
-        await visit('/launch/customise-design');
-        expect(currentURL()).to.equal('/signin');
-
-        await visit('/launch/connect-stripe');
-        expect(currentURL()).to.equal('/signin');
-
-        await visit('/launch/set-pricing');
-        expect(currentURL()).to.equal('/signin');
-
-        await visit('/launch/complete');
-        expect(currentURL()).to.equal('/signin');
     });
 
     describe('when logged in', function () {
@@ -37,26 +25,6 @@ describe('Acceptance: Launch flow', function () {
         it('can visit /launch', async function () {
             await visit('/launch');
             expect(currentURL()).to.equal('/launch/customise-design');
-        });
-
-        it('can visit /launch/customise-design', async function () {
-            await visit('/launch/customise-design');
-            expect(currentURL()).to.equal('/launch/customise-design');
-        });
-
-        it('can visit /launch/connect-stripe', async function () {
-            await visit('/launch/connect-stripe');
-            expect(currentURL()).to.equal('/launch/connect-stripe');
-        });
-
-        it('can visit /launch/set-pricing', async function () {
-            await visit('/launch/set-pricing');
-            expect(currentURL()).to.equal('/launch/set-pricing');
-        });
-
-        it('can visit /launch/complete', async function () {
-            await visit('/launch/complete');
-            expect(currentURL()).to.equal('/launch/complete');
         });
     });
 });
