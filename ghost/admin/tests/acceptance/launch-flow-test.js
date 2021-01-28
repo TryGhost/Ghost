@@ -24,7 +24,7 @@ describe('Acceptance: Launch flow', function () {
 
         it('can visit /launch', async function () {
             await visit('/launch');
-            expect(currentURL()).to.equal('/launch/customise-design');
+            expect(currentURL()).to.equal('/launch');
         });
     });
 });
