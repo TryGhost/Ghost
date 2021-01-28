@@ -57,6 +57,10 @@ module.exports = class StripeAPIService {
         return this._configured;
     }
 
+    get mode() {
+        return this._testMode ? 'test' : 'live';
+    }
+
     configure(config) {
         this._stripe = new Stripe(config.secretKey);
         this._config = config;
