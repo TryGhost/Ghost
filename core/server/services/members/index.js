@@ -72,6 +72,9 @@ const membersService = {
 
             membersApi.bus.on('error', function (err) {
                 logging.error(err);
+                if (err.fatal) {
+                    process.exit(1);
+                }
             });
         }
         return membersApi;
