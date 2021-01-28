@@ -109,12 +109,14 @@ module.exports = function MembersApi({
     const ready = paymentConfig.stripe ? Promise.all([
         stripePlansService.configure({
             product: stripeConfig.product,
-            plans: stripeConfig.plans
+            plans: stripeConfig.plans,
+            mode: process.env.NODE_ENV || 'development'
         }),
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,
             webhookHandlerUrl: stripeConfig.webhookHandlerUrl,
-            webhook: stripeConfig.webhook || {}
+            webhook: stripeConfig.webhook || {},
+            mode: process.env.NODE_ENV || 'development'
         })
     ]) : Promise.resolve();
 
