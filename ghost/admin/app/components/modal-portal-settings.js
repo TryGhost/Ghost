@@ -35,7 +35,6 @@ export const ICON_MAPPING = [
 export default ModalComponent.extend({
     config: service(),
     membersUtils: service(),
-    portal: service(),
     settings: service(),
 
     page: 'signup',
@@ -73,7 +72,7 @@ export default ModalComponent.extend({
 
     portalPreviewUrl: computed('buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked', 'settings.{portalName,portalButton,portalButtonSignupText,portalButtonStyle,accentColor}', function () {
         const options = this.getProperties(['buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked']);
-        return this.portal.getPreviewUrl(options);
+        return this.membersUtils.getPortalPreviewUrl(options);
     }),
 
     showIconSetting: computed('selectedButtonStyle', function () {

@@ -52,18 +52,66 @@
     <GhErrorMessage @errors={{this.settings.errors}} @property="stripePlans" class="w-100 red"/>
 </div>
 
-<div class="gh-setting-first">
-    <div class="gh-setting-content">
-        <h4 class="gh-setting-title">Allow free member signup</h4>
-        <p class="gh-setting-desc pa0 ma0">If disabled, members can only be signed up via payment checkout or API integration</p>
+<div>
+    <div class="mb3">
+        <h4 class="gh-portal-setting-title">Plans available at signup</h4>
     </div>
-    <div class="gh-setting-action">
-        <div class="for-switch">
-            <label class="switch" for="members-allow-self-signup" {{action "toggleSelfSignup" bubbles="false"}}>
-                <input type="checkbox" checked={{this.settings.membersAllowFreeSignup}} class="gh-input" {{on "click" this.toggleSelfSignup}} data-test-checkbox="members-allow-self-signup">
-                <span class="input-toggle-component mt1"></span>
-            </label>
-        </div>
+    <div class="form-group mb0 for-checkbox">
+        <label
+            class="checkbox"
+            for="free-plan"
+        >
+            <input
+                type="checkbox"
+                checked={{this.isFreeChecked}}
+                id="free-plan"
+                name="free-plan"
+                disabled={{not this.settings.membersAllowFreeSignup}}
+                class="gh-input post-settings-featured"
+                {{on "click" this.toggleFreePlan}}
+                data-test-checkbox="featured"
+            >
+            <span class="input-toggle-component"></span>
+            <p>Free</p>
+        </label>
+    </div>
+    <div class="form-group mb0 for-checkbox">
+        <label
+            class="checkbox"
+            for="monthly-plan"
+        >
+            <input
+                type="checkbox"
+                id="monthly-plan"
+                name="monthly-plan"
+                checked={{this.isMonthlyChecked}}
+                disabled={{not this.membersUtils.isStripeEnabled}}
+                class="gh-input post-settings-featured"
+                {{on "click" this.toggleMonthlyPlan}}
+                data-test-checkbox="featured"
+            >
+            <span class="input-toggle-component"></span>
+            <p>Monthly</p>
+        </label>
+    </div>
+    <div class="form-group mb0 for-checkbox">
+        <label
+            class="checkbox"
+            for="yearly-plan"
+        >
+            <input
+                type="checkbox"
+                id="yearly-plan"
+                name="yearly-plan"
+                checked={{this.isYearlyChecked}}
+                disabled={{not this.membersUtils.isStripeEnabled}}
+                class="gh-input post-settings-featured"
+                {{on "click" this.toggleYearlyPlan}}
+                data-test-checkbox="featured"
+            >
+            <span class="input-toggle-component"></span>
+            <p>Yearly</p>
+        </label>
     </div>
 </div>
 
