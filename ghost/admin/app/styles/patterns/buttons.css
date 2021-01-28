@@ -481,6 +481,10 @@ Usage: CTA buttons grouped together horizontally.
     font-weight: 500;
 }
 
+.gh-btn-group .gh-btn-group-selected svg {
+    fill: var(--blue);
+}
+
 .gh-btn-block + .gh-btn-block {
     margin-top: 5px;
 }
