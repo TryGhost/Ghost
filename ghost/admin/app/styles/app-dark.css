@@ -39,6 +39,7 @@
 @import "components/codemirror.css";
 @import "components/lists.css";
 @import "components/tabs.css";
+@import "components/browser-preview.css";
 
 
 /* Layouts: Groups of Components
@@ -508,6 +509,10 @@ input:focus,
 .gh-list-row:not(.header):not(.loading):hover .gh-list-data,
 .settings-tag .tag-edit-button.active {
     background: color-mod(var(--dark-main-bg-color) l(-2%));
+}
+
+.gh-browserpreview-browser {
+    background: color-mod(var(--dark-main-bg-color) l(-6%));
 }
 
 .tag-settings .gh-image-uploader {
