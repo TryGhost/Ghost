@@ -93,10 +93,6 @@ const initExpressApps = async () => {
     return parentApp;
 };
 
-const initMaintenanceApp = () => {
-    return require('./web/maintenance')();
-};
-
 /**
  * - initialise models
  * - initialise i18n
@@ -142,7 +138,7 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
         config.set('maintenance:enabled', true);
         logging.info('Blog is in maintenance mode.');
 
-        ghostServer.rootApp = initMaintenanceApp();
+        ghostServer.rootApp = require('./web/maintenance');
 
         try {
             migrator.migrate()
