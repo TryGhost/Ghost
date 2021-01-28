@@ -53,6 +53,10 @@ export default class ModalPostPreviewSocialComponent extends Component {
         return this.args.post.ogDescription || this._fallbackDescription;
     }
 
+    get facebookImage() {
+        return this.args.post.ogImage;
+    }
+
     // Twitter
 
     get twitterTitle() {
@@ -61,5 +65,9 @@ export default class ModalPostPreviewSocialComponent extends Component {
 
     get twitterDescription() {
         return this.args.post.twitterDescription || this._fallbackDescription;
+    }
+
+    get twitterImage() {
+        return this.args.post.twitterImage;
     }
 }
