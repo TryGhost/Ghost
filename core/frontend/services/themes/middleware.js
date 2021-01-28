@@ -133,9 +133,7 @@ function updateLocalTemplateOptions(req, res, next) {
         firstname: req.member.name && req.member.name.split(' ')[0],
         avatar_image: req.member.avatar_image,
         subscriptions: req.member.stripe.subscriptions,
-        paid: req.member.stripe.subscriptions.filter((subscription) => {
-            return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
-        }).length !== 0
+        paid: req.member.status === 'paid'
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
