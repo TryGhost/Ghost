@@ -39,6 +39,9 @@ describe('Unit: v3/utils/serializers/output/utils/mapper', function () {
 
         it('calls mapper on relations', function () {
             const frame = {
+                original: {
+                    context: {}
+                },
                 options: {
                     withRelated: ['tags', 'authors'],
                     context: {}
