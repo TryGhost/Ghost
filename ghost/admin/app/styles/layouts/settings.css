@@ -1,3 +1,51 @@
+/* Settings menu
+/* ---------------------------------------------------------- */
+.gh-nav-settings-close {
+    margin: 26px 0;
+    padding: 0;
+}
+
+.gh-nav-settings-close h4 {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 28px;
+    font-size: 1.9rem;
+}
+
+.gh-nav-settings-close a {
+    display: flex;
+    padding: 5px 4px 2px;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    margin: 0 -12px 0 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.gh-nav-settings-close a:hover {
+    background: var(--active-menu-bg-color);
+}
+
+.gh-nav-settings-close a svg {
+    width: 16px;
+    height: 16px;
+    margin-top: -3px;
+}
+
+.gh-nav-settings-main {
+    margin: 7px 0;
+}
+
+.gh-nav-settings-main .active {
+    background: none !important;
+    font-weight: 400;
+    color: color-mod(var(--middarkgrey) l(-10%));
+}
+
+
 /* Settings
 /* ---------------------------------------------------------- */
 .gh-settings-main-grid {
@@ -11,49 +59,57 @@
 .gh-settings-main-grid .gh-setting-group {
     display: flex;
     color: var(--darkgrey);
-    border-bottom: 1px solid var(--whitegrey);
-    border-right: 1px solid var(--whitegrey);
     padding: 20px;
+    min-height: 85px;
+    text-align: left;
 }
 
-.gh-settings-main-grid a.gh-setting-group:hover {
-    background: var(--whitegrey-l2);
+.gh-settings-main-grid .gh-setting-group span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    /* border: 1px solid var(--whitegrey); */
+    background: color-mod(var(--main-bg-color) s(+8%));
+    width: 40px;
+    height: 40px;
+    min-width: 40px;;
+    border-radius: 5px;
 }
 
-.gh-settings-main-grid .gh-setting-group:nth-child(3n) {
-    border-right: none;
+.gh-settings-main-grid .gh-setting-group span.color-1 {
+    background: var(--yellow);
 }
 
-.gh-settings-main-grid .gh-setting-group:nth-last-child(-n+3) {
-    border-bottom: none;
+.gh-settings-main-grid .gh-setting-group span.color-2 {
+    background: var(--green);
 }
 
-.gh-settings-main-grid .gh-setting-group:first-child {
-    border-top-left-radius: .5rem;
+.gh-settings-main-grid .gh-setting-group span.color-3 {
+    background: var(--blue);
 }
 
-.gh-settings-main-grid .gh-setting-group:nth-child(3) {
-    border-top-right-radius: .5rem;
+.gh-settings-main-grid .gh-setting-group span.color-4 {
+    background: var(--purple);
 }
 
-.gh-settings-main-grid .gh-setting-group:nth-last-child(3) {
-    border-bottom-left-radius: .5rem;
-}
-
-.gh-settings-main-grid .gh-setting-group:last-child {
-    border-bottom-right-radius: .5rem;
+.gh-settings-main-grid .gh-setting-group:hover span {
+    background: color-mod(var(--main-bg-color) l(-3%) s(+8%));
 }
 
 .gh-settings-main-grid .gh-setting-group svg {
-    margin-top: 3px;
-    flex-basis: 48px;
-    max-width: 28px;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
 }
 
-.gh-settings-main-grid .gh-setting-group svg path {
-    fill: var(--midgrey);
+.gh-settings-main-grid .gh-setting-group svg path,
+.gh-settings-main-grid .gh-setting-group svg circle {
+    fill: var(--midlightgrey);
+}
+
+.gh-settings-main-grid .gh-setting-group:hover svg path,
+.gh-settings-main-grid .gh-setting-group:hover svg circle {
+    fill: var(--middarkgrey);
 }
 
 .gh-settings-main-grid .gh-setting-group div {
@@ -72,6 +128,20 @@
     padding: 0;
     line-height: 1.5em;
 }
+
+@media (max-width: 1100px) {
+    .gh-settings-main-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .gh-settings-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Setting headers */
 
 .gh-setting-header {
     margin: 4vw 0 5px 1px;
@@ -272,62 +342,6 @@
 .gh-setting-content-extended {
     width: 100%;
     margin-top: 25px;
-}
-
-
-/* Design
-/* ---------------------------------------------------------- */
-
-.gh-settings-design .input-color input {
-    position: relative;
-    height: 30px;
-    width: 102px;
-    padding: 3px 4px 3px 44px;
-    font-size: 1.3rem;
-}
-
-.gh-settings-design .input-color::after {
-    top: 5px;
-    left: 34px;
-}
-
-.gh-settings-design .color-picker-horizontal-divider {
-    position: absolute;
-    display: block;
-    content: "";
-    width: 1px;
-    top: 0;
-    left: 29px;
-    bottom: 0;
-    background: color-mod(var(--lightgrey) l(-5%) s(-10%));
-}
-
-.gh-settings-design .input-color input:focus + .color-picker-horizontal-divider {
-    top: 2px;
-    bottom: 2px;
-}
-
-.gh-settings-design .color-box-container {
-    height: 26px;
-    width: 26px;
-    position: absolute;
-    overflow: hidden;
-    top: 2px;
-    left: 2px;
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
-}
-
-.gh-settings-design .color-box-container .color-picker {
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    border: none;
-    outline: none;
-    padding: 0;
-    margin: 0;
-    width: 50px;
-    height: 50px;
 }
 
 /* Theme Directory
@@ -958,7 +972,6 @@ p.theme-validation-details {
 /* ---------------------------------------------------------- */
 .blog-logo,
 .blog-icon {
-    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23E6EEF2' d='M0 0h24v24H0z'/%3E%3Cpath fill='%23D8E2E8' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
     max-height: 50px;
     height: auto !important;
 }
@@ -1034,4 +1047,177 @@ p.theme-validation-details {
 
 .gh-setting-unsplash-checkbox {
     margin-bottom: 0;
+}
+
+/* Branding
+/* ---------------------------------------------------- */
+.fullscreen-modal-branding-modal {
+    margin: 30px;
+    max-width: 100%;
+}
+
+.fullscreen-modal-branding-modal .modal-content {
+    position: relative;
+    overflow: scroll;
+    height: 100%;
+    padding: 0;
+}
+
+.fullscreen-modal-branding-modal .modal-body {
+    margin: 0;
+    padding: 20px 24px;
+}
+
+.gh-branding-settings {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+}
+
+.gh-branding-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--whitegrey);
+    margin: -20px -24px;
+    padding: 20px 24px;
+}
+
+.gh-branding-settings-header h4 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.9rem;
+    font-weight: 600;
+}
+
+.gh-branding-settings-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.gh-branding-settings-actions .close {
+    padding: 4px;
+    margin-right: 12px;
+}
+
+.gh-branding-settings-options {
+    flex-basis: 25%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    border-right: 1px solid var(--whitegrey);
+    min-width: 320px;
+    max-width: 400px;
+    margin: 20px 0 -20px;
+    padding: 24px 24px 24px 0;
+    overflow: scroll;
+    height: calc(100vh - 136px);
+}
+
+.gh-branding-image-container {
+    position: relative;
+    align-self: flex-start;
+    height: 50px;
+}
+
+.gh-branding-image-container.largeimg {
+    width: 100%;
+    display: flex;
+    height: unset;
+    min-height: 80px;
+    align-items: center;
+    justify-content: center;
+}
+
+.gh-branding-image-container.transparent-bg {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23E6EEF2' d='M0 0h24v24H0z'/%3E%3Cpath fill='%23D8E2E8' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.gh-branding-settings-options .gh-setting-action-largeimg-delete,
+.gh-branding-settings-options .gh-setting-action-smallimg-delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 5px;
+    margin: 0;
+    border-radius: 3px;
+    opacity: 0;
+}
+
+.gh-branding-settings-options .gh-setting-action-largeimg-delete:hover,
+.gh-branding-settings-options .gh-setting-action-smallimg-delete:hover {
+    background: var(--red);
+    border-color: transparent;
+}
+
+.gh-branding-image-container:hover .gh-setting-action-largeimg-delete,
+.gh-branding-image-container:hover .gh-setting-action-smallimg-delete {
+    opacity: 1;
+}
+
+.gh-branding-settings-right {
+    flex-grow: 1;
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 20px -24px -20px 0;
+}
+
+.gh-branding-settings-previewcontainer {
+    margin: 32px 68px 68px;
+}
+
+.gh-branding-settings .input-color input {
+    position: relative;
+    height: 30px;
+    width: 102px;
+    padding: 3px 4px 3px 44px;
+    font-size: 1.3rem;
+}
+
+.gh-branding-settings .input-color::after {
+    top: 5px;
+    left: 34px;
+}
+
+.gh-branding-settings .color-picker-horizontal-divider {
+    position: absolute;
+    display: block;
+    content: "";
+    width: 1px;
+    top: 0;
+    left: 29px;
+    bottom: 0;
+    background: color-mod(var(--lightgrey) l(-5%) s(-10%));
+}
+
+.gh-branding-settings .input-color input:focus + .color-picker-horizontal-divider {
+    top: 2px;
+    bottom: 2px;
+}
+
+.gh-branding-settings .color-box-container {
+    height: 26px;
+    width: 26px;
+    position: absolute;
+    overflow: hidden;
+    top: 2px;
+    left: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.gh-branding-settings .color-box-container .color-picker {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    height: 50px;
 }

@@ -16,7 +16,7 @@ function withText(elements) {
     return Array.from(elements).filter(elem => elem.textContent.trim() !== '');
 }
 
-describe('Acceptance: Settings - Design', function () {
+describe.skip('Acceptance: Settings - Design', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 

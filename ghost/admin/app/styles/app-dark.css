@@ -40,6 +40,8 @@
 @import "components/lists.css";
 @import "components/tabs.css";
 @import "components/browser-preview.css";
+@import "components/stacks.css";
+@import "components/browser-preview.css";
 
 
 /* Layouts: Groups of Components
@@ -440,8 +442,7 @@ input:focus,
     background: var(--white);
 }
 
-.blog-logo,
-.blog-icon {
+.gh-branding-image-container.transparent-bg {
     background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23303e46' d='M0 0h24v24H0z'/%3E%3Cpath fill='%233e515b' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
@@ -481,8 +482,13 @@ input:focus,
 .gh-nav-list .gh-secondary-action:hover span,
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover,
 .gh-nav-list .active,
-.gh-nav-btn-search:hover {
-    background: color-mod(var(--dark-main-bg-color) l(+5%) s(-5%))
+.gh-nav-btn-search:hover,
+.gh-nav-list button.main-menu-item:hover,
+.gh-nav-bottom .ember-basic-dropdown-trigger:hover,
+.gh-nav-bottom-tabicon:hover,
+.gh-nav-bottom-tabicon.active,
+.gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
+    background: color-mod(var(--dark-main-bg-color) l(+5%) s(-5%));
 }
 
 .gh-nav-list .gh-nav-nightshift span svg path {
@@ -498,7 +504,8 @@ input:focus,
 .gh-contentfilter-menu-trigger--active,
 .gh-contentfilter-menu-trigger:focus,
 .tags-container,
-.content-list ol {
+.content-list ol,
+.gh-settings-main-grid {
     background: #212A2E;
 }
 
@@ -507,7 +514,8 @@ input:focus,
 .ember-power-select-group .ember-power-select-option[aria-current=true],
 .gh-list-row:not(.header):not(.loading):hover .gh-list-cell,
 .gh-list-row:not(.header):not(.loading):hover .gh-list-data,
-.settings-tag .tag-edit-button.active {
+.settings-tag .tag-edit-button.active,
+.gh-portal-site-frame-cover {
     background: color-mod(var(--dark-main-bg-color) l(-2%));
 }
 
@@ -519,6 +527,25 @@ input:focus,
     background-color: transparent;
 }
 
+.gh-settings-main-grid .gh-setting-group span {
+    background: color-mod(var(--dark-main-bg-color) l(+2%));
+}
+
+.gh-settings-main-grid .gh-setting-group:hover span {
+    background: color-mod(var(--dark-main-bg-color) l(+4%));
+}
+
+.nightshift-toggle {
+    background: #2d3d42;
+}
+
+.nightshift-toggle .thumb {
+    background: var(--midlightgrey-d2);
+}
+
+.nightshift-toggle .moon svg {
+    color: var(--midlightgrey-d2);
+}
 
 /* Koenig styles */
 .kg-link-input {

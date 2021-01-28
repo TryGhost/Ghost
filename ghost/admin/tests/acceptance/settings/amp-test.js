@@ -17,7 +17,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
-        await visit('/settings/integrations/amp');
+        await visit('/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -27,7 +27,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/settings/integrations/amp');
+        await visit('/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
@@ -37,7 +37,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/settings/integrations/amp');
+        await visit('/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
@@ -47,7 +47,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/settings/integrations/amp');
+        await visit('/integrations/amp');
 
         expect(currentURL(), 'currentURL').to.equal('/staff');
     });
@@ -61,10 +61,10 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         });
 
         it('it enables or disables AMP properly and saves it', async function () {
-            await visit('/settings/integrations/amp');
+            await visit('/integrations/amp');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
+            expect(currentURL(), 'currentURL').to.equal('/integrations/amp');
 
             // AMP is enabled by default
             expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
@@ -98,10 +98,10 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         });
 
         it('warns when leaving without saving', async function () {
-            await visit('/settings/integrations/amp');
+            await visit('/integrations/amp');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
+            expect(currentURL(), 'currentURL').to.equal('/integrations/amp');
 
             // AMP is enabled by default
             expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox default').to.be.true;
@@ -119,9 +119,9 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
 
             expect(currentURL(), 'currentURL after leave without saving').to.equal('/staff');
 
-            await visit('/settings/integrations/amp');
+            await visit('/integrations/amp');
 
-            expect(currentURL(), 'currentURL after return').to.equal('/settings/integrations/amp');
+            expect(currentURL(), 'currentURL after return').to.equal('/integrations/amp');
 
             // settings were not saved
             expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;

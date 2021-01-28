@@ -9,7 +9,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Design', function () {
+describe('Acceptance: Settings - Theme', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 

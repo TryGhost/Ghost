@@ -37,7 +37,7 @@ describe('Acceptance: Content', function () {
             return await authenticateSession();
         });
 
-        it('displays and filters posts', async function () {
+        it.skip('displays and filters posts', async function () {
             await visit('/posts');
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages

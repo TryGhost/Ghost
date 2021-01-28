@@ -98,7 +98,7 @@
 .gh-nav {
     position: relative;
     z-index: 800;
-    flex: 0 0 268px;
+    flex: 0 0 300px;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -295,7 +295,7 @@
 
 .gh-nav-list .gh-nav-list-h {
     overflow: hidden;
-    padding: 10px 20px;
+    padding: 10px 27px;
     color:  color-mod(var(--darkgrey));
     text-overflow: ellipsis;
     text-transform: uppercase;
@@ -306,15 +306,20 @@
     font-weight: 500;
 }
 
-.gh-nav-list a {
+.gh-nav-list a,
+.gh-nav-list button.main-menu-item {
     display: flex;
     align-items: center;
-    padding: 6px 32px;
+    padding: 6px 23px;
     color: color-mod(var(--middarkgrey) l(-10%));
     transition: none;
     margin: 2px 5px;
     font-weight: 400;
     border-radius: 5px;
+}
+
+.gh-nav-list button.main-menu-item {
+    width: calc(100% - 12px);
 }
 
 .gh-nav-list .active {
@@ -324,7 +329,8 @@
     font-weight: 700;
 }
 
-.gh-nav-list a:not(.active):hover {
+.gh-nav-list a:not(.active):hover,
+.gh-nav-list button.main-menu-item:hover {
     color: var(--darkgrey);
     background: var(--menu-hover-bg-color);
     opacity: 1;
@@ -340,7 +346,12 @@
     transition: none;
 }
 
-.gh-nav-list a:not(.active):hover svg {
+.gh-nav-list svg.force-fill path {
+    fill: var(--midgrey);
+}
+
+.gh-nav-list a:not(.active):hover svg,
+.gh-nav-list button.main-menu-item:hover svg {
     fill: var(--darkgrey);
 }
 
@@ -348,7 +359,8 @@
     fill: var(--active-menu-color);
 }
 
-.gh-nav-list a svg g {
+.gh-nav-list a svg g,
+.gh-nav-list button.main-menu-item svg g {
     stroke: var(--midgrey);
 }
 
@@ -413,7 +425,7 @@
     fill: var(--middarkgrey);
 }
 
-.gh-nav-list .gh-secondary-action:hover span {
+.gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
     background: var(--active-menu-bg-color);
 }
 
@@ -425,6 +437,17 @@
 
 .gh-nav-list .gh-secondary-action:hover span svg path {
     fill: var(--darkgrey);
+}
+
+.gh-nav-list .gh-secondary-action.icon-only,
+.gh-nav-list .gh-secondary-action.icon-only span {
+    pointer-events: none;
+    transition: none;
+}
+
+.gh-nav-list .gh-secondary-action.icon-only.arrow svg {
+    width: 16px;
+    height: 16px;
 }
 
 .gh-nav-list .gh-nav-new-post span svg {
@@ -445,15 +468,6 @@
     padding: 0;
 }
 
-.gh-nav-bottom {
-    margin: 0 5px;
-}
-
-.gh-nav-bottom .ember-basic-dropdown-trigger:hover {
-    background: var(--menu-hover-bg-color);
-    border-radius: 5px;
-}
-
 .gh-nav-pro .gh-btn-green {
     margin: 7px 10px 7px 20px !important;
     width: calc(100% - 40px) !important;
@@ -468,7 +482,7 @@
 }
 
 .gh-nav-view-list a {
-    padding-left: 58px;
+    padding-left: 48px;
     padding-right: 12px;
 }
 
@@ -532,6 +546,118 @@
 .gh-nav-view-list .svg-pink .circle {
     border-color: var(--pink);
     background: var(--pink);
+}
+
+/* Bottom nav
+/* ---------------------------------------------------------- */
+
+.gh-nav-bottom {
+    margin: 0 5px;
+}
+
+.gh-nav-bottom .ember-basic-dropdown-trigger:hover {
+    background: var(--menu-hover-bg-color);
+    border-radius: 999px;
+}
+
+.gh-nav-bottom-tabicon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    padding: 10px;
+    border-radius: 999px;
+    width: 40px;
+    height: 40px;
+    line-height: 1;
+}
+
+.gh-nav-bottom-tabicon:hover {
+    background: var(--menu-hover-bg-color);
+}
+
+.gh-nav-bottom-tabicon.active {
+    background: var(--active-menu-bg-color);
+}
+
+.gh-nav-bottom-tabicon.active svg {
+    fill: var(--darkgrey);
+}
+
+.gh-nav-bottom-tabicon svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--midlightgrey-d2);
+    line-height: 1;
+    transition: none;
+}
+
+.gh-nav-bottom-tabicon:last-child[data-tooltip]:before {
+    left: -12px;
+}
+
+.nightshift-toggle-container {
+    padding: 8px 0 8px 12px;
+}
+
+.nightshift-toggle-container[data-tooltip]:before {
+    left: -10px;
+}
+
+.nightshift-toggle {
+    position: relative;
+    height: 24px;
+    width: 42px;
+    background: var(--midlightgrey);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all ease-in-out 0.3s;
+}
+
+.nightshift-toggle .thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: var(--white);
+    border-radius: 999px;
+    transition: all ease-in-out 0.3s;
+}
+
+.nightshift-toggle.on .thumb {
+    position: absolute;
+    left: 20px;
+}
+
+.nightshift-toggle .sun {
+    position: absolute;
+    top: 6px;
+    left: 24px;
+    color: var(--white);
+    line-height: 1;
+}
+
+.nightshift-toggle .moon {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    color: var(--white);
+    line-height: 1;
+}
+
+.nightshift-toggle .sun svg,
+.nightshift-toggle .moon svg {
+    width: 12px;
+    height: 12px;
+    transition: all ease-in-out 0.3s;
+}
+
+.nightshift-toggle .sun svg line,
+.nightshift-toggle .sun svg path,
+.nightshift-toggle .sun svg circle,
+.nightshift-toggle .moon svg path {
+    stroke-width: 2.0px;
 }
 
 /* Mobile Nav Menu (Slides out)

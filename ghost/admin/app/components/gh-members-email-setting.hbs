@@ -1,0 +1,205 @@
+<div class="flex flex-column mb5">
+    <section class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
+        <div class="gh-setting-first gh-setting-last relative">
+            <div class="gh-setting-content">
+                <h4 class="gh-setting-title">Email design</h4>
+                <p class="gh-setting-desc pa0 ma0">Customize the look and feel of email newsletters</p>
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn" {{action (toggle "showEmailDesignSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
+            </div>
+        </div>
+    </section>
+    
+    <div class="gh-setting-header">Email</div>
+    <section class="flex flex-column br3 shadow-1 bg-grouped-table mt1 pa5">
+        <div class="gh-setting-first">
+            <div class="gh-setting-content">
+                <h4 class="gh-setting-title">Email addresses</h4>
+                <p class="gh-setting-desc pa0 ma0">Contact information used for newsletters and member login emails</p>
+            </div>
+            <div class="gh-setting-action">
+                <button type="button" class="gh-btn" {{action (toggle "membersFromOpen" this)}} data-test-toggle-membersFrom><span>{{if this.membersFromOpen "Close" "Expand"}}</span></button>
+            </div>
+        </div>
+
+        {{#liquid-if this.membersFromOpen}}
+            <div class="mt2">
+                <GhFormGroup>
+                    <label class="fw6 f8">Support email address</label>
+                    <div class="flex items-center justify-center mt1">
+                        <GhTextInput
+                            @value={{readonly this.supportAddress}}
+                            @input={{action "setSupportAddress" value="target.value"}}
+                            @class="gh-labs-members-emailinput"
+                        />
+                        <GhTaskButton
+                            @buttonText="Update support address"
+                            @runningText="Sending..."
+                            @successText="Confirmation email sent"
+                            @disabled={{this.disableUpdateSupportAddressButton}}
+                            @task={{this.updateSupportAddress}}
+                            @class="gh-btn gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
+                            data-test-button="update-support-address"
+                        />
+                    </div>
+                </GhFormGroup>
+                <div class="nt5 mb5">
+                    <span class="mt1 fw4 f8 midgrey">
+                        How members can reach you for help with their account (public)
+                    </span>
+                </div>
+                {{#if this.showSupportAddressConfirmation}}
+                <div class="flex items-center green-d1 nt3 lh-1">
+                    {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
+                </div>
+                {{/if}}
+            </div>
+            <div class="mt8">
+                <GhFormGroup>
+                    <label class="fw6 f8">Newsletter email address</label>
+                    <div class="flex items-center justify-center mt1">
+                        <GhTextInput
+                            @value={{readonly this.fromAddress}}
+                            @input={{action "setFromAddress" value="target.value"}}
+                            @class="gh-labs-members-emailinput"
+                        />
+                        <GhTaskButton
+                            @buttonText="Update newsletter address"
+                            @runningText="Sending..."
+                            @successText="Confirmation email sent"
+                            @disabled={{this.disableUpdateFromAddressButton}}
+                            @task={{this.updateFromAddress}}
+                            @class="gh-btn gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
+                            data-test-button="update-from-address"
+                        />
+                    </div>
+                </GhFormGroup>
+                <div class="nt5 mb5">
+                    <span class="mt1 fw4 f8 midgrey">
+                        The address your newsletter posts are sent from
+                    </span>
+                </div>
+                {{#if this.showFromAddressConfirmation}}
+                <div class="flex items-center green-d1 nt3 lh-1">
+                    {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
+                </div>
+                {{/if}}
+            </div>
+            <div class="mt8">
+                <GhFormGroup @class="for-select gh-labs-members-defaultemaildd">
+                    <label class="fw6 f8" for="reply-address">Newsletter replies go to</label>
+                    <span class="gh-select mt1">
+                        {{one-way-select this.selectedReplyAddress
+                            id="reply-address"
+                            name="reply-address"
+                            options=(readonly this.replyAddresses)
+                            optionValuePath="value"
+                            optionLabelPath="label"
+                            update=(action "setReplyAddress")
+                        }}
+                        {{svg-jar "arrow-down-small"}}
+                    </span>
+                </GhFormGroup>
+                <div class="nt5 mb5">
+                    <span class="mt1 fw4 f8 midgrey">
+                        Where you receive responses to newsletters
+                    </span>
+                </div>
+            </div>
+        {{/liquid-if}}
+
+        <div class="{{if this.mailgunIsConfigured "gh-setting-last" "gh-setting"}}">
+            <div class="gh-setting-content">
+                <h4 class="gh-setting-title">Enable newsletter open-rate analytics</h4>
+                <p class="gh-setting-desc pa0 ma0 mb1">Track how many members are reading your emails</p>
+            </div>
+            <div class="gh-setting-action">
+                <div class="for-switch">
+                    <label class="switch" for="email-track-opens" {{on "click" (action "toggleEmailTrackOpens")}}>
+                        <input type="checkbox" checked={{this.emailTrackOpens}} class="gh-input" {{on "click" (action "toggleEmailTrackOpens")}} name="email-track-opens" data-test-checkbox="email-track-opens">
+                        <span class="input-toggle-component mt1"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        {{#unless this.mailgunIsConfigured}}
+            <div class="gh-setting-last">
+                <div class="gh-setting-content">
+                    <h4 class="gh-setting-title">Email newsletter settings</h4>
+                    <p class="gh-setting-desc pa0 ma0">The <a href="https://www.mailgun.com/" target="_blank" rel="nofollow noopener">Mailgun API</a> is used for bulk email newsletter delivery. <a href="https://ghost.org/docs/faq/mailgun-newsletters/" target="_blank" rel="noopener">Why is this required?</a></p>
+                </div>
+                <div class="gh-setting-action">
+                    <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail>
+                        <span>{{if this.membersEmailOpen "Close" "Expand"}}</span>
+                    </button>
+                </div>
+            </div>
+
+            {{#liquid-if this.membersEmailOpen}}
+            <div class="flex flex-column w-100 w-50-l flex mt8">
+                <div class="flex items-center">
+                    <GhFormGroup @class="gh-labs-mailgun-region">
+                        <label class="fw6 f8">Mailgun region</label>
+                        <div class="mt1">
+                            <PowerSelect
+                                @options={{this.mailgunRegions}}
+                                @selected={{this.mailgunRegion}}
+                                @onChange={{action "setMailgunRegion"}}
+                                @searchEnabled={{false}}
+                                @triggerComponent="gh-power-select/trigger"
+                                as |region|
+                            >
+                                {{region.flag}} {{region.name}}
+                            </PowerSelect>
+                        </div>
+                    </GhFormGroup>
+                    <GhFormGroup>
+                        <label class="fw6 f8">Mailgun domain</label>
+                        <GhTextInput
+                            @value={{readonly this.mailgunSettings.domain}}
+                            @input={{action "setMailgunDomain"}}
+                            @class="mt1"
+                            data-test-mailgun-domain-input={{true}}
+                        />
+                    </GhFormGroup>
+                </div>
+                <div class="nt5 mb5">
+                    <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
+                        Find your Mailgun region and domain here &raquo;
+                    </a>
+                </div>
+                <GhFormGroup>
+                    <label class="fw6 f8">Mailgun API key</label>
+                    <GhTextInput
+                        @type="password"
+                        @value={{readonly this.mailgunSettings.apiKey}}
+                        @input={{action "setMailgunApiKey"}}
+                        @class="mt1 password" @autocomplete="new-password"
+                        data-test-mailgun-api-key-input={{true}}
+                    />
+                    <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
+                        Find your Mailgun API keys here &raquo;
+                    </a>
+                </GhFormGroup>
+            </div>
+            {{/liquid-if}}
+        {{/unless}}
+    </section>
+</div>
+
+{{#if this.showLeaveSettingsModal}}
+    <GhFullscreenModal @modal="leave-settings"
+        @confirm={{action "leavePortalSettings"}}
+        @close={{action "closeLeaveSettingsModal"}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showEmailDesignSettings}}
+    <GhFullscreenModal @modifier="full-overlay portal-settings">
+        <ModalEmailDesignSettings
+            @closeModal={{action "closeEmailDesignSettings"}}
+        />
+    </GhFullscreenModal>
+{{/if}}
