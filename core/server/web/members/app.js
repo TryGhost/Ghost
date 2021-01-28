@@ -15,9 +15,6 @@ module.exports = function setupMembersApp() {
     // send 503 json response in case of maintenance
     membersApp.use(shared.middlewares.maintenance);
 
-    // Entire app is behind labs flag
-    membersApp.use(shared.middlewares.labs.members);
-
     // Support CORS for requests from the frontend
     const siteUrl = new URL(urlUtils.getSiteUrl());
     membersApp.use(cors(siteUrl.origin));

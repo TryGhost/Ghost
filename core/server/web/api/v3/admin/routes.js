@@ -88,31 +88,30 @@ module.exports = function apiRoutes() {
     router.del('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
 
     // ## Members
-    router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.browse));
-    router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.add));
+    router.get('/members', mw.authAdminApi, http(api.members.browse));
+    router.post('/members', mw.authAdminApi, http(api.members.add));
 
-    router.get('/members/stats', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.stats));
+    router.get('/members/stats', mw.authAdminApi, http(api.members.stats));
 
-    router.get('/members/upload', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.exportCSV));
+    router.get('/members/upload', mw.authAdminApi, http(api.members.exportCSV));
     router.post('/members/upload',
-        shared.middlewares.labs.members,
         mw.authAdminApi,
         apiMw.upload.single('membersfile'),
         apiMw.upload.validation({type: 'members'}),
         http(api.members.importCSV)
     );
 
-    router.get('/members/hasActiveStripeSubscriptions', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.hasActiveStripeSubscriptions));
+    router.get('/members/hasActiveStripeSubscriptions', mw.authAdminApi, http(api.members.hasActiveStripeSubscriptions));
 
-    router.get('/members/stripe_connect', shared.middlewares.labs.members, mw.authAdminApi, http(api.membersStripeConnect.auth));
+    router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-    router.get('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.read));
-    router.put('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.edit));
-    router.del('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.destroy));
+    router.get('/members/:id', mw.authAdminApi, http(api.members.read));
+    router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
+    router.del('/members/:id', mw.authAdminApi, http(api.members.destroy));
 
-    router.put('/members/:id/subscriptions/:subscription_id', shared.middlewares.labs.members, mw.authAdminApi, http(api.members.editSubscription));
+    router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));
 
-    router.get('/members/:id/signin_urls', shared.middlewares.labs.members, mw.authAdminApi, http(api.memberSigninUrls.read));
+    router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));

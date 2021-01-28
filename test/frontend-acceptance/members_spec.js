@@ -16,155 +16,78 @@ describe('Basic Members Routes', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    describe('Members enabled', function () {
-        before(function () {
-            const originalSettingsCacheGetFn = settingsCache.get;
+    before(function () {
+        const originalSettingsCacheGetFn = settingsCache.get;
 
-            sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-                if (key === 'labs') {
-                    return {members: true};
-                }
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+            if (key === 'labs') {
+                return {members: true};
+            }
 
-                return originalSettingsCacheGetFn(key, options);
-            });
-        });
-
-        after(function () {
-            sinon.restore();
-        });
-
-        describe('Routes', function () {
-            it('should error serving webhook endpoint without any parameters', async function () {
-                await request.post('/members/webhooks/stripe')
-                    .expect(400);
-            });
-
-            it('should error when invalid member token is passed into session', async function () {
-                await request.get('/members/api/session')
-                    .expect(400);
-            });
-
-            it('should return no content when removing member sessions', async function () {
-                await request.del('/members/api/session')
-                    .expect(204);
-            });
-
-            it('should error for invalid member token on member data endpoint', async function () {
-                await request.get('/members/api/member')
-                    .expect(400);
-            });
-
-            it('should serve member site endpoint', async function () {
-                await request.get('/members/api/site')
-                    .expect(200);
-            });
-
-            it('should error for invalid data on member magic link endpoint', async function () {
-                await request.post('/members/api/send-magic-link')
-                    .expect(400);
-            });
-
-            it('should error for invalid data on members create checkout session endpoint', async function () {
-                await request.post('/members/api/create-stripe-checkout-session')
-                    .expect(400);
-            });
-
-            it('should error for invalid data on members create update session endpoint', async function () {
-                await request.post('/members/api/create-stripe-update-session')
-                    .expect(400);
-            });
-
-            it('should error for invalid data on members subscription endpoint', async function () {
-                await request.put('/members/api/subscriptions/123')
-                    .expect(400);
-            });
-
-            it('should serve theme 404 on members endpoint', async function () {
-                await request.get('/members/')
-                    .expect(404)
-                    .expect('Content-Type', 'text/html; charset=utf-8');
-            });
-
-            it('should redirect invalid token on members endpoint', async function () {
-                await request.get('/members/?token=abc&action=signup')
-                    .expect(302)
-                    .expect('Location', '/?action=signup&success=false');
-            });
+            return originalSettingsCacheGetFn(key, options);
         });
     });
 
-    describe('Members disabled', function () {
-        before(function () {
-            const originalSettingsCacheGetFn = settingsCache.get;
+    after(function () {
+        sinon.restore();
+    });
 
-            sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-                if (key === 'labs') {
-                    return {members: false};
-                }
-
-                return originalSettingsCacheGetFn(key, options);
-            });
+    describe('Routes', function () {
+        it('should error serving webhook endpoint without any parameters', async function () {
+            await request.post('/members/webhooks/stripe')
+                .expect(400);
         });
 
-        after(function () {
-            sinon.restore();
+        it('should error when invalid member token is passed into session', async function () {
+            await request.get('/members/api/session')
+                .expect(400);
         });
 
-        describe('Routes', function () {
-            it('should not serve webhook endpoint', async function () {
-                await request.post('/members/webhooks/stripe')
-                    .expect(404);
-            });
+        it('should return no content when removing member sessions', async function () {
+            await request.del('/members/api/session')
+                .expect(204);
+        });
 
-            it('should not serve session endpoint', async function () {
-                await request.get('/members/api/session')
-                    .expect(404);
-            });
+        it('should error for invalid member token on member data endpoint', async function () {
+            await request.get('/members/api/member')
+                .expect(400);
+        });
 
-            it('should not serve session removal endpoint', async function () {
-                await request.del('/members/api/session')
-                    .expect(404);
-            });
+        it('should serve member site endpoint', async function () {
+            await request.get('/members/api/site')
+                .expect(200);
+        });
 
-            it('should not serve member data endpoint', async function () {
-                await request.get('/members/api/member')
-                    .expect(404);
-            });
+        it('should error for invalid data on member magic link endpoint', async function () {
+            await request.post('/members/api/send-magic-link')
+                .expect(400);
+        });
 
-            it('should not serve member site endpoint', async function () {
-                await request.get('/members/api/site')
-                    .expect(404);
-            });
+        it('should error for invalid data on members create checkout session endpoint', async function () {
+            await request.post('/members/api/create-stripe-checkout-session')
+                .expect(400);
+        });
 
-            it('should not serve member magic link endpoint', async function () {
-                await request.post('/members/api/send-magic-link')
-                    .expect(404);
-            });
+        it('should error for invalid data on members create update session endpoint', async function () {
+            await request.post('/members/api/create-stripe-update-session')
+                .expect(400);
+        });
 
-            it('should not serve members create checkout session endpoint', async function () {
-                await request.post('/members/api/create-stripe-checkout-session')
-                    .expect(404);
-            });
+        it('should error for invalid data on members subscription endpoint', async function () {
+            await request.put('/members/api/subscriptions/123')
+                .expect(400);
+        });
 
-            it('should not serve members create update session endpoint', async function () {
-                await request.post('/members/api/create-stripe-update-session')
-                    .expect(404);
-            });
+        it('should serve theme 404 on members endpoint', async function () {
+            await request.get('/members/')
+                .expect(404)
+                .expect('Content-Type', 'text/html; charset=utf-8');
+        });
 
-            it('should not serve members subscription endpoint', async function () {
-                await request.put('/members/api/subscriptions/123')
-                    .expect(404);
-            });
-
-            it('should serve 404 on members endpoint', async function () {
-                await request.get('/members/')
-                    .expect(404);
-            });
-
-            it('should not redirect members endpoint with token', async function () {
-                await request.get('/members/?token=abc&action=signup')
-                    .expect(404);
-            });
+        it('should redirect invalid token on members endpoint', async function () {
+            await request.get('/members/?token=abc&action=signup')
+                .expect(302)
+                .expect('Location', '/?action=signup&success=false');
         });
     });
 });

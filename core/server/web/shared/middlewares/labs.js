@@ -9,6 +9,4 @@ const labs = flag => (req, res, next) => {
     }
 };
 
-labs.members = labs('members');
-
 module.exports = labs;

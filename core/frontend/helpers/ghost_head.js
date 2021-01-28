@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs, urlUtils} = require('../services/proxy');
+const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, urlUtils} = require('../services/proxy');
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('ghost_head');
 const templateStyles = require('./tpl/styles');
@@ -167,7 +167,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                     }
                 }
 
-                if (!_.includes(context, 'amp') && labs.isSet('members')) {
+                if (!_.includes(context, 'amp')) {
                     head.push(getMembersHelper());
                 }
             }

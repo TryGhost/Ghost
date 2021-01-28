@@ -368,44 +368,6 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it('can toggle member setting', function () {
-            return request.get(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    const jsonResponse = res.body;
-                    const changedValue = [];
-
-                    const settingToChange = {
-                        settings: [
-                            {
-                                key: 'labs',
-                                value: '{"subscribers":false,"members":false}'
-                            }
-                        ]
-                    };
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(settingToChange)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .then(function ({body, headers}) {
-                            const putBody = body;
-                            headers['x-cache-invalidate'].should.eql('/*');
-                            should.exist(putBody);
-
-                            putBody.settings[0].key.should.eql('labs');
-                            putBody.settings[0].value.should.eql(JSON.stringify({subscribers: false, members: false}));
-                        });
-                });
-        });
-
         it('can\'t edit permalinks', function (done) {
             const settingToChange = {
                 settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
@@ -522,31 +484,6 @@ describe('Settings API (v2)', function () {
 
                     // by default we login with the owner
                     return localUtils.doAuth(request);
-                });
-        });
-
-        it('cannot toggle member setting', function (done) {
-            const settingToChange = {
-                settings: [
-                    {
-                        key: 'labs',
-                        value: '{"subscribers":false,"members":true}'
-                    }
-                ]
-            };
-
-            request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
                 });
         });
     });
