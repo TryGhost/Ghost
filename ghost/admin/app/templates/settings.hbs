@@ -6,58 +6,99 @@
     </GhCanvasHeader>
 
     <section class="view-container">
+        <div class="gh-setting-header gh-first-header">Website</div>
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.general" data-test-nav="settings">
-                {{svg-jar "page"}}
+                <span>{{svg-jar "settings"}}</span>
                 <div>
                     <h4>General</h4>
-                    <p>Update basic publication details, and generic site metadata</p>
+                    <p>Basic publication details and site metadata</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
-                {{svg-jar "paintbrush"}}
+                <span>{{svg-jar "page"}}</span>
                 <div>
                     <h4>Theme</h4>
-                    <p>Install and update site theme</p>
+                    <p>Install and update themes</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.design" data-test-nav="design">
-                {{svg-jar "paintbrush"}}
+            <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="design">
+                <span>{{svg-jar "paintbrush"}}</span>
                 <div>
-                    <h4>Design</h4>
-                    <p>Upload your site icon, logo and set accent color</p>
+                    <h4>Branding</h4>
+                    <p>Upload site logo and set accent color</p>
                 </div>
-            </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.members" data-test-nav="design">
-                {{svg-jar "members"}}
+            </button>
+            <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="theme">
+                <span>{{svg-jar "compass-2"}}</span>
                 <div>
-                    <h4>Members</h4>
-                    <p>Connect to Stripe, customise Portal and set up membership details</p>
+                    <h4>Navigation</h4>
+                    <p>Set up primary and secondary menus</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.integrations" @current-when={{this.isIntegrationRoute}} data-test-nav="integrations">
-                {{svg-jar "modules"}}
+        </div>
+
+        <div class="gh-setting-header">Members</div>
+        <div class="gh-settings-main-grid">
+            <button type="button" class="gh-setting-group" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
+                <span>{{svg-jar "portal-logo"}}</span>
                 <div>
-                    <h4>Integrations</h4>
-                    <p>Integrate third party apps and services with your Ghost site</p>
+                    <h4>Portal</h4>
+                    <p>Customize members modal signup flow</p>
+                </div>
+            </button>
+            <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="design">
+                <span>{{svg-jar "email"}}</span>
+                <div>
+                    <h4>Email newsletter</h4>
+                    <p>Customise emails and set email addresses</p>
                 </div>
             </LinkTo>
+            <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="design">
+                <span>{{svg-jar "piggy-bank"}}</span>
+                <div>
+                    <h4>Payments</h4>
+                    <p>Connect to Stripe and set up prices</p>
+                </div>
+            </LinkTo>
+        </div>
+
+        <div class="gh-setting-header">Extensions</div>
+        <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.code-injection" data-test-nav="code-injection">
-                {{svg-jar "brackets"}}
+                <span>{{svg-jar "brackets"}}</span>
                 <div>
                     <h4>Code injection</h4>
-                    <p>Add code to the header or footer of your publication</p>
+                    <p>Add code to your publication</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
-                {{svg-jar "labs"}}
+                <span>{{svg-jar "labs"}}</span>
                 <div>
                     <h4>Labs</h4>
-                    <p>Testing ground for new or experimental features</p>
+                    <p>Testing ground for new features</p>
                 </div>
             </LinkTo>
-            <div class="gh-setting-group"></div>
-            <div class="gh-setting-group"></div>
         </div>
     </section>
-</section>
+</section> 
+
+{{#if this.showPortalSettings}}
+    <GhFullscreenModal @modal="portal-settings"
+        @model={{hash
+            openStripeSettings=(action "openStripeSettings")
+        }}
+        @close={{action "closePortalSettings"}}
+        @modifier="full-overlay portal-settings" />
+{{/if}}
+{{#if this.showBrandingModal}}
+    <GhFullscreenModal @modal="branding"
+        @close={{action "closeBrandingModal"}}
+        @modifier="full-overlay branding-modal" />
+{{/if}}
+{{#if this.showLeaveSettingsModal}}
+    <GhFullscreenModal @modal="leave-settings"
+        @confirm={{action "leavePortalSettings"}}
+        @close={{action "closeLeaveSettingsModal"}}
+        @modifier="action wide" />
+{{/if}}

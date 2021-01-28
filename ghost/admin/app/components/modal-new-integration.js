@@ -27,7 +27,7 @@ export default ModalComponent.extend({
     createIntegration: task(function* () {
         try {
             let integration = yield this.confirm();
-            this.router.transitionTo('settings.integration', integration);
+            this.router.transitionTo('integration', integration);
         } catch (error) {
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically

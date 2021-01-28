@@ -17,23 +17,21 @@
         </div>
     {{/unless}}
 
-    {{#if this.feature.members}}
-        <div class="gh-contentfilter-menu gh-contentfilter-visibility {{if @selectedVisibility.value "gh-contentfilter-selected"}}" data-test-visibility-select="true">
-            <PowerSelect
-                @selected={{@selectedVisibility}}
-                @options={{@availableVisibilities}}
-                @searchEnabled={{false}}
-                @onChange={{@onVisibilityChange}}
-                @triggerComponent="gh-power-select/trigger"
-                @triggerClass="gh-contentfilter-menu-trigger"
-                @dropdownClass="gh-contentfilter-menu-dropdown"
-                @matchTriggerWidth={{false}}
-                as |visibility|
-            >
-                {{#if visibility.name}}{{visibility.name}}{{else}}<span class="red">Unknown visibility</span>{{/if}}
-            </PowerSelect>
-        </div>
-    {{/if}}
+    <div class="gh-contentfilter-menu gh-contentfilter-visibility {{if @selectedVisibility.value "gh-contentfilter-selected"}}" data-test-visibility-select="true">
+        <PowerSelect
+            @selected={{@selectedVisibility}}
+            @options={{@availableVisibilities}}
+            @searchEnabled={{false}}
+            @onChange={{@onVisibilityChange}}
+            @triggerComponent="gh-power-select/trigger"
+            @triggerClass="gh-contentfilter-menu-trigger"
+            @dropdownClass="gh-contentfilter-menu-dropdown"
+            @matchTriggerWidth={{false}}
+            as |visibility|
+        >
+            {{#if visibility.name}}{{visibility.name}}{{else}}<span class="red">Unknown visibility</span>{{/if}}
+        </PowerSelect>
+    </div>
 
     {{#unless @currentUser.isAuthorOrContributor}}
         <div class="gh-contentfilter-menu gh-contentfilter-author {{if @selectedAuthor.slug "gh-contentfilter-selected"}}" data-test-author-select="true">

@@ -1,0 +1,33 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Email newsletter
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @buttonText="Save settings"
+                @task={{this.saveSettings}}
+                @successText="Saved"
+                @runningText="Saving"
+                @class="gh-btn gh-btn-blue gh-btn-icon"
+                data-test-button="save-members-settings"
+            />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container settings-debug">
+
+        {{#if this.session.user.isOwner}}
+        <div class="gh-setting-liquid-section">
+            <GhMembersEmailSetting
+                @settings={{this.settings}}
+                @fromAddress={{this.fromAddress}}
+                @supportAddress={{this.supportAddress}}
+                @setEmailAddress={{action "setEmailAddress"}}
+            />
+        </div>
+        {{/if}}
+
+    </section>
+</section>

@@ -1,0 +1,33 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Payments
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @buttonText="Save settings"
+                @task={{this.saveSettings}}
+                @successText="Saved"
+                @runningText="Saving"
+                @class="gh-btn gh-btn-blue gh-btn-icon"
+                data-test-button="save-members-settings"
+            />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container settings-debug">
+
+        {{#if this.session.user.isOwner}}
+        <div class="gh-setting-liquid-section">
+            <GhMembersPaymentsSetting
+                @settings={{this.settings}}
+                @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
+                @setStripeConnectIntegrationTokenSetting={{action "setStripeConnectIntegrationTokenSetting"}}
+            />
+        </div>
+
+        {{/if}}
+
+    </section>
+</section>

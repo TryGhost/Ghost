@@ -16,7 +16,7 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
-        await visit('/settings/integrations/zapier');
+        await visit('/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -26,7 +26,7 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/settings/integrations/zapier');
+        await visit('/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
@@ -36,7 +36,7 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/settings/integrations/zapier');
+        await visit('/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
@@ -46,7 +46,7 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/settings/integrations/zapier');
+        await visit('/integrations/zapier');
 
         expect(currentURL(), 'currentURL').to.equal('/staff');
     });
@@ -60,10 +60,10 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
         });
 
         it('it loads', async function () {
-            await visit('/settings/integrations/zapier');
+            await visit('/integrations/zapier');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/zapier');
+            expect(currentURL(), 'currentURL').to.equal('/integrations/zapier');
         });
     });
 });
