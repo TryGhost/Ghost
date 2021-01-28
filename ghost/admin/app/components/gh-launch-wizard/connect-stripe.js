@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhLaunchWizardConnectStripeComponent extends Component {
@@ -56,6 +57,8 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         if (this.settings.get('stripeConnectIntegrationToken')) {
             try {
                 yield this.settings.save();
+                this.pauseAndContinue.perform();
+                return true;
             } catch (error) {
                 if (error.payload?.errors) {
                     this.stripeConnectError = 'Invalid secure key';
@@ -68,5 +71,11 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
             this.stripeConnectError = 'Paste your secure key to continue';
             return false;
         }
+    }
+
+    @task
+    *pauseAndContinue() {
+        yield timeout(500);
+        this.args.nextStep();
     }
 }
