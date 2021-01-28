@@ -1,10 +1,10 @@
 const hbs = require('express-hbs');
+const MaintenanceApp = require('@tryghost/maintenance');
 const {i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const express = require('../../../shared/express');
 const config = require('../../../shared/config');
 const {servePublicFile, serveFavicon} = require('../site/middleware');
-const MaintenanceApp = require('./maintenance-app');
 
 const createHbsEngine = () => {
     const engine = hbs.create();
