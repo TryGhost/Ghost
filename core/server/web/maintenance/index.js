@@ -2,6 +2,9 @@ const hbs = require('express-hbs');
 const compress = require('compression');
 const debug = require('ghost-ignition').debug('web:maintenance');
 const constants = require('@tryghost/constants');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const express = require('../../../shared/express');
 const config = require('../../../shared/config');
 const {servePublicFile} = require('../site/middleware');
@@ -35,12 +38,18 @@ module.exports = function setupMaintenanceApp() {
     app.use(servePublicFile('public/404-ghost.png', 'image/png', constants.ONE_HOUR_S));
 
     app.use('/', (req, res) => {
-        const data = {
-            message: 'Maintenance',
-            statusCode: 503
-        };
+        const error = new errors.MaintenanceError({
+            message: i18n.t('errors.general.maintenance')
+        });
 
-        res.render('error', data, (err, html) => {
+        logging.error({req: req, res: res, err: error});
+
+        // never cache errors
+        res.set({
+            'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+        });
+        res.status(error.statusCode);
+        res.render('error', error, (err, html) => {
             return res.send(html);
         });
     });
