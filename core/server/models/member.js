@@ -67,9 +67,7 @@ const Member = ghostBookshelf.Model.extend({
         const defaultSerializedObject = ghostBookshelf.Model.prototype.serialize.call(this, options);
 
         if (defaultSerializedObject.stripeSubscriptions) {
-            defaultSerializedObject.stripe = {
-                subscriptions: defaultSerializedObject.stripeSubscriptions
-            };
+            defaultSerializedObject.subscriptions = defaultSerializedObject.stripeSubscriptions;
             delete defaultSerializedObject.stripeSubscriptions;
         }
 
