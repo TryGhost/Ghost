@@ -125,6 +125,6 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         }
 
         yield this.settings.save();
-        this.args.afterComplete();
+        this.args.nextStep();
     }
 }

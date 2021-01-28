@@ -17,7 +17,7 @@
         </GhFormGroup>
     </div>
 </div>
-<div class="w-100 w-50-l flex flex-column flex-row-ns">
+<div class="w-100 flex flex-column flex-row-ns">
     <div class="w-100 w-50-ns mr3-ns">
         <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
         <label class="fw6 f8">Monthly price</label>
@@ -27,7 +27,7 @@
                 @value={{readonly this.stripePlans.monthly.amount}}
                 @type="number"
                 @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                @focus-out={{action "validateStripePlans"}}
+                {{on "blur" this.validateStripePlans}}
             />
             <span class="gh-input-append"><span class="ttu">{{this.stripePlans.monthly.currency}}</span>/month</span>
         </div>
@@ -41,7 +41,7 @@
                 @value={{readonly this.stripePlans.yearly.amount}}
                 @type="number"
                 @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                @focus-out={{action "validateStripePlans"}}
+                {{on "blur" this.validateStripePlans}}
             />
             <span class="gh-input-append"><span class="ttu">{{this.stripePlans.yearly.currency}}</span>/year</span>
         </div>
@@ -49,7 +49,7 @@
     </div>
 </div>
 <div class="w-100 w-50-l flex flex-column flex-row-ns">
-    <GhErrorMessage @errors={{settings.errors}} @property="stripePlans" class="w-100 red"/>
+    <GhErrorMessage @errors={{this.settings.errors}} @property="stripePlans" class="w-100 red"/>
 </div>
 
 <div class="gh-setting-first">
