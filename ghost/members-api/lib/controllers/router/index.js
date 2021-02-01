@@ -271,8 +271,8 @@ module.exports = class RouterController {
 
         try {
             const session = await this._stripeAPIService.createCheckoutSession(plan, stripeCustomer, {
-                successUrl: req.body.successUrl,
-                cancelUrl: req.body.cancelUrl,
+                successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
+                cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 metadata: req.body.metadata
             });
             const publicKey = this._stripeAPIService.getPublicKey();
