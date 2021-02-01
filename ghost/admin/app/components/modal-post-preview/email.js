@@ -27,14 +27,12 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     @tracked html = '';
     @tracked subject = '';
-    @tracked emailPreviewAddress = '';
+    @tracked previewEmailAddress = '';
     @tracked sendPreviewEmailError = '';
 
     get mailgunIsEnabled() {
         return this.config.get('mailgunIsConfigured') ||
-            this.settings.get('mailgunApiKey') &&
-            this.settings.get('mailgunDomain') &&
-            this.settings.get('mailgunBaseUrl');
+            !!(this.settings.get('mailgunApiKey') && this.settings.get('mailgunDomain') && this.settings.get('mailgunBaseUrl'));
     }
 
     @action
@@ -53,8 +51,8 @@ export default class ModalPostPreviewEmailComponent extends Component {
     @task({drop: true})
     *sendPreviewEmailTask() {
         try {
-            const resourceId = this.post.id;
-            const testEmail = this.emailPreviewAddress.trim();
+            const resourceId = this.args.post.id;
+            const testEmail = this.previewEmailAddress.trim();
 
             if (!validator.isEmail(testEmail)) {
                 this.sendPreviewEmailError = 'Please enter a valid email';
@@ -86,6 +84,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
                 }
 
                 this.sendPreviewEmailError = message;
+                throw error;
             }
         }
     }
