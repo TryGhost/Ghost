@@ -1,0 +1,22 @@
+#!/bin/bash
+# Modified from https://github.com/chaitanyagupta/gitutils
+
+red='\033[0;31m'
+no_color='\033[0m'
+grey='\033[0;90m'
+
+echo -e "Checking commit message for bad references ${grey}(commit-msg hook)${no_color}"
+
+echo "Message:"
+echo `cat $1`
+
+BAD_MATCH=`grep -E '#\d+' $1 | grep -v 'https://github.com/'`
+
+if [[ ! -z "$BAD_MATCH" ]]; then
+    echo "Your commit message contains relative references, please make them absolute"
+    echo -e "${red}${BAD_MATCH}${no_color}"
+    echo "E.g. 'refs: #1234' should be 'refs: https://github.com/TryGhost/Ghost#1234'"
+    exit 1
+else
+    echo "No bad references found in commit message, continuing..."
+fi
