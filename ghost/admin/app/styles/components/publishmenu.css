@@ -53,6 +53,7 @@
     font-size: 1.4rem;
     font-weight: normal;
     will-change: transform, opacity;
+    z-index: 99999; /* needs to sit on top of preview modal */
 }
 
 .gh-publishmenu-dropdown.ember-basic-dropdown--transitioning-in {
