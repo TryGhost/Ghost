@@ -19,6 +19,29 @@ export default class ModalPostPreviewSocialComponent extends Component {
         return this.args.post.metaTitle || this.args.post.title || '(Untitled)';
     }
 
+    get serpURL() {
+        const blogUrl = this.config.get('blogUrl');
+        const seoSlug = this.args.post.slug || '';
+        const canonicalUrl = this.args.post.canonicalUrl || '';
+
+        if (canonicalUrl) {
+            if (canonicalUrl.match(/^\//)) {
+                return `${blogUrl}${canonicalUrl}`;
+            } else {
+                return canonicalUrl;
+            }
+        } else {
+            const seoURL = `${blogUrl}/${seoSlug}`;
+
+            // only append a slash to the URL if the slug exists
+            if (seoSlug) {
+                return `${seoURL}/`;
+            }
+
+            return seoURL;
+        }
+    }
+
     get serpDescription() {
         const metaDescription = this.args.post.metaDescription;
 
