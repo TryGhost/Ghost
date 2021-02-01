@@ -121,7 +121,12 @@
 
     {{#if this.showPostPreviewModal}}
         <GhFullscreenModal @modal="post-preview"
-            @model={{this.post}}
+            @model={{hash
+                post=this.post
+                saveTask=this.save
+                setEditorSaveType=(action "setSaveType")
+                memberCount=this.memberCount
+            }}
             @close={{action "togglePostPreviewModal"}}
             @modifier="full-overlay email-preview" />
     {{/if}}

@@ -429,6 +429,7 @@ export default Controller.extend({
             post.set('statusScratch', null);
 
             if (!options.silent) {
+                this.set('showPostPreviewModal', false);
                 this._showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);
             }
 
@@ -749,6 +750,7 @@ export default Controller.extend({
         this.set('shouldFocusEditor', false);
         this.set('leaveEditorTransition', null);
         this.set('showLeaveEditorModal', false);
+        this.set('showPostPreviewModal', false);
         this.set('infoMessage', null);
         this.set('wordCount', null);
 
