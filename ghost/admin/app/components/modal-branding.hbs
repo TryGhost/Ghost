@@ -60,7 +60,7 @@
                             {{#if uploader.isUploading}}
                                 {{uploader.progressBar}}
                             {{else if this.settings.logo}}
-                                <div class="gh-branding-image-container largeimg transparent-bg">
+                                <div class="gh-branding-image-container largeimg justify-center transparent-bg">
                                     <img class="blog-logo" src="{{this.settings.logo}}" alt="logo" data-test-logo-img>
                                     <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "logo"}} data-test-delete-image="logo">
                                         {{svg-jar "trash" class="w4 h4 fill-white"}}
