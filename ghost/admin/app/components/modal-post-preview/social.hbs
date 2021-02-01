@@ -49,5 +49,29 @@
             <div class="seo-preview-link">{{truncate this.serpURL 70}}</div>
             <div class="seo-preview-description">{{truncate this.serpDescription 300}}</div>
         </div>
+
+        <label class="mb2 f8 fw6 darkgrey">Generic embed preview</label>
+        <div class="kg-bookmark-card">
+            <div class="kg-bookmark-container">
+                <div class="kg-bookmark-content">
+                    <div class="kg-bookmark-title">{{@post.title}}</div>
+                    <div class="kg-bookmark-description">{{or @post.metaDescription @post.customExcerpt (truncate @post.excerpt 250)}}</div>
+                    <div class="kg-bookmark-metadata">
+                        {{#if this.settings.icon}}
+                            <div class="kg-bookmark-icon"><img src={{this.settings.icon}}></div>
+                        {{/if}}
+                        <div class="kg-bookmark-publisher">{{or this.settings.metaTitle this.settings.title}}</div>
+                        <div class="kg-bookmark-author">{{@post.primaryAuthor.name}}</div>
+                    </div>
+                </div>
+                {{#let (or @post.featureImage @post.primaryAuthor.profileImage) as |image|}}
+                    {{#if image}}
+                        <div class="kg-bookmark-thumbnail">
+                            <img src={{image}}>
+                        </div>
+                    {{/if}}
+                {{/let}}
+            </div>
+        </div>
     </div>
 </div>

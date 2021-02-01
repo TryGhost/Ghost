@@ -941,7 +941,7 @@
     border-radius: 4px;
 }
 
-.koenig-editor__editor .kg-bookmark-container {
+.kg-bookmark-container {
     display: flex;
     color: var(--darkgrey);
     text-decoration: none;
