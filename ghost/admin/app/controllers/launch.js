@@ -12,6 +12,7 @@ export default class LaunchController extends Controller {
 
     @tracked previewGuid = (new Date()).valueOf();
     @tracked previewSrc = '';
+    @tracked step = 'customise-design';
 
     steps = {
         'customise-design': {
@@ -37,9 +38,9 @@ export default class LaunchController extends Controller {
             position: 'Final step',
             back: 'set-pricing'
         }
-    }
+    };
 
-    @tracked step = 'customise-design';
+    skippedSteps = [];
 
     get currentStep() {
         return this.steps[this.step];
@@ -53,19 +54,34 @@ export default class LaunchController extends Controller {
     }
 
     @action
-    nextStep() {
+    goNextStep() {
         this.step = this.currentStep.next;
     }
 
     @action
-    backStep() {
-        this.step = this.currentStep.back;
+    goBackStep() {
+        let step = this.currentStep.back;
+
+        while (this.skippedSteps.includes(step)) {
+            this.skippedSteps = this.skippedSteps.filter(s => s !== step);
+            step = this.steps[step].back;
+        }
+
+        this.step = step;
     }
 
     // TODO: remember when a step is skipped so "back" works as expected
     @action
     skipStep() {
-        this.step = this.currentStep.skip;
+        let step = this.currentStep.next;
+        let skipToStep = this.currentStep.skip;
+
+        while (step !== skipToStep) {
+            this.skippedSteps.push(step);
+            step = this.steps[step].next;
+        }
+
+        this.step = step;
     }
 
     @action
@@ -86,5 +102,6 @@ export default class LaunchController extends Controller {
     @action
     reset() {
         this.step = 'customise-design';
+        this.skippedSteps = [];
     }
 }
