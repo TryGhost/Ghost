@@ -39,7 +39,7 @@ function addTable(name) {
  * @param {[string]} names  - names of the tables to drop
  */
 function dropTables(names) {
-    return createTransactionalMigration(
+    return createIrreversibleMigration(
         async function up(connection) {
             for (const name of names) {
                 const exists = await connection.schema.hasTable(name);
