@@ -7,9 +7,6 @@
             },
             "data": {
                 "api_keys": [],
-                "app_fields": [],
-                "app_settings": [],
-                "apps": [],
                 "brute": [
                     {
                         "key": "mXicDihx2jaDah6tVF663JguP33Y2ubKh/YjCQghpRE=",
@@ -876,7 +873,6 @@
                         "updated_by": "1"
                     }
                 ],
-                "permissions_apps": [],
                 "permissions_roles": [
                     {
                         "id": "5c2ca6e0e015a6761618234d",
@@ -2408,26 +2404,6 @@
                         "id": "5c2ca6e0e015a67616182423",
                         "key": "active_theme",
                         "value": "casper",
-                        "type": "string",
-                        "created_at": "2019-01-02T11:56:16.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:16.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6e0e015a67616182424",
-                        "key": "active_apps",
-                        "value": "[]",
-                        "type": "string",
-                        "created_at": "2019-01-02T11:56:16.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:16.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6e0e015a67616182425",
-                        "key": "installed_apps",
-                        "value": "[]",
                         "type": "string",
                         "created_at": "2019-01-02T11:56:16.000Z",
                         "created_by": "1",

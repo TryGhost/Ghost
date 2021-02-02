@@ -1373,26 +1373,6 @@
                         "updated_by": "1"
                     },
                     {
-                        "id": "59a952c2ebbf7206b369cdd9",
-                        "key": "active_apps",
-                        "value": "[]",
-                        "type": "app",
-                        "created_at": "2017-09-01T12:29:54.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:29:54.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "59a952c2ebbf7206b369cdda",
-                        "key": "installed_apps",
-                        "value": "[]",
-                        "type": "app",
-                        "created_at": "2017-09-01T12:29:54.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:31:41.000Z",
-                        "updated_by": "1"
-                    },
-                    {
                         "id": "59a952c2ebbf7206b369cddb",
                         "key": "is_private",
                         "value": "false",
