@@ -8,7 +8,8 @@ const keyGroupMapper = require('../../../../api/shared/serializers/input/utils/s
 const keyTypeMapper = require('../../../../api/shared/serializers/input/utils/settings-key-type-mapper');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
-const ignoredSettings = ['active_apps', 'installed_apps', 'members_from_address', 'members_support_address'];
+const ignoredSettings = ['members_from_address', 'members_support_address'];
+// NOTE: drop support in Ghost 5.0
 const deprecatedSupportedSettingsMap = {
     default_locale: 'lang',
     active_timezone: 'timezone',
