@@ -141,23 +141,23 @@ jobs:
           DIR=$(mktemp -d)
           ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      - name: Latest Release
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+      #- name: Latest Release
+      #  run: |
+      #    DIR=$(mktemp -d)
+      #    ghost install local -d $DIR
+      #    ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      - name: Upgrade from latest v1
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v1 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+      # - name: Upgrade from latest v1
+      #   run: |
+      #     DIR=$(mktemp -d)
+      #     ghost install v1 --local -d $DIR
+      #     ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      - name: Upgrade from latest v2
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v2 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+      # - name: Upgrade from latest v2
+      #   run: |
+      #     DIR=$(mktemp -d)
+      #     ghost install v2 --local -d $DIR
+      #     ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/4.0')
