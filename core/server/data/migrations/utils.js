@@ -45,7 +45,7 @@ function dropTables(names) {
                 const exists = await connection.schema.hasTable(name);
 
                 if (!exists) {
-                    logging.warn(`Failed dropping table: ${name}. Table does not exits`);
+                    logging.warn(`Failed to drop table: ${name} - table does not exist`);
                 } else {
                     logging.info(`Dropping table: ${name}`);
                     await commands.deleteTable(name, connection);
