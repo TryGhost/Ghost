@@ -10,7 +10,7 @@
     </div>
 
     <div class="flex mb4 br3 bg-white">
-        <div class="w-30 vh-75 ml20">
+        <div class="w-30 ml20">
             {{component (concat "gh-launch-wizard/" this.step)
                 nextStep=this.nextStep
                 backStep=this.backStep
@@ -21,7 +21,7 @@
         </div>
 
         <div class="relative flex-grow-1 mt10 mr20">
-            <GhBrowserPreview @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
+            <GhBrowserPreview class="gh-launch-wizard-preview-container" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
                 <GhSiteIframe class="gh-launch-wizard-preview" @src={{this.previewSrc}} @guid={{this.previewGuid}}></GhSiteIframe>
             </GhBrowserPreview>
         </div>

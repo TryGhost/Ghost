@@ -1,129 +1,131 @@
-<div class="w-100 w-50-l flex flex-column flex-row-ns">
-    <div class="w-100">
-        <GhFormGroup @class="for-select">
-            <label class="fw6 f8"for="currency">Plan currency</label>
-            <span class="gh-select mt1">
-                <OneWaySelect
-                    @value={{this.selectedCurrency}}
-                    id="currency"
-                    name="currency"
-                    @options={{this.currencies}}
-                    @optionValuePath="value"
-                    @optionLabelPath="label"
-                    @update={{this.setStripePlansCurrency}}
-                />
-                {{svg-jar "arrow-down-small"}}
-            </span>
-        </GhFormGroup>
-    </div>
-</div>
-<div class="w-100 flex flex-column flex-row-ns">
-    <div class="w-100 w-50-ns mr3-ns">
-        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
-        <label class="fw6 f8">Monthly price</label>
+<div class="gh-launch-wizard-settings-container">
+    <div class="gh-stack">
+        <div class="gh-stack-item flex-column">
+            <div class="w-100">
+                <GhFormGroup @class="for-select">
+                    <div class="gh-setting-title" for="currency">Plan currency</div>
+                    <span class="gh-select mt2">
+                        <OneWaySelect
+                            @value={{this.selectedCurrency}}
+                            id="currency"
+                            name="currency"
+                            @options={{this.currencies}}
+                            @optionValuePath="value"
+                            @optionLabelPath="label"
+                            @update={{this.setStripePlansCurrency}}
+                        />
+                        {{svg-jar "arrow-down-small"}}
+                    </span>
+                </GhFormGroup>
+            </div>
+            <div class="w-100 flex flex-column flex-row-ns">
+                <div class="w-100 w-50-ns mr3-ns">
+                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
+                    <div class="gh-setting-title">Monthly price</div>
 
-        <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
-            <GhTextInput
-                @value={{readonly this.stripePlans.monthly.amount}}
-                @type="number"
-                @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                {{on "blur" this.validateStripePlans}}
-            />
-            <span class="gh-input-append"><span class="ttu">{{this.stripePlans.monthly.currency}}</span>/month</span>
+                    <div class="flex items-center justify-center mt2 gh-input-group gh-labs-price-label">
+                        <GhTextInput
+                            @value={{readonly this.stripePlans.monthly.amount}}
+                            @type="number"
+                            @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
+                            {{on "blur" this.validateStripePlans}}
+                        />
+                        <span class="gh-input-append"><span class="ttu">{{this.stripePlans.monthly.currency}}</span>/month</span>
+                    </div>
+                    </GhFormGroup>
+                </div>
+                <div class="w-100 w-50-ns ml2-ns">
+                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
+                    <div class="gh-setting-title">Yearly price</div>
+                    <div class="flex items-center justify-center mt2 gh-input-group gh-labs-price-label">
+                        <GhTextInput
+                            @value={{readonly this.stripePlans.yearly.amount}}
+                            @type="number"
+                            @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
+                            {{on "blur" this.validateStripePlans}}
+                        />
+                        <span class="gh-input-append"><span class="ttu">{{this.stripePlans.yearly.currency}}</span>/year</span>
+                    </div>
+                    </GhFormGroup>
+                </div>
+            </div>
         </div>
-        </GhFormGroup>
-    </div>
-    <div class="w-100 w-50-ns ml2-ns">
-        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
-        <label class="fw6 f8">Yearly price</label>
-        <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
-            <GhTextInput
-                @value={{readonly this.stripePlans.yearly.amount}}
-                @type="number"
-                @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                {{on "blur" this.validateStripePlans}}
-            />
-            <span class="gh-input-append"><span class="ttu">{{this.stripePlans.yearly.currency}}</span>/year</span>
+        <div class="w-100 w-50-l flex flex-column flex-row-ns">
+            <GhErrorMessage @errors={{this.settings.errors}} @property="stripePlans" class="w-100 red"/>
         </div>
-        </GhFormGroup>
-    </div>
-</div>
-<div class="w-100 w-50-l flex flex-column flex-row-ns">
-    <GhErrorMessage @errors={{this.settings.errors}} @property="stripePlans" class="w-100 red"/>
-</div>
 
-<div>
-    <div class="mb3">
-        <h4 class="gh-portal-setting-title">Plans available at signup</h4>
-    </div>
-    <div class="form-group mb0 for-checkbox">
-        <label
-            class="checkbox"
-            for="free-plan"
-        >
-            <input
-                type="checkbox"
-                checked={{this.isFreeChecked}}
-                id="free-plan"
-                name="free-plan"
-                disabled={{not this.settings.membersAllowFreeSignup}}
-                class="gh-input post-settings-featured"
-                {{on "click" this.toggleFreePlan}}
-                data-test-checkbox="featured"
-            >
-            <span class="input-toggle-component"></span>
-            <p>Free</p>
-        </label>
-    </div>
-    <div class="form-group mb0 for-checkbox">
-        <label
-            class="checkbox"
-            for="monthly-plan"
-        >
-            <input
-                type="checkbox"
-                id="monthly-plan"
-                name="monthly-plan"
-                checked={{this.isMonthlyChecked}}
-                disabled={{not this.membersUtils.isStripeEnabled}}
-                class="gh-input post-settings-featured"
-                {{on "click" this.toggleMonthlyPlan}}
-                data-test-checkbox="featured"
-            >
-            <span class="input-toggle-component"></span>
-            <p>Monthly</p>
-        </label>
-    </div>
-    <div class="form-group mb0 for-checkbox">
-        <label
-            class="checkbox"
-            for="yearly-plan"
-        >
-            <input
-                type="checkbox"
-                id="yearly-plan"
-                name="yearly-plan"
-                checked={{this.isYearlyChecked}}
-                disabled={{not this.membersUtils.isStripeEnabled}}
-                class="gh-input post-settings-featured"
-                {{on "click" this.toggleYearlyPlan}}
-                data-test-checkbox="featured"
-            >
-            <span class="input-toggle-component"></span>
-            <p>Yearly</p>
-        </label>
-    </div>
-</div>
+        <div class="gh-stack-item gh-setting flex-column bb b--whitegrey">
+            <div class="gh-setting-title">Plans available at signup</div>
+            <div class="form-group mt2 mb0 for-checkbox">
+                <label
+                    class="checkbox"
+                    for="free-plan"
+                >
+                    <input
+                        type="checkbox"
+                        checked={{this.isFreeChecked}}
+                        id="free-plan"
+                        name="free-plan"
+                        disabled={{not this.settings.membersAllowFreeSignup}}
+                        class="gh-input post-settings-featured"
+                        {{on "click" this.toggleFreePlan}}
+                        data-test-checkbox="featured"
+                    >
+                    <span class="input-toggle-component"></span>
+                    <p>Free</p>
+                </label>
+            </div>
+            <div class="form-group mb0 for-checkbox">
+                <label
+                    class="checkbox"
+                    for="monthly-plan"
+                >
+                    <input
+                        type="checkbox"
+                        id="monthly-plan"
+                        name="monthly-plan"
+                        checked={{this.isMonthlyChecked}}
+                        disabled={{not this.membersUtils.isStripeEnabled}}
+                        class="gh-input post-settings-featured"
+                        {{on "click" this.toggleMonthlyPlan}}
+                        data-test-checkbox="featured"
+                    >
+                    <span class="input-toggle-component"></span>
+                    <p>Monthly</p>
+                </label>
+            </div>
+            <div class="form-group mb0 for-checkbox">
+                <label
+                    class="checkbox"
+                    for="yearly-plan"
+                >
+                    <input
+                        type="checkbox"
+                        id="yearly-plan"
+                        name="yearly-plan"
+                        checked={{this.isYearlyChecked}}
+                        disabled={{not this.membersUtils.isStripeEnabled}}
+                        class="gh-input post-settings-featured"
+                        {{on "click" this.toggleYearlyPlan}}
+                        data-test-checkbox="featured"
+                    >
+                    <span class="input-toggle-component"></span>
+                    <p>Yearly</p>
+                </label>
+            </div>
+        </div>
 
-<div class="flex flex-row">
-    <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
+        <div class="flex flex-row mt4">
+            <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
 
-    {{!-- TODO: reset "failed" state automatically --}}
-    <GhTaskButton
-        @buttonText="Save and continue"
-        @task={{this.saveAndContinue}}
-        @runningText="Launching"
-        @class="right gh-btn gh-btn-black gh-btn-icon"
-        data-test-button="wizard-next"
-    />
+            {{!-- TODO: reset "failed" state automatically --}}
+            <GhTaskButton
+                @buttonText="Save and continue"
+                @task={{this.saveAndContinue}}
+                @runningText="Launching"
+                @class="right gh-btn gh-btn-black gh-btn-icon"
+                data-test-button="wizard-next"
+            />
+        </div>
+    </div>
 </div>

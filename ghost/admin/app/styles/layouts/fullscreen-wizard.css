@@ -18,6 +18,10 @@
     text-transform: uppercase;
 }
 
+.gh-launch-wizard-preview-container {
+    max-height: 760px;
+}
+
 .gh-launch-wizard-preview {
     box-shadow: 
         0 0 0 1px rgba(0,0,0,0.02),
@@ -33,8 +37,8 @@
 .gh-launch-wizard-settings-container {
     height: calc(100vh - 136px);
     min-width: 320px;
-    margin: 20px 0 -20px;
-    padding: 24px 80px 24px 0;
+    margin: 40px 80px -30px 0;
+    overflow: scroll;
 }
 
 .gh-launch-wizard-settings-container .gh-setting-action-largeimg-delete,

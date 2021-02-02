@@ -1,7 +1,9 @@
-<h3>All looks good?</h3>
-<p>You are all set up to start creating content, grow an audience and make your first sale!</p>
-<p>You can further customise your site from the Admin settings.</p>
-<div class="flex flex-row">
-    <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
-    <LinkTo @route="dashboard" class="gh-btn gh-btn-black"><span>Launch your site!</span></LinkTo>
+<div class="gh-launch-wizard-settings-container">
+    <h4>All looks good?</h4>
+    <p>You are all set up to start creating content, grow an audience and make your first sale!</p>
+    <p>You can further customise your site in Settings.</p>
+    <div class="flex flex-row">
+        <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
+        <LinkTo @route="dashboard" class="gh-btn gh-btn-black"><span>Launch your site!</span></LinkTo>
+    </div>
 </div>
