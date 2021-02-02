@@ -11,10 +11,10 @@
 }
 
 .gh-launch-wizard-step-indicator {
+    color: var(--midgrey);
     font-size: 1.2rem;
     font-weight: 500;
     letter-spacing: 0.1px;
-    color: var(--midgrey);
     text-transform: uppercase;
 }
 
@@ -30,28 +30,50 @@
     ;
 }
 
-.gh-launch-wizard-settings-design {
+.gh-launch-wizard-settings-container {
+    height: calc(100vh - 136px);
     min-width: 320px;
     margin: 20px 0 -20px;
     padding: 24px 80px 24px 0;
-    height: calc(100vh - 136px);
 }
 
-.gh-launch-wizard-settings-design .gh-setting-action-largeimg-delete,
-.gh-launch-wizard-settings-design .gh-setting-action-smallimg-delete {
+.gh-launch-wizard-settings-container .gh-setting-action-largeimg-delete,
+.gh-launch-wizard-settings-container .gh-setting-action-smallimg-delete {
     position: absolute;
     top: 5px;
     right: 5px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    padding: 5px;
     margin: 0;
+    padding: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.9);
     border-radius: 3px;
     opacity: 0;
 }
 
-.gh-launch-wizard-settings-design .gh-setting-action-largeimg-delete:hover,
-.gh-launch-wizard-settings-design .gh-setting-action-smallimg-delete:hover {
-    background: var(--red);
+.gh-launch-wizard-settings-container .gh-setting-action-largeimg-delete:hover,
+.gh-launch-wizard-settings-container .gh-setting-action-smallimg-delete:hover {
     border-color: transparent;
+    background: var(--red);
+}
+
+
+/* Connect Stripe settings */
+.gh-launch-wizard-stripe-info {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+    box-shadow: 
+        0 0 1px rgba(0,0,0,.12),
+        0 1px 6px rgba(0,0,0,.03),
+        0 6px 10px -8px rgba(0,0,0,.1);
+}
+
+.gh-launch-wizard-stripe-connect-token {
+    height: 88px;
+    min-height: unset;
+    font-family: var(--font-family-mono);
+    font-size: 1.3rem;
+    resize: none;
+    background: var(--whitegrey-l2);
 }
