@@ -63,15 +63,31 @@ function dropColumn(tableName, column, transaction) {
     });
 }
 
-function addUnique(tableName, column, transaction) {
+/**
+ * Adds an unique index to a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to add unique constraint to
+ * @param {string|[string]} columns - column(s) to form unique constraint with
+ * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction.knex - knex instance
+ */
+function addUnique(tableName, columns, transaction) {
     return (transaction || db.knex).schema.table(tableName, function (table) {
-        table.unique(column);
+        table.unique(columns);
     });
 }
 
-function dropUnique(tableName, column, transaction) {
+/**
+ * Drops a unique key constraint from a table.
+ *
+ * @param {string} tableName - name of the table to drop unique constraint from
+ * @param {string|[string]} columns - column(s) unique constraint was formed
+ * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction.knex - knex instance
+ */
+function dropUnique(tableName, columns, transaction) {
     return (transaction || db.knex).schema.table(tableName, function (table) {
-        table.dropUnique(column);
+        table.dropUnique(columns);
     });
 }
 
