@@ -3,8 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
-      - '4.0'
+      - main
       - 'renovate/*'
 jobs:
   prod-build:
@@ -40,7 +39,7 @@ jobs:
       - run: yarn lint:js
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
         env:
@@ -68,7 +67,7 @@ jobs:
           BROWSER: ${{ matrix.browser }}
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
         env:
