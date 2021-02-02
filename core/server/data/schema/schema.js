@@ -144,11 +144,6 @@ module.exports = {
         role_id: {type: 'string', maxlength: 24, nullable: false},
         permission_id: {type: 'string', maxlength: 24, nullable: false}
     },
-    permissions_apps: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        app_id: {type: 'string', maxlength: 24, nullable: false},
-        permission_id: {type: 'string', maxlength: 24, nullable: false}
-    },
     settings: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         group: {
@@ -232,41 +227,6 @@ module.exports = {
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id'},
         tag_id: {type: 'string', maxlength: 24, nullable: false, references: 'tags.id'},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
-    },
-    apps: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        version: {type: 'string', maxlength: 50, nullable: false},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive'},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
-    app_settings: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        key: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        value: {type: 'text', maxlength: 65535, nullable: true},
-        app_id: {type: 'string', maxlength: 24, nullable: false, references: 'apps.id'},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
-    app_fields: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        key: {type: 'string', maxlength: 50, nullable: false},
-        value: {type: 'text', maxlength: 65535, nullable: true},
-        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'html'},
-        app_id: {type: 'string', maxlength: 24, nullable: false, references: 'apps.id'},
-        relatable_id: {type: 'string', maxlength: 24, nullable: false},
-        relatable_type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'posts'},
-        active: {type: 'bool', nullable: false, defaultTo: true},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
     invites: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
