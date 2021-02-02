@@ -1,10 +1,8 @@
+const {createTransactionalMigration} = require('../../utils');
 const logging = require('../../../../../shared/logging');
 
-module.exports = {
-    config: {
-        transaction: true
-    },
-    async up({transacting: knex}){
+module.exports = createTransactionalMigration(
+    async function up(knex){
         const settingsKeys = ['installed_apps', 'active_apps'];
         logging.info(`Removing ${settingsKeys.join(',')} from "settings" table.`);
 
@@ -12,7 +10,7 @@ module.exports = {
             .whereIn('key', settingsKeys)
             .del();
     },
-    async down() {
+    async function down() {
         // noop: no need to recreate any apps as it's a cleanup in major version migration
     }
-};
+);
