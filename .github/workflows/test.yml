@@ -66,7 +66,13 @@ jobs:
       - run: |
           node index.js &
           sleep 20 && { kill $! && wait $!; } 2>/dev/null
+
+      - run: yarn knex-migrator rollback --v 4.0 --force
+        if: github.ref == 'refs/heads/4.0'
+
       - run: yarn knex-migrator rollback --v 3.0 --force
+        if: github.ref == 'refs/heads/master'
+
       - run: yarn knex-migrator migrate --force
 
   test:
