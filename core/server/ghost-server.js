@@ -159,14 +159,18 @@ class GhostServer {
      * Stops the server, handles cleanup and exits the process = a full shutdown
      * Called on SIGINT or SIGTERM
      */
-    async shutdown() {
+    async shutdown(code = 0) {
         try {
             logging.warn(i18n.t('notices.httpServer.ghostIsShuttingDown'));
             await this.stop();
-            process.exit(0);
+            setTimeout(() => {
+                process.exit(code);
+            }, 100);
         } catch (error) {
             logging.error(error);
-            process.exit(1);
+            setTimeout(() => {
+                process.exit(1);
+            }, 100);
         }
     }
 
