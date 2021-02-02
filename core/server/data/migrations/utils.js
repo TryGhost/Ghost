@@ -1,6 +1,7 @@
 const ObjectId = require('bson-objectid').default;
 const logging = require('../../../shared/logging');
 const commands = require('../schema').commands;
+const Promise = require('bluebird');
 
 const MIGRATION_USER = 1;
 
@@ -28,6 +29,28 @@ function addTable(name) {
 
             logging.info(`Dropping table: ${name}`);
             return commands.deleteTable(name, connection);
+        }
+    );
+}
+
+/**
+ * Creates migration which will drop a table
+ *
+ * @param {[string]} names  - names of the tables to drop
+ */
+function dropTables(names) {
+    return createTransactionalMigration(
+        async function up(connection) {
+            for (const name of names) {
+                const exists = await connection.schema.hasTable(name);
+
+                if (!exists) {
+                    logging.warn(`Failed dropping table: ${name}. Table does not exits`);
+                } else {
+                    logging.info(`Dropping table: ${name}`);
+                    await commands.deleteTable(name, connection);
+                }
+            }
         }
     );
 }
@@ -223,6 +246,25 @@ function createNonTransactionalMigration(up, down) {
 
 /**
  * @param {(connection: import('knex')) => Promise<void>} up
+ *
+ * @returns {Migration}
+ */
+function createIrreversibleMigration(up) {
+    return {
+        config: {
+            irreversible: true
+        },
+        async up(config) {
+            await up(config.connection);
+        },
+        async down() {
+            return Promise.reject();
+        }
+    };
+}
+
+/**
+ * @param {(connection: import('knex')) => Promise<void>} up
  * @param {(connection: import('knex')) => Promise<void>} down
  *
  * @returns {Migration}
@@ -351,11 +393,13 @@ function createDropColumnMigration(table, column, columnDefinition) {
 
 module.exports = {
     addTable,
+    dropTables,
     addPermission,
     addPermissionToRole,
     addPermissionWithRoles,
     createTransactionalMigration,
     createNonTransactionalMigration,
+    createIrreversibleMigration,
     combineTransactionalMigrations,
     combineNonTransactionalMigrations,
     createAddColumnMigration,
