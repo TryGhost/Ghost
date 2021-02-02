@@ -12,8 +12,8 @@
     <div class="flex mb4 br3 bg-white">
         <div class="w-30 ml20">
             {{component (concat "gh-launch-wizard/" this.step)
-                nextStep=this.nextStep
-                backStep=this.backStep
+                nextStep=this.goNextStep
+                backStep=this.goBackStep
                 skipStep=this.skipStep
                 refreshPreview=this.refreshPreview
                 updatePreview=this.updatePreview
