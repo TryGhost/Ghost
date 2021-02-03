@@ -16,7 +16,7 @@ describe('{{next_post}} helper', function () {
         locals = {
             root: {
                 _locals: {
-                    apiVersion: 'v2'
+                    apiVersion: 'v3'
                 },
                 context: ['post']
             }
