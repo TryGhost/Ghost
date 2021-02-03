@@ -188,8 +188,8 @@ jobs:
         working-directory: core/client
       - run: if [ -n "$(git status --porcelain)" ]; then git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"; fi
 
-      - run: npm version premajor --preid="pre.$ghost_hash.$ghost_admin_hash"
-      - run: npm version premajor --preid="pre.$ghost_hash.$ghost_admin_hash"
+      - run: npm version prerelease --preid="pre.$ghost_hash.$ghost_admin_hash"
+      - run: npm version prerelease --preid="pre.$ghost_hash.$ghost_admin_hash"
         working-directory: core/client
 
       - run: grunt release --skip-update
