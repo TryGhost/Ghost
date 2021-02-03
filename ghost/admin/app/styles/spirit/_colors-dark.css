@@ -7,13 +7,15 @@
 
 :root {
     /* Base colors */
+    --black: #fff;
+    --white: #263238;
+    --lime: #B5FF18;
     --blue: #3eb0ef;
     --green: #a4d037;
     --purple: #ad26b4;
     --yellow: #fecd35;
     --red: #f05230;
     --pink: #fa3a57;
-    --white: #263238;
     --extra-darkgrey: #212A2E;
 
     --black-10: rgba(255, 255, 255, 0.1);

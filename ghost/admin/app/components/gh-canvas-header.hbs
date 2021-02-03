@@ -1,7 +1,9 @@
-<header
+<div
     {{did-insert (action "initScrollWatch")}}
     {{will-destroy (action "clearScrollWatch")}}
     ...attributes
 >
-    {{yield}}
-</header>
+    <header class="gh-canvas-header-content gh-main-width">
+        {{yield}}
+    </header>
+</div>

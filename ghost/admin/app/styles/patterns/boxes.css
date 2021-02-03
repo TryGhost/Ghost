@@ -59,3 +59,13 @@
 .gh-box-error-border {
     border-left: 5px solid var(--red);
 }
+
+.gh-content-bg-whitegrey {
+    background: var(--whitegrey-l1);
+}
+
+.gh-content-box {
+    border: 1px solid var(--main-area-divider-color);
+    border-radius: 7px;
+    background: var(--white);
+}

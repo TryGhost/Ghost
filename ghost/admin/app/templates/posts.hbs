@@ -22,15 +22,14 @@
                 @onOrderChange={{action "changeOrder"}}
             />
 
-            <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
+            <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-primary" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
         </section>
     </GhCanvasHeader>
 
-    <section class="content-list">
+    <section class="view-container gh-main-width content-list">
         <ol class="posts-list gh-list {{unless this.postsInfinityModel "no-posts"}}">
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
-                    <div class="gh-list-header no-padding">{{!--Favorite indicator column: no header--}}</div>
                     <div class="gh-list-header gh-posts-title-header">Title</div>
                     {{#if this.feature.emailAnalytics}}
                         <div class="gh-list-header gh-posts-sends-header">Sends</div>

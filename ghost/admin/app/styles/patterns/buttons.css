@@ -102,6 +102,21 @@ fieldset[disabled] .gh-btn {
     box-shadow: none;
 }
 
+/* Primary button
+/* ---------------------------------------------------------- */
+.gh-btn-primary,
+.gh-btn-primary:hover {
+    background: var(--black);
+    border: none;
+    color: var(--white);
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.gh-btn-primary:hover {
+    background: color-mod(var(--black) l(-20%));
+}
+
 
 /* Blue button
 /* ---------------------------------------------------------- */

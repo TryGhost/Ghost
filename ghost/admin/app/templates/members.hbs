@@ -57,19 +57,20 @@
                     </li>
                 </GhDropdown>
             </span>
-            <LinkTo @route="member.new" class="gh-btn gh-btn-green" data-test-new-member-button="true"><span>New member</span></LinkTo>
+            <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
         </section>
     </GhCanvasHeader>
 
     {{#unless this.members.loading}}
         <section class="view-container">
+
             {{#if (and this.members this.showingAll)}}
-                <section>
+                <section class="gh-members-chart">
                     <GhMembersChart nightShift={{feature "nightShift"}} />
                 </section>
             {{/if}}
 
-            <section class="content-list">
+            <section class="content-list gh-main-width">
                 <ol class="members-list gh-list {{unless this.members "no-posts"}}">
                     {{#if this.members}}
                         <li class="gh-list-row header relative">

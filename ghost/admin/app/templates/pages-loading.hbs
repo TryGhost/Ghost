@@ -1,29 +1,31 @@
 <section class="gh-canvas" {{did-insert (action "setMainClass" "gh-main-primarybg" target=this.ui)}}>
-    <header class="gh-canvas-header post-header">
-        <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
-        <section class="view-actions">
-            <GhContentfilter
-                @currentUser={{this.session.user}}
-                @selectedType={{this.selectedType}}
-                @availableTypes={{this.availableTypes}}
-                @onTypeChange={{action (mut k)}}
-                @selectedVisibility={{this.selectedVisibility}}
-                @availableVisibilities={{this.availableVisibilities}}
-                @onVisibilityChange={{action (mut k)}}
-                @selectedAuthor={{this.selectedAuthor}}
-                @availableAuthors={{this.availableAuthors}}
-                @onAuthorChange={{action (mut k)}}
-                @selectedTag={{this.selectedTag}}
-                @availableTags={{this.availableTags}}
-                @onTagChange={{action (mut k)}}
-                @selectedOrder={{this.selectedOrder}}
-                @availableOrders={{this.availableOrders}}
-                @onOrderChange={{action (mut k)}}
-            />
+    <div class="gh-canvas-header">
+        <header class="gh-canvas-header-content gh-main-width post-header">
+            <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
+            <section class="view-actions">
+                <GhContentfilter
+                    @currentUser={{this.session.user}}
+                    @selectedType={{this.selectedType}}
+                    @availableTypes={{this.availableTypes}}
+                    @onTypeChange={{action (mut k)}}
+                    @selectedVisibility={{this.selectedVisibility}}
+                    @availableVisibilities={{this.availableVisibilities}}
+                    @onVisibilityChange={{action (mut k)}}
+                    @selectedAuthor={{this.selectedAuthor}}
+                    @availableAuthors={{this.availableAuthors}}
+                    @onAuthorChange={{action (mut k)}}
+                    @selectedTag={{this.selectedTag}}
+                    @availableTags={{this.availableTags}}
+                    @onTagChange={{action (mut k)}}
+                    @selectedOrder={{this.selectedOrder}}
+                    @availableOrders={{this.availableOrders}}
+                    @onOrderChange={{action (mut k)}}
+                />
 
-            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
-        </section>
-    </header>
+                <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+            </section>
+        </header>
+    </div>
 
     <div class="gh-content">
         <GhLoadingList />

@@ -1,12 +1,11 @@
 .gh-list {
-    margin: 0;
+    margin: 0 0 0 -6px;
     padding: 0;
     list-style: none;
     background: var(--white);
     display: table;
     width: 100%;
-    border-radius: 5px;
-    box-shadow: var(--shadow-1);
+    border-bottom: var(--main-area-divider-color) 1px solid;
 }
 
 .gh-list.tabbed {
@@ -21,26 +20,6 @@
 .gh-list-row:not(.header):not(.loading):hover .gh-list-cell,
 .gh-list-row:not(.header):not(.loading):hover .gh-list-data {
     background: var(--whitegrey-l2);
-}
-
-.gh-list-row:first-of-type .gh-list-cell:first-child,
-.gh-list-row:first-of-type .gh-list-data:first-child {
-    border-top-left-radius: 5px;
-}
-
-.gh-list-row:first-of-type .gh-list-cell:last-child,
-.gh-list-row:first-of-type .gh-list-data:last-child {
-    border-top-right-radius: 5px;
-}
-
-.gh-list-row:last-of-type .gh-list-cell:first-child,
-.gh-list-row:last-of-type .gh-list-data:first-child {
-    border-bottom-left-radius: 5px;
-}
-
-.gh-list-row:last-of-type .gh-list-cell:last-child,
-.gh-list-row:last-of-type .gh-list-data:last-child {
-    border-bottom-right-radius: 5px;
 }
 
 .gh-list-row:not(.header):first-of-type {
@@ -61,20 +40,19 @@
 .gh-list-header {
     display: table-cell;
     vertical-align: middle;
-    border-bottom: var(--lightgrey) 1px solid;
+    border-bottom: var(--main-area-divider-color) 1px solid;
     font-size: 1.2rem;
     font-weight: 500;
     letter-spacing: 0.1px;
-    color: var(--midgrey);
+    color: var(--black);
     text-transform: uppercase;
     padding: 10px 20px;
     white-space: nowrap;
-    background: var(--whitegrey-l2);
 }
 
 .gh-list:not(.tabbed) .gh-list-header:first-child {
     border-top-left-radius: 5px;
-    padding-left: 16px;
+    padding-left: 8px;
 }
 
 .gh-list:not(.tabbed) .gh-list-header:last-child {
@@ -95,7 +73,7 @@
 }
 
 .gh-list-row .gh-list-data:first-child {
-    padding-left: 16px;
+    padding-left: 8px;
 }
 
 .gh-list-data.show-on-hover > *,
