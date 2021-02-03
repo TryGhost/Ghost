@@ -8,7 +8,7 @@ const MIGRATION_USER = 1;
 /**
  * Creates a migrations which will add a new table from schema.js to the database
  */
-function addTable(name) {
+function addTable(name, tableSpec) {
     return createNonTransactionalMigration(
         async function up(connection) {
             const tableExists = await connection.schema.hasTable(name);
@@ -18,7 +18,7 @@ function addTable(name) {
             }
 
             logging.info(`Adding table: ${name}`);
-            return commands.createTable(name, connection);
+            return commands.createTable(name, connection, tableSpec);
         },
         async function down(connection) {
             const tableExists = await connection.schema.hasTable(name);
