@@ -1,13 +1,14 @@
 :root {
-    --main-bg-color: rgb(242, 244, 247);
-    --menu-hover-bg-color: color-mod(var(--main-bg-color) s(+8%));
-    --active-menu-color: var(--darkgrey);
-    --active-menu-bg-color: color-mod(var(--main-bg-color) l(-3%) s(+8%));
+    /* Main menu variables */
+    --mainmenu-color-hover-bg: var(--whitegrey-l1);
+    --mainmenu-color-active: var(--black);
+    --mainmenu-color-active-bg: var(--whitegrey-l1);
+    --mainmenu-width: 340px;
+    --mainmenu-padding: var(--main-area-padding);
 }
 
 /* Global Layout
 /* ---------------------------------------------------------- */
-
 
 /* Main viewport, contains main content, and alerts */
 /* Use `position: fixed`, covering full window area so scrolling on mobile doesn't trigger elastic scroll */
@@ -98,21 +99,22 @@
 .gh-nav {
     position: relative;
     z-index: 800;
-    flex: 0 0 300px;
+    flex: 0 0 var(--mainmenu-width);
     display: flex;
     flex-direction: column;
     min-width: 0;
-    background: var(--white);
+    /* background: linear-gradient(315deg,var(--whitegrey-l2),var(--white)); */
     transform: translateX(0);
-    border-right: 1px solid color-mod(var(--main-bg-color) l(-4%));
+    border-right: 1px solid var(--main-area-divider-color);
 }
 
 .gh-nav-menu {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 24px 0px 11px;
-    margin: 0 20px;
+    height: var(--main-vertical-panel-height);
+    padding: var(--mainmenu-padding);
+    border-bottom: 1px solid var(--main-area-divider-color);
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
@@ -173,13 +175,14 @@
     min-width: 0; /* TODO: This is a bullshit Firefox hack */
 }
 
-.gh-nav-menu-details-blog {
+.gh-nav-menu-details-sitetitle {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1.5rem;
     line-height: 1.3em;
     font-weight: 700;
+    color: var(--black);
 }
 
 .gh-nav-menu-details-user {
@@ -197,21 +200,31 @@
     justify-content: space-between;
     flex-grow: 1;
     overflow-y: auto;
+    padding: 0;
 }
 
 /* Global search
 /* ---------------------------------------------------------- */
 
 .gh-nav-btn-search {
-    padding: 5px 4px 2px;
-    width: 30px;
-    height: 30px;
+    padding: 8px 8px 5px;
+    width: 36px;
+    height: 36px;
     border-radius: 999px;
-    margin: 3px -6px 0 0;
+    margin: 2px -8px 0 0;
+}
+
+.gh-nav-btn-search svg {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-nav-btn-search svg path {
+    fill: var(--black);
 }
 
 .gh-nav-btn-search:hover {
-    background: var(--active-menu-bg-color);
+    background: var(--mainmenu-color-hover-bg);
 }
 
 .gh-nav-search-modal {
@@ -252,7 +265,7 @@
 
 .gh-nav-search-icon path {
     stroke: none !important;
-    fill: var(--midlightgrey);
+    fill: var(--lightgrey);
 }
 
 .gh-search-tips {
@@ -310,12 +323,14 @@
 .gh-nav-list button.main-menu-item {
     display: flex;
     align-items: center;
-    padding: 6px 23px;
     color: color-mod(var(--middarkgrey) l(-10%));
     transition: none;
-    margin: 2px 5px;
     font-weight: 400;
-    border-radius: 5px;
+    padding: 8px var(--mainmenu-padding) 8px calc(var(--mainmenu-padding) + 7px);
+    font-size: 1.5rem;
+    margin: 0;
+    border-radius: 0;
+    box-sizing: border-box;
 }
 
 .gh-nav-list button.main-menu-item {
@@ -324,26 +339,41 @@
 
 .gh-nav-list .active {
     position: relative;
-    color: var(--active-menu-color);
-    background: var(--active-menu-bg-color);
+    color: var(--mainmenu-color-active);
+    background: var(--mainmenu-color-active-bg);
     font-weight: 700;
+    /* border: 1px solid var(--black);
+    padding: 7px calc(var(--mainmenu-padding) - 2px) 7px calc(var(--mainmenu-padding) + 5px); */
 }
+
+/* .gh-nav-list .active::after {
+    content: "";
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    top: 0;
+    bottom: 0;
+    left: 30px;
+    border-radius: 999px;
+    background: var(--lime);
+} */
 
 .gh-nav-list a:not(.active):hover,
 .gh-nav-list button.main-menu-item:hover {
     color: var(--darkgrey);
-    background: var(--menu-hover-bg-color);
+    /* background: var(--mainmenu-color-hover-bg); */
     opacity: 1;
 }
 
 /* Icons */
 .gh-nav-list svg {
-    margin-right: 8px;
-    width: 16px;
-    height: 16px;
-    fill: var(--midgrey);
+    margin-right: 17px;
+    width: 18px;
+    height: 18px;
+    fill: var(--darkgrey);
     line-height: 1;
     transition: none;
+    z-index: 999;
 }
 
 .gh-nav-list svg.force-fill path {
@@ -352,11 +382,11 @@
 
 .gh-nav-list a:not(.active):hover svg,
 .gh-nav-list button.main-menu-item:hover svg {
-    fill: var(--darkgrey);
+    fill: var(--black);
 }
 
 .gh-nav-list .active svg {
-    fill: var(--active-menu-color);
+    fill: #8FD200;
 }
 
 .gh-nav-list a svg g,
@@ -369,7 +399,18 @@
 }
 
 .gh-nav-list .active svg g {
-    stroke: var(--active-menu-color);
+    stroke: #8FD200;
+}
+
+.gh-nav-button-expand {
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    height: 16px;
+    position: absolute;
+    left: 8px;
+    top: 11px;
+    z-index: 99999;
 }
 
 .gh-nav-button-expand.expanded {
@@ -394,10 +435,10 @@
 .gh-nav-list .gh-secondary-action {
     position: absolute;
     z-index: 999;
-    padding: 6px;
+    padding: 10px;
     margin: 0;
-    right: 8px;
-    top: -6px;
+    right: 12px;
+    top: -10px;
     opacity: 0;
     transition: opacity ease 0.2s;
 }
@@ -407,8 +448,8 @@
 }
 
 .gh-nav-list .gh-secondary-action span {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     border-radius: 100%;
     display: flex;
     align-items: center;
@@ -422,11 +463,11 @@
 }
 
 .gh-nav-list .gh-secondary-action span svg path {
-    fill: var(--middarkgrey);
+    fill: var(--black);
 }
 
 .gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
-    background: var(--active-menu-bg-color);
+    background: var(--mainmenu-color-hover-bg);
 }
 
 .gh-nav-list .gh-secondary-action:hover,
@@ -436,7 +477,7 @@
 }
 
 .gh-nav-list .gh-secondary-action:hover span svg path {
-    fill: var(--darkgrey);
+    fill: var(--black);
 }
 
 .gh-nav-list .gh-secondary-action.icon-only,
@@ -460,7 +501,7 @@
 }
 
 .gh-nav-main {
-    margin: 22px 0;
+    margin: 24px 0;
 }
 
 .gh-nav-labs {
@@ -475,15 +516,14 @@
 
 .gh-nav-view-list {
     padding: 0;
-    margin: 0;
+    margin: 0 0 22px;
     list-style: none;
     font-size: 1.4rem;
     line-height: 1.6em;
 }
 
 .gh-nav-view-list a {
-    padding-left: 48px;
-    padding-right: 12px;
+    padding-left: calc(var(--mainmenu-padding) + 42px);
 }
 
 .gh-nav-viewname {
@@ -498,9 +538,9 @@
     display: block;
     border-radius: 999px;
     border: 3px solid var(--midgrey);
-    width: 12px;
-    height: 12px;
-    margin: 0 10px 0 2px;
+    width: 8px;
+    height: 8px;
+    margin: 0 8px 0 -30px;
 }
 
 .gh-nav-view-list .svg-midgrey .circle {
@@ -552,11 +592,18 @@
 /* ---------------------------------------------------------- */
 
 .gh-nav-bottom {
-    margin: 0 5px;
+    margin: 0;
+    padding: var(--mainmenu-padding);
+    border-top: 1px solid var(--main-area-divider-color);
+}
+
+.gh-nav-bottom .ember-basic-dropdown-trigger {
+    padding: 4px 8px 4px 4px;
+    margin: -4px -8px -4px -4px;
 }
 
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover {
-    background: var(--menu-hover-bg-color);
+    background: var(--mainmenu-color-active-bg);
     border-radius: 999px;
 }
 
@@ -573,21 +620,21 @@
 }
 
 .gh-nav-bottom-tabicon:hover {
-    background: var(--menu-hover-bg-color);
+    background: var(--mainmenu-color-hover-bg);
 }
 
 .gh-nav-bottom-tabicon.active {
-    background: var(--active-menu-bg-color);
+    background: var(--mainmenu-color-active-bg);
 }
 
 .gh-nav-bottom-tabicon.active svg {
-    fill: var(--darkgrey);
+    fill: var(--black);
 }
 
 .gh-nav-bottom-tabicon svg {
     width: 20px;
     height: 20px;
-    fill: var(--midlightgrey-d2);
+    fill: var(--darkgrey);
     line-height: 1;
     transition: none;
 }
@@ -608,7 +655,7 @@
     position: relative;
     height: 24px;
     width: 42px;
-    background: var(--midlightgrey);
+    background: var(--black);
     border-radius: 999px;
     cursor: pointer;
     transition: all ease-in-out 0.3s;
@@ -849,40 +896,33 @@
 
 .gh-canvas {
     flex-grow: 1;
-    padding: 0 24px 48px;
+    padding: 0 0 48px;
     margin: 0 auto;
-    max-width: 1220px;
 }
 
 .gh-canvas-header {
+    margin: 0;
+    position: sticky;
+    top: 0;
+    background: var(--main-bg-color);
+    z-index: 700;
+    border-bottom: 1px solid var(--main-area-divider-color);
+}
+
+.gh-canvas-header-content {
+    height: calc(var(--main-vertical-panel-height) - 1px);
     position: relative;
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 0;
-    min-height: 84px;
-    position: sticky;
-    top: 0;
-    background: var(--main-bg-color);
-    z-index: 700;
-    margin: 0 -24px 3px;
-    padding: 0 24px;
-
-    border-bottom: 1px solid;
-    border-color: color-mod(color-mod(var(--main-bg-color) l(-4%)) a(0%));
-    transition-duration: 300ms;
-    transition-property: border-color;
 }
 
-.gh-canvas-header--sticky:before {
-    position: absolute;
-    content: "";
-    background: color-mod(var(--lightgrey) l(-2%));
-    height: 1px;
-    bottom: -2px;
-    left: 24px;
-    right: 24px;
+.gh-main-width {
+    width: 100%;
+    max-width: var(--main-content-maxwidth);
+    margin: 0 auto;
+    padding: 0 var(--main-content-sidepadding);
 }
 
 .gh-main-white .gh-canvas-header {
@@ -897,12 +937,13 @@
     padding: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 2.8rem;
+    font-size: 3.3rem;
     line-height: 1.2em;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+    font-weight: 700;
+    letter-spacing: 0px;
     /* match button height to avoid jump on navigation between screens*/
     min-height: 35px;
+    color: var(--black);
 }
 
 @media (max-width: 500px) {
@@ -912,7 +953,7 @@
 }
 
 .gh-canvas-title a {
-    color: var(--darkgrey);
+    color: var(--black);
 }
 
 .gh-canvas-title span {
@@ -1002,6 +1043,8 @@
 .view-content {
     position: relative;
     flex-grow: 1;
+    padding-top: var(--main-area-padding);
+    padding-bottom: var(--main-area-padding);
 }
 
 .view-content {

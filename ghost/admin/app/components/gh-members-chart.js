@@ -101,11 +101,11 @@ export default Component.extend({
                 cubicInterpolationMode: 'monotone',
                 data: dateValues,
                 fill: false,
-                backgroundColor: 'rgba(62,176,239,.9)',
+                backgroundColor: 'rgba(181,255,24,1.0)',
                 pointRadius: 0,
                 pointHitRadius: 10,
-                borderColor: 'rgba(62,176,239,.9)',
-                borderJoinStyle: 'round'
+                borderColor: 'rgba(181,255,24,1.0)',
+                borderJoinStyle: 'miter'
             }]
         });
     },
@@ -165,8 +165,8 @@ export default Component.extend({
                     labelString: 'Date',
                     gridLines: {
                         drawTicks: false,
-                        color: (this.nightShift ? '#333F44' : '#E5EFF5'),
-                        zeroLineColor: (this.nightShift ? '#333F44' : '#E5EFF5')
+                        color: (this.nightShift ? '#333F44' : '#3E3F41'),
+                        zeroLineColor: (this.nightShift ? '#333F44' : '#3E3F41')
                     },
                     ticks: {
                         display: false,
@@ -244,7 +244,7 @@ export default Component.extend({
                     ctx.moveTo(x, topY);
                     ctx.lineTo(x, bottomY);
                     ctx.lineWidth = 1;
-                    ctx.strokeStyle = (this.nightShift ? 'rgba(62, 176, 239, 0.65)' : 'rgba(62, 176, 239, 0.8)');
+                    ctx.strokeStyle = (this.nightShift ? 'rgba(62, 176, 239, 0.65)' : 'rgba(62, 176, 239, 0.1)');
                     ctx.stroke();
                     ctx.restore();
                 }

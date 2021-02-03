@@ -13,12 +13,16 @@
 /* Main Layout
 /* ---------------------------------------------------------- */
 
+.integrations-wrapper {
+    background: linear-gradient(315deg,var(--whitegrey-l1),var(--whitegrey-l2));
+    padding: var(--main-area-padding) 0;
+}
+
 .integrations-directory {
     display: grid;
     justify-content: space-between;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-gap: 25px;
-    margin: 4px 0 2.4vw;
 }
 
 .id-item {

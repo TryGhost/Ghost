@@ -5,32 +5,32 @@
         </h2>
     </GhCanvasHeader>
 
-    <section class="view-container">
+    <section class="view-container gh-main-width">
         <div class="gh-setting-header gh-first-header">Website</div>
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.general" data-test-nav="settings">
-                <span>{{svg-jar "settings"}}</span>
+                <span class="color-1">{{svg-jar "settings"}}</span>
                 <div>
                     <h4>General</h4>
                     <p>Basic publication details and site metadata</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
-                <span>{{svg-jar "page"}}</span>
+                <span class="color-2">{{svg-jar "page"}}</span>
                 <div>
                     <h4>Theme</h4>
                     <p>Install and update themes</p>
                 </div>
             </LinkTo>
             <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="design">
-                <span>{{svg-jar "paintbrush"}}</span>
+                <span class="color-3">{{svg-jar "paintbrush"}}</span>
                 <div>
                     <h4>Branding</h4>
                     <p>Upload site logo and set accent color</p>
                 </div>
             </button>
             <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="theme">
-                <span>{{svg-jar "compass-2"}}</span>
+                <span class="color-4">{{svg-jar "compass-2"}}</span>
                 <div>
                     <h4>Navigation</h4>
                     <p>Set up primary and secondary menus</p>
@@ -41,21 +41,21 @@
         <div class="gh-setting-header">Members</div>
         <div class="gh-settings-main-grid">
             <button type="button" class="gh-setting-group" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
-                <span>{{svg-jar "portal-logo"}}</span>
+                <span class="color-3">{{svg-jar "portal-logo"}}</span>
                 <div>
                     <h4>Portal</h4>
                     <p>Customize members modal signup flow</p>
                 </div>
             </button>
             <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="design">
-                <span>{{svg-jar "email"}}</span>
+                <span class="color-4">{{svg-jar "email"}}</span>
                 <div>
                     <h4>Email newsletter</h4>
                     <p>Customise emails and set email addresses</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="design">
-                <span>{{svg-jar "piggy-bank"}}</span>
+                <span class="color-1">{{svg-jar "piggy-bank"}}</span>
                 <div>
                     <h4>Payments</h4>
                     <p>Connect to Stripe and set up prices</p>
@@ -66,14 +66,14 @@
         <div class="gh-setting-header">Extensions</div>
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.code-injection" data-test-nav="code-injection">
-                <span>{{svg-jar "brackets"}}</span>
+                <span class="color-2">{{svg-jar "brackets"}}</span>
                 <div>
                     <h4>Code injection</h4>
                     <p>Add code to your publication</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
-                <span>{{svg-jar "labs"}}</span>
+                <span class="color-3">{{svg-jar "labs"}}</span>
                 <div>
                     <h4>Labs</h4>
                     <p>Testing ground for new features</p>

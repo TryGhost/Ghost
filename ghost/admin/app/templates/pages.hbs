@@ -22,15 +22,14 @@
                 @onOrderChange={{action "changeOrder"}}
             />
 
-            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
         </section>
     </GhCanvasHeader>
 
-    <section class="content-list">
+    <section class="view-container gh-main-width content-list">
         <ol class="gh-list {{unless this.postsInfinityModel "no-posts"}}">
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
-                    <div class="gh-list-header no-padding">{{!--Favorite indicator column: no header--}}</div>
                     <div class="gh-list-header gh-posts-title-header">Title</div>
                     <div class="gh-list-header gh-posts-status-header">Status</div>
                 </li>
@@ -46,7 +45,7 @@
                         {{#if this.showingAll}}
                             {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
                             <h3>You haven't created any pages yet!</h3>
-                            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green gh-btn-lg">
+                            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary gh-btn-lg">
                                 <span>Create a new page</span>
                             </LinkTo>
                         {{else}}

@@ -26,11 +26,6 @@ textarea.gh-tag-details-textarea {
     white-space: nowrap;
 }
 
-.tags-view {
-    max-width: 1220px;
-    margin: 0 auto;
-}
-
 /* Mobile style of tag list */
 @media (max-width: 1000px) {
     .gh-tags-list-item {

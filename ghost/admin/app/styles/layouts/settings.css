@@ -26,7 +26,7 @@
 }
 
 .gh-nav-settings-close a:hover {
-    background: var(--active-menu-bg-color);
+    background: var(--mainmenu-color-active-bg);
 }
 
 .gh-nav-settings-close a svg {
@@ -52,14 +52,13 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     background: var(--white);
-    box-shadow: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1);
     border-radius: .5rem;;
 }
 
 .gh-settings-main-grid .gh-setting-group {
     display: flex;
     color: var(--darkgrey);
-    padding: 20px;
+    padding: 20px 20px 20px 0;
     min-height: 85px;
     text-align: left;
 }
@@ -69,12 +68,11 @@
     align-items: center;
     justify-content: center;
     padding: 5px;
-    /* border: 1px solid var(--whitegrey); */
-    background: color-mod(var(--main-bg-color) s(+8%));
-    width: 40px;
-    height: 40px;
-    min-width: 40px;;
-    border-radius: 5px;
+    background: var(--black);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;;
+    border-radius: 999px;
 }
 
 .gh-settings-main-grid .gh-setting-group span.color-1 {
@@ -94,7 +92,7 @@
 }
 
 .gh-settings-main-grid .gh-setting-group:hover span {
-    background: color-mod(var(--main-bg-color) l(-3%) s(+8%));
+    opacity: 0.9;
 }
 
 .gh-settings-main-grid .gh-setting-group svg {
@@ -104,12 +102,12 @@
 
 .gh-settings-main-grid .gh-setting-group svg path,
 .gh-settings-main-grid .gh-setting-group svg circle {
-    fill: var(--midlightgrey);
+    fill: var(--white);
 }
 
 .gh-settings-main-grid .gh-setting-group:hover svg path,
 .gh-settings-main-grid .gh-setting-group:hover svg circle {
-    fill: var(--middarkgrey);
+    fill: var(--white);
 }
 
 .gh-settings-main-grid .gh-setting-group div {
@@ -145,11 +143,13 @@
 
 .gh-setting-header {
     margin: 4vw 0 5px 1px;
-    color: var(--midlightgrey);
+    color: var(--black);
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: 0.35px;
     font-size: 1.2rem;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--main-area-divider-color);
 }
 
 .gh-first-header {
