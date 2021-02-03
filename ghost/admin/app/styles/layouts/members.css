@@ -51,6 +51,7 @@
 
 .members-list {
     table-layout: fixed;
+    margin-top: var(--main-area-padding);
 }
 
 .members-list .gh-list-row.header {
@@ -165,13 +166,20 @@ p.gh-members-list-email {
     padding-right: 12px;
 }
 
+.gh-members-chart {
+    margin-top: calc(-1 * var(--main-area-padding));
+    padding: var(--main-area-padding) 0;
+}
+
+.gh-members-chart-box {
+    background: var(--black);
+    border: none;
+}
+
 .gh-members-chart-header {
     padding: 12px 16px;
     margin-bottom: 10px;
-    background: var(--whitegrey-l2);
-    border-bottom: var(--lightgrey) 1px solid;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    border-bottom: var(--darkgrey) 1px solid;
 }
 
 .gh-members-chart-header .gh-contentfilter {
@@ -181,9 +189,11 @@ p.gh-members-list-email {
 
 .gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger {
     border-radius: 4px;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: 0 0 0 1px var(--darkgrey);
     height: 16px;
     padding: 0 8px;
+    background: var(--black);
+    color: var(--white);
 }
 
 .gh-members-chart-dropdown {
@@ -202,9 +212,10 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-summary-data {
-    font-size: 3.6rem;
-    color: var(--darkgrey);
+    font-size: 3.9rem;
+    color: var(--black);
     line-height: 4.0rem;
+    font-weight: 600;
 }
 
 .members-header .gh-contentfilter {

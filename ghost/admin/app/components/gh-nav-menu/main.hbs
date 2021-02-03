@@ -1,10 +1,10 @@
 <header class="gh-nav-menu">
     <div class="gh-nav-menu-details">
         <div class="gh-nav-menu-icon" style={{this.iconStyle}}></div>
-        <div class="gh-nav-menu-details-blog">{{this.config.blogTitle}}</div>
+        <div class="gh-nav-menu-details-sitetitle">{{this.config.blogTitle}}</div>
     </div>
     <div class="gh-nav-menu-search">
-        <button class="gh-nav-btn-search" {{action "toggleSearchModal"}} title="Search site (Ctrl/⌘ + K)"><span>{{svg-jar "search" class="w4 h4 fill-midgrey"}}</span></button>
+        <button class="gh-nav-btn-search" {{action "toggleSearchModal"}} title="Search site (Ctrl/⌘ + K)"><span>{{svg-jar "search"}}</span></button>
     </div>
 </header>
 
@@ -18,12 +18,12 @@
     <div class="gh-nav-top">
         <ul class="gh-nav-list gh-nav-main">
             <li class="relative">
-                <LinkTo @route="dashboard" @alt="Dashboard" @title="Dashboard" data-test-nav="dashboard">{{svg-jar "page"}}Dashboard</LinkTo>
+                <LinkTo @route="dashboard" @alt="Dashboard" @title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
             </li>
             <li class="relative">
                 <span {{action "transitionToOrRefreshSite" on="click"}}>
                     <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
-                        {{svg-jar "house"}} View site
+                        {{svg-jar "page"}} View site
                     </LinkTo>
                 </span>
                 <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
@@ -36,7 +36,7 @@
                 <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
                 <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New post" @title="New post" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
                 {{#if this.customViews.forPosts}}
-                    <button type="button" class="absolute left-1 top-2 z-9999 flex items-center pl2 h4 gh-nav-button-expand {{if this.navigation.settings.expanded.posts "expanded"}}" {{on "click" (fn this.navigation.toggleExpansion "posts")}} aria-label="{{if this.navigation.settings.expanded.posts "Collapse custom post types" "Expand custom post types"}}">
+                    <button type="button" class="gh-nav-button-expand {{if this.navigation.settings.expanded.posts "expanded"}}" {{on "click" (fn this.navigation.toggleExpansion "posts")}} aria-label="{{if this.navigation.settings.expanded.posts "Collapse custom post types" "Expand custom post types"}}">
                         {{svg-jar (if this.navigation.settings.expanded.posts "arrow-down-stroke" "arrow-right-stroke")}}
                     </button>
                     {{#liquid-if this.navigation.settings.expanded.posts}}
@@ -44,13 +44,10 @@
                             {{#each this.customViews.forPosts as |view|}}
                                 <li>
                                     <LinkTo @route="posts" @query={{reset-query-params "posts" view.filter}} data-test-nav-custom="{{view.route}}-{{view.name}}" title="{{view.name}}">
-                                        {{!-- <div class="dib w4 h4 mr2 bg-{{view.color}} br-100"></div> --}}
                                         <span class="flex items-center svg-{{view.color}}">
-                                            {{#if view.icon}}
-                                                {{svg-jar (or view.icon "post")}}
-                                            {{else}}
+                                            {{#unless view.icon}}
                                                 <span class="circle"></span>
-                                            {{/if}}
+                                            {{/unless}}
                                         </span>
                                         <span class="gh-nav-viewname">{{view.name}}</span>
                                     </LinkTo>
@@ -79,16 +76,12 @@
                         <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
                     {{/if}}
                 </li>
+                <li>
+                    <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "modules"}}Integrations</LinkTo>
+                </li>
             {{/if}}
             <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
         </ul>
-        {{#if (gh-user-can-admin this.session.user)}}
-            <ul class="gh-nav-list gh-nav-settings">
-                <li class="relative">
-                    <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "modules"}}Integrations</LinkTo>
-                </li>
-            </ul>
-        {{/if}}
 
         {{#if this.showMenuExtension}}
             <ul class="gh-nav-list gh-nav-settings">

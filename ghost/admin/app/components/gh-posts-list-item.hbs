@@ -3,12 +3,6 @@
     {{on "mouseleave" this.mouseLeave}}
     ...attributes
 >
-    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-featured" @title="Edit this {{@post.displayName}}">
-        {{#if @post.isFeatured}}
-            <span data-tooltip="Featured" class="dib pl1 pr1 nr1 nl1">{{svg-jar "star-filled" class="fill-blue w3 h3"}}</span>
-        {{/if}}
-    </LinkTo>
-
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title" @title="Edit this {{@post.displayName}}">
         <h3 class="gh-content-entry-title">
             {{@post.title}}
