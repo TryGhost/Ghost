@@ -12,6 +12,8 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
     @tracked stripeConnectTestMode = false;
     @tracked stripeConnectError = null;
+    @tracked stripePublishableKeyError = null;
+    @tracked stripeSecretKeyError = null;
 
     get stripeConnectAuthUrl() {
         const mode = this.stripeConnectTestMode ? 'test' : 'live';
@@ -32,12 +34,14 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     setStripeDirectPublicKey(event) {
         this.settings.set('stripeProductName', this.settings.get('title'));
         this.settings.set('stripePublishableKey', event.target.value);
+        this.stripePublishableKeyError = null;
     }
 
     @action
     setStripeDirectSecretKey(event) {
         this.settings.set('stripeProductName', this.settings.get('title'));
-        this.settings.set('stripePublishableKey', event.target.value);
+        this.settings.set('stripeSecretKey', event.target.value);
+        this.stripeSecretKeyError = null;
     }
 
     @action
@@ -54,22 +58,45 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
     @task
     *saveAndContinue() {
-        if (this.settings.get('stripeConnectIntegrationToken')) {
-            try {
-                yield this.settings.save();
-                this.pauseAndContinue.perform();
-                return true;
-            } catch (error) {
-                if (error.payload?.errors) {
-                    this.stripeConnectError = 'Invalid secure key';
-                    return false;
-                }
-
-                throw error;
+        if (this.config.get('stripeDirect')) {
+            if (!this.settings.get('stripePublishableKey')) {
+                this.stripePublishableKeyError = 'Enter your publishable key to continue';
             }
-        } else {
+
+            if (!this.settings.get('stripeSecretKey')) {
+                this.stripeSecretKeyError = 'Enter your secret key to continue';
+            }
+
+            if (this.stripePublishableKeyError || this.stripeSecretKeyError) {
+                return false;
+            }
+        } else if (!this.settings.get('stripeConnectIntegrationToken')) {
             this.stripeConnectError = 'Paste your secure key to continue';
             return false;
+        }
+
+        try {
+            yield this.settings.save();
+            this.pauseAndContinue.perform();
+            return true;
+        } catch (error) {
+            if (error.payload?.errors && error.payload.errors[0].type === 'ValidationError') {
+                const [validationError] = error.payload.errors;
+
+                if (this.config.get('stripeDirect')) {
+                    if (validationError.context.match(/stripe_publishable_key/)) {
+                        this.stripePublishableKeyError = 'Invalid publishable key';
+                    } else {
+                        this.stripeSecretKeyError = 'Invalid secret key';
+                    }
+                } else {
+                    this.stripeConnectError = 'Invalid secure key';
+                }
+
+                return false;
+            }
+
+            throw error;
         }
     }
 

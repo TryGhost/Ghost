@@ -19,20 +19,22 @@
                     <GhTextInput
                         @id="stripe-publishable-key"
                         @type="password"
-                        @value={{readonly this.settings.stripeDirectPublicKey}}
+                        @value={{readonly this.settings.stripePublishableKey}}
                         class="mt1 password"
                         {{on "input" this.setStripeDirectPublicKey}}
                     />
+                    {{#if this.stripePublishableKeyError}}<p class="mb0 mt2 f8 red">{{this.stripePublishableKeyError}}</p>{{/if}}
                 </div>
                 <div>
                     <label for="stripe-secret-key" class="gh-setting-title">Stripe Secret key</label>
                     <GhTextInput
                         @id="stripe-secret-key"
                         @type="password"
-                        @value={{readonly this.settings.stripeDirectSecretKey}}
+                        @value={{readonly this.settings.stripeSecretKey}}
                         class="mt1 password"
                         {{on "input" this.setStripeDirectSecretKey}}
                     />
+                    {{#if this.stripeSecretKeyError}}<p class="mb0 mt2 f8 red">{{this.stripeSecretKeyError}}</p>{{/if}}
                     <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" rel="noopener noreferrer" class="mt1 fw4 f8">
                         Find your Stripe API keys here &raquo;
                     </a>
