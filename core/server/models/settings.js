@@ -384,11 +384,11 @@ Settings = ghostBookshelf.Model.extend({
                 return;
             }
 
-            const secretKeyRegex = /pk_(?:test|live)_[\da-zA-Z]{1,247}$/;
+            const publishableKeyRegex = /pk_(?:test|live)_[\da-zA-Z]{1,247}$/;
 
-            if (!secretKeyRegex.test(value)) {
+            if (!publishableKeyRegex.test(value)) {
                 throw new errors.ValidationError({
-                    message: `stripe_secret_key did not match ${secretKeyRegex}`
+                    message: `stripe_publishable_key did not match ${publishableKeyRegex}`
                 });
             }
         },
@@ -412,11 +412,11 @@ Settings = ghostBookshelf.Model.extend({
                 return;
             }
 
-            const secretKeyRegex = /pk_(?:test|live)_[\da-zA-Z]{1,247}$/;
+            const publishableKeyRegex = /pk_(?:test|live)_[\da-zA-Z]{1,247}$/;
 
-            if (!secretKeyRegex.test(value)) {
+            if (!publishableKeyRegex.test(value)) {
                 throw new errors.ValidationError({
-                    message: `stripe_secret_key did not match ${secretKeyRegex}`
+                    message: `stripe_publishable_key did not match ${publishableKeyRegex}`
                 });
             }
         }
