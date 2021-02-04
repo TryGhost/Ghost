@@ -12,7 +12,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
         title: {type: 'string', maxlength: 2000, nullable: false, validations: {isLength: {max: 255}}},
-        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        slug: {type: 'string', maxlength: 191, nullable: false},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         comment_id: {type: 'string', maxlength: 50, nullable: true},
@@ -57,7 +57,10 @@ module.exports = {
         codeinjection_head: {type: 'text', maxlength: 65535, nullable: true},
         codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true},
         custom_template: {type: 'string', maxlength: 100, nullable: true},
-        canonical_url: {type: 'text', maxlength: 2000, nullable: true}
+        canonical_url: {type: 'text', maxlength: 2000, nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['slug', 'type']
+        ]
     },
     posts_meta: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

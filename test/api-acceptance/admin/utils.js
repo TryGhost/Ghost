@@ -28,11 +28,12 @@ const expectedProperties = {
 
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobildoc
         .without('html', 'plaintext')
         .without('locale')
         .without('page')
-        // v2 API doesn't return new type field
+        // API should not return type field
         .without('type')
         // deprecated
         .without('author_id', 'author')
@@ -48,6 +49,7 @@ const expectedProperties = {
 
     page: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobildoc
         .without('html', 'plaintext')
         .without('locale')
