@@ -3,7 +3,7 @@
     {{on "mouseleave" this.mouseLeave}}
     ...attributes
 >
-    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title" @title="Edit this {{@post.displayName}}">
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title">
         <h3 class="gh-content-entry-title">
             {{@post.title}}
         </h3>
@@ -22,7 +22,7 @@
     </LinkTo>
 
     {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients" @title="Edit this {{@post.displayName}}">
+        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
             <div class="flex fw4">
                 {{#if (or @post.email @post.willEmail)}}
                     {{#if (eq @post.email.status "submitted")}}
@@ -35,7 +35,7 @@
             </div>
         </LinkTo>
 
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens" @title="Edit this {{@post.displayName}}">
+        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
                 <div class="flex">
                     <span class="darkgrey fw5 gh-content-email-stats">
@@ -51,7 +51,7 @@
         </LinkTo>
     {{/if}}
 
-    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status" @title="Edit this {{@post.displayName}}">
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
         <div class="flex items-center">
             {{#if @post.isScheduled}}
             <span class="gh-content-status-draft gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">

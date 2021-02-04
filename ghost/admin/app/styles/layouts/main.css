@@ -1,8 +1,8 @@
 :root {
     /* Main menu variables */
-    --mainmenu-color-hover-bg: var(--whitegrey-l1);
+    --mainmenu-color-hover-bg: var(--whitegrey);
     --mainmenu-color-active: var(--black);
-    --mainmenu-color-active-bg: var(--whitegrey-l1);
+    --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 340px;
     --mainmenu-padding: var(--main-area-padding);
 }
