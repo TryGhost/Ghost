@@ -80,7 +80,7 @@
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger,
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger:hover {
     color: var(--black);
-    font-weight: 500;
+    font-weight: 600;
     background: var(--whitegrey);
 }
 

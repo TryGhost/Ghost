@@ -3,7 +3,7 @@
 >
 
     {{!-- Chart title/filter graph --}}
-    <div class="flex-auto gh-content-box mr6 gh-members-chart-box">
+    <div class="flex-auto gh-content-box gh-members-chart-box">
         <div class="flex justify-between items-center gh-members-chart-header">
             <h2 class="f-small ttu white fw5 mb0">Total members</h2>
             <div class="view-actions">
@@ -43,12 +43,12 @@
     </div>
 
     {{!-- Summary --}}
-    <div class="gh-content-box gh-members-chart-summary flex flex-column justify-between">
-        <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
+    <div class="gh-content-box grey gh-members-chart-summary flex flex-column justify-between">
+        <div class="flex-auto flex flex-column justify-center items-start pa4">
             <h3 class="f-small ttu black fw5">Total Members</h3>
             <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.total)}}</div>
         </div>
-        <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
+        <div class="flex-auto flex flex-column justify-center items-start pa4">
             {{#if (eq this.selectedRange.days "all-time")}}
                 <h3 class="f-small ttu black fw5">All time signups</h3>
             {{else}}

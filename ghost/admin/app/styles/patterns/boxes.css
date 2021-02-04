@@ -66,6 +66,11 @@
 
 .gh-content-box {
     border: 1px solid var(--main-area-divider-color);
-    border-radius: 7px;
+    border-radius: 4px;
     background: var(--white);
+}
+
+.gh-content-box.grey {
+    border: none;
+    background: var(--whitegrey-l1);
 }
