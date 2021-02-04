@@ -48,6 +48,14 @@
     background: var(--white);
 }
 
+.gh-main-grey {
+    background: var(--whitegrey-l2);
+}
+
+.gh-main-grey-gradient {
+    background: linear-gradient(315deg,var(--whitegrey-l2),var(--white));
+}
+
 /*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
 .gh-main > section {
     width: 100%;
@@ -909,6 +917,15 @@
     border-color: transparent;
 }
 
+.gh-main-grey .gh-canvas-header {
+    background: var(--whitegrey-l2);
+}
+
+.gh-main-grey-gradient .gh-canvas-header {
+    background: transparent;
+    position: relative;
+}
+
 .gh-canvas-header-content {
     height: calc(var(--main-vertical-panel-height) - 1px);
     position: relative;
@@ -1065,6 +1082,7 @@
 .view-actions .gh-btn {
     border: none;
     box-shadow: none;
+    background: color-mod(var(--whitegrey-l1) l(-3%));
 }
 
 .view-actions .gh-btn:hover {

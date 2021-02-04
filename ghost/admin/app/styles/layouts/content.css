@@ -67,21 +67,11 @@
     background: var(--whitegrey);
 }
 
-.gh-contentfilter-type .gh-contentfilter-menu-trigger {
-    border-top-left-radius: 4px !important;
-    border-bottom-left-radius: 4px !important;
-}
-
-.gh-contentfilter-menu:last-of-type .gh-contentfilter-menu-trigger {
-    border-top-right-radius: 4px !important;
-    border-bottom-right-radius: 4px !important;
-}
-
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger,
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger:hover {
-    color: var(--black);
+    color: var(--green);
     font-weight: 600;
-    background: var(--whitegrey);
+    background: var(--whitegrey-l1);
 }
 
 .gh-contentfilter-menu-trigger svg path {
@@ -135,6 +125,7 @@
     display: flex;
     height: 33px;
     line-height: 33px;
+    background: color-mod(var(--whitegrey-l1) l(-3%));
 }
 
 

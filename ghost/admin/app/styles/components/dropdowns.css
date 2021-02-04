@@ -24,8 +24,8 @@
     min-width: 200px;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 5px;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 7px 20px -5px rgba(0,0,0,.15);
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
     list-style: none;
     text-align: left;
     text-transform: none;
@@ -56,7 +56,7 @@
     clear: both;
     padding: 6px 14px;
     width: 100%;
-    color: var(--middarkgrey);
+    color: var(--darkgrey);
     text-align: left;
     white-space: nowrap;
     font-size: 1.3rem;

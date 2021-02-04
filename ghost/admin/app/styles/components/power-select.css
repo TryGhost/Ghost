@@ -195,12 +195,12 @@
 .ember-power-select-multiple-option {
     margin: 2px;
     padding: 2px 6px;
-    border: 1px solid #3fb0ef;
+    border: 1px solid var(--black);
     border-radius: 3px;
     font-size: 0.93em;
     font-weight: 500;
     color: white;
-    background: #3fb0ef;
+    background: var(--black);
 }
 
 .ember-power-select-multiple-remove-btn {
@@ -247,13 +247,13 @@
 /* Tag input */
 
 .tag-token--internal {
-    background: color-mod(var(--blue) alpha(0.1));
-    color: var(--blue);
+    background: color-mod(var(--green) alpha(0.1));
+    color: var(--green);
 }
 
 .tag-token--internal svg path {
-    stroke: var(--blue);
-    fill: var(--blue);
+    stroke: var(--green);
+    fill: var(--green);
 }
 
 /* Inside settings / Mailgun region */
