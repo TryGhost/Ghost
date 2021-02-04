@@ -52,20 +52,19 @@
     color: var(--darkgrey);
     letter-spacing: 0.2px;
     height: 33px;
-    padding: 5px 10px 6px 10px;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 5px 12px 6px;
+    margin-right: 8px;
     outline: none;
     border: none;
-    border-right: 1px solid var(--whitegrey-l2);
-    border-radius: 0;
+    border-radius: 2px !important;
     white-space: nowrap;
     transition: all 0.25s ease;
 }
 
 .gh-contentfilter-menu-trigger:hover {
     cursor: pointer;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
     color: var(--darkgrey);
+    background: var(--whitegrey);
 }
 
 .gh-contentfilter-type .gh-contentfilter-menu-trigger {
@@ -80,12 +79,13 @@
 
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger,
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger:hover {
-    color: var(--blue);
+    color: var(--black);
     font-weight: 500;
+    background: var(--whitegrey);
 }
 
 .gh-contentfilter-menu-trigger svg path {
-    stroke: color-mod(var(--midgrey) l(-7%));
+    stroke: var(--black);
 }
 
 .gh-contentfilter .ember-power-select-selected-item,
@@ -124,10 +124,11 @@
     width: 18px;
     height: 18px;
     margin: 2px 0 0;
+    color: var(--black);
 }
 
 .gh-contentfilter-actions svg g {
-    stroke: var(--middarkgrey);
+    stroke: var(--black);
 }
 
 .gh-contentfilter-button {

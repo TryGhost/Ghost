@@ -103,7 +103,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    background: linear-gradient(315deg,var(--whitegrey-l2),var(--white));
+    /* background: linear-gradient(315deg,var(--whitegrey-l2),var(--white)); */
     transform: translateX(0);
     border-right: 1px solid var(--main-area-divider-color);
 }
@@ -114,7 +114,6 @@
     align-items: center;
     height: var(--main-vertical-panel-height);
     padding: var(--mainmenu-padding);
-    border-bottom: 1px solid var(--main-area-divider-color);
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
@@ -301,6 +300,10 @@
     line-height: 1.6em;
 }
 
+.gh-nav-list:first-of-type {
+    margin-top: 0;
+}
+
 .gh-nav-list li {
     margin: 0;
     padding: 0;
@@ -340,23 +343,20 @@
 .gh-nav-list .active {
     position: relative;
     color: var(--mainmenu-color-active);
-    background: var(--mainmenu-color-active-bg);
     font-weight: 700;
     /* border: 1px solid var(--black);
     padding: 7px calc(var(--mainmenu-padding) - 2px) 7px calc(var(--mainmenu-padding) + 5px); */
 }
 
-/* .gh-nav-list .active::after {
+.gh-nav-list .active::after {
     content: "";
     position: absolute;
-    width: 36px;
-    height: 36px;
+    width: 4px;
     top: 0;
     bottom: 0;
-    left: 30px;
-    border-radius: 999px;
-    background: var(--lime);
-} */
+    left: 0;
+    background: var(--black);
+}
 
 .gh-nav-list a:not(.active):hover,
 .gh-nav-list button.main-menu-item:hover {
@@ -370,7 +370,7 @@
     margin-right: 17px;
     width: 18px;
     height: 18px;
-    fill: var(--darkgrey);
+    fill: var(--midgrey);
     line-height: 1;
     transition: none;
     z-index: 999;
@@ -386,7 +386,7 @@
 }
 
 .gh-nav-list .active svg {
-    fill: #8FD200;
+    fill: var(--black);
 }
 
 .gh-nav-list a svg g,
@@ -594,7 +594,6 @@
 .gh-nav-bottom {
     margin: 0;
     padding: var(--mainmenu-padding);
-    border-top: 1px solid var(--main-area-divider-color);
 }
 
 .gh-nav-bottom .ember-basic-dropdown-trigger {
@@ -906,7 +905,8 @@
     top: 0;
     background: var(--main-bg-color);
     z-index: 700;
-    border-bottom: 1px solid var(--main-area-divider-color);
+    border-bottom: 1px solid;
+    border-color: transparent;
 }
 
 .gh-canvas-header-content {
@@ -937,7 +937,7 @@
     padding: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 3.3rem;
+    font-size: 3.1rem;
     line-height: 1.2em;
     font-weight: 700;
     letter-spacing: 0px;
@@ -1043,7 +1043,7 @@
 .view-content {
     position: relative;
     flex-grow: 1;
-    padding-top: var(--main-area-padding);
+    padding-top: 0;
     padding-bottom: var(--main-area-padding);
 }
 
