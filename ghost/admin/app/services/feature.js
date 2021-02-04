@@ -52,6 +52,7 @@ export default Service.extend({
 
     emailAnalytics: feature('emailAnalytics'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
+    launchComplete: feature('launchComplete', {user: true}),
 
     _user: null,
 
