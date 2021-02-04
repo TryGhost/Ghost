@@ -652,7 +652,7 @@
 
 .nightshift-toggle {
     position: relative;
-    height: 24px;
+    height: 22px;
     width: 42px;
     background: var(--black);
     border-radius: 999px;
@@ -664,8 +664,8 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     background-color: var(--white);
     border-radius: 999px;
     transition: all ease-in-out 0.3s;
@@ -678,15 +678,15 @@
 
 .nightshift-toggle .sun {
     position: absolute;
-    top: 6px;
-    left: 24px;
+    top: 5px;
+    right: 6px;
     color: var(--white);
     line-height: 1;
 }
 
 .nightshift-toggle .moon {
     position: absolute;
-    top: 6px;
+    top: 5px;
     left: 6px;
     color: var(--white);
     line-height: 1;
