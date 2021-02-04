@@ -21,6 +21,7 @@ const expectedProperties = {
 
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobiledoc
         .without('html', 'plaintext')
         .without('locale')
