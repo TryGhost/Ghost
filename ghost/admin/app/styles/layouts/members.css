@@ -51,7 +51,6 @@
 
 .members-list {
     table-layout: fixed;
-    margin-top: var(--main-area-padding);
 }
 
 .members-list .gh-list-row.header {
@@ -92,21 +91,16 @@
 
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
-    padding-left: 30px;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
+    padding-left: 32px;
+    border: none;
+    background: var(--whitegrey-l1);
 }
 
 .members-header .view-actions .gh-input-search-icon {
-    width: 14px;
-    height: 14px;
-    top: 10px;
-    left: 10px;
-}
-
-.dropdown-topmenu .gh-contentfilter-menu-trigger {
-    border-top-left-radius: 4px !important;
-    border-bottom-left-radius: 4px !important;
+    width: 16px;
+    height: 16px;
+    top: 9px;
+    left: 9px;
 }
 
 .gh-members-list-searchfield.active {
@@ -161,9 +155,11 @@ p.gh-members-list-email {
 }
 
 .members-header .gh-members-header-search {
-    margin-right: 12px;
-    border-right: 1px solid var(--lightgrey-d2);
-    padding-right: 12px;
+    margin-right: 32px;
+}
+
+.gh-members-chart {
+    padding-bottom: var(--main-area-padding);
 }
 
 .gh-members-chart-box {
