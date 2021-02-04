@@ -16,7 +16,7 @@ describe('Acceptance: Launch flow', function () {
 
     describe('when logged in', function () {
         beforeEach(async function () {
-            let role = this.server.create('role', {name: 'Administrator'});
+            let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
             return await authenticateSession();
