@@ -1,18 +1,18 @@
-{{#if this.config.stripeDirect}}
-    <div class="gh-launch-wizard-settings-container">
-        <div class="gh-stack overflow-scroll flex-grow-1">
-            <div class="gh-stack-item gh-setting-first">
-                <div class="gh-launch-wizard-stripe-info">
-                    <div class="flex justify-between items-center mb2">
-                        <div class="gh-setting-title">How you get paid</div>
-                        {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
-                    </div>
-                    <div class="gh-setting-desc">
-                        Stripe is our exclusive direct payments partner.<br />
-                        Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
-                    </div>
+<div class="gh-launch-wizard-settings-container">
+    <div class="gh-stack overflow-scroll flex-grow-1">
+        <div class="gh-stack-item gh-setting-first">
+            <div class="gh-launch-wizard-stripe-info">
+                <div class="flex justify-between items-center mb2">
+                    <div class="gh-setting-title">How you get paid</div>
+                    {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+                </div>
+                <div class="gh-setting-desc">
+                    Stripe is our exclusive direct payments partner.<br />
+                    Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
                 </div>
             </div>
+        </div>
+        {{#if this.config.stripeDirect}}
             <div class="gh-stack-item gh-setting flex-column">
                 <div class="mb4">
                     <label for="stripe-publishable-key" class="gh-setting-title">Stripe Publishable key</label>
@@ -41,73 +41,77 @@
                 </div>
             </div>
             <div class="gh-setting-desc"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
-        </div>
-        <div class="gh-launch-wizard-nav-buttons">
-            <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
-
-            {{!-- TODO: reset "failed" state automatically --}}
-            <GhTaskButton
-                @buttonText="Save and continue"
-                @task={{this.saveAndContinue}}
-                @runningText="Saving"
-                @class="right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
-                data-test-button="wizard-next"
-            />
-        </div>
-    </div>
-{{else}}
-    <div class="gh-launch-wizard-settings-container">
-        <div class="gh-stack overflow-scroll flex-grow-1">
-            <div class="gh-stack-item gh-setting-first">
-                <div class="gh-launch-wizard-stripe-info">
-                    <div class="flex justify-between items-center mb2">
-                        <div class="gh-setting-title">How you get paid</div>
-                        {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
-                    </div>
-                    <div class="gh-setting-desc">
-                        Stripe is our exclusive direct payments partner.<br />
-                        Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
-                    </div>
-                </div>
-            </div>
+        {{else}}
             <div class="gh-stack-item gh-setting">
                 <div class="w-100">
-                    <div class="gh-setting-title">Generate secure key</div>
-                    <div class="flex items-center mb4 justify-between mt2">
-                        <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
-                        <div class="ml2 flex items-center flex-nowrap">
-                            <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
-                            <div class="for-switch small">
-                                <label class="switch" for="stripe-connect-test-mode" {{on "click" this.toggleStripeConnectTestMode}}>
-                                    <input type="checkbox" class="gh-input" checked={{this.stripeConnectTestMode}} {{on "click" this.toggleStripeConnectTestMode}} data-test-checkbox="stripe-connect-test-mode">
-                                    <span class="input-toggle-component mt1"></span>
-                                </label>
+                    {{!-- Stripe already configured --}}
+                    {{#if this.settings.stripeConnectAccountId}}
+                        <h4 class="gh-setting-title">Already connected to Stripe</h4>
+                        <p class="gh-setting-desc pa0 ma0">
+                            Connected to <a href="https://dashboard.stripe.com/{{this.settings.stripeConnectAccountId}}" target="_blank">{{this.settings.stripeConnectDisplayName}}</a>
+
+                            {{#unless this.settings.stripeConnectLivemode}}
+                                <span class="gh-members-connect-testmodelabel">Test mode</span>
+                            {{/unless}}
+                        </p>
+                        {{#if this.hasActiveStripeSubscriptions}}
+                            <p class="red ma0 pa0 f8 nudge-bottom--2">
+                                Cannot disconnect while there are members with active Stripe subscriptions.
+                            </p>
+                        {{else}}
+                            <div class="gh-setting-action">
+                                <button type="button" class="gh-btn" {{on "click" (perform this.openDisconnectStripeConnectModalTask)}}><span>Disconnect</span></button>
+                            </div>
+                        {{/if}}
+                    {{!-- Stripe not yet configured --}}
+                    {{else}}
+                        <div class="gh-setting-title">Generate secure key</div>
+                        <div class="flex items-center mb4 justify-between mt2">
+                            <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
+                            <div class="ml2 flex items-center flex-nowrap">
+                                <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
+                                <div class="for-switch small">
+                                    <label class="switch" for="stripe-connect-test-mode" {{on "click" this.toggleStripeConnectTestMode}}>
+                                        <input type="checkbox" class="gh-input" checked={{this.stripeConnectTestMode}} {{on "click" this.toggleStripeConnectTestMode}} data-test-checkbox="stripe-connect-test-mode">
+                                        <span class="input-toggle-component mt1"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="gh-setting-action">
-                        <GhTextarea
-                            class="gh-launch-wizard-stripe-connect-token"
-                            placeholder="Paste your secure key here"
-                            {{on "input" this.setStripeConnectIntegrationToken}}
-                        />
-                        {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
-                    </div>
-                    <div class="gh-setting-desc mt4"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
+                        <div class="gh-setting-action">
+                            <GhTextarea
+                                class="gh-launch-wizard-stripe-connect-token"
+                                placeholder="Paste your secure key here"
+                                {{on "input" this.setStripeConnectIntegrationToken}}
+                            />
+                            {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
+                        </div>
+                        <div class="gh-setting-desc mt4"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
+                    {{/if}}
                 </div>
             </div>
-        </div>
-        <div class="gh-launch-wizard-nav-buttons">
-            <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
-
-            {{!-- TODO: reset "failed" state automatically --}}
-            <GhTaskButton
-                @buttonText="Save and continue"
-                @task={{this.saveAndContinue}}
-                @runningText="Saving"
-                @class="right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
-                data-test-button="wizard-next"
-            />
-        </div>
+        {{/if}}
     </div>
+    <div class="gh-launch-wizard-nav-buttons">
+        <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
+
+        <GhTaskButton
+            @buttonText="Save and continue"
+            @task={{this.saveAndContinueTask}}
+            @runningText="Saving"
+            @class="right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
+            data-test-button="wizard-next"
+        />
+    </div>
+</div>
+
+{{#if this.showDisconnectStripeConnectModal}}
+    <GhFullscreenModal
+        @modal="disconnect-stripe"
+        @model={{hash
+            stripeConnectAccountName=this.settings.stripeConnectDisplayName
+        }}
+        @confirm={{perform this.disconnectStripeConnectIntegrationTask}}
+        @close={{this.closeDisconnectStripeModal}}
+        @modifier="action wide" />
 {{/if}}

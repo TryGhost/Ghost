@@ -6,10 +6,13 @@ import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhLaunchWizardConnectStripeComponent extends Component {
+    @service ajax;
     @service config;
     @service ghostPaths;
     @service settings;
 
+    @tracked hasActiveStripeSubscriptions = false;
+    @tracked showDisconnectStripeConnectModal = false;
     @tracked stripeConnectTestMode = false;
     @tracked stripeConnectError = null;
     @tracked stripePublishableKeyError = null;
@@ -56,8 +59,37 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         this.stripeConnectError = null;
     }
 
+    @task({drop: true})
+    *openDisconnectStripeConnectModalTask() {
+        this.hasActiveStripeSubscriptions = false;
+
+        const url = this.ghostPaths.url.api('/members/hasActiveStripeSubscriptions');
+        const response = yield this.ajax.request(url);
+
+        if (response.hasActiveStripeSubscriptions) {
+            this.hasActiveStripeSubscriptions = true;
+            return;
+        }
+
+        this.showDisconnectStripeConnectModal = true;
+    }
+
+    @action
+    closeDisconnectStripeModal() {
+        this.showDisconnectStripeConnectModal = false;
+    }
+
     @task
-    *saveAndContinue() {
+    *disconnectStripeConnectIntegrationTask() {
+        this.disconnectStripeError = false;
+        const url = this.ghostPaths.url.api('/settings/stripe/connect');
+
+        yield this.ajax.delete(url);
+        yield this.settings.reload();
+    }
+
+    @task
+    *saveAndContinueTask() {
         if (this.config.get('stripeDirect')) {
             if (!this.settings.get('stripePublishableKey')) {
                 this.stripePublishableKeyError = 'Enter your publishable key to continue';
@@ -70,14 +102,19 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
             if (this.stripePublishableKeyError || this.stripeSecretKeyError) {
                 return false;
             }
-        } else if (!this.settings.get('stripeConnectIntegrationToken')) {
+        } else if (!this.settings.get('stripeConnectAccountId') && !this.settings.get('stripeConnectIntegrationToken')) {
             this.stripeConnectError = 'Paste your secure key to continue';
             return false;
         }
 
+        if (!this.config.get('stripeDirect') && this.settings.get('stripeConnectAccountId')) {
+            this.args.nextStep();
+            return true;
+        }
+
         try {
             yield this.settings.save();
-            this.pauseAndContinue.perform();
+            this.pauseAndContinueTask.perform();
             return true;
         } catch (error) {
             if (error.payload?.errors && error.payload.errors[0].type === 'ValidationError') {
@@ -92,8 +129,6 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
                 } else {
                     this.stripeConnectError = 'Invalid secure key';
                 }
-
-                return false;
             }
 
             throw error;
@@ -101,7 +136,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     }
 
     @task
-    *pauseAndContinue() {
+    *pauseAndContinueTask() {
         yield timeout(500);
         this.args.nextStep();
     }
