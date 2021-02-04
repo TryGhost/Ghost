@@ -168,7 +168,8 @@ function createApiInstance(config) {
             },
             StripeCustomer: models.MemberStripeCustomer,
             StripeCustomerSubscription: models.StripeCustomerSubscription,
-            Member: models.Member
+            Member: models.Member,
+            MemberSubscribeEvent: models.MemberSubscribeEvent
         },
         logger: logging
     });
