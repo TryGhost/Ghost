@@ -47,7 +47,7 @@
 .gh-contentfilter-menu-trigger:focus,
 .gh-contentfilter-menu-trigger--active {
     background: var(--white);
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     font-weight: 400;
     color: var(--darkgrey);
     letter-spacing: 0.2px;
@@ -98,7 +98,7 @@
     margin-top: 6px;
     padding: 6px 0;
     border: none !important;
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 7px 20px -5px rgba(0,0,0,.15);
     border-radius: 5px !important;
 }

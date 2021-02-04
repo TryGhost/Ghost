@@ -25,8 +25,8 @@
     display: block;
     overflow: hidden;
     padding: 0 11px;
-    height: 35px;
-    font-size: 1.3rem;
+    height: 33px;
+    font-size: 1.35rem;
     line-height: 33px;
     font-weight: 500;
     text-align: center;
@@ -115,7 +115,7 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 .gh-btn-primary,
 .gh-btn-primary:hover {
-    background: var(--black);
+    background: var(--black) !important;
     border: none;
     color: var(--white);
     font-weight: 600;
@@ -490,7 +490,6 @@ Usage: CTA buttons grouped together horizontally.
     margin: 0;
     background: none;
     box-shadow: none;
-    min-width: 120px;
     margin: 2px;
     border-radius: 2px;
 }
