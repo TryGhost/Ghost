@@ -18,10 +18,6 @@
     text-transform: uppercase;
 }
 
-.gh-launch-wizard-preview-container {
-    max-height: 760px;
-}
-
 .gh-launch-wizard-preview {
     box-shadow: 
         0 0 0 1px rgba(0,0,0,0.02),
@@ -35,10 +31,11 @@
 }
 
 .gh-launch-wizard-settings-container {
+    display: flex;
+    flex-direction: column;
     height: calc(100vh - 136px);
     min-width: 320px;
-    margin: 40px 80px -30px 0;
-    overflow: scroll;
+    margin: 40px 48px 0 0;
 }
 
 .gh-launch-wizard-settings-container .gh-setting-action-largeimg-delete,
@@ -58,6 +55,14 @@
 .gh-launch-wizard-settings-container .gh-setting-action-smallimg-delete:hover {
     border-color: transparent;
     background: var(--red);
+}
+
+.gh-launch-wizard-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5.6rem;
+    padding-top: 2.4rem;
+    line-height: 0;
 }
 
 

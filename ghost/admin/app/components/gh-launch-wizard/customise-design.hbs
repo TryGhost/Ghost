@@ -1,6 +1,6 @@
     <div class="gh-branding-settings">
         <section class="gh-launch-wizard-settings-container">
-            <div class="gh-stack mb8">
+            <div class="gh-stack overflow-scroll flex-grow-1">
                 <div class="gh-stack-item gh-setting-first">
                     <div class="gh-setting-content">
                         <div class="gh-setting-title">Accent color</div>
@@ -118,7 +118,7 @@
                     </div>
                     </GhUploader>
                 </div>
-                <div class="gh-stack-item gh-setting bb b--whitegrey" data-test-setting="coverImage">
+                <div class="gh-stack-item gh-setting" data-test-setting="coverImage">
                     <GhUploader
                         @extensions={{this.imageExtensions}}
                         @onComplete={{action "imageUploaded" "coverImage"}}
@@ -153,9 +153,10 @@
                     </div>
                     </GhUploader>
                 </div>
-                <div>
-                    <button type="button" class="gh-btn gh-btn-black mt4" {{on "click" @nextStep}} data-test-button="wizard-next"><span>Next step</span></button>
-                </div>
+            </div>
+
+            <div class="gh-launch-wizard-nav-buttons">
+                <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @nextStep}} data-test-button="wizard-next"><span>Next step</span></button>
             </div>
         </section>
     </div>
