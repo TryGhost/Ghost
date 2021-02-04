@@ -65,6 +65,23 @@ fieldset[disabled] .gh-btn {
     vertical-align: middle;
 }
 
+/* Primary button
+/* ---------------------------------------------------------- */
+.gh-btn-primary,
+.gh-btn-black {
+    background: var(--black) !important;
+    border: none;
+    color: var(--white) !important;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.gh-btn-primary:hover,
+.gh-btn-black:hover {
+    background: color-mod(var(--black) l(-20%)) !important;
+}
+
+
 /* Button highlights
 /* ---------------------------------------------------------- */
 
@@ -109,22 +126,6 @@ fieldset[disabled] .gh-btn {
 .gh-btn-grey:focus span {
     background: color-mod(var(--lightgrey) l(+15%));
     box-shadow: none;
-}
-
-/* Primary button
-/* ---------------------------------------------------------- */
-.gh-btn-primary,
-.gh-btn-black {
-    background: var(--black) !important;
-    border: none;
-    color: var(--white);
-    font-weight: 600;
-    box-shadow: none;
-}
-
-.gh-btn-primary:hover,
-.gh-btn-black:hover {
-    background: color-mod(var(--black) l(-20%));
 }
 
 
@@ -447,7 +448,7 @@ Usage: CTA buttons grouped together horizontally.
     border: none;
     background: none;
     margin: 0;
-    background: none;
+    background: transparent !important;
     box-shadow: none;
     margin: 2px;
     border-radius: 2px;
@@ -458,6 +459,7 @@ Usage: CTA buttons grouped together horizontally.
     height: 31px;
     line-height: 31px;
     border-radius: 2px;
+    background: transparent !important;
 }
 
 .gh-btn-group .gh-btn-group-selected span {
@@ -465,7 +467,7 @@ Usage: CTA buttons grouped together horizontally.
     font-weight: 600;
     padding-left: 12px;
     padding-right: 12px;
-    background: var(--white);
+    background: var(--white) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 

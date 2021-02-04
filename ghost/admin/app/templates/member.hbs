@@ -21,30 +21,32 @@
                 {{/unless}}
             {{/if}}
 
-            <GhTaskButton @class="gh-btn gh-btn-blue gh-btn-icon" @type="button" @task={{this.saveTask}} @data-test-button="save" />
+            <GhTaskButton @class="gh-btn gh-btn-primary gh-btn-icon" @type="button" @task={{this.saveTask}} @data-test-button="save" />
         </section>
     </GhCanvasHeader>
 
-    <form class="member-basic-info-form">
-        <GhMemberSettingsForm
-            @member={{this.member}}
-            @scratchMember={{this.scratchMember}}
-            @setProperty={{this.setProperty}}
-            @isLoading={{this.isLoading}} />
-    </form>
+    <div class="gh-main-width">
+        <form class="member-basic-info-form">
+            <GhMemberSettingsForm
+                @member={{this.member}}
+                @scratchMember={{this.scratchMember}}
+                @setProperty={{this.setProperty}}
+                @isLoading={{this.isLoading}} />
+        </form>
 
-    {{#unless this.member.isNew}}
-        <div class="w-60">
-            <button
-                type="button"
-                class="gh-btn gh-btn-red gh-btn-icon mt14"
-                {{on "click" this.toggleDeleteMemberModal}}
-                data-test-button="delete-member"
-            >
-                <span>Delete member</span>
-            </button>
-        </div>
-    {{/unless}}
+        {{#unless this.member.isNew}}
+            <div class="w-60">
+                <button
+                    type="button"
+                    class="gh-btn gh-btn-red gh-btn-icon mt14"
+                    {{on "click" this.toggleDeleteMemberModal}}
+                    data-test-button="delete-member"
+                >
+                    <span>Delete member</span>
+                </button>
+            </div>
+        {{/unless}}
+    </div>
 </section>
 
 {{#if this.showUnsavedChangesModal}}

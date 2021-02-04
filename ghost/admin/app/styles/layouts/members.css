@@ -169,7 +169,7 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-header {
-    padding: 12px 16px;
+    padding: 12px 7px 12px 12px;
     margin-bottom: 10px;
     border-bottom: var(--darkgrey) 1px solid;
 }

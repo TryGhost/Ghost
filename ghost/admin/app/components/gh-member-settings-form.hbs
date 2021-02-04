@@ -1,5 +1,5 @@
 <div class="mt2 pb2 gh-member-settings" ...attributes>
-    <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column justify-between items-stretch gh-member-details">
+    <div class="flex-auto bg-grouped-table gh-content-box mt2 flex flex-column justify-between items-stretch gh-member-details">
         <div>
             <div class="flex items-center pa5 pb3">
                 {{#if (or this.member.name this.member.email)}}
@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-member-internal-info">
+    <div class="flex-auto bg-grouped-table gh-content-box grey mt2 flex flex-column items-stretch gh-member-internal-info">
         <div class="pa5">
             <GhFormGroup @classNames="gh-member-labels">
                 <label for="label-input">Labels</label>
@@ -117,13 +117,13 @@
             <h4 class="midlightgrey f-small fw5 ttu mt8 gh-member-label-stripe">Stripe info</h4>
 
             {{#if this.isLoading}}
-                <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
+                <div class="pa20 bg-grouped-table gh-content-box grey mt2">
                     <div class="flex justify-center flex-auto">
                         <div class="gh-loading-spinner"> </div>
                     </div>
                 </div>
             {{else}}
-                <div class="br4 shadow-1 bg-grouped-table mt2">
+                <div class="bg-grouped-table gh-content-box grey mt2">
                     {{#if this.subscriptions}}
                         <div class="gh-member-header-stripeinfo">
                             <div class="flex items-center justify-between gh-btn-group w-100 ma5 mb0">
