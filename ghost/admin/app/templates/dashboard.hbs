@@ -6,6 +6,8 @@
     </GhCanvasHeader>
 
     <section class="view-container gh-main-width">
-        <LinkTo @route="launch">Launch site - Finish setup</LinkTo>
+        {{#if this.session.user.isOwner}}
+            <LinkTo @route="launch">Launch site - Finish setup</LinkTo>
+        {{/if}}
     </section>
 </section>
