@@ -25,7 +25,7 @@
     display: block;
     overflow: hidden;
     padding: 0 11px;
-    height: 33px;
+    height: 35px;
     font-size: 1.3rem;
     line-height: 33px;
     font-weight: 400;
@@ -34,6 +34,15 @@
     border-radius: 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.gh-btn-large span {
+    height: 45px;
+    padding: 0 24px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 44px;
+    letter-spacing: .4px;
 }
 
 .gh-btn:hover {
@@ -263,9 +272,6 @@ fieldset[disabled] .gh-btn {
     color-mod(var(--darkgrey) l(-7%) saturation(-10%)) 90%,
     color-mod(var(--darkgrey) l(-4%) saturation(-10%))
     );
-    font-weight: 500;
-    height: 35px;
-    line-height: 35px;
 }
 
 /* When clicked or focused with keyboard */

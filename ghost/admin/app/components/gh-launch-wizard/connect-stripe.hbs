@@ -1,6 +1,6 @@
 {{#if this.config.stripeDirect}}
     <div class="gh-launch-wizard-settings-container">
-        <div class="gh-stack">
+        <div class="gh-stack overflow-scroll flex-grow-1">
             <div class="gh-stack-item gh-setting-first">
                 <div class="gh-launch-wizard-stripe-info">
                     <div class="flex justify-between items-center mb2">
@@ -13,7 +13,7 @@
                     </div>
                 </div>
             </div>
-            <div class="gh-stack-item gh-setting flex-column bb b--whitegrey">
+            <div class="gh-stack-item gh-setting flex-column">
                 <div class="mb4">
                     <label for="stripe-publishable-key" class="gh-setting-title">Stripe Publishable key</label>
                     <GhTextInput
@@ -40,24 +40,24 @@
                     </a>
                 </div>
             </div>
-            <div class="flex flex-row mt4 mb4">
-                <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
+            <div class="gh-setting-desc"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
+        </div>
+        <div class="gh-launch-wizard-nav-buttons">
+            <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
 
-                {{!-- TODO: reset "failed" state automatically --}}
-                <GhTaskButton
-                    @buttonText="Save and continue"
-                    @task={{this.saveAndContinue}}
-                    @runningText="Saving"
-                    @class="right gh-btn gh-btn-black gh-btn-icon"
-                    data-test-button="wizard-next"
-                />
-            </div>
-            <div class="gh-setting-desc"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip this step</a> if you don't want to offer paid subscriptions.</div>
+            {{!-- TODO: reset "failed" state automatically --}}
+            <GhTaskButton
+                @buttonText="Save and continue"
+                @task={{this.saveAndContinue}}
+                @runningText="Saving"
+                @class="right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
+                data-test-button="wizard-next"
+            />
         </div>
     </div>
 {{else}}
     <div class="gh-launch-wizard-settings-container">
-        <div class="gh-stack">
+        <div class="gh-stack overflow-scroll flex-grow-1">
             <div class="gh-stack-item gh-setting-first">
                 <div class="gh-launch-wizard-stripe-info">
                     <div class="flex justify-between items-center mb2">
@@ -70,11 +70,11 @@
                     </div>
                 </div>
             </div>
-            <div class="gh-stack-item gh-setting bb b--whitegrey">
+            <div class="gh-stack-item gh-setting">
                 <div class="w-100">
                     <div class="gh-setting-title">Generate secure key</div>
                     <div class="flex items-center mb4 justify-between mt2">
-                        <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect light-blue" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
+                        <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
                         <div class="ml2 flex items-center flex-nowrap">
                             <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
                             <div class="for-switch small">
@@ -93,21 +93,21 @@
                         />
                         {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
                     </div>
+                    <div class="gh-setting-desc mt4"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
                 </div>
             </div>
-            <div class="flex flex-row mt4 mb4">
-                <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
+        </div>
+        <div class="gh-launch-wizard-nav-buttons">
+            <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
 
-                {{!-- TODO: reset "failed" state automatically --}}
-                <GhTaskButton
-                    @buttonText="Save and continue"
-                    @task={{this.saveAndContinue}}
-                    @runningText="Saving"
-                    @class="right gh-btn gh-btn-black gh-btn-icon"
-                    data-test-button="wizard-next"
-                />
-            </div>
-            <div class="gh-setting-desc"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip this step</a> if you don't want to offer paid subscriptions.</div>
+            {{!-- TODO: reset "failed" state automatically --}}
+            <GhTaskButton
+                @buttonText="Save and continue"
+                @task={{this.saveAndContinue}}
+                @runningText="Saving"
+                @class="right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
+                data-test-button="wizard-next"
+            />
         </div>
     </div>
 {{/if}}
