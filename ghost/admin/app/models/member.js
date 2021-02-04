@@ -10,7 +10,7 @@ export default Model.extend(ValidationEngine, {
     email: attr('string'),
     note: attr('string'),
     createdAtUTC: attr('moment-utc'),
-    subscriptions: attr('member-subscription'),
+    stripe: attr('member-subscription'),
     subscribed: attr('boolean', {defaultValue: true}),
     comped: attr('boolean', {defaultValue: false}),
     geolocation: attr('json-string'),
