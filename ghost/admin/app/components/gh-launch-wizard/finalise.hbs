@@ -6,6 +6,12 @@
     </div>
     <div class="gh-launch-wizard-nav-buttons">
         <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
-        <LinkTo @route="dashboard" class="gh-btn gh-btn-black gh-btn-large"><span>Launch your site!</span></LinkTo>
+        <GhTaskButton
+            @task={{this.finaliseTask}}
+            @buttonText="Launch your site!"
+            @runningText="Launching..."
+            @class="gh-btn gh-btn-black gh-btn-large gh-btn-icon"
+            data-test-button="wizard-finish"
+        />
     </div>
 </div>
