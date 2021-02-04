@@ -8,11 +8,10 @@
     outline: none;
     background: var(--white);
     box-shadow: 0 2px 5px -3px rgba(0,0,0,.12);
-    color: color-mod(var(--midgrey) l(-7%));
+    color: var(--darkgrey);
     text-decoration: none !important;
     user-select: none;
-    fill: color-mod(var(--midgrey) l(-7%));
-    border: 1px solid color-mod(var(--midgrey) l(+35%) s(+10%));
+    fill: var(--white);
     border-radius: 3px;
     transition: all 0.2s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
@@ -31,7 +30,7 @@
     font-weight: 500;
     text-align: center;
     letter-spacing: 0.2px;
-    border-radius: 4px;
+    border-radius: 3px;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
@@ -114,7 +113,7 @@ fieldset[disabled] .gh-btn {
 /* Primary button
 /* ---------------------------------------------------------- */
 .gh-btn-primary,
-.gh-btn-primary:hover {
+.gh-btn-black {
     background: var(--black) !important;
     border: none;
     color: var(--white);
@@ -122,7 +121,8 @@ fieldset[disabled] .gh-btn {
     box-shadow: none;
 }
 
-.gh-btn-primary:hover {
+.gh-btn-primary:hover,
+.gh-btn-black:hover {
     background: color-mod(var(--black) l(-20%));
 }
 
@@ -133,7 +133,6 @@ fieldset[disabled] .gh-btn {
 /* The background of the button creates 1px gradient border */
 .gh-btn-blue,
 .gh-btn-blue:hover {
-    border: 1px solid color-mod(var(--blue) s(-5%));
     color: #fff;
     fill: #fff;
     box-shadow: none;
@@ -146,22 +145,22 @@ fieldset[disabled] .gh-btn {
 
 /* The background of the span is the main visual element */
 .gh-btn-blue span {
-    background: linear-gradient(color-mod(var(--blue) l(+6%) s(-1%)), color-mod(var(--blue) l(-6%) saturation(-8%)));
+    background: var(--blue);
     font-weight: 500;
 }
 
 .gh-btn-blue:hover span {
-    background: linear-gradient(color-mod(var(--blue) l(+9%) s(-1%)), color-mod(var(--blue) l(-3%) saturation(-3%)));
+    background: color-mod(var(--blue) l(+5%));
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-blue:active,
 .gh-btn-blue:focus {
-    background: color-mod(var(--blue) l(-20%) saturation(-15%));
+    background: var(--blue);
 }
 .gh-btn-blue:active span,
 .gh-btn-blue:focus span {
-    background: color-mod(var(--blue) l(-7%) saturation(-10%));
+    background: var(--blue);
     box-shadow: none;
 }
 
@@ -171,7 +170,6 @@ fieldset[disabled] .gh-btn {
 /* The background of the button creates 1px gradient border */
 .gh-btn-green,
 .gh-btn-green:hover {
-    border: 1px solid color-mod(var(--green) s(-5%));
     color: #fff;
     fill: #fff;
     box-shadow: none;
@@ -184,22 +182,22 @@ fieldset[disabled] .gh-btn {
 
 /* The background of the span is the main visual element */
 .gh-btn-green span {
-    background: linear-gradient(color-mod(var(--green) l(+6%) s(-2%)), color-mod(var(--green) l(-8%) s(+5%)));
+    background: var(--green);
     font-weight: 500;
 }
 
 .gh-btn-green:hover span {
-    background: linear-gradient(color-mod(var(--green) l(+9%) s(-1%)), color-mod(var(--green) l(-3%) saturation(-3%)));
+    background: color-mod(var(--green) l(+5%));
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-green:active,
 .gh-btn-green:focus {
-    background: color-mod(var(--green) l(-9%) saturation(-9%));
+    background: var(--green);
 }
 .gh-btn-green:active span,
 .gh-btn-green:focus span {
-    background: color-mod(var(--green) l(-3%) saturation(-7%));
+    background: var(--green);
     box-shadow: none;
 }
 
@@ -210,7 +208,6 @@ fieldset[disabled] .gh-btn {
 /* The background of the button creates 1px gradient border */
 .gh-btn-red,
 .gh-btn-red:hover {
-    border: 1px solid color-mod(var(--red) s(-5%));
     color: #fff;
     fill: #fff;
     box-shadow: none;
@@ -223,65 +220,22 @@ fieldset[disabled] .gh-btn {
 
 /* The background of the span is the main visual element */
 .gh-btn-red span {
-    background: linear-gradient(
-    color-mod(var(--red) whiteness(+7%)),
-    color-mod(var(--red) l(-7%) saturation(-10%)) 60%,
-    color-mod(var(--red) l(-7%) saturation(-10%)) 90%,
-    color-mod(var(--red) l(-4%) saturation(-10%))
-    );
+    background: var(--red);
     font-weight: 500;
 }
 
 .gh-btn-red:hover span {
-    background: linear-gradient(color-mod(var(--red) l(+7%) s(-1%)), color-mod(var(--red) l(-5%) saturation(-3%)));
+    background: color-mod(var(--red) l(+5%));
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-red:active,
 .gh-btn-red:focus {
-    background: color-mod(var(--red) l(-20%) saturation(-15%));
+    background: var(--red);
 }
 .gh-btn-red:active span,
 .gh-btn-red:focus span {
-    background: color-mod(var(--red) l(-7%) saturation(-10%));
-    box-shadow: none;
-}
-
-/* Black button
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-black,
-.gh-btn-black:hover {
-    border: 0;
-    color: #fff;
-    fill: #fff;
-    box-shadow: none;
-    transition-property: box-shadow;
-}
-
-.gh-btn-black:hover {
-    box-shadow: 0 4px 5px -3px rgba(0,0,0,.1);
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-black span {
-    background: linear-gradient(
-    color-mod(var(--darkgrey) whiteness(+7%)),
-    color-mod(var(--darkgrey) l(-7%) saturation(-10%)) 60%,
-    color-mod(var(--darkgrey) l(-7%) saturation(-10%)) 90%,
-    color-mod(var(--darkgrey) l(-4%) saturation(-10%))
-    );
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-black:active,
-.gh-btn-black:focus {
-    background: color-mod(var(--darkgrey) l(-20%) saturation(-15%));
-}
-.gh-btn-black:active span,
-.gh-btn-black:focus span {
-    background: color-mod(var(--darkgrey) l(-7%) saturation(-10%));
+    background: var(--red);
     box-shadow: none;
 }
 
