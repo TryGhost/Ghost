@@ -163,7 +163,6 @@
     justify-content: space-between;
     padding: 18px 20px;
     margin: 0 -20px;
-    border-top: var(--lightgrey) 1px solid;
 }
 
 .gh-setting-first {

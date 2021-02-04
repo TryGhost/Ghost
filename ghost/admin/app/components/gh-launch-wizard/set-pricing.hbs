@@ -1,5 +1,5 @@
 <div class="gh-launch-wizard-settings-container">
-    <div class="gh-stack">
+    <div class="gh-stack overflow-scroll flex-grow-1">
         <div class="gh-stack-item flex-column">
             <div class="w-100">
                 <GhFormGroup @class="for-select">
@@ -54,7 +54,7 @@
             <GhErrorMessage @errors={{this.settings.errors}} @property="stripePlans" class="w-100 red"/>
         </div>
 
-        <div class="gh-stack-item gh-setting flex-column bb b--whitegrey">
+        <div class="gh-stack-item gh-setting flex-column">
             <div class="gh-setting-title">Plans available at signup</div>
             <div class="form-group mt2 mb0 for-checkbox">
                 <label
@@ -114,18 +114,18 @@
                 </label>
             </div>
         </div>
+    </div>
 
-        <div class="flex flex-row mt4">
-            <button type="button" class="gh-btn gh-btn-icon mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
+    <div class="gh-launch-wizard-nav-buttons">
+        <button type="button" class="gh-btn gh-btn-icon gh-btn-large mr2" {{on "click" @backStep}}><span>{{svg-jar "arrow-left"}}</span></button>
 
-            {{!-- TODO: reset "failed" state automatically --}}
-            <GhTaskButton
-                @buttonText="Save and continue"
-                @task={{this.saveAndContinue}}
-                @runningText="Launching"
-                @class="right gh-btn gh-btn-black gh-btn-icon"
-                data-test-button="wizard-next"
-            />
-        </div>
+        {{!-- TODO: reset "failed" state automatically --}}
+        <GhTaskButton
+            @buttonText="Save and continue"
+            @task={{this.saveAndContinue}}
+            @runningText="Launching"
+            @class="right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
+            data-test-button="wizard-next"
+        />
     </div>
 </div>
