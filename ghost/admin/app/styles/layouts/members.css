@@ -166,14 +166,10 @@ p.gh-members-list-email {
     padding-right: 12px;
 }
 
-.gh-members-chart {
-    margin-top: calc(-1 * var(--main-area-padding));
-    padding: var(--main-area-padding) 0;
-}
-
 .gh-members-chart-box {
     background: var(--black);
     border: none;
+    margin-right: var(--main-area-padding);
 }
 
 .gh-members-chart-header {

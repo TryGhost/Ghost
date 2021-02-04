@@ -13,7 +13,7 @@
     user-select: none;
     fill: color-mod(var(--midgrey) l(-7%));
     border: 1px solid color-mod(var(--midgrey) l(+35%) s(+10%));
-    border-radius: 2px;
+    border-radius: 3px;
     transition: all 0.2s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
 
@@ -28,7 +28,7 @@
     height: 35px;
     font-size: 1.3rem;
     line-height: 33px;
-    font-weight: 400;
+    font-weight: 500;
     text-align: center;
     letter-spacing: 0.2px;
     border-radius: 4px;
@@ -477,29 +477,38 @@ Usage: CTA buttons grouped together horizontally.
 
 */
 
-.gh-btn-group .gh-btn {
-    margin-left: 15px;
+.gh-btn-group {
+    border-radius: 0;
+    background: var(--whitegrey-l1);
+    border-radius: 2px;
+    padding: 1px;
 }
 
 .gh-btn-group .gh-btn {
+    border: none;
+    background: none;
     margin: 0;
-    border-radius: 0 0 0 0;
-    border: none;
-    border-left: 1px solid var(--whitegrey);
+    background: none;
+    box-shadow: none;
+    min-width: 120px;
+    margin: 2px;
+    border-radius: 2px;
 }
 
-.gh-btn-group .gh-btn:first-of-type {
-    border-radius: 5px 0 0 5px;
-    border: none;
-}
-
-.gh-btn-group .gh-btn:last-of-type {
-    border-radius: 0 5px 5px 0;
+.gh-btn-group .gh-btn span {
+    border-radius: 0;
+    height: 31px;
+    line-height: 31px;
+    border-radius: 2px;
 }
 
 .gh-btn-group .gh-btn-group-selected span {
-    color: var(--blue);
-    font-weight: 500;
+    color: var(--black);
+    font-weight: 600;
+    padding-left: 12px;
+    padding-right: 12px;
+    background: var(--white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .gh-btn-group .gh-btn-group-selected svg {

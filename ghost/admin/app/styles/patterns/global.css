@@ -134,7 +134,7 @@
     --list-divider-color: color-mod(var(--black) a(5%));
     --main-vertical-panel-height: 96px;
     --main-content-maxwidth: 1320px;
-    --main-content-sidepadding: 40px;
+    --main-content-sidepadding: 48px;
     --main-content-sidedistance: calc((100vw - var(--mainmenu-width) - var(--main-content-maxwidth)) / 2) - var(--main-area-padding);
     
     /* Special colours */
