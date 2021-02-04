@@ -12,7 +12,6 @@ export default Factory.extend({
     featured: false,
     featureImage(i) { return `/content/images/2015/10/post-${i}.jpg`; },
     html(i) { return `<p>HTML for post ${i}.</p>`; },
-    locale: null,
     visibility: 'public',
     metaDescription(i) { return `Meta description for post ${i}.`; },
     metaTitle(i) { return `Meta Title for post ${i}`; },

@@ -20,7 +20,6 @@ export default BaseModel.extend(ValidationEngine, {
     location: attr('string'),
     accessibility: attr('string'),
     status: attr('string'),
-    locale: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     lastLoginUTC: attr('moment-utc'),

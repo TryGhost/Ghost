@@ -92,7 +92,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     twitterDescription: attr('string'),
     emailSubject: attr('string'),
     html: attr('string'),
-    locale: attr('string'),
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
