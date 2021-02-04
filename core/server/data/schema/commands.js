@@ -103,31 +103,16 @@ function createTable(table, transaction, tableSpec = schema[table]) {
             }
 
             return (transaction || db.knex).schema.createTable(table, function (t) {
-                let tableIndexes = [];
-                let tableUniqueConstraints = [];
+                Object.keys(tableSpec)
+                    .filter(column => !(column.startsWith('@@')))
+                    .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
 
-                const columnKeys = _.keys(tableSpec);
-                _.each(columnKeys, function (column) {
-                    if (column === '@@INDEXES@@') {
-                        tableIndexes = tableSpec['@@INDEXES@@'];
-                        return;
-                    }
-
-                    if (column === '@@UNIQUE_CONSTRAINTS@@') {
-                        tableUniqueConstraints = tableSpec['@@UNIQUE_CONSTRAINTS@@'];
-                        return;
-                    }
-
-                    return addTableColumn(table, t, column, tableSpec[column]);
-                });
-
-                _.each(tableIndexes, function (index) {
-                    t.index(index);
-                });
-
-                _.each(tableUniqueConstraints, function (unique) {
-                    t.unique(unique);
-                });
+                if (tableSpec['@@INDEXES@@']) {
+                    tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
+                }
+                if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
+                    tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+                }
             });
         });
 }
