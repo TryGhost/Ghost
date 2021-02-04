@@ -13,7 +13,7 @@
     user-select: none;
     fill: color-mod(var(--midgrey) l(-7%));
     border: 1px solid color-mod(var(--midgrey) l(+35%) s(+10%));
-    border-radius: 5px;
+    border-radius: 2px;
     transition: all 0.2s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
 
