@@ -41,10 +41,10 @@ export default Component.extend(SettingsMenuMixin, {
     slugValue: boundOneWay('post.slug'),
 
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),
-    facebookImage: or('post.ogImage', 'post.featureImage'),
+    facebookImage: or('post.ogImage', 'post.featureImage', 'settings.ogImage', 'settings.coverImage'),
     facebookTitle: or('ogTitleScratch', 'seoTitle'),
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),
-    twitterImage: or('post.twitterImage', 'post.featureImage'),
+    twitterImage: or('post.twitterImage', 'post.featureImage', 'settings.twitterImage', 'settings.coverImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
     showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
