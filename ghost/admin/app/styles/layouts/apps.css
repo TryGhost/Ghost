@@ -15,7 +15,7 @@
 
 .integrations-wrapper {
     background: linear-gradient(315deg,var(--whitegrey-l1),var(--whitegrey-l2));
-    padding: var(--main-area-padding) 0;
+    padding: var(--main-layout-area-padding) 0;
 }
 
 .integrations-directory {
