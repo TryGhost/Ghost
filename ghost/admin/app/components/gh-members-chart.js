@@ -101,10 +101,10 @@ export default Component.extend({
                 cubicInterpolationMode: 'monotone',
                 data: dateValues,
                 fill: false,
-                backgroundColor: 'rgba(181,255,24,1.0)',
+                backgroundColor: '#B5FF18',
                 pointRadius: 0,
                 pointHitRadius: 10,
-                borderColor: 'rgba(181,255,24,1.0)',
+                borderColor: '#B5FF18',
                 borderJoinStyle: 'miter'
             }]
         });
@@ -133,7 +133,7 @@ export default Component.extend({
                 intersect: false,
                 mode: 'index',
                 displayColors: false,
-                backgroundColor: '#343f44',
+                backgroundColor: '#24272B',
                 xPadding: 7,
                 yPadding: 7,
                 cornerRadius: 5,
@@ -165,8 +165,8 @@ export default Component.extend({
                     labelString: 'Date',
                     gridLines: {
                         drawTicks: false,
-                        color: (this.nightShift ? '#333F44' : '#3E3F41'),
-                        zeroLineColor: (this.nightShift ? '#333F44' : '#3E3F41')
+                        color: (this.nightShift ? '#333F44' : '#394047'),
+                        zeroLineColor: (this.nightShift ? '#333F44' : '#394047')
                     },
                     ticks: {
                         display: false,

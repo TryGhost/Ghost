@@ -93,7 +93,16 @@
     min-width: 220px;
     padding-left: 32px;
     border: none;
-    background: var(--whitegrey-l1);
+    background: color-mod(var(--whitegrey) l(+1%));
+}
+
+.members-header.grey .view-actions .gh-btn,
+.members-header.grey .view-actions input.gh-members-list-searchfield {
+    background: color-mod(var(--whitegrey) l(-1%));
+}
+
+.members-header .view-actions input.gh-members-list-searchfield:focus {
+    background: var(--white);
 }
 
 .members-header .view-actions .gh-input-search-icon {
@@ -101,6 +110,11 @@
     height: 16px;
     top: 9px;
     left: 9px;
+    fill: var(--middarkgrey);
+}
+
+.members-header.black .view-actions input.gh-members-list-searchfield {
+    background: var(--darkgrey-d1);
 }
 
 .gh-members-list-searchfield.active {
@@ -159,19 +173,17 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart {
-    padding-bottom: var(--main-area-padding);
+    padding-bottom: var(--main-layout-area-padding);
 }
 
 .gh-members-chart-box {
-    background: var(--black);
-    border: none;
-    margin-right: var(--main-area-padding);
+    margin-right: var(--main-layout-area-padding);
 }
 
 .gh-members-chart-header {
     padding: 12px 7px 12px 12px;
     margin-bottom: 10px;
-    border-bottom: var(--darkgrey) 1px solid;
+    border-bottom: var(--main-color-area-divider) 1px solid;
 }
 
 .gh-members-chart-header .gh-contentfilter {
@@ -181,11 +193,11 @@ p.gh-members-list-email {
 
 .gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger {
     border-radius: 4px;
-    box-shadow: 0 0 0 1px var(--darkgrey);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     height: 16px;
     padding: 0 8px;
-    background: var(--black);
-    color: var(--white);
+    background: var(--white);
+    color: var(--black);
 }
 
 .gh-members-chart-dropdown {
@@ -203,11 +215,56 @@ p.gh-members-list-email {
     min-width: 244px;
 }
 
+.gh-members-chart-summary-heading {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+    margin: 0;
+    padding: 0;
+    color: var(--black);
+}
+
 .gh-members-chart-summary-data {
     font-size: 3.9rem;
     color: var(--black);
     line-height: 4.0rem;
     font-weight: 600;
+}
+
+.gh-members-chart.black {
+    background: var(--black);
+}
+
+.gh-members-chart.black .gh-members-chart-header {
+    border-color: var(--darkgrey);
+}
+
+.gh-members-chart.black .gh-members-chart-summary-heading {
+    color: var(--midlightgrey);
+}
+
+.gh-members-chart.black .gh-members-chart-summary-data {
+    color: var(--whitegrey);
+}
+
+.gh-members-chart.black .gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger,
+.gh-members-chart-box.black .gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger {
+    background: transparent;
+    border: 1px solid var(--darkgrey);
+    color: var(--whitegrey);
+}
+
+.gh-members-chart.black .gh-contentfilter-menu-trigger svg path {
+    stroke: var(--whitegrey) !important;
+}
+
+.gh-members-chart-box.black .gh-members-chart-summary-heading {
+    color: var(--lightgrey);
+}    
+
+.gh-members-chart-box.black .gh-members-chart-header {
+    border-color: var(--darkgrey);
 }
 
 .members-header .gh-contentfilter {
@@ -229,6 +286,9 @@ p.gh-members-list-email {
     width: 205px;
 }
 
+.gh-members-chart + .content-list .members-list {
+    margin-top: var(--main-layout-area-padding);
+}
 
 @media (max-width: 1100px) {
     .gh-members-chart-summary-data {

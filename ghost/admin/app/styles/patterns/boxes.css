@@ -65,12 +65,24 @@
 }
 
 .gh-content-box {
-    border: 1px solid var(--main-area-divider-color);
+    border: 1px solid var(--whitegrey);
     border-radius: 4px;
     background: var(--white);
 }
 
 .gh-content-box.grey {
     border: none;
-    background: var(--whitegrey-l1);
+    background: var(--main-color-content-greybg);
+}
+
+.gh-content-box.darkgrey {
+    border: none;
+    background: color-mod(var(--black) l(+6%) s(+2%));
+    color: var(--white);
+}
+
+.gh-content-box.black {
+    border: none;
+    background: var(--black);
+    color: var(--white);
 }

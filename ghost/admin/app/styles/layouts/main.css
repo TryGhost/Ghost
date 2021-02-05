@@ -4,7 +4,7 @@
     --mainmenu-color-active: var(--black);
     --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 340px;
-    --mainmenu-padding: var(--main-area-padding);
+    --mainmenu-padding: var(--main-layout-area-padding);
 }
 
 /* Global Layout
@@ -113,14 +113,14 @@
     min-width: 0;
     /* background: linear-gradient(315deg,var(--whitegrey-l2),var(--white)); */
     transform: translateX(0);
-    border-right: 1px solid var(--main-area-divider-color);
+    border-right: 1px solid var(--main-color-area-divider);
 }
 
 .gh-nav-menu {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    height: var(--main-vertical-panel-height);
+    height: var(--main-layout-vpanel-height);
     padding: var(--mainmenu-padding);
 }
 
@@ -356,7 +356,7 @@
     padding: 7px calc(var(--mainmenu-padding) - 2px) 7px calc(var(--mainmenu-padding) + 5px); */
 }
 
-.gh-nav-list .active::after {
+/* .gh-nav-list .active::after {
     content: "";
     position: absolute;
     width: 4px;
@@ -364,7 +364,7 @@
     bottom: 0;
     left: 0;
     background: var(--black);
-}
+} */
 
 .gh-nav-list a:not(.active):hover,
 .gh-nav-list button.main-menu-item:hover {
@@ -917,8 +917,9 @@
     border-color: transparent;
 }
 
+.gh-canvas-header.grey,
 .gh-main-grey .gh-canvas-header {
-    background: var(--whitegrey-l2);
+    background: var(--main-color-content-greybg);
 }
 
 .gh-main-grey-gradient .gh-canvas-header {
@@ -927,7 +928,7 @@
 }
 
 .gh-canvas-header-content {
-    height: calc(var(--main-vertical-panel-height) - 1px);
+    height: calc(var(--main-layout-vpanel-height) - 1px);
     position: relative;
     flex-shrink: 0;
     display: flex;
@@ -937,9 +938,9 @@
 
 .gh-main-width {
     width: 100%;
-    max-width: var(--main-content-maxwidth);
+    max-width: var(--main-layout-content-maxwidth);
     margin: 0 auto;
-    padding: 0 var(--main-content-sidepadding);
+    padding: 0 var(--main-layout-content-sidepadding);
 }
 
 .gh-main-white .gh-canvas-header {
@@ -993,6 +994,7 @@
 .gh-canvas-title:hover .gh-btn-edit-view {
     opacity: 1.0;
 }
+
 
 /* What's new badges
 /* ---------------------------------------------------- */
@@ -1061,7 +1063,7 @@
     position: relative;
     flex-grow: 1;
     padding-top: 0;
-    padding-bottom: var(--main-area-padding);
+    padding-bottom: var(--main-layout-area-padding);
 }
 
 .view-content {
@@ -1075,17 +1077,17 @@
 
 .view-actions input[type="text"] {
     padding: 8px 8px 9px;
-    height: 35px;
+    height: 33px;
     font-size: 1.35rem;
 }
 
-.view-actions .gh-btn {
+.view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue) {
     border: none;
     box-shadow: none;
     background: color-mod(var(--whitegrey-l1) l(-3%));
 }
 
-.view-actions .gh-btn:hover {
+.view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):hover {
     background: var(--whitegrey);
 }
 
@@ -1132,6 +1134,41 @@
 
 .gh-actions-menu.fade-out {
     animation-duration: 0.01s;
+}
+
+.gh-canvas-header.black {
+    background: var(--black);
+}
+
+.gh-canvas-header.black .gh-canvas-title,
+.gh-canvas-header.black .gh-canvas-title a {
+    color: var(--whitegrey);
+}
+
+.gh-canvas-header.black .view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green),
+.gh-canvas-header.black .view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):hover {
+    background: var(--darkgrey);
+}
+
+.gh-canvas-header.black .view-actions .gh-btn.gh-btn-primary,
+.gh-canvas-header.black .view-actions .gh-btn.gh-btn-primary:hover {
+    background: var(--white) !important;
+    color: var(--black) !important;
+}
+
+.gh-canvas-header.black .view-actions .gh-btn svg {
+    fill: var(--whitegrey);
+}
+
+.gh-canvas-header.black .gh-contentfilter-menu-trigger, 
+.gh-canvas-header.black .gh-contentfilter-menu-trigger--active, 
+.gh-canvas-header.black .gh-contentfilter-menu-trigger:focus {
+    background: var(--black);
+    color: var(--whitegrey);
+}
+
+.gh-canvas-header.black .gh-contentfilter-menu-trigger svg path {
+    stroke: var(--whitegrey);
 }
 
 @media (max-width: 400px) {

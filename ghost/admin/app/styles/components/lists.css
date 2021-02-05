@@ -5,7 +5,7 @@
     background: var(--white);
     display: table;
     width: 100%;
-    border-bottom: var(--main-area-divider-color) 1px solid;
+    border-bottom: var(--main-color-area-divider) 1px solid;
 }
 
 .gh-list.tabbed {
@@ -44,7 +44,7 @@
 .gh-list-header {
     display: table-cell;
     vertical-align: middle;
-    border-bottom: var(--main-area-divider-color) 1px solid;
+    border-bottom: var(--main-color-area-divider) 1px solid;
     font-size: 1.2rem;
     font-weight: 500;
     letter-spacing: 0.1px;

@@ -129,18 +129,20 @@
 
     /* Global, high-level UI colors */
     --main-bg-color: rgb(255, 255, 255);
-    --main-area-divider-color: var(--whitegrey-d1);
-    --main-area-padding: 32px;
-    --list-divider-color: color-mod(var(--black) a(5%));
-    --main-vertical-panel-height: 96px;
-    --main-content-maxwidth: 1320px;
-    --main-content-sidepadding: 48px;
-    --main-content-sidedistance: calc((100vw - var(--mainmenu-width) - var(--main-content-maxwidth)) / 2) - var(--main-area-padding);
+    --main-color-area-divider: var(--whitegrey-d1);
+    --main-color-content-greybg: color-mod(var(--whitegrey-l2) l(-1%));
+
+    --list-color-divider: color-mod(var(--black) a(5%));
     
     /* Special colours */
     --transparent:transparent;
     --errorbg-lightred: rgba(240, 82, 48, 0.05);
-
+    
+    /* Global layout values */
+    --main-layout-content-sidepadding: 48px;
+    --main-layout-content-maxwidth: 1320px;
+    --main-layout-area-padding: 32px;
+    --main-layout-vpanel-height: 96px;
     
     /* Style values */
     --border-radius: 4px;

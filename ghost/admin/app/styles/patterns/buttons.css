@@ -69,9 +69,9 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 .gh-btn-primary,
 .gh-btn-black {
-    background: var(--black) !important;
+    background: var(--black);
     border: none;
-    color: var(--white) !important;
+    color: var(--white);
     font-weight: 600;
     box-shadow: none;
 }
