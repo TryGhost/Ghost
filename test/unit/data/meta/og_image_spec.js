@@ -57,6 +57,18 @@ describe('getOgImage', function () {
 
         should(
             getOgImage({context: ['post'], post})
+        ).endWith('settings-og.jpg');
+
+        localSettingsCache.og_image = '';
+
+        should(
+            getOgImage({context: ['post'], post})
+        ).endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getOgImage({context: ['post'], post})
         ).equal(null);
     });
 
@@ -81,6 +93,18 @@ describe('getOgImage', function () {
 
         should(
             getOgImage({context: ['page'], page})
+        ).endWith('settings-og.jpg');
+
+        localSettingsCache.og_image = '';
+
+        should(
+            getOgImage({context: ['page'], page})
+        ).endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getOgImage({context: ['page'], page})
         ).equal(null);
     });
 
@@ -102,6 +126,18 @@ describe('getOgImage', function () {
             .should.endWith('page-feature.jpg');
 
         post.feature_image = '';
+
+        should(
+            getOgImage({context: ['page'], post})
+        ).endWith('settings-og.jpg');
+
+        localSettingsCache.og_image = '';
+
+        should(
+            getOgImage({context: ['page'], post})
+        ).endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
 
         should(
             getOgImage({context: ['page'], post})
