@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@sinonjs/fake-timers": "6.0.1",
-    "date-fns": "2.16.1",
+    "date-fns": "2.17.0",
     "delay": "5.0.0",
     "mocha": "8.2.1",
     "should": "13.2.3",
