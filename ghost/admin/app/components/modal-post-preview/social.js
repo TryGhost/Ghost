@@ -55,7 +55,7 @@ export default class ModalPostPreviewSocialComponent extends Component {
     }
 
     get facebookImage() {
-        return this.args.post.ogImage || this.args.post.featureImage;
+        return this.args.post.ogImage || this.args.post.featureImage || this.settings.get('ogImage') || this.settings.get('coverImage');
     }
 
     // Twitter
@@ -69,6 +69,6 @@ export default class ModalPostPreviewSocialComponent extends Component {
     }
 
     get twitterImage() {
-        return this.args.post.twitterImage || this.args.post.featureImage;
+        return this.args.post.twitterImage || this.args.post.featureImage || this.settings.get('twitterImage') || this.settings.get('coverImage');
     }
 }
