@@ -36,11 +36,11 @@
 }
 
 .gh-btn-large span {
-    height: 45px;
+    height: 48px;
     padding: 0 24px;
     font-size: 1.5rem;
     font-weight: 500;
-    line-height: 44px;
+    line-height: 46px;
     letter-spacing: .4px;
 }
 
@@ -62,6 +62,7 @@ fieldset[disabled] .gh-btn {
 
 .gh-btn svg {
     display: inline-block;
+    vertical-align: middle;
 }
 
 /* Button highlights
@@ -303,6 +304,8 @@ fieldset[disabled] .gh-btn {
 svg.gh-btn-icon-right {
     margin-left: 0.5em;
     margin-right: 0;
+    width: 16px;
+    height: auto;
 }
 
 .gh-btn-icon svg path {
@@ -314,6 +317,8 @@ svg.gh-btn-icon-right {
 }
 
 .gh-btn-icon-grey svg {
+    width: 16px;
+    height: auto;
     fill: var(--midgrey);
 }
 
