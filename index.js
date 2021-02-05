@@ -37,6 +37,6 @@ ghost().then(function (ghostServer) {
 }).catch(function (err) {
     logging.error(err);
     setTimeout(() => {
-        process.exit(-1);
+        process.exit(1);
     }, 100);
 });
