@@ -164,7 +164,7 @@ const minimalRequiredSetupToStartGhost = async (dbState) => {
             } finally {
                 logging.error(err);
                 setTimeout(() => {
-                    process.exit(-1);
+                    process.exit(1);
                 }, 100);
             }
         }
