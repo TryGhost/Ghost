@@ -173,13 +173,19 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-box {
-    margin-right: var(--main-layout-area-padding);
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--main-color-area-divider);
+    border-left: none;
 }
 
 .gh-members-chart-header {
-    padding: 12px 7px 12px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 12px 0;
     margin-bottom: 10px;
-    border-bottom: var(--main-color-area-divider) 1px solid;
 }
 
 .gh-members-chart-header .gh-contentfilter {
@@ -188,12 +194,9 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger {
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
     height: 16px;
     padding: 0 8px;
-    background: var(--white);
-    color: var(--black);
 }
 
 .gh-members-chart-dropdown {
@@ -202,13 +205,36 @@ p.gh-members-list-email {
 
 .gh-members-chart-container {
     height: 186px;
-    margin: 0;
-    padding: 4px 7px 11px 2px;
+    margin: 0 0 0 -16px;
+    padding: 4px 20px 11px 0;
+}
+
+.gh-members-chart-xlabels {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.3rem;
+    color: var(--middarkgrey);
+    padding: 0 28px 0 0;
 }
 
 .gh-members-chart-summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     flex-basis: 24%;
     min-width: 244px;
+}
+
+.gh-members-chart-summary section {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
 }
 
 .gh-members-chart-summary-heading {

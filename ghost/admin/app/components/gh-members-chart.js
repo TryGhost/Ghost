@@ -101,10 +101,10 @@ export default Component.extend({
                 cubicInterpolationMode: 'monotone',
                 data: dateValues,
                 fill: false,
-                backgroundColor: '#B5FF18',
+                backgroundColor: '#45C32E',
                 pointRadius: 0,
                 pointHitRadius: 10,
-                borderColor: '#B5FF18',
+                borderColor: '#45C32E',
                 borderJoinStyle: 'miter'
             }]
         });
@@ -133,7 +133,7 @@ export default Component.extend({
                 intersect: false,
                 mode: 'index',
                 displayColors: false,
-                backgroundColor: '#24272B',
+                backgroundColor: '#15171A',
                 xPadding: 7,
                 yPadding: 7,
                 cornerRadius: 5,
@@ -165,8 +165,8 @@ export default Component.extend({
                     labelString: 'Date',
                     gridLines: {
                         drawTicks: false,
-                        color: (this.nightShift ? '#333F44' : '#394047'),
-                        zeroLineColor: (this.nightShift ? '#333F44' : '#394047')
+                        color: (this.nightShift ? '#333F44' : '#CED4D9'),
+                        zeroLineColor: (this.nightShift ? '#333F44' : '#CED4D9')
                     },
                     ticks: {
                         display: false,
@@ -174,6 +174,7 @@ export default Component.extend({
                         minRotation: 0,
                         padding: 6,
                         autoSkip: false,
+                        fontColor: '#626D79',
                         maxTicksLimit: 10,
                         callback: function (value, index, values) {
                             let step = (values.length - 1) / (maxTicksAllowed);
@@ -203,7 +204,7 @@ export default Component.extend({
                     },
                     ticks: {
                         maxTicksLimit: 5,
-                        fontColor: '#9baeb8',
+                        fontColor: '#626D79',
                         padding: 8,
                         precision: 0,
                         callback: function (value) {

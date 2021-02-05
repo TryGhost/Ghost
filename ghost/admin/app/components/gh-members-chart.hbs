@@ -3,8 +3,8 @@
 >
 
     {{!-- Chart title/filter graph --}}
-    <div class="flex-auto gh-content-box black gh-members-chart-box">
-        <div class="flex justify-between items-center gh-members-chart-header">
+    <div class="gh-members-chart-box">
+        <div class="gh-members-chart-header">
             <h2 class="gh-members-chart-summary-heading">Total members</h2>
             <div class="view-actions">
                 <div class="gh-contentfilter gh-contentfilter-menu gh-contentfilter-type">
@@ -36,29 +36,29 @@
                     @height={{300}} />
             {{/if}}
         </div>
-        <div class="flex justify-between pa4 pt0 pb2 nt1">
-            <span class="f8 midlightgrey">{{this.startDateLabel}}</span>
-            <span class="f8 midlightgrey">Today</span>
+        <div class="gh-members-chart-xlabels">
+            <span>{{this.startDateLabel}}</span>
+            <span>Today</span>
         </div>
     </div>
 
     {{!-- Summary --}}
-    <div class="gh-content-box grey gh-members-chart-summary flex flex-column justify-between">
-        <div class="flex-auto flex flex-column justify-center items-start pa4">
+    <div class="gh-content-box vertical gh-members-chart-summary">
+        <section>
             <h3 class="gh-members-chart-summary-heading">Total Members</h3>
             <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.total)}}</div>
-        </div>
-        <div class="flex-auto flex flex-column justify-center items-start pa4">
+        </section>
+        <section>
             {{#if (eq this.selectedRange.days "all-time")}}
                 <h3 class="gh-members-chart-summary-heading">All time signups</h3>
             {{else}}
                 <h3 class="gh-members-chart-summary-heading">Signed up in the last {{this.selectedRange.days}} days</h3>
             {{/if}}
             <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.total_in_range)}}</div>
-        </div>
-        <div class="flex-auto flex flex-column justify-center items-start pa4">
+        </section>
+        <section>
             <h3 class="gh-members-chart-summary-heading">Signed up today</h3>
             <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.new_today)}}</div>
-        </div>
+        </section>
     </div>
 </div>
