@@ -74,6 +74,12 @@
     background: var(--whitegrey-l1);
 }
 
+.gh-canvas-header.grey .gh-contentfilter-menu-trigger,
+.gh-canvas-header.grey .gh-contentfilter-menu-trigger:focus,
+.gh-canvas-header.grey .gh-contentfilter-menu-trigger--active {
+    background: var(--main-color-content-greybg);
+}
+
 .gh-contentfilter-menu-trigger svg path {
     stroke: var(--black);
 }
