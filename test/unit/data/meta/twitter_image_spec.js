@@ -57,6 +57,18 @@ describe('getTwitterImage', function () {
 
         should(
             getTwitterImage({context: ['post'], post})
+        ).endWith('settings-twitter.jpg');
+
+        localSettingsCache.twitter_image = '';
+
+        should(
+            getTwitterImage({context: ['post'], post})
+        ).endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getTwitterImage({context: ['post'], post})
         ).equal(null);
     });
 
@@ -81,6 +93,18 @@ describe('getTwitterImage', function () {
 
         should(
             getTwitterImage({context: ['page'], page})
+        ).endWith('settings-twitter.jpg');
+
+        localSettingsCache.twitter_image = '';
+
+        should(
+            getTwitterImage({context: ['page'], page})
+        ).endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getTwitterImage({context: ['page'], page})
         ).equal(null);
     });
 
@@ -102,6 +126,18 @@ describe('getTwitterImage', function () {
             .should.endWith('page-feature.jpg');
 
         post.feature_image = '';
+
+        should(
+            getTwitterImage({context: ['page'], post})
+        ).endWith('settings-twitter.jpg');
+
+        localSettingsCache.twitter_image = '';
+
+        should(
+            getTwitterImage({context: ['page'], post})
+        ).endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
 
         should(
             getTwitterImage({context: ['page'], post})
