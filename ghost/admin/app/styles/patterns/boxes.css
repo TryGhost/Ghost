@@ -86,3 +86,12 @@
     background: var(--black);
     color: var(--white);
 }
+
+.gh-content-box.vertical {
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--main-color-area-divider);
+    border-bottom: 1px solid var(--main-color-area-divider);
+    border-radius: 0;
+}
