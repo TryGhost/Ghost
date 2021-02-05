@@ -109,6 +109,11 @@ const Member = ghostBookshelf.Model.extend({
         let labelsToSave = [];
         let ops = [];
 
+        if (_.isUndefined(this.get('labels'))) {
+            this.unset('labels');
+            return;
+        }
+
         // CASE: detect lowercase/uppercase label slugs
         if (!_.isUndefined(this.get('labels')) && !_.isNull(this.get('labels'))) {
             labelsToSave = [];
