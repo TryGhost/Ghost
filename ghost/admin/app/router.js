@@ -77,6 +77,8 @@ Router.map(function () {
     this.route('member', {path: '/members/:member_id'});
 
     this.route('error404', {path: '/*path'});
+
+    this.route('designsystem');
 });
 
 export default Router;

@@ -3,7 +3,7 @@
     --mainmenu-color-hover-bg: var(--whitegrey);
     --mainmenu-color-active: var(--black);
     --mainmenu-color-active-bg: var(--whitegrey);
-    --mainmenu-width: 340px;
+    --mainmenu-width: 310px;
     --mainmenu-padding: var(--main-layout-area-padding);
 }
 
@@ -1192,4 +1192,18 @@
     .gh-canvas {
         padding: 0 4vw 4vw;
     }
+}
+
+section.gh-ds ul {
+    margin-bottom: 5vw;
+}
+
+section.gh-ds ul li {
+    margin-bottom: 12px;
+}
+
+section.gh-ds h2 {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--whitegrey);
 }

@@ -172,10 +172,6 @@ p.gh-members-list-email {
     margin-right: 32px;
 }
 
-.gh-members-chart {
-    padding-bottom: var(--main-layout-area-padding);
-}
-
 .gh-members-chart-box {
     margin-right: var(--main-layout-area-padding);
 }
@@ -218,7 +214,7 @@ p.gh-members-list-email {
 .gh-members-chart-summary-heading {
     font-size: 1.2rem;
     text-transform: uppercase;
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 0.2px;
     margin: 0;
     padding: 0;
