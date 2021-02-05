@@ -64,7 +64,6 @@ const author = (attrs, frame) => {
 
     // @NOTE: unused fields
     delete attrs.visibility;
-    delete attrs.locale;
 
     return attrs;
 };
@@ -120,7 +119,6 @@ const post = (attrs, frame) => {
         delete attrs.primary_author;
     }
 
-    delete attrs.locale;
     delete attrs.author;
     delete attrs.type;
 
