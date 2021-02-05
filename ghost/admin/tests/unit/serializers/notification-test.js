@@ -1,4 +1,5 @@
 import Pretender from 'pretender';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
@@ -17,7 +18,7 @@ describe('Unit: Serializer: notification', function () {
     });
 
     it('converts location->key when deserializing', function () {
-        server.get('/ghost/api/v3/admin/notifications', function () {
+        server.get(`${ghostPaths().apiRoot}/notifications`, function () {
             let response = {
                 notifications: [{
                     id: 1,

@@ -1,4 +1,5 @@
 import Pretender from 'pretender';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
@@ -18,7 +19,7 @@ describe('Integration: Adapter: user', function () {
     });
 
     it('loads users from regular endpoint when all are fetched', function (done) {
-        server.get('/ghost/api/v3/admin/users/', function () {
+        server.get(`${ghostPaths().apiRoot}/users/`, function () {
             return [200, {'Content-Type': 'application/json'}, JSON.stringify({users: [
                 {
                     id: 1,
@@ -40,7 +41,7 @@ describe('Integration: Adapter: user', function () {
     });
 
     it('loads user from slug endpoint when single user is queried and slug is passed in', function (done) {
-        server.get('/ghost/api/v3/admin/users/slug/user-1/', function () {
+        server.get(`${ghostPaths().apiRoot}/users/slug/user-1/`, function () {
             return [200, {'Content-Type': 'application/json'}, JSON.stringify({users: [
                 {
                     id: 1,
@@ -58,7 +59,7 @@ describe('Integration: Adapter: user', function () {
     });
 
     it('handles "include" parameter when querying single user via slug', function (done) {
-        server.get('/ghost/api/v3/admin/users/slug/user-1/', (request) => {
+        server.get(`${ghostPaths().apiRoot}/users/slug/user-1/`, (request) => {
             let params = request.queryParams;
             expect(params.include, 'include query').to.equal('roles,count.posts');
 

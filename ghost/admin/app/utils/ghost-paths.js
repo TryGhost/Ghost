@@ -18,7 +18,7 @@ export default function () {
     let subdir = path.substr(0, path.search('/ghost/'));
     let adminRoot = `${subdir}/ghost/`;
     let assetRoot = `${subdir}/ghost/assets/`;
-    let apiRoot = `${subdir}/ghost/api/v3/admin`;
+    let apiRoot = `${subdir}/ghost/api/canary/admin`;
 
     function assetUrl(src) {
         return subdir + src;
