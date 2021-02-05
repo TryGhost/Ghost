@@ -1,3 +1,14 @@
+ul.nostyle {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.nostyle li {
+    margin: 0;
+    padding: 0;
+}
+
 .gh-list {
     margin: 0;
     padding: 0;
@@ -45,7 +56,7 @@
     display: table-cell;
     vertical-align: middle;
     border-bottom: var(--main-color-area-divider) 1px solid;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 500;
     letter-spacing: 0.1px;
     color: var(--black);

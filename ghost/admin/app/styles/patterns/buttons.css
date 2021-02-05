@@ -3,15 +3,16 @@
 
 /* Base button style */
 /* Should only be applied to <a> tags */
-.gh-btn {
+.gh-btn,
+.gh-btn-grey {
     display: inline-block;
     outline: none;
-    background: var(--white);
-    box-shadow: 0 2px 5px -3px rgba(0,0,0,.12);
+    background: var(--whitegrey);
     color: var(--darkgrey);
     text-decoration: none !important;
     user-select: none;
     fill: var(--white);
+    font-weight: 400;
     border-radius: 3px;
     transition: all 0.2s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
@@ -20,14 +21,14 @@
 }
 
 /* ALL buttons must have a span for content */
-.gh-btn span {
+.gh-btn span,
+.gh-btn-grey span {
     display: block;
     overflow: hidden;
     padding: 0 11px;
     height: 33px;
     font-size: 1.35rem;
     line-height: 33px;
-    font-weight: 500;
     text-align: center;
     letter-spacing: 0.2px;
     border-radius: 3px;
@@ -44,17 +45,16 @@
     letter-spacing: .4px;
 }
 
-.gh-btn:hover {
+.gh-btn:hover,
+.gh-btn-grey:hover {
     color: var(--darkgrey);
-    box-shadow: 0 3px 4px -3px rgba(0,0,0,.13);
-    border-color: color-mod(var(--midgrey) l(+25%) s(+10%));
+    background: var(--whitegrey-d1);
 }
 
 /* When disabled */
 .gh-btn.disabled,
 .gh-btn[disabled],
 fieldset[disabled] .gh-btn {
-    box-shadow: none;
     opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
@@ -69,16 +69,120 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 .gh-btn-primary,
 .gh-btn-black {
-    background: var(--black);
-    border: none;
     color: var(--white);
-    font-weight: 600;
-    box-shadow: none;
+    background: var(--black);
+    font-weight: 500;
 }
 
 .gh-btn-primary:hover,
 .gh-btn-black:hover {
+    color: var(--white);
     background: color-mod(var(--black) l(-20%)) !important;
+}
+
+
+/* Blue button
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-blue {
+    color: #fff;
+    fill: #fff;
+    background: var(--blue);
+    font-weight: 500;
+}
+
+.gh-btn-blue:hover {
+    color: #fff;
+    background: color-mod(var(--blue) l(-4%));
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-blue:active,
+.gh-btn-blue:focus {
+    background: color-mod(var(--blue) l(-7%));
+}
+
+/* Green button
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-green {
+    color: #fff;
+    fill: #fff;
+    background: var(--green);
+    font-weight: 500;
+}
+
+.gh-btn-green:hover {
+    color: #fff;
+    background: color-mod(var(--green) l(-4%));
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-green:active,
+.gh-btn-green:focus {
+    background: color-mod(var(--green) l(-7%));
+}
+
+
+/* Red button
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-red {
+    color: #fff;
+    fill: #fff;
+    box-shadow: none;
+    background: var(--red);
+    font-weight: 500;
+}
+
+.gh-btn-red:hover {
+    color: #fff;
+    background: color-mod(var(--red) l(-4%));
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-red:active,
+.gh-btn-red:focus {
+    background: color-mod(var(--red) l(-7%));
+}
+
+/* Outline button
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-outline {
+    color: var(--darkgrey);
+    fill: var(--darkgrey);
+    border: 1px solid var(--lightgrey-l1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    background: none;
+}
+
+.gh-btn-outline:hover {
+    color: var(--black);
+    background: none;
+    border-color: color-mod(var(--lightgrey-l1) l(-8%));
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-outline:active,
+.gh-btn-outline:focus {
+    border-color: color-mod(var(--lightgrey-l1) l(-15%));
+}
+
+.gh-btn-outline.blue {
+    border-color: var(--blue);
+    color: var(--blue);
+    box-shadow: none;
+}
+
+.gh-btn-outline.blue:hover {
+    border-color: color-mod(var(--blue) l(-10%));
+    color: color-mod(var(--blue) l(-10%));
+    box-shadow: none;
 }
 
 
@@ -98,147 +202,6 @@ fieldset[disabled] .gh-btn {
 .gh-btn-hover-red:hover {
     color: var(--red);
     border-color: var(--red);
-}
-
-
-/* Grey button - First so that other colors will override
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-grey {
-    padding: 1px;
-    border: 0;
-    fill: var(--darkgrey);
-    transition: none !important;
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-grey span {
-    background: color-mod(var(--lightgrey) l(-5%));
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-grey:active,
-.gh-btn-grey:focus {
-    background: color-mod(var(--midgrey) l(+25%));
-}
-.gh-btn-grey:active span,
-.gh-btn-grey:focus span {
-    background: color-mod(var(--lightgrey) l(+15%));
-    box-shadow: none;
-}
-
-
-/* Blue button
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-blue,
-.gh-btn-blue:hover {
-    color: #fff;
-    fill: #fff;
-    box-shadow: none;
-    transition-property: box-shadow;
-}
-
-.gh-btn-blue:hover {
-    box-shadow: none;
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-blue span {
-    background: var(--blue);
-    font-weight: 500;
-}
-
-.gh-btn-blue:hover span {
-    background: color-mod(var(--blue) l(+5%));
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-blue:active,
-.gh-btn-blue:focus {
-    background: var(--blue);
-}
-.gh-btn-blue:active span,
-.gh-btn-blue:focus span {
-    background: var(--blue);
-    box-shadow: none;
-}
-
-/* Green button
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-green,
-.gh-btn-green:hover {
-    color: #fff;
-    fill: #fff;
-    box-shadow: none;
-    transition-property: box-shadow;
-}
-
-.gh-btn-green:hover {
-    box-shadow: none;
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-green span {
-    background: var(--green);
-    font-weight: 500;
-}
-
-.gh-btn-green:hover span {
-    background: color-mod(var(--green) l(+5%));
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-green:active,
-.gh-btn-green:focus {
-    background: var(--green);
-}
-.gh-btn-green:active span,
-.gh-btn-green:focus span {
-    background: var(--green);
-    box-shadow: none;
-}
-
-
-/* Red button
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-red,
-.gh-btn-red:hover {
-    color: #fff;
-    fill: #fff;
-    box-shadow: none;
-    transition-property: box-shadow;
-}
-
-.gh-btn-red:hover {
-    box-shadow: none;
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-red span {
-    background: var(--red);
-    font-weight: 500;
-}
-
-.gh-btn-red:hover span {
-    background: color-mod(var(--red) l(+5%));
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-red:active,
-.gh-btn-red:focus {
-    background: var(--red);
-}
-.gh-btn-red:active span,
-.gh-btn-red:focus span {
-    background: var(--red);
-    box-shadow: none;
 }
 
 
@@ -364,22 +327,6 @@ svg.gh-btn-icon-right {
 
 .gh-btn-text.yellow span {
     color: color-mod(var(--yellow) l(-10%));
-}
-
-.gh-btn-outline,
-.gh-btn-outline:hover {
-    background: none;
-    box-shadow: none;
-}
-
-.gh-btn-outline.blue {
-    border-color: var(--blue);
-    color: var(--blue);
-}
-
-.gh-btn-outline.blue:hover {
-    border-color: color-mod(var(--blue) l(-10%));
-    color: color-mod(var(--blue) l(-10%));
 }
 
 .gh-btn-textfield-group span {
