@@ -176,7 +176,7 @@ p.gh-members-list-email {
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
-    border: 1px solid var(--main-color-area-divider);
+    border: 1px solid var(--list-color-divider);
     border-left: none;
 }
 
@@ -184,7 +184,7 @@ p.gh-members-list-email {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 20px 12px 0;
+    padding: 16px 24px 4px 0;
     margin-bottom: 10px;
 }
 
@@ -197,6 +197,7 @@ p.gh-members-list-email {
     border-radius: 3px;
     height: 16px;
     padding: 0 8px;
+    margin-right: 0;
 }
 
 .gh-members-chart-dropdown {
@@ -215,15 +216,15 @@ p.gh-members-list-email {
     justify-content: space-between;
     font-size: 1.3rem;
     color: var(--middarkgrey);
-    padding: 0 28px 0 0;
+    padding: 0 28px 16px 0;
 }
 
 .gh-members-chart-summary {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    flex-basis: 24%;
-    min-width: 244px;
+    flex-basis: 28%;
+    min-width: 280px;
 }
 
 .gh-members-chart-summary section {
@@ -234,11 +235,11 @@ p.gh-members-list-email {
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    padding: 20px;
+    padding: 16px 24px;
 }
 
 .gh-members-chart-summary-heading {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: 0.2px;
@@ -309,7 +310,7 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart + .content-list .members-list {
-    margin-top: var(--main-layout-area-padding);
+    margin-top: var(--main-layout-section-vpadding);
 }
 
 @media (max-width: 1100px) {
