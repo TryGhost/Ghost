@@ -78,7 +78,7 @@ Router.map(function () {
 
     this.route('error404', {path: '/*path'});
 
-    this.route('designsystem');
+    this.route('designsandbox');
 });
 
 export default Router;
