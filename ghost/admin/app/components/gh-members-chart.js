@@ -165,8 +165,8 @@ export default Component.extend({
                     labelString: 'Date',
                     gridLines: {
                         drawTicks: false,
-                        color: (this.nightShift ? '#333F44' : '#CED4D9'),
-                        zeroLineColor: (this.nightShift ? '#333F44' : '#CED4D9')
+                        color: (this.nightShift ? '#333F44' : '#DDE1E5'),
+                        zeroLineColor: (this.nightShift ? '#333F44' : '#DDE1E5')
                     },
                     ticks: {
                         display: false,

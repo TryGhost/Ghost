@@ -132,7 +132,7 @@
     --main-color-area-divider: var(--whitegrey-d1);
     --main-color-content-greybg: color-mod(var(--whitegrey-l2) l(-1%));
 
-    --list-color-divider: color-mod(var(--black) a(5%));
+    --list-color-divider: var(--whitegrey-d1);
     
     /* Special colours */
     --transparent:transparent;
@@ -143,6 +143,7 @@
     --main-layout-content-maxwidth: 1320px;
     --main-layout-area-padding: 32px;
     --main-layout-vpanel-height: 96px;
+    --main-layout-section-vpadding: 3vw;
     
     /* Style values */
     --border-radius: 4px;

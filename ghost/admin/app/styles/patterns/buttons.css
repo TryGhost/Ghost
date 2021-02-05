@@ -12,7 +12,7 @@
     text-decoration: none !important;
     user-select: none;
     fill: var(--white);
-    font-weight: 400;
+    font-weight: 500;
     border-radius: 3px;
     transition: all 0.2s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
@@ -25,7 +25,7 @@
 .gh-btn-grey span {
     display: block;
     overflow: hidden;
-    padding: 0 11px;
+    padding: 0 14px;
     height: 33px;
     font-size: 1.35rem;
     line-height: 33px;
