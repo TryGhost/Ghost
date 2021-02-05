@@ -1,4 +1,5 @@
 import Pretender from 'pretender';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -32,7 +33,7 @@ describe('Integration: Service: config', function () {
 
     it('normalizes blogUrl to non-trailing-slash', function (done) {
         let stubBlogUrl = function stubBlogUrl(url) {
-            server.get('/ghost/api/v3/admin/config/', function () {
+            server.get(`${ghostPaths().apiRoot}/config/`, function () {
                 return [
                     200,
                     {'Content-Type': 'application/json'},
@@ -40,7 +41,7 @@ describe('Integration: Service: config', function () {
                 ];
             });
 
-            server.get('/ghost/api/v3/admin/site/', function () {
+            server.get(`${ghostPaths().apiRoot}/site/`, function () {
                 return [
                     200,
                     {'Content-Type': 'application/json'},

@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Pretender from 'pretender';
 import Service from '@ember/service';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
@@ -29,13 +30,13 @@ const sessionStub = Service.extend({
 });
 
 const stubSuccessfulUpload = function (server, delay = 0) {
-    server.post('/ghost/api/v3/admin/images/upload/', function () {
+    server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
         return [200, {'Content-Type': 'application/json'}, '{"images": [{"url":"/content/images/test.png"}]}'];
     }, delay);
 };
 
 const stubFailedUpload = function (server, code, error, delay = 0) {
-    server.post('/ghost/api/v3/admin/images/upload/', function () {
+    server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
         return [code, {'Content-Type': 'application/json'}, JSON.stringify({
             errors: [{
                 type: error,
@@ -78,7 +79,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(server.handledRequests.length).to.equal(1);
-        expect(server.handledRequests[0].url).to.equal('/ghost/api/v3/admin/images/upload/');
+        expect(server.handledRequests[0].url).to.equal(`${ghostPaths().apiRoot}/images/upload/`);
         expect(server.handledRequests[0].requestHeaders.Authorization).to.be.undefined;
     });
 
@@ -177,7 +178,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('handles file too large error directly from the web server', async function () {
-        server.post('/ghost/api/v3/admin/images/upload/', function () {
+        server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
             return [413, {}, ''];
         });
         await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
@@ -197,7 +198,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('handles unknown failure', async function () {
-        server.post('/ghost/api/v3/admin/images/upload/', function () {
+        server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
             return [500, {'Content-Type': 'application/json'}, ''];
         });
         await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);

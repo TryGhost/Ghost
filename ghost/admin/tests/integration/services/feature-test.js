@@ -1,6 +1,7 @@
 import EmberError from '@ember/error';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Pretender from 'pretender';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -17,11 +18,11 @@ function stubSettings(server, labs, validSave = true) {
         }
     ];
 
-    server.get('/ghost/api/v3/admin/settings/', function () {
+    server.get(`${ghostPaths().apiRoot}/settings/`, function () {
         return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings})];
     });
 
-    server.put('/ghost/api/v3/admin/settings/', function (request) {
+    server.put(`${ghostPaths().apiRoot}/settings/`, function (request) {
         let statusCode = (validSave) ? 200 : 400;
         let response = (validSave) ? request.requestBody : JSON.stringify({
             errors: [{
@@ -47,11 +48,11 @@ function stubUser(server, accessibility, validSave = true) {
         }]
     }];
 
-    server.get('/ghost/api/v3/admin/users/me/', function () {
+    server.get(`${ghostPaths().apiRoot}/users/me/`, function () {
         return [200, {'Content-Type': 'application/json'}, JSON.stringify({users})];
     });
 
-    server.put('/ghost/api/v3/admin/users/1/', function (request) {
+    server.put(`${ghostPaths().apiRoot}/users/1/`, function (request) {
         let statusCode = (validSave) ? 200 : 400;
         let response = (validSave) ? request.requestBody : JSON.stringify({
             errors: [{

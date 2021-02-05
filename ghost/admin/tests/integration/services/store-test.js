@@ -1,5 +1,6 @@
 import Pretender from 'pretender';
 import config from 'ghost-admin/config/environment';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
@@ -21,7 +22,7 @@ describe('Integration: Service: store', function () {
         let {version} = config.APP;
         let store = this.owner.lookup('service:store');
 
-        server.get('/ghost/api/v3/admin/posts/1/', function () {
+        server.get(`${ghostPaths().apiRoot}/posts/1/`, function () {
             return [
                 404,
                 {'Content-Type': 'application/json'},

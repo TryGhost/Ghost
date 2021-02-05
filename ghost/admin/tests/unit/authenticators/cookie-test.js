@@ -1,4 +1,5 @@
 import Service from '@ember/service';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import sinon from 'sinon';
 import {beforeEach, describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -42,7 +43,7 @@ const mockTour = Service.extend({
 });
 
 const mockGhostPaths = Service.extend({
-    apiRoot: '/ghost/api/v3/admin'
+    apiRoot: ghostPaths().apiRoot
 });
 
 describe('Unit: Authenticator: cookie', () => {
@@ -74,7 +75,7 @@ describe('Unit: Authenticator: cookie', () => {
             let tour = this.owner.lookup('service:tour');
 
             return authenticator.authenticate('AzureDiamond', 'hunter2').then(() => {
-                expect(post.args[0][0]).to.equal('/ghost/api/v3/admin/session');
+                expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
                 expect(post.args[0][1]).to.deep.include({
                     data: {
                         username: 'AzureDiamond',
@@ -103,7 +104,7 @@ describe('Unit: Authenticator: cookie', () => {
             let del = authenticator.ajax.del;
 
             return authenticator.invalidate().then(() => {
-                expect(del.args[0][0]).to.equal('/ghost/api/v3/admin/session');
+                expect(del.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
             });
         });
     });

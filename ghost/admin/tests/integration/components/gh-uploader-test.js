@@ -1,4 +1,5 @@
 import Pretender from 'pretender';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {click, find, findAll, render, settled, waitFor, waitUntil} from '@ember/test-helpers';
@@ -8,13 +9,13 @@ import {expect} from 'chai';
 import {setupRenderingTest} from 'ember-mocha';
 
 const stubSuccessfulUpload = function (server, delay = 0) {
-    server.post('/ghost/api/v3/admin/images/upload/', function () {
+    server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
         return [200, {'Content-Type': 'application/json'}, '{"images": [{"url": "/content/images/test.png"}]}'];
     }, delay);
 };
 
 const stubFailedUpload = function (server, code, error, delay = 0) {
-    server.post('/ghost/api/v3/admin/images/upload/', function () {
+    server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
         return [code, {'Content-Type': 'application/json'}, JSON.stringify({
             errors: [{
                 type: error,
@@ -50,7 +51,7 @@ describe('Integration: Component: gh-uploader', function () {
 
             let [lastRequest] = server.handledRequests;
             expect(server.handledRequests.length).to.equal(1);
-            expect(lastRequest.url).to.equal('/ghost/api/v3/admin/images/upload/');
+            expect(lastRequest.url).to.equal(`${ghostPaths().apiRoot}/images/upload/`);
             // requestBody is a FormData object
             // this will fail in anything other than Chrome and Firefox
             // https://developer.mozilla.org/en-US/docs/Web/API/FormData#Browser_compatibility
@@ -135,7 +136,7 @@ describe('Integration: Component: gh-uploader', function () {
 
         it('onComplete returns results in same order as selected', async function () {
             // first request has a delay to simulate larger file
-            server.post('/ghost/api/v3/admin/images/upload/', function () {
+            server.post(`${ghostPaths().apiRoot}/images/upload/`, function () {
                 // second request has no delay to simulate small file
                 stubSuccessfulUpload(server, 0);
 
@@ -257,7 +258,7 @@ describe('Integration: Component: gh-uploader', function () {
         });
 
         it('uploads to supplied `uploadUrl`', async function () {
-            server.post('/ghost/api/v3/admin/images/', function () {
+            server.post(`${ghostPaths().apiRoot}/images/`, function () {
                 return [200, {'Content-Type': 'application/json'}, '{"images": [{"url": "/content/images/test.png"}]'];
             });
 
@@ -266,7 +267,7 @@ describe('Integration: Component: gh-uploader', function () {
             await settled();
 
             let [lastRequest] = server.handledRequests;
-            expect(lastRequest.url).to.equal('/ghost/api/v3/admin/images/');
+            expect(lastRequest.url).to.equal(`${ghostPaths().apiRoot}/images/`);
         });
 
         it('passes supplied paramName in request', async function () {

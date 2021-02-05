@@ -1,4 +1,5 @@
 import Pretender from 'pretender';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
@@ -23,7 +24,7 @@ describe('Unit: Model: invite', function () {
             let model = store.createRecord('invite');
             let role;
 
-            server.post('/ghost/api/v3/admin/invites/', function () {
+            server.post(`${ghostPaths().apiRoot}/invites/`, function () {
                 return [200, {}, '{}'];
             });
 
