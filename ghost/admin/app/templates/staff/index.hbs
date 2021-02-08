@@ -15,7 +15,7 @@
             @modifier="action wide" />
     {{/if}}
 
-    <section class="view-container gh-main-width gh-team">
+    <section class="view-container gh-team">
     {{!-- Show invited users to everyone except authors --}}
     {{#unless this.currentUser.isAuthorOrContributor}}
         {{#if this.invites}}

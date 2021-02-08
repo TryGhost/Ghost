@@ -377,7 +377,7 @@
     align-items: center;
     border: 1px solid var(--lightgrey);
     border-radius: 3px;
-    padding: 4px 8px;
+    padding: 5px 8px;
     margin-right: 8px;
     background: var(--white);
 }
@@ -391,17 +391,6 @@
     color: var(--white);
     font-weight: 500;
     border-radius: 3px;
-}
-
-
-/* Custom Integrations
-/* ---------------------------------------------------------- */
-.new-webhook-cell td {
-    padding: 0;
-}
-
-.new-webhook-cell:hover {
-    background: var(--whitegrey-l2);
 }
 
 /* Zapier templates */
@@ -459,4 +448,51 @@
     background-size: cover;
     background-repeat: no-repeat;
     border-radius: 15%;
+}
+
+/* Custom Integrations
+/* ---------------------------------------------------------- */
+.new-webhook-cell td {
+    padding: 0;
+}
+
+.new-webhook-cell:hover {
+    background: var(--whitegrey-l2);
+}
+
+.app-custom-icon-container {
+    margin-right: 32px;
+}
+
+.app-custom-icon {
+    display: flex;
+    position: relative;
+    align-items: center;
+    height: 118px;
+    width: 118px;
+    margin: 0;
+    border-radius: 3px;
+    border: 1px solid var(--lightgrey);
+    background: var(--white);
+    padding: 24px;
+}
+
+.app-custom-icon-uploadlabel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--white);
+    border-radius: 3px;
+    text-align: center;
+    background-color: var(--black);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.app-custom-api-table .data-label {
+    width: 200px;
 }

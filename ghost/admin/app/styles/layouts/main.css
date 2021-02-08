@@ -909,8 +909,9 @@
 
 .gh-canvas {
     flex-grow: 1;
-    padding: 0 0 48px;
+    padding: 0 var(--main-layout-content-sidepadding) 48px;
     margin: 0 auto;
+    max-width: var(--main-layout-content-maxwidth);
 }
 
 .gh-canvas-header {
@@ -974,18 +975,20 @@
 
 .gh-main-section.bb { border-bottom: 1px solid var(--whitegrey); }
 
+
 .gh-main-section .heading,
 .gh-main-section-block .heading {
     font-size: 1.7rem;
     font-weight: 600;
-    color: var(--black);
-    border-bottom: 1px solid var(--whitegrey);
+    text-transform: none;
+    letter-spacing: unset;
     padding: 8px 0;
+    border-bottom: 1px solid var(--whitegrey);
+    color: var(--black);
     margin: 0;
 }
 
-.gh-main-section .heading.list,
-.gh-main-section .heading {
+.gh-main-section .heading.small {
     font-size: 1.1rem;
     text-transform: uppercase;
     letter-spacing: 0.2px;
@@ -1009,6 +1012,12 @@
 
 .gh-main-section .heading + .description {
     margin-top: -10px;
+}
+
+.gh-main-section .heading.large + .description {
+    font-size: 1.3rem;
+    margin-top: -8px;
+    padding-bottom: 12px;
 }
 
 .gh-main-section.columns-2 {
@@ -1035,6 +1044,8 @@
 .gh-main-section-block.br { border-right: 1px solid var(--whitegrey); }
 .gh-main-section-block.bb { border-bottom: 1px solid var(--whitegrey); }
 .gh-main-section-block.bl { border-left: 1px solid var(--whitegrey); }
+
+.gh-main-section-block.p0 { padding: 0; }
 
 .gh-canvas-title {
     display: flex;
