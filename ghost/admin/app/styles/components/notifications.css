@@ -18,8 +18,8 @@
     margin-top: 8px;
     padding: 4px 8px;
     width: 286px;
-    background: color-mod(var(--blue) s(+10%));
-    border-radius: 22px;
+    background: var(--black);
+    border-radius: 6px;
     box-shadow:
         0 1.1px 2.3px rgba(0, 0, 0, 0.028),
         0 3.8px 7.8px rgba(0, 0, 0, 0.042),
