@@ -1,5 +1,5 @@
 <BasicDropdown @verticalPosition="below" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
-    <dd.Trigger class="gh-btn gh-btn-outline gh-publishmenu-trigger">
+    <dd.Trigger class="gh-btn gh-btn-black gh-publishmenu-trigger">
         <span data-test-publishmenu-trigger>{{this.triggerText}} {{svg-jar "arrow-down"}}</span>
     </dd.Trigger>
 
@@ -41,7 +41,7 @@
             or cancel the task when the post status updates and switches components
          --}}
         <footer class="gh-publishmenu-footer">
-            <button class="gh-btn gh-btn-outline gh-btn-link" {{on "click" (action dd.actions.close)}} data-test-publishmenu-cancel>
+            <button class="gh-btn gh-btn-outline" {{on "click" (action dd.actions.close)}} data-test-publishmenu-cancel>
                 <span>Cancel</span>
             </button>
             <GhTaskButton
@@ -50,7 +50,7 @@
                 @taskArgs={{hash dropdown=dd}}
                 @successText={{this.successText}}
                 @runningText={{this.runningText}}
-                @class="gh-btn gh-btn-blue gh-publishmenu-button gh-btn-icon"
+                @class="gh-btn gh-btn-black gh-publishmenu-button gh-btn-icon"
                 data-test-publishmenu-save=true
             />
         </footer>

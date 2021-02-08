@@ -2,17 +2,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-publishmenu-trigger {
-    color: var(--blue);
-    border: none;
     cursor: pointer;
-    text-shadow: none;
-    background: none;
-    box-shadow: none;
-}
-
-.gh-publishmenu-trigger:hover {
-    background: none;
-    box-shadow: none;
 }
 
 .gh-publishmenu-trigger svg {
@@ -21,8 +11,8 @@
 }
 
 .gh-publishmenu-trigger svg path {
-    stroke: var(--blue);
-    stroke-width: 1px;
+    stroke: var(--white);
+    stroke-width: 4px;
 }
 
 .gh-publishmenu-trigger:focus {
@@ -33,7 +23,6 @@
     position: relative;
     z-index: 1000;
     display: flex;
-    align-items: center;
 }
 
 .gh-publishmenu-dropdown {

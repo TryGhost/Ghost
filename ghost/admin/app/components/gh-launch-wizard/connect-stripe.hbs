@@ -42,29 +42,31 @@
             </div>
             <div class="gh-setting-desc"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
         {{else}}
-            <div class="gh-stack-item gh-setting">
-                <div class="w-100">
-                    {{!-- Stripe already configured --}}
-                    {{#if this.settings.stripeConnectAccountId}}
+            <div class="gh-stack-item gh-setting flex-wrap">
+                {{!-- Stripe already configured --}}
+                {{#if this.settings.stripeConnectAccountId}}
+                    <div>
                         <h4 class="gh-setting-title">Already connected to Stripe</h4>
-                        <p class="gh-setting-desc pa0 ma0">
+                        <p class="gh-setting-desc mt2">
                             Connected to <a href="https://dashboard.stripe.com/{{this.settings.stripeConnectAccountId}}" target="_blank">{{this.settings.stripeConnectDisplayName}}</a>
 
                             {{#unless this.settings.stripeConnectLivemode}}
                                 <span class="gh-members-connect-testmodelabel">Test mode</span>
                             {{/unless}}
                         </p>
-                        {{#if this.hasActiveStripeSubscriptions}}
-                            <p class="red ma0 pa0 f8 nudge-bottom--2">
-                                Cannot disconnect while there are members with active Stripe subscriptions.
-                            </p>
-                        {{else}}
-                            <div class="gh-setting-action">
-                                <button type="button" class="gh-btn" {{on "click" (perform this.openDisconnectStripeConnectModalTask)}}><span>Disconnect</span></button>
-                            </div>
-                        {{/if}}
-                    {{!-- Stripe not yet configured --}}
+                    </div>
+                    {{#if this.hasActiveStripeSubscriptions}}
+                        <p class="red ma0 pa0 f8 nudge-bottom--2">
+                            Cannot disconnect while there are members with active Stripe subscriptions.
+                        </p>
                     {{else}}
+                        <div class="gh-setting-action">
+                            <button type="button" class="gh-btn" {{on "click" (perform this.openDisconnectStripeConnectModalTask)}}><span>Disconnect</span></button>
+                        </div>
+                    {{/if}}
+                {{!-- Stripe not yet configured --}}
+                {{else}}
+                    <div class="w-100">
                         <div class="gh-setting-title">Generate secure key</div>
                         <div class="flex items-center mb4 justify-between mt2">
                             <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
@@ -87,21 +89,22 @@
                             {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
                         </div>
                         <div class="gh-setting-desc mt4"><a href="javascript:void(0)" {{on "click" @skipStep}}>Skip</a> if you don't want to offer paid subscriptions.</div>
-                    {{/if}}
-                </div>
+                    </div>
+                {{/if}}
             </div>
         {{/if}}
     </div>
     <div class="gh-launch-wizard-nav-buttons">
-        <button type="button" class="gh-btn gh-btn-icon-grey gh-btn-large w-30" {{on "click" @backStep}}><span>{{svg-jar "arrow-left-tail"}}</span></button>
+        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon-dark gh-btn-large w-30" {{on "click" @backStep}}><span>{{svg-jar "arrow-left-tail"}}</span></button>
 
         <GhTaskButton
-            @buttonText="Save and continue"
             @task={{this.saveAndContinueTask}}
             @runningText="Saving"
-            @class="w-70 ml4 right gh-btn gh-btn-black gh-btn-large gh-btn-icon"
+            @class="w-70 ml4 right gh-btn gh-btn-black gh-btn-large gh-btn-icon-right"
             data-test-button="wizard-next"
-        />
+        >
+            <span>{{if this.settings.stripeConnectAccountId "Continue" "Save and continue"}}{{svg-jar "arrow-right-tail"}}</span>
+        </GhTaskButton>
     </div>
 </div>
 

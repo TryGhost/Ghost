@@ -25,12 +25,14 @@
     margin-right: auto;
 }
 
-.gh-post-preview-header .gh-btn-group {
-    flex: 1;
-}
-
 .gh-post-preview-header-border {
     border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-post-preview-btn-group {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
 }
 
 .gh-post-preview-btn-group button {
@@ -39,26 +41,7 @@
 
 .gh-post-preview-btn-group button span {
     height: 40px;
-    border: 1px solid var(--whitegrey);
-    border-radius: 0;
-}
-
-.gh-post-preview-btn-group button:first-of-type span {
-    border-right: none;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
-
-.gh-post-preview-btn-group button:nth-of-type(2) span,
-.gh-post-preview-btn-group button:nth-of-type(3) span {
-    border-right: none;
-    border-left: none;
-}
-
-.gh-post-preview-btn-group button:last-of-type span {
-    border-left: none;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-radius: 3px;
 }
 
 .gh-post-preview-mode svg {
