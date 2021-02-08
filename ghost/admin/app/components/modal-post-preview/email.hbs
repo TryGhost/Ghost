@@ -11,17 +11,18 @@
 </div>
 <div class="gh-post-preview-email-footer">
     <span class="mr3 flex-grow-1 nowrap fw6 f8 darkgrey">Send a preview newsletter</span>
-    <div class="mr3 truncate midlightgrey">
+    {{#if this.sendPreviewEmailError}}
+        <div class="error mr3 nowrap"><span class="response" id="sendError">{{this.sendPreviewEmailError}}</span></div>
+    {{/if}}
+    <div class="mr3 truncate midlightgrey {{if this.sendPreviewEmailError "error"}}">
         <Input
             @value={{this.previewEmailAddress}}
             class="gh-input"
             placeholder="you@yoursite.com"
+            aria-invalid={{if this.sendPreviewEmailError "true"}}
+            aria-describedby={{if this.sendPreviewEmailError "sendError"}}
             {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
         />
-
-        {{#if this.sendPreviewEmailError}}
-            <div class="error"><p class="response">{{this.sendPreviewEmailError}}</p></div>
-        {{/if}}
     </div>
     <GhTaskButton
         @task={{this.sendPreviewEmailTask}}
