@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "snippets.v3",
+  "title": "snippets",
+  "description": "Base snippets definitions",
+  "definitions": {
+    "snippet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191
+        },
+        "mobiledoc": {
+          "type": "string",
+          "format": "json-string",
+          "maxLength": 1000000000
+        },
+        "id": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        },
+        "created_by": {
+          "strip": true
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "updated_by": {
+          "strip": true
+        }
+      }
+    }
+  }
+}

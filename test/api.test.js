@@ -43,6 +43,19 @@ describe('Exposes a correct API', function () {
         } catch (err) {
             throw new Error('should not throw an error');
         }
+
+        try {
+            const v4Post = {
+                posts: [{
+                    title: 'Donny is the king',
+                    email_subject: 'Merlin\'s housewarming party'
+                }]
+            };
+
+            await apiSchema.validate({data: v4Post, schema: 'posts-add', version: 'v4'});
+        } catch (err) {
+            throw new Error('should not throw an error');
+        }
     });
 
     describe('default version (canary)', function () {
@@ -106,6 +119,75 @@ describe('Exposes a correct API', function () {
 
                 try {
                     await apiSchema.validate({data});
+                    throw new Error('should throw an error');
+                } catch (err) {
+                    err.errorType.should.equal('IncorrectUsageError');
+                }
+            });
+        });
+    });
+
+    describe('v3 version', function () {
+        describe('get', function () {
+            it('Returns schema definition by name', function () {
+                const postsDefinition = apiSchema.get('posts-edit', 'v3');
+                postsDefinition.title.should.eql('posts.edit');
+                postsDefinition.properties.posts.items.allOf[0].$ref.should.equal('posts.v3#/definitions/post');
+            });
+
+            it('Returns null when schema definition does not exist', function () {
+                const nonExistantSchema = apiSchema.get('imaginary', 'v3');
+                should.equal(nonExistantSchema, null);
+            });
+        });
+
+        describe('list', function () {
+            it('Returns names of all available definitions for default version', function () {
+                const definitions = apiSchema.list('v3');
+                definitions.length.should.eql(16);
+                definitions.includes('posts-add').should.equal(true);
+            });
+        });
+
+        describe('validate', function () {
+            it('Validates data', async function () {
+                const data = {
+                    posts: [{
+                        title: 'valid'
+                    }]
+                };
+
+                try {
+                    await apiSchema.validate({data, schema: 'posts-add', version: 'v3'});
+                } catch (err) {
+                    throw new Error('should not throw an error');
+                }
+            });
+
+            it('Invalidates data', async function () {
+                const data = {
+                    posts: [{
+                        status: 'invalid status'
+                    }]
+                };
+
+                try {
+                    await apiSchema.validate({data, schema: 'posts-add', definition: 'posts'});
+                    throw new Error('should throw an error');
+                } catch (err) {
+                    err.errorType.should.equal('ValidationError');
+                }
+            });
+
+            it('Incorrect use throws an error', async function () {
+                const data = {
+                    posts: [{
+                        title: 'valid'
+                    }]
+                };
+
+                try {
+                    await apiSchema.validate({data, version: 'v3'});
                     throw new Error('should throw an error');
                 } catch (err) {
                     err.errorType.should.equal('IncorrectUsageError');

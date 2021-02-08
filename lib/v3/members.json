@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "members.v3",
+  "title": "members",
+  "description": "Base members definitions",
+  "definitions": {
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 191,
+          "pattern": "^([^,]|$)"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^([^,]|$)"
+        },
+        "avatar_image": {
+          "strip": true
+        },
+        "note": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        "subscribed": {
+          "type": "boolean"
+        },
+        "comped": {
+          "type": "boolean"
+        },
+        "stripe_customer_id": {
+          "type": "string"
+        },
+        "id": {
+          "strip": true
+        },
+        "labels": {
+          "$ref": "#/definitions/member-labels"
+        },
+        "email_count": {
+          "strip": true
+        },
+        "email_opened_count": {
+          "strip": true
+        },
+        "email_open_rate": {
+          "strip": true
+        },
+        "email_recipients": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        },
+        "created_by": {
+          "strip": true
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "updated_by": {
+          "strip": true
+        }
+      }
+    },
+    "member-labels": {
+      "description": "Labels of the member",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              },
+              "members": {
+                "strip": true
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    }
+  }
+}
