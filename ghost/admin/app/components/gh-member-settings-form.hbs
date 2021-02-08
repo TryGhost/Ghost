@@ -63,8 +63,9 @@
         </div>
     </section>
 
-    <section class="gh-main-section flex items-start">
-        <div class="width-67 gh-main-section-content pt pr">
+    <h4 class="gh-main-section-heading no-border">Basic info</h4>
+    <section class="gh-main-section gh-content-box grey flex items-start">
+        <div class="width-67 gh-main-section-content pa prx2">
             <div>
                 <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width">
                     <label for="member-name">Name</label>
@@ -98,7 +99,7 @@
                 </div>
             </GhFormGroup>
         </div>
-        <div class="gh-main-section-content pt width-34">
+        <div class="gh-main-section-content pa width-34">
             <div class="flex-auto flex flex-column items-stretch">
                 <div>
                     <GhFormGroup @classNames="gh-member-labels">
