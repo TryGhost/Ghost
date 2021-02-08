@@ -7,8 +7,7 @@
                     {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
                 </div>
                 <div class="gh-setting-desc">
-                    Stripe is our exclusive direct payments partner.<br />
-                    Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
+                    Stripe is our exclusive direct payments partner. Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
                 </div>
             </div>
         </div>
@@ -71,7 +70,7 @@
                         <div class="flex items-center mb4 justify-between mt2">
                             <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
                             <div class="ml2 flex items-center flex-nowrap">
-                                <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
+                                <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">Test mode</span>
                                 <div class="for-switch small">
                                     <label class="switch" for="stripe-connect-test-mode" {{on "click" this.toggleStripeConnectTestMode}}>
                                         <input type="checkbox" class="gh-input" checked={{this.stripeConnectTestMode}} {{on "click" this.toggleStripeConnectTestMode}} data-test-checkbox="stripe-connect-test-mode">
