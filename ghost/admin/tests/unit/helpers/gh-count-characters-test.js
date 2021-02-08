@@ -3,7 +3,7 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
 describe('Unit: Helper: gh-count-characters', function () {
-    let defaultStyle = 'color: rgb(115, 138, 148);';
+    let defaultStyle = 'color: rgb(69, 195, 46);';
     let errorStyle = 'color: rgb(240, 82, 48);';
 
     it('counts remaining chars', function () {
