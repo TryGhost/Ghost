@@ -391,7 +391,8 @@ figure blockquote p {
 }
 
 .kg-bookmark-content {
-    flex-grow: 1;
+    display: inline-block;
+    width: 100%;
     padding: 20px;
 }
 
