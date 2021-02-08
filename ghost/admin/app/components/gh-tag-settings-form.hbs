@@ -1,6 +1,6 @@
-<h4 class="midlightgrey f-small fw5 ttu">Basic settings</h4>
-<div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
-    <div class="order-1 flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+<section class="gh-main-section columns-2">
+    <h4 class="heading">Basic settings</h4>
+    <div class="gh-main-section-block">
         <div class="gh-tag-settings-multiprop">
             <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="name" class="mr2 flex-auto">
                 <label for="tag-name">Name</label>
@@ -65,7 +65,7 @@
             <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.description 500}}</p>
         </GhFormGroup>
     </div>
-    <div class="order-0 mb6 mb0-ns order-2-ns w-100 w-50-m w-third-l">
+    <div class="gh-main-section-block">
         <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
             <label for="tag-image">Tag image</label>
             <GhImageUploaderWithPreview
@@ -78,11 +78,11 @@
             />
         </GhFormGroup>
     </div>
-</div>
+</section>
 
-<h4 class="midlightgrey f-small fw5 ttu mt15">Meta data</h4>
-<div class="flex flex-column br3 shadow-1 bg-grouped-table mt2">
-    <section class="bb b--whitegrey pa5">
+
+<section class="gh-main-section">
+    <div class="gh-main-section-block bb bt">
         <div class="flex justify-between">
             <div>
                 <h4 class="gh-setting-title">Meta data</h4>
@@ -93,8 +93,8 @@
             </div>
         </div>
         {{#liquid-if this.metadataOpen}}
-        <div class="mt6 flex flex-column flex-row-ns items-start justify-between">
-            <div class="flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+        <div class="gh-main-section columns-2">
+            <div class="gh-main-section-block">
                 <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaTitle">
                     <label for="meta-title">Meta title</label>
                     <GhTextInput
@@ -135,7 +135,7 @@
                     <GhErrorMessage @errors={{this.tag.errors}} @property="canonicalUrl" />
                 </GhFormGroup>
             </div>
-            <div class="w-100 w-50-m w-third-l">
+            <div class="gh-main-section-block">
                 <div class="form-group">
                     <label>Search Engine Result Preview</label>
                     <div class="seo-preview">
@@ -147,8 +147,9 @@
             </div>
         </div>
         {{/liquid-if}}
-    </section>
-    <section class="bb b--whitegrey pa5">
+    </div>
+
+    <div class="gh-main-section-block bb">
         <div class="flex justify-between">
             <div>
                 <h4 class="gh-setting-title">Twitter card</h4>
@@ -159,8 +160,8 @@
             </div>
         </div>
         {{#liquid-if this.twitterMetadataOpen}}
-        <div class="mt6 flex flex-column flex-row-ns items-start justify-between">
-            <div class="flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+        <div class="gh-main-section columns-2">
+            <div class="gh-main-section-block">
                 <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterImage">
                     <label for="twitter-image">Twitter image</label>
                     <GhImageUploaderWithPreview
@@ -201,7 +202,7 @@
                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.twitterDescription 156}}</p>
                 </GhFormGroup>
             </div>
-            <div class="w-100 w-50-m w-third-l">
+            <div class="gh-main-section-block">
                 <div class="form-group">
                     <label>Preview</label>
                     <div class="gh-twitter-preview">
@@ -224,8 +225,9 @@
             </div>
         </div>
         {{/liquid-if}}
-    </section>
-    <section class="bb b--whitegrey pa5">
+    </div>
+
+    <div class="gh-main-section-block bb">
         <div class="flex justify-between">
             <div>
                 <h4 class="gh-setting-title">Facebook card</h4>
@@ -236,8 +238,8 @@
             </div>
         </div>
         {{#liquid-if this.facebookMetadataOpen}}
-        <div class="mt6 flex flex-column flex-row-ns items-start justify-between">
-            <div class="flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+        <div class="gh-main-section columns-2">
+            <div class="gh-main-section-block">
                 <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogImage">
                     <label for="og-image">Facebook image</label>
                     <GhImageUploaderWithPreview
@@ -278,7 +280,7 @@
                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.ogDescription 156}}</p>
                 </GhFormGroup>
             </div>
-            <div class="w-100 w-50-m w-third-l">
+            <div class="gh-main-section-block">
                 <div class="form-group">
                     <label>Preview</label>
                     <div class="gh-og-preview">
@@ -301,8 +303,9 @@
             </div>
         </div>
         {{/liquid-if}}
-    </section>
-    <section class="bb b--whitegrey pa5">
+    </div>
+
+    <div class="gh-main-section-block bb">
         <div class="flex justify-between">
             <div>
                 <h4 class="gh-setting-title">Code injection</h4>
@@ -313,8 +316,8 @@
             </div>
         </div>
         {{#liquid-if this.codeInjectionOpen}}
-        <div class="mt6 flex flex-column flex-row-ns flex-wrap items-start justify-between">
-            <GhFormGroup @class="settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionHead">
+        <div class="gh-main-section">
+            <GhFormGroup @class="gh-main-section-block settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionHead">
                 <label for="codeinjection-head" class="gh-tag-setting-codeheader">Tag header <code class="fw4 ml1">\{{ghost_head}}</code></label>
                 <GhCmEditor @value={{this.scratchTag.codeinjectionHead}}
                     @id="tag-setting-codeinjection-head"
@@ -327,7 +330,7 @@
                 <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionHead"/>
             </GhFormGroup>
 
-            <GhFormGroup @class="settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionFoot">
+            <GhFormGroup @class="gh-main-section-block settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionFoot">
                 <label for="codeinjection-foot"class="gh-tag-setting-codeheader">Tag footer <code class="fw4 ml1">\{{ghost_foot}}</code></label>
                 <GhCmEditor @value={{this.scratchTag.codeinjectionFoot}}
                     @id="tag-setting-codeinjection-foot"
@@ -341,5 +344,5 @@
             </GhFormGroup>
         </div>
         {{/liquid-if}}
-    </section>
-</div>
+    </div>
+</section>

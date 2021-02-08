@@ -70,6 +70,12 @@
     background: var(--white);
 }
 
+.gh-content-box.pa { padding: 24px; }
+.gh-content-box.pt { padding-top: 24px; }
+.gh-content-box.pr { padding-right: 24px; }
+.gh-content-box.pb { padding-bottom: 24px; }
+.gh-content-box.pl { padding-left: 24px; }
+
 .gh-content-box.grey {
     border: none;
     background: var(--main-color-content-greybg);
