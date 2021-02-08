@@ -4,15 +4,17 @@
     </div>
 </div>
 <div class="gh-post-preview-browser-footer">
-    <span class="mr3 mt1 mb1 nowrap fw6 f8 darkgrey">Share preview privately</span>
-    <div class="gh-post-preview-url-container">
+    <span class="mr3 nowrap fw6 f8 darkgrey">Share preview privately</span>
+    <div class="gh-post-preview-url-container truncate">
         <span class="db truncate w-90">{{@post.previewUrl}}</span>
-        <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-post-preview-copy">
-            {{#if this.copyPreviewUrl.isRunning}}
-                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
-            {{else}}
-                <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-            {{/if}}
-        </button>
     </div>
+    <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-green gh-btn-icon gh-post-preview-copy-url-trigger">
+        <span>
+            {{#if this.copyPreviewUrl.isRunning}} 
+                Copied!
+            {{else}}
+                copy
+            {{/if}}
+        </span>
+    </button>
 </div>

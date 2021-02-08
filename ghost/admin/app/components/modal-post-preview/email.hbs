@@ -10,25 +10,26 @@
     </div>
 </div>
 <div class="gh-post-preview-email-footer">
-    <span class="mr3 flex-grow-1 nowrap fw6 f8 darkgrey">Send a preview newsletter</span>
-    {{#if this.sendPreviewEmailError}}
-        <div class="error mr3 nowrap"><span class="response" id="sendError">{{this.sendPreviewEmailError}}</span></div>
-    {{/if}}
-    <div class="mr3 truncate midlightgrey {{if this.sendPreviewEmailError "error"}}">
+    <span class="mr3 nowrap fw6 f8 darkgrey">Send a test newsletter</span>
+
+    <div class="gh-post-preview-email-input {{if this.sendPreviewEmailError "error"}}">
         <Input
             @value={{this.previewEmailAddress}}
-            class="gh-input"
+            class="gh-input gh-post-preview-email-input"
             placeholder="you@yoursite.com"
             aria-invalid={{if this.sendPreviewEmailError "true"}}
             aria-describedby={{if this.sendPreviewEmailError "sendError"}}
             {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
         />
+        {{#if this.sendPreviewEmailError}}
+            <div class="error fixed nowrap f8 lh-heading"><span class="response" id="sendError">{{this.sendPreviewEmailError}}</span></div>
+        {{/if}}
     </div>
     <GhTaskButton
         @task={{this.sendPreviewEmailTask}}
         @buttonText="Send"
         @successText="Sent"
         @runningText="Sending..."
-        @class="gh-btn gh-btn-green gh-btn-icon"
+        @class="gh-btn gh-btn-green gh-btn-icon gh-post-preview-email-trigger"
     />
 </div>
