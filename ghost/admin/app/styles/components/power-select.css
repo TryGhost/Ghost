@@ -33,7 +33,7 @@
 .ember-power-select-trigger[aria-expanded="true"],
 .ember-power-select-search input {
     outline: 0;
-    border-color: color-mod(var(--whitegrey) a(70%) s(-10%));
+    border-color: var(--input-border-color);
 }
 
 .ember-power-select-dropdown {
@@ -41,7 +41,7 @@
     z-index: 1000;
     box-sizing: border-box;
     margin: 0;
-    border: 1px solid color-mod(var(--whitegrey) a(70%) s(-10%));
+    border: var(--input-border);
     border-top: 0 none;
     background: #fff;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
@@ -187,7 +187,7 @@
 .ember-power-select-multiple-trigger {
     background: #fff;
     padding: 4px;
-    border: rgb(214, 227, 235) 1px solid;
+    border: var(--input-border);
     border-radius: 3px;
     outline: none;
 }
