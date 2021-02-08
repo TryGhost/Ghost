@@ -93,7 +93,8 @@
     min-width: 220px;
     padding-left: 32px;
     border: none;
-    background: color-mod(var(--whitegrey) l(+1%));
+    background: var(--white);
+    border: var(--input-border);
 }
 
 .members-header.grey .view-actions .gh-btn,
@@ -103,6 +104,7 @@
 
 .members-header .view-actions input.gh-members-list-searchfield:focus {
     background: var(--white);
+    border-color: var(--green);
 }
 
 .members-header .view-actions .gh-input-search-icon {
@@ -118,8 +120,8 @@
 }
 
 .gh-members-list-searchfield.active {
-    border-color: #3eb0ef;
-    box-shadow: inset 0 0 0 1px #3eb0ef;
+    border-color: var(--green) !important;
+    box-shadow: inset 0 0 0 1px var(--green);
 }
 
 .gh-members-list-checkbox {
