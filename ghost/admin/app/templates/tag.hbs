@@ -11,16 +11,14 @@
             </section>
         </GhCanvasHeader>
 
-        <div class="gh-main-width">
-            <GhTagSettingsForm
-                @tag={{this.tag}}
-                @scratchTag={{this.scratchTag}}
-                @setProperty={{action "setProperty"}} />
-        </div>
+        <GhTagSettingsForm
+            @tag={{this.tag}}
+            @scratchTag={{this.scratchTag}}
+            @setProperty={{action "setProperty"}} />
     </form>
 
     {{#unless this.tag.isNew}}
-        <div class="gh-main-width">
+        <div>
             <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}}>
                 <span>Delete tag</span>
             </button>
