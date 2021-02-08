@@ -5,13 +5,6 @@
     background: none;
 }
 
-.gh-invited-users .apps-grid-cell:hover + .apps-grid-cell .apps-card-app,
-.gh-invited-users .apps-grid-cell:hover .apps-card-app {
-    border-color: var(--lightgrey);
-    padding-left: 0;
-    margin-left: 16px;
-}
-
 .gh-invited-users .gh-badge {
     text-transform: none;
 }

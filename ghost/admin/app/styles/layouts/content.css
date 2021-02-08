@@ -478,6 +478,7 @@
 .no-posts {
     background: none;
     box-shadow: none;
+    border: none !important;
 }
 
 .no-posts + .infinity-loader {
@@ -491,8 +492,8 @@
     justify-content: center;
     align-items: center;
     margin: 0 auto;
-    padding: 0 0 10vw;
-    height: calc(100vh - 140px);
+    padding: 0;
+    height: calc(100vh - 200px);
 }
 
 .no-posts-box .no-posts {
