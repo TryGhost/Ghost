@@ -7,76 +7,72 @@
         </h2>
     </GhCanvasHeader>
 
-    <section class="view-container bt b--lightgrey-d1 pt5">
-        <section class="app-grid">
-            <div class="app-cell">
-                <div class="bg-white mr3 display flex items-center justify-center br-pill shadow-1 pa3 dark-no-shadow">
+    <section class="view-container gh-main-width">
+        <section class="gh-main-section no-heading">
+            <div class="gh-main-section-block app-detail-heading app-grid">
+                <div class="app-cell">
                     <img class="app-icon" src="assets/img/zapier.svg" />
                 </div>
-            </div>
-            <div class="app-cell">
-                <h3>Zapier</h3>
-                <p>Automation for your favourite apps</p>
+                <div class="app-cell">
+                    <h3>Zapier</h3>
+                    <p>Automation for your favourite apps</p>
+
+                    <table class="list">
+                        <tbody>
+                            <tr>
+                                <td class="data-label">Admin API key</td>
+                                <td class="data highlight-hover">
+                                    <div class="relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                                        <span class="truncate" data-test-text="admin-key">
+                                            {{this.integration.adminKey.secret}}
+                                        </span>
+                                        <div class="app-api-buttons child">
+                                            <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                            </button>
+                                            <button type="button" {{action (perform this.copyAdminKey)}} class="app-button-copy">
+                                                {{#if this.copyAdminKey.isRunning}}
+                                                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                {{else}}
+                                                Copy
+                                                {{/if}}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
+                                        <div class="green nt3 mb2 pl3"> Admin API Key was successfully regenerated </div>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="data-label">API URL</td>
+                                <td class="data highlight-hover">
+                                    <div class="relative flex items-center {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
+                                        <span data-test-text="api-url">
+                                            {{this.apiUrl}}
+                                        </span>
+                                        <div class="app-api-buttons child">
+                                            <button type="button" {{action (perform this.copyApiUrl)}} class="app-button-copy">
+                                                {{#if this.copyApiUrl.isRunning}}
+                                                    {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                                {{else}}
+                                                    Copy
+                                                {{/if}}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>  
+                </div>
             </div>
         </section>
 
-        <div class="m15 mt4">
-            <table class="ma0 shadow-1 bg-grouped-table br3" style="table-layout: fixed">
-                <tbody>
-                    <tr class="bb b--lightgrey">
-                        <td class="pa3 w50 fw7 v-top">Admin API key</td>
-                        <td class="pa0">
-                            <div class="pa3 relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
-                                <span class="midgrey truncate" data-test-text="admin-key">
-                                    {{this.integration.adminKey.secret}}
-                                </span>
-                                <div class="absolute top-2 right-2 flex items-stretch child">
-                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2 bg-white" data-tooltip="Regenerate">
-                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
-                                    </button>
-                                    <button type="button" {{action (perform this.copyAdminKey)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
-                                        {{#if this.copyAdminKey.isRunning}}
-                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                        {{else}}
-                                        Copy
-                                        {{/if}}
-                                    </button>
-                                </div>
-                            </div>
-                            {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
-                                <div class="green nt3 mb2 pl3"> Admin API Key was successfully regenerated </div>
-                            {{/if}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pa3 w50 fw7">API URL</td>
-                        <td class="pa0 truncate">
-                            <div class="pa3 relative truncate {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
-                                <span class="midgrey" data-test-text="api-url">
-                                    {{this.apiUrl}}
-                                </span>
-                                <div class="absolute top-1 right-2">
-                                    <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform this.copyApiUrl)}} class="white fw4 flex items-center">
-                                            {{#if this.copyApiUrl.isRunning}}
-                                                {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
-                                            {{else}}
-                                                Copy
-                                            {{/if}}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt12" id="zapier-toggle">
+        <section id="zapier-toggle" class="gh-main-section">
+            <h4 class="heading bn">Zapier templates</h4>
+            <p class="description">Explore pre-built templates for common automation tasks</p>
             <div class="gh-setting-content gh-setting-content--no-action">
-                <div class="gh-setting-title">Zapier templates</div>
-                <div class="gh-setting-desc mt1">Explore pre-built templates for common automation tasks</div>
                 <div class="gh-setting-content-extended">                    
                     <div class="apps-grid gh-settings-zapier-templates">
                         <div class="apps-grid-cell">
@@ -240,7 +236,7 @@
 
                 </div>
             </div>
-        </div>
+        </section>
     </section>
 </section>
 

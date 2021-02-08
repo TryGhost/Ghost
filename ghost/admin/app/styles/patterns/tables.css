@@ -92,3 +92,32 @@ table td,
     top: 1px;
     position: relative;
 }
+
+/* Plain list tables */
+.table.list, 
+table.list td {
+    padding: 8px 0;
+}
+
+.table.list .data-label, 
+table.list .data-label {
+    color: var(--midgrey);
+    font-weight: 400;
+    font-size: 1.4rem;
+    white-space: nowrap;
+    padding-right: 8px;
+}
+
+.table.list .data, 
+table.list .data {
+    color: var(--darkgrey);
+    font-weight: 500;
+    font-size: 1.4rem;
+    padding: 8px;
+    word-wrap: break-word;
+}
+
+.table.list .data.highlight-hover:hover,
+table.list .data.highlight-hover:hover {
+    background: var(--whitegrey-l1);
+}
