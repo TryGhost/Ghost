@@ -12,7 +12,7 @@
     margin: 1.6em 0;
     color: color-mod(var(--midgrey) l(-18%));
     text-align: center;
-    background: var(--white);
+    background: var(--whitegrey-l1);
     border-radius: 4px;
     border-radius: 4px;
 }

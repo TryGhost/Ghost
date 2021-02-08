@@ -7,20 +7,24 @@
                 {{if this.tag.isNew "New tag" this.tag.name}}
             </h2>
             <section class="view-actions">
-                <GhTaskButton @task={{this.save}} @type="button" @class="gh-btn gh-btn-blue gh-btn-icon" @data-test-button="save" />
+                <GhTaskButton @task={{this.save}} @type="button" @class="gh-btn gh-btn-primary gh-btn-icon" @data-test-button="save" />
             </section>
         </GhCanvasHeader>
 
-        <GhTagSettingsForm
-            @tag={{this.tag}}
-            @scratchTag={{this.scratchTag}}
-            @setProperty={{action "setProperty"}} />
+        <div class="gh-main-width">
+            <GhTagSettingsForm
+                @tag={{this.tag}}
+                @scratchTag={{this.scratchTag}}
+                @setProperty={{action "setProperty"}} />
+        </div>
     </form>
 
     {{#unless this.tag.isNew}}
-        <button type="button" class="gh-btn gh-btn-red gh-btn-icon mb15" {{on "click" (action "openDeleteTagModal")}}>
-            <span>Delete tag</span>
-        </button>
+        <div class="gh-main-width">
+            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}}>
+                <span>Delete tag</span>
+            </button>
+        </div>
     {{/unless}}
 </section>
 

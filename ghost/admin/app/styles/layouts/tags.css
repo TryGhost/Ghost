@@ -129,9 +129,15 @@ textarea.gh-tag-details-textarea {
 /* Tag details
 /* ---------------------------------------------------------- */
 
+.gh-tag-basic-settings-form {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px 0;
+}
+
 .gh-tag-image-uploader .gh-image-uploader {
     margin: 4px 0 0;
-    border: 1px solid var(--lightgrey);
+    border: 1px solid var(--whitegrey-l1);
     min-height: 147px;
 }
 

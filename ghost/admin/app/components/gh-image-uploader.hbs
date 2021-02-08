@@ -15,7 +15,7 @@
     {{!-- file selection/drag-n-drop  --}}
     <div class="upload-form">
         <GhFileInput @multiple={{false}} @alt={{this.description}} @action={{action "fileSelected"}} @accept={{this.accept}}>
-            <div class="gh-btn gh-btn-outline" data-test-file-input-description><span>{{this.description}}</span></div>
+            <div class="gh-btn gh-btn-white" data-test-file-input-description><span>{{this.description}}</span></div>
         </GhFileInput>
 
         {{#if (and this.allowUnsplash this.settings.unsplash.isActive)}}

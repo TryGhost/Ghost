@@ -1,3 +1,4 @@
+/* Plain text lists */
 ul.nostyle {
     list-style-type: none;
     margin: 0;
@@ -9,12 +10,13 @@ ul.nostyle li {
     padding: 0;
 }
 
+/* Tabular data lists */
 .gh-list {
+    display: table;
     margin: 0;
     padding: 0;
     list-style: none;
     background: var(--white);
-    display: table;
     width: 100%;
     border-bottom: var(--main-color-area-divider) 1px solid;
 }
@@ -27,11 +29,6 @@ ul.nostyle li {
 .gh-list-row {
     display: table-row;
 }
-
-/* .gh-list-row:not(.header):not(.loading):hover .gh-list-cell,
-.gh-list-row:not(.header):not(.loading):hover .gh-list-data {
-    background: var(--whitegrey-l2);
-} */
 
 .gh-list-row:not(.header):not(.loading):hover {
     background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);

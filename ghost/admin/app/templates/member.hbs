@@ -36,14 +36,16 @@
 
         {{#unless this.member.isNew}}
             <div class="gh-main-section">
-                <button
-                    type="button"
-                    class="gh-btn gh-btn-red gh-btn-icon"
-                    {{on "click" this.toggleDeleteMemberModal}}
-                    data-test-button="delete-member"
-                >
-                    <span>Delete member</span>
-                </button>
+                <div class="gh-main-section-block">
+                    <button
+                        type="button"
+                        class="gh-btn gh-btn-red gh-btn-icon"
+                        {{on "click" this.toggleDeleteMemberModal}}
+                        data-test-button="delete-member"
+                    >
+                        <span>Delete member</span>
+                    </button>
+                </div>
             </div>
         {{/unless}}
     </div>
