@@ -20,7 +20,7 @@
     {{#unless this.currentUser.isAuthorOrContributor}}
         {{#if this.invites}}
         <section class="gh-main-section gh-invited-users apps-first-header" data-test-invited-users>
-            <h4 class="heading small">Invited users</h4>
+            <h4 class="gh-main-section-header small">Invited users</h4>
             <div class="apps-grid">
 
                 {{#each this.sortedInvites as |invite|}}
@@ -72,7 +72,7 @@
     {{/unless}}
 
     <section class="gh-main-section gh-active-users {{unless this.invites "apps-first-header"}}" data-test-active-users>
-        <h4 class="heading small">Active users</h4>
+        <h4 class="gh-main-section-header small">Active users</h4>
         <div class="apps-grid">
             {{!-- For authors/contributors, only show their own user --}}
             {{#if this.currentUser.isAuthorOrContributor}}
