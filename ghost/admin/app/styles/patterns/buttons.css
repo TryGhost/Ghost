@@ -65,7 +65,7 @@
 .gh-btn.disabled,
 .gh-btn[disabled],
 fieldset[disabled] .gh-btn {
-    opacity: 0.8;
+    opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
 }
