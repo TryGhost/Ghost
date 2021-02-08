@@ -1,84 +1,86 @@
-<section class="gh-main-section columns-2">
-    <h4 class="heading">Basic settings</h4>
-    <div class="gh-main-section-block">
-        <div class="gh-tag-settings-multiprop">
-            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="name" class="mr2 flex-auto">
-                <label for="tag-name">Name</label>
+<div class="gh-main-section-modifier">
+    <h4 class="gh-main-section-header small">Basic settings</h4>
+    <section class="gh-main-section columns-2">
+        <div class="gh-main-section-block">
+            <div class="gh-tag-settings-multiprop">
+                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="name" class="mr2 flex-auto">
+                    <label for="tag-name">Name</label>
+                    <GhTextInput
+                        @id="tag-name"
+                        @name="name"
+                        @value={{this.scratchTag.name}}
+                        @tabindex="1"
+                        @focus-out={{action "setProperty" "name" this.scratchTag.name}}
+                    />
+                    <span class="error">
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="name" />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="accentColor" data-test-error="accentColor" />
+                    </span>
+                    <p class="description">
+                        Start with # to create internal tags
+                        <a href="https://ghost.org/help/organising-content/#private-tags" target="_blank" rel="noreferrer">Learn more</a>
+                    </p>
+                </GhFormGroup>
+
+                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="accentColor" class="gh-tag-settings-colorcontainer">
+                    <label for="accent-color">Color</label>
+                    <div class="input-color">
+                        <GhTextInput
+                            @name="accent-color"
+                            @placeholder="abcdef"
+                            @autocorrect="off"
+                            @maxlength="6"
+                            @focus-out={{action "validateAccentColor"}}
+                            @value={{accentColor}}
+                            data-test-input="accentColor"
+                        />
+                        <div class="color-box" style={{this.accentColorBackgroundStyle}}></div>
+                    </div>
+                </GhFormGroup>
+            </div>
+
+            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="slug">
+                <label for="tag-slug">Slug</label>
                 <GhTextInput
-                    @id="tag-name"
-                    @name="name"
-                    @value={{this.scratchTag.name}}
-                    @tabindex="1"
-                    @focus-out={{action "setProperty" "name" this.scratchTag.name}}
+                    @value={{this.scratchTag.slug}}
+                    @id="tag-slug"
+                    @name="slug"
+                    @tabindex="2"
+                    @focus-out={{action "setProperty" "slug" this.scratchTag.slug}}
                 />
-                <span class="error">
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="name" />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="accentColor" data-test-error="accentColor" />
-                </span>
-                <p class="description">
-                    Start with # to create internal tags
-                    <a href="https://ghost.org/help/organising-content/#private-tags" target="_blank" rel="noreferrer">Learn more</a>
-                </p>
+                <GhUrlPreview @prefix="tag" @slug={{this.scratchTag.slug}} @tagName="p" @classNames="description" />
+                <GhErrorMessage @errors={{this.activeTag.errors}} @property="slug" />
             </GhFormGroup>
 
-            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="accentColor" class="gh-tag-settings-colorcontainer">
-                <label for="accent-color">Color</label>
-                <div class="input-color">
-                    <GhTextInput
-                        @name="accent-color"
-                        @placeholder="abcdef"
-                        @autocorrect="off"
-                        @maxlength="6"
-                        @focus-out={{action "validateAccentColor"}}
-                        @value={{accentColor}}
-                        data-test-input="accentColor"
-                    />
-                    <div class="color-box" style={{this.accentColorBackgroundStyle}}></div>
-                </div>
+            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="description">
+                <label for="tag-description">Description</label>
+                <GhTextarea
+                    @id="tag-description"
+                    @name="description"
+                    @class="gh-tag-details-textarea"
+                    @tabindex="3"
+                    @value={{this.scratchTag.description}}
+                    @focus-out={{action "setProperty" "description" this.scratchTag.description}}
+                />
+                <GhErrorMessage @errors={{this.tag.errors}} @property="description" />
+                <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.description 500}}</p>
             </GhFormGroup>
         </div>
-
-        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="slug">
-            <label for="tag-slug">Slug</label>
-            <GhTextInput
-                @value={{this.scratchTag.slug}}
-                @id="tag-slug"
-                @name="slug"
-                @tabindex="2"
-                @focus-out={{action "setProperty" "slug" this.scratchTag.slug}}
-            />
-            <GhUrlPreview @prefix="tag" @slug={{this.scratchTag.slug}} @tagName="p" @classNames="description" />
-            <GhErrorMessage @errors={{this.activeTag.errors}} @property="slug" />
-        </GhFormGroup>
-
-        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="description">
-            <label for="tag-description">Description</label>
-            <GhTextarea
-                @id="tag-description"
-                @name="description"
-                @class="gh-tag-details-textarea"
-                @tabindex="3"
-                @value={{this.scratchTag.description}}
-                @focus-out={{action "setProperty" "description" this.scratchTag.description}}
-            />
-            <GhErrorMessage @errors={{this.tag.errors}} @property="description" />
-            <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.description 500}}</p>
-        </GhFormGroup>
-    </div>
-    <div class="gh-main-section-block">
-        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
-            <label for="tag-image">Tag image</label>
-            <GhImageUploaderWithPreview
-                @image={{this.tag.featureImage}}
-                @text="Upload tag image"
-                @class="gh-tag-image-uploader"
-                @allowUnsplash={{true}}
-                @update={{action "setCoverImage"}}
-                @remove={{action "clearCoverImage"}}
-            />
-        </GhFormGroup>
-    </div>
-</section>
+        <div class="gh-main-section-block">
+            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
+                <label for="tag-image">Tag image</label>
+                <GhImageUploaderWithPreview
+                    @image={{this.tag.featureImage}}
+                    @text="Upload tag image"
+                    @class="gh-tag-image-uploader"
+                    @allowUnsplash={{true}}
+                    @update={{action "setCoverImage"}}
+                    @remove={{action "clearCoverImage"}}
+                />
+            </GhFormGroup>
+        </div>
+    </section>
+</div>
 
 
 <section class="gh-main-section">
