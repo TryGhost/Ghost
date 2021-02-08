@@ -42,7 +42,7 @@
                 {{#unless this.post.isNew}}
                     {{#if this.post.isDraft}}
                         <div>
-                            <button type="button" class="gh-contentfilter-menu-trigger mr3" {{on "click" (action "togglePostPreviewModal")}}>
+                            <button type="button" class="gh-editor-preview-trigger" {{on "click" (action "togglePostPreviewModal")}}>
                                 <span>Preview</span>
                             </button>
                         </div>
