@@ -578,15 +578,15 @@
   dependencies:
     papaparse "5.3.0"
 
-"@tryghost/members-ssr@0.8.8":
-  version "0.8.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.8.tgz#64f7d83899e443b88e6b06ed36130fa28c09d8bd"
-  integrity sha512-nQJXIN41oYTX7lJ7+vvCsY3EyfANHA0UWYURRO/5I4bEReZa/bF1C6Bow9pWEZXixxfyIQm4ffAOixDUIIusaA==
+"@tryghost/members-ssr@0.8.10":
+  version "0.8.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.10.tgz#e1f300336b79aa1682b1a2ed26db8ddae1cc65e6"
+  integrity sha512-dHXriIZuz4Ld0iGujGJvdJp0MjgOZwMMBqzOyrDrvVCucHHibdWAgkORgoJ3f+ko5Xn1i1wNofhOICCJ5uA4kQ==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
     cookies "^0.8.0"
-    ghost-ignition "4.4.2"
+    ghost-ignition "4.4.3"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
