@@ -80,6 +80,10 @@ ul.nostyle li {
     transition: none !important;
 }
 
+.gh-list.small .gh-list-data {
+    padding: 8px 20px;
+}
+
 .gh-list-row:nth-of-type(2) .gh-list-data {
     border-top: none;
 }
