@@ -7,7 +7,7 @@
             General settings
         </h2>
         <section class="view-actions">
-            <GhTaskButton @buttonText="Save settings" @task={{this.save}} @class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button="true" />
+            <GhTaskButton @buttonText="Save settings" @task={{this.save}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-save-button="true" />
         </section>
     </GhCanvasHeader>
 
@@ -20,9 +20,9 @@
 
     <section class="view-container">
 
-        <div class="gh-setting-header gh-first-header">Publication info</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
-            <div class="gh-setting-first">
+        <section class="gh-main-section">
+            <h4 class="heading small">Publication info</h4>
+            <div class="gh-main-section-block bb gh-setting">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Title &amp; description</div>
                     <div class="gh-setting-desc">The details used to identify your publication around the web</div>
@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <div class="gh-setting">
+            <div class="gh-main-section-block bb gh-setting">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Site timezone</div>
                     <div class="gh-setting-desc">Set the time and date of your publication, used for all published posts</div>
@@ -74,7 +74,8 @@
                     <button type="button" class="gh-btn" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if this.timezoneOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
-            <div class="gh-setting-last">
+
+            <div class="gh-main-section-block bb gh-setting">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Publication Language</div>
                     <div class="gh-setting-desc">Set the language/locale which is used on your site</div>
@@ -97,11 +98,11 @@
                     <button type="button" class="gh-btn" {{action (toggle "langOpen" this)}} data-test-toggle-lang><span>{{if this.langOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="gh-setting-header">Site meta settings</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
-            <div class="gh-setting-first flex-column">
+        <section class="gh-main-section">
+            <h4 class="heading small">Site meta settings</h4>
+            <div class="gh-main-section-block bb gh-setting flex-column">
                 <div class="flex flex-row justify-between w-100">
                     <div class="gh-setting-content">
                         <div class="gh-setting-title">Meta data</div>
@@ -154,7 +155,7 @@
                     </div>
                 {{/liquid-if}}
             </div>
-            <div class="gh-setting flex-column">
+            <div class="gh-main-section-block bb gh-setting flex-column">
                 <div class="flex flex-row justify-between w-100">
                     <div class="gh-setting-content">
                         <div class="gh-setting-title">Twitter card</div>
@@ -224,7 +225,7 @@
                     </div>
                     {{/liquid-if}}
             </div>
-            <div class="gh-setting-last flex-column">
+            <div class="gh-main-section-block bb gh-setting flex-column">
                 <div class="flex flex-row justify-between w-100">
                     <div class="gh-setting-content">
                         <div class="gh-setting-title">Facebook card</div>
@@ -291,13 +292,13 @@
                             </div>
                         </div>
                     </div>
-                    {{/liquid-if}}
+                {{/liquid-if}}
             </div>
-        </div>
+        </section>
 
-        <div class="gh-setting-header">Social accounts</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
-            <div class="gh-setting-first gh-setting-last">
+        <section class="gh-main-section">
+            <h4 class="heading small">Social accounts</h4>
+            <div class="gh-main-section-block bb gh-setting gh-setting-last">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Social accounts</div>
                     <div class="gh-setting-desc">Link your social accounts for full structured data and rich card support</div>
@@ -336,11 +337,11 @@
                     <button type="button" class="gh-btn" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if this.socialOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="gh-setting-header">Advanced settings</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
-            <div class="gh-setting-first gh-setting-last">
+        <section class="gh-main-section">
+            <h4 class="heading small">Advanced settings</h4>
+            <div class="gh-main-section-block bb gh-setting">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Make this site private</div>
                     <div class="gh-setting-desc">
@@ -386,7 +387,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
     </section>
     </div>
