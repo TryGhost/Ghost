@@ -202,10 +202,11 @@
 }
 
 .gh-setting-desc {
-    line-height: 1.3em;
+    line-height: 1.4em;
     color: var(--middarkgrey);
     letter-spacing: 0.3px;
     font-size: 1.3rem;
+    font-weight: 400;
 }
 
 .gh-setting-error {
