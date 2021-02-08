@@ -869,13 +869,9 @@ export default Controller.extend({
             type = capitalize(this.get('post.displayName'));
             path = this.get('post.url');
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
-        } else {
-            type = 'Preview';
-            path = this.get('post.previewUrl');
-            actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }
 
-        notifications.showNotification(message, {type: 'success', actions: actions.htmlSafe(), delayed});
+        notifications.showNotification(message, {type: 'success', actions: (actions && actions.htmlSafe()), delayed});
     },
 
     _showScheduledNotification(delayed) {
