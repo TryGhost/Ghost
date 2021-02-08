@@ -949,10 +949,11 @@
     padding: 0 var(--main-layout-content-sidepadding);
 }
 
+.gh-main-section-content.pa { padding: 20px 24px 24px; }
 .gh-main-section-content.pt { padding-top: 10px; }
-.gh-main-section-content.pr { padding-right: 54px; }
+.gh-main-section-content.pr { padding-right: 24px; }
 .gh-main-section-content.pb { padding-bottom: 10px; }
-.gh-main-section-content.pl { padding-left: 54px; }
+.gh-main-section-content.pl { padding-left: 24px; }
 
 .gh-main-white .gh-canvas-header {
     background: var(--white);
