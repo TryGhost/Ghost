@@ -19,8 +19,8 @@
     {{!-- Show invited users to everyone except authors --}}
     {{#unless this.currentUser.isAuthorOrContributor}}
         {{#if this.invites}}
-        <section class="apps-grid-container gh-invited-users apps-first-header" data-test-invited-users>
-            <span class="apps-grid-title">Invited users</span>
+        <section class="gh-main-section gh-invited-users apps-first-header" data-test-invited-users>
+            <h4 class="heading small">Invited users</h4>
             <div class="apps-grid">
 
                 {{#each this.sortedInvites as |invite|}}
@@ -71,8 +71,8 @@
         {{/if}}
     {{/unless}}
 
-    <section class="apps-grid-container gh-active-users {{unless this.invites "apps-first-header"}}" data-test-active-users>
-        <span class="apps-grid-title">Active users</span>
+    <section class="gh-main-section gh-active-users {{unless this.invites "apps-first-header"}}" data-test-active-users>
+        <h4 class="heading small">Active users</h4>
         <div class="apps-grid">
             {{!-- For authors/contributors, only show their own user --}}
             {{#if this.currentUser.isAuthorOrContributor}}
