@@ -3,7 +3,7 @@
 
 form label {
     display: block;
-    color: var(--darkgrey);
+    color: var(--black);
     font-size: 1.3rem;
     font-weight: 600;
     user-select: text;
@@ -67,9 +67,9 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey);
+    color: var(--middarkgrey);
     font-size: 1.3rem;
-    font-weight: 400;
+    font-weight: 300;
 }
 
 .form-group p.green {
@@ -479,11 +479,10 @@ textarea {
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--whitegrey-l2);
-    border: 1px solid color-mod(var(--lightgrey) l(-3%));
+    background: var(--lightgrey);
     transition: .3s;
-    width: 50px !important;
-    height: 28px !important;
+    width: 48px !important;
+    height: 26px !important;
     border-radius: 999px;
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
@@ -502,13 +501,12 @@ textarea {
     top: 2px !important;
     background-color: white;
     transition: .3s;
-    box-shadow: 0 1px 2px rgba(0,0,0,.1);
-    border: 1px solid color-mod(var(--lightgrey) l(-3%));
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
     border-radius: 999px;
 }
 
 .for-switch input:checked + .input-toggle-component {
-    background: var(--green);
+    background: var(--black);
     border-color: transparent;
 }
 

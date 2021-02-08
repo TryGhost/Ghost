@@ -157,7 +157,8 @@
 
     /* Inputs */
     --input-bg-color: var(--white);
-    --input-border: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    --input-border-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
+    --input-border: var(--input-border-color) 1px solid;
 }
 
 /* Colour classes
@@ -335,6 +336,23 @@ h5 {
 
 h6 {
     font-size: 1.5rem;
+}
+
+.gh-heading-xs {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: .2px;
+    margin: 0;
+    padding: 0;
+    color: var(--black);
+}
+
+.gh-data-summary {
+    font-size: 3.9rem;
+    line-height: 4rem;
+    font-weight: 600;
+    color: var(--black);
 }
 
 p,

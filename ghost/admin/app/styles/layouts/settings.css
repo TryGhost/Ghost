@@ -193,12 +193,17 @@
     font-size: 1.5rem;
     line-height: 1.15em;
     font-weight: 600;
-    color: var(--darkgrey);
+    color: var(--black);
+}
+
+.gh-setting-title.m {
+    font-size: 1.4rem;
+    font-weight: 500;
 }
 
 .gh-setting-desc {
     line-height: 1.3em;
-    color: var(--midgrey);
+    color: var(--middarkgrey);
     letter-spacing: 0.3px;
     font-size: 1.3rem;
 }

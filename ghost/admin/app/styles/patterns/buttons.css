@@ -25,10 +25,10 @@
 .gh-btn-grey span {
     display: block;
     overflow: hidden;
-    padding: 0 14px;
-    height: 33px;
+    padding: 0 14px 1px;
+    height: 34px;
     font-size: 1.35rem;
-    line-height: 33px;
+    line-height: 34px;
     text-align: center;
     letter-spacing: 0.2px;
     border-radius: 3px;
@@ -234,11 +234,6 @@ fieldset[disabled] .gh-btn {
 .gh-btn-white.gh-btn-green:hover,
 .gh-btn-white.gh-btn-blue:hover {
     border: none;
-}
-
-.gh-btn-white span {
-    height: 35px;
-    line-height: 35px;
 }
 
 .gh-btn-strong {

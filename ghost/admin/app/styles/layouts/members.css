@@ -239,20 +239,8 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-summary-heading {
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    font-weight: 500;
-    letter-spacing: 0.2px;
     margin: 0;
     padding: 0;
-    color: var(--black);
-}
-
-.gh-members-chart-summary-data {
-    font-size: 3.9rem;
-    color: var(--black);
-    line-height: 4.0rem;
-    font-weight: 600;
 }
 
 .gh-members-chart.black {
@@ -497,11 +485,35 @@ label[for="member-description"] + p {
     margin: 0 0 4px;
 }
 
+.gh-member-detail-overview {
+    padding: 32px 0 0;
+}
+
+.gh-member-detail-overview h3 {
+    font-size: 1.7rem;
+    font-weight: 600;
+    padding: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-member-detail-overview p {
+    margin: 0;
+    padding: 0;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-member-detail-overview a,
+.gh-member-detail-overview a:hover {
+    color: var(--black);
+}
+
 textarea.gh-member-details-textarea {
     max-width: 100%;
     min-width: auto;
     min-height: 50px;
-    height: 154px;
+    height: 85px;
 }
 
 .gh-member-info-icon {
@@ -598,6 +610,7 @@ textarea.gh-member-details-textarea {
 .gh-members-subscribed-checkbox,
 .gh-members-comped-checkbox {
     max-width: 100%;
+    margin-top: 32px;
 }
 
 .gh-new-member-avatar {
@@ -642,12 +655,6 @@ textarea.gh-member-details-textarea {
 
 .gh-member-btn-contsub:hover span {
     color: color-mod(var(--blue) l(-7%) saturation(-10%));
-}
-
-.gh-member-details,
-.gh-member-feed {
-    float: left;
-    width: 69%;
 }
 
 .gh-member-internal-info,

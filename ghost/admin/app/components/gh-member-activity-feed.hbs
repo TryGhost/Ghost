@@ -1,11 +1,8 @@
-<div class="gh-member-feed" ...attributes>
-
-    <div class="flex justify-between mt8">
-        <h4 class="midlightgrey f-small fw5 ttu">Member activity</h4>
-    </div>
-
-    <div class="flex-auto bg-grouped-table gh-content-box mt2 flex flex-column justify-between items-stretch">
-        <div class="pt5 pb5">
+<div class="gh-member-feed gh-main-section-content pr" ...attributes>
+    <h4 class="gh-main-section-heading no-border">Member activity</h4>
+    
+    <div class="gh-content-box flex-auto flex flex-column justify-between items-stretch">
+        <div>
             {{#if this.activities}}
                 {{#each this.firstActivities as |activity|}}
                     <GhMemberActivityFeedItem @activity={{activity}} />
@@ -28,11 +25,10 @@
                     </button>
                 {{/if}}
             {{else}}
-                <p class="ma0 pa8 tc midgrey">No member activity yet</p>
+                <p class="ma0 pa12 tc midgrey fw3">No member activity yet</p>
             {{/if}}
         </div>
     </div>
-
 </div>
 
 {{#if this.emailPreview}}
