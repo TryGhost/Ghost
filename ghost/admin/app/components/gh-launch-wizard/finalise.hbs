@@ -5,7 +5,7 @@
         <p>You can further customise your site in Settings.</p>
     </div>
     <div class="gh-launch-wizard-nav-buttons">
-        <button type="button" class="gh-btn gh-btn-icon-grey gh-btn-large w-30" {{on "click" @backStep}}><span>{{svg-jar "arrow-left-tail"}}</span></button>
+        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon-dark gh-btn-large w-30" {{on "click" @backStep}}><span>{{svg-jar "arrow-left-tail"}}</span></button>
         <GhTaskButton
             @task={{this.finaliseTask}}
             @buttonText="Launch your site!"

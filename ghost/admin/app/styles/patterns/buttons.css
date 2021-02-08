@@ -51,6 +51,16 @@
     background: var(--whitegrey-d1);
 }
 
+.gh-btn svg {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.gh-btn-large svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* When disabled */
 .gh-btn.disabled,
 .gh-btn[disabled],
@@ -58,11 +68,6 @@ fieldset[disabled] .gh-btn {
     opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
-}
-
-.gh-btn svg {
-    display: inline-block;
-    vertical-align: middle;
 }
 
 /* Primary button
@@ -80,6 +85,9 @@ fieldset[disabled] .gh-btn {
     background: color-mod(var(--black) l(-20%)) !important;
 }
 
+.gh-btn-black svg {
+    fill: var(--white);
+}
 
 /* Blue button
 /* ---------------------------------------------------------- */
@@ -165,6 +173,10 @@ fieldset[disabled] .gh-btn {
     color: var(--black);
     background: none;
     border-color: color-mod(var(--lightgrey-l1) l(-8%));
+}
+
+.gh-btn-outline svg {
+    fill: var(--black);
 }
 
 /* When clicked or focused with keyboard */
@@ -278,16 +290,6 @@ svg.gh-btn-icon-right {
 
 .gh-btn-icon-no-margin {
     margin: 0;
-}
-
-.gh-btn-icon-grey svg {
-    width: 16px;
-    height: auto;
-    fill: var(--midgrey);
-}
-
-.gh-btn-icon-grey svg path {
-    stroke: var(--midgrey);
 }
 
 .gh-btn-text,

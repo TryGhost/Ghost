@@ -558,7 +558,7 @@ describe('Acceptance: Editor', function () {
             expect(currentURL(), 'currentURL')
                 .to.equal('/editor/post/1');
 
-            await click('button.post-settings');
+            await click('[data-test-button="psm-toggle"]');
 
             let tokens = findAll('[data-test-input="authors"] .ember-power-select-multiple-option');
 

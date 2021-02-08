@@ -69,13 +69,9 @@
 /* Connect Stripe settings */
 .gh-launch-wizard-stripe-info {
     width: 100%;
-    padding: 12px;
-    border: 1px solid var(--whitegrey);
-    border-radius: 4px;
-    box-shadow: 
-        0 0 1px rgba(0,0,0,.12),
-        0 1px 6px rgba(0,0,0,.03),
-        0 6px 10px -8px rgba(0,0,0,.1);
+    padding: 24px 16px;
+    background: var(--whitegrey-l1);
+    border-radius: 2px;
 }
 
 .gh-launch-wizard-stripe-connect-token {

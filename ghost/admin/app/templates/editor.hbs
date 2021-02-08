@@ -7,15 +7,17 @@
         <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if this.infoMessage "bg-white"}}">
             <div class="flex items-center pe-auto">
                 {{#if this.ui.isFullScreen}}
-                    <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless this.infoMessage "bg-white"}}">
-                        <LinkTo @route={{pluralize this.post.displayName }} @classNames="blue link fw4 flex items-center" data-test-link={{pluralize this.post.displayName}}>
-                            {{svg-jar "arrow-left" class="w3 fill-blue mr1 nudge-right--2"}}
-                            {{capitalize (pluralize this.post.displayName)}}
+                    <div class="ml3 flex items-center {{unless this.infoMessage "bg-white"}}">
+                        <LinkTo @route={{pluralize this.post.displayName }} @classNames="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                            <span>
+                                {{svg-jar "arrow-left"}}
+                                {{capitalize (pluralize this.post.displayName)}}
+                            </span>
                         </LinkTo>
                     </div>
                 {{/if}}
-                <div class="flex items-center pl4 pr4 f8 nudge-left--1 h9 br2 br--right {{unless this.infoMessage "bg-white"}}">
-                    <span class="fw4 midgrey-l2">
+                <div class="gh-editor-post-status {{unless this.infoMessage "bg-white"}}">
+                    <span>
                         <GhEditorPostStatus
                             @post={{this.post}}
                             @isSaving={{or this.autosave.isRunning this.saveTasks.isRunning}}
@@ -36,10 +38,14 @@
             </div>
             {{/if}}
 
-            <section class="view-actions br2 {{unless this.infoMessage "bg-white"}}" style="pointer-events: auto">
+            <section class="flex {{unless this.infoMessage "bg-white"}}" style="pointer-events: auto">
                 {{#unless this.post.isNew}}
                     {{#if this.post.isDraft}}
-                        <button type="button" class="blue link f8 fw4 tracked-1 mr1 pl3 pr4 br b--lightgrey hover-darkgrey" {{on "click" (action "togglePostPreviewModal")}}>Preview {{this.post.displayName}}</button>
+                        <div>
+                            <button type="button" class="gh-contentfilter-menu-trigger mr3" {{on "click" (action "togglePostPreviewModal")}}>
+                                <span>Preview</span>
+                            </button>
+                        </div>
                     {{/if}}
 
                     {{#if this.session.user.isContributor}}
@@ -49,20 +55,24 @@
                             @class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
                             data-test-contributor-save=true />
                     {{else}}
-                        <GhPublishmenu
-                            @post={{this.post}}
-                            @postStatus={{this.post.status}}
-                            @saveTask={{this.save}}
-                            @setSaveType={{action "setSaveType"}}
-                            @onOpen={{action "cancelAutosave"}}
-                            @backgroundTask={{this.backgroundLoader}}
-                            @memberCount={{this.memberCount}} />
+                        <div>
+                            <GhPublishmenu
+                                @post={{this.post}}
+                                @postStatus={{this.post.status}}
+                                @saveTask={{this.save}}
+                                @setSaveType={{action "setSaveType"}}
+                                @onOpen={{action "cancelAutosave"}}
+                                @backgroundTask={{this.backgroundLoader}}
+                                @memberCount={{this.memberCount}} />
+                        </div>
                     {{/if}}
                 {{/unless}}
 
-                <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
-                    {{svg-jar "settings"}}
-                </button>
+                <div>
+                    <button type="button" class="gh-btn gh-btn-icon only-has-icon gh-actions-cog ml3" title="Settings" data-test-button="psm-toggle" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
+                        <span>{{svg-jar "settings"}}</span>
+                    </button>
+                </div>
             </section>
         </header>
 
