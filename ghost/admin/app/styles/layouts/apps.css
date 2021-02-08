@@ -13,16 +13,14 @@
 /* Main Layout
 /* ---------------------------------------------------------- */
 
-.integrations-wrapper {
-    background: linear-gradient(315deg,var(--whitegrey-l1),var(--whitegrey-l2));
-    padding: var(--main-layout-area-padding) 0;
-}
-
 .integrations-directory {
     display: grid;
     justify-content: space-between;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-gap: 25px;
+    background: var(--whitegrey-l1);
+    padding: 24px;
+    border-radius: 3px;
 }
 
 .id-item {
@@ -107,21 +105,6 @@
 }
 
 /* Built-in integrations */
-
-.apps-grid-container {
-    margin: 2vw 0 0;
-}
-
-.apps-grid-title {
-    display: block;
-    margin: 1vw 0 5px 1px;
-    color: var(--midlightgrey);
-    text-transform: uppercase;
-    font-weight: 500;
-    letter-spacing: 0.35px;
-    font-size: 1.2rem;
-}
-
 .apps-first-header,
 .apps-first-header .apps-grid-title {
     margin-top: 0px;
@@ -131,9 +114,6 @@
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
-    border-radius: 5px;
-    background: var(--white);
-    box-shadow: var(--shadow-1);
 }
 
 .apps-grid-note {
@@ -167,9 +147,9 @@
     align-items: center;
     justify-content: space-between;
     overflow: hidden;
-    padding: 16px 16px;
+    padding: 16px 4px;
     height: 65px;
-    border-top: var(--lightgrey) 1px solid;
+    border-bottom: var(--whitegrey) 1px solid;
     transition: background 0.3s ease;
 }
 
@@ -190,21 +170,11 @@
     }
 }
 
-.apps-grid-cell:first-of-type {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-
-.apps-grid-cell:last-of-type {
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
 .apps-grid-cell:first-of-type .apps-card-app {
     border-top: none;
 }
 
-.apps-card-left {
+.apps-card-left {   
     display: flex;
     align-items: center;
 }
@@ -335,26 +305,27 @@
     width: 100%;
 }
 
-/* Slack
+/* Details
 /* ---------------------------------------------------------- */
 
 .app-grid {
     display: flex;
-    flex-wrap: wrap;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-start;
     align-content: flex-start;
-    margin-bottom: 30px;
+    margin-top: 12px;
 }
 
 .app-icon {
     position: relative;
-    flex: 0 0 48px;
-    width: 48px;
-    height: 48px;
+    flex: 1 0 56px;
+    width: 56px;
+    min-width: 56px;
+    height: 56px;
     background-position: center center;
     background-size: cover;
     border-radius: 10%;
+    margin-right: 32px;
 }
 
 .app-icon img {
@@ -362,17 +333,17 @@
 }
 
 .app-cell h3 {
-    margin: 0;
-    color: var(--darkgrey);
-    font-size: 2.4rem;
-    font-weight: 500;
+    margin: 4px 0 0;
+    color: var(--black);
+    font-size: 2.1rem;
+    font-weight: 600;
 }
 
 .app-cell p {
     margin: 0;
     margin-bottom: 5px;
     color: var(--midgrey);
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     line-height: 1.4em;
 }
 
@@ -391,6 +362,35 @@
 .app-config-form > .gh-btn-grey:hover,
 .app-config-form > .gh-btn-grey:focus {
     border-color: rgb(223, 225, 227);
+}
+
+.app-api-buttons {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: -4px;
+    right: -3px;
+}
+
+.app-button-regenerate {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--lightgrey);
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-right: 8px;
+    background: var(--white);
+}
+
+.app-button-copy {
+    display: flex;
+    align-items: center;
+    background: var(--black);
+    font-size: 1.2rem;
+    padding: 4px 12px;
+    color: var(--white);
+    font-weight: 500;
+    border-radius: 3px;
 }
 
 
@@ -421,6 +421,10 @@
 
 .zapier-template-link:hover span {
     color: #f04600;
+}
+
+.gh-settings-zapier-templates {
+    margin-top: -25px;
 }
 
 .gh-settings-zapier-templates .apps-card-app-title {
