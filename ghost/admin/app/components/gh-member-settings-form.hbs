@@ -63,61 +63,66 @@
         </div>
     </section>
 
-    <section class="gh-main-section columns-2">
-        <h4 class="heading">Basic data</h4>
-        <div class="gh-main-section-block">
-            <div>
-                <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width">
-                    <label for="member-name">Name</label>
-                    <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
-                        @focus-out={{action "setProperty" "name" this.scratchMember.name}} data-test-input="member-name" />
-                    <GhErrorMessage @errors={{member.errors}} @property="name" />
-                </GhFormGroup>
-
-                <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width">
-                    <label for="member-email">Email</label>
-                    <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
-                        @autocapitalize="off" @autocorrect="off" @autocomplete="off"
-                        @focus-out={{action "setProperty" "email" this.scratchMember.email}} data-test-input="member-email"/>
-                    <GhErrorMessage @errors={{this.member.errors}} @property="email" />
-                </GhFormGroup>
-            </div>
-
-            <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4 class="gh-setting-title m">Subscribed to newsletter</h4>
-                        <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
-                    </div>
-                    <div class="for-switch">
-                        <label class="switch" for="subscribed-checkbox">
-                            <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
-                                @name="subscribed" data-test-checkbox="member-subscribed" />
-                            <span class="input-toggle-component"></span>
-                        </label>
-                    </div>
-                </div>
-            </GhFormGroup>
-        </div>
-        <div class="gh-main-section-block">
-            <div class="flex-auto flex flex-column items-stretch">
+    <section class="gh-main-section-modifier">
+        <h4 class="gh-main-section-header small">Basic data</h4>
+        <div class="gh-main-section columns-2">
+            <div class="gh-main-section-block">
                 <div>
-                    <GhFormGroup @classNames="gh-member-labels">
-                        <label for="label-input">Labels</label>
-                        <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" data-test-input="" />
+                    <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width">
+                        <label for="member-name">Name</label>
+                        <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
+                            @focus-out={{action "setProperty" "name" this.scratchMember.name}} data-test-input="member-name" />
+                        <GhErrorMessage @errors={{member.errors}} @property="name" />
                     </GhFormGroup>
+
+                    <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width">
+                        <label for="member-email">Email</label>
+                        <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
+                            @autocapitalize="off" @autocorrect="off" @autocomplete="off"
+                            @focus-out={{action "setProperty" "email" this.scratchMember.email}} data-test-input="member-email"/>
+                        <GhErrorMessage @errors={{this.member.errors}} @property="email" />
+                    </GhFormGroup>
+                </div>
+
+                <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="gh-setting-title m">Subscribed to newsletter</h4>
+                            <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+                        </div>
+                        <div class="for-switch">
+                            <label class="switch" for="subscribed-checkbox">
+                                <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
+                                    @name="subscribed" data-test-checkbox="member-subscribed" />
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                </GhFormGroup>
+            </div>
+
+            <div class="gh-main-section-block">
+                <div class="flex-auto flex flex-column items-stretch">
+                    <div>
+                        <GhFormGroup @classNames="gh-member-labels">
+                            <label for="label-input">Labels</label>
+                            <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" data-test-input="" />
+                        </GhFormGroup>
                     
-                    <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0 gh-member-note">
-                        <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
-                        <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
-                            @value={{this.scratchMember.note}} @focus-out={{action "setProperty" "note" this.scratchMember.note}} data-test-input="member-note" />
-                        <GhErrorMessage @errors={{this.member.errors}} @property="note" />
-                        <p> Maximum: <b>500</b> characters. You’ve used
-                            {{gh-count-down-characters this.scratchMember.note 500}}</p>
-                    </GhFormGroup>
+                        <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0 gh-member-note">
+                            <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
+                            <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
+                                @value={{this.scratchMember.note}} @focus-out={{action "setProperty" "note" this.scratchMember.note}} data-test-input="member-note" />
+                            <GhErrorMessage @errors={{this.member.errors}} @property="note" />
+                            <p> Maximum: <b>500</b> characters. You’ve used
+                                {{gh-count-down-characters this.scratchMember.note 500}}</p>
+                        </GhFormGroup>
+                    </div>
                 </div>
             </div>
         </div>
+
+        
     </section>
 
     <section class="gh-main-section {{if this.canShowStripeInfo "columns-2"}}">
@@ -126,7 +131,7 @@
         </div>
         {{#if this.canShowStripeInfo}}
             <div class="gh-main-section-block bb">
-                    <h4 class="heading">Stripe info</h4>
+                    <h4 class="gh-main-section-header">Stripe info</h4>
                     <div class="gh-member-stripe">
                         {{#if this.isLoading}}
                             <div class="pa20 bg-grouped-table gh-content-box grey mt2">
