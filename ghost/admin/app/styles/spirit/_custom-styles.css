@@ -359,7 +359,3 @@ button, .btn-base {
     animation-iteration-count: infinite;
     animation-duration: 0.7s;
 }
-
-.bg-grouped-table {
-    background: var(--white);
-}

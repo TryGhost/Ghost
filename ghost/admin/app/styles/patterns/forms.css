@@ -3,9 +3,9 @@
 
 form label {
     display: block;
-    color: var(--black);
+    color: var(--darkgrey);
     font-size: 1.3rem;
-    font-weight: 600;
+    font-weight: 500;
     user-select: text;
 }
 
