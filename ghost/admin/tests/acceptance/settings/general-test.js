@@ -70,13 +70,13 @@ describe('Acceptance: Settings - General', function () {
                 .to.have.class('active');
 
             expect(
-                find('[data-test-save-button]').textContent.trim(),
+                find('[data-test-button="save"]').textContent.trim(),
                 'save button text'
             ).to.equal('Save settings');
 
             await click('[data-test-toggle-pub-info]');
             await fillIn('[data-test-title-input]', 'New Blog Title');
-            await click('[data-test-save-button]');
+            await click('[data-test-button="save"]');
             expect(document.title, 'page title').to.equal('Settings - General - New Blog Title');
 
             // CMD-S shortcut works
@@ -105,7 +105,7 @@ describe('Acceptance: Settings - General', function () {
             find('#timezone option[value="Africa/Cairo"]').selected = true;
 
             await triggerEvent('#timezone', 'change');
-            await click('[data-test-save-button]');
+            await click('[data-test-button="save"]');
             expect(find('#timezone option:checked').textContent.trim()).to.equal('(GMT +2:00) Cairo, Egypt');
         });
 
