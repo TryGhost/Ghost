@@ -275,7 +275,7 @@ describe('Acceptance: Editor', function () {
 
             await triggerEvent('#timezone', 'change');
             // save the settings
-            await click('.gh-btn.gh-btn-blue');
+            await click('[data-test-button="save"]');
 
             expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
                 .to.equal('(GMT +12:00) International Date Line West');
