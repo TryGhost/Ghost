@@ -60,7 +60,7 @@
     "@tryghost/members-api": "1.0.0-rc.0",
     "@tryghost/members-csv": "0.4.4",
     "@tryghost/members-ssr": "0.8.10",
-    "@tryghost/mw-session-from-token": "0.1.14",
+    "@tryghost/mw-session-from-token": "0.1.15",
     "@tryghost/promise": "0.1.5",
     "@tryghost/security": "0.2.4",
     "@tryghost/session-service": "0.1.16",
