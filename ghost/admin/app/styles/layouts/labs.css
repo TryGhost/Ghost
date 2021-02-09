@@ -82,7 +82,7 @@
 .gh-members-stripe-info {
     border-radius: 0.9rem;
     border: 1px solid var(--whitegrey);
-    background: var(--whitegrey-l2);
+    background: var(--white);
     padding: 12px;
     width: 380px;
 }

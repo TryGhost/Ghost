@@ -61,15 +61,19 @@ input {
     user-select: text;
 }
 
+.form-group.no-margin {
+    margin-bottom: 0;
+}
+
 .form-group.right {
     text-align: right;
 }
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--middarkgrey);
-    font-size: 1.3rem;
-    font-weight: 400;
+    color: var(--midgrey);
+    font-size: 1.25rem;
+    font-weight: 300;
 }
 
 .form-group p.green {
@@ -323,8 +327,8 @@ textarea {
 .gh-radio-button {
     flex-shrink: 0;
     position: relative;
-    width: 15px;
-    height: 15px;
+    width: 17px;
+    height: 17px;
     border: color-mod(var(--lightgrey) l(-10%)) 1px solid;
     border-radius: 100%;
     background: #fff;
@@ -356,8 +360,8 @@ textarea {
 }
 
 .gh-radio.active .gh-radio-button {
-    border-color: color-mod(var(--blue) l(-12%));
-    background: var(--blue);
+    border-color: color-mod(var(--black) l(-12%));
+    background: var(--black);
 }
 
 .gh-radio.active .gh-radio-button:before {
@@ -366,8 +370,8 @@ textarea {
     position: absolute;
     top: 3px;
     left: 3px;
-    width: 7px;
-    height: 7px;
+    width: 9px;
+    height: 9px;
     background: #fff;
     border-radius: 100%;
     box-shadow: rgba(0,0,0,0.25) 0 1px 3px;
@@ -532,8 +536,8 @@ textarea {
 }
 
 .for-switch.small .input-toggle-component:before {
-    height: 16px !important;
-    width: 16px !important;
+    height: 18px !important;
+    width: 18px !important;
 }
 
 .for-switch.small input:checked + .input-toggle-component:before {

@@ -30,33 +30,35 @@
             </div>
         </section>
 
-        <section class="gh-main-section bb columns-2">
+        <div class="gh-main-section-modifier grey">
             <h4 class="gh-main-section-header small">Unsplash configuration</h4>
-            <div class="gh-main-section-block">
-                <div class="gh-setting" id="unsplash-toggle">
-                    <div class="gh-setting-content">
-                        <div class="gh-setting-title">Enable Unsplash</div>
-                        <div class="gh-setting-desc">Enable <a href="https://unsplash.com" target="_blank">Unsplash</a> image integration for your posts</div>
-                    </div>
-                    <div class="gh-setting-action">
-                        <div class="form-group right gh-setting-unsplash-checkbox">
-                            <div class="for-checkbox">
-                                <label for="isActive" class="checkbox">
-                                        <input
-                                            type="checkbox"
-                                            checked={{this.unsplashSettings.isActive}}
-                                            id="isActive"
-                                            name="isActive"
-                                            onclick={{action "update" value="target.checked"}}
-                                            data-test-checkbox="unsplash"
-                                        >
-                                        <span class="input-toggle-component"></span>
-                                </label>
+            <section class="gh-main-section columns-2">
+                <div class="gh-main-section-block">
+                    <div class="gh-setting" id="unsplash-toggle">
+                        <div class="gh-setting-content">
+                            <div class="gh-setting-title">Enable Unsplash</div>
+                            <div class="gh-setting-desc">Enable <a href="https://unsplash.com" target="_blank">Unsplash</a> image integration for your posts</div>
+                        </div>
+                        <div class="gh-setting-action">
+                            <div class="form-group right gh-setting-unsplash-checkbox">
+                                <div class="for-checkbox">
+                                    <label for="isActive" class="checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.unsplashSettings.isActive}}
+                                                id="isActive"
+                                                name="isActive"
+                                                onclick={{action "update" value="target.checked"}}
+                                                data-test-checkbox="unsplash"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </section>
 </section>

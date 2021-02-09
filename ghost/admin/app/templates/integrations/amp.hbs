@@ -30,52 +30,54 @@
             </div>
         </section>
 
-        <section class="gh-main-section bb columns-2">
+        <div class="gh-main-section-modifier grey">
             <h4 class="gh-main-section-header small">AMP configuration</h4>
-            <div class="gh-main-section-block">
-                <div class="gh-setting">
-                    <div class="gh-setting-content">
-                        <div class="gh-setting-title">Enable AMP</div>
-                        <div class="gh-setting-desc">Enable <a href="https://ampproject.org" target="_blank">Google Accelerated Mobile Pages</a> for your posts</div>
-                    </div>
-                    <div class="gh-setting-action">
-                        <div class="for-checkbox">
-                            <label for="amp" class="checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={{this.settings.amp}}
-                                    id="amp"
-                                    name="amp"
-                                    onclick={{action "update" value="target.checked"}}
-                                    data-test-amp-checkbox
-                                >
-                                <span class="input-toggle-component"></span>
-                            </label>
+            <section class="gh-main-section columns-2">
+                <div class="gh-main-section-block">
+                    <div class="gh-setting">
+                        <div class="gh-setting-content">
+                            <div class="gh-setting-title">Enable AMP</div>
+                            <div class="gh-setting-desc">Enable <a href="https://ampproject.org" target="_blank">Google Accelerated Mobile Pages</a> for your posts</div>
+                        </div>
+                        <div class="gh-setting-action">
+                            <div class="for-checkbox">
+                                <label for="amp" class="checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.settings.amp}}
+                                        id="amp"
+                                        name="amp"
+                                        onclick={{action "update" value="target.checked"}}
+                                        data-test-amp-checkbox
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </div>
-                {{#liquid-if this.settings.amp class=""}}
-                <div class="gh-setting-last gh-setting-amp-liquid">
-                    <div class="gh-setting-content gh-setting-content--no-action">
-                        <div class="gh-setting-title">Google Analytics Tracking ID</div>
-                        <div class="gh-setting-desc">Tracks AMP traffic in Google Analytics, find your ID <a href="https://ghost.org/help/how-to-find-your-google-analytics-tracking-id/">here</a></div>
-                        <div class="gh-setting-content-extended">
-                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ampGtagId">
-                                <GhTextInput
-                                    @placeholder="UA-XXXXXXX-X"
-                                    @name="amp_gtag_id"
-                                    @value={{this.settings.ampGtagId}}
-                                    @keyEvents={{hash
-                                        Enter=(action "save")
-                                    }}
-                                />
-                                <GhErrorMessage @errors={{this.settings.errors}} @property="ampGtagId"/>
-                            </GhFormGroup>
+                    {{#liquid-if this.settings.amp class=""}}
+                    <div class="gh-setting-last gh-setting-amp-liquid">
+                        <div class="gh-setting-content gh-setting-content--no-action">
+                            <div class="gh-setting-title">Google Analytics Tracking ID</div>
+                            <div class="gh-setting-desc">Tracks AMP traffic in Google Analytics, find your ID <a href="https://ghost.org/help/how-to-find-your-google-analytics-tracking-id/">here</a></div>
+                            <div class="gh-setting-content-extended">
+                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ampGtagId">
+                                    <GhTextInput
+                                        @placeholder="UA-XXXXXXX-X"
+                                        @name="amp_gtag_id"
+                                        @value={{this.settings.ampGtagId}}
+                                        @keyEvents={{hash
+                                            Enter=(action "save")
+                                        }}
+                                    />
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="ampGtagId"/>
+                                </GhFormGroup>
+                            </div>
                         </div>
                     </div>
+                    {{/liquid-if}}
                 </div>
-                {{/liquid-if}}
-            </div>
-        </section>
+            </section>
+        </div>
     </section>
 </section>
