@@ -1,9 +1,9 @@
 :root {
     /* Main menu variables */
-    --mainmenu-color-hover-bg: var(--whitegrey);
+    --mainmenu-color-hover-bg: var(--whitegrey-l1);
     --mainmenu-color-active: var(--black);
     --mainmenu-color-active-bg: var(--whitegrey);
-    --mainmenu-width: 310px;
+    --mainmenu-width: 320px;
     --mainmenu-padding: var(--main-layout-area-padding);
 }
 
@@ -344,7 +344,7 @@
     transition: none;
     font-weight: 400;
     padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     margin: 0;
     border-radius: 0;
     box-sizing: border-box;
@@ -361,16 +361,6 @@
     /* border: 1px solid var(--black);
     padding: 7px calc(var(--mainmenu-padding) - 2px) 7px calc(var(--mainmenu-padding) + 5px); */
 }
-
-/* .gh-nav-list .active::after {
-    content: "";
-    position: absolute;
-    width: 4px;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    background: var(--black);
-} */
 
 .gh-nav-list a:not(.active):hover,
 .gh-nav-list button.main-menu-item:hover {
