@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {capitalize, createPopupNotification, getFirstpromoterId, getSiteDomain, hasPlan, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
+import {capitalize, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getSiteDomain, hasPlan, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -178,8 +178,11 @@ export default class App extends React.Component {
     fetchQueryStrData(qs = '') {
         const qsParams = new URLSearchParams(qs);
         const data = {
-            site: {}
+            site: {
+                plans: {}
+            }
         };
+
         const allowedPlans = [];
 
         // Handle the query params key/value pairs
@@ -208,6 +211,16 @@ export default class App extends React.Component {
                 data.site.portal_button_signup_text = value || '';
             } else if (key === 'buttonStyle' && value) {
                 data.site.portal_button_style = value;
+            } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {
+                data.site.plans.monthly = Number(value);
+            } else if (key === 'yearlyPrice' && !isNaN(Number(value))) {
+                data.site.plans.yearly = Number(value);
+            } else if (key === 'currency' && value) {
+                const currencyValue = value.toUpperCase();
+                data.site.plans.currency = currencyValue;
+                data.site.plans.currency_symbol = getCurrencySymbol(currencyValue);
+            } else if (key === 'disableBackground' && JSON.parse(value)) {
+                data.site.disableBackground = JSON.parse(value);
             }
         }
         data.site.portal_plans = allowedPlans;
@@ -357,7 +370,12 @@ export default class App extends React.Component {
             site: {
                 ...this.state.site,
                 ...(linkSite || {}),
-                ...(previewSite || {})
+                ...(previewSite || {}),
+                plans: {
+                    ...(this.state.site && this.state.site.plans),
+                    ...(linkSite || {}).plans,
+                    ...(previewSite || {}).plans
+                }
             },
             ...restLinkData,
             ...restPreviewData

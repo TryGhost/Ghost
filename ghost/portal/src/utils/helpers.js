@@ -187,6 +187,18 @@ export const getSiteDomain = ({site}) => {
     }
 };
 
+export const getCurrencySymbol = (currency) => {
+    const CURRENCY_SYMBOLS = {
+        USD: '$',
+        AUD: '$',
+        CAD: '$',
+        GBP: '£',
+        EUR: '€',
+        INR: '₹'
+    };
+    return CURRENCY_SYMBOLS[currency] || '';
+};
+
 export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {

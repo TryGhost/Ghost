@@ -144,10 +144,10 @@ class PopupContent extends React.Component {
             pageClass = page;
             break;
         }
-
+        const className = (hasMode(['preview', 'dev']) && !site.disableBackground) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container';
         return (
             <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
-                <div className={(hasMode(['preview', 'dev']) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container') + ' ' + popupWidthStyle + ' ' + pageClass} style={pageStyle} ref={node => (this.node = node)} tabIndex="-1">
+                <div className={className + ' ' + popupWidthStyle + ' ' + pageClass} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                     <CookieDisabledBanner message={cookieBannerText} />
                     {this.renderPopupNotification()}
                     {this.renderActivePage()}
@@ -205,18 +205,21 @@ export default class PopupModal extends React.Component {
     }
 
     renderFrameContainer() {
-        const {member} = this.context;
+        const {member, site} = this.context;
         const Styles = StylesWrapper({member});
+
         const frameStyle = {
             ...Styles.frame.common
         };
         if (hasMode(['preview'])) {
             Styles.modalContainer.zIndex = '3999997';
         }
+        const className = (hasMode(['preview', 'dev']) && !site.disableBackground) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background';
+
         return (
             <div style={Styles.modalContainer}>
                 <Frame style={frameStyle} title="membersjs-popup" head={this.renderFrameStyles()}>
-                    <div className={hasMode(['preview', 'dev']) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background'} onClick = {e => this.handlePopupClose(e)}></div>
+                    <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
                 </Frame>
             </div>
