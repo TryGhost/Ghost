@@ -11,166 +11,169 @@
             </section>
         </GhCanvasHeader>
 
-        <section class="gh-main-section bt">
-            <div class="gh-main-section-block">
-                <div class="flex">
-                    <div class="flex flex-column items-start app-custom-icon-container">
-                        <label class="mb1">Icon</label>
-                        <figure class="app-custom-icon hide-child" style={{this.iconImageStyle}}>
-                            <AspectRatioBox @class="flex items-center h-100 justify-center" @ratio="1/1" @base="height">
-                                {{#unless this.integration.iconImage}}
-                                    {{svg-jar "integration" class="w11 h11"}}
-                                {{/unless}}
-                            </AspectRatioBox>
+        <div class="gh-main-section-modifier grey">
+            <h4 class="gh-main-section-header small">Configuration</h4>
+            <section class="gh-main-section">
+                <div class="gh-main-section-block">
+                    <div class="flex">
+                        <div class="flex flex-column items-start app-custom-icon-container">
+                            <label class="mb1">Icon</label>
+                            <figure class="app-custom-icon hide-child" style={{this.iconImageStyle}}>
+                                <AspectRatioBox @class="flex items-center h-100 justify-center" @ratio="1/1" @base="height">
+                                    {{#unless this.integration.iconImage}}
+                                        {{svg-jar "integration" class="w11 h11"}}
+                                    {{/unless}}
+                                </AspectRatioBox>
 
-                            <GhUploader
-                                @extensions={{this.imageExtensions}}
-                                @onComplete={{action "setIconImage"}}
-                                as |uploader|
+                                <GhUploader
+                                    @extensions={{this.imageExtensions}}
+                                    @onComplete={{action "setIconImage"}}
+                                    as |uploader|
+                                >
+                                    {{#if uploader.isUploading}}
+                                        <div class="absolute top-0 left-0 w-100 h-100 br4 bg-black-70 flex items-center">
+                                            {{uploader.progressBar}}
+                                            </div>
+                                    {{else}}
+                                        <button
+                                            type="button"
+                                            class="child app-custom-icon-uploadlabel"
+                                            {{action "triggerIconFileDialog"}}
+                                        >
+                                            Upload
+                                        </button>
+                                    {{/if}}
+                                    <div style="display:none">
+                                        <GhFileInput
+                                            @name="iconImage"
+                                            @multiple={{false}}
+                                            @action={{uploader.setFiles}}
+                                            @accept={{this.imageMimeTypes}} data-test-file-input="icon" />
+                                    </div>
+                                </GhUploader>
+                            </figure>
+                        </div>
+                        <div class="flex-auto">
+                            <GhValidationStatusContainer
+                                @class="flex flex-column w-100 mr3"
+                                @errors={{this.integration.errors}}
+                                @hasValidated={{this.integration.hasValidated}}
+                                @property="name"
                             >
-                                {{#if uploader.isUploading}}
-                                    <div class="absolute top-0 left-0 w-100 h-100 br4 bg-black-70 flex items-center">
-                                        {{uploader.progressBar}}
-                                        </div>
-                                {{else}}
-                                    <button
-                                        type="button"
-                                        class="child app-custom-icon-uploadlabel"
-                                        {{action "triggerIconFileDialog"}}
-                                    >
-                                        Upload
-                                    </button>
-                                {{/if}}
-                                <div style="display:none">
-                                    <GhFileInput
-                                        @name="iconImage"
-                                        @multiple={{false}}
-                                        @action={{uploader.setFiles}}
-                                        @accept={{this.imageMimeTypes}} data-test-file-input="icon" />
-                                </div>
-                            </GhUploader>
-                        </figure>
-                    </div>
-                    <div class="flex-auto">
-                        <GhValidationStatusContainer
-                            @class="flex flex-column w-100 mr3"
-                            @errors={{this.integration.errors}}
-                            @hasValidated={{this.integration.hasValidated}}
-                            @property="name"
-                        >
-                            <label for="integration_name">Name</label>
-                            <GhTextInput
-                                @id="integration_name"
-                                @class="gh-input mt1 mb1"
-                                @type="text"
-                                @value={{readonly this.integration.name}}
-                                @input={{action (mut this.integration.name) value="target.value"}}
-                                @focus-out={{action "validate" "name" target=this.integration}}
-                                data-test-input="name"
-                            />
-                            <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="name" class="ma0" />
-                        </GhValidationStatusContainer>
+                                <label for="integration_name">Name</label>
+                                <GhTextInput
+                                    @id="integration_name"
+                                    @class="gh-input mt1 mb1"
+                                    @type="text"
+                                    @value={{readonly this.integration.name}}
+                                    @input={{action (mut this.integration.name) value="target.value"}}
+                                    @focus-out={{action "validate" "name" target=this.integration}}
+                                    data-test-input="name"
+                                />
+                                <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="name" class="ma0" />
+                            </GhValidationStatusContainer>
 
-                        <GhValidationStatusContainer
-                            @class="flex flex-column w-100 mr3"
-                            @errors={{this.integration.errors}}
-                            @hasValidated={{this.integration.hasValidated}}
-                            @property="decription"
-                        >
-                            <label for="integration_description" class="mt3">Description</label>
-                            <GhTextInput
-                                @id="integration_description"
-                                @class="gh-input mt1"
-                                @type="text"
-                                @value={{readonly this.integration.description}}
-                                @input={{action (mut this.integration.description) value="target.value"}}
-                                @focus-out={{action "validate" "description" target=this.integration}}
-                                data-test-input="description"
-                            />
-                            <GhErrorMessage @errors={{this.integration.errors}} @property="description" data-test-error="description" class="ma0" />
-                        </GhValidationStatusContainer>
+                            <GhValidationStatusContainer
+                                @class="flex flex-column w-100 mr3"
+                                @errors={{this.integration.errors}}
+                                @hasValidated={{this.integration.hasValidated}}
+                                @property="decription"
+                            >
+                                <label for="integration_description" class="mt3">Description</label>
+                                <GhTextInput
+                                    @id="integration_description"
+                                    @class="gh-input mt1"
+                                    @type="text"
+                                    @value={{readonly this.integration.description}}
+                                    @input={{action (mut this.integration.description) value="target.value"}}
+                                    @focus-out={{action "validate" "description" target=this.integration}}
+                                    data-test-input="description"
+                                />
+                                <GhErrorMessage @errors={{this.integration.errors}} @property="description" data-test-error="description" class="ma0" />
+                            </GhValidationStatusContainer>
 
-                        <table class="app-custom-api-table list" style="table-layout: fixed">
-                            <tbody>
-                                <tr>
-                                    <td class="data-label">Content API key</td>
-                                    <td class="data highlight-hover">
-                                        <div class="relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
-                                            <span class="truncate" data-test-text="content-key">
-                                                {{this.integration.contentKey.secret}}
-                                            </span>
-                                            <div class="app-api-buttons child">
-                                                <button type="button" {{action "confirmRegenerateKeyModal" this.integration.contentKey}} class="app-button-regenerate" data-tooltip="Regenerate">
-                                                    {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
-                                                </button>
-                                                <button type="button" {{action (perform this.copyContentKey)}} class="app-button-copy">
-                                                    {{#if this.copyContentKey.isRunning}}
-                                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                                    {{else}}
-                                                    Copy
-                                                    {{/if}}
-                                                </button>
+                            <table class="app-custom-api-table list" style="table-layout: fixed">
+                                <tbody>
+                                    <tr>
+                                        <td class="data-label">Content API key</td>
+                                        <td class="data highlight-hover">
+                                            <div class="relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
+                                                <span class="truncate" data-test-text="content-key">
+                                                    {{this.integration.contentKey.secret}}
+                                                </span>
+                                                <div class="app-api-buttons child">
+                                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.contentKey}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                                    </button>
+                                                    <button type="button" {{action (perform this.copyContentKey)}} class="app-button-copy">
+                                                        {{#if this.copyContentKey.isRunning}}
+                                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                        {{else}}
+                                                        Copy
+                                                        {{/if}}
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {{#if (eq this.regeneratedKeyType this.integration.contentKey.type)}}
-                                            <div class="green nt3 mb2"> Content API Key was successfully regenerated </div>
-                                        {{/if}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="data-label">Admin API key</td>
-                                    <td class="data highlight-hover">
-                                        <div class="relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
-                                            <span class="truncate" data-test-text="admin-key">
-                                                {{this.integration.adminKey.secret}}
-                                            </span>
-                                            <div class="app-api-buttons child">
-                                                <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="app-button-regenerate" data-tooltip="Regenerate">
-                                                    {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
-                                                </button>
-                                                <button type="button" {{action (perform this.copyAdminKey)}} class="app-button-copy">
-                                                    {{#if this.copyAdminKey.isRunning}}
-                                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                                    {{else}}
-                                                    Copy
-                                                    {{/if}}
-                                                </button>
+                                            {{#if (eq this.regeneratedKeyType this.integration.contentKey.type)}}
+                                                <div class="green nt3 mb2"> Content API Key was successfully regenerated </div>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="data-label">Admin API key</td>
+                                        <td class="data highlight-hover">
+                                            <div class="relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                                                <span class="truncate" data-test-text="admin-key">
+                                                    {{this.integration.adminKey.secret}}
+                                                </span>
+                                                <div class="app-api-buttons child">
+                                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                                    </button>
+                                                    <button type="button" {{action (perform this.copyAdminKey)}} class="app-button-copy">
+                                                        {{#if this.copyAdminKey.isRunning}}
+                                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                        {{else}}
+                                                        Copy
+                                                        {{/if}}
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
-                                            <div class="green nt3 mb2"> Admin API key was successfully regenerated </div>
-                                        {{/if}}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="data-label">API URL</td>
-                                    <td class="data highlight-hover truncate">
-                                        <div class="relative flex items-center {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
-                                            <span data-test-text="api-url">
-                                                {{this.apiUrl}}
-                                            </span>
-                                            <div class="app-api-buttons child">
-                                                <button type="button" {{action (perform this.copyApiUrl)}} class="app-button-copy">
-                                                    {{#if this.copyApiUrl.isRunning}}
-                                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                                    {{else}}
-                                                    Copy
-                                                    {{/if}}
-                                                </button>
+                                            {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
+                                                <div class="green nt3 mb2"> Admin API key was successfully regenerated </div>
+                                            {{/if}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="data-label">API URL</td>
+                                        <td class="data highlight-hover truncate">
+                                            <div class="relative flex items-center {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
+                                                <span data-test-text="api-url">
+                                                    {{this.apiUrl}}
+                                                </span>
+                                                <div class="app-api-buttons child">
+                                                    <button type="button" {{action (perform this.copyApiUrl)}} class="app-button-copy">
+                                                        {{#if this.copyApiUrl.isRunning}}
+                                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                        {{else}}
+                                                        Copy
+                                                        {{/if}}
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </form>
 
     <section class="gh-main-section">
-            <h4 class="gh-main-section-header large">Webhooks</h4>
+            <h4 class="gh-main-section-header small">Webhooks</h4>
             <div class="gh-main-section-block p0">
             <table class="gh-list small">
                 <thead>

@@ -6,7 +6,7 @@
             Navigation
         </h2>
         <section class="view-actions">
-            <GhTaskButton @task={{this.save}} @class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button={{true}} />
+            <GhTaskButton @task={{this.save}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-save-button={{true}} />
         </section>
     </GhCanvasHeader>
 
@@ -17,61 +17,65 @@
             @modifier="action wide" />
     {{/if}}
 
-    <section class="view-container gh-settings-design">
-        <div class="gh-setting-header gh-first-header">Primary Navigation</div>
-        <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
-            <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
-                <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
-                    {{#each this.settings.navigation as |navItem index|}}
-                        <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
-                            <GhNavitem
-                                @navItem={{navItem}}
-                                @baseUrl={{this.blogUrl}}
-                                @addItem={{action "addNavItem"}}
-                                @deleteItem={{action "deleteNavItem"}}
-                                @updateUrl={{action "updateUrl"}}
-                                @updateLabel={{action "updateLabel"}}
-                                data-test-navitem={{index}} />
-                        </DraggableObject>
-                    {{/each}}
-                </SortableObjects>
-                <GhNavitem
-                    @navItem={{this.newNavItem}}
-                    @baseUrl={{this.blogUrl}}
-                    @addItem={{action "addNavItem"}}
-                    @updateUrl={{action "updateUrl"}}
-                    @updateLabel={{action "updateLabel"}}
-                    data-test-navitem="new" />
-            </form>
-        </div>
+    <div class="gh-main-section-modifier grey">
+        <h4 class="gh-main-section-header small">Primary Navigation</h4>
+        <section class="gh-main-section">
+            <div class="gh-main-section-block">
+                <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
+                    <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
+                        {{#each this.settings.navigation as |navItem index|}}
+                            <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                                <GhNavitem
+                                    @navItem={{navItem}}
+                                    @baseUrl={{this.blogUrl}}
+                                    @addItem={{action "addNavItem"}}
+                                    @deleteItem={{action "deleteNavItem"}}
+                                    @updateUrl={{action "updateUrl"}}
+                                    @updateLabel={{action "updateLabel"}}
+                                    data-test-navitem={{index}} />
+                            </DraggableObject>
+                        {{/each}}
+                    </SortableObjects>
+                    <GhNavitem
+                        @navItem={{this.newNavItem}}
+                        @baseUrl={{this.blogUrl}}
+                        @addItem={{action "addNavItem"}}
+                        @updateUrl={{action "updateUrl"}}
+                        @updateLabel={{action "updateLabel"}}
+                        data-test-navitem="new" />
+                </form>
+            </div>
+        </section>
 
-        <div class="gh-setting-header">Secondary Navigation</div>
-        <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
-            <form id="secondary-navigation" class="gh-blognav" novalidate="novalidate">
-                <SortableObjects @sortableObjectList={{this.settings.secondaryNavigation}} @useSwap={{false}}>
-                    {{#each this.settings.secondaryNavigation as |navItem index|}}
-                        <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
-                            <GhNavitem
-                                @navItem={{navItem}}
-                                @baseUrl={{this.blogUrl}}
-                                @addItem={{action "addNavItem"}}
-                                @deleteItem={{action "deleteNavItem"}}
-                                @updateUrl={{action "updateUrl"}}
-                                @updateLabel={{action "updateLabel"}}
-                                data-test-navitem={{index}} />
-                        </DraggableObject>
-                    {{/each}}
-                </SortableObjects>
-                <GhNavitem
-                    @navItem={{this.newSecondaryNavItem}}
-                    @baseUrl={{this.blogUrl}}
-                    @addItem={{action "addNavItem"}}
-                    @updateUrl={{action "updateUrl"}}
-                    @updateLabel={{action "updateLabel"}}
-                    data-test-navitem="new" />
-            </form>
-        </div>
-    </section>
+        <h4 class="gh-main-section-header small">Secondary Navigation</h4>
+        <section class="gh-main-section">
+            <div class="gh-main-section-block">
+                <form id="secondary-navigation" class="gh-blognav" novalidate="novalidate">
+                    <SortableObjects @sortableObjectList={{this.settings.secondaryNavigation}} @useSwap={{false}}>
+                        {{#each this.settings.secondaryNavigation as |navItem index|}}
+                            <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                                <GhNavitem
+                                    @navItem={{navItem}}
+                                    @baseUrl={{this.blogUrl}}
+                                    @addItem={{action "addNavItem"}}
+                                    @deleteItem={{action "deleteNavItem"}}
+                                    @updateUrl={{action "updateUrl"}}
+                                    @updateLabel={{action "updateLabel"}}
+                                    data-test-navitem={{index}} />
+                            </DraggableObject>
+                        {{/each}}
+                    </SortableObjects>
+                    <GhNavitem
+                        @navItem={{this.newSecondaryNavItem}}
+                        @baseUrl={{this.blogUrl}}
+                        @addItem={{action "addNavItem"}}
+                        @updateUrl={{action "updateUrl"}}
+                        @updateLabel={{action "updateLabel"}}
+                        data-test-navitem="new" />
+                </form>
+            </div>
+        </section>
+    </div>
 </section>
 
 {{outlet}}

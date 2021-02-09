@@ -22,8 +22,8 @@
 }
 
 .gh-image-uploader.-with-image {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 2px;
+    background: transparent !important;
+    border: none !important;
 }
 
 .gh-image-uploader img {

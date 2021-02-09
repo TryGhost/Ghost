@@ -63,7 +63,7 @@
         </div>
     </section>
 
-    <section class="gh-main-section-modifier">
+    <section class="gh-main-section-modifier grey">
         <h4 class="gh-main-section-header small">Basic data</h4>
         <div class="gh-main-section columns-2">
             <div class="gh-main-section-block">
@@ -125,13 +125,15 @@
         
     </section>
 
-    <section class="gh-main-section {{if this.canShowStripeInfo "columns-2"}}">
-        <div class="gh-main-section-block bb">
-            <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
-        </div>
-        {{#if this.canShowStripeInfo}}
-            <div class="gh-main-section-block bb">
-                    <h4 class="gh-main-section-header">Stripe info</h4>
+    <div class="gh-main-section-modifier grey">
+        <h4 class="gh-main-section-header small">Member activity</h4>
+        <section class="gh-main-section {{if this.canShowStripeInfo "columns-2"}}">
+            <div class="gh-main-section-block">
+                <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
+            </div>
+            {{#if this.canShowStripeInfo}}
+                <h4 class="gh-main-section-header">Stripe info</h4>
+                <div class="gh-main-section-block">
                     <div class="gh-member-stripe">
                         {{#if this.isLoading}}
                             <div class="pa20 bg-grouped-table gh-content-box grey mt2">
@@ -305,7 +307,8 @@
                             </div>
                         {{/if}}
                     </div>
-            </div>
-        {{/if}}
-    </section>
+                </div>
+            {{/if}}
+        </section>
+    </div>
 </div>
