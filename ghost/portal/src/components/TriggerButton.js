@@ -36,6 +36,7 @@ const Styles = ({brandColor, hasText}) => {
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
             overflow: 'hidden',
+            opacity: 1,
             ...frame
         },
         userIcon: {
