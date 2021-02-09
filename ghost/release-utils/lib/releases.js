@@ -92,7 +92,7 @@ module.exports.create = (options = {}) => {
         method: 'POST',
         body: {
             tag_name: options.tagName,
-            target_commitish: 'master',
+            target_commitish: 'main',
             name: options.releaseName,
             body: body.join(os.EOL),
             draft: draft,
