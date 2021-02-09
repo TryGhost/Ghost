@@ -94,7 +94,7 @@ const initServices = async ({config}) => {
 
     // Initialise analytics events
     if (config.get('segment:key')) {
-        require('./analytics-events').init();
+        require('./server/analytics-events').init();
     }
 
     debug('End: initialiseServices');
