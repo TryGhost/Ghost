@@ -334,10 +334,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.6.tgz#1861f665f20687bac42be77e17d9d58464ea96cd"
   integrity sha512-JXlJdodaXEbSBr8tVydtyvp5G72W7jiEmUzyzJnUlVTqvJZ58JSO4fuoXst6IEzy42RXvUBBSV0vswxa1bWT9g==
 
-"@tryghost/constants@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.4.tgz#7b185227fcad0aaa33d02abc9ba629adc8190039"
-  integrity sha512-lFbfNU8jNPUxLQcxXXYzVFZMclJ4fcFoMuhed63xld/DoistWIRrI/dePEYNymG9nbYhDk/4szwdwGJE8ZURIg==
+"@tryghost/constants@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.5.tgz#26bcceb8f885848df325d1fccfc98b902fd0802f"
+  integrity sha512-+slsdsHuUIWfPr9Fp+3rbK0iOdRmQUQijbkjKlhCaVYXI9PaN4I0KxMUncUn5xTG6acg/gRXjZ1F2yX/enFgeQ==
 
 "@tryghost/elasticsearch-bunyan@^0.1.0":
   version "0.1.0"
