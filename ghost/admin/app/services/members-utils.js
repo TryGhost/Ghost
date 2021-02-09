@@ -61,7 +61,7 @@ export default class MembersUtilsService extends Service {
             settingsParam.append('monthlyPrice', monthlyPrice);
         }
         if (yearlyPrice) {
-            settingsParam.append('yearlyPrice', monthlyPrice);
+            settingsParam.append('yearlyPrice', yearlyPrice);
         }
         if (currency) {
             settingsParam.append('currency', currency);
