@@ -25,14 +25,8 @@ module.exports = createTransactionalMigration(
                 value: isActive.toString()
             })
             .where({
-                key: 'unsplash_is_active'
-            });
-
-        await knex('settings')
-            .where({
                 key: 'unsplash'
-            })
-            .del();
+            });
     },
 
     async function down() {

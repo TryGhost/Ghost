@@ -411,8 +411,11 @@
         }
     },
     "unsplash": {
-        "unsplash_is_active": {
+        "unsplash": {
             "defaultValue": "true",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
             "type": "boolean"
         }
     },
