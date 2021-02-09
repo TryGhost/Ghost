@@ -36,6 +36,9 @@
         "stripe_customer_id": {
           "type": "string"
         },
+        "subscriptions": {
+          "type": "array"
+        },
         "id": {
           "strip": true
         },

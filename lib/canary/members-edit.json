@@ -33,6 +33,9 @@
           "subscribed": {
             "type": "boolean"
           },
+          "subscriptions": {
+            "type": "array"
+          },
           "comped": {
             "type": "boolean"
           },
