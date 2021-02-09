@@ -1,5 +1,6 @@
 const debug = require('ghost-ignition').debug('importer:settings');
 const Promise = require('bluebird');
+const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
@@ -15,6 +16,23 @@ const deprecatedSupportedSettingsMap = {
     active_timezone: 'timezone',
     ghost_head: 'codeinjection_head',
     ghost_foot: 'codeinjection_foot'
+};
+const deprecatedSupportedSettingsOneToManyMap = {
+    slack: [{
+        from: '[0].url',
+        to: {
+            key: 'slack_url',
+            group: 'slack',
+            type: 'string'
+        }
+    }, {
+        from: '[0].username',
+        to: {
+            key: 'slack_username',
+            group: 'slack',
+            type: 'string'
+        }
+    }]
 };
 
 const isFalse = (value) => {
@@ -90,6 +108,45 @@ class SettingsImporter extends BaseImporter {
             return data;
         });
 
+        for (const key in deprecatedSupportedSettingsOneToManyMap) {
+            const deprecatedSetting = this.dataToImport.find(setting => setting.key === key);
+
+            if (deprecatedSetting) {
+                let deprecatedSettingValue;
+
+                try {
+                    deprecatedSettingValue = JSON.parse(deprecatedSetting.value);
+                } catch (err) {
+                    // TODO: check copy
+                    this.problems.push({
+                        message: `Failed to parse the value of ${deprecatedSetting.key} setting value`,
+                        help: this.modelName,
+                        context: deprecatedSetting
+                    });
+                }
+
+                if (deprecatedSettingValue) {
+                    deprecatedSupportedSettingsOneToManyMap[key].forEach(({from, to}) => {
+                        const value = _.get(deprecatedSettingValue, from);
+                        this.dataToImport.push({
+                            id: ObjectId.generate(),
+                            key: to.key,
+                            value: value,
+                            group: to.group,
+                            type: to.type,
+                            flags: null,
+                            created_by: deprecatedSetting.created_by,
+                            created_at: deprecatedSetting.created_at,
+                            updated_by: deprecatedSetting.updated_by,
+                            updated_at: deprecatedSetting.updated_at
+                        });
+                    });
+                }
+            }
+
+            this.dataToImport = _.filter(this.dataToImport, data => (key === data.key));
+        }
+
         // NOTE: keep back compatibility with settings object structure present before migration
         //       ref. https://github.com/TryGhost/Ghost/issues/10318
         this.dataToImport = this.dataToImport.map((data) => {
@@ -116,10 +173,6 @@ class SettingsImporter extends BaseImporter {
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
             return data.key !== 'password';
-        });
-
-        this.dataToImport = _.filter(this.dataToImport, (data) => {
-            return data.key !== 'slackUrl';
         });
 
         this.dataToImport = _.filter(this.dataToImport, (data) => {
