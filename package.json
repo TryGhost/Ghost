@@ -47,7 +47,7 @@
     "@tryghost/bootstrap-socket": "0.2.5",
     "@tryghost/constants": "0.1.4",
     "@tryghost/errors": "0.2.7",
-    "@tryghost/helpers": "1.1.37",
+    "@tryghost/helpers": "1.1.38",
     "@tryghost/image-transform": "1.0.3",
     "@tryghost/job-manager": "0.7.1",
     "@tryghost/kg-card-factory": "2.1.5",
