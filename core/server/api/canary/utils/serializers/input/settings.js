@@ -5,8 +5,7 @@ const settingsCache = require('../../../../../services/settings/cache');
 
 const DEPRECATED_SETTINGS = [
     'bulk_email_settings',
-    'slack',
-    'unsplash'
+    'slack'
 ];
 
 module.exports = {
@@ -56,6 +55,10 @@ module.exports = {
 
         // Ignore deprecated settings
         frame.data.settings = frame.data.settings.filter((setting) => {
+            // NOTE: ignore old unsplash object notation
+            if (setting.key === 'unsplash' && _.isObject(setting.value)) {
+                return true;
+            }
             return DEPRECATED_SETTINGS.includes(setting.key) === false;
         });
 

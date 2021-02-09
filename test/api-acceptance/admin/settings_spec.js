@@ -34,7 +34,7 @@ describe('Settings API', function () {
 
         localUtils.API.checkResponse(jsonResponse, 'settings');
 
-        JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
+        JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).should.eql(true);
         JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
         should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
         should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_head'}));
@@ -92,8 +92,8 @@ describe('Settings API', function () {
                     value: {label: 'label1'}
                 },
                 {
-                    key: 'slack',
-                    value: JSON.stringify({username: 'username'})
+                    key: 'slack_username',
+                    value: 'username'
                 },
                 {
                     key: 'is_private',
@@ -142,6 +142,10 @@ describe('Settings API', function () {
                 {
                     key: 'timezone',
                     value: 'Pacific/Auckland'
+                },
+                {
+                    key: 'unsplash',
+                    value: false
                 }
             ]
         };
@@ -160,6 +164,8 @@ describe('Settings API', function () {
         headers['x-cache-invalidate'].should.eql('/*');
         should.exist(putBody);
 
+        putBody.settings.length.should.eql(17);
+
         putBody.settings[0].key.should.eql('title');
         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
 
@@ -169,8 +175,8 @@ describe('Settings API', function () {
         putBody.settings[2].key.should.eql('navigation');
         should.equal(putBody.settings[2].value, JSON.stringify({label: 'label1'}));
 
-        putBody.settings[3].key.should.eql('slack');
-        should.equal(putBody.settings[3].value, JSON.stringify({username: 'username'}));
+        putBody.settings[3].key.should.eql('slack_username');
+        should.equal(putBody.settings[3].value, 'username');
 
         putBody.settings[4].key.should.eql('is_private');
         should.equal(putBody.settings[4].value, false);
@@ -210,6 +216,9 @@ describe('Settings API', function () {
 
         putBody.settings[15].key.should.eql('timezone');
         should.equal(putBody.settings[15].value, 'Pacific/Auckland');
+
+        putBody.settings[16].key.should.eql('unsplash');
+        should.equal(putBody.settings[16].value, false);
 
         localUtils.API.checkResponse(putBody, 'settings');
     });
