@@ -1,4 +1,4 @@
-<div class="fullscreen-wizard-container" {{will-destroy this.reset}}>
+<div class="fullscreen-wizard-container" {{did-insert this.setup}} {{will-destroy this.reset}}>
     <div class="pt7 pb5 pl12 pr12 flex justify-between items-center bb b--whitegrey">
         <div class="flex flex-column">
             <div class="ttu gh-launch-wizard-step-indicator">{{this.currentStep.position}}</div>

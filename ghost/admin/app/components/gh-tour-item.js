@@ -70,6 +70,7 @@ const GhTourItemComponent = Component.extend({
 
     mediaQueries: service(),
     tour: service(),
+    ui: service(),
 
     tagName: '',
 
@@ -88,11 +89,12 @@ const GhTourItemComponent = Component.extend({
     _popoverOffset: null,
 
     isMobile: reads('mediaQueries.isMobile'),
-    isVisible: computed('isMobile', '_throbber', function () {
+    isVisible: computed('isMobile', '_throbber', 'ui.showTour', function () {
+        let showTour = this.ui.showTour;
         let isMobile = this.isMobile;
         let hasThrobber = !isBlank(this._throbber);
 
-        return !isMobile && hasThrobber;
+        return showTour && !isMobile && hasThrobber;
     }),
 
     init() {
