@@ -1,0 +1,10 @@
+<aside class="custom-post-upgrade-cta">
+    <div class="custom-post-upgrade-cta-content" style="background-color: {{accentColor}}">
+        {{#if @member}}
+            <a class="gh-btn" data-portal="account/plans" style="color:{{accentColor}}">Account upgrade link</a>
+        {{else}}
+            <a class="gh-btn" data-portal="signup" style="color:{{accentColor}}">Subscribe now</a>
+            <p><small>Already have an account? <a data-portal="signin">Sign in</a></small></p>
+        {{/if}}
+    </div>
+</aside>
