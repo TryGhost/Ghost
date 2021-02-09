@@ -634,6 +634,29 @@ describe('Members API', function () {
             });
     });
 
+    it('Can fetch subscription stats (default)', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/subscribers/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                const stats = jsonResponse.subscriber_stats;
+                should.exist(stats);
+                should.exist(stats.total);
+                should.exist(stats.total_in_range);
+                should.exist(stats.total_on_date);
+                should.exist(stats.new_today);
+            });
+    });
+
     it('Errors when fetching stats with unknown days param value', function () {
         return request
             .get(localUtils.API.getApiQuery('members/stats/?days=nope'))

@@ -14,7 +14,8 @@ module.exports = {
     exportCSV: createSerializer('exportCSV', exportCSV),
 
     importCSV: createSerializer('importCSV', passthrough),
-    stats: createSerializer('stats', passthrough)
+    stats: createSerializer('stats', passthrough),
+    subscriberStats: createSerializer('subscriberStats', subscriberStats)
 };
 
 /**
@@ -61,6 +62,12 @@ function exportCSV(page, _apiConfig, frame) {
     const members = page.data.map(model => serializeMember(model, frame.options));
 
     return unparse(members);
+}
+
+function subscriberStats(data) {
+    return {
+        subscriber_stats: data
+    };
 }
 
 /**

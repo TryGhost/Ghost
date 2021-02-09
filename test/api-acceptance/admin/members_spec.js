@@ -399,6 +399,27 @@ describe('Members API', function () {
         return jsonResponse;
     }
 
+    async function fetchSubscriberStats() {
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/stats/subscribers/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse);
+        const stats = jsonResponse.subscriber_stats;
+        should.exist(stats);
+        should.exist(stats.total);
+        should.exist(stats.total_in_range);
+        should.exist(stats.total_on_date);
+        should.exist(stats.new_today);
+        return jsonResponse;
+    }
+
     function parseTotalOnDate(jsonResponse) {
         // replicate default look back date of 30 days
         const days = 30;
@@ -436,6 +457,10 @@ describe('Members API', function () {
 
     it('Can fetch stats', function () {
         return fetchStats();
+    });
+
+    it('Can fetch subscriber stats', function () {
+        return fetchSubscriberStats();
     });
 
     it('Can render stats in GMT -X timezones', async function () {

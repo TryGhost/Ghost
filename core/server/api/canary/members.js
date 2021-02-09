@@ -8,6 +8,7 @@ const membersService = require('../../services/members');
 
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
+const _ = require('lodash');
 
 const allowedIncludes = ['email_recipients'];
 
@@ -382,6 +383,20 @@ module.exports = {
             const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);
 
             return await membersService.stats.fetch(days);
+        }
+    },
+
+    subscriberStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const statsData = await membersService.api.events.getSubscriptions();
+            const totalSubscriptions = (_.last(statsData) && _.last(statsData).subscribed) || 0;
+            return {
+                total: totalSubscriptions,
+                total_on_date: statsData
+            };
         }
     }
 };
