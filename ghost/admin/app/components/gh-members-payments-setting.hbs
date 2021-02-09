@@ -93,7 +93,7 @@
                 </div>
                 <div class="gh-expandable-content">
                     {{#liquid-if this.membersStripeOpen}}
-                    <div class="mt6 mb6">
+                    <div class="mb2">
                         <div class="flex flex-column flex-row-l items-start justify-between">
                             <div class="w-100 w-50-l">
                                 <label class="fw6 f8">Generate secure key</label>
@@ -158,7 +158,7 @@
             </div>
             <div class="gh-expandable-content">
                 {{#liquid-if this.membersPricingOpen}}
-                    <div class="w-100 w-50-l flex flex-column flex-row-ns mt8">
+                    <div class="w-100 w-50-l flex flex-column flex-row-ns">
                         <div class="w-100">
                             <GhFormGroup @class="for-select">
                                 <label class="fw6 f8"for="currency">Plan currency</label>
@@ -244,7 +244,7 @@
             </div>
             <div class="gh-expandable-content">
                 {{#liquid-if this.membersPostAccessOpen}}
-                <div class="flex flex-column w-50 flex mt8">
+                <div class="flex flex-column w-50 flex">
                     <div class="gh-radio {{if (eq settings.defaultContentVisibility "public") "active"}}"
                         {{action "setDefaultContentVisibility" "public" on="click"}}>
                         <div class="gh-radio-button" data-test-publishmenu-unpublished-option></div>
