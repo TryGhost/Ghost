@@ -1,4 +1,4 @@
-<div class="gh-main-section-modifier">
+<div class="gh-main-section-modifier grey">
     <h4 class="gh-main-section-header small">Basic settings</h4>
     <section class="gh-main-section columns-2">
         <div class="gh-main-section-block">
@@ -52,7 +52,7 @@
                 <GhErrorMessage @errors={{this.activeTag.errors}} @property="slug" />
             </GhFormGroup>
 
-            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="description">
+            <GhFormGroup @class="no-margin" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="description">
                 <label for="tag-description">Description</label>
                 <GhTextarea
                     @id="tag-description"
@@ -67,7 +67,7 @@
             </GhFormGroup>
         </div>
         <div class="gh-main-section-block">
-            <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
+            <GhFormGroup @class="no-margin" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
                 <label for="tag-image">Tag image</label>
                 <GhImageUploaderWithPreview
                     @image={{this.tag.featureImage}}
@@ -82,269 +82,272 @@
     </section>
 </div>
 
-
-<section class="gh-main-section">
-    <div class="gh-main-section-block bb bt">
-        <div class="flex justify-between">
+<section class="gh-expandable">
+    <div class="gh-expandable-block">
+        <div class="gh-expandable-header">
             <div>
-                <h4 class="gh-setting-title">Meta data</h4>
-                <p class="gh-setting-desc pa0 ma0">Extra content for search engines.</p>
+                <h4 class="gh-expandable-title">Meta data</h4>
+                <p class="gh-expandable-description">Extra content for search engines.</p>
             </div>
-            <div>
-                <button type="button" class="gh-btn" {{action (toggle "metadataOpen" this)}}><span>{{if this.metadataOpen "Close" "Expand"}}</span></button>
-            </div>
+            <button type="button" class="gh-btn gh-btn-expand" {{action (toggle "metadataOpen" this)}}><span>{{if this.metadataOpen "Close" "Expand"}}</span></button>
         </div>
-        {{#liquid-if this.metadataOpen}}
-        <div class="gh-main-section columns-2">
-            <div class="gh-main-section-block">
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaTitle">
-                    <label for="meta-title">Meta title</label>
-                    <GhTextInput
-                        @id="meta-title"
-                        @name="metaTitle"
-                        @placeholder={{this.scratchTag.name}}
-                        @tabindex="4"
-                        @value={{this.scratchTag.metaTitle}}
-                        @focus-out={{action "setProperty" "metaTitle" this.scratchTag.metaTitle}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="metaTitle" />
-                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaTitle 70}}</p>
-                </GhFormGroup>
 
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaDescription">
-                    <label for="meta-description">Meta description</label>
-                    <GhTextarea
-                        @id="meta-description"
-                        @name="metaDescription"
-                        @class="gh-tag-details-textarea"
-                        @placeholder={{this.scratchTag.description}}
-                        @tabindex="5"
-                        @value={{this.scratchTag.metaDescription}}
-                        @focus-out={{action "setProperty" "metaDescription" this.scratchTag.metaDescription}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="metaDescription" />
-                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaDescription 156}}</p>
-                </GhFormGroup>
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="canonicalUrl">
-                    <label for="canonical-url">Canonical URL</label>
-                    <GhTextInput
-                        @id="canonical-url"
-                        @name="canonicalUrl"
-                        @tabindex="4"
-                        @value={{this.scratchTag.canonicalUrl}}
-                        @focus-out={{action "validateCanonicalUrl"}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="canonicalUrl" />
-                </GhFormGroup>
-            </div>
-            <div class="gh-main-section-block">
-                <div class="form-group">
-                    <label>Search Engine Result Preview</label>
-                    <div class="seo-preview">
-                        <div class="seo-preview-title">{{this.seoTitle}}</div>
-                        <div class="seo-preview-link">{{this.seoURL}}</div>
-                        <div class="seo-preview-description">{{this.seoDescription}}</div>
+        <div class="gh-expandable-content">
+            {{#liquid-if this.metadataOpen}}
+            <div class="gh-main-section columns-2">
+                <div class="gh-main-section-block">
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaTitle">
+                        <label for="meta-title">Meta title</label>
+                        <GhTextInput
+                            @id="meta-title"
+                            @name="metaTitle"
+                            @placeholder={{this.scratchTag.name}}
+                            @tabindex="4"
+                            @value={{this.scratchTag.metaTitle}}
+                            @focus-out={{action "setProperty" "metaTitle" this.scratchTag.metaTitle}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="metaTitle" />
+                        <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaTitle 70}}</p>
+                    </GhFormGroup>
+
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaDescription">
+                        <label for="meta-description">Meta description</label>
+                        <GhTextarea
+                            @id="meta-description"
+                            @name="metaDescription"
+                            @class="gh-tag-details-textarea"
+                            @placeholder={{this.scratchTag.description}}
+                            @tabindex="5"
+                            @value={{this.scratchTag.metaDescription}}
+                            @focus-out={{action "setProperty" "metaDescription" this.scratchTag.metaDescription}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="metaDescription" />
+                        <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaDescription 156}}</p>
+                    </GhFormGroup>
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="canonicalUrl">
+                        <label for="canonical-url">Canonical URL</label>
+                        <GhTextInput
+                            @id="canonical-url"
+                            @name="canonicalUrl"
+                            @tabindex="4"
+                            @value={{this.scratchTag.canonicalUrl}}
+                            @focus-out={{action "validateCanonicalUrl"}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="canonicalUrl" />
+                    </GhFormGroup>
+                </div>
+                <div class="gh-main-section-block">
+                    <div class="form-group">
+                        <label>Search Engine Result Preview</label>
+                        <div class="seo-preview">
+                            <div class="seo-preview-title">{{this.seoTitle}}</div>
+                            <div class="seo-preview-link">{{this.seoURL}}</div>
+                            <div class="seo-preview-description">{{this.seoDescription}}</div>
+                        </div>
                     </div>
                 </div>
             </div>
+            {{/liquid-if}}
         </div>
-        {{/liquid-if}}
     </div>
 
-    <div class="gh-main-section-block bb">
-        <div class="flex justify-between">
+    <div class="gh-expandable-block">
+        <div class="gh-expandable-header">
             <div>
-                <h4 class="gh-setting-title">Twitter card</h4>
-                <p class="gh-setting-desc pa0 ma0">Customised structured data for Twitter.</p>
+                <h4 class="gh-expandable-title">Twitter card</h4>
+                <p class="gh-expandable-description">Customised structured data for Twitter.</p>
             </div>
-            <div>
-                <button type="button" class="gh-btn" {{action (toggle "twitterMetadataOpen" this)}}><span>{{if this.twitterMetadataOpen "Close" "Expand"}}</span></button>
-            </div>
+            <button type="button" class="gh-btn gh-btn-expand" {{action (toggle "twitterMetadataOpen" this)}}><span>{{if this.twitterMetadataOpen "Close" "Expand"}}</span></button>
         </div>
-        {{#liquid-if this.twitterMetadataOpen}}
-        <div class="gh-main-section columns-2">
-            <div class="gh-main-section-block">
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterImage">
-                    <label for="twitter-image">Twitter image</label>
-                    <GhImageUploaderWithPreview
-                        @image={{this.tag.twitterImage}}
-                        @text="Add Twitter image"
-                        @class="gh-tag-image-uploader"
-                        @allowUnsplash={{true}}
-                        @update={{action "setTwitterImage"}}
-                        @remove={{action "clearTwitterImage"}}
-                    />
-                </GhFormGroup>
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterTitle">
-                    <label for="twitter-title">Twitter title</label>
-                    <GhTextInput
-                        @id="twitter-title"
-                        @name="twitterTitle"
-                        @placeholder={{this.scratchTag.name}}
-                        @tabindex="4"
-                        @value={{this.scratchTag.twitterTitle}}
-                        @focus-out={{action "setProperty" "twitterTitle" this.scratchTag.twitterTitle}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="twitterTitle" />
-                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.twitterTitle 70}}</p>
-                </GhFormGroup>
 
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterDesctiption">
-                    <label for="twitter-description">Twitter description</label>
-                    <GhTextarea
-                        @id="twitter-description"
-                        @name="twitterDescription"
-                        @class="gh-tag-details-textarea"
-                        @placeholder={{this.scratchTag.description}}
-                        @tabindex="5"
-                        @value={{this.scratchTag.twitterDescription}}
-                        @focus-out={{action "setProperty" "twitterDescription" this.scratchTag.twitterDescription}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="twitterDescription" />
-                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.twitterDescription 156}}</p>
-                </GhFormGroup>
-            </div>
-            <div class="gh-main-section-block">
-                <div class="form-group">
-                    <label>Preview</label>
-                    <div class="gh-twitter-preview">
-                        {{#if this.twitterImage}}
-                        <div class="gh-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
-                        {{/if}}
-                        <div class="gh-twitter-preview-content">
-                            <div class="gh-twitter-preview-title">{{this.twitterTitle}}</div>
-                            <div class="gh-twitter-preview-description">{{truncate this.twitterDescription 155}}</div>
-                            <div class="gh-twitter-preview-footer">
-                                <div class="gh-twitter-preview-footer-left">
-                                    {{this.config.blogDomain}}
-                                </div>
-                                <div class="gh-twitter-preview-footer-right">
+        <div class="gh-expandable-content">
+            {{#liquid-if this.twitterMetadataOpen}}
+            <div class="gh-main-section columns-2">
+                <div class="gh-main-section-block">
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterImage">
+                        <label for="twitter-image">Twitter image</label>
+                        <GhImageUploaderWithPreview
+                            @image={{this.tag.twitterImage}}
+                            @text="Add Twitter image"
+                            @class="gh-tag-image-uploader"
+                            @allowUnsplash={{true}}
+                            @update={{action "setTwitterImage"}}
+                            @remove={{action "clearTwitterImage"}}
+                        />
+                    </GhFormGroup>
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterTitle">
+                        <label for="twitter-title">Twitter title</label>
+                        <GhTextInput
+                            @id="twitter-title"
+                            @name="twitterTitle"
+                            @placeholder={{this.scratchTag.name}}
+                            @tabindex="4"
+                            @value={{this.scratchTag.twitterTitle}}
+                            @focus-out={{action "setProperty" "twitterTitle" this.scratchTag.twitterTitle}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="twitterTitle" />
+                        <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.twitterTitle 70}}</p>
+                    </GhFormGroup>
+
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterDesctiption">
+                        <label for="twitter-description">Twitter description</label>
+                        <GhTextarea
+                            @id="twitter-description"
+                            @name="twitterDescription"
+                            @class="gh-tag-details-textarea"
+                            @placeholder={{this.scratchTag.description}}
+                            @tabindex="5"
+                            @value={{this.scratchTag.twitterDescription}}
+                            @focus-out={{action "setProperty" "twitterDescription" this.scratchTag.twitterDescription}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="twitterDescription" />
+                        <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.twitterDescription 156}}</p>
+                    </GhFormGroup>
+                </div>
+                <div class="gh-main-section-block">
+                    <div class="form-group">
+                        <label>Preview</label>
+                        <div class="gh-twitter-preview">
+                            {{#if this.twitterImage}}
+                            <div class="gh-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
+                            {{/if}}
+                            <div class="gh-twitter-preview-content">
+                                <div class="gh-twitter-preview-title">{{this.twitterTitle}}</div>
+                                <div class="gh-twitter-preview-description">{{truncate this.twitterDescription 155}}</div>
+                                <div class="gh-twitter-preview-footer">
+                                    <div class="gh-twitter-preview-footer-left">
+                                        {{this.config.blogDomain}}
+                                    </div>
+                                    <div class="gh-twitter-preview-footer-right">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {{/liquid-if}}
         </div>
-        {{/liquid-if}}
     </div>
 
-    <div class="gh-main-section-block bb">
-        <div class="flex justify-between">
+    <div class="gh-expandable-block">
+        <div class="gh-expandable-header">
             <div>
-                <h4 class="gh-setting-title">Facebook card</h4>
-                <p class="gh-setting-desc pa0 ma0">Customise Open Graph data.</p>
+                <h4 class="gh-expandable-title">Facebook card</h4>
+                <p class="gh-expandable-description">Customise Open Graph data.</p>
             </div>
-            <div>
-                <button type="button" class="gh-btn" {{action (toggle "facebookMetadataOpen" this)}}><span>{{if this.facebookMetadataOpen "Close" "Expand"}}</span></button>
-            </div>
+            <button type="button" class="gh-btn gh-btn-expand" {{action (toggle "facebookMetadataOpen" this)}}><span>{{if this.facebookMetadataOpen "Close" "Expand"}}</span></button>
         </div>
-        {{#liquid-if this.facebookMetadataOpen}}
-        <div class="gh-main-section columns-2">
-            <div class="gh-main-section-block">
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogImage">
-                    <label for="og-image">Facebook image</label>
-                    <GhImageUploaderWithPreview
-                        @image={{this.tag.ogImage}}
-                        @text="Add Facebook image"
-                        @class="gh-tag-image-uploader"
-                        @allowUnsplash={{true}}
-                        @update={{action "setOgImage"}}
-                        @remove={{action "clearOgImage"}}
-                    />
-                </GhFormGroup>
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaTitle">
-                    <label for="og-title">Facebook title</label>
-                    <GhTextInput
-                        @id="og-title"
-                        @name="ogTitle"
-                        @placeholder={{this.scratchTag.name}}
-                        @tabindex="4"
-                        @value={{this.scratchTag.ogTitle}}
-                        @focus-out={{action "setProperty" "ogTitle" this.scratchTag.ogTitle}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="ogTitle" />
-                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.ogTitle 70}}</p>
-                </GhFormGroup>
 
-                <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogDescription">
-                    <label for="og-description">Facebook description</label>
-                    <GhTextarea
-                        @id="og-description"
-                        @name="ogDescription"
-                        @class="gh-tag-details-textarea"
-                        @placeholder={{this.scratchTag.description}}
-                        @tabindex="5"
-                        @value={{this.scratchTag.ogDescription}}
-                        @focus-out={{action "setProperty" "ogDescription" this.scratchTag.ogDescription}}
-                    />
-                    <GhErrorMessage @errors={{this.tag.errors}} @property="ogDescription" />
-                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.ogDescription 156}}</p>
-                </GhFormGroup>
-            </div>
-            <div class="gh-main-section-block">
-                <div class="form-group">
-                    <label>Preview</label>
-                    <div class="gh-og-preview">
-                        {{#if this.facebookImage}}
-                        <div class="gh-og-preview-image" style={{background-image-style this.facebookImage}}></div>
-                        {{/if}}
-                        <div class="gh-og-preview-content">
-                            <div class="gh-og-preview-title">{{truncate this.facebookTitle 88}}</div>
-                            <div class="gh-og-preview-description">{{truncate this.facebookDescription 300}}</div>
-                            <div class="gh-og-preview-footer">
-                                <div class="gh-og-preview-footer-left">
-                                    {{this.config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{author-names this.post.authors}}</span>
-                                </div>
-                                <div class="gh-og-preview-footer-right">
+        <div class="gh-expandable-content">
+            {{#liquid-if this.facebookMetadataOpen}}
+            <div class="gh-main-section columns-2">
+                <div class="gh-main-section-block">
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogImage">
+                        <label for="og-image">Facebook image</label>
+                        <GhImageUploaderWithPreview
+                            @image={{this.tag.ogImage}}
+                            @text="Add Facebook image"
+                            @class="gh-tag-image-uploader"
+                            @allowUnsplash={{true}}
+                            @update={{action "setOgImage"}}
+                            @remove={{action "clearOgImage"}}
+                        />
+                    </GhFormGroup>
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaTitle">
+                        <label for="og-title">Facebook title</label>
+                        <GhTextInput
+                            @id="og-title"
+                            @name="ogTitle"
+                            @placeholder={{this.scratchTag.name}}
+                            @tabindex="4"
+                            @value={{this.scratchTag.ogTitle}}
+                            @focus-out={{action "setProperty" "ogTitle" this.scratchTag.ogTitle}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="ogTitle" />
+                        <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.ogTitle 70}}</p>
+                    </GhFormGroup>
+
+                    <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogDescription">
+                        <label for="og-description">Facebook description</label>
+                        <GhTextarea
+                            @id="og-description"
+                            @name="ogDescription"
+                            @class="gh-tag-details-textarea"
+                            @placeholder={{this.scratchTag.description}}
+                            @tabindex="5"
+                            @value={{this.scratchTag.ogDescription}}
+                            @focus-out={{action "setProperty" "ogDescription" this.scratchTag.ogDescription}}
+                        />
+                        <GhErrorMessage @errors={{this.tag.errors}} @property="ogDescription" />
+                        <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.ogDescription 156}}</p>
+                    </GhFormGroup>
+                </div>
+                <div class="gh-main-section-block">
+                    <div class="form-group">
+                        <label>Preview</label>
+                        <div class="gh-og-preview">
+                            {{#if this.facebookImage}}
+                            <div class="gh-og-preview-image" style={{background-image-style this.facebookImage}}></div>
+                            {{/if}}
+                            <div class="gh-og-preview-content">
+                                <div class="gh-og-preview-title">{{truncate this.facebookTitle 88}}</div>
+                                <div class="gh-og-preview-description">{{truncate this.facebookDescription 300}}</div>
+                                <div class="gh-og-preview-footer">
+                                    <div class="gh-og-preview-footer-left">
+                                        {{this.config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{author-names this.post.authors}}</span>
+                                    </div>
+                                    <div class="gh-og-preview-footer-right">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {{/liquid-if}}
         </div>
-        {{/liquid-if}}
     </div>
 
-    <div class="gh-main-section-block bb">
-        <div class="flex justify-between">
+    <div class="gh-expandable-block">
+        <div class="gh-expandable-header">
             <div>
-                <h4 class="gh-setting-title">Code injection</h4>
-                <p class="gh-setting-desc pa0 ma0">Add styles/scripts to the header and footer.</p>
+                <h4 class="gh-expandable-title">Code injection</h4>
+                <p class="gh-expandable-description">Add styles/scripts to the header and footer.</p>
             </div>
-            <div>
-                <button type="button" class="gh-btn" {{action (toggle "codeInjectionOpen" this)}}><span>{{if this.codeInjectionOpen "Close" "Expand"}}</span></button>
-            </div>
+            <button type="button" class="gh-btn gh-btn-expand" {{action (toggle "codeInjectionOpen" this)}}><span>{{if this.codeInjectionOpen "Close" "Expand"}}</span></button>
         </div>
-        {{#liquid-if this.codeInjectionOpen}}
-        <div class="gh-main-section">
-            <GhFormGroup @class="gh-main-section-block settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionHead">
-                <label for="codeinjection-head" class="gh-tag-setting-codeheader">Tag header <code class="fw4 ml1">\{{ghost_head}}</code></label>
-                <GhCmEditor @value={{this.scratchTag.codeinjectionHead}}
-                    @id="tag-setting-codeinjection-head"
-                    @class="gh-tag-setting-codeinjection"
-                    @name="tag-setting-codeinjection-head"
-                    @focusOut={{action "setProperty" "codeinjectionHead" this.scratchTag.codeinjectionHead}}
-                    @stopEnterKeyDownPropagation="true"
-                    @update={{action (mut this.scratchTag.codeinjectionHead)}}
-                />
-                <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionHead"/>
-            </GhFormGroup>
 
-            <GhFormGroup @class="gh-main-section-block settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionFoot">
-                <label for="codeinjection-foot"class="gh-tag-setting-codeheader">Tag footer <code class="fw4 ml1">\{{ghost_foot}}</code></label>
-                <GhCmEditor @value={{this.scratchTag.codeinjectionFoot}}
-                    @id="tag-setting-codeinjection-foot"
-                    @class="gh-tag-setting-codeinjection"
-                    @name="tag-setting-codeinjection-foot"
-                    @focusOut={{action "setProperty" "codeinjectionFoot" this.scratchTag.codeinjectionFoot}}
-                    @stopEnterKeyDownPropagation="true"
-                    @update={{action (mut this.scratchTag.codeinjectionFoot)}}
-                />
-                <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionFoot"/>
-            </GhFormGroup>
+        <div class="gh-expandable-content">
+            {{#liquid-if this.codeInjectionOpen}}
+            <div class="gh-main-section">
+                <GhFormGroup @class="gh-main-section-block settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionHead">
+                    <label for="codeinjection-head" class="gh-tag-setting-codeheader">Tag header <code class="fw4 ml1">\{{ghost_head}}</code></label>
+                    <GhCmEditor @value={{this.scratchTag.codeinjectionHead}}
+                        @id="tag-setting-codeinjection-head"
+                        @class="gh-tag-setting-codeinjection"
+                        @name="tag-setting-codeinjection-head"
+                        @focusOut={{action "setProperty" "codeinjectionHead" this.scratchTag.codeinjectionHead}}
+                        @stopEnterKeyDownPropagation="true"
+                        @update={{action (mut this.scratchTag.codeinjectionHead)}}
+                    />
+                    <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionHead"/>
+                </GhFormGroup>
+
+                <GhFormGroup @class="gh-main-section-block settings-code" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="codeinjectionFoot">
+                    <label for="codeinjection-foot"class="gh-tag-setting-codeheader">Tag footer <code class="fw4 ml1">\{{ghost_foot}}</code></label>
+                    <GhCmEditor @value={{this.scratchTag.codeinjectionFoot}}
+                        @id="tag-setting-codeinjection-foot"
+                        @class="gh-tag-setting-codeinjection"
+                        @name="tag-setting-codeinjection-foot"
+                        @focusOut={{action "setProperty" "codeinjectionFoot" this.scratchTag.codeinjectionFoot}}
+                        @stopEnterKeyDownPropagation="true"
+                        @update={{action (mut this.scratchTag.codeinjectionFoot)}}
+                    />
+                    <GhErrorMessage @errors={{this.tag.errors}} @property="codeinjectionFoot"/>
+                </GhFormGroup>
+            </div>
+            {{/liquid-if}}
         </div>
-        {{/liquid-if}}
     </div>
 </section>

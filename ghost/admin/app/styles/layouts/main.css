@@ -959,7 +959,7 @@
     display: grid;
     grid-template-columns: 1fr;
     margin-bottom: 3vw;
-    grid-column-gap: 3vw;
+    grid-column-gap: 40px;
 }
 
 .gh-main-section.no-heading,
@@ -970,7 +970,7 @@
 .gh-main-section.bb { border-bottom: 1px solid var(--whitegrey); }
 
 .gh-main-section-header {
-    font-size: 1.7rem;
+    font-size: 1.9rem;
     font-weight: 600;
     text-transform: none;
     letter-spacing: unset;
@@ -1040,25 +1040,105 @@
 .gh-main-section-block.p0 { padding: 0; }
 
 .gh-main-section-modifier.grey .gh-main-section {
-    grid-column-gap: 0;
-    background: var(--whitegrey-l1);
+    background: color-mod(var(--whitegrey-l1) l(+1%));
     border-radius: 3px;
+    padding: 16px 40px 32px;
 }
 
-.gh-main-section-modifier.grey .gh-main-section-block {
-    padding: 16px 24px 24px;
+.gh-main-section-modifier.grey .gh-main-section-block.bt { border-top: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
+.gh-main-section-modifier.grey .gh-main-section-block.br { border-right: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
+.gh-main-section-modifier.grey .gh-main-section-block.bb { border-bottom: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
+.gh-main-section-modifier.grey .gh-main-section-block.bl { border-left: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
+
+.gh-main-section-modifier.grey .gh-main-section-block.gh-setting {
+    padding: 18px 20px 17px;
 }
 
 .gh-main-section-modifier.grey .gh-main-section-header {
     border: none;
 }
 
+/* Expandables */
+.gh-expandable {
+    /* background: color-mod(var(--whitegrey-l1) l(+1%)); */
+    border-top: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--whitegrey);
+    /* border-radius: 3px; */
+}
+
+.gh-expandable-block {
+    border-bottom: 1px solid var(--whitegrey);
+    padding: 18px 0;
+    margin: 0;
+}
+
+.gh-expandable-block .gh-main-section {
+    margin: 0;
+}
+
+.gh-expandable-block:last-of-type {
+    border-bottom: none;
+}
+
+.gh-expandable-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gh-expandable-header .gh-expandable-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--black);
+    margin: 0;
+    padding: 0;
+}
+
+.gh-expandable-header .gh-expandable-description {
+    font-size: 1.3rem;
+    color: var(--midgrey);
+    margin: 0;
+    padding: 0;
+}
+
+.gh-expandable-content {
+    background: color-mod(var(--whitegrey-l1) l(+1%));
+    margin: 18px 0 -18px;
+    padding: 0 40px;
+}
+
+.gh-expandable-content .liquid-child {
+    margin-top: 8px;
+}
+
+/* Inputs and buttons for grey background */
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
+.gh-main-section-modifier.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+    background: var(--whitegrey-d1);
+}
+
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
+.gh-main-section-modifier.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
+    background: var(--whitegrey-d2);
+}
+
+.gh-expandable-content input:not(:focus),
+.gh-expandable-content .gh-input:not(:focus),
+.gh-expandable-content .ember-power-select-multiple-trigger,
 .gh-main-section-modifier.grey input:not(:focus),
 .gh-main-section-modifier.grey .gh-input:not(:focus),
 .gh-main-section-modifier.grey .ember-power-select-multiple-trigger {
     border-color: var(--whitegrey-d1);
 }
 
+.gh-expandable-content
+.gh-main-section-modifier.grey .gh-image-uploader {
+    border-color: var(--whitegrey-d1);
+    background: transparent;
+}
+
+
+/* Canvas */
 .gh-canvas-title {
     display: flex;
     align-items: center;
