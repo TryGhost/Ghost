@@ -16,7 +16,7 @@ jobs:
     name: Lint
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: '12.10.0'
       - run: yarn
@@ -46,7 +46,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: '12.10.0'
 
@@ -87,7 +87,7 @@ jobs:
     name: Node ${{ matrix.node }} - ${{ matrix.env.DB }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -123,7 +123,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: '10.13.0'
       - run: npm install -g ghost-cli@latest
