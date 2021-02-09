@@ -21,26 +21,32 @@ module.exports = createTransactionalMigration(
             slackUsername = 'Ghost';
         }
 
+        const now = await knex.raw('CURRENT_TIMESTAMP');
+
         await knex('settings')
-            .update({
+            .insert({
+                key: 'slack_url',
                 group: 'slack',
                 type: 'string',
                 flags: null,
-                value: slackUrl
-            })
-            .where({
-                key: 'slack_url'
+                value: slackUrl,
+                created_by: 1,
+                created_at: now,
+                updated_by: 1,
+                updated_at: now
             });
 
         await knex('settings')
-            .update({
+            .insert({
+                key: 'slack_username',
                 group: 'slack',
                 type: 'string',
                 flags: null,
-                value: slackUsername
-            })
-            .where({
-                key: 'slack_username'
+                value: slackUsername,
+                created_by: 1,
+                created_at: now,
+                updated_by: 1,
+                updated_at: now
             });
 
         await knex('settings')
