@@ -1,3 +1,4 @@
+const ObjectId = require('bson-objectid').default;
 const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
@@ -12,7 +13,12 @@ module.exports = createTransactionalMigration(
         let slackUrl = '';
         let slackUsername = '';
         try {
-            const value = JSON.parse(slackSetting.value);
+            // example value that used to be stored in here:
+            // value: [{
+            //     "url":"https://hooks.slack.com/services/TC_REDACTED/B01_REDACTED/mk_REDACTED",
+            //     "username":"Ghost"
+            // }]
+            const value = JSON.parse(slackSetting.value)[0];
 
             slackUrl = value.url;
             slackUsername = value.username;
@@ -21,10 +27,11 @@ module.exports = createTransactionalMigration(
             slackUsername = 'Ghost';
         }
 
-        const now = await knex.raw('CURRENT_TIMESTAMP');
+        const now = knex.raw('CURRENT_TIMESTAMP');
 
         await knex('settings')
             .insert({
+                id: ObjectId.generate(),
                 key: 'slack_url',
                 group: 'slack',
                 type: 'string',
@@ -38,6 +45,7 @@ module.exports = createTransactionalMigration(
 
         await knex('settings')
             .insert({
+                id: ObjectId.generate(),
                 key: 'slack_username',
                 group: 'slack',
                 type: 'string',
