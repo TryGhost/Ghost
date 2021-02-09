@@ -64,7 +64,7 @@
     "@tryghost/promise": "0.1.4",
     "@tryghost/security": "0.2.4",
     "@tryghost/session-service": "0.1.15",
-    "@tryghost/social-urls": "0.1.18",
+    "@tryghost/social-urls": "0.1.19",
     "@tryghost/string": "0.1.17",
     "@tryghost/url-utils": "0.6.25",
     "@tryghost/vhost-middleware": "1.0.11",
