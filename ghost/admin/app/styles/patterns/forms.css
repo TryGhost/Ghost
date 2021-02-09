@@ -71,9 +71,9 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey);
+    color: var(--midgrey-d2);
     font-size: 1.25rem;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .form-group p.green {
