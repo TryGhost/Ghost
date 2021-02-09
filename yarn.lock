@@ -422,7 +422,7 @@
     ghost-ignition "4.2.4"
     lodash "4.17.20"
 
-"@tryghost/errors@0.2.7", "@tryghost/errors@^0.2.7":
+"@tryghost/errors@0.2.7":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.7.tgz#9c518d3656f5335c95912a5cbb5751a90964d96e"
   integrity sha512-oonHLYJvwQoxKLjO57EWAQe4cIvqo6YtLOBt9Gz3oQFrDdxlLrqxVkt9X4v+IvOkcpW6Nw1lw9T4A0KLRcg4eA==
@@ -596,10 +596,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-session-from-token@0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.14.tgz#b6d2bb1b074fe12f0b83106b8669c6d4dbaf8728"
-  integrity sha512-UpESDzLdhbmwVrmcmbYyKr2JZb8jiwn5YmDzj13nYlsNMOO8CyshsNf1EhAQOlAzXFmm5PGtkRiKTTAqgooXVw==
+"@tryghost/mw-session-from-token@0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.15.tgz#c1fa8e0a5b3868e83137b5e42b6a3d4f66bc2902"
+  integrity sha512-nzb4dW/79uYnssFEHDkb0LeYA6nxDXtDdRcY9zpmTzoHmcM0whgXcNMCCW2YBZXgpbBTJxeWxfJKs9XgvrgkOg==
 
 "@tryghost/pretty-cli@1.2.11":
   version "1.2.11"
