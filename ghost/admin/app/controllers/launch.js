@@ -7,7 +7,6 @@ export default class LaunchController extends Controller {
     @service config;
     @service router;
     @service settings;
-    @service ui;
 
     queryParams = ['step'];
 
@@ -101,14 +100,8 @@ export default class LaunchController extends Controller {
     }
 
     @action
-    setup() {
-        this.ui.set('showTour', false);
-    }
-
-    @action
     reset() {
         this.step = 'customise-design';
         this.skippedSteps = [];
-        this.ui.set('showTour', true);
     }
 }
