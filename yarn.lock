@@ -473,15 +473,15 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.7.1.tgz#bbbfc9679cada353f9ee82b31eb8d32febf4e246"
-  integrity sha512-I59N9MXggwwXpy2qsN6Xo9T4a/sijOURkp3CmCtGK9TSCE/q1Y2piZjLx2HUe19hRhbbDPvQifr4zCa556COjA==
+"@tryghost/job-manager@0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.7.2.tgz#76db25b81a9039a8d8c4c8389a6c6dc8a86e3326"
+  integrity sha512-7RalSohNtbjWfUWzQytx0r7seV2bFPeMlRwCAlulNC8pAbpg0Kd0HtayaGeDdpwTVWH4gnn2byIFKhSpLIcvTg==
   dependencies:
     "@breejs/later" "4.0.2"
-    bree "4.1.0"
+    bree "4.1.1"
     cron-validate "1.4.2"
-    fastq "1.10.0"
+    fastq "1.10.1"
     p-wait-for "3.2.0"
 
 "@tryghost/kg-card-factory@2.1.5":
@@ -1459,10 +1459,10 @@ braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
-bree@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/bree/-/bree-4.1.0.tgz#c27c942d6d32fd2ac4809a2a80509298a31fca3e"
-  integrity sha512-4mQMvYGrTtVp6apa/t4bXMcug7q0Eb6cXgWbly7OdhECT9PFsjyaGrSGr2+2TWUD2TFVEeZEtkk1rl8oGcjvgQ==
+bree@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/bree/-/bree-4.1.1.tgz#a29371d45adfb21225885e23030fa708c18da8eb"
+  integrity sha512-jTCqlI0Ll4pYxLoSdpv3lndY3++Ksgqq40bdtTNyufNVBpFzJNSXuL7/iEv2257MleprKJw28SIK8YhJpLBlJg==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@breejs/later" "^4.0.2"
@@ -3609,10 +3609,10 @@ fast-safe-stringify@^2.0.7:
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
-fastq@1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.10.0.tgz#74dbefccade964932cdf500473ef302719c652bb"
-  integrity sha512-NL2Qc5L3iQEsyYzweq7qfgy5OtXCmGzGvhElGEd/SoFWEMOEczNh5s5ocaF01HDetxz+p8ecjNPA6cZxxIHmzA==
+fastq@1.10.1:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.10.1.tgz#8b8f2ac8bf3632d67afcd65dac248d5fdc45385e"
+  integrity sha512-AWuv6Ery3pM+dY7LYS8YIaCiQvUaos9OB1RyNgaOWnaX+Tik7Onvcsf8x8c+YtDeT0maYLniBip2hox5KtEXXA==
   dependencies:
     reusify "^1.0.4"
 
