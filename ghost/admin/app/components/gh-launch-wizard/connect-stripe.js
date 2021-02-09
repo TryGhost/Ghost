@@ -137,6 +137,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
     @task
     *pauseAndContinueTask() {
+        this.args.refreshPreview();
         yield timeout(500);
         this.args.nextStep();
     }
