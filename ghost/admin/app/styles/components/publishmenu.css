@@ -136,8 +136,8 @@
 }
 
 .gh-publishmenu-radio.active .gh-publishmenu-radio-button {
-    border-color: color-mod(var(--blue) l(-12%));
-    background: var(--blue);
+    border-color: var(--black);
+    background: var(--black);
 }
 
 .gh-publishmenu-radio.active .gh-publishmenu-radio-button:before {
