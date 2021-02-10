@@ -729,8 +729,12 @@
 }
 
 .settings-code-editor .CodeMirror-gutters {
-    background-color: rgb(242, 244, 247);
+    background-color: var(--whitegrey-l2);
     border-right: 1px solid var(--lightgrey);
+}
+
+.settings-code-editor .CodeMirror-cursor {
+    border: 1px solid var(--midgrey);
 }
 
 .settings-code-editor .cm-s-xq-light span.cm-meta {

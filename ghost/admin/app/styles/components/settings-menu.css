@@ -129,6 +129,7 @@
 
 .settings-menu-content label code {
     font-weight: normal;
+    border: 1px solid var(--lightgrey);
 }
 
 .settings-menu-content .gh-image-uploader {
@@ -221,6 +222,19 @@
     height: 170px;
     min-height: 170px;
     padding: 0;
+    background: var(--white);
+    color: var(--darkgrey);
+    border: 1px solid var(--lightgrey);
+    border-radius: 4px;
+}
+
+.settings-menu-content .CodeMirror-cursor {
+    border: 1px solid var(--midgrey);
+}
+
+.settings-menu-content .CodeMirror-gutters {
+    background-color: var(--whitegrey-l2);
+    border-right: 1px solid var(--lightgrey);
 }
 
 .settings-menu-content .CodeMirror:hover {
