@@ -683,7 +683,10 @@
 
 .nightshift-toggle.on .thumb {
     position: absolute;
-    left: 20px;
+    left: 21px;
+    width: 20px;
+    height: 20px;
+    top: 1px;
 }
 
 .nightshift-toggle .sun {
