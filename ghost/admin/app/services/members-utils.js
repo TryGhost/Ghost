@@ -23,9 +23,9 @@ export default class MembersUtilsService extends Service {
             disableBackground,
             buttonIcon,
             page = 'signup',
-            isFree = true,
-            isMonthly = true,
-            isYearly = true,
+            isFreeChecked = true,
+            isMonthlyChecked = true,
+            isYearlyChecked = true,
             monthlyPrice,
             yearlyPrice,
             currency
@@ -43,9 +43,9 @@ export default class MembersUtilsService extends Service {
 
         settingsParam.append('button', this.settings.get('portalButton'));
         settingsParam.append('name', this.settings.get('portalName'));
-        settingsParam.append('isFree', isFree);
-        settingsParam.append('isMonthly', isMonthly);
-        settingsParam.append('isYearly', isYearly);
+        settingsParam.append('isFree', isFreeChecked);
+        settingsParam.append('isMonthly', isMonthlyChecked);
+        settingsParam.append('isYearly', isYearlyChecked);
         settingsParam.append('page', page);
         settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
         settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
