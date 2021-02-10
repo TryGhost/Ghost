@@ -95,5 +95,28 @@ describe('SettingsImporter', function () {
 
             should.exist(problem);
         });
+
+        it('Adds a problem if unable to parse data from slack configuration', function () {
+            const fakeSettings = [{
+                key: 'slack',
+                value: 'invalid JSON here'
+            }];
+
+            const fakeExistingSettings = [{
+                key: 'slack_username',
+                value: 'Ghost'
+            }];
+
+            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
+
+            importer.existingData = fakeExistingSettings;
+            importer.beforeImport();
+
+            const problem = find(importer.problems, {
+                message: 'Failed to parse the value of slack setting value'
+            });
+
+            should.exist(problem);
+        });
     });
 });

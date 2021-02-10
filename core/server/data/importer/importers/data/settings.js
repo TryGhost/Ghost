@@ -144,7 +144,7 @@ class SettingsImporter extends BaseImporter {
                 }
             }
 
-            this.dataToImport = _.filter(this.dataToImport, data => (key === data.key));
+            this.dataToImport = _.filter(this.dataToImport, data => (key !== data.key));
         }
 
         // NOTE: keep back compatibility with settings object structure present before migration
