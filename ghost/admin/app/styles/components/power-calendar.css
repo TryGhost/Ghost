@@ -93,12 +93,11 @@
   bottom: 2px;
   line-height: 1;
   font-size: 150%;
-  color: var(--blue);
+  color: var(--black);
 }
 
 .ember-power-calendar-nav-control:focus {
-  transform: scale(1.2);
-  color: color-mod(var(--blue) l(+10%));
+  color: color-mod(var(--black) l(+10%));
 }
 
 .ember-power-calendar-day--current-month {
@@ -107,7 +106,7 @@
 
 .ember-power-calendar-day--today,
 .ember-power-calendar-day:not([disabled]):hover {
-  background-color: var(--lightgrey);
+  background-color: var(--whitegrey);
   border-radius: 3px;
 }
 
@@ -118,23 +117,23 @@
 .ember-power-calendar-day--selected,
 .ember-power-calendar-day--selected:not([disabled]):hover {
   font-weight: bold;
-  background-color: color-mod(var(--blue) l(+30%));
+  background-color: color-mod(var(--green) l(+30%));
   color: var(--darkgrey);
   border-radius: 3px;
 }
 
 .ember-power-calendar-day--selected.ember-power-calendar-day--range-start,
 .ember-power-calendar-day--selected.ember-power-calendar-day--range-end {
-  background-color: color-mod(var(--blue) l(+40%));
+  background-color: color-mod(var(--green) l(+40%));
 }
 
 .ember-power-calendar-day--selected.ember-power-calendar-day--range-start:hover,
 .ember-power-calendar-day--selected.ember-power-calendar-day--range-end:hover {
-    background-color: color-mod(var(--blue) l(+40%));
+    background-color: color-mod(var(--green) l(+40%));
 }
 
 .ember-power-calendar-day--focused {
-  box-shadow: inset 0px -2px 0px 0px var(--blue);
+  box-shadow: inset 0px -2px 0px 0px var(--green);
 }
 
 .ember-power-calendar-day--interactive[disabled] {
