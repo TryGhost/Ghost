@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 export default class ModalPostPreviewSocialComponent extends Component {
     @service config;
     @service settings;
+    @service ghostPaths;
 
     get _fallbackDescription() {
         return this.args.post.customExcerpt ||
