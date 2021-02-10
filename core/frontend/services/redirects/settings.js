@@ -58,9 +58,9 @@ const parseRedirectsFile = (content, ext) => {
 
     if (ext === '.yaml') {
         let redirects = [];
-        let configYaml = yaml.safeLoad(content);
+        let configYaml = yaml.load(content);
 
-        // yaml.safeLoad passes almost every yaml code.
+        // yaml.load passes almost every yaml code.
         // Because of that, it's hard to detect if there's an error in the file.
         // But one of the obvious errors is the plain string output.
         // Here we check if the user made this mistake.

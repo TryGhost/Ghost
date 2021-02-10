@@ -41,7 +41,7 @@ describe('DB version integrity', function () {
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
         const routesPath = path.join(config.get('paths').defaultSettings, 'default-routes.yaml');
-        const defaultRoutes = validateFrontendSettings(yaml.safeLoad(fs.readFileSync(routesPath, 'utf-8')));
+        const defaultRoutes = validateFrontendSettings(yaml.load(fs.readFileSync(routesPath, 'utf-8')));
 
         const tablesNoValidation = _.cloneDeep(schema.tables);
         let schemaHash;
