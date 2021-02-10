@@ -233,7 +233,6 @@
     flex-grow: 1;
     align-items: center;
     justify-content: flex-start;
-    border-right: 1px solid var(--lightgrey);
     padding: 2px;
 }
 
@@ -286,6 +285,8 @@
     width: 46px;
     border: none;
     box-shadow: none;
+    background: transparent;
+    border: 1px dashed var(--lightgrey);
 }
 
 .gh-portal-button-uploadicon span {
@@ -297,6 +298,7 @@
 .gh-portal-button-uploadicon span svg {
     width: 18px;
     height: 18px;
+    fill: var(--darkgrey);
 }
 
 .gh-portal-button-uploadicon:hover span svg {
