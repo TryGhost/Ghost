@@ -954,11 +954,17 @@
 }
 
 /* Main sections */
+/* 
+    .gh-main-section [columns-2|columns-3]
+        .gh-main-section-block [columns-2|columns-3]
+            .gh-main-section-header [small]
+            .gh-main-section-content [grey]
+*/
 .gh-main-section {
     display: grid;
     grid-template-columns: 1fr;
     margin-bottom: 3vw;
-    grid-column-gap: 40px;
+    grid-column-gap: 0;
 }
 
 .gh-main-section.no-heading,
@@ -1000,7 +1006,9 @@
     font-weight: 400;
 }
 
-.gh-main-section-description.bn { border-bottom: none; }
+.gh-main-section-description.bn { 
+    border-bottom: none; 
+}
 
 .gh-main-section-header + .gh-main-section-description {
     margin-top: -6px;
@@ -1014,6 +1022,7 @@
 
 .gh-main-section.columns-2 {
     grid-template-columns: 1fr 1fr;
+    grid-column-gap: 32px;
 }
 
 .gh-main-section.columns-2 .gh-main-section-header {
@@ -1022,6 +1031,7 @@
 
 .gh-main-section.columns-3 {
     grid-template-columns: 1fr 1fr 1fr;
+    grid-column-gap: 32px;
 }
 
 .gh-main-section.columns-3 .gh-main-section-header {
@@ -1029,7 +1039,11 @@
 }
 
 .gh-main-section-block {
-    padding: 16px 0;
+    padding: 0;
+}
+
+.gh-main-section-block:not(:last-of-type) {
+    margin-bottom: 32px;
 }
 
 .gh-main-section-block.bt { border-top: 1px solid var(--whitegrey); }
@@ -1039,30 +1053,37 @@
 
 .gh-main-section-block.p0 { padding: 0; }
 
-.gh-main-section-modifier.grey .gh-main-section {
+.gh-main-section-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-bottom: 3vw;
+}
+
+.gh-main-section-content.grey {
     background: var(--main-color-content-greybg);
+    padding: 24px;
     border-radius: 3px;
-    grid-column-gap: 0px;
 }
 
-.gh-main-section-modifier.grey .gh-main-section-block.bt { border-top: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
-.gh-main-section-modifier.grey .gh-main-section-block.br { border-right: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
-.gh-main-section-modifier.grey .gh-main-section-block.bb { border-bottom: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
-.gh-main-section-modifier.grey .gh-main-section-block.bl { border-left: 1px solid color-mod(var(--whitegrey-d1) l(+1%)); }
-
-.gh-main-section-modifier.grey .gh-main-section-block.gh-setting {
-    padding: 18px 20px 17px;
+.gh-main-section-content.columns-2 {
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 80px;
 }
 
-.gh-main-section-modifier.grey .gh-main-section-header {
-    border: none;
+.gh-main-section-content.columns-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-column-gap: 24px;
 }
 
-.gh-main-section-modifier.grey .gh-main-section-block {
-    padding: 16px 24px 24px;
+.gh-main-section-content.grey {
+    background: var(--main-color-content-greybg);
 }
 
-/* Expandables */
+.gh-main-section-content.padding-top-s {
+    padding-top: 16px;
+}
+
+/* Expandable options */
 .gh-expandable {
     background: var(--main-color-content-greybg);
     border-radius: 3px;
@@ -1109,14 +1130,12 @@
     padding: 0 24px;
 }
 
-/* Inputs and buttons for grey background */
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
-.gh-main-section-modifier.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+/* Grey background modifiers */
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
     background: var(--whitegrey-d2);
 }
 
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
-.gh-main-section-modifier.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
     background: color-mod(var(--whitegrey-d2) l(-4%));
 }
 
@@ -1130,10 +1149,7 @@
 
 .gh-expandable-content input:not(:focus),
 .gh-expandable-content .gh-input:not(:focus),
-.gh-expandable-content .ember-power-select-multiple-trigger,
-.gh-main-section-modifier.grey input:not(:focus),
-.gh-main-section-modifier.grey .gh-input:not(:focus),
-.gh-main-section-modifier.grey .ember-power-select-multiple-trigger {
+.gh-expandable-content .ember-power-select-multiple-trigger {
     border-color: var(--whitegrey-d1);
 }
 
@@ -1141,7 +1157,6 @@
     margin: 0;
     padding: 0;
 }
-
 
 /* Canvas */
 .gh-canvas-title {

@@ -17,10 +17,10 @@
             @modifier="action wide" />
     {{/if}}
 
-    <div class="gh-main-section-modifier grey">
-        <h4 class="gh-main-section-header small">Primary Navigation</h4>
-        <section class="gh-main-section">
-            <div class="gh-main-section-block">
+    <section class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Primary Navigation</h4>
+        <div class="gh-main-section-block">
+            <div class="gh-main-section-content padding-top-s grey">
                 <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
                     <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
                         {{#each this.settings.navigation as |navItem index|}}
@@ -45,11 +45,11 @@
                         data-test-navitem="new" />
                 </form>
             </div>
-        </section>
+        </div>
 
-        <h4 class="gh-main-section-header small">Secondary Navigation</h4>
-        <section class="gh-main-section">
-            <div class="gh-main-section-block">
+        <h4 class="gh-main-section-header small bn">Secondary Navigation</h4>
+        <div class="gh-main-section-block">
+            <div class="gh-main-section-content padding-top-s grey">
                 <form id="secondary-navigation" class="gh-blognav" novalidate="novalidate">
                     <SortableObjects @sortableObjectList={{this.settings.secondaryNavigation}} @useSwap={{false}}>
                         {{#each this.settings.secondaryNavigation as |navItem index|}}
@@ -74,8 +74,8 @@
                         data-test-navitem="new" />
                 </form>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 </section>
 
 {{outlet}}

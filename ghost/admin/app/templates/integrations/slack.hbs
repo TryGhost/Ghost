@@ -30,66 +30,68 @@
             </div>
         </section>
 
-        <div class="gh-main-section-modifier grey">
-            <h4 class="gh-main-section-header small">Slack configuration</h4>
-            <section class="gh-main-section columns-2">
-                <form class="app-config-form" id="slack-settings" novalidate="novalidate" {{action "save" on="submit"}}>
+        <section class="gh-main-section">
+            <h4 class="gh-main-section-header small bn">Slack configuration</h4>
+            <div class="gh-main-section-block">
+                <div class="gh-main-section-content padding-top-s grey">
+                    <form class="app-config-form" id="slack-settings" novalidate="novalidate" {{action "save" on="submit"}}>
 
-                    <div class="gh-main-section-block">
-                        <div class="gh-setting-first">
-                            <div class="gh-setting-content gh-setting-content--no-action">
-                                <div class="gh-setting-title">Webhook URL</div>
-                                <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost.</div>
-                                <div class="gh-setting-content-extended">
-                                    <GhFormGroup @errors={{this.slackSettings.errors}} @hasValidated={{this.slackSettings.hasValidated}} @property="url">
-                                        <GhTextInput
-                                            @placeholder="https://hooks.slack.com/services/..."
-                                            @name="slack[url]"
-                                            @value={{readonly this.slackSettings.url}}
-                                            @input={{action "updateURL" value="target.value"}}
-                                            @keyEvents={{hash
-                                                Enter=(action "save")
-                                            }}
-                                            @focus-out={{action "triggerDirtyState"}}
-                                            data-test-slack-url-input={{true}}
-                                        />
-                                        {{#unless this.slackSettings.errors.url}}
-                                            <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
-                                        {{else}}
-                                            <GhErrorMessage @errors={{this.slackSettings.errors}} @property="url" data-test-error="slack-url" />
-                                        {{/unless}}
-                                    </GhFormGroup>
+                        <div class="gh-main-section-block">
+                            <div class="gh-setting-first">
+                                <div class="gh-setting-content gh-setting-content--no-action">
+                                    <div class="gh-setting-title">Webhook URL</div>
+                                    <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost.</div>
+                                    <div class="gh-setting-content-extended">
+                                        <GhFormGroup @errors={{this.slackSettings.errors}} @hasValidated={{this.slackSettings.hasValidated}} @property="url">
+                                            <GhTextInput
+                                                @placeholder="https://hooks.slack.com/services/..."
+                                                @name="slack[url]"
+                                                @value={{readonly this.slackSettings.url}}
+                                                @input={{action "updateURL" value="target.value"}}
+                                                @keyEvents={{hash
+                                                    Enter=(action "save")
+                                                }}
+                                                @focus-out={{action "triggerDirtyState"}}
+                                                data-test-slack-url-input={{true}}
+                                            />
+                                            {{#unless this.slackSettings.errors.url}}
+                                                <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
+                                            {{else}}
+                                                <GhErrorMessage @errors={{this.slackSettings.errors}} @property="url" data-test-error="slack-url" />
+                                            {{/unless}}
+                                        </GhFormGroup>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gh-setting">
+                                <div class="gh-setting-content gh-setting-content--no-action">
+                                    <div class="gh-setting-title">Username</div>
+                                    <div class="gh-setting-desc">The username to display messages from</div>
+                                    <div class="gh-setting-content-extended">
+                                        <GhFormGroup @errors={{this.slackSettings.errors}} @hasValidated={{this.slackSettings.hasValidated}} @property="username">
+                                            <GhTextInput
+                                                @placeholder="Ghost"
+                                                @name="slack[username]"
+                                                @value={{readonly this.slackSettings.username}}
+                                                @input={{action "updateUsername" value="target.value"}}
+                                                @keyEvents={{hash
+                                                    Enter=(action "save")
+                                                }}
+                                                @focus-out={{action "triggerDirtyState"}}
+                                                data-test-slack-username-input={{true}}
+                                            />
+                                            {{#if this.slackSettings.errors.username}}
+                                                <GhErrorMessage @errors={{this.slackSettings.errors}} @property="username" />
+                                            {{/if}}
+                                        </GhFormGroup>
+                                    </div>
+                                    <GhTaskButton @buttonText="Send test notification" @task={{this.sendTestNotification}} @successText="Sent" @class="gh-btn gh-btn-icon" @disabled={{this.testNotificationDisabled}} data-test-send-notification-button="true" />
                                 </div>
                             </div>
                         </div>
-                        <div class="gh-setting">
-                            <div class="gh-setting-content gh-setting-content--no-action">
-                                <div class="gh-setting-title">Username</div>
-                                <div class="gh-setting-desc">The username to display messages from</div>
-                                <div class="gh-setting-content-extended">
-                                    <GhFormGroup @errors={{this.slackSettings.errors}} @hasValidated={{this.slackSettings.hasValidated}} @property="username">
-                                        <GhTextInput
-                                            @placeholder="Ghost"
-                                            @name="slack[username]"
-                                            @value={{readonly this.slackSettings.username}}
-                                            @input={{action "updateUsername" value="target.value"}}
-                                            @keyEvents={{hash
-                                                Enter=(action "save")
-                                            }}
-                                            @focus-out={{action "triggerDirtyState"}}
-                                            data-test-slack-username-input={{true}}
-                                        />
-                                        {{#if this.slackSettings.errors.username}}
-                                            <GhErrorMessage @errors={{this.slackSettings.errors}} @property="username" />
-                                        {{/if}}
-                                    </GhFormGroup>
-                                </div>
-                                <GhTaskButton @buttonText="Send test notification" @task={{this.sendTestNotification}} @successText="Sent" @class="gh-btn gh-btn-icon" @disabled={{this.testNotificationDisabled}} data-test-send-notification-button="true" />
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </section>
-        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
     </section>
 </section>
