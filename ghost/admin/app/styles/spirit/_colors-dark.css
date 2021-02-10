@@ -16,7 +16,8 @@
     --yellow: #fecd35;
     --red: #f05230;
     --pink: #fa3a57;
-    --extra-darkgrey: #212A2E;
+    --white: #15171a;
+    --extra-darkgrey: #191b1f;
 
     --black-10: rgba(255, 255, 255, 0.1);
     --black-20: rgba(255, 255, 255, 0.2);
@@ -28,21 +29,21 @@
     --black-80: rgba(255, 255, 255, 0.8);
     --black-90: rgba(255, 255, 255, 0.9);
 
-    --white-10: rgba(38, 50, 56, 0.1);
-    --white-20: rgba(38, 50, 56, 0.2);
-    --white-30: rgba(38, 50, 56, 0.3);
-    --white-40: rgba(38, 50, 56, 0.4);
-    --white-50: rgba(38, 50, 56, 0.5);
-    --white-60: rgba(38, 50, 56, 0.6);
-    --white-70: rgba(38, 50, 56, 0.7);
-    --white-80: rgba(38, 50, 56, 0.8);
-    --white-90: rgba(38, 50, 56, 0.9);
+    --white-10: rgba(21, 23, 26, 0.1);
+    --white-20: rgba(21, 23, 26, 0.2);
+    --white-30: rgba(21, 23, 26, 0.3);
+    --white-40: rgba(21, 23, 26, 0.4);
+    --white-50: rgba(21, 23, 26, 0.5);
+    --white-60: rgba(21, 23, 26, 0.6);
+    --white-70: rgba(21, 23, 26, 0.7);
+    --white-80: rgba(21, 23, 26, 0.8);
+    --white-90: rgba(21, 23, 26, 0.9);
 
-    --whitegrey: #343f44;
-    --lightgrey: #54666D;
-    --midlightgrey: #738a94;
-    --midgrey: #9BAEB8;
-    --middarkgrey: #c5d2d9;
+    --whitegrey: #1f2328;
+    --lightgrey: #2a3037;
+    --midlightgrey: #586574;
+    --midgrey: #7f8d9f;
+    --middarkgrey: #c2cbd6;
     --darkgrey: #e5eff5;
 
     --transparent:transparent;
