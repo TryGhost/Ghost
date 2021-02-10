@@ -70,11 +70,25 @@
 
 
 :root {
+    /* Primary colours */
+    --black: #fafafb;
+    --white: #15171A;
+    --lime: #B5FF18;
+
     --darkgrey: #e5eff5;
+    --middarkgrey: #ABB4BE;
     --midgrey: #738296;
+    --midlightgrey:#626D79;
     --lightgrey: #292f38;
-    --dark-main-bg-color: #1f2328;
+    --whitegrey: #222730;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
+
+    --dark-main-bg-color: #15171A;
+    --hairline-color-1: #292f38;
+    --hairline-color-2: #626D79;
+
+    --main-color-content-greybg: color-mod(var(--whitegrey-d1) l(+0%) s(+5%));
+    --list-color-divider: var(--whitegrey-l1);
 }
 
 body {
@@ -485,7 +499,7 @@ input:focus,
 }
 
 .gh-nav {
-    border-right: none;
+    border-color: var(--hairline-color-1);
 }
 
 .gh-nav-list a {
@@ -495,14 +509,17 @@ input:focus,
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
 .gh-nav-list .gh-secondary-action:hover span,
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover,
-.gh-nav-list .active,
 .gh-nav-btn-search:hover,
 .gh-nav-list button.main-menu-item:hover,
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover,
 .gh-nav-bottom-tabicon:hover,
 .gh-nav-bottom-tabicon.active,
 .gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
-    background: color-mod(var(--dark-main-bg-color) l(+5%) s(-5%));
+    background: var(--white);
+}
+
+.gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
+    background: #171b1f;
 }
 
 .gh-nav-btn-search:hover {
@@ -524,7 +541,7 @@ input:focus,
 .tags-container,
 .content-list ol,
 .gh-settings-main-grid {
-    background: #191b1f;
+    background: var(--dark-main-bg-color);
 }
 
 .gh-posts-list-item:hover,
@@ -554,15 +571,15 @@ input:focus,
 }
 
 .nightshift-toggle {
-    background: #2d3d42;
+    background: var(--black);
 }
 
 .nightshift-toggle .thumb {
-    background: var(--midlightgrey-d2);
+    background: var(--dark-main-bg-color);
 }
 
 .nightshift-toggle .moon svg {
-    color: var(--midlightgrey-d2);
+    color: var(--dark-main-bg-color);
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
@@ -578,16 +595,23 @@ input:focus,
 
 /* Dark style Lists */
 .gh-list {
-    background: #191b1f;
+    background: var(--dark-main-bg-color) !important;
 }
 
 .gh-list-header,
 .gh-list-row:not(.header):hover .gh-list-cell,
 .gh-list-row:not(.header):hover .gh-list-data,
 .apps-grid-cell:hover {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
+.gh-list-header {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-list-data {
+    border-top: 1px solid var(--hairline-color-1);
+}
 
 /* Members */
 .gh-members-chart-header {

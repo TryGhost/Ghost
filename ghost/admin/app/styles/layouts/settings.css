@@ -102,12 +102,12 @@
 
 .gh-settings-main-grid .gh-setting-group svg path,
 .gh-settings-main-grid .gh-setting-group svg circle {
-    fill: var(--white);
+    fill: #fff;
 }
 
 .gh-settings-main-grid .gh-setting-group:hover svg path,
 .gh-settings-main-grid .gh-setting-group:hover svg circle {
-    fill: var(--white);
+    fill: #fff;
 }
 
 .gh-settings-main-grid .gh-setting-group div {
