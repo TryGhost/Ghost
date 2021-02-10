@@ -123,16 +123,16 @@
 
 
     <section class="gh-main-section columns-2">
-        <div class="gh-main-section-block">
+        <div class="gh-main-section-block stretch-height">
             <h4 class="gh-main-section-header small bn">Member activity</h4>
-            <div class="gh-main-section-content grey">
+            <div class="gh-main-section-content grey stretch-height">
                 <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
             </div>
         </div>
         {{#if this.canShowStripeInfo}}
         <div class="gh-main-section-block">
             <h4 class="gh-main-section-header small bn">Stripe info</h4>
-            <div class="gh-main-section-content padding-top-s grey">
+            <div class="gh-main-section-content stretch-height grey">
                 <div class="gh-member-stripe">
                     {{#if this.isLoading}}
                         <div class="flex justify-center flex-auto">
