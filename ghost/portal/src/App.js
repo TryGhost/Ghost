@@ -156,7 +156,11 @@ export default class App extends React.Component {
                 ...linkSiteData,
                 ...previewSiteData,
                 ...notificationSiteData,
-                ...devSiteData
+                ...devSiteData,
+                plans: {
+                    ...(apiSiteData || {}).plans,
+                    ...(previewSiteData || {}).plans
+                }
             },
             ...restDevData,
             ...restLinkData,
