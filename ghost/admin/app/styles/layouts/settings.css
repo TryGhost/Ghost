@@ -701,7 +701,7 @@
     padding: 0;
     min-width: 250px;
     min-height: 300px;
-    max-width: 1130px;
+    max-width: 1224px;
     width: calc(100vw - 360px);
     height: auto;
     line-height: 22px;
@@ -1078,7 +1078,7 @@ p.theme-validation-details {
     justify-content: space-between;
     border-bottom: 1px solid var(--whitegrey);
     margin: -20px -24px;
-    padding: 20px 24px;
+    padding: 16px 24px;
 }
 
 .gh-branding-settings-header h4 {

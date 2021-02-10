@@ -960,7 +960,7 @@
 .gh-main-section.bb { border-bottom: 1px solid var(--whitegrey); }
 
 .gh-main-section-header {
-    font-size: 1.9rem;
+    font-size: 1.7rem;
     font-weight: 600;
     text-transform: none;
     letter-spacing: unset;
@@ -982,24 +982,25 @@
     border: none;
 }
 
-.gh-main-section .header-description,
-.gh-main-section-block .header-description {
-    font-size: 1.2rem;
-    font-weight: 400;
+.gh-main-section-description {
     color: var(--middarkgrey);
     border-bottom: 1px solid var(--whitegrey);
     padding: 0 0 8px;
-    margin: 0;
-}
-
-.gh-main-section-header + .description {
-    margin-top: -10px;
-}
-
-.gh-main-section-header.large + .description {
     font-size: 1.3rem;
-    margin-top: -8px;
+    margin: 0;
+    font-weight: 400;
+}
+
+.gh-main-section-description.bn { border-bottom: none; }
+
+.gh-main-section-header + .gh-main-section-description {
+    margin-top: -6px;
     padding-bottom: 12px;
+}
+
+.gh-main-section-header.small + .gh-main-section-description {
+    font-size: 1.2rem;
+    margin-top: -10px;
 }
 
 .gh-main-section.columns-2 {

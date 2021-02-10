@@ -5,18 +5,16 @@
     position: relative;
     padding: 12px 10px 14px 40px;
     border: 1px solid transparent;
-    border-left-width: 5px;
-    color: var(--midgrey);
+    color: var(--black);
     line-height: 1.55em;
     letter-spacing: 0.2px;
-    background: #fff;
+    background: color-mod(var(--blue) a(5%));
     border-radius: 5px;
-    border-color: var(--whitegrey);
-    box-shadow: 0 6px 10px -8px rgba(0,0,0,.15)
+    border-color: color-mod(var(--blue) a(30%));
 }
 
 .gh-box a {
-    color: var(--middarkgrey);
+    color: var(--black);
     text-decoration: underline;
 }
 
@@ -24,10 +22,6 @@
     position: absolute;
     left: 12px;
     width: auto;
-}
-
-.gh-box-tip {
-    border-left-color: var(--blue);
 }
 
 .gh-box-tip svg:first-of-type {
