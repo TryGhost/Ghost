@@ -464,11 +464,11 @@
     display: flex;
     position: relative;
     align-items: center;
-    height: 118px;
-    width: 118px;
+    height: 117px;
+    width: 117px;
     margin: 0;
     border-radius: 3px;
-    border: 1px solid var(--lightgrey);
+    border: 1px solid var(--whitegrey);
     background: var(--white);
     padding: 24px;
 }
