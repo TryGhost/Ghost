@@ -5,7 +5,7 @@
     position: relative;
     padding: 12px 10px 14px 40px;
     border: 1px solid transparent;
-    color: var(--black);
+    color: var(--darkgrey);
     line-height: 1.55em;
     letter-spacing: 0.2px;
     background: color-mod(var(--blue) a(5%));
@@ -15,7 +15,7 @@
 
 .gh-box a {
     color: var(--black);
-    text-decoration: underline;
+    font-weight: 600;
 }
 
 .gh-box svg:first-of-type {
@@ -31,7 +31,8 @@
 }
 
 .gh-box-alert {
-    border-left-color: color-mod(var(--yellow) l(-8%) s(+10%));
+    border-color: var(--yellow);
+    background: color-mod(var(--yellow) a(5%));
 }
 
 .gh-box-alert svg:first-of-type {

@@ -14,15 +14,20 @@
     width: 350px;
     max-width: 100%;
     overflow: hidden;
-    background: var(--whitegrey-l2);
-    border-left: 1px solid var(--whitegrey);
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    background: var(--white);
+    transition: all 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(360px, 0px, 0px);
-    /* box-shadow: 0 0 1px rgba(99, 114, 130, 0.1), 1px 0 16px rgba(27, 39, 51, 0.08); */
+    box-shadow: none;
 }
 
 .settings-menu-expanded .settings-menu-container {
     transform: translate3d(0, 0px, 0px);
+    box-shadow:
+        -4.5px 0 3.6px rgba(0, 0, 0, 0.007),
+        -12.5px 0 10px rgba(0, 0, 0, 0.008),
+        -30.1px 0 24.1px rgba(0, 0, 0, 0.01),
+        -100px 0 80px rgba(0, 0, 0, 0.02)
+    ;
 }
 
 .settings-menu-container .settings-menu-pane {
@@ -114,7 +119,7 @@
 .settings-menu-pane .gh-date-time-picker-date,
 .settings-menu-pane .gh-date-time-picker-time {
     background: var(--white);
-    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
+    border: var(--input-border);
 }
 
 .settings-menu-container .ember-power-select-multiple-trigger input,
@@ -189,6 +194,7 @@
 
 .settings-menu-delete-button:hover {
     box-shadow: none;
+    background: none;
 }
 
 .settings-menu-delete-button span {
@@ -303,7 +309,7 @@
     z-index: 900;
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    background: transparent;
+    background: rgba(0,0,0,0.02);
     /* Not off the screen, to give a parallax effect */
     animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
 }

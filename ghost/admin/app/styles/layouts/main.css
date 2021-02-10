@@ -1031,7 +1031,7 @@
 .gh-main-section-block.p0 { padding: 0; }
 
 .gh-main-section-modifier.grey .gh-main-section {
-    background: color-mod(var(--whitegrey-l1) l(+1%));
+    background: var(--main-color-content-greybg);
     border-radius: 3px;
     grid-column-gap: 0px;
 }
@@ -1055,7 +1055,7 @@
 
 /* Expandables */
 .gh-expandable {
-    background: color-mod(var(--whitegrey-l1) l(+1%));
+    background: var(--main-color-content-greybg);
     border-radius: 3px;
 }
 
@@ -1095,7 +1095,7 @@
 }
 
 .gh-expandable-content {
-    background: linear-gradient(color-mod(var(--whitegrey-l1) l(+1%)), color-mod(var(--whitegrey-l1) l(+0%)));
+    background: linear-gradient(var(--main-color-content-greybg), color-mod(var(--main-color-content-greybg) l(-2%)));
     margin: 18px -24px -18px;
     padding: 0 24px;
 }
