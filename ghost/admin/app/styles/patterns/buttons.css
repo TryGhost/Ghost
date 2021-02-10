@@ -382,7 +382,8 @@ Usage: CTA buttons grouped together horizontally.
 */
 
 .gh-btn-group {
-    border-radius: 0;
+    display: flex;
+    align-items: center;
     background: var(--whitegrey-l1);
     border-radius: 3px;
     line-height: 0;
@@ -405,11 +406,11 @@ Usage: CTA buttons grouped together horizontally.
     line-height: 30px;
     border-radius: 2px;
     background: transparent !important;
+    font-weight: 500 !important;
 }
 
 .gh-btn-group .gh-btn-group-selected span {
     color: var(--black);
-    font-weight: 600;
     padding-left: 12px;
     padding-right: 12px;
     background: var(--white) !important;
@@ -437,6 +438,43 @@ Usage: CTA buttons grouped together horizontally.
 
 .gh-btn-link.blue {
     color: var(--blue);
+}
+
+/* Tab buttons */
+/* ---------------------------------------------------------- */
+.gh-btn-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-btn-tabs .gh-btn {
+    background: none !important;
+    border-radius: 0;
+    margin-right: 20px;
+    border-bottom: 1px solid transparent;
+}
+
+.gh-btn-tabs .gh-btn span {
+    background: none !important;
+    border-radius: 0;
+    padding: 0;
+    color: var(--midgrey);
+    font-weight: 500 !important;
+}
+
+.gh-btn-tabs .gh-btn span:hover {
+    color: var(--darkgrey);
+}
+
+.gh-btn-tabs .gh-btn-tab-selected {
+    border-bottom-color: var(--black);
+}
+
+.gh-btn-tabs .gh-btn-tab-selected span {
+    color: var(--black);
 }
 
 

@@ -132,21 +132,19 @@
         {{#if this.canShowStripeInfo}}
         <div class="gh-main-section-block">
             <h4 class="gh-main-section-header small bn">Stripe info</h4>
-            <div class="gh-main-section-content grey">
+            <div class="gh-main-section-content padding-top-s grey">
                 <div class="gh-member-stripe">
                     {{#if this.isLoading}}
-                        <div class="pa12 bg-grouped-table gh-content-box grey mt2">
-                            <div class="flex justify-center flex-auto">
-                                <div class="gh-loading-spinner"> </div>
-                            </div>
+                        <div class="flex justify-center flex-auto">
+                            <div class="gh-loading-spinner"> </div>
                         </div>
                     {{else}}
-                        <div class="bg-grouped-table gh-content-box grey mt2">
+                        <div>
                             {{#if this.subscriptions}}
                                 <div class="gh-member-header-stripeinfo">
-                                    <div class="flex items-center justify-between gh-btn-group w-100 ma5 mb0">
-                                        <button type="button" class="gh-btn gh-member-btn-stripe-toggle w-100 {{if (eq this.stripeDetailsType "subscription") "gh-btn-group-selected"}}" {{on "click" (fn this.changeStripeDetailsType "subscription")}}><span>Subscription</span></button>
-                                        <button type="button" class="gh-btn gh-member-btn-stripe-toggle w-100 {{if (eq this.stripeDetailsType "customer") "gh-btn-group-selected"}}" {{on "click" (fn this.changeStripeDetailsType "customer")}}><span>Customer</span></button>
+                                    <div class="gh-btn-tabs">
+                                        <button type="button" class="gh-btn gh-member-btn-stripe-toggle {{if (eq this.stripeDetailsType "subscription") "gh-btn-tab-selected"}}" {{on "click" (fn this.changeStripeDetailsType "subscription")}}><span>Subscription</span></button>
+                                        <button type="button" class="gh-btn gh-member-btn-stripe-toggle {{if (eq this.stripeDetailsType "customer") "gh-btn-tab-selected"}}" {{on "click" (fn this.changeStripeDetailsType "customer")}}><span>Customer</span></button>
                                     </div>
                                 </div>
                                 {{#if (eq this.stripeDetailsType "subscription")}}
@@ -156,7 +154,7 @@
                                         </div>
                                     {{/if}}
                                     {{#each this.subscriptions as |subscription|}}
-                                        <section class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
+                                        <section class="gh-member-stripe-info flex flex-column flex-row-ns items-start justify-between">
                                             <div class="flex items-start w-100">
                                                 <div class="flex-auto">
                                                     <table class="gh-member-stripe-table">
@@ -235,7 +233,7 @@
                                     {{/each}}
                                 {{else}}
 
-                                    <section class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
+                                    <section class="gh-member-stripe-info flex flex-column flex-row-ns items-start justify-between">
                                         <div class="flex items-start w-100">
                                             <div class="flex-auto">
                                                 <table class="gh-member-stripe-table">
@@ -287,7 +285,7 @@
                                     <p class="ma0 pa0 tc midgrey">Member doesn't have an active Stripe subscription</p>
                                 </div>
                             {{/if}}
-                            <div class="pa5 pb0 pt4 flex flex-column justify-between bt b--whitegrey">
+                            <div class="flex flex-column justify-between bt b--whitegrey-d1">
                                 <GhFormGroup @classNames="gh-members-comped-checkbox">
                                     <div class="flex justify-between items-center gh-members-comped">
                                         <div class="mr5">
