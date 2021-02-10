@@ -69,7 +69,7 @@
                 {{/unless}}
 
                 <div>
-                    <button type="button" class="gh-btn gh-btn-icon only-has-icon gh-actions-cog ml3" title="Settings" data-test-button="psm-toggle" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
+                    <button type="button" class="gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog ml3" title="Settings" data-test-button="psm-toggle" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
                         <span>{{svg-jar "settings"}}</span>
                     </button>
                 </div>
@@ -100,7 +100,7 @@
             @deleteSnippet={{if this.canManageSnippets this.toggleDeleteSnippetModal}}
         />
 
-        <div class="absolute flex items-center br3 bg-transparent {{if editor.headerClass "right-4 bottom-4" "right-6 bottom-6"}}">
+        <div class="gh-editor-wordcount-container {{if editor.headerClass "small"}}">
             <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw4">
                 {{gh-pluralize this.wordCount.wordCount "word"}}
             </div>

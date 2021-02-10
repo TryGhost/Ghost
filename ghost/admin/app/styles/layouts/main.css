@@ -134,7 +134,7 @@
     top: -344px;
     left: 20px;
     margin: 10px 0 0;
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.08), 0 18px 45px -5px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--box-shadow-m);
     min-width: 280px;
     padding: 6px 0;
 }
@@ -413,12 +413,18 @@
     height: 16px;
     position: absolute;
     left: 8px;
-    top: 11px;
+    top: 9px;
     z-index: 99999;
+    opacity: 1;
 }
 
 .gh-nav-button-expand.expanded {
     padding-left: 9px;
+    opacity: 0;
+}
+
+.gh-nav:hover .gh-nav-button-expand {
+    opacity: 1;
 }
 
 .gh-nav-button-expand svg {
