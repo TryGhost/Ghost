@@ -6712,6 +6712,11 @@ node-fetch@^2.6.0:
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
   integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
 
+node-fetch@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
+  integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
+
 node-forge@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-0.10.0.tgz#32dea2afb3e9926f02ee5ce8794902691a676bf3"
@@ -6993,12 +6998,12 @@ object.values@^1.1.0:
     function-bind "^1.1.1"
     has "^1.0.3"
 
-oembed-parser@1.3.7:
-  version "1.3.7"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.3.7.tgz#3741c238a383f595e84dc4f4f3f9c5f6f8d95c53"
-  integrity sha512-u+zIINgVUTMJ5wqs2dpoJhWZ+0yLmChB3wV4NDIT81cZtHlm0xcgR3JuvXdtgJDJK/1diHk3DQtv2zsjhdeEkA==
+oembed-parser@1.4.5:
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.4.5.tgz#0556464be3cc339f3dd441a55b362968e070345c"
+  integrity sha512-CTrwqBizddDtlKDZ66JXYiSKCGePLiY5mSTx7oZohbyuG3WwuJnP1D8ZCR7BJhgDBpvJwyZqpPHD5a7pRVYPOg==
   dependencies:
-    node-fetch "^2.6.0"
+    node-fetch "^2.6.1"
 
 on-finished@^2.3.0, on-finished@~2.3.0:
   version "2.3.0"
