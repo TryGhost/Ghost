@@ -662,7 +662,6 @@ textarea.gh-member-details-textarea {
 .gh-member-internal-info,
 .gh-member-stripe {
     float: right;
-    width: 29%;
 }
 
 @media (max-width: 1160px) {
