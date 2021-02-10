@@ -81,32 +81,6 @@
     border: 1px solid color-mod(var(--main-bg-color) l(-8%));
 }
 
-.gh-user-name {
-    margin: -2px 8px 2px 0;
-    padding: 0 0 3px 0;
-    word-break: break-all;
-    font-weight: 600;
-    line-height: 1.1em;
-    max-width: 160px;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    white-space: nowrap;
-}
-
-.gh-user-email {
-    margin: -1px 8px -3px 0;
-    padding: 0 0 3px 0;
-    word-break: break-all;
-    font-size: 1.25rem;
-    font-weight: 400;
-    line-height: 1.1em;
-    color: var(--middarkgrey);
-    max-width: 160px;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    white-space: nowrap;
-}
-
 /* Global Nav
 /* ---------------------------------------------------------- */
 
@@ -131,12 +105,12 @@
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
-    top: -344px;
+    top: -440px;
     left: 20px;
     margin: 10px 0 0;
     box-shadow: var(--box-shadow-m);
-    min-width: 280px;
-    padding: 6px 0;
+    min-width: 290px;
+    padding: 6px 0 12px;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu>li>a,
@@ -144,7 +118,7 @@
     font-size: 1.4rem;
     margin: 0;
     width: unset;
-    padding: 10px 24px 11px;
+    padding: 8px 24px 9px;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu>li>button {
@@ -214,6 +188,54 @@
     flex-grow: 1;
     overflow-y: auto;
     padding: 0;
+}
+
+.gh-account-menu-header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 24px;
+}
+
+.gh-account-menu-header .gh-user-avatar {
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-account-menu-header .user-menu-signout {
+    position: absolute;
+    top: 16px;
+    right: 12px;
+}
+
+.gh-user-name {
+    margin: 8px 0 0;
+    padding: 0;
+    word-break: break-all;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2em;
+    max-width: 160px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.gh-user-email {
+    margin: 4px 0 0;
+    padding: 0;
+    word-break: break-all;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.2em;
+    color: var(--middarkgrey);
+    max-width: 160px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 
 /* Global search
@@ -1042,8 +1064,13 @@
     padding: 0;
 }
 
+.gh-main-section-block.with-margin,
 .gh-main-section-block:not(:last-of-type) {
     margin-bottom: 32px;
+}
+
+.gh-main-section-block.no-margin {
+    margin-bottom: 0;
 }
 
 .gh-main-section-block.bt { border-top: 1px solid var(--whitegrey); }
@@ -1080,6 +1107,16 @@
 
 .gh-main-section-content.padding-top-s {
     padding-top: 16px;
+}
+
+.gh-main-section-block.stretch-height {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-main-section-block.stretch-height .gh-main-section-content {
+    flex-grow: 1;
 }
 
 /* Expandable options */
