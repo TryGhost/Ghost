@@ -4,8 +4,7 @@
 .nav-list {
     padding: 0;
     max-width: 500px;
-    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
-    background: #fff;
+    background: var(--main-color-content-greybg);
     border-radius: var(--border-radius);
 }
 
@@ -22,7 +21,7 @@
 }
 
 .nav-list-item:hover {
-    background: color-mod(var(--lightgrey) l(+6%));
+    background: var(--whitegrey);
     cursor: pointer;
 }
 
@@ -37,7 +36,7 @@
 }
 
 .nav-list-item:not(:last-of-type) {
-    border-bottom: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
+    border-bottom: 1px solid var(--white);
 }
 
 .nav-list-item button {

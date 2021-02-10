@@ -130,7 +130,7 @@
     /* Global, high-level UI colors */
     --main-bg-color: rgb(255, 255, 255);
     --main-color-area-divider: var(--whitegrey-d1);
-    --main-color-content-greybg: color-mod(var(--whitegrey-l2) l(-1%));
+    --main-color-content-greybg: color-mod(var(--whitegrey-l1) l(+0%));
 
     --list-color-divider: var(--whitegrey-d1);
     
@@ -157,7 +157,7 @@
 
     /* Inputs */
     --input-bg-color: var(--white);
-    --input-border-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
+    --input-border-color: var(--whitegrey-d2);
     --input-border: var(--input-border-color) 1px solid;
 }
 
