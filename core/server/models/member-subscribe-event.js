@@ -24,7 +24,7 @@ const MemberSubscribeEvent = ghostBookshelf.Model.extend({
             return options.concat('aggregateSubscriptionDeltas');
         }
 
-        return options
+        return options;
     },
     async edit() {
         throw new errors.IncorrectUsageError('Cannot edit MemberSubscribeEvent');
