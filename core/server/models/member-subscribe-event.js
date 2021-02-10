@@ -17,6 +17,15 @@ const MemberSubscribeEvent = ghostBookshelf.Model.extend({
         }
     }
 }, {
+    permittedOptions(methodName) {
+        const options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+
+        if (methodName === 'findAll') {
+            return options.concat('aggregateSubscriptionDeltas');
+        }
+
+        return options
+    },
     async edit() {
         throw new errors.IncorrectUsageError('Cannot edit MemberSubscribeEvent');
     },
