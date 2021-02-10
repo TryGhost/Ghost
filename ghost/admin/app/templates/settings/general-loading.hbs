@@ -1,14 +1,14 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
+    <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="settings">Settings</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
-            General settings
+            General
         </h2>
         <section class="view-actions">
-            <GhTaskButton @buttonText="Save settings" @task={{this.save}} @class="gh-btn gh-btn-blue gh-btn-icon" @disabled={{true}} data-test-save-button="true" />
+            <GhTaskButton @buttonText="Save settings" @task={{this.save}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-button="save" />
         </section>
-    </header>
+    </GhCanvasHeader>
 
     <section class="gh-content">
         <GhLoadingSpinner />
