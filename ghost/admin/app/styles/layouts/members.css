@@ -532,7 +532,7 @@ textarea.gh-member-details-textarea {
 .gh-member-header-stripeinfo {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     min-height: 24px;
 }
 
@@ -542,15 +542,6 @@ textarea.gh-member-details-textarea {
 
 .gh-member-stripe-info:last-of-type {
     border-bottom: none;
-}
-
-.gh-member-btn-stripe-toggle {
-    box-shadow: 0 2px 5px -3px rgba(0,0,0,.12), 0 0 1px rgba(0, 0, 0, .13);    
-}
-
-.gh-member-btn-stripe-toggle:hover {
-    box-shadow: 0 3px 5px -3px rgba(0,0,0,.13), 0 0 1px rgba(0, 0, 0, .13);
-
 }
 
 .gh-member-stripe-table {
@@ -579,6 +570,7 @@ textarea.gh-member-details-textarea {
     color: var(--midgrey-d1);
     white-space: nowrap;
     padding: 5px 12px 5px 0;
+    width: 170px;
 }
 
 .gh-member-stripe-data {
@@ -612,7 +604,8 @@ textarea.gh-member-details-textarea {
 .gh-members-subscribed-checkbox,
 .gh-members-comped-checkbox {
     max-width: 100%;
-    margin-top: 32px;
+    margin-top: 24px;
+    margin-bottom: 0;
 }
 
 .gh-new-member-avatar {
@@ -621,11 +614,11 @@ textarea.gh-member-details-textarea {
 
 .gh-member-cancels-on-label {
     display: inline-block;
-    background: var(--lightgrey-d1);
+    background: color-mod(var(--purple) a(10%));
     border-radius: 4px;
     padding: 0px 5px;
     margin: -2px 0 -2px -5px;
-    color: var(--darkgrey);
+    color: var(--purple);
     font-size: 1.3rem;
     font-weight: 400;
 }
@@ -634,12 +627,6 @@ textarea.gh-member-details-textarea {
     display: inline-block;
     text-transform: capitalize;
     margin-right: 6px;
-}
-
-.gh-member-btn-cancelsub span,
-.gh-member-btn-contsub span {
-    height: 25px;
-    line-height: 25px;
 }
 
 .gh-member-btn-contsub {
