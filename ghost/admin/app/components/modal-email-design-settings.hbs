@@ -26,7 +26,7 @@
                     </div>
                     <div class="modal-fullsettings-section">
                         <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title">Typography</h4>
+                            <h4 class="modal-fullsettings-title">Body font</h4>
                             <div class="modal-fullsettings-radiogroup gh-email-design-typography">
                                 <div class="gh-radio {{if (eq this.bodyFontCategory "serif") "active"}}"
                                     {{on "click" (fn this.setBodyFontCategory "serif")}}
@@ -120,7 +120,7 @@
                         @buttonText="Save and close"
                         @successText="Saved"
                         @task={{this.saveSettings}}
-                        @idleClass="gh-btn-blue"
+                        @idleClass="gh-btn-primary"
                         @class="gh-btn gh-btn-icon"
                         data-test-button="save-members-modal-setting"
                     />

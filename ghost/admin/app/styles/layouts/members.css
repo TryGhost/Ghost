@@ -1183,7 +1183,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-email-design-typography .active .gh-radio-content {
     border: 1px solid transparent;
-    box-shadow: 0px 0px 0px 2px var(--blue);
+    box-shadow: 0px 0px 0px 2px var(--green);
 }
 
 .gh-email-design-typography .gh-radio-button {
@@ -1244,7 +1244,6 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailsettings-footer {
-    border-top: 1px solid var(--whitegrey);
     padding-top: 20px;
     margin-bottom: 4px;
 }
@@ -1322,7 +1321,7 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0;
     height: 78px;
     padding: 0 24px;
-    border-bottom: 1px solid var(--lightgrey-d1);
+    border-bottom: 1px solid var(--whitegrey);
     background: var(--white);
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;

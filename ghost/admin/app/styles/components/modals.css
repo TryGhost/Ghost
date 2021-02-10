@@ -236,6 +236,7 @@
 
 .modal-fullsettings-topbar {
     height: 66px;
+    padding: 0 24px;
 }
 
 .modal-fullsettings-heading {
@@ -245,7 +246,6 @@
     font-weight: 600;
     padding: 0 24px;
     margin: 0 -24px 1px;
-    border-bottom: 1px solid var(--whitegrey);
 }
 
 .modal-fullsettings-form {
@@ -258,7 +258,7 @@
 }
 
 .modal-fullsettings-section.first {
-    margin-top: 20px;
+    margin-top: 8px;
 }
 
 .modal-fullsettings-section.divider-top {
@@ -332,22 +332,20 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    padding: 0 20px 20px;
+    padding: 0;
     border-left: 1px solid var(--whitegrey);
 }
 
 .modal-fullsettings-preview-container {
-    border: 1px solid var(--whitegrey);
-    border-radius: 5px;
     overflow: hidden;
     background: var(--whitegrey-l1);
-    height: calc(100vh - 150px);
+    height: calc(100vh - 126px);
     overflow-y: scroll;
 }
 
 .modal-fullsettings-preview-hidescrollbar {
     overflow: hidden;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 126px);
     background: var(--whitegrey-l1);
     border: 1px solid var(--whitegrey);
     border-radius: 5px;
