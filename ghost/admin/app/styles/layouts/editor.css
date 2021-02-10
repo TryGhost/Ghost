@@ -99,13 +99,14 @@
     top: 1px;
     right: 0;
     font-size: 1.3rem;
+    color: var(--green);
 }
 
 .post-view-link svg {
     display: inline;
     width: 10px;
     height: 10px;
-    fill: var(--blue);
+    fill: var(--green);
 }
 
 

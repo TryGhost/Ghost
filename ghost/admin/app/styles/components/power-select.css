@@ -195,7 +195,7 @@
 .ember-power-select-multiple-option {
     margin: 2px;
     padding: 2px 6px;
-    border: 1px solid var(--black);
+    border: 1px solid var(--black-20);
     border-radius: 3px;
     font-size: 0.93em;
     font-weight: 500;
@@ -247,13 +247,13 @@
 /* Tag input */
 
 .tag-token--internal {
-    background: color-mod(var(--green) alpha(0.1));
-    color: var(--green);
+    background: color-mod(var(--black) alpha(0.1));
+    color: var(--black);
 }
 
 .tag-token--internal svg path {
-    stroke: var(--green);
-    fill: var(--green);
+    stroke: var(--black);
+    fill: var(--black);
 }
 
 /* Inside settings / Mailgun region */
