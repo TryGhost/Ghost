@@ -4,8 +4,8 @@
 /* Base notification style */
 .gh-notifications {
     position: absolute;
-    bottom: 28px;
-    left: 20px;
+    bottom: 30px;
+    left: 30px;
     z-index: 7000;
     display: flex;
     flex-direction: column;

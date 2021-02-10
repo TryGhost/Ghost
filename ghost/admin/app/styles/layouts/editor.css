@@ -298,6 +298,32 @@
     z-index: 799;
 }
 
+.gh-btn-editor {
+    background: var(--white) !important;
+}
+
+.gh-btn-editor span {
+    color: var(--darkgrey);
+}
+
+.gh-btn-editor:hover {
+    background: var(--whitegrey) !important;
+}
+
+.gh-btn-editor.green span {
+    color: var(--green);
+}
+
+.gh-editor-wordcount-container {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    background: transparent;
+}
+
 @media (max-width: 750px) {
     .gh-editor-header {
         padding: 0 4vw;

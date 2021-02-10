@@ -11,7 +11,7 @@
 }
 
 .gh-publishmenu-trigger svg path {
-    stroke: var(--white);
+    stroke: var(--darkgrey);
     stroke-width: 4px;
 }
 
@@ -43,15 +43,7 @@
     will-change: transform, opacity;
     z-index: 99999; /* needs to sit on top of preview modal */
     /* box-shadow: 0 0 0 1px rgba(99,114,130,0.06), 0 8px 16px rgba(27,39,51,0.08); */
-    box-shadow:
-        0 0 7px rgba(0, 0, 0, 0.08),
-        0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011),
-        0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016),
-        0 9.5px 10px -5px rgba(0, 0, 0, 0.02),
-        0 17px 17.9px -5px rgba(0, 0, 0, 0.024),
-        0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029),
-        0 76px 80px -5px rgba(0, 0, 0, 0.04)
-    ;
+    box-shadow: var(--box-shadow-m);
 }
 
 .gh-publishmenu-dropdown.ember-basic-dropdown--transitioning-in {

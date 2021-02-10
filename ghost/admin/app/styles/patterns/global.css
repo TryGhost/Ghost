@@ -155,6 +155,16 @@
     --shadow-2: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
     --shadow-3: 0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12);
 
+    --box-shadow-m:
+        0 0 7px rgba(0, 0, 0, 0.08),
+        0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011),
+        0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016),
+        0 9.5px 10px -5px rgba(0, 0, 0, 0.02),
+        0 17px 17.9px -5px rgba(0, 0, 0, 0.024),
+        0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029),
+        0 76px 80px -5px rgba(0, 0, 0, 0.04)
+    ;
+
     /* Inputs */
     --input-bg-color: var(--white);
     --input-border-color: var(--whitegrey-d2);
