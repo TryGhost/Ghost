@@ -27,6 +27,6 @@
     "mocha": "8.2.1",
     "should": "13.2.3",
     "sinon": "9.2.4",
-    "typescript": "4.1.4"
+    "typescript": "4.1.5"
   }
 }
