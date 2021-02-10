@@ -384,8 +384,8 @@ Usage: CTA buttons grouped together horizontally.
 .gh-btn-group {
     border-radius: 0;
     background: var(--whitegrey-l1);
-    border-radius: 2px;
-    padding: 1px;
+    border-radius: 3px;
+    line-height: 0;
 }
 
 .gh-btn-group .gh-btn {
@@ -400,8 +400,8 @@ Usage: CTA buttons grouped together horizontally.
 
 .gh-btn-group .gh-btn span {
     border-radius: 0;
-    height: 31px;
-    line-height: 31px;
+    height: 30px;
+    line-height: 30px;
     border-radius: 2px;
     background: transparent !important;
 }

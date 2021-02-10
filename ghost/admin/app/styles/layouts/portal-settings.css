@@ -79,7 +79,7 @@
 }
 
 .gh-portal-settings .form-group.space-l {
-    margin-bottom: 1.9em;
+    margin-bottom: 1.6em;
 }
 
 .gh-portal-setting-title {
@@ -94,26 +94,23 @@
 }
 
 .gh-portal-setting-sectionheading {
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: var(--midlightgrey);
-    margin: 0 0 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.2px;
+    color: var(--black);
+    margin: 0;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--whitegrey);
 }
 
 .gh-portal-setting-section {
-    margin: 12px -24px;
+    margin: 0 -24px 3.5vw;
     padding: 0 28px;
 }
 
 .gh-portal-setting-section p {
     line-height: 1.5em;
-}
-
-.gh-portal-setting-section.divider-top {
-    border-top: 1px solid var(--whitegrey);
-    padding-top: 16px;
 }
 
 .gh-portal-settings .input-color input {
@@ -181,7 +178,7 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    padding: 0 20px 20px;
+    padding: 0;
     border-left: 1px solid var(--whitegrey);
 }
 
@@ -240,6 +237,10 @@
     padding: 2px;
 }
 
+.gh-portal-setting-first {
+    margin: 12px 0 0;
+}
+
 .gh-portal-button-icon {
     display: inline-block;
     cursor: pointer;
@@ -254,11 +255,11 @@
 }
 
 .gh-portal-button-icon:hover {
-    box-shadow: 0px 0px 0px 1px color-mod(var(--blue) a(40%));
+    box-shadow: 0px 0px 0px 1px color-mod(var(--green) a(40%));
 }
 
 .gh-portal-button-icon.selected-icon {
-    box-shadow: 0px 0px 0px 2px var(--blue);
+    box-shadow: 0px 0px 0px 2px var(--green);
 }
 
 .gh-portal-button-icon svg path {
@@ -266,7 +267,7 @@
 }
 
 .gh-portal-button-icon.selected-icon svg path {
-    stroke: var(--blue);
+    stroke: var(--green);
 }
 
 .gh-portal-button-icon .gh-loading-spinner {
@@ -364,23 +365,51 @@
     border: none;
 }
 
+.gh-portal-settings-title {
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    margin: 0;
+    height: 66px;
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+}
+
+.gh-portal-settings-previewheader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 66px;
+    padding: 0 24px;
+    margin: 0;
+    width: 100%;
+}
+
+.gh-portal-settings-previewheader .gh-btn-group .gh-btn {
+    min-width: 90px;
+}
+
+.gh-portal-settings-actions {
+    position: absolute;
+    top: 16px;
+    right: 24px;
+}
+
 .gh-portal-preview-wrapper {
     overflow: hidden;
     max-height: calc(100vh - 60px - 66px - 20px);
     height: 100%;
-    border: 1px solid var(--whitegrey);
     background: #EDF0F2;
-    border-radius: 5px;
 }
 
 .gh-portal-preview-container {
     position: relative;
     flex-grow: 1;
-    border: 1px solid var(--whitegrey);
-    border-radius: 5px;
     overflow: hidden;
     background: #EDF0F2;
-    max-height: calc(100vh - 60px - 66px - 20px);
+    max-height: calc(100vh - 60px - 66px);
 }
 
 .gh-portal-preview-wrapper .gh-portal-preview-container {
@@ -537,7 +566,6 @@
 
 .gh-portal-setting-no-stripe {
     padding: 20px;
-    margin-bottom: 28px;
     font-size: 1.3rem;
     text-align: center;
     background: var(--whitegrey-l2);
