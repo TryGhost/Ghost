@@ -52,44 +52,8 @@ module.exports = {
             .del();
     },
 
-    async down({transacting: knex}) {
-        const slackUrlSetting = await knex('settings')
-            .select('value')
-            .where({
-                key: 'slack_url'
-            })
-            .first();
-
-        const slackUsernameSetting = await knex('settings')
-            .select('value')
-            .where({
-                key: 'slack_username'
-            })
-            .first();
-
-        const now = await knex.raw('CURRENT_TIMESTAMP');
-
-        const url = slackUrlSetting && typeof slackUrlSetting.value === 'string' ? slackUrlSetting.value : '';
-        const username = slackUsernameSetting && typeof slackUsernameSetting.value === 'string' ? slackUsernameSetting.value : 'Ghost';
-
-        await knex('settings')
-            .insert({
-                key: 'slack',
-                group: 'slack',
-                type: 'object',
-                flags: null,
-                value: JSON.stringify({url, username}),
-                created_by: 1,
-                created_at: now,
-                updated_by: 1,
-                updated_at: now
-            });
-
-        await knex('settings')
-            .whereIn('key', [
-                'slack_url',
-                'slack_username'
-            ])
-            .del();
+    async down() {
+        // this is a major version migration, so there is no need for back compatibility
+        // less code - less scenarios to think about
     }
 };
