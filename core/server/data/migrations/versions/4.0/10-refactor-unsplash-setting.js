@@ -1,9 +1,7 @@
-module.exports = {
-    config: {
-        transaction: true
-    },
+const {createTransactionalMigration} = require('../../utils');
 
-    async up({transacting: knex}) {
+module.exports = createTransactionalMigration(
+    async function up(knex) {
         const unsplashSetting = await knex('settings')
             .select('value')
             .where({
@@ -37,8 +35,8 @@ module.exports = {
             .del();
     },
 
-    async down() {
+    async function down() {
         // this is a major version migration, so there is no need for back compatibility
         // less code - less scenarios to think about
     }
-};
+);
