@@ -10,176 +10,177 @@
     <section class="view-container settings-debug">
         <p class="gh-box gh-box-tip">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
 
-        <div class="gh-setting-header">Migration options</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
-            <div class="gh-setting-first">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Import content</div>
-                    <div class="gh-setting-desc">Import posts from another Ghost installation</div>
-                </div>
-                <div class="gh-setting-action">
-                    <form id="settings-import" enctype="multipart/form-data">
-                        <GhFileUpload
-                            @id="importfile"
-                            @classNames="flex"
-                            @uploadButtonText={{this.uploadButtonText}}
-                            @onUpload={{action "onUpload"}}
-                            @acceptEncoding={{this.importMimeType}}
-                            data-test-file-input="import"
-                        />
-                    </form>
-                </div>
-            </div>
-
-            {{#if this.importErrors}}
-                <div class="gh-import-errors {{if this.importSuccessful "gh-import-errors-alert"}}" data-test-import-errors>
-                    <div class="gh-import-errors-title">
-                        {{#if this.importSuccessful}}
-                            Import successful with warnings
-                        {{else}}
-                            Import failed
-                        {{/if}}
-                    </div>
-
-                    {{#each this.importErrors as |error|}}
-                        <div class="gh-import-error" data-test-import-error>
-                            <p class="gh-import-error-message" data-test-import-error-message>
-                                {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
-                            </p>
-
-                            {{#if error.context}}
-                                <div class="gh-import-error-entry" data-test-import-error-context>
-                                    <pre>{{error.context}}</pre>
-                                </div>
-                            {{/if}}
+        <div class="gh-main-section">
+            <h4 class="gh-main-section-header small bn">Migration options</h4>
+            <div class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Import content</h4>
+                            <p class="gh-expandable-description">Import posts from another Ghost installation</p>
                         </div>
-                    {{/each}}
-                </div>
-            {{/if}}
+                        <form id="settings-import" enctype="multipart/form-data">
+                            <GhFileUpload
+                                @id="importfile"
+                                @classNames="flex"
+                                @uploadButtonText={{this.uploadButtonText}}
+                                @onUpload={{action "onUpload"}}
+                                @acceptEncoding={{this.importMimeType}}
+                                data-test-file-input="import"
+                            />
+                        </form>
+                    </div>
+                    {{#if this.importErrors}}
+                        <div class="gh-import-errors {{if this.importSuccessful "gh-import-errors-alert"}}" data-test-import-errors>
+                            <div class="gh-import-errors-title">
+                                {{#if this.importSuccessful}}
+                                    Import successful with warnings
+                                {{else}}
+                                    Import failed
+                                {{/if}}
+                            </div>
 
-            <div class="gh-setting">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Export your content</div>
-                    <div class="gh-setting-desc">Download all of your posts and settings in a single, glorious JSON file</div>
+                            {{#each this.importErrors as |error|}}
+                                <div class="gh-import-error" data-test-import-error>
+                                    <p class="gh-import-error-message" data-test-import-error-message>
+                                        {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
+                                    </p>
+
+                                    {{#if error.context}}
+                                        <div class="gh-import-error-entry" data-test-import-error-context>
+                                            <pre>{{error.context}}</pre>
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            {{/each}}
+                        </div>
+                    {{/if}}
                 </div>
-                <div class="gh-setting-action">
-                    <button type="button" class="gh-btn gh-btn-hover-blue" {{action "downloadFile" "db"}}><span>Export</span></button>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Export your content</h4>
+                            <p class="gh-expandable-description">Download all of your posts and settings in a single, glorious JSON file</p>
+                        </div>
+                        <button type="button" class="gh-btn" {{action "downloadFile" "db"}}><span>Export</span></button>
+                    </div>
                 </div>
-            </div>
-            <div class="gh-setting-last">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Delete all content</div>
-                    <div class="gh-setting-desc">Permanently delete all posts and tags from the database, a hard reset</div>
-                </div>
-                <div class="gh-setting-action">
-                    <button type="button" class="gh-btn gh-btn-hover-red js-delete" {{action "toggleDeleteAllModal"}}><span>Delete</span></button>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Delete all content</h4>
+                            <p class="gh-expandable-description">Permanently delete all posts and tags from the database, a hard reset</p>
+                        </div>
+                        <button type="button" class="gh-btn gh-btn-red js-delete" {{action "toggleDeleteAllModal"}}><span>Delete</span></button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="gh-setting-header">Beta features</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
-            <div class="gh-setting-first">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Night shift</div>
-                    <div class="gh-setting-desc">Swap Ghost admin's colours to a dark background which is easy on the eyes</div>
-                </div>
-                <div class="gh-setting-action">
-                    <div class="for-switch"><GhFeatureFlag @flag="nightShift" /></div>
-                </div>
-            </div>
-            <div class="gh-setting">
-                <GhUploader
-                    @extensions={{this.jsonExtension}}
-                    @uploadUrl="/redirects/json/"
-                    @paramName="redirects"
-                    @onUploadSuccess={{perform this.redirectUploadResult true}}
-                    @onUploadFailure={{perform this.redirectUploadResult false}}
-                    as |uploader|
-                >
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Redirects</div>
-                    <div class="gh-setting-desc">Configure redirects for old or moved content, more info in <a href="https://ghost.org/docs/tutorials/implementing-redirects/">the docs</a></div>
-                    {{#each uploader.errors as |error|}}
-                        <div class="gh-setting-error" data-test-error="redirects">{{or error.context error.message}}</div>
-                    {{/each}}
-                </div>
-                <div class="gh-setting-action" style="display: flex; flex-direction: column">
-                    {{#if uploader.isUploading}}
-                        {{uploader.progressBar}}
-                    {{else}}
-                        <button
-                            type="button"
-                            class="gh-btn gh-btn-icon {{if this.redirectSuccess "gh-btn-green"}} {{if this.redirectFailure "gh-btn-red"}}"
-                            onclick={{action "triggerFileDialog"}}
-                            data-test-button="upload-redirects"
-                        >
-                            <span>
-                                {{#if this.redirectSuccess}}
-                                    {{svg-jar "check-circle"}} Uploaded
-                                {{else if this.redirectFailure}}
-                                    {{svg-jar "retry"}} Upload Failed
-                                {{else}}
-                                    Upload redirects JSON
-                                {{/if}}
-                            </span>
-                        </button>
-                        <span><a href="#" {{action "downloadFile" "redirects/json"}} data-test-link="download-redirects">Download current redirects</a></span>
-                    {{/if}}
+        <div class="gh-main-section">
+            <h4 class="gh-main-section-header small bn">Beta features</h4>
+            <div class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <GhUploader
+                        @extensions={{this.jsonExtension}}
+                        @uploadUrl="/redirects/json/"
+                        @paramName="redirects"
+                        @onUploadSuccess={{perform this.redirectUploadResult true}}
+                        @onUploadFailure={{perform this.redirectUploadResult false}}
+                        as |uploader|
+                    >
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Redirects</h4>
+                            <p class="gh-expandable-description">Configure redirects for old or moved content, more info in <a href="https://ghost.org/docs/tutorials/implementing-redirects/">the docs</a></p>
+                        </div>
+                        <div class="gh-setting-action flex flex-column items-end">
+                            {{#if uploader.isUploading}}
+                                {{uploader.progressBar}}
+                            {{else}}
+                                <button
+                                    type="button"
+                                    class="gh-btn gh-btn-icon {{if this.redirectSuccess "gh-btn-green"}} {{if this.redirectFailure "gh-btn-red"}}"
+                                    onclick={{action "triggerFileDialog"}}
+                                    data-test-button="upload-redirects"
+                                >
+                                    <span>
+                                        {{#if this.redirectSuccess}}
+                                            {{svg-jar "check-circle"}} Uploaded
+                                        {{else if this.redirectFailure}}
+                                            {{svg-jar "retry"}} Upload Failed
+                                        {{else}}
+                                            Upload redirects JSON
+                                        {{/if}}
+                                    </span>
+                                </button>
+                                <div><a href="#" {{action "downloadFile" "redirects/json"}} data-test-link="download-redirects">Download current redirects</a></div>
+                            {{/if}}
 
-                    <div style="display:none">
-                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsonMimeType}} data-test-file-input="redirects" />
-                    </div>
-                </div>
-                </GhUploader>
-            </div>
-            <div class="gh-setting-last">
-                <GhUploader
-                    @extensions={{this.yamlExtension}}
-                    @uploadUrl="/settings/routes/yaml/"
-                    @paramName="routes"
-                    @onUploadSuccess={{perform this.routesUploadResult true}}
-                    @onUploadFailure={{perform this.routesUploadResult false}}
-                    as |uploader|
-                >
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Routes</div>
-                    <div class="gh-setting-desc">Configure dynamic routing by modifying the routes.yaml file</div>
-                    {{#each uploader.errors as |error|}}
-                        <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
-                    {{/each}}
-                </div>
-                <div class="gh-setting-action" style="display: flex; flex-direction: column">
-                    {{#if uploader.isUploading}}
-                        {{uploader.progressBar}}
-                    {{else}}
-                        <button
-                            type="button"
-                            class="gh-btn gh-btn-icon {{if this.routesSuccess "gh-btn-green"}} {{if this.routesFailure "gh-btn-red"}}"
-                            onclick={{action "triggerFileDialog"}}
-                            data-test-button="upload-routes"
-                        >
-                            <span>
-                                {{#if this.routesSuccess}}
-                                    {{svg-jar "check-circle"}} Uploaded
-                                {{else if this.routesFailure}}
-                                    {{svg-jar "retry"}} Upload Failed
-                                {{else}}
-                                    Upload routes YAML
-                                {{/if}}
-                            </span>
-                        </button>
-                        <span><a href="#" {{action "downloadFile" "settings/routes/yaml"}} data-test-link="download-routes">Download current routes.yaml</a></span>
-                    {{/if}}
+                            {{#each uploader.errors as |error|}}
+                                <div class="gh-setting-error" data-test-error="redirects">{{or error.context error.message}}</div>
+                            {{/each}}
 
-                    <div style="display:none">
-                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.yamlAccept}} data-test-file-input="routes" />
+                            <div style="display:none">
+                                <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsonMimeType}} data-test-file-input="redirects" />
+                            </div>
+                        </div>
                     </div>
+                    </GhUploader>
                 </div>
-                </GhUploader>
+
+                <div class="gh-expandable-block">
+                    <GhUploader
+                        @extensions={{this.yamlExtension}}
+                        @uploadUrl="/settings/routes/yaml/"
+                        @paramName="routes"
+                        @onUploadSuccess={{perform this.routesUploadResult true}}
+                        @onUploadFailure={{perform this.routesUploadResult false}}
+                        as |uploader|
+                    >
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Routes</h4>
+                            <p class="gh-expandable-description">Configure dynamic routing by modifying the routes.yaml file</p>
+                        </div>
+                        <div class="gh-setting-action flex flex-column items-end">
+                            {{#if uploader.isUploading}}
+                                {{uploader.progressBar}}
+                            {{else}}
+                                <button
+                                    type="button"
+                                    class="gh-btn gh-btn-icon {{if this.routesSuccess "gh-btn-green"}} {{if this.routesFailure "gh-btn-red"}}"
+                                    onclick={{action "triggerFileDialog"}}
+                                    data-test-button="upload-routes"
+                                >
+                                    <span>
+                                        {{#if this.routesSuccess}}
+                                            {{svg-jar "check-circle"}} Uploaded
+                                        {{else if this.routesFailure}}
+                                            {{svg-jar "retry"}} Upload Failed
+                                        {{else}}
+                                            Upload routes YAML
+                                        {{/if}}
+                                    </span>
+                                </button>
+                                <div><a href="#" {{action "downloadFile" "settings/routes/yaml"}} data-test-link="download-routes">Download current routes.yaml</a></div>
+                            {{/if}}
+
+                            {{#each uploader.errors as |error|}}
+                                <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
+                            {{/each}}
+
+                            <div style="display:none">
+                                <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.yamlAccept}} data-test-file-input="routes" />
+                            </div>
+                        </div>
+                    </div>
+                    </GhUploader>
+                </div>
             </div>
         </div>
-
     </section>
 </section>
 
