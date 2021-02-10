@@ -470,7 +470,7 @@
     padding: 10px;
     margin: 0;
     right: 12px;
-    top: -10px;
+    top: -12px;
     opacity: 0;
     transition: opacity ease 0.2s;
 }
@@ -503,8 +503,7 @@
 }
 
 .gh-nav-list .gh-secondary-action:hover,
-.gh-nav-list a.gh-secondary-action:hover,
-.gh-nav-list .active + .gh-secondary-action:hover span {
+.gh-nav-list a.gh-secondary-action:hover {
     background: none;
 }
 
