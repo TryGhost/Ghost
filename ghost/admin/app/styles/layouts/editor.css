@@ -294,7 +294,7 @@
     align-items: center;
     height: 36px;
     padding: 0;
-    margin: 24px;
+    margin: 30px;
     z-index: 799;
 }
 
@@ -358,7 +358,7 @@
     min-height: auto;
     margin-bottom: 1.6rem;
     border: none;
-    color: var(--darkgrey-d1);
+    color: var(--black);
     font-size: 4.8rem;
     line-height: 1.15em;
     font-weight: 600;
