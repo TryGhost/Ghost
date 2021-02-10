@@ -88,7 +88,11 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         this.set('currencies', CURRENCIES);
-        this.set('membersStripeOpen', true);
+        if (this.get('stripeConnectAccountId')) {
+            this.set('membersStripeOpen', false);
+        } else {
+            this.set('membersStripeOpen', true);
+        }
     },
 
     actions: {
