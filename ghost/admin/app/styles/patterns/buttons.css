@@ -416,7 +416,7 @@ Usage: CTA buttons grouped together horizontally.
 }
 
 .gh-btn-group .gh-btn-group-selected svg {
-    fill: var(--blue);
+    fill: var(--black);
 }
 
 .gh-btn-block + .gh-btn-block {

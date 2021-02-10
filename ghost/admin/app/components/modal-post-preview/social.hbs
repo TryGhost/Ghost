@@ -1,76 +1,83 @@
 
 <div class="gh-post-preview-social-container">
     <div class="flex flex-column">
-        <div class="flex mw-m mb8">
-            <div class="flex flex-column pr4">
-                <label class="mb2 f8 fw6 darkgrey">Facebook preview</label>
-                <div class="gh-og-preview">
+        <div class="flex mb6">
+            <div class="gh-social-og-container">
+                <div class="flex ma3 mb2">
+                    <span>{{svg-jar "social-facebook" class="social-icon"}}</span>
+                    <div>
+                        <div class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</div>
+                        <div class="gh-social-og-time">12 hrs</div>
+                    </div>
+                </div>
+                <div class="flex flex-column ma3 mt2">
+                    <span class="gh-social-og-desc w-100 mb2" />
+                    <span class="gh-social-og-desc w-100 mb2" />
+                    <span class="gh-social-og-desc w-60" />
+                </div>
+                <div class="gh-social-og-preview">
                     {{#if this.facebookImage}}
-                        <div class="gh-og-preview-image" style={{background-image-style this.facebookImage}}></div>
+                        <div class="gh-social-og-preview-image" style={{background-image-style this.facebookImage}}></div>
                     {{/if}}
-                    <div class="gh-og-preview-content">
-                        <div class="gh-og-preview-title">{{truncate this.facebookTitle 88}}</div>
-                        <div class="gh-og-preview-description">{{truncate this.facebookDescription 300}}</div>
-                        <div class="gh-og-preview-footer">
-                            <div class="gh-og-preview-footer-left">
-                                {{this.config.blogDomain}} <span class="gh-og-preview-footer-left-divider">|</span> by <span class="gh-og-preview-footer-author">{{author-names @post.authors}}</span>
-                            </div>
-                            <div class="gh-og-preview-footer-right">
-                            </div>
+                    <div class="gh-social-og-preview-content">
+                        <div class="gh-social-og-preview-meta">
+                            {{this.config.blogDomain}}
                         </div>
+                        <div class="gh-social-og-preview-title">{{truncate this.facebookTitle 88}}</div>
+                        <div class="gh-social-og-preview-desc">{{truncate this.facebookDescription}}</div>
                     </div>
+                </div>
+                <div class="gh-social-og-reactions">
+                    <span class="gh-social-og-likes">{{svg-jar "facebook-like" class="z-999"}}{{svg-jar "facebook-heart" class="nl1"}}182</span>
+                    <span class="gh-social-og-comments">7 comments</span>
+                    <span class="gh-social-og-comments ml2">2 shares</span>
+
                 </div>
             </div>
 
-            <div class="flex flex-column pl4">
-                <label class="mb2 f8 fw6 darkgrey">Twitter preview</label>
-                <div class="gh-twitter-preview">
-                    {{#if this.twitterImage}}
-                        <div class="gh-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
-                    {{/if}}
-                    <div class="gh-twitter-preview-content">
-                        <div class="gh-twitter-preview-title">{{this.twitterTitle}}</div>
-                        <div class="gh-twitter-preview-description">{{truncate this.twitterDescription 155}}</div>
-                        <div class="gh-twitter-preview-footer">
-                            <div class="gh-twitter-preview-footer-left">
-                                {{this.config.blogDomain}}
+            <div class="gh-social-twitter-container">
+                <div class="flex ma3 mb2 mr4">
+                    <span>{{svg-jar "social-twitter" class="social-icon"}}</span>
+                    <div>
+                        <span class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</span>
+                        <span class="gh-social-og-time">12 hrs</span>
+                        <div class="flex flex-column mt2 mb3">
+                            <span class="gh-social-og-desc w-100 mb2" />
+                            <span class="gh-social-og-desc w-60" />
+                        </div>
+                        <div class="gh-social-twitter-post-preview">
+                            {{#if this.twitterImage}}
+                                <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
+                            {{/if}}
+                            <div class="gh-twitter-preview-content">
+                                <div class="gh-social-twitter-preview-title">{{this.twitterTitle}}</div>
+                                <div class="gh-social-twitter-preview-desc">{{truncate this.twitterDescription}}</div>
+                                <div class="gh-social-twitter-preview-meta">
+                                    {{svg-jar "twitter-link"}}
+                                    {{this.config.blogDomain}}
+                                </div>
                             </div>
-                            <div class="gh-twitter-preview-footer-right">
-                            </div>
+                        </div>
+                        <div class="gh-social-twitter-reactions">
+                            <div class="flex items-center">{{svg-jar "twitter-comment"}}2</div>
+                            <div class="flex items-center">{{svg-jar "twitter-retweet"}}11</div>
+                            <div class="flex items-center">{{svg-jar "twitter-like"}}32</div>
+                            <div class="flex items-center">{{svg-jar "twitter-share"}}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <label class="mb2 f8 fw6 darkgrey">Search Engine Result Preview</label>
-        <div class="mw-m seo-preview mb6">
-            <div class="seo-preview-title">{{truncate this.serpTitle 70}}</div>
-            <div class="seo-preview-link">{{truncate this.serpURL 70}}</div>
-            <div class="seo-preview-description">{{truncate this.serpDescription 300}}</div>
-        </div>
-
-        <label class="mb2 f8 fw6 darkgrey">Generic embed preview</label>
-        <div class="kg-bookmark-card">
-            <div class="kg-bookmark-container">
-                <div class="kg-bookmark-content">
-                    <div class="kg-bookmark-title">{{@post.title}}</div>
-                    <div class="kg-bookmark-description">{{or @post.metaDescription @post.customExcerpt (truncate @post.excerpt 250)}}</div>
-                    <div class="kg-bookmark-metadata">
-                        {{#if this.settings.icon}}
-                            <div class="kg-bookmark-icon"><img src={{this.settings.icon}}></div>
-                        {{/if}}
-                        <div class="kg-bookmark-publisher">{{or this.settings.metaTitle this.settings.title}}</div>
-                        <div class="kg-bookmark-author">{{@post.primaryAuthor.name}}</div>
-                    </div>
+        <div class="gh-seo-preview-container">
+            {{svg-jar "google"}}
+            <div class="gh-seo-preview">
+                <div class="gh-seo-search-bar">{{svg-jar "google-search"}}</div>
+                <div class="gh-seo-preview-link">{{this.config.blogDomain}} > {{#if this.ghostPaths.subdir}}{{this.ghostPaths.subdir}} > {{/if}}{{@post.slug}}</div>
+                <div class="gh-seo-preview-title">{{this.serpTitle}}</div>
+                <div class="gh-seo-preview-desc">
+                    {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 170}}
                 </div>
-                {{#let (or @post.featureImage @post.primaryAuthor.profileImage) as |image|}}
-                    {{#if image}}
-                        <div class="kg-bookmark-thumbnail">
-                            <img src={{image}}>
-                        </div>
-                    {{/if}}
-                {{/let}}
             </div>
         </div>
     </div>
