@@ -14,13 +14,22 @@
                 <dropdown.Content class="gh-nav-menu-dropdown">
                     <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
                         <li role="presentation">
+                            <div class="gh-account-menu-header">
+                                <span class="user-menu-signout" data-tooltip="Logout"><LinkTo @route="signout" @classNames="dropdown-item" @role="menuitem" @tabindex="-1">{{svg-jar "signout"}}</LinkTo></span>
+                                <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}></div>
+                                <h4 class="gh-user-name">{{this.session.user.name}}</h4>
+                                <span class="gh-user-email">{{this.session.user.email}}</span>
+                            </div>
+                        </li>
+                        <li class="divider" role="separator"></li>
+                        <li role="presentation">
                             <LinkTo @route="about" @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="about">
-                                {{svg-jar "store"}} About Ghost
+                                About Ghost
                             </LinkTo>
                         </li>
                         <li role="presentation">
                             <button class="dropdown-item" role="menuitem" tabindex="-1" {{on "click" this.whatsNew.showModal}}>
-                                {{svg-jar "gift"}} What's new?
+                                What's new?
                                 {{#if this.whatsNew.hasNew}}
                                     <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-blue br-100"></span></div>
                                 {{/if}}
@@ -29,12 +38,12 @@
                         <li class="divider" role="separator"></li>
                         <li role="presentation">
                             <LinkTo @route="staff.user" @model={{this.session.user.slug}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="user-profile">
-                                {{svg-jar "user-circle"}} Your Profile
+                                Your Profile
                             </LinkTo>
                         </li>
                         <li role="presentation">
                             <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
-                                {{svg-jar "ambulance"}} Support Center
+                                Support Center
                             </a>
                         </li>
                         <li role="presentation">
@@ -42,15 +51,15 @@
                                 href="https://twitter.com/intent/tweet?text=%40Ghost+Hi%21+Can+you+help+me+with+&related=Ghost"
                                 onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"
                             >
-                                {{svg-jar "twitter"}} Tweet @Ghost!
+                                Tweet @Ghost!
                             </a>
                         </li>
                         <li role="presentation">
                             <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help/topic/setting-up/" target="_blank">
-                                {{svg-jar "book-open"}} How to Use Ghost
+                                How to Use Ghost
                             </a>
                         </li>
-                        <li class="divider" role="separator"></li>
+                        {{!-- <li class="divider" role="separator"></li> --}}
 
                         {{#if this.showDropdownExtension}}
                             {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
@@ -66,11 +75,11 @@
                             {{/each}}
                         {{/if}}
 
-                        <li role="presentation">
+                        {{!-- <li role="presentation">
                             <LinkTo @route="signout" @classNames="dropdown-item user-menu-signout" @role="menuitem" @tabindex="-1">
                                 {{svg-jar "signout"}} Sign Out
                             </LinkTo>
-                        </li>
+                        </li> --}}
                     </ul>
                 </dropdown.Content>
             </GhBasicDropdown>

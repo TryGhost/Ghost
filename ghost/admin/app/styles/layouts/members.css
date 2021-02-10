@@ -534,6 +534,7 @@ textarea.gh-member-details-textarea {
     align-items: center;
     justify-content: flex-start;
     min-height: 24px;
+    margin-top: -8px;
 }
 
 .gh-member-stripe-info {

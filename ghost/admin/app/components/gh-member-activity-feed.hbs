@@ -1,5 +1,5 @@
 <div class="gh-member-feed" ...attributes>
-    <div class="flex-auto flex flex-column justify-between items-stretch">
+    <div class="flex-auto flex flex-column items-stretch {{if this.activities "justify-between" "h-100 justify-center"}}">
         <div>
             {{#if this.activities}}
                 {{#each this.firstActivities as |activity|}}
@@ -23,7 +23,7 @@
                     </button>
                 {{/if}}
             {{else}}
-                <p class="ma0 pa12 tc midgrey fw3">No member activity yet</p>
+                <p class="ma0 pa12 tc midgrey">No member activity yet</p>
             {{/if}}
         </div>
     </div>
