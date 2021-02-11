@@ -237,7 +237,7 @@
 
 .gh-content-status-published {
     color: var(--midgrey);
-    background: var(--lightgrey);
+    background: var(--whitegrey);
     display: inline-block;
     border-radius: 3px;
     text-transform: uppercase;
