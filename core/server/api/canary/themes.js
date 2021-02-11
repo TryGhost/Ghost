@@ -1,15 +1,11 @@
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
-const stream = require('stream');
-const util = require('util');
 const security = require('@tryghost/security');
 const {events} = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
 const models = require('../../models');
 const request = require('../../lib/request');
-
-const finished = util.promisify(stream.finished);
 
 module.exports = {
     docName: 'themes',
@@ -89,16 +85,15 @@ module.exports = {
 
                 try {
                     // download zip file
-                    const download = request(zipUrl, {
+                    const response = await request(zipUrl, {
                         followRedirect: true,
                         headers: {
                             accept: 'application/vnd.github.v3+json'
                         },
-                        encoding: null,
-                        stream: true
-                    }).pipe(fs.createWriteStream(downloadPath));
+                        encoding: null
+                    });
 
-                    await finished(download);
+                    await fs.writeFile(downloadPath, response.body);
 
                     // install theme from zip
                     const zip = {
