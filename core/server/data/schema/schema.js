@@ -73,7 +73,8 @@ module.exports = {
         twitter_description: {type: 'string', maxlength: 500, nullable: true},
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
-        email_subject: {type: 'string', maxlength: 300, nullable: true}
+        email_subject: {type: 'string', maxlength: 300, nullable: true},
+        frontmatter: {type: 'text', maxlength: 65535, nullable: true}
     },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
