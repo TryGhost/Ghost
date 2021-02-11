@@ -182,10 +182,11 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             currency: this.selectedCurrency.value,
             monthlyPrice: this.stripePlans.monthly.amount,
             yearlyPrice: this.stripePlans.yearly.amount,
-            isMonthly: this.isMonthlyChecked,
-            isYearly: this.isYearlyChecked,
-            isFree: this.isFreeChecked
+            isMonthlyChecked: this.isMonthlyChecked,
+            isYearlyChecked: this.isYearlyChecked,
+            isFreeChecked: this.isFreeChecked
         };
+
         const url = this.membersUtils.getPortalPreviewUrl(options);
         this.args.updatePreview(url);
     }
