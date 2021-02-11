@@ -1,6 +1,15 @@
+const fs = require('fs-extra');
+const os = require('os');
+const path = require('path');
+const stream = require('stream');
+const util = require('util');
+const security = require('@tryghost/security');
 const {events} = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
 const models = require('../../models');
+const request = require('../../lib/request');
+
+const finished = util.promisify(stream.finished);
 
 module.exports = {
     docName: 'themes',
@@ -46,6 +55,86 @@ module.exports = {
         }
     },
 
+    install: {
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'source',
+            'ref'
+        ],
+        validation: {
+            source: {
+                required: true,
+                values: ['github']
+            },
+            ref: {
+                required: true
+            }
+        },
+        permissions: {
+            method: 'add'
+        },
+        async query(frame) {
+            if (frame.options.source === 'github') {
+                const [org, repo] = frame.options.ref.toLowerCase().split('/');
+
+                // omit /:ref so we fetch the default branch
+                const zipUrl = `https://api.github.com/repos/${org}/${repo}/zipball`;
+                const zipName = `${repo}.zip`;
+
+                // store zip in a unique temporary folder to avoid conflicts
+                const downloadBase = path.join(os.tmpdir(), security.identifier.uid(10));
+                const downloadPath = path.join(downloadBase, zipName);
+
+                await fs.ensureDir(downloadBase);
+
+                try {
+                    // download zip file
+                    const download = request(zipUrl, {
+                        followRedirect: true,
+                        headers: {
+                            accept: 'application/vnd.github.v3+json'
+                        },
+                        encoding: null,
+                        stream: true
+                    }).pipe(fs.createWriteStream(downloadPath));
+
+                    await finished(download);
+
+                    // install theme from zip
+                    const zip = {
+                        path: downloadPath,
+                        name: zipName
+                    };
+                    let {theme, themeOverridden} = await themeService.storage.setFromZip(zip);
+
+                    // if we didn't overriding an active theme, activate it now
+                    if (!themeOverridden) {
+                        const newSettings = [{
+                            key: 'active_theme',
+                            value: repo
+                        }];
+
+                        const checkedTheme = await themeService.activate(repo);
+
+                        // @NOTE: we use the model, not the API here, as we don't want to trigger permissions
+                        await models.Settings.edit(newSettings, frame.options);
+
+                        theme = themeService.getJSON(repo, checkedTheme);
+                    }
+
+                    events.emit('theme.uploaded', {name: theme.name});
+
+                    return theme;
+                } finally {
+                    // clean up tmp dir with downloaded file
+                    fs.remove(downloadBase);
+                }
+            }
+        }
+    },
+
     upload: {
         headers: {},
         permissions: {
@@ -66,7 +155,7 @@ module.exports = {
                         // CASE: clear cache
                         this.headers.cacheInvalidate = true;
                     }
-                    events.emit('theme.uploaded');
+                    events.emit('theme.uploaded', {name: theme.name});
                     return theme;
                 });
         }
