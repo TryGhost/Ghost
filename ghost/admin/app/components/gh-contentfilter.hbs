@@ -93,7 +93,7 @@
             {{#if this.customViews.activeView}}
                 <button
                     type="button"
-                    class="gh-contentfilter-menu-trigger gh-contentfilter-button"
+                    class="gh-contentfilter-menu-trigger gh-contentfilter-button gh-btn-save-view"
                     title="Edit current view..."
                     data-test-button="edit-view"
                     {{on "click" this.customViews.toggleFormModal}}
@@ -103,7 +103,7 @@
             {{else}}
                 <button
                     type="button"
-                    class="gh-contentfilter-menu-trigger gh-contentfilter-button"
+                    class="gh-contentfilter-menu-trigger gh-contentfilter-button gh-btn-save-view"
                     title="Save as view..."
                     data-test-button="add-view"
                     {{on "click" this.customViews.toggleFormModal}}

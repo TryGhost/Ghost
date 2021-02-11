@@ -78,7 +78,7 @@
     background-position: 50%;
     background-size: cover;
     border-radius: 100%;
-    border: 1px solid color-mod(var(--main-bg-color) l(-8%));
+    border: 1px solid var(--whitegrey);
 }
 
 /* Global Nav
@@ -706,10 +706,8 @@
 
 .nightshift-toggle.on .thumb {
     position: absolute;
-    left: 21px;
-    width: 20px;
-    height: 20px;
-    top: 1px;
+    left: 22px;
+    top: 2px;
 }
 
 .nightshift-toggle .sun {
