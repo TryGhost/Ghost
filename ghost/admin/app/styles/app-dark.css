@@ -144,9 +144,12 @@ input:focus,
     background: color-mod(var(--lightgrey));
 }
 
-.settings-menu-container,
 .gh-main-white {
     background: var(--white);
+}
+
+.settings-menu-container {
+    background: #1c1f23;
 }
 
 @media (max-width: 800px) {
@@ -212,18 +215,24 @@ input:focus,
     filter: invert(100%);
 }
 
+/* Buttons
+/* ---------------------------------------------------------------------- */
 .gh-btn {
-    color: color-mod(var(--darkgrey) l(-27%) blackness(+15%));
+    color: var(--black);
     text-shadow: none;
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
-    border: color-mod(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid;
-    background: var(--transparent);
+.gh-btn-primary {
+    color: var(--white);
 }
 
-.view-actions .gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
-    border-color: color-mod(var(--darkgrey) l(-27%) blackness(+15%) alpha(50%));
+.gh-btn-primary:hover {
+    background: var(--black) !important;
+}
+
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary) {
+    background: var(--lightgrey);
+    color: var(--black);
 }
 
 .gh-btn-group .gh-btn:first-of-type {
@@ -248,6 +257,28 @@ input:focus,
 
 .gh-btn-link {
     border: none !important;
+}
+
+.gh-image-uploader .gh-btn {
+    background: var(--whitegrey) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+
+.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red), 
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+    background: var(--lightgrey);
+}
+
+.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover, 
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
+    background: var(--lightgrey-l1);
+}
+
+.gh-btn-tabs .gh-btn {
+    background: transparent !important;
 }
 
 .settings-menu-delete-button {
@@ -343,6 +374,11 @@ input:focus,
 
 .ember-power-select-group .ember-power-select-option .highlight {
     background: rgba(0,0,0,0.5);
+}
+
+.ember-power-select-multiple-option {
+    background: var(--white);
+    color: var(--black);
 }
 
 .fullscreen-modal-background {
@@ -448,7 +484,7 @@ input:focus,
 
 .apps-grid,
 .apps-grid-cell {
-    background: #191b1f;
+    background: var(--dark-main-bg-color);
 }
 
 .td-cta-box {
@@ -460,6 +496,10 @@ input:focus,
 .form-group code {
     background-color: var(--extra-darkgrey);
     border-right: 1px solid var(--lightgrey);
+}
+
+.for-switch input:checked+.input-toggle-component {
+    background: var(--green);
 }
 
 .settings-code-editor .CodeMirror {
@@ -515,7 +555,7 @@ input:focus,
 .gh-nav-bottom-tabicon:hover,
 .gh-nav-bottom-tabicon.active,
 .gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
-    background: var(--white);
+    background: var(--whitegrey);
 }
 
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
@@ -524,10 +564,6 @@ input:focus,
 
 .gh-nav-btn-search:hover {
     background: var(--lightgrey);
-}
-
-.gh-nav-list .gh-nav-nightshift span svg path {
-    fill: color-mod(var(--midgrey) l(-5%));
 }
 
 .apps-card-app-icon {
@@ -566,20 +602,20 @@ input:focus,
     background: color-mod(var(--dark-main-bg-color) l(+2%));
 }
 
-.gh-settings-main-grid .gh-setting-group:hover span {
-    background: color-mod(var(--dark-main-bg-color) l(+4%));
-}
-
 .nightshift-toggle {
-    background: var(--black);
+    background: var(--lightgrey);
 }
 
 .nightshift-toggle .thumb {
-    background: var(--dark-main-bg-color);
+    background: var(--black);
 }
 
 .nightshift-toggle .moon svg {
-    color: var(--dark-main-bg-color);
+    color: var(--black);
+}
+
+.gh-nav-list .gh-nav-nightshift span svg path {
+    fill: color-mod(var(--midgrey) l(-5%));
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
