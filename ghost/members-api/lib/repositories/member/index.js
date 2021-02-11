@@ -169,7 +169,7 @@ module.exports = class MemberRepository {
             throw new Error('Subscription is not associated with a customer for the member');
         }
 
-        const subscription = data.subscription;
+        const subscription = await this._stripeAPIService.getSubscription(data.subscription.id);
         let paymentMethodId;
         if (!subscription.default_payment_method) {
             paymentMethodId = null;
