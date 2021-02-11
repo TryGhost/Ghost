@@ -185,6 +185,12 @@ select.error {
     background: var(--white);
 }
 
+.error .gh-input:focus,
+.error .gh-input.focus {
+    border-color: color-mod(var(--red)) !important;
+    box-shadow: inset 0 0 0 1px var(--red);
+}
+
 .gh-select:focus,
 select:focus {
     background: color-mod(var(--input-bg-color) l(-3%));
