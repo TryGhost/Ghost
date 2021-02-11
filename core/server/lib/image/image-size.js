@@ -22,13 +22,24 @@ class ImageSize {
         this.request = request;
 
         this.REQUEST_OPTIONS = {
-            // we need the user-agent, otherwise some https request may fail (e.g. cloudfare)
+            // we need the user-agent, otherwise some https request may fail (e.g. cloudflare)
             headers: {
                 'User-Agent': 'Mozilla/5.0 Safari/537.36'
             },
             timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
             retry: 0, // for `got`, used with image-size
             encoding: null
+        };
+
+        // probe-image-size v6 now uses Needle npm module so we need slightly different options
+        this.PROBE_SIZE_OF_REQUEST_OPTIONS = {
+            // we need the user-agent, otherwise some https request may fail (e.g. cloudflare)
+            headers: {
+                'User-Agent': 'Mozilla/5.0 Safari/537.36'
+            },
+            open_timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
+            response_timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
+            read_timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000
         };
     }
 
@@ -56,7 +67,7 @@ class ImageSize {
     // use probe-image-size to download enough of an image to get it's dimensions
     // returns promise which resolves dimensions
     _probeImageSizeFromUrl(imageUrl) {
-        // probe-image-size uses `request` npm module which doesn't have our `got`
+        // probe-image-size uses `needle` npm module which doesn't have our `got`
         // override with custom URL validation so it needs duplicating here
         if (_.isEmpty(imageUrl) || !this.validator.isURL(imageUrl)) {
             return Promise.reject(new errors.InternalServerError({
@@ -65,8 +76,8 @@ class ImageSize {
                 context: imageUrl
             }));
         }
-    
-        return probeSizeOf(imageUrl, this.REQUEST_OPTIONS);
+
+        return probeSizeOf(imageUrl, this.PROBE_SIZE_OF_REQUEST_OPTIONS);
     }
 
     // download full image then use image-size to get it's dimensions
