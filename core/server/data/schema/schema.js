@@ -340,7 +340,7 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {
             type: 'string', maxlength: 50, nullable: false, defaultTo: 'free', validations: {
-                isIn: [['free', 'paid']]
+                isIn: [['free', 'paid', 'comped']]
             }
         },
         name: {type: 'string', maxlength: 191, nullable: true},
@@ -354,6 +354,49 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    members_payment_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        amount: {type: 'integer', nullable: false},
+        currency: {type: 'string', maxLength: 3, nullable: false},
+        source: {type: 'string', maxlength: 50, nullable: false},
+        created_at: {type: 'dateTime', nullable: false}
+    },
+    members_login_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false}
+    },
+    members_email_change_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        email: {type: 'string', maxlength: 191, nullable: false, unique: false, validations: {isEmail: true}},
+        created_at: {type: 'dateTime', nullable: false}
+    },
+    members_status_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        status: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['free', 'paid', 'comped']]
+            }
+        },
+        created_at: {type: 'dateTime', nullable: false}
+    },
+    members_paid_subscription_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        from_plan: {type: 'string', maxlength: 50, nullable: true},
+        to_plan: {type: 'string', maxlength: 50, nullable: true},
+        currency: {type: 'string', maxLength: 3, nullable: false},
+        source: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['stripe']]
+            }
+        },
+        mrr_delta: {type: 'integer', nullable: false},
+        created_at: {type: 'dateTime', nullable: false}
     },
     labels: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
