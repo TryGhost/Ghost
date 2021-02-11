@@ -393,9 +393,12 @@ module.exports = {
         async query() {
             const statsData = await membersService.api.events.getSubscriptions();
             const totalSubscriptions = (_.last(statsData) && _.last(statsData).subscribed) || 0;
+            statsData.forEach((d) => {
+                d.date = moment(d.date).format('YYYY-MM-DD');
+            });
             return {
-                total: totalSubscriptions,
-                total_on_date: statsData
+                subscribers_count: totalSubscriptions,
+                subscribers_on_date: statsData
             };
         }
     }

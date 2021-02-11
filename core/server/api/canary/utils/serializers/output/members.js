@@ -66,7 +66,7 @@ function exportCSV(page, _apiConfig, frame) {
 
 function subscriberStats(data) {
     return {
-        subscriber_stats: data
+        stats: data
     };
 }
 
