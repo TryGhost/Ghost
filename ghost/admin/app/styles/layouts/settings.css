@@ -73,6 +73,7 @@
     height: 48px;
     min-width: 48px;;
     border-radius: 999px;
+    color: #fff;
 }
 
 .gh-settings-main-grid .gh-setting-group span.color-1 {
@@ -100,14 +101,9 @@
     height: 20px;
 }
 
-.gh-settings-main-grid .gh-setting-group svg path,
-.gh-settings-main-grid .gh-setting-group svg circle {
-    fill: #fff;
-}
-
-.gh-settings-main-grid .gh-setting-group:hover svg path,
-.gh-settings-main-grid .gh-setting-group:hover svg circle {
-    fill: #fff;
+.gh-settings-main-grid .gh-setting-group.portal svg {
+    width: 24px;
+    height: 24px;
 }
 
 .gh-settings-main-grid .gh-setting-group div {
@@ -118,6 +114,7 @@
 .gh-settings-main-grid .gh-setting-group h4 {
     font-size: 1.5rem;
     font-weight: 600;
+    margin: 4px 0 2px;
 }
 
 .gh-settings-main-grid .gh-setting-group p {
