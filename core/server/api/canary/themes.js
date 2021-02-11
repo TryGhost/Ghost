@@ -56,9 +56,7 @@ module.exports = {
     },
 
     install: {
-        headers: {
-            cacheInvalidate: true
-        },
+        headers: {},
         options: [
             'source',
             'ref'
@@ -107,21 +105,10 @@ module.exports = {
                         path: downloadPath,
                         name: zipName
                     };
-                    let {theme, themeOverridden} = await themeService.storage.setFromZip(zip);
+                    const {theme, themeOverridden} = await themeService.storage.setFromZip(zip);
 
-                    // if we didn't overriding an active theme, activate it now
-                    if (!themeOverridden) {
-                        const newSettings = [{
-                            key: 'active_theme',
-                            value: repo
-                        }];
-
-                        const checkedTheme = await themeService.activate(repo);
-
-                        // @NOTE: we use the model, not the API here, as we don't want to trigger permissions
-                        await models.Settings.edit(newSettings, frame.options);
-
-                        theme = themeService.getJSON(repo, checkedTheme);
+                    if (themeOverridden) {
+                        this.headers.cacheInvalidate = true;
                     }
 
                     events.emit('theme.uploaded', {name: theme.name});
