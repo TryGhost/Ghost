@@ -6,18 +6,18 @@
 /* ---------------------------------------------------------- */
 
 .user-actions-cog {
-    margin-right: 10px
+    margin-right: 10px;
+    color: var(--darkgrey);
 }
 
 .user-actions-cog svg {
-    height: 13px;
-    width: 13px;
-    fill: var(--midgrey);
+    height: 16px;
+    width: 16px;
     margin-right: 0;
 }
 
 .user-actions-cog svg path {
-    stroke: initial;
+    stroke: currentColor;
 }
 
 .user-actions-menu {

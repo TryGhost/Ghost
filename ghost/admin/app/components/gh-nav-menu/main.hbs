@@ -23,7 +23,7 @@
             <li class="relative">
                 <span {{action "transitionToOrRefreshSite" on="click"}}>
                     <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
-                        {{svg-jar "page"}} View site
+                        {{svg-jar "view-site"}} View site
                     </LinkTo>
                 </span>
                 <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
@@ -77,7 +77,7 @@
                     {{/if}}
                 </li>
                 <li>
-                    <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "modules"}}Integrations</LinkTo>
+                    <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "module"}}Integrations</LinkTo>
                 </li>
             {{/if}}
             <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>

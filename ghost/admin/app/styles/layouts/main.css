@@ -394,9 +394,9 @@
 /* Icons */
 .gh-nav-list svg {
     margin-right: 17px;
-    width: 18px;
-    height: 18px;
-    fill: var(--midgrey);
+    width: 16px;
+    height: 16px;
+    /* fill: var(--midgrey); */
     line-height: 1;
     transition: none;
     z-index: 999;
@@ -647,6 +647,7 @@
     width: 40px;
     height: 40px;
     line-height: 1;
+    color: var(--darkgrey);
 }
 
 .gh-nav-bottom-tabicon:hover {
@@ -655,6 +656,7 @@
 
 .gh-nav-bottom-tabicon.active {
     background: var(--whitegrey-d1);
+    color: var(--black);
 }
 
 .gh-nav-bottom-tabicon.active svg {
@@ -1377,14 +1379,14 @@
 }
 
 .gh-actions-cog svg {
-    height: 18px;
-    width: 18px;
-    fill: var(--black);
+    height: 16px;
+    width: 16px;
     margin-right: 0;
+    margin-top: 1px;
 }
 
 .gh-actions-cog svg path {
-    stroke: initial;
+    stroke: currentColor;
 }
 
 .gh-actions-menu {
