@@ -128,7 +128,7 @@
     "nodemailer": "0.7.1",
     "oembed-parser": "1.3.7",
     "path-match": "1.2.4",
-    "probe-image-size": "5.0.0",
+    "probe-image-size": "6.0.0",
     "rss": "1.2.2",
     "sanitize-html": "2.3.2",
     "semver": "7.3.4",
