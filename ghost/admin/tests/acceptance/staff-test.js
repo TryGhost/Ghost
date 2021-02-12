@@ -147,7 +147,7 @@ describe('Acceptance: Staff', function () {
 
             // invite user button exists
             expect(
-                find('.view-actions .gh-btn-green'),
+                find('.view-actions .gh-btn-primary'),
                 'invite people button'
             ).to.exist;
 
@@ -182,7 +182,7 @@ describe('Acceptance: Staff', function () {
             ).to.equal(0);
 
             // click the invite people button
-            await click('.view-actions .gh-btn-green');
+            await click('.view-actions .gh-btn-primary');
 
             let roleOptions = findAll('.fullscreen-modal select[name="role"] option');
 
@@ -257,7 +257,7 @@ describe('Acceptance: Staff', function () {
             ).to.equal(2);
 
             // submit new invite with different role
-            await click('.view-actions .gh-btn-green');
+            await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'invite2@example.com');
             await fillIn('.fullscreen-modal select[name="role"]', '2');
             await click('.fullscreen-modal .gh-btn-green');
@@ -280,7 +280,7 @@ describe('Acceptance: Staff', function () {
             ).to.equal('Editor');
 
             // submit invite form with existing user
-            await click('.view-actions .gh-btn-green');
+            await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'admin@example.com');
             await click('.fullscreen-modal .gh-btn-green');
 
@@ -333,7 +333,7 @@ describe('Acceptance: Staff', function () {
             ).to.equal('invite1@example.com');
 
             // add another invite to test ordering on resend
-            await click('.view-actions .gh-btn-green');
+            await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'invite3@example.com');
             await click('.fullscreen-modal .gh-btn-green');
 
