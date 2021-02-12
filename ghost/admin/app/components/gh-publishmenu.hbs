@@ -1,4 +1,4 @@
-<BasicDropdown @verticalPosition="below" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
+<GhBasicDropdown @verticalPosition="below" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
     <dd.Trigger class="gh-btn gh-btn-editor {{if (or (eq this.displayState "published") (eq this.displayState "scheduled")) "green"}} gh-publishmenu-trigger">
         <span data-test-publishmenu-trigger>{{this.triggerText}} {{svg-jar "arrow-down"}}</span>
     </dd.Trigger>
@@ -55,7 +55,7 @@
             />
         </footer>
     </dd.Content>
-</BasicDropdown>
+</GhBasicDropdown>
 
 {{#if this.showEmailConfirmationModal}}
     <GhFullscreenModal
