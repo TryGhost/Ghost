@@ -31,7 +31,7 @@ export default Route.extend({
                         ? transition.intent.url
                         : '');
 
-                if (destinationUrl.includes('/billing')) {
+                if (destinationUrl?.includes('/billing')) {
                     isBillingTransition = true;
                 }
             }

@@ -10,6 +10,11 @@
 
         <main class="gh-main {{this.ui.mainClass}}" role="main">
             {{outlet}}
+
+            {{#if this.showBilling}}
+                <GhBillingModal />
+            {{/if}}
+
         </main>
 
         <GhNotifications />
@@ -27,10 +32,6 @@
             @close={{this.customViews.toggleFormModal}}
             @modifier="action narrow"
         />
-    {{/if}}
-
-    {{#if this.showBilling}}
-        <GhBillingModal />
     {{/if}}
 </GhApp>
 
