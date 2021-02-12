@@ -27,6 +27,9 @@ module.exports = {
         events.on('server.start', function readAllThemesOnServerStart() {
             themeLoader.loadAllThemes();
         });
+        events.on('themes.ready', function readAllThemesOnServerStart() {
+            themeLoader.loadAllThemes();
+        });
 
         // Just read the active theme for now
         return themeLoader
