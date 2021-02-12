@@ -85,6 +85,7 @@ fieldset[disabled] .gh-btn {
     background: color-mod(var(--black) l(-20%)) !important;
 }
 
+.gh-btn-primary,
 .gh-btn-black svg {
     fill: var(--white);
 }
@@ -214,6 +215,10 @@ fieldset[disabled] .gh-btn {
 .gh-btn-hover-red:hover {
     color: var(--red);
     border-color: var(--red);
+}
+
+.gh-btn-hover-background:hover {
+    background: var(--lightgrey);
 }
 
 

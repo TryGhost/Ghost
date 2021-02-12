@@ -14,15 +14,15 @@
                 <div class="apps-configured">
                     {{!--Delete--}}
                     {{#if theme.isDeletable}}
-                        <a href="#" {{action this.deleteTheme theme}} disabled={{theme.active}} class="apps-configured-action red-hover red-bg-hover" data-test-theme-delete-button>Delete</a>
+                        <a href="#" {{action this.deleteTheme theme}} disabled={{theme.active}} class="apps-configured-action darkgrey red-hover red-bg-hover" data-test-theme-delete-button>Delete</a>
                     {{/if}}
                     {{!--Download--}}
-                    <a href="#" {{action this.downloadTheme theme}} class="apps-configured-action darkgrey-hover blue-bg-hover" data-test-theme-download-button>Download</a>
+                    <a href="#" {{action this.downloadTheme theme}} class="apps-configured-action darkgrey darkgrey-hover lightgrey-bg-hover" data-test-theme-download-button>Download</a>
                     {{!--Active Label / Activate Button--}}
                     {{#if theme.active}}
                         <span class="gh-badge gh-badge-black apps-configured-action" data-test-theme-badge>Active</span>
                     {{else}}
-                        <a href="#" {{action this.activateTheme theme.model}} class="apps-configured-action apps-configured-action-activate green-hover green-bg-hover" data-test-theme-activate-button>
+                        <a href="#" {{action this.activateTheme theme.model}} class="apps-configured-action darkgrey apps-configured-action-activate green-hover green-bg-hover" data-test-theme-activate-button>
                             Activate
                         </a>
                     {{/if}}

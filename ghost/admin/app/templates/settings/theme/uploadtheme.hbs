@@ -1,6 +1,6 @@
 <GhFullscreenModal @modal="upload-theme"
     @model={{hash
-        themes=themes
+        themes=this.themes
         activate=(route-action 'activateTheme')
     }}
     @close={{route-action "cancel"}}

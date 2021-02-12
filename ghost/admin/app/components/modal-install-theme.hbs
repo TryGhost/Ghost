@@ -1,0 +1,142 @@
+<div class="theme-validation-container" {{did-update this.reset @model}}>
+    <header class="modal-header" data-test-modal="install-theme">
+        <h1>
+            {{#if this.installSuccess}}
+                {{#if this.hasWarningsOrErrors}}
+                    Install successful with {{#if this.validationErrors}}errors{{else}}warnings{{/if}}
+                {{else}}
+                    Install successful!
+                {{/if}}
+            {{else if this.hasWarningsOrErrors}}
+                Invalid theme
+            {{else}}
+                Install theme
+            {{/if}}
+        </h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" this.close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        {{#if this.isReady}}
+            <p>
+                Are you sure you want to install <strong>{{this.themeName}}</strong> from
+                <a href="https://github.com/{{this.model.ref}}" target="_blank" rel="noopener noreferrer">https://github.com/{{this.model.ref}}</a>?
+            </p>
+            {{#if this.willOverwriteExisting}}
+                <p>
+                    This will overwrite your existing version of {{this.themeName}}{{if this.willOverwriteExisting.active " which is your active theme"}}.
+                    Any custom changes will be lost.
+                </p>
+            {{/if}}
+        {{/if}}
+
+        {{#if this.willOverwriteDefault}}
+            <p>
+                Sorry, the default Casper theme cannot be overwritten.<br>
+                If you wish to make changes please download the theme and upload a renamed zip file.
+            </p>
+        {{/if}}
+
+        {{#if this.installSuccess}}
+            {{#if this.hasWarningsOrErrors}}
+                <p>
+                    The theme <strong>"{{this.themeName}}"</strong> was installed successfully but we detected some {{if this.validationErrors "errors" "warnings"}}.
+                    {{#unless this.theme.active}}
+                        You are still able to activate and use the theme but it is recommended to fix these {{if this.validationErrors "errors" "warnings"}} before you do so.
+                    {{/unless}}
+                </p>
+            {{else}}
+                {{!-- Installed with no errors --}}
+                <p>The theme <strong>"{{this.themeName}}"</strong> was installed successfully. {{unless this.theme.active "Do you want to activate it now?"}}</p>
+            {{/if}}
+        {{/if}}
+
+        {{#if this.installError}}
+            {{!-- Outright failure - not found, not a theme, server error, etc --}}
+            <p>{{this.themeName}} failed to install.</p>
+            <p class="error"><strong class="response">{{this.installError}}</strong></p>
+        {{/if}}
+
+        {{#if this.installFailure}}
+            {{!-- Invalid theme --}}
+            <p>This theme is invalid and cannot be activated. Contact the theme developer.</p>
+        {{/if}}
+
+        {{#if this.fatalValidationErrors}}
+            <div>
+                <h2 class="mb0 mt4 f5 fw6">Fatal Errors</h2>
+                <p class="mb2">Must-fix to activate theme</p>
+            </div>
+
+            <ul class="pa0">
+            {{#each this.fatalValidationErrors as |error|}}
+                <li class="theme-validation-item theme-fatal-error">
+                    <GhThemeErrorLi @error={{error}} />
+                </li>
+            {{/each}}
+            </ul>
+        {{/if}}
+
+        {{#if this.validationErrors}}
+            <div>
+                <h2 class="mb0 mt4 f5 fw6">Errors</h2>
+                <p class="mb2">Highly recommended to fix, functionality <strong>could</strong> be restricted</p>
+            </div>
+            <ul class="pa0">
+            {{#each this.validationErrors as |error|}}
+                <li class="theme-validation-item theme-error">
+                    <GhThemeErrorLi @error={{error}} />
+                </li>
+            {{/each}}
+            </ul>
+        {{/if}}
+
+        {{#if this.validationWarnings}}
+            <div>
+                <h2 class="mb0 mt4 f5 fw6">Warnings</h2>
+            </div>
+            <ul class="pa0">
+            {{#each this.validationWarnings as |error|}}
+                <li class="theme-validation-item theme-warning">
+                    <GhThemeErrorLi @error={{error}} />
+                </li>
+            {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+
+    <div class="modal-footer">
+        <div class="flex items-center justify-between {{if this.hasActionButton "flex-auto"}}">
+            <button type="button" class="gh-btn" {{on "click" this.close}} data-test-button="cancel">
+                <span>{{#if (or this.installSuccess this.installFailure)}}Close{{else}}Cancel{{/if}}</span>
+            </button>
+
+            {{#if this.hasActionButton}}
+                <div class="flex items-center">
+                    {{#if this.shouldShowInstall}}
+                        <GhTaskButton
+                            @task={{this.installTask}}
+                            @type="button"
+                            @class="gh-btn gh-btn-icon gh-btn-green"
+                            @buttonText={{if this.willOverwriteExisting "Overwrite" "Install"}}
+                            @runningText="Installing"
+                            @successText="Installed"
+                            data-test-button="install"
+                        />
+                    {{/if}}
+
+                    {{#if this.shouldShowActivate}}
+                        <GhTaskButton
+                            @task={{this.activateTask}}
+                            @type="button"
+                            @class="gh-btn gh-btn-icon gh-btn-green"
+                            @buttonText="Activate"
+                            @runningText="Activating"
+                            data-test-button="activate"
+                        />
+                    {{/if}}
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</div>

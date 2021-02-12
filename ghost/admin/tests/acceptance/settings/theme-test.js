@@ -88,7 +88,7 @@ describe('Acceptance: Settings - Theme', function () {
             ).to.equal('Blog (default)');
 
             // theme upload displays modal
-            await click('[data-test-upload-theme-button]');
+            await click('[data-test-button="uploadtheme"]');
             expect(
                 findAll('[data-test-modal="upload-theme"]').length,
                 'theme upload modal displayed after button click'
@@ -102,7 +102,7 @@ describe('Acceptance: Settings - Theme', function () {
             ).to.be.true;
 
             // theme upload validates mime type
-            await click('[data-test-upload-theme-button]');
+            await click('[data-test-button="uploadtheme"]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {type: 'text/csv'});
 
             expect(
@@ -281,7 +281,7 @@ describe('Acceptance: Settings - Theme', function () {
             await click('.fullscreen-modal [data-test-close-button]');
 
             // theme upload handles success then close
-            await click('[data-test-upload-theme-button]');
+            await click('[data-test-button="uploadtheme"]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-1.zip', type: 'application/zip'});
 
             expect(
@@ -307,7 +307,7 @@ describe('Acceptance: Settings - Theme', function () {
             await click('.fullscreen-modal [data-test-close-button]');
 
             // theme upload handles success then activate
-            await click('[data-test-upload-theme-button]');
+            await click('[data-test-button="uploadtheme"]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'theme-2.zip', type: 'application/zip'});
             await click('.fullscreen-modal [data-test-activate-now-button]');
 
@@ -547,7 +547,7 @@ describe('Acceptance: Settings - Theme', function () {
             await click('[data-test-theme-id="foo"] [data-test-theme-delete-button]');
             await click('.fullscreen-modal [data-test-delete-button]');
 
-            await click('[data-test-upload-theme-button]');
+            await click('[data-test-button="uploadtheme"]');
             await fileUpload('.fullscreen-modal input[type="file"]', ['test'], {name: 'foo.zip', type: 'application/zip'});
             // this will fail if upload failed because there won't be an activate now button
             await click('.fullscreen-modal [data-test-activate-now-button]');
