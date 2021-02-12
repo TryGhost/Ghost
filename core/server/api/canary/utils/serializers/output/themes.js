@@ -12,6 +12,11 @@ module.exports = {
         this.browse(...arguments);
     },
 
+    install() {
+        debug('install');
+        this.browse(...arguments);
+    },
+
     activate() {
         debug('activate');
         this.browse(...arguments);
