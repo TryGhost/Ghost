@@ -139,10 +139,6 @@ describe('Settings API', function () {
                     value: 'twitter description'
                 },
                 {
-                    key: 'labs',
-                    value: '{"subscribers":false,"members":true}'
-                },
-                {
                     key: 'lang',
                     value: 'ua'
                 },
@@ -211,14 +207,11 @@ describe('Settings API', function () {
         putBody.settings[12].key.should.eql('twitter_description');
         should.equal(putBody.settings[12].value, 'twitter description');
 
-        putBody.settings[13].key.should.eql('labs');
-        should.equal(putBody.settings[13].value, '{"subscribers":false,"members":true}');
+        putBody.settings[13].key.should.eql('lang');
+        should.equal(putBody.settings[13].value, 'ua');
 
-        putBody.settings[14].key.should.eql('lang');
-        should.equal(putBody.settings[14].value, 'ua');
-
-        putBody.settings[15].key.should.eql('timezone');
-        should.equal(putBody.settings[15].value, 'Pacific/Auckland');
+        putBody.settings[14].key.should.eql('timezone');
+        should.equal(putBody.settings[14].value, 'Pacific/Auckland');
 
         putBody.settings[16].key.should.eql('slack');
         should.equal(putBody.settings[16].value, JSON.stringify([{
