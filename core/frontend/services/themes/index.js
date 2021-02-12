@@ -31,6 +31,10 @@ module.exports = {
             themeLoader.loadAllThemes();
         });
 
+        events.on('themes.ready', function readAllThemesOnServerStart() {
+            themeLoader.loadAllThemes();
+        });
+
         // Just read the active theme for now
         return themeLoader
             .loadOneTheme(activeThemeName)
