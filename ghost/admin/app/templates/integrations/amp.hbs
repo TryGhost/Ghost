@@ -33,9 +33,9 @@
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">AMP configuration</h4>
             <section class="gh-main-section-block">
-                <div class="gh-main-section-content grey padding-top-s columns-2">
+                <div class="gh-main-section-content grey padding-top-s">
                     <div>
-                        <div class="gh-setting">
+                        <div class="gh-setting-first">
                             <div class="gh-setting-content">
                                 <div class="gh-setting-title">Enable AMP</div>
                                 <div class="gh-setting-desc">Enable <a href="https://ampproject.org" target="_blank">Google Accelerated Mobile Pages</a> for your posts</div>
@@ -62,7 +62,7 @@
                                 <div class="gh-setting-title">Google Analytics Tracking ID</div>
                                 <div class="gh-setting-desc">Tracks AMP traffic in Google Analytics, find your ID <a href="https://ghost.org/help/how-to-find-your-google-analytics-tracking-id/">here</a></div>
                                 <div class="gh-setting-content-extended">
-                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ampGtagId">
+                                    <GhFormGroup @class="no-margin" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ampGtagId">
                                         <GhTextInput
                                             @placeholder="UA-XXXXXXX-X"
                                             @name="amp_gtag_id"
