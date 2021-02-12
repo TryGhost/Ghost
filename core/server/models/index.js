@@ -30,6 +30,7 @@ const models = [
     'member',
     'member-subscribe-event',
     'member-login-event',
+    'member-email-change-event',
     'member-payment-event',
     'member-status-event',
     'posts-meta',
