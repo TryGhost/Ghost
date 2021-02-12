@@ -105,12 +105,12 @@
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
-    top: -440px;
-    left: 20px;
+    top: -406px;
+    left: -13px;
     margin: 10px 0 0;
     box-shadow: var(--box-shadow-m);
     min-width: 290px;
-    padding: 6px 0 12px;
+    padding: 6px 0;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu>li>a,
@@ -193,16 +193,20 @@
 .gh-account-menu-header {
     position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 32px 24px 24px;
+    padding: 12px 24px;
 }
 
 .gh-account-menu-header .gh-user-avatar {
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
     margin: 0;
     padding: 0;
+}
+
+.gh-account-menu-header .gh-user-info {
+    margin-left: 10px;
 }
 
 .gh-account-menu-header .user-menu-signout {
@@ -212,7 +216,7 @@
 }
 
 .gh-user-name {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     padding: 0;
     word-break: break-all;
     font-size: 1.5rem;
