@@ -186,7 +186,9 @@
 .gh-post-preview-social-container {
     position: relative;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
     height: 100%;
     overflow-y: scroll;
     padding: 3.2rem;
@@ -194,6 +196,20 @@
     background: var(--whitegrey-l1);
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+}
+
+.gh-post-preview-social-container:after {
+    content: "";
+    display: block;
+    height: 2.4rem;
+    width: 100%;
+  }
+
+@media (max-width: 1120px) {
+    .gh-social-container-responsive {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
 .social-icon {
@@ -204,10 +220,16 @@
 
 .gh-social-og-container {
     width: 476px;
-    margin-right: 1.2rem;
+    margin-bottom: 2.4rem;
     border: 1px solid #e5e5e5;
     background: #fff;
     border-radius: 3px;
+}
+
+@media (min-width: 1120px) {
+    .gh-social-og-container {
+        margin-right: 1.2rem;
+    }
 }
 
 .gh-social-og-title {
@@ -313,10 +335,16 @@
 }
 
 .gh-social-twitter-container {
-    width: 600px;
-    margin-left: 1.2rem;
+    width: 591px;
+    margin-bottom: 2.4rem;
     border: 1px solid #ebeef0;
     background: #fff;
+}
+
+@media (min-width: 1120px) {
+    .gh-social-twitter-container {
+        margin-left: 1.2rem;
+    }
 }
 
 .gh-social-twitter-post-preview {
@@ -338,8 +366,12 @@
     background-position: center center;
 }
 
+.gh-social-twitter-preview-content {
+    padding: 10px;
+}
+
 .gh-social-twitter-preview-title {
-    max-width: 487px;
+    width: 487px;
     max-height: 1.3em;
     overflow: hidden;
     overflow-wrap: break-word;
@@ -353,6 +385,7 @@
 }
 
 .gh-social-twitter-preview-desc {
+    width: 487px;
     max-height: 40px;
     overflow: hidden;
     overflow-wrap: break-word;
@@ -369,6 +402,7 @@
     display: flex;
     overflow: hidden;
     overflow-wrap: break-word;
+    width: 487px;
     margin-top: 2px;
     color: #5b7083;
     font-size: 15px;
@@ -406,7 +440,7 @@
 .gh-seo-preview-container {
     display: flex;
     width: 100%;
-    max-width: 1108px;
+    max-width: 1091px;
     padding: 20px 30px;
     border: 1px solid var(--whitegrey);
     font-family: Arial, sans-serif;
