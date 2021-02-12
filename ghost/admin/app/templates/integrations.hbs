@@ -212,38 +212,32 @@
                     </LinkTo>
                 </div>
             {{else}}
-                <div class="flex flex-column justify-center items-center mih30 miw-100" data-test-blank="custom-integrations">
+                <div class="flex flex-column justify-center items-center mih30 miw-100 bb b--whitegrey" data-test-blank="custom-integrations">
                     {{#if this.fetchIntegrations.isRunning}}
                         <div class="gh-loading-spinner"></div>
                     {{else}}
                         <div class="flex flex-column items-center pa5 pt15 pb15">
-                            <p class="ma0 pa0 tc midgrey lh-title mt2">
+                            <p class="ma0 pa0 tc midgrey lh-title mt2 mb4">
                                 Create your own custom Ghost integrations with dedicated API keys & webhooks
                             </p>
-                            <LinkTo @route="integrations.new" class="" data-test-button="new-integration">
-                                <div class="flex items-center pa2 pt1">
-                                    {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
-                                    <span class="db ml1 blue nudge-bottom--1">Add custom integration</span>
-                                </div>
+                            <LinkTo @route="integrations.new" class="gh-btn gh-btn-green gh-btn-icon" data-test-button="new-integration">
+                                <span>{{svg-jar "add" class="w3 h3"}} Add custom integration</span>
                             </LinkTo>
                         </div>
                     {{/if}}
                 </div>
             {{/each}}
-
-            {{#if this.integrations}}
-            <div class="apps-grid-cell new-integration-cell">
-                <LinkTo @route="integrations.new" class="" data-test-button="new-integration">
-                <article class="apps-card-app">
-                    <div class="flex items-center">
-                        {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
-                        <span class="db ml1 blue nudge-bottom--1 fw4">Add custom integration</span>
-                    </div>
-                </article>
-                </LinkTo>
-            </div>
-            {{/if}}
         </div>
+
+        {{#if this.integrations}}
+        {{!-- <div class="apps-grid-cell new-integration-cell"> --}}
+        <div class="mt5">
+            <LinkTo @route="integrations.new" class="gh-btn gh-btn-green gh-btn-icon" data-test-button="new-integration">
+                <span>{{svg-jar "add" class="w3 h3"}} Add custom integration</span>
+            </LinkTo>
+        </div>
+        {{!-- </div> --}}
+        {{/if}}
     </section>
 
 </section>
