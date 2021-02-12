@@ -1,7 +1,7 @@
 
 <div class="gh-post-preview-social-container">
     <div class="flex flex-column">
-        <div class="flex mb6">
+        <div class="flex gh-social-container-responsive">
             <div class="gh-social-og-container">
                 <div class="flex ma3 mb2">
                     <span>{{svg-jar "social-facebook" class="social-icon"}}</span>
@@ -36,7 +36,7 @@
             </div>
 
             <div class="gh-social-twitter-container">
-                <div class="flex ma3 mb2 mr4">
+                <div class="flex ma4">
                     <span>{{svg-jar "social-twitter" class="social-icon"}}</span>
                     <div>
                         <span class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</span>
@@ -49,7 +49,7 @@
                             {{#if this.twitterImage}}
                                 <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
                             {{/if}}
-                            <div class="gh-twitter-preview-content">
+                            <div class="gh-social-twitter-preview-content">
                                 <div class="gh-social-twitter-preview-title">{{this.twitterTitle}}</div>
                                 <div class="gh-social-twitter-preview-desc">{{truncate this.twitterDescription}}</div>
                                 <div class="gh-social-twitter-preview-meta">
