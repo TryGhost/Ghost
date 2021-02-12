@@ -40,8 +40,8 @@ function getMembersHelper() {
     const stripeDirectSecretKey = settingsCache.get('stripe_secret_key');
     const stripeDirectPublishableKey = settingsCache.get('stripe_publishable_key');
     const stripeConnectAccountId = settingsCache.get('stripe_connect_account_id');
-
-    let membersHelper = `<script defer src="https://unpkg.com/@tryghost/portal@~1.0.0-rc/umd/portal.min.js" data-ghost="${urlUtils.getSiteUrl()}"></script>`;
+    const portalUrl = config.get('portal:url');
+    let membersHelper = `<script defer src="${portalUrl}" data-ghost="${urlUtils.getSiteUrl()}"></script>`;
     membersHelper += (`<style> ${templateStyles}</style>`);
     if ((!!stripeDirectSecretKey && !!stripeDirectPublishableKey) || !!stripeConnectAccountId) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';

@@ -119,5 +119,9 @@
     "emailAnalytics": true,
     "backgroundJobs": {
         "emailAnalytics": true
+    },
+    "portal": {
+        "url": "https://unpkg.com/@tryghost/portal@~1.0.0-rc/umd/portal.min.js",
+        "version": "~1.0.0-rc"
     }
 }
