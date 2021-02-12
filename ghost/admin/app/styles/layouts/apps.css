@@ -313,7 +313,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     align-content: flex-start;
-    margin-top: 12px;
+    margin-top: 24px;
 }
 
 .app-icon {
@@ -489,6 +489,10 @@
     font-weight: 600;
 }
 
+.app-custom-api-table {
+    margin-bottom: 0;
+}
+
 .app-custom-api-table .data-label {
-    width: 200px;
+    width: 160px;
 }
