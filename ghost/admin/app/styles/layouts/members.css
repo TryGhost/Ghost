@@ -16,6 +16,9 @@
 
 .gh-member-detail-avatar {
     box-shadow: none;
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
 }
 
 .gh-member-avatar-label {

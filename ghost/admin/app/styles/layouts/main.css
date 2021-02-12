@@ -1223,6 +1223,14 @@
     margin-top: -8px;
 }
 
+@media (max-width: 1000px) {
+    .gh-main-section.columns-2,
+    .gh-main-section-content.columns-2 {
+        grid-template-columns: 1fr;
+        grid-row-gap: 32px;
+    }
+}
+
 /* Canvas */
 .gh-canvas-title {
     display: flex;
@@ -1239,12 +1247,6 @@
     /* match button height to avoid jump on navigation between screens*/
     min-height: 35px;
     color: var(--black);
-}
-
-@media (max-width: 500px) {
-    .gh-canvas-title svg {
-        margin: 0 5px;
-    }
 }
 
 .gh-canvas-title a {
@@ -1270,6 +1272,12 @@
 
 .gh-canvas-title:hover .gh-btn-edit-view {
     opacity: 1.0;
+}
+
+@media (max-width: 500px) {
+    .gh-canvas-title svg {
+        margin: 0 5px;
+    }
 }
 
 
