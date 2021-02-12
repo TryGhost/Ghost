@@ -37,7 +37,7 @@ describe('Themes middleware', function () {
     let fakeLabsData;
 
     beforeEach(function () {
-        req = {app: {}};
+        req = {app: {}, header: () => { }};
         res = {locals: {}};
 
         fakeActiveTheme = {
@@ -148,6 +148,59 @@ describe('Themes middleware', function () {
             should.equal(res.locals.secure, req.secure);
 
             done();
+        });
+    });
+
+    describe('Preview Mode', function () {
+        it('calls updateTemplateOptions with correct data when one parameter is set', function (done) {
+            const previewString = 'c=%23000fff';
+            req.header = () => {
+                return previewString;
+            };
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                should.not.exist(err);
+
+                hbs.updateTemplateOptions.calledOnce.should.be.true();
+                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                const data = templateOptions.data;
+
+                data.should.be.an.Object().with.properties('site', 'labs', 'config');
+
+                should.equal(data.site, fakeSiteData);
+
+                data.site.should.be.an.Object().with.properties('accent_color', '_preview');
+                data.site._preview.should.eql(previewString);
+                data.site.accent_color.should.eql('#000fff');
+
+                done();
+            });
+        });
+
+        it('calls updateTemplateOptions with correct data when two parameters are set', function (done) {
+            const previewString = 'c=%23000fff&icon=%2Fcontent%2Fimages%2Fmyimg.png';
+            req.header = () => {
+                return previewString;
+            };
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                should.not.exist(err);
+
+                hbs.updateTemplateOptions.calledOnce.should.be.true();
+                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                const data = templateOptions.data;
+
+                data.should.be.an.Object().with.properties('site', 'labs', 'config');
+
+                should.equal(data.site, fakeSiteData);
+
+                data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
+                data.site._preview.should.eql(previewString);
+                data.site.accent_color.should.eql('#000fff');
+                data.site.icon.should.eql('/content/images/myimg.png');
+
+                done();
+            });
         });
     });
 });
