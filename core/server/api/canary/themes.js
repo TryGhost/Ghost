@@ -6,6 +6,8 @@ const {events} = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
 const models = require('../../models');
 const request = require('../../lib/request');
+const errors = require('@tryghost/errors/lib/errors');
+const i18n = require('../../lib/common/i18n');
 
 module.exports = {
     docName: 'themes',
@@ -109,6 +111,15 @@ module.exports = {
                     events.emit('theme.uploaded', {name: theme.name});
 
                     return theme;
+                } catch (e) {
+                    if (e.statusCode && e.statusCode === 404) {
+                        return Promise.reject(new errors.BadRequestError({
+                            message: i18n.t('errors.api.themes.repoDoesNotExist'),
+                            context: zipUrl
+                        }));
+                    }
+
+                    throw e;
                 } finally {
                     // clean up tmp dir with downloaded file
                     fs.remove(downloadBase);
