@@ -1,17 +1,21 @@
+.fullscreen-modal-gh-wn-modal {
+    max-width: 640px;
+}
+
 .gh-wn-header {
     position: relative;
     display: flex;
     align-items: center;
     margin: -32px -32px 0;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    padding: 18px 18px 12px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
     overflow: hidden;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
     background: var(--purple);
     background: linear-gradient(135deg, color-mod(var(--purple) h(-10) s(+5%) l(-10%)) 0%, rgba(173,38,180,1) 100%);
-    padding: 18px 32px 12px;
 }
 
 .gh-wn-header .background-img {
@@ -28,9 +32,13 @@
     margin: 0 8px 4px;
 }
 
+.gh-wn-header svg path {
+    fill: #fff;
+}
+
 .gh-wn-content {
-    margin: 0px -32px;
-    padding: 0px 32px;
+    margin: 0 -32px;
+    padding: 0;
     max-height: calc(100vh - 170px);
     overflow-y: scroll;
 }
@@ -46,8 +54,8 @@
 }
 
 .gh-wn-entry {
-    margin: 0 -32px;
-    padding: 0 32px;
+    margin: 0 0 3vw;
+    padding: 0 4vw 1vw;
     border-bottom: 1px solid var(--whitegrey);
 }
 
