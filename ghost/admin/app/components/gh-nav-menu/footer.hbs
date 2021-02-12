@@ -15,10 +15,11 @@
                     <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
                         <li role="presentation">
                             <div class="gh-account-menu-header">
-                                <span class="user-menu-signout" data-tooltip="Logout"><LinkTo @route="signout" @classNames="dropdown-item" @role="menuitem" @tabindex="-1">{{svg-jar "signout"}}</LinkTo></span>
                                 <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}></div>
-                                <h4 class="gh-user-name">{{this.session.user.name}}</h4>
-                                <span class="gh-user-email">{{this.session.user.email}}</span>
+                                <div class="gh-user-info">
+                                    <h4 class="gh-user-name">{{this.session.user.name}}</h4>
+                                    <span class="gh-user-email">{{this.session.user.email}}</span>
+                                </div>
                             </div>
                         </li>
                         <li class="divider" role="separator"></li>
@@ -38,12 +39,12 @@
                         <li class="divider" role="separator"></li>
                         <li role="presentation">
                             <LinkTo @route="staff.user" @model={{this.session.user.slug}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="user-profile">
-                                Your Profile
+                                Your profile
                             </LinkTo>
                         </li>
                         <li role="presentation">
                             <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
-                                Support Center
+                                Support center
                             </a>
                         </li>
                         <li role="presentation">
@@ -56,10 +57,9 @@
                         </li>
                         <li role="presentation">
                             <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help/topic/setting-up/" target="_blank">
-                                How to Use Ghost
+                                How to use Ghost
                             </a>
                         </li>
-                        {{!-- <li class="divider" role="separator"></li> --}}
 
                         {{#if this.showDropdownExtension}}
                             {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
@@ -68,18 +68,19 @@
                                 {{else}}
                                     <li role="presentation">
                                         <a href="{{menuItem.href}}" target="_blank" class="dropdown-item {{menuItem.classes}}" role="menuitem" tabindex="-1">
-                                            {{svg-jar menuItem.icon}} {{menuItem.text}}
+                                            {{menuItem.text}}
                                         </a>
                                     </li>
                                 {{/if}}
                             {{/each}}
                         {{/if}}
 
-                        {{!-- <li role="presentation">
+                        <li class="divider" role="separator"></li>
+                        <li role="presentation">
                             <LinkTo @route="signout" @classNames="dropdown-item user-menu-signout" @role="menuitem" @tabindex="-1">
-                                {{svg-jar "signout"}} Sign Out
+                                Sign out
                             </LinkTo>
-                        </li> --}}
+                        </li>
                     </ul>
                 </dropdown.Content>
             </GhBasicDropdown>
