@@ -29,6 +29,7 @@ const models = [
     'mobiledoc-revision',
     'member',
     'member-subscribe-event',
+    'member-paid-subscription-event',
     'member-login-event',
     'member-email-change-event',
     'member-payment-event',
