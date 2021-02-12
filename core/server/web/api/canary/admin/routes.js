@@ -142,6 +142,8 @@ module.exports = function apiRoutes() {
         http(apiCanary.themes.upload)
     );
 
+    router.post('/themes/install', mw.authAdminApi, http(apiCanary.themes.install));
+
     router.put('/themes/:name/activate',
         mw.authAdminApi,
         http(apiCanary.themes.activate)
