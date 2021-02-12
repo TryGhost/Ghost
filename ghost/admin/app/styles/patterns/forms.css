@@ -641,8 +641,8 @@ textarea {
 }
 
 .gh-input-group .gh-input:focus + .gh-input-append {
-    border-color: color-mod(var(--blue));
-    box-shadow: inset 0 0 0 1px var(--blue);
+    border-color: color-mod(var(--green));
+    box-shadow: inset 0 0 0 1px var(--green);
 }
 
 .gh-input-group .gh-input:focus + .gh-input-append,
