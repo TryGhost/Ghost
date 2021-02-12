@@ -303,6 +303,13 @@ p.gh-members-list-email {
     margin-top: var(--main-layout-section-vpadding);
 }
 
+@media  (min-width: 1200px) and (max-width: 1370px) {
+    .members-header .view-actions input.gh-members-list-searchfield {
+        max-width: 130px;
+        min-width: unset;
+    }
+}
+
 @media (max-width: 1100px) {
     .gh-members-chart-summary-data {
         font-size: 2.8rem;

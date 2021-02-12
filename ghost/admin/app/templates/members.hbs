@@ -1,63 +1,67 @@
 <section class="gh-canvas">
-    <GhCanvasHeader class="gh-canvas-header members-header">
+    <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
         <section class="view-actions">
-            <GhMembersFilter
-                @selectedLabel={{this.selectedLabel}}
-                @availableLabels={{this.availableLabels}}
-                @onLabelChange={{this.changeLabel}}
-                @onLabelAdd={{this.addLabel}}
-                @onLabelEdit={{this.editLabel}}
-                @selectedPaidParam={{this.selectedPaidParam}}
-                @availablePaidParams={{this.paidParams}}
-                @onPaidParamChange={{this.changePaidParam}}
-                @availableOrders={{this.availableOrders}}
-                @selectedOrder={{this.selectedOrder}}
-                @onOrderChange={{this.changeOrder}}
-            />
-            <div class="relative gh-members-header-search">
-                {{svg-jar "search" class="gh-input-search-icon"}}
-                <GhTextInput
-                    placeholder="Search members..."
-                    @value={{this.searchText}}
-                    @input={{this.search}}
-                    class="gh-members-list-searchfield {{if this.searchText "active"}}" />
+            <div class="view-actions-bottom-row">
+                <GhMembersFilter
+                    @selectedLabel={{this.selectedLabel}}
+                    @availableLabels={{this.availableLabels}}
+                    @onLabelChange={{this.changeLabel}}
+                    @onLabelAdd={{this.addLabel}}
+                    @onLabelEdit={{this.editLabel}}
+                    @selectedPaidParam={{this.selectedPaidParam}}
+                    @availablePaidParams={{this.paidParams}}
+                    @onPaidParamChange={{this.changePaidParam}}
+                    @availableOrders={{this.availableOrders}}
+                    @selectedOrder={{this.selectedOrder}}
+                    @onOrderChange={{this.changeOrder}}
+                />
+                <div class="relative gh-members-header-search">
+                    {{svg-jar "search" class="gh-input-search-icon"}}
+                    <GhTextInput
+                        placeholder="Search members..."
+                        @value={{this.searchText}}
+                        @input={{this.search}}
+                        class="gh-members-list-searchfield {{if this.searchText "active"}}" />
+                </div>
             </div>
 
-            <span class="dropdown">
-                <GhDropdownButton @dropdownName="members-actions-menu"
-                    @classNames="gh-btn gh-btn-icon only-has-icon gh-actions-cog" @title="Members Actions"
-                    @data-test-user-actions="true">
-                    <span>
-                        {{svg-jar "settings"}}
-                        <span class="hidden">Actions</span>
-                    </span>
-                </GhDropdownButton>
-                <GhDropdown @name="members-actions-menu" @tagName="ul"
-                    @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right">
-                    <li>
-                        <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
-                            <span>Import members</span>
-                        </LinkTo>
-                    </li>
-                    <li class="{{if this.members.length "" "disabled"}}">
-                        {{#if this.members.length}}
-                            <button class="mr2" {{on "click" this.exportData}}>
-                                {{#if this.showingAll}}
-                                    <span>Export all members</span>
-                                {{else}}
-                                <span>Export selected members ({{this.members.length}})</span>
-                                {{/if}}
-                            </button>
-                        {{else}}
-                            <button class="mr2" disabled="true">
-                                <span>Export selected members (0)</span>
-                            </button>
-                        {{/if}}
-                    </li>
-                </GhDropdown>
-            </span>
-            <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
+            <div class="view-actions-top-row">
+                <span class="dropdown">
+                    <GhDropdownButton @dropdownName="members-actions-menu"
+                        @classNames="gh-btn gh-btn-icon only-has-icon gh-actions-cog" @title="Members Actions"
+                        @data-test-user-actions="true">
+                        <span>
+                            {{svg-jar "settings"}}
+                            <span class="hidden">Actions</span>
+                        </span>
+                    </GhDropdownButton>
+                    <GhDropdown @name="members-actions-menu" @tagName="ul"
+                        @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right">
+                        <li>
+                            <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
+                                <span>Import members</span>
+                            </LinkTo>
+                        </li>
+                        <li class="{{if this.members.length "" "disabled"}}">
+                            {{#if this.members.length}}
+                                <button class="mr2" {{on "click" this.exportData}}>
+                                    {{#if this.showingAll}}
+                                        <span>Export all members</span>
+                                    {{else}}
+                                    <span>Export selected members ({{this.members.length}})</span>
+                                    {{/if}}
+                                </button>
+                            {{else}}
+                                <button class="mr2" disabled="true">
+                                    <span>Export selected members (0)</span>
+                                </button>
+                            {{/if}}
+                        </li>
+                    </GhDropdown>
+                </span>
+                <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
+            </div>
         </section>
     </GhCanvasHeader>
 

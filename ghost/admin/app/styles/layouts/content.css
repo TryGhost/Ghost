@@ -51,14 +51,15 @@
     font-weight: 400;
     color: var(--darkgrey);
     letter-spacing: 0.2px;
-    height: 33px;
-    padding: 5px 12px 6px;
+    height: 34px;
+    padding: 6px 12px 6px;
     margin-right: 8px;
     outline: none;
     border: none;
     border-radius: 2px !important;
     white-space: nowrap;
     transition: all 0.25s ease;
+    overflow: hidden;
 }
 
 .gh-contentfilter-menu-trigger:hover {
@@ -314,7 +315,7 @@
     .gh-posts-list-item {
         display: flex;
         flex-wrap: wrap;
-        border-bottom: 1px solid var(--lightgrey);
+        border-bottom: 1px solid var(--whitegrey);
         margin: 0;
     }
 
@@ -354,7 +355,7 @@
     .gh-post-list-opens {
         display: inline-block;
         border: none;
-        padding: 0 4px 20px 28px;
+        padding: 0 4px 20px 0;
         font-size: 1.3rem;
         max-width: 140px;
         white-space: nowrap;
@@ -413,32 +414,6 @@
 
     .gh-content-email-stats-mobile {
         display: inherit;
-    }
-
-    .post-header {
-        justify-content: flex-end;
-        min-height: 120px;
-    }
-
-    .post-header .gh-canvas-title {
-        position: absolute;
-        top: 29px;
-        left: 21px;
-    }
-
-    .post-header .view-actions {
-        flex-direction: column;
-        align-items: flex-end;
-        margin-top: 18px;
-        overflow-y: hidden;
-    }
-
-    .post-header .view-actions .gh-contentfilter {
-        order: 2;
-        margin: 10px 0 -20px;
-        padding: 6px 2px 26px 22px;
-        max-width: calc(100vw - 10px);
-        overflow-x: auto;
     }
 }
 
