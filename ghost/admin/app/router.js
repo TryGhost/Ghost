@@ -53,6 +53,7 @@ Router.map(function () {
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.theme', {path: '/settings/theme'}, function () {
         this.route('uploadtheme');
+        this.route('install');
     });
     this.route('settings.navigation', {path: '/settings/navigation'});
     this.route('settings.labs', {path: '/settings/labs'});

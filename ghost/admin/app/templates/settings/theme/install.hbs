@@ -1,0 +1,10 @@
+<GhFullscreenModal
+    @modal="install-theme"
+    @model={{hash
+        source=this.source
+        ref=this.ref
+        themes=@model
+    }}
+    @close={{this.close}}
+    @modifier="action wide"
+/>
