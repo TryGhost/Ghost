@@ -217,8 +217,8 @@
 
 .apps-configured a {
     display: inline-block;
-    padding: 0 4px;
-    border-radius: 4px;
+    padding: 2px 6px;
+    border-radius: 3px;
 }
 
 .apps-configured-action {
