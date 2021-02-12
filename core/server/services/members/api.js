@@ -170,6 +170,7 @@ function createApiInstance(config) {
             StripeCustomerSubscription: models.StripeCustomerSubscription,
             Member: models.Member,
             MemberSubscribeEvent: models.MemberSubscribeEvent,
+            MemberPaymentEvent: models.MemberPaymentEvent,
             MemberStatusEvent: models.MemberStatusEvent
         },
         logger: logging
