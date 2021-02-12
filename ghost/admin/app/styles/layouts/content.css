@@ -237,17 +237,17 @@
     justify-content: center;
     align-items: center;
     height: 19px;
-    padding: 0 4px;
+    padding: 0 9px;
 }
 
 .gh-content-status-published {
     color: var(--midgrey);
     background: var(--whitegrey);
     display: inline-block;
-    border-radius: 3px;
+    border-radius: 999px;
     text-transform: uppercase;
     font-size: 1.2rem;
-    padding: 0 3px;
+    padding: 0 9px;
     font-weight: 500;
 }
 

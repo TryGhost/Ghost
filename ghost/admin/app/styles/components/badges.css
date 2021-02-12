@@ -3,7 +3,7 @@
 
 .gh-badge {
     display: inline-block;
-    padding: 3px 4px;
+    padding: 3px 9px;
     color: var(--green-d2);
     font-size: 1.2rem;
     line-height: 1em;
@@ -14,7 +14,7 @@
     white-space: nowrap;
     user-select: none;
     background: color-mod(var(--green) a(20%));
-    border-radius: 3px;
+    border-radius: 999px;
     text-transform: uppercase;
 }
 
