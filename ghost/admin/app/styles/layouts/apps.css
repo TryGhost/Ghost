@@ -468,7 +468,7 @@
     width: 117px;
     margin: 0;
     border-radius: 3px;
-    border: 1px solid var(--whitegrey);
+    border: 1px solid var(--whitegrey-d1);
     background: var(--white);
     padding: 24px;
 }
