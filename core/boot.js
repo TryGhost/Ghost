@@ -46,6 +46,10 @@ const initExpressApps = async () => {
 
     const parentApp = require('./server/web/parent/app')();
 
+    // @TODO: fix this
+    const {events} = require('./server/lib/common');
+    events.emit('themes.ready');
+
     debug('End: initExpressApps');
     return parentApp;
 };
@@ -155,6 +159,7 @@ const bootGhost = async () => {
 
         // Announce Server Readiness
         logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
+        debug('boot announcing readiness');
         GhostServer.announceServerReadiness();
     } catch (error) {
         const errors = require('@tryghost/errors');
