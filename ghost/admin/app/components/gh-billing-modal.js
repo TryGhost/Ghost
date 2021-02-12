@@ -21,12 +21,6 @@ export default Component.extend({
         this._removeShortcuts();
     },
 
-    actions: {
-        closeModal() {
-            this.billing.closeBillingWindow();
-        }
-    },
-
     _setupShortcuts() {
         run(function () {
             document.activeElement.blur();
@@ -38,16 +32,11 @@ export default Component.extend({
             this.send('confirm');
         });
 
-        key('escape', 'modal', () => {
-            this.send('closeModal');
-        });
-
         key.setScope('modal');
     },
 
     _removeShortcuts() {
         key.unbind('enter', 'modal');
-        key.unbind('escape', 'modal');
         key.setScope(this._previousKeymasterScope);
     }
 });
