@@ -139,6 +139,7 @@ class GhostServer {
                     }, 5000);
                 }
 
+                debug('server announcing readiness');
                 return GhostServer.announceServerReadiness()
                     .finally(() => {
                         resolve(self);
@@ -328,6 +329,7 @@ module.exports.announceServerReadiness = function (error = null) {
         message.started = false;
         message.error = error;
     } else {
+        debug('emit: server.start');
         events.emit('server.start');
     }
 
