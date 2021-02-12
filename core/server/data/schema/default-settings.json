@@ -394,12 +394,6 @@
             "type": "string"
         }
     },
-    "labs": {
-        "labs": {
-            "defaultValue": "{}",
-            "type": "object"
-        }
-    },
     "slack": {
         "slack_url": {
             "defaultValue": "",
