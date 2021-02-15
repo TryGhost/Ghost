@@ -46,6 +46,7 @@ export const TESTING_EXPANDO_PROPERTY = '__mobiledoc_kit_editor';
 export const MOBILEDOC_VERSION = '0.3.1';
 export const BLANK_DOC = {
     version: MOBILEDOC_VERSION,
+    ghostVersion: '4.0',
     markups: [],
     atoms: [],
     cards: [],
@@ -737,6 +738,11 @@ export default Component.extend({
 
     postDidChange(editor) {
         let updatedMobiledoc = editor.serialize(MOBILEDOC_VERSION);
+
+        // mobiledoc-kit will not output any custom top-level properties so we
+        // need to add them back in here
+        updatedMobiledoc.ghostVersion = this._upstreamMobiledoc.ghostVersion || BLANK_DOC.ghostVersion;
+
         this._localMobiledoc = updatedMobiledoc;
 
         // trigger closure action
