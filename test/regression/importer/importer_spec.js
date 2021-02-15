@@ -1138,6 +1138,47 @@ describe('Integration: Importer', function () {
                 });
         });
 
+        it('import 1.0 Koenig post format', function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1',
+                mobiledoc: JSON.stringify({
+                    version: '0.3.1',
+                    markups: [],
+                    atoms: [],
+                    cards: [
+                        ['image', {
+                            src: 'source',
+                            cardWidth: 'wide'
+                        }],
+                        ['card-markdown', {
+                            markdown: '# Post Content'
+                        }]
+                    ],
+                    sections: [[10,0],[10,1]]
+                })
+            });
+
+            delete exportData.data.posts[0].html;
+
+            const options = Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal);
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(options)
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].data.map(model => model.toJSON(options));
+
+                    posts.length.should.eql(1);
+
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
+                    posts[0].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                });
+        });
+
         it('import 2.0 Koenig post format', function () {
             const exportData = exportedLatestBody().db[0];
 
@@ -1153,7 +1194,6 @@ describe('Integration: Importer', function () {
                             cardWidth: 'wide'
                         }],
                         ['markdown', {
-                            cardName: 'markdown',
                             markdown: '# Post Content'
                         }]
                     ],
@@ -1171,7 +1211,6 @@ describe('Integration: Importer', function () {
                     atoms: [],
                     cards: [
                         ['markdown', {
-                            cardName: 'markdown',
                             markdown: '## Post Content'
                         }],
                         ['image', {
@@ -1196,10 +1235,10 @@ describe('Integration: Importer', function () {
 
                     posts.length.should.eql(2);
 
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt></figure>');
 
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
                     posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
@@ -1478,7 +1517,7 @@ describe('1.0', function () {
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="markdown">markdown</h2>\n<!--kg-card-end: markdown-->');
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## markdown"}]],"sections":[[10,0]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## markdown"}]],"sections":[[10,0]]}');
                 });
         });
 
@@ -1522,7 +1561,6 @@ describe('1.0', function () {
                             src: 'source'
                         }],
                         ['markdown', {
-                            cardName: 'markdown',
                             markdown: '# Post Content'
                         }]
                     ],
@@ -1540,7 +1578,6 @@ describe('1.0', function () {
                     atoms: [],
                     cards: [
                         ['markdown', {
-                            cardName: 'markdown',
                             markdown: '## Post Content'
                         }],
                         ['image', {
@@ -1565,10 +1602,10 @@ describe('1.0', function () {
 
                     posts.length.should.eql(2);
 
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt></figure>');
 
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
                     posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
