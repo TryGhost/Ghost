@@ -280,6 +280,15 @@ export default class App extends React.Component {
         return {};
     }
 
+    /* Get the accent color from data attributes */
+    getColorOverride() {
+        const scriptTag = document.querySelector('script[data-ghost]');
+        if (scriptTag && scriptTag.dataset.accentColor) {
+            return scriptTag.dataset.accentColor;
+        }
+        return false;
+    }
+
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
         try {
@@ -287,6 +296,10 @@ export default class App extends React.Component {
             this.GhostApi = setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
             this.setupFirstPromoter({site, member});
+            const colorOverride = this.getColorOverride();
+            if (colorOverride) {
+                site.accent_color = colorOverride;
+            }
             return {site, member};
         } catch (e) {
             if (hasMode(['dev', 'test'])) {
