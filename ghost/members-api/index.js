@@ -9,6 +9,7 @@ const StripeWebhookService = require('./lib/services/stripe-webhook');
 const TokenService = require('./lib/services/token');
 const GeolocationSerice = require('./lib/services/geolocation');
 const MemberRepository = require('./lib/repositories/member');
+const EventRepository = require('./lib/repositories/event');
 const RouterController = require('./lib/controllers/router');
 
 module.exports = function MembersApi({
@@ -33,7 +34,13 @@ module.exports = function MembersApi({
         StripeWebhook,
         StripeCustomer,
         StripeCustomerSubscription,
-        Member
+        Member,
+        MemberSubscribeEvent,
+        MemberLoginEvent,
+        MemberPaidSubscriptionEvent,
+        MemberPaymentEvent,
+        MemberStatusEvent,
+        MemberEmailChangeEvent
     },
     logger
 }) {
@@ -62,14 +69,28 @@ module.exports = function MembersApi({
         stripePlansService,
         logger,
         Member,
+        MemberSubscribeEvent,
+        MemberPaidSubscriptionEvent,
+        MemberEmailChangeEvent,
+        MemberStatusEvent,
         StripeCustomer,
         StripeCustomerSubscription
+    });
+
+    const eventRepository = new EventRepository({
+        logger,
+        MemberSubscribeEvent,
+        MemberPaidSubscriptionEvent,
+        MemberPaymentEvent,
+        MemberStatusEvent,
+        MemberEmailChangeEvent
     });
 
     const stripeWebhookService = new StripeWebhookService({
         StripeWebhook,
         stripeAPIService,
         memberRepository,
+        eventRepository,
         sendEmailWithMagicLink
     });
 
@@ -184,6 +205,7 @@ module.exports = function MembersApi({
         const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
 
         if (member) {
+            await MemberLoginEvent.add({member_id: member.id});
             if (oldEmail) {
                 // user exists but wants to change their email address
                 if (oldEmail) {
@@ -195,7 +217,8 @@ module.exports = function MembersApi({
             return member;
         }
 
-        await users.create({name, email, labels});
+        const newMember = await users.create({name, email, labels});
+        await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
     }
 
@@ -319,6 +342,7 @@ module.exports = function MembersApi({
         sendEmailWithMagicLink,
         getMagicLink,
         hasActiveStripeSubscriptions,
-        members: users
+        members: users,
+        events: eventRepository
     };
 };
