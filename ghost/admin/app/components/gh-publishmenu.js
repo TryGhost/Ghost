@@ -218,7 +218,7 @@ export default Component.extend({
     }),
 
     countPaidMembersTask: task(function* () {
-        const result = yield this.store.query('member', {filter: 'subscribed:true+status:paid', limit: 1, page: 1});
+        const result = yield this.store.query('member', {filter: 'subscribed:true+status:-free', limit: 1, page: 1});
         const paidMemberCount = result.meta.pagination.total;
         const freeMemberCount = this.memberCount - paidMemberCount;
         this.set('paidMemberCount', paidMemberCount);
