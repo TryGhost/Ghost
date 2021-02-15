@@ -13,6 +13,7 @@ module.exports = {
     get blankDocument() {
         return {
             version: '0.3.1',
+            ghostVersion: '4.0',
             markups: [],
             atoms: [],
             cards: [],
