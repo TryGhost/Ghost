@@ -1174,7 +1174,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-email-design-typography .gh-radio-content {
     border: 1px solid var(--whitegrey);
-    border-radius: 4px;
+    border-radius: 3px;
     margin: 0 -32px 0 0;
 }
 
@@ -1286,7 +1286,10 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailpreview-container {
     background: #fff;
-    border-radius: 12px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
     padding: 0;
     margin: 32px auto;
     box-shadow: 
@@ -1320,8 +1323,8 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 0 24px;
     border-bottom: 1px solid var(--whitegrey);
     background: var(--white);
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
 .gh-members-emailpreview-faux p {

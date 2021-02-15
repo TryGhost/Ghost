@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    border-radius: 8px !important;
+    border-radius: 3px !important;
     box-shadow:
         0 0 0 1px rgba(0,0,0,0.02),
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
@@ -20,14 +20,14 @@
 }
 
 .gh-browserpreview-iframecontainer .site-frame {
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 
 .gh-browserpreview-browser {
-    background: color-mod(var(--main-bg-color) l(-3%) s(+8%));
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    background: var(--whitegrey-d1);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
 .gh-browserpreview-browser .tabs {
@@ -66,7 +66,7 @@
     display: flex;
     align-items: center;
     font-size: 1.25rem;
-    background: color-mod(var(--white) a(0.9));
+    background: var(--whitegrey-l1);
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
 }

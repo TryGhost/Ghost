@@ -95,7 +95,6 @@ export default Controller.extend({
 
     /* public properties -----------------------------------------------------*/
 
-    infoMessage: null,
     leaveEditorTransition: null,
     shouldFocusEditor: false,
     showDeletePostModal: false,
@@ -751,7 +750,6 @@ export default Controller.extend({
         this.set('leaveEditorTransition', null);
         this.set('showLeaveEditorModal', false);
         this.set('showPostPreviewModal', false);
-        this.set('infoMessage', null);
         this.set('wordCount', null);
 
         // remove the onbeforeunload handler as it's only relevant whilst on

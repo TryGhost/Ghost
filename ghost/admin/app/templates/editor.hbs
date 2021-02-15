@@ -4,10 +4,10 @@
         @class="gh-editor gh-view"
         as |editor|
     >
-        <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if this.infoMessage "bg-white"}}">
+        <header class="gh-editor-header br2 pe-none {{editor.headerClass}}">
             <div class="flex items-center pe-auto">
                 {{#if this.ui.isFullScreen}}
-                    <div class="ml3 flex items-center {{unless this.infoMessage "bg-white"}}">
+                    <div class="ml3 flex items-center">
                         <LinkTo @route={{pluralize this.post.displayName }} @classNames="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
                             <span>
                                 {{svg-jar "arrow-left"}}
@@ -16,7 +16,7 @@
                         </LinkTo>
                     </div>
                 {{/if}}
-                <div class="gh-editor-post-status {{unless this.infoMessage "bg-white"}}">
+                <div class="gh-editor-post-status">
                     <span>
                         <GhEditorPostStatus
                             @post={{this.post}}
@@ -26,19 +26,7 @@
                 </div>
             </div>
 
-            {{#if this.infoMessage}}
-            <div class="gh-koenig-info miw88 flex flex-auto justify-center" style="pointer-events: auto">
-                <div class="midgrey inline-flex tracked-1 center pa1 pl4 pr4 br3 justify-center items-start {{if (eq editor.headerClass "gh-editor-header-small") "bg-white"}}">
-                    {{svg-jar "idea" class="w7 h7 fill-blue"}}
-                    <p class="ma0 pa0 ml1 nudge-top--2">
-                        {{this.infoMessage}}
-                        <button type="button" class="blue fw5" {{action (mut this.infoMessage "")}}>Got it</button>
-                    </p>
-                </div>
-            </div>
-            {{/if}}
-
-            <section class="flex {{unless this.infoMessage "bg-white"}}" style="pointer-events: auto">
+            <section class="flex" style="pointer-events: auto">
                 {{#unless this.post.isNew}}
                     {{#if this.post.isDraft}}
                         <div>

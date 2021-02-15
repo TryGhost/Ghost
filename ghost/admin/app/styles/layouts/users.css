@@ -71,7 +71,6 @@
     background-position: center center;
     background-size: cover;
     border-radius: 100%;
-    box-shadow: var(--white) 0 0 0 3px;
 }
 
 .user-list-item-figure img {
