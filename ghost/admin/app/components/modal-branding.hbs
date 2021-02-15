@@ -2,8 +2,28 @@
     <div class="gh-branding-settings-header">
         <h4>Branding</h4>
         <div class="gh-branding-settings-actions">
-            <a class="gh-btn gh-btn-primary" href="" role="button" title="Close" {{action "closeModal"}}><span>Save and close</span></a>
+             <button
+                        class="gh-btn mr3"
+                        {{action "closeModal"}}
+                        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+                        {{on "mousedown" (optional this.noop)}}
+                        data-test-button="cancel-custom-view-form"
+                    >
+                        <span>Cancel</span>
+                    </button>
+            <GhTaskButton
+                        @buttonText="Save and close"
+                        @successText="Saved"
+                        @task={{this.saveTask}}
+                        @idleClass="gh-btn-primary"
+                        @class="gh-btn gh-btn-icon"
+                        data-test-button="save-members-modal-setting"
+                    />
         </div>
+
+
+
+
     </div>
     <div class="gh-branding-settings">
         <section class="gh-branding-settings-options">
@@ -164,8 +184,12 @@
         </section>
 
         <section class="gh-branding-settings-right">
-            <GhBrowserPreview class="gh-branding-settings-previewcontainer" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
-                <GhSiteIframe class="gh-branding-settings-preview" @guid={{this.previewGuid}}></GhSiteIframe>
+            <GhBrowserPreview class="gh-branding-settings-previewcontainer" @icon={{this.icon}} @title={{this.config.blogTitle}}>
+                <GhSiteIframe
+                    class="gh-branding-settings-preview"
+                    @src={{this.themePreviewUrl}}
+                    @guid={{this.previewGuid}}
+                ></GhSiteIframe>
             </GhBrowserPreview>
         </section>
     </div>
