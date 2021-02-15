@@ -72,22 +72,22 @@
 :root {
     /* Primary colours */
     --black: #fafafb;
-    --white: #15171A;
+    --white: #111213;
     --lime: #B5FF18;
 
-    --darkgrey: #e5eff5;
-    --middarkgrey: #ABB4BE;
-    --midgrey: #738296;
-    --midlightgrey:#626D79;
-    --lightgrey: #292f38;
-    --whitegrey: #222730;
+    --darkgrey: #e8ebed;
+    --middarkgrey: #aeb5bc;
+    --midgrey: #80868e;
+    --midlightgrey:#60666c;
+    --lightgrey: #2b2d31;
+    --whitegrey: #1c1e21;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
 
-    --dark-main-bg-color: #15171A;
-    --hairline-color-1: #292f38;
+    --dark-main-bg-color: #151719;
+    --hairline-color-1: #272a30;
     --hairline-color-2: #626D79;
 
-    --main-color-content-greybg: color-mod(var(--whitegrey-d1) l(+0%) s(+5%));
+    --main-color-content-greybg: var(--whitegrey);
     --list-color-divider: var(--whitegrey-l1);
 }
 
@@ -131,6 +131,11 @@ input:focus,
     border-color: color-mod(var(--lightgrey) l(+10%));
 }
 
+.for-checkbox input:checked + .input-toggle-component {
+    border-color: var(--green);
+    background: var(--green);
+}
+
 .gh-input-append {
     border-color: color-mod(var(--lightgrey));
 }
@@ -144,12 +149,16 @@ input:focus,
     background: color-mod(var(--lightgrey));
 }
 
+.gh-input-icon.gh-icon-link svg path {
+    stroke: var(--darkgrey);
+}
+
 .gh-main-white {
     background: var(--white);
 }
 
 .settings-menu-container {
-    background: #1c1f23;
+    background: var(--main-color-content-greybg);
 }
 
 @media (max-width: 800px) {
@@ -222,16 +231,23 @@ input:focus,
     text-shadow: none;
 }
 
-.gh-btn-primary {
+.gh-btn-primary,
+.gh-btn-black {
     color: var(--white);
 }
 
+.gh-btn-black:hover,
 .gh-btn-primary:hover {
     background: var(--black) !important;
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary) {
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black) {
     background: var(--lightgrey);
+    color: var(--black);
+}
+
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):hover {
+    background: var(--lightgrey-d1);
     color: var(--black);
 }
 
@@ -253,6 +269,10 @@ input:focus,
 
 .gh-btn-white {
     background: var(--transparent);
+}
+
+.gh-btn-outline:hover {
+    border-color: var(--lightgrey-l2);
 }
 
 .gh-btn-link {
@@ -325,6 +345,10 @@ input:focus,
     background: var(--lightgrey);
 }
 
+.nav-list-item:hover {
+    background: var(--lightgrey-l1);
+}
+
 .gh-select select {
     color: var(--darkgrey);
     background: var(--lightgrey);
@@ -340,7 +364,7 @@ input:focus,
 }
 
 .gh-publishmenu-dropdown {
-    background: #191b1f;
+    background: var(--whitegrey);
 }
 
 .gh-image-uploader {
@@ -356,7 +380,7 @@ input:focus,
 }
 
 .dropdown-menu {
-    background: var(--lightgrey);
+    background: var(--whitegrey-l1);
 }
 
 .dropdown-menu li > a, .dropdown-menu li > button {
@@ -386,7 +410,7 @@ input:focus,
 }
 
 .modal-content {
-    background: #191b1f;
+    background: var(--whitegrey);
 }
 
 .seo-preview-title {
@@ -468,10 +492,6 @@ input:focus,
     background: var(--lightgrey);
 }
 
-.settings-menu-content .CodeMirror {
-    background: var(--extra-darkgrey);
-}
-
 .settings-menu-expanded .content-cover,
 .mobile-menu-expanded .content-cover {
     background: transparent;
@@ -487,15 +507,29 @@ input:focus,
     background: var(--dark-main-bg-color);
 }
 
+.td-item-overlay:hover,
+.td-item-overlay:focus {
+    background-color: var(--black-90);
+}
+
 .td-cta-box {
     background: #191b1f;
+}
+
+.td-item-empty {
+    background: var(--whitegrey-l1);
 }
 
 .settings-code-editor .CodeMirror-gutters,
 .settings-code code,
 .form-group code {
-    background-color: var(--extra-darkgrey);
-    border-right: 1px solid var(--lightgrey);
+    background-color: var(--whitegrey);
+    border-right: 1px solid var(--hairline-color-1);
+}
+
+.gh-main-section-description code {
+    background-color: var(--whitegrey);
+    border: 1px solid var(--lightgrey);
 }
 
 .for-switch input:checked+.input-toggle-component {
@@ -503,11 +537,23 @@ input:focus,
 }
 
 .settings-code-editor .CodeMirror {
-    color: var(--darkgrey);
+    color: var(--black);
 }
 
 .settings-code-editor .CodeMirror-cursor {
     border-color: var(--midgrey);
+}
+
+.gh-branding-settings-right {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-branding-settings-header {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-branding-settings-options {
+    border-right: 1px solid var(--hairline-color-1);
 }
 
 .gh-branding-image-container.transparent-bg {
@@ -543,7 +589,7 @@ input:focus,
 }
 
 .gh-nav-list a {
-    color: color-mod(var(--midgrey) l(+10%) s(-5%));
+    color: color-mod(var(--midgrey));
 }
 
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
@@ -559,11 +605,19 @@ input:focus,
 }
 
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
-    background: #171b1f;
+    background: var(--whitegrey-l2);
 }
 
 .gh-nav-btn-search:hover {
     background: var(--lightgrey);
+}
+
+.apps-grid-cell:hover {
+    background: var(--whitegrey);
+}
+
+.apps-card-app {
+    border-bottom: var(--hairline-color-1) 1px solid;
 }
 
 .apps-card-app-icon {
@@ -587,11 +641,15 @@ input:focus,
 .gh-list-row:not(.header):not(.loading):hover .gh-list-data,
 .settings-tag .tag-edit-button.active,
 .gh-portal-site-frame-cover {
-    background: color-mod(var(--dark-main-bg-color) l(-2%));
+    background: var(--whitegrey);
 }
 
 .gh-browserpreview-browser {
-    background: color-mod(var(--dark-main-bg-color) l(-6%));
+    background: var(--whitegrey);
+}
+
+.gh-browserpreview-browser .tabs div  {
+    background: var(--lightgrey);
 }
 
 .tag-settings .gh-image-uploader {
@@ -619,7 +677,7 @@ input:focus,
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
-    background-color: var(--extra-darkgrey);
+    background-color: var(--whitegrey);
     border-right: 1px solid var(--lightgrey);
 }
 
@@ -628,6 +686,50 @@ input:focus,
     border-color: var(--blue) !important;
 }
 
+/* Editor  */
+.gh-editor-back-button {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-editor-post-status {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-editor-preview-trigger {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-btn-editor {
+    background: var(--dark-main-bg-color) !important;
+}
+
+.gh-publishmenu-button {
+    color: var(--black);
+    background: var(--green-d1);
+}
+
+.gh-publishmenu-button:hover {
+    color: #fff;
+    background: var(--green) !important;
+}
+
+.settings-menu-delete-button {
+    background: var(--main-color-content-greybg) !important;
+}
+
+/* Post preview modal */
+.gh-post-preview-header,
+.gh-post-preview-browser-footer {
+    background: var(--main-color-content-greybg);
+}
+
+.gh-post-preview-header-border {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-post-preview-browser-footer {
+    border-top: 1px solid var(--hairline-color-1);
+}
 
 /* Dark style Lists */
 .gh-list {
@@ -636,8 +738,7 @@ input:focus,
 
 .gh-list-header,
 .gh-list-row:not(.header):hover .gh-list-cell,
-.gh-list-row:not(.header):hover .gh-list-data,
-.apps-grid-cell:hover {
+.gh-list-row:not(.header):hover .gh-list-data {
     background: var(--dark-main-bg-color);
 }
 
@@ -671,16 +772,35 @@ input:focus,
 
 .modal-fullsettings-preview-container,
 .fullscreen-modal-email-preview .gh-pe-mobile-container,
-.fullscreen-modal-email-preview .gh-pe-desktop-container {
+.fullscreen-modal-email-preview .gh-pe-desktop-container{
     background: var(--dark-main-bg-color);
 }
 
+.gh-post-preview-browser-container,
+.gh-post-preview-email-container,
+.gh-post-preview-social-container {
+    background: var(--dark-main-bg-color);
+}
+
+.modal-fullsettings-main {
+    border-left: 1px solid var(--hairline-color-1);
+}
+
 .gh-pe-mobile-bezel {
-    background: #2b373e;
+    background: var(--lightgrey-l2);
 }
 
 .gh-members-emailsettings-footer-input {
     background: color-mod(var(--lightgrey));
+}
+
+.gh-email-design-typography .gh-radio-content {
+    border: 1px solid var(--hairline-color-1);
+}
+
+.gh-members-connect-testmodelabel {
+    background: #983705;
+    color: #f8e5b9;
 }
 
 /* Portal */
@@ -696,4 +816,40 @@ input:focus,
 
 .gh-portal-settings-maintabs li:not(:last-of-type) {
     border-right: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
+}
+
+.gh-portal-settings-main {
+    border-left: 1px solid var(--hairline-color-1);
+}
+
+.gh-portal-setting-sectionheading {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-portal-links-container {
+    background: var(--main-color-content-greybg)
+}
+
+/* Launch-site wizard */
+.fullscreen-wizard-container {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-launch-wizard-content {
+    background: var(--dark-main-bg-color);
+    border-top: 1px solid var(--hairline-color-1);
+}
+
+.gh-launch-wizard-btn {
+    color: var(--black);
+    background: var(--green-d1);
+}
+
+.gh-launch-wizard-btn:hover {
+    color: #fff;
+    background: var(--green) !important;
+}
+
+.gh-launch-wizard-btn svg {
+    fill: var(--black);
 }

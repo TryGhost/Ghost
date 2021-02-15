@@ -186,8 +186,8 @@
 .gh-post-preview-social-container {
     position: relative;
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
+    flex-wrap: wrap;
     width: 100%;
     height: 100%;
     overflow-y: scroll;
@@ -201,8 +201,8 @@
 .gh-post-preview-social-container:after {
     content: "";
     display: block;
-    height: 2.4rem;
     width: 100%;
+    height: 2.4rem;
   }
 
 @media (max-width: 1120px) {
@@ -467,7 +467,7 @@
     width: 100%;
     height: 28px;
     margin-bottom: 48px;
-    background: var(--whitegrey-l1);
+    background: #f4f5f6;
     border-radius: 14px;
 }
 
