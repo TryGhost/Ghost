@@ -20,15 +20,26 @@ export default ModalComponent.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+    ajax: service(),
 
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
     iconExtensions: null,
     iconMimeTypes: 'image/png,image/x-icon',
 
-    dirtyAttributes: false,
-
     previewGuid: (new Date()).valueOf(),
+
+    frontendUrl: computed('config.blogUrl', function () {
+        return `${this.get('config.blogUrl')}`;
+    }),
+
+    themePreviewUrl: computed(function () {
+        let origin = window.location.origin;
+        let subdir = this.ghostPaths.subdir;
+        let url = this.ghostPaths.url.join(origin, subdir);
+
+        return url.replace(/\/$/, '/ghost/preview/');
+    }),
 
     accentColorPickerValue: computed('settings.accentColor', function () {
         return this.get('settings.accentColor') || '#ffffff';
@@ -46,10 +57,23 @@ export default ModalComponent.extend({
         return htmlSafe(`background-color: ${this.accentColorPickerValue}`);
     }),
 
+    getPreviewData: computed('settings.{accentColor,icon,logo,coverImage}', function () {
+        let string = `c=${encodeURIComponent(this.get('settings.accentColor'))}&icon=${encodeURIComponent(this.get('settings.icon'))}&logo=${encodeURIComponent(this.get('settings.logo'))}&cover=${encodeURIComponent(this.get('settings.coverImage'))}`;
+
+        return string;
+    }),
+
     init() {
         this._super(...arguments);
         this.iconExtensions = ICON_EXTENSIONS;
-        this.refreshPreview();
+    },
+
+    didInsertElement() {
+        window.addEventListener('message', (event) => {
+            if (event && event.data && event.data === 'loaded') {
+                this.replacePreview();
+            }
+        });
     },
 
     actions: {
@@ -92,7 +116,6 @@ export default ModalComponent.extend({
 
             // roll back changes on settings props
             settings.rollbackAttributes();
-            this.set('dirtyAttributes', false);
 
             return transition.retry();
         },
@@ -102,7 +125,6 @@ export default ModalComponent.extend({
         async removeImage(image) {
             // setting `null` here will error as the server treats it as "null"
             this.settings.set(image, '');
-            await this.save.perform();
             this.refreshPreview();
         },
 
@@ -130,7 +152,6 @@ export default ModalComponent.extend({
         async imageUploaded(property, results) {
             if (results[0]) {
                 let result = this.settings.set(property, results[0].url);
-                await this.save.perform();
                 this.refreshPreview();
                 return result;
             }
@@ -141,18 +162,48 @@ export default ModalComponent.extend({
         }
     },
 
+    replacePreview() {
+        const ghostFrontendUrl = this.frontendUrl;
+
+        const options = {
+            contentType: 'text/html;charset=utf-8',
+            // ember-ajax will try and parse the response as JSON if not explicitly set
+            dataType: 'text',
+            headers: {
+                'x-ghost-preview': this.getPreviewData
+            }
+        };
+
+        this.ajax
+            .post(ghostFrontendUrl, options)
+            .then((response) => {
+                this.getPreviewIframe().contentWindow.postMessage(response, '*');
+            })
+            .catch(() => {
+                this.notifications.showAlert('Sorry, there was an error with preview. Please let the Ghost team know what happened.', {type: 'error'});
+            });
+    },
+
+    refreshPreview() {
+        // this.set('previewGuid',(new Date()).valueOf());
+        // REset the src and trigger a reload
+        this.getPreviewIframe().src = this.themePreviewUrl;
+    },
+    getPreviewIframe() {
+        return document.getElementById('site-frame');
+    },
+
     debounceUpdateAccentColor: task(function* (event) {
         yield timeout(500);
         this._updateAccentColor(event);
     }).restartable(),
 
-    save: task(function* () {
+    saveTask: task(function* () {
         let notifications = this.notifications;
         let validationPromises = [];
 
         try {
             yield RSVP.all(validationPromises);
-            this.set('dirtyAttributes', false);
             return yield this.settings.save();
         } catch (error) {
             if (error) {
@@ -177,7 +228,6 @@ export default ModalComponent.extend({
 
             // clear out the accent color
             this.settings.set('accentColor', '');
-            await this.save.perform();
             this.refreshPreview();
             return;
         }
@@ -197,16 +247,12 @@ export default ModalComponent.extend({
             }
 
             this.set('settings.accentColor', newColor);
-            await this.save.perform();
             this.refreshPreview();
         } else {
             this.get('settings.errors').add('accentColor', 'The colour should be in valid hex format');
             this.get('settings.hasValidated').pushObject('accentColor');
             return;
         }
-    },
-
-    refreshPreview() {
-        this.set('previewGuid',(new Date()).valueOf());
     }
+
 });
