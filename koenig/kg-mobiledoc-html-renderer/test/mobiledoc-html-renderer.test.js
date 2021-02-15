@@ -27,12 +27,14 @@ describe('Mobiledoc HTML renderer', function () {
         let renderer = new Renderer({cards: [testCard]});
         let result = JSON.parse(renderer.render(mobiledoc));
 
+        result.ghostVersion.should.equal('4.0');
         result.target.should.equal('html');
     });
 
     it('allows card option override', function () {
         let mobiledoc = {
             version: '0.3.1',
+            ghostVersion: 'x.x',
             markups: [],
             atoms: [],
             cards: [['test']],
@@ -52,6 +54,7 @@ describe('Mobiledoc HTML renderer', function () {
         let renderer = new Renderer({cards: [testCard]});
         let result = JSON.parse(renderer.render(mobiledoc, {target: 'email'}));
 
+        result.ghostVersion.should.equal('x.x');
         result.target.should.equal('email');
     });
 

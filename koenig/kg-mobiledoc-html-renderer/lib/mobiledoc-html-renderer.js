@@ -27,8 +27,9 @@ const nodeTextContent = function (node) {
 // serializing to HTML. Saves having a large HTML parsing dependency such as
 // jsdom that may break on malformed HTML in MD or HTML cards
 class DomModifier {
-    constructor() {
+    constructor(options) {
         this.usedIds = [];
+        this.options = options;
     }
 
     addHeadingId(node) {
@@ -77,7 +78,9 @@ class MobiledocHtmlRenderer {
     }
 
     render(mobiledoc, _cardOptions = {}) {
+        const ghostVersion = mobiledoc.ghostVersion || '4.0';
         const defaultCardOptions = {
+            ghostVersion,
             target: 'html'
         };
         const cardOptions = Object.assign({}, defaultCardOptions, _cardOptions);
@@ -97,7 +100,7 @@ class MobiledocHtmlRenderer {
 
         // Walk the DOM output and modify nodes as needed
         // eg. to add ID attributes to heading elements
-        const modifier = new DomModifier();
+        const modifier = new DomModifier({ghostVersion});
         modifier.modifyChildren(rendered.result);
 
         const output = serializer.serializeChildren(rendered.result);
