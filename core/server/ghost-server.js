@@ -183,14 +183,12 @@ class GhostServer {
      * @returns {Promise} Resolves once Ghost has stopped
      */
     async stop() {
-        // If we never fully started, there's nothing to stop
-        if (this.httpServer === null) {
-            return;
-        }
-
         try {
-            // We stop the server first so that no new long running requests or processes can be started
-            await this._stopServer();
+            // If we never fully started, there's nothing to stop
+            if (this.httpServer && this.httpServer.listening) {
+                // We stop the server first so that no new long running requests or processes can be started
+                await this._stopServer();
+            }
             // Do all of the cleanup tasks
             await this._cleanup();
         } finally {
@@ -234,7 +232,14 @@ class GhostServer {
      */
     async _stopServer() {
         return new Promise((resolve, reject) => {
-            this.httpServer.stop((err, status) => (err ? reject(err) : resolve(status)));
+            this.httpServer
+                .stop((error, status) => {
+                    if (error) {
+                        return reject(error);
+                    }
+
+                    return resolve(status);
+                });
         });
     }
 
