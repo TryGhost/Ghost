@@ -113,7 +113,7 @@ const exportedLegacyBody = () => {
 };
 
 // Tests in here do an import for each test
-describe('Integration: Importer', function () {
+describe.only('Integration: Importer', function () {
     before(testUtils.teardownDb);
 
     beforeEach(function () {
@@ -909,6 +909,24 @@ describe('Integration: Importer', function () {
 
                     posts[0].tags.length.should.eql(1);
                     tags[0].slug.should.eql('tag-1');
+                });
+        });
+
+        it('does not import settings: labs', function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'labs',
+                value: JSON.stringify({members: true})
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (imported) {
+                    imported.problems.length.should.eql(0);
+                    return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    should.equal(result, null);
                 });
         });
 
