@@ -11,7 +11,7 @@ const MemberPaymentEvent = ghostBookshelf.Model.extend({
             const knex = ghostBookshelf.knex;
             return qb.clear('select')
                 .select(knex.raw('DATE(created_at) as date'))
-                .select(knex.raw('SUM(amount) as gross_volume'))
+                .select(knex.raw('SUM(amount) as volume_delta'))
                 .select('currency')
                 .groupByRaw('currency, DATE(created_at)')
                 .orderByRaw('DATE(created_at)');
