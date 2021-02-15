@@ -8,6 +8,7 @@ const membersService = require('../../services/members');
 
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
+const _ = require('lodash');
 
 const allowedIncludes = ['email_recipients'];
 
@@ -382,6 +383,97 @@ module.exports = {
             const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);
 
             return await membersService.stats.fetch(days);
+        }
+    },
+
+    memberStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const memberStats = await membersService.api.events.getStatuses();
+            let totalMembers = _.last(memberStats) ? (_.last(memberStats).paid + _.last(memberStats).free + _.last(memberStats).comped) : 0;
+
+            return {
+                resource: 'members',
+                total: totalMembers,
+                data: memberStats.map((d) => {
+                    const {paid, free, comped} = d;
+                    return {
+                        date: moment(d.date).format('YYYY-MM-DD'),
+                        paid, free, comped
+                    };
+                }),
+                unit: 'day'
+            };
+        }
+    },
+
+    mrrStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const mrrData = await membersService.api.events.getMRR();
+            const mrrStats = Object.keys(mrrData).map((curr) => {
+                return {
+                    resource: 'mrr',
+                    currency: curr,
+                    data: mrrData[curr].map((d) => {
+                        return Object.assign({}, {
+                            date: moment(d.date).format('YYYY-MM-DD'),
+                            value: d.mrr
+                        });
+                    }),
+                    unit: 'day'
+                };
+            });
+            return mrrStats;
+        }
+    },
+    subscriberStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const statsData = await membersService.api.events.getSubscriptions();
+            const totalSubscriptions = (_.last(statsData) && _.last(statsData).subscribed) || 0;
+            statsData.forEach((d) => {
+                d.date = moment(d.date).format('YYYY-MM-DD');
+            });
+            return {
+                resource: 'subscribers',
+                total: totalSubscriptions,
+                data: statsData.map((d) => {
+                    return Object.assign({}, {
+                        date: moment(d.date).format('YYYY-MM-DD'),
+                        value: d.subscribed
+                    });
+                }),
+                unit: 'day'
+            };
+        }
+    },
+    grossVolumeStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const volumeData = await membersService.api.events.getVolume();
+            const volumeStats = Object.keys(volumeData).map((curr) => {
+                return {
+                    resource: 'gross-volumne',
+                    currency: curr,
+                    data: volumeData[curr].map((d) => {
+                        return Object.assign({}, {
+                            date: moment(d.date).format('YYYY-MM-DD'),
+                            value: d.volume
+                        });
+                    }),
+                    unit: 'day'
+                };
+            });
+            return volumeStats;
         }
     }
 };
