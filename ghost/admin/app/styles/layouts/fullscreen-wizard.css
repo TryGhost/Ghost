@@ -18,6 +18,12 @@
     text-transform: uppercase;
 }
 
+.gh-launch-wizard-content {
+    display: flex;
+    background: var(--white);
+    border-top: 1px solid var(--whitegrey);
+}
+
 .gh-launch-wizard-content-left {
     flex-grow: 0;
     flex-shrink: 0;

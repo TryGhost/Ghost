@@ -378,7 +378,7 @@ textarea {
     left: 3px;
     width: 9px;
     height: 9px;
-    background: #fff;
+    background: var(--white);
     border-radius: 100%;
     box-shadow: rgba(0,0,0,0.25) 0 1px 3px;
 }

@@ -441,6 +441,7 @@
     font-weight: 400;
     color: var(--midgrey-l2);
     letter-spacing: .2px;
+    background: var(--white)
 }
 
 .gh-editor-preview-trigger {

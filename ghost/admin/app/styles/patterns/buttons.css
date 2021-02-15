@@ -173,7 +173,7 @@ fieldset[disabled] .gh-btn {
 .gh-btn-outline:hover {
     color: var(--black);
     background: none;
-    border-color: color-mod(var(--lightgrey-l1) l(-8%));
+    border-color: var(--lightgrey);
 }
 
 .gh-btn-outline svg {

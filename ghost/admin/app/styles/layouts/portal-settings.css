@@ -397,6 +397,8 @@
     position: absolute;
     top: 16px;
     right: 24px;
+    display: flex;
+    align-items: center;
 }
 
 .gh-portal-preview-wrapper {
