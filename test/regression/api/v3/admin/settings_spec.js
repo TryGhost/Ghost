@@ -270,6 +270,21 @@ describe('Settings API (v3)', function () {
                 });
         });
 
+        it('Can\'t read labs dropped in v4', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/labs/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
         it('Can read deprecated default_locale', function (done) {
             request.get(localUtils.API.getApiQuery('settings/default_locale/'))
                 .set('Origin', config.get('url'))
@@ -429,6 +444,33 @@ describe('Settings API (v3)', function () {
 
                     testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('slack');
+                    done();
+                });
+        });
+
+        it('Can\'t edit labs dropped in v4', function (done) {
+            const settingToChange = {
+                settings: [{key: 'labs', value: JSON.stringify({members: false})}]
+            };
+
+            request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(0);
+
                     done();
                 });
         });
