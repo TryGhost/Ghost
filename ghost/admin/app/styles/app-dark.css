@@ -297,6 +297,10 @@ input:focus,
     background: var(--lightgrey-l1);
 }
 
+.gh-main-section-header {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
 .gh-btn-tabs .gh-btn {
     background: transparent !important;
 }
