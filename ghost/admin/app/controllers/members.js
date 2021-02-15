@@ -165,7 +165,7 @@ export default class MembersController extends Controller {
         let filters = [];
         if (this.paidParam !== null) {
             if (this.paidParam === 'true') {
-                filters.push('status:paid');
+                filters.push('status:-free');
             } else {
                 filters.push('status:free');
             }
@@ -292,7 +292,7 @@ export default class MembersController extends Controller {
             }
             if (paidParam !== null) {
                 if (paidParam === 'true') {
-                    filters.push('status:paid');
+                    filters.push('status:-free');
                 } else {
                     filters.push('status:free');
                 }
@@ -329,7 +329,7 @@ export default class MembersController extends Controller {
         }
         if (paidParam !== null) {
             if (paidParam === 'true') {
-                filters.push('status:paid');
+                filters.push('status:-free');
             } else {
                 filters.push('status:free');
             }
