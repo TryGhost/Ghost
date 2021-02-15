@@ -5,7 +5,8 @@ const settingsCache = require('../../../../../services/settings/cache');
 
 const DEPRECATED_SETTINGS = [
     'bulk_email_settings',
-    'slack'
+    'slack',
+    'labs'
 ];
 
 const deprecatedSupportedSettingsOneToManyMap = {
