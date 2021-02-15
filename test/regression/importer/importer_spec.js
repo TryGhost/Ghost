@@ -1437,10 +1437,10 @@ describe('1.0', function () {
 
                     posts.length.should.eql(2);
                     should(posts[0].html).eql(null);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
 
                     should(posts[1].html).eql(null);
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
 
@@ -1466,7 +1466,7 @@ describe('1.0', function () {
 
                     posts.length.should.eql(1);
                     should(posts[0].html).eql(null);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
 
@@ -1492,7 +1492,7 @@ describe('1.0', function () {
 
                     posts.length.should.eql(1);
                     should(posts[0].html).eql(null);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
 
