@@ -6,17 +6,20 @@ module.exports = class StripeWebhookService {
      * @param {any} deps.StripeWebhook
      * @param {import('../stripe-api')} deps.stripeAPIService
      * @param {import('../../repositories/member')} deps.memberRepository
+     * @param {import('../../repositories/event')} deps.eventRepository
      * @param {any} deps.sendEmailWithMagicLink
      */
     constructor({
         StripeWebhook,
         stripeAPIService,
         memberRepository,
+        eventRepository,
         sendEmailWithMagicLink
     }) {
         this._StripeWebhook = StripeWebhook;
         this._stripeAPIService = stripeAPIService;
         this._memberRepository = memberRepository;
+        this._eventRepository = eventRepository;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this.handlers = {};
         this.registerHandler('customer.subscription.deleted', this.subscriptionEvent);
@@ -134,6 +137,11 @@ module.exports = class StripeWebhookService {
         }
     }
 
+    /**
+     * @param {import('stripe').invoices.IInvoice} invoice
+     *
+     * @returns {Promise<void>}
+     */
     async invoiceEvent(invoice) {
         const subscription = await this._stripeAPIService.getSubscription(invoice.subscription, {
             expand: ['default_payment_method']
@@ -144,10 +152,13 @@ module.exports = class StripeWebhookService {
         });
 
         if (member) {
-            await this._memberRepository.linkSubscription({
-                id: member.id,
-                subscription
-            });
+            if (invoice.paid) {
+                await this._eventRepository.registerPayment({
+                    member_id: member.id,
+                    currency: invoice.currency,
+                    amount: invoice.amount_paid
+                });
+            }
         }
     }
 
