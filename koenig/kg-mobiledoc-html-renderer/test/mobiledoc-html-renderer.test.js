@@ -27,7 +27,6 @@ describe('Mobiledoc HTML renderer', function () {
         let renderer = new Renderer({cards: [testCard]});
         let result = JSON.parse(renderer.render(mobiledoc));
 
-        result.version.should.equal(2);
         result.target.should.equal('html');
     });
 
@@ -51,9 +50,8 @@ describe('Mobiledoc HTML renderer', function () {
         };
 
         let renderer = new Renderer({cards: [testCard]});
-        let result = JSON.parse(renderer.render(mobiledoc, {version: 1, target: 'email'}));
+        let result = JSON.parse(renderer.render(mobiledoc, {target: 'email'}));
 
-        result.version.should.equal(1);
         result.target.should.equal('email');
     });
 

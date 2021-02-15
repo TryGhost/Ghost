@@ -77,12 +77,7 @@ class MobiledocHtmlRenderer {
     }
 
     render(mobiledoc, _cardOptions = {}) {
-        /**
-         * version 1 === Ghost 1.0 markdown-only mobiledoc
-         * version 2 (latest) === Ghost 2.0 full mobiledoc
-         */
         const defaultCardOptions = {
-            version: 2,
             target: 'html'
         };
         const cardOptions = Object.assign({}, defaultCardOptions, _cardOptions);
