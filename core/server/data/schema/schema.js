@@ -379,8 +379,13 @@ module.exports = {
     members_status_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        status: {
-            type: 'string', maxlength: 50, nullable: false, validations: {
+        from_status: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['free', 'paid', 'comped']]
+            }
+        },
+        to_status: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
                 isIn: [['free', 'paid', 'comped']]
             }
         },
