@@ -22,8 +22,8 @@
     "@testing-library/react": "11.2.5",
     "@testing-library/user-event": "12.7.1",
     "prop-types": "15.7.2",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
     "react-scripts": "3.4.4"
   },
   "scripts": {
