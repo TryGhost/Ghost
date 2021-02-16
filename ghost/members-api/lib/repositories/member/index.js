@@ -98,7 +98,7 @@ module.exports = class MemberRepository {
         }
 
         await this._MemberStatusEvent.add({
-            member_id: data.id,
+            member_id: member.id,
             from_status: null,
             to_status: member.get('status')
         }, options);
