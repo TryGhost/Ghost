@@ -82,7 +82,7 @@ class GhostServer {
             self.httpServer.on('error', function (error) {
                 let ghostError;
 
-                if (error.errno === 'EADDRINUSE') {
+                if (error.code === 'EADDRINUSE') {
                     ghostError = new errors.GhostError({
                         message: i18n.t('errors.httpServer.addressInUse.error'),
                         context: i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
