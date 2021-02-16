@@ -51,6 +51,18 @@
     fill: var(--midgrey);
 }
 
+.gh-btn-external {
+    margin-left: 2rem;
+}
+
+.gh-btn-external svg {
+    width: 12px;
+    fill: var(--darkgrey);
+}
+
+.gh-btn-external svg path {
+    stroke: none;
+}
 
 /* Browser preview */
 .gh-post-preview-browser-container {

@@ -474,7 +474,7 @@
     padding: 10px;
     margin: 0;
     right: 12px;
-    top: -12px;
+    top: -11px;
     opacity: 0;
     transition: opacity ease 0.2s;
 }
@@ -494,12 +494,9 @@
 
 .gh-nav-list .gh-secondary-action span svg {
     margin-right: 0;
-    width: 22px;
-    height: 22px;
-}
-
-.gh-nav-list .gh-secondary-action span svg path {
-    fill: var(--black);
+    width: 12px;
+    height: 12px;
+    fill: color-mod(var(--middarkgrey) l(-10%));
 }
 
 .gh-nav-list .gh-secondary-action:not(.icon-only):hover span {

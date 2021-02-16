@@ -96,7 +96,7 @@
 
 .post-view-link {
     position: absolute;
-    top: 1px;
+    top: -1px;
     right: 0;
     font-size: 1.3rem;
     color: var(--green);
@@ -104,8 +104,10 @@
 
 .post-view-link svg {
     display: inline;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
+    vertical-align: middle;
+    margin-bottom: 2px;
     fill: var(--green);
 }
 
