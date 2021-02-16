@@ -255,5 +255,20 @@ describe('XMLRPC', function () {
                 setTimeout(retry, 100);
             }());
         });
+
+        it('should behave correctly when getting a 429', function (done) {
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(429);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            ping(testPost);
+
+            (function retry() {
+                if (ping1.isDone()) {
+                    return done();
+                }
+
+                setTimeout(retry, 100);
+            }());
+        });
     });
 });
