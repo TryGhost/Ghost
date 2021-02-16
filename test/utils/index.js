@@ -14,10 +14,10 @@ const knexMigrator = new KnexMigrator();
 // Ghost Internals
 const config = require('../../core/shared/config');
 const boot = require('../../core/boot');
-const GhostServer = require('../../core/server/ghost-server');
 const {events} = require('../../core/server/lib/common');
 const db = require('../../core/server/data/db');
 const models = require('../../core/server/models');
+const notify = require('../../core/server/notify');
 const urlService = require('../../core/frontend/services/url');
 const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
@@ -252,7 +252,7 @@ const freshModeGhostStart = async (options) => {
     await bootGhost(options);
 
     // Ensure notify was called (this is idempotent)
-    GhostServer.notifyServerStarted();
+    notify.notifyServerStarted();
 
     // Wait for the URL service to be ready, which happens after boot, but don't re-trigger db.ready
     await urlServiceUtils.isFinished({disableDbReadyEvent: true});
