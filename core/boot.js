@@ -10,6 +10,17 @@ require('./server/overrides');
 const debug = require('ghost-ignition').debug('boot');
 // END OF GLOBAL REQUIRES
 
+class BootLogger {
+    constructor(logging, startTime) {
+        this.logging = logging;
+        this.startTime = startTime;
+    }
+    log(message) {
+        let {logging, startTime} = this;
+        logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
+    }
+}
+
 /**
   * Get the Database into a ready state
   * - DatabaseStateManager handles doing all this for us
@@ -191,47 +202,50 @@ async function bootGhost() {
     let ghostServer;
 
     try {
-        // Config is the absolute first thing to do!
+        // Config must be the first thing we do, because it is required for absolutely everything
         debug('Begin: Load config');
         const config = require('./shared/config');
         debug('End: Load config');
 
         // Version is required by sentry & Migratior config & so is fundamental to booting
-        // However, it involves reading package.json, so put it here for visibility on how slow it is
+        // However, it involves reading package.json so its slow
+        // It's here for visibility on slowness
         debug('Begin: Load version info');
         require('./server/lib/ghost-version');
         debug('End: Load version info');
+
+        // Logging is used absolutely everywhere
+        debug('Begin: Load logging');
+        const logging = require('./shared/logging');
+        const bootLogger = new BootLogger(logging, startTime);
+        debug('End: Load logging');
 
         // Sentry must be initialised early, but requires config
         debug('Begin: Load sentry');
         require('./shared/sentry');
         debug('End: Load sentry');
 
+        // Start server with minimal app in maintenance mode
         debug('Begin: load server + minimal app');
-
-        // Get minimal application in maintenance mode
         const rootApp = require('./app');
-
-        // Start server with minimal App
         const GhostServer = require('./server/ghost-server');
         ghostServer = new GhostServer();
         await ghostServer.start(rootApp);
+        bootLogger.log('server started');
+        // @TODO: move this
         ghostServer.rootApp = rootApp;
-
-        const logging = require('./shared/logging');
-        logging.info('Ghost server start', (Date.now() - startTime) / 1000 + 's');
         debug('End: load server + minimal app');
 
-        debug('Begin: Get DB ready');
         // Get the DB ready
+        debug('Begin: Get DB ready');
         await initDatabase({config, logging});
+        bootLogger.log('database ready');
         debug('End: Get DB ready');
 
         // Load Ghost with all its services
         debug('Begin: Load Ghost Core Services');
         await initCore({ghostServer});
         await initFrontend();
-
         const ghostApp = await initExpressApps({});
         await initServices({config});
         debug('End: Load Ghost Core Services');
@@ -239,8 +253,8 @@ async function bootGhost() {
         // Mount the full Ghost app onto the minimal root app & disable maintenance mode
         mountGhost(rootApp, ghostApp);
 
-        // Announce Server Readiness
-        logging.info('Ghost booted', (Date.now() - startTime) / 1000 + 's');
+        // We are technically done here
+        bootLogger.log('booted');
         debug('boot announcing readiness');
         GhostServer.announceServerReadiness();
 
