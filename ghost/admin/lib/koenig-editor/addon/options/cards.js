@@ -11,7 +11,8 @@ export const CARD_COMPONENT_MAP = {
     embed: 'koenig-card-embed',
     bookmark: 'koenig-card-bookmark',
     gallery: 'koenig-card-gallery',
-    email: 'koenig-card-email'
+    email: 'koenig-card-email',
+    paywall: 'koenig-card-paywall'
 };
 
 // map card names to generic icons (used for ghost elements when dragging)
@@ -114,6 +115,14 @@ export const CARD_MENU = [
             matches: ['email'],
             type: 'card',
             replaceArg: 'email'
+        },
+        {
+            label: 'Paywall',
+            icon: 'koenig/kg-card-type-paywall',
+            desc: 'Mark end of free preview',
+            matches: ['paywall'],
+            type: 'card',
+            replaceArg: 'hr'
         }]
     },
     {
