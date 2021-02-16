@@ -61,7 +61,7 @@ describe('Bookmark card', function () {
             },
             payload: {}
         };
-        serializer.serialize(card.render(opts)).should.match('');
+        serializer.serialize(card.render(opts)).should.eql('');
     });
 
     it('uses payload.url as href rather than payload.metadata.url', function () {

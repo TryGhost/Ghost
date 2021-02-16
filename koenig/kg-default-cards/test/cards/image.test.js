@@ -75,47 +75,6 @@ describe('Image card', function () {
         serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image"></figure>');
     });
 
-    // width/height is a breaking change but may be added back later on
-    it.skip('renders an image with width/height', function () {
-        let opts = {
-            env: {
-                dom: new SimpleDom.Document()
-            },
-            payload: {
-                src: 'https://www.ghost.org/image.png',
-                title: 'example image',
-                width: 640,
-                height: 480
-            }
-        };
-
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image" width="640" height="480"></figure>');
-    });
-
-    it.skip('renders an image with resized max default width/height', function () {
-        let opts = {
-            env: {
-                dom: new SimpleDom.Document()
-            },
-            payload: {
-                fileName: 'NatGeo01.jpg',
-                src: '/content/images/2018/08/NatGeo01-9.jpg',
-                width: 3200,
-                height: 1600
-            },
-            options: {
-                imageOptimization: {
-                    defaultMaxWidth: 2000
-                },
-                canTransformImage: () => true
-            }
-        };
-
-        const output = serializer.serialize(card.render(opts));
-        output.should.match(/width="2000"/);
-        output.should.match(/height="1000"/);
-    });
-
     it('renders nothing with no src', function () {
         let opts = {
             env: {
@@ -142,7 +101,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('<figure class="kg-card kg-image-card">');
         });
 
         it('wide', function () {
@@ -156,7 +116,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="https://www.ghost.org/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('<figure class="kg-card kg-image-card kg-width-wide">');
         });
 
         it('full', function () {
@@ -170,7 +131,86 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-width-full"><img src="https://www.ghost.org/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('<figure class="kg-card kg-image-card kg-width-full">');
+        });
+    });
+
+    describe('image dimensions', function () {
+        it('includes width and height when available', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2021/02/four-point-oh.png',
+                    width: 3000,
+                    height: 6000
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('width="3000" height="6000"');
+        });
+
+        it('omits width and height when not available', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2021/02/four-point-oh.png'
+                }
+            };
+
+            const output = serializer.serialize(card.render(opts));
+
+            output.should.not.containEql(' width="');
+            output.should.not.containEql(' height="');
+        });
+
+        it('uses resized width and height when there\'s a max width', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2021/02/four-point-oh.png',
+                    width: 3000,
+                    height: 6000
+                },
+                options: {
+                    imageOptimization: {
+                        defaultMaxWidth: 2000
+                    },
+                    canTransformImage: () => true
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('width="2000" height="4000"');
+        });
+
+        it('uses original width and height when transform is not available', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2021/02/four-point-oh.png',
+                    width: 3000,
+                    height: 6000
+                },
+                options: {
+                    imageOptimization: {
+                        defaultMaxWidth: 2000
+                    },
+                    canTransformImage: () => false
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('width="3000" height="6000"');
         });
     });
 
@@ -197,7 +237,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w" sizes="(min-width: 720px) 720px"></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is omitted when target === email', function () {
@@ -223,7 +264,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="600" height="1200"></figure>');
+            serializer.serialize(card.render(opts))
+                .should.not.containEql('srcset=');
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
@@ -239,7 +281,8 @@ describe('Image card', function () {
                 options: {}
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.not.containEql('srcset=');
         });
 
         it('is omitted when `srcsets: false` is passed in as an option', function () {
@@ -265,7 +308,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.not.containEql('srcset=');
         });
 
         it('is omitted when canTransformImages is provided and returns false', function () {
@@ -293,7 +337,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.not.containEql('srcset=');
         });
 
         it('is omitted when no width is provided', function () {
@@ -317,7 +362,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.not.containEql('srcset=');
         });
 
         it('is omitted when image is smaller than minimum responsive width', function () {
@@ -342,7 +388,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt></figure>');
+            serializer.serialize(card.render(opts))
+                .should.not.containEql('srcset=');
         });
 
         it('omits sizes larger than image width and includes original image width if smaller than largest responsive width', function () {
@@ -367,7 +414,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w" sizes="(min-width: 720px) 720px"></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w"');
         });
 
         it('works correctly with subdirectories', function () {
@@ -392,7 +440,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/subdir/content/images/2020/06/image.png" class="kg-image" alt srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w" sizes="(min-width: 720px) 720px"></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included when src is an Unsplash image', function () {
@@ -418,7 +467,8 @@ describe('Image card', function () {
             };
 
             // note that '&' in URLs will be rendered as '&amp;' to maintain HTML encoding
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" alt srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w" sizes="(min-width: 720px) 720px"></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"');
         });
 
         it('has same size omission behaviour for Unsplash as local files', function () {
@@ -443,7 +493,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" alt srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w" sizes="(min-width: 720px) 720px"></figure>');
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w"');
         });
     });
 
