@@ -2,7 +2,11 @@ const errors = require('@tryghost/errors');
 const ghostBookshelf = require('./base');
 
 const MemberEmailChangeEvent = ghostBookshelf.Model.extend({
-    tableName: 'members_email_change_events'
+    tableName: 'members_email_change_events',
+
+    member() {
+        return this.belongsTo('Member', 'member_id', 'id');
+    }
 }, {
     async edit() {
         throw new errors.IncorrectUsageError('Cannot edit MemberEmailChangeEvent');

@@ -3,6 +3,11 @@ const ghostBookshelf = require('./base');
 
 const MemberPaymentEvent = ghostBookshelf.Model.extend({
     tableName: 'members_payment_events',
+
+    member() {
+        return this.belongsTo('Member', 'member_id', 'id');
+    },
+
     customQuery(qb, options) {
         if (options.aggregatePaymentVolume) {
             if (options.limit || options.filter) {

@@ -3,6 +3,11 @@ const ghostBookshelf = require('./base');
 
 const MemberSubscribeEvent = ghostBookshelf.Model.extend({
     tableName: 'members_subscribe_events',
+
+    member() {
+        return this.belongsTo('Member', 'member_id', 'id');
+    },
+
     customQuery(qb, options) {
         if (options.aggregateSubscriptionDeltas) {
             if (options.limit || options.filter) {
