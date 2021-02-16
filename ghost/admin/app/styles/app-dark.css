@@ -67,6 +67,7 @@
 @import "layouts/billing.css";
 @import "layouts/fullscreen-wizard.css";
 @import "layouts/post-preview.css";
+@import "layouts/dashboard.css";
 
 
 :root {

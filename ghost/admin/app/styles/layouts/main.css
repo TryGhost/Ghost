@@ -62,6 +62,10 @@
     background: linear-gradient(315deg,var(--whitegrey-l2),var(--white));
 }
 
+.gh-main-wide .gh-canvas {
+    max-width: 1600px;
+}
+
 /*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
 .gh-main > section {
     width: 100%;
