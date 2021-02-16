@@ -14,13 +14,10 @@ const knexMigrator = new KnexMigrator();
 // Ghost Internals
 const config = require('../../core/shared/config');
 const boot = require('../../core/boot');
-const express = require('../../core/shared/express');
-const ghost = require('../../core/server');
 const GhostServer = require('../../core/server/ghost-server');
 const {events} = require('../../core/server/lib/common');
 const db = require('../../core/server/data/db');
 const models = require('../../core/server/models');
-const urlUtils = require('../../core/shared/url-utils');
 const urlService = require('../../core/frontend/services/url');
 const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
@@ -215,21 +212,6 @@ const restartModeGhostStart = async () => {
     // Trigger server start, which is ONLY used for theme reload
     events.emit('server.start');
 };
-
-// Old Boot Method
-// const bootGhost = async (options) => {
-//     // Require Ghost
-//     ghostServer = await ghost();
-
-//     // Mount Ghost & Start Server
-//     if (options.subdir) {
-//         let parentApp = express('test parent');
-//         parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
-//         await ghostServer.start(parentApp);
-//     } else {
-//         await ghostServer.start();
-//     }
-// };
 
 const bootGhost = async () => {
     ghostServer = await boot();

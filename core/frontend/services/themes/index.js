@@ -23,11 +23,8 @@ module.exports = {
 
         debug('init themes', activeThemeName);
 
-        // Register a listener for server-start to load all themes
-        events.on('server.start', function readAllThemesOnServerStart() {
-            themeLoader.loadAllThemes();
-        });
-        events.on('themes.ready', function readAllThemesOnServerStart() {
+        // Register a listener for when the server says we can start to load all themes
+        events.on('themes.ready', function readAllThemesOnReady() {
             themeLoader.loadAllThemes();
         });
 

@@ -56,7 +56,6 @@
     "@tryghost/kg-markdown-html-renderer": "4.0.0-rc.2",
     "@tryghost/kg-mobiledoc-html-renderer": "4.0.0-rc.1",
     "@tryghost/magic-link": "0.6.6",
-    "@tryghost/maintenance": "0.1.0",
     "@tryghost/members-api": "1.0.0-rc.3",
     "@tryghost/members-csv": "0.4.4",
     "@tryghost/members-ssr": "0.8.10",
