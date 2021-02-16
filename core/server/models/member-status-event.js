@@ -3,6 +3,11 @@ const ghostBookshelf = require('./base');
 
 const MemberStatusEvent = ghostBookshelf.Model.extend({
     tableName: 'members_status_events',
+
+    member() {
+        return this.belongsTo('Member', 'member_id', 'id');
+    },
+
     customQuery(qb, options) {
         if (options.aggregateStatusCounts) {
             if (options.limit || options.filter) {
