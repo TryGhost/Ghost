@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "mobiledoc-dom-renderer": "^0.7.0",
+    "semver": "^7.3.4",
     "simple-dom": "^1.4.0"
   }
 }

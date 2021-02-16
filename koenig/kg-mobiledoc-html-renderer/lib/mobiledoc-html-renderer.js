@@ -1,4 +1,5 @@
 const SimpleDom = require('simple-dom');
+const semver = require('semver');
 const Renderer = require('mobiledoc-dom-renderer').default;
 
 const walkDom = function (node, func) {
@@ -23,6 +24,29 @@ const nodeTextContent = function (node) {
     return textContent;
 };
 
+const slugify = function (inputString, {ghostVersion = '4.0'} = {}) {
+    const version = semver.coerce(ghostVersion);
+
+    if (semver.satisfies(version, '<4.x')) {
+        // backwards compatible slugs used in Ghost 2.x to 3.x mobiledoc
+        return inputString.replace(/[<>&"?]/g, '')
+            .trim()
+            .replace(/[^\w]/g, '-')
+            .replace(/-{2,}/g, '-')
+            .toLowerCase();
+    } else {
+        // news slugs introduced in 4.0
+        // allows all chars except symbols but will urlEncode everything
+        // produces %-encoded chars in src but browsers show real chars in status bar and url bar
+        return encodeURIComponent(inputString.trim()
+            .toLowerCase()
+            .replace(/[\][!"#$%&'()*+,./:;<=>?@\\^_{|}~]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/^-|-{2,}|-$/g, '')
+        );
+    }
+};
+
 // used to walk the rendered SimpleDOM output and modify elements before
 // serializing to HTML. Saves having a large HTML parsing dependency such as
 // jsdom that may break on malformed HTML in MD or HTML cards
@@ -38,12 +62,7 @@ class DomModifier {
         }
 
         let text = nodeTextContent(node);
-        let id = text
-            .replace(/[<>&"?]/g, '')
-            .trim()
-            .replace(/[^\w]/g, '-')
-            .replace(/-{2,}/g, '-')
-            .toLowerCase();
+        let id = slugify(text, this.options);
 
         if (this.usedIds[id] !== undefined) {
             this.usedIds[id] += 1;

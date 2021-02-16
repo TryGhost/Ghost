@@ -214,6 +214,10 @@ describe('Mobiledoc HTML renderer', function () {
                     [1, 'h1', [
                         [0, [0], 1, 'preceding'],
                         [0, [], 0, ' link']
+                    ]],
+                    // accents and non-latin chars
+                    [1, 'h1', [
+                        [0, [], 0, 'ãàáäâåčçďẽèéëêìíïîñõòóöôřšťùúüûýž']
                     ]]
                 ]
             };
@@ -242,6 +246,9 @@ describe('Mobiledoc HTML renderer', function () {
             // heading with link
             output.should.match(/<h1 id="trailing-link">trailing <a href="http:\/\/example\.com">link<\/a><\/h1>/);
             output.should.match(/<h1 id="preceding-link"><a href="http:\/\/example\.com">preceding<\/a> link<\/h1>/);
+
+            // accents and non-latin chars
+            output.should.match(/<h1 id="%C3%A3%C3%A0%C3%A1%C3%A4%C3%A2%C3%A5%C4%8D%C3%A7%C4%8F%E1%BA%BD%C3%A8%C3%A9%C3%AB%C3%AA%C3%AC%C3%AD%C3%AF%C3%AE%C3%B1%C3%B5%C3%B2%C3%B3%C3%B6%C3%B4%C5%99%C5%A1%C5%A5%C3%B9%C3%BA%C3%BC%C3%BB%C3%BD%C5%BE">ãàáäâåčçďẽèéëêìíïîñõòóöôřšťùúüûýž<\/h1>/);
         });
     });
 });

@@ -11,9 +11,9 @@ module.exports = {
         commentWrapper: true
     },
 
-    render: function ({payload, env: {dom}/*, options*/}) {
+    render: function ({payload, env: {dom}, options}) {
         // convert markdown to HTML ready for insertion into dom
-        let html = markdownHtmlRenderer.render(payload.markdown || '');
+        let html = markdownHtmlRenderer.render(payload.markdown || '', options);
 
         if (!html) {
             return dom.createTextNode('');

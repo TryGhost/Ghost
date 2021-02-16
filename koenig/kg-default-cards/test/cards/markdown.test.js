@@ -67,4 +67,38 @@ describe('Markdown card', function () {
         transformed.markdown
             .should.equal('A link to [an internal post](http://127.0.0.1:2369/post)');
     });
+
+    describe('ghostVersion', function () {
+        it('3.0', function () {
+            const opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    markdown: '# Header One'
+                },
+                options: {
+                    ghostVersion: '3.0'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<h1 id="headerone">Header One</h1>\n');
+        });
+
+        it('4.0', function () {
+            const opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    markdown: '# Header One'
+                },
+                options: {
+                    ghostVersion: '4.0'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<h1 id="header-one">Header One</h1>\n');
+        });
+    });
 });
