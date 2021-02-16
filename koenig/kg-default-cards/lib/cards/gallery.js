@@ -160,7 +160,14 @@ module.exports = {
                     }
                 }
 
-                imgDiv.appendChild(img);
+                if (image.href) {
+                    const a = dom.createElement('a');
+                    a.setAttribute('href', image.href);
+                    a.appendChild(img);
+                    imgDiv.appendChild(a);
+                } else {
+                    imgDiv.appendChild(img);
+                }
                 rowDiv.appendChild(imgDiv);
             });
 

@@ -70,14 +70,15 @@ describe('Gallery card', function () {
                         fileName: 'NatGeo09.jpg',
                         src: '/content/images/2018/08/NatGeo09-8.jpg',
                         width: 3200,
-                        height: 1600
+                        height: 1600,
+                        href: 'https://example.com'
                     }
                 ],
                 caption: 'Test caption'
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600" alt></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo02-10.jpg" width="3200" height="1600" alt></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo03-6.jpg" width="3200" height="1600" alt></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo04-7.jpg" width="3200" height="1600" alt="Alt test"></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo05-4.jpg" width="3200" height="1600" alt title="Title test"></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo06-6.jpg" width="3200" height="1600" alt></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo07-5.jpg" width="3200" height="1600" alt></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo09-8.jpg" width="3200" height="1600" alt></div></div></div><figcaption>Test caption</figcaption></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600" alt></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo02-10.jpg" width="3200" height="1600" alt></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo03-6.jpg" width="3200" height="1600" alt></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo04-7.jpg" width="3200" height="1600" alt="Alt test"></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo05-4.jpg" width="3200" height="1600" alt title="Title test"></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo06-6.jpg" width="3200" height="1600" alt></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo07-5.jpg" width="3200" height="1600" alt></div><div class="kg-gallery-image"><a href="https://example.com"><img src="/content/images/2018/08/NatGeo09-8.jpg" width="3200" height="1600" alt></a></div></div></div><figcaption>Test caption</figcaption></figure>');
     });
 
     it('renders nothing with no images', function () {

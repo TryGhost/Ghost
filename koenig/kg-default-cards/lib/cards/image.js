@@ -108,7 +108,14 @@ module.exports = {
             }
         }
 
-        figure.appendChild(img);
+        if (payload.href) {
+            const a = dom.createElement('a');
+            a.setAttribute('href', payload.href);
+            a.appendChild(img);
+            figure.appendChild(a);
+        } else {
+            figure.appendChild(img);
+        }
 
         if (payload.caption) {
             const figcaption = dom.createElement('figcaption');
