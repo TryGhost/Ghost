@@ -82,12 +82,21 @@ function ping(post) {
                 }
             })
             .catch(function (err) {
-                logging.error(new errors.GhostError({
-                    err: err,
-                    message: err.message,
-                    context: i18n.t('errors.services.ping.requestFailed.error', {service: 'xmlrpc'}),
-                    help: i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
-                }));
+                if (err.statusCode === 429) {
+                    logging.error(new errors.TooManyRequestsError({
+                        err,
+                        message: err.message,
+                        context: i18n.t('errors.services.ping.requestFailed.error', {service: 'xmlrpc'}),
+                        help: i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
+                    }));
+                } else {
+                    logging.error(new errors.GhostError({
+                        err: err,
+                        message: err.message,
+                        context: i18n.t('errors.services.ping.requestFailed.error', {service: 'xmlrpc'}),
+                        help: i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
+                    }));
+                }
             });
     });
 }
