@@ -216,6 +216,12 @@ class PostsImporter extends BaseImporter {
                     mobiledoc = mobiledocLib.blankDocument;
                 }
 
+                // ghostVersion was introduced in 4.0. Any earlier content won't have it set
+                // so we should set it to "3.0" to match rendering output
+                if (!mobiledoc.ghostVersion) {
+                    mobiledoc.ghostVersion = '3.0';
+                }
+
                 mobiledoc.cards.forEach((card) => {
                     // Ghost 1.0 markdown card = 'card-markdown', Ghost 2.0 markdown card = 'markdown'
                     if (card[0] === 'card-markdown') {
