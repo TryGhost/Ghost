@@ -28,7 +28,7 @@ export default Component.extend({
     top: null,
     left: null,
     right: null,
-    href: '',
+    _href: '',
 
     // private properties
     _selectedRange: null,
@@ -57,33 +57,35 @@ export default Component.extend({
     init() {
         this._super(...arguments);
 
-        // record the range now because the property is bound and will update
-        // as we make changes whilst calculating the link position
-        this._selectedRange = this.selectedRange;
-        this._linkRange = this.linkRange;
+        if (!this.source) {
+            // record the range now because the property is bound and will update
+            // as we make changes whilst calculating the link position
+            this._selectedRange = this.selectedRange;
+            this._linkRange = this.linkRange;
 
-        // grab a window range so that we can use getBoundingClientRect. Using
-        // document.createRange is more efficient than doing editor.setRange
-        // because it doesn't trigger all of the selection changing side-effects
-        // TODO: extract MobiledocRange->NativeRange into a util
-        let editor = this.editor;
-        let cursor = editor.cursor;
-        let {head, tail} = this._linkRange;
-        let {node: headNode, offset: headOffset} = cursor._findNodeForPosition(head);
-        let {node: tailNode, offset: tailOffset} = cursor._findNodeForPosition(tail);
-        let range = document.createRange();
-        range.setStart(headNode, headOffset);
-        range.setEnd(tailNode, tailOffset);
-        this._windowRange = range;
+            // grab a window range so that we can use getBoundingClientRect. Using
+            // document.createRange is more efficient than doing editor.setRange
+            // because it doesn't trigger all of the selection changing side-effects
+            // TODO: extract MobiledocRange->NativeRange into a util
+            let editor = this.editor;
+            let cursor = editor.cursor;
+            let {head, tail} = this._linkRange;
+            let {node: headNode, offset: headOffset} = cursor._findNodeForPosition(head);
+            let {node: tailNode, offset: tailOffset} = cursor._findNodeForPosition(tail);
+            let range = document.createRange();
+            range.setStart(headNode, headOffset);
+            range.setEnd(tailNode, tailOffset);
+            this._windowRange = range;
+
+            // grab an existing href value if there is one
+            this._getHrefFromMarkup();
+        }
 
         // wait until rendered to position so that we have access to this.element
         run.schedule('afterRender', this, function () {
             this._positionToolbar();
             this._focusInput();
         });
-
-        // grab an existing href value if there is one
-        this._getHrefFromMarkup();
 
         // watch the window for mousedown events so that we can close the menu
         // when we detect a click outside
@@ -93,6 +95,12 @@ export default Component.extend({
         // watch for keydown events so that we can close the menu on Escape
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
+    },
+
+    didReceiveAttrs() {
+        if (this.source === 'direct' && this.href !== this._href) {
+            this.set('_href', this.href);
+        }
     },
 
     willDestroyElement() {
@@ -108,8 +116,14 @@ export default Component.extend({
                 // prevent Enter from triggering in the editor and removing text
                 event.preventDefault();
 
-                let href = relativeToAbsolute(this.href, this.config.get('blogUrl'));
-                this.set('href', href);
+                let href = relativeToAbsolute(this._href, this.config.get('blogUrl'));
+                this.set('_href', href);
+
+                if (this.source === 'direct') {
+                    this.update(href);
+                    this.cancel();
+                    return;
+                }
 
                 // create a single editor runloop here so that we don't get
                 // separate remove and replace ops pushed onto the undo stack
@@ -126,7 +140,7 @@ export default Component.extend({
         },
 
         clear() {
-            this.set('href', '');
+            this.set('_href', '');
             this._focusInput();
         }
     },
@@ -136,7 +150,7 @@ export default Component.extend({
     _getHrefFromMarkup() {
         let linkMarkup = getLinkMarkupFromRange(this._linkRange);
         if (linkMarkup) {
-            this.set('href', linkMarkup.attributes.href);
+            this.set('_href', linkMarkup.attributes.href);
             this._linkRange = this._linkRange.expandByMarker(marker => !!marker.markups.includes(linkMarkup));
         }
     },
@@ -248,6 +262,7 @@ export default Component.extend({
     _handleMousedown(event) {
         if (!event.target.closest(`#${this.elementId}`)) {
             // no need to re-select for mouse clicks
+            console.log('mousedown cancel');
             this.cancel();
         }
     },
