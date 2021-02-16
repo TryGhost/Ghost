@@ -98,7 +98,7 @@ const addEmail = async (postModel, options) => {
 
     switch (emailRecipientFilter) {
     case 'paid':
-        filterOptions.filter = 'subscribed:true+status:paid';
+        filterOptions.filter = 'subscribed:true+status:-free';
         break;
     case 'free':
         filterOptions.filter = 'subscribed:true+status:free';
@@ -295,7 +295,7 @@ async function getEmailMemberRows({emailModel, options}) {
 
     switch (recipientFilter) {
     case 'paid':
-        filterOptions.filter = 'subscribed:true+status:paid';
+        filterOptions.filter = 'subscribed:true+status:-free';
         break;
     case 'free':
         filterOptions.filter = 'subscribed:true+status:free';
