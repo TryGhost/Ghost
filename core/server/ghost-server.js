@@ -200,15 +200,6 @@ class GhostServer {
     }
 
     /**
-    * @param  {Object} externalApp - express app instance
-    * @return {Promise} Resolves once Ghost has switched HTTP Servers
-    */
-    async swapHttpApp(externalApp) {
-        await this._stopServer();
-        await this.start(externalApp);
-    }
-
-    /**
      * ### Hammertime
      * To be called after `stop`
      */

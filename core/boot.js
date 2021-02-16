@@ -208,7 +208,6 @@ async function bootGhost() {
         debug('End: Load sentry');
 
         debug('Begin: load server + minimal app');
-        process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
         // Get minimal application in maintenance mode
         const rootApp = require('./app');
@@ -241,7 +240,7 @@ async function bootGhost() {
         mountGhost(rootApp, ghostApp);
 
         // Announce Server Readiness
-        logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
+        logging.info('Ghost booted', (Date.now() - startTime) / 1000 + 's');
         debug('boot announcing readiness');
         GhostServer.announceServerReadiness();
 
