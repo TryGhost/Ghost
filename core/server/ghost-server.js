@@ -52,7 +52,7 @@ class GhostServer {
         };
 
         return new Promise(function (resolve, reject) {
-            if (Object.prototype.hasOwnProperty.call(config.get('server'), 'socket')) {
+            if (_.has(config.get('server'), 'socket')) {
                 socketConfig = config.get('server').socket;
 
                 if (_.isString(socketConfig)) {
@@ -105,38 +105,7 @@ class GhostServer {
 
                 // Debug logs output in testmode only
                 if (config.get('server:testmode')) {
-                    // This is horrible and very temporary
-                    const jobService = require('./services/jobs');
-
-                    // Output how many connections are open every 5 seconds
-                    const connectionInterval = setInterval(() => self.httpServer.getConnections(
-                        (err, connections) => logging.warn(`${connections} connections currently open`)
-                    ), 5000);
-
-                    // Output a notice when the server closes
-                    self.httpServer.on('close', function () {
-                        clearInterval(connectionInterval);
-                        logging.warn('Server has fully closed');
-                    });
-
-                    // Output job queue length every 5 seconds
-                    setInterval(() => {
-                        logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`);
-
-                        const runningScheduledjobs = Object.keys(jobService.bree.workers);
-                        if (Object.keys(jobService.bree.workers).length) {
-                            logging.warn(`${Object.keys(jobService.bree.workers).length} jobs running: ${runningScheduledjobs}`);
-                        }
-
-                        const scheduledJobs = Object.keys(jobService.bree.intervals);
-                        if (Object.keys(jobService.bree.intervals).length) {
-                            logging.warn(`${Object.keys(jobService.bree.intervals).length} scheduled jobs: ${scheduledJobs}`);
-                        }
-
-                        if (runningScheduledjobs.length === 0 && scheduledJobs.length === 0) {
-                            logging.warn('No scheduled or running jobs');
-                        }
-                    }, 5000);
+                    self._startTestMode();
                 }
 
                 debug('server announcing readiness');
@@ -207,6 +176,9 @@ class GhostServer {
         logging.info(i18n.t('notices.httpServer.cantTouchThis'));
     }
 
+    /**
+     * Add a task that should be called on shutdown
+     */
     registerCleanupTask(task) {
         this.cleanupTasks.push(task);
     }
@@ -240,15 +212,46 @@ class GhostServer {
             .all(this.cleanupTasks.map(task => task()));
     }
 
-    _onShutdownComplete() {
-        // Wrap up
-        events.emit('server.stop');
-        this.httpServer = null;
-        this._logStopMessages();
+    /**
+     * Internal Method for TestMode.
+     */
+    _startTestMode() {
+        // This is horrible and very temporary
+        const jobService = require('./services/jobs');
+
+        // Output how many connections are open every 5 seconds
+        const connectionInterval = setInterval(() => this.httpServer.getConnections(
+            (err, connections) => logging.warn(`${connections} connections currently open`)
+        ), 5000);
+
+        // Output a notice when the server closes
+        this.httpServer.on('close', function () {
+            clearInterval(connectionInterval);
+            logging.warn('Server has fully closed');
+        });
+
+        // Output job queue length every 5 seconds
+        setInterval(() => {
+            logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`);
+
+            const runningScheduledjobs = Object.keys(jobService.bree.workers);
+            if (Object.keys(jobService.bree.workers).length) {
+                logging.warn(`${Object.keys(jobService.bree.workers).length} jobs running: ${runningScheduledjobs}`);
+            }
+
+            const scheduledJobs = Object.keys(jobService.bree.intervals);
+            if (Object.keys(jobService.bree.intervals).length) {
+                logging.warn(`${Object.keys(jobService.bree.intervals).length} scheduled jobs: ${scheduledJobs}`);
+            }
+
+            if (runningScheduledjobs.length === 0 && scheduledJobs.length === 0) {
+                logging.warn('No scheduled or running jobs');
+            }
+        }, 5000);
     }
 
     /**
-     * ### Log Start Messages
+     * Log Start Messages
      */
     _logStartMessages() {
         logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
@@ -267,8 +270,7 @@ class GhostServer {
     }
 
     /**
-     * ### Log Stop Messages
-     * Private / internal API
+     * Log Stop Messages
      */
     _logStopMessages() {
         logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
