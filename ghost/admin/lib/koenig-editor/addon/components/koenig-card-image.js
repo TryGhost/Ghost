@@ -77,8 +77,8 @@ export default Component.extend({
         return 'image-normal';
     }),
 
-    toolbar: computed('payload.{cardWidth,src}', function () {
-        if (!this.payload.src) {
+    toolbar: computed('isEditingLink', 'payload.{cardWidth,src}', function () {
+        if (!this.payload.src || this.isEditingLink) {
             return false;
         }
 
@@ -88,20 +88,25 @@ export default Component.extend({
             items: [{
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
-                iconClass: `${!cardWidth ? 'fill-blue-l2' : 'fill-white'}`,
+                iconClass: !cardWidth ? 'fill-blue-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, '')
             }, {
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
-                iconClass: `${cardWidth === 'wide' ? 'fill-blue-l2' : 'fill-white'}`,
+                iconClass: cardWidth === 'wide' ? 'fill-blue-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, 'wide')
             }, {
                 title: 'Full',
                 icon: 'koenig/kg-img-full',
-                iconClass: `${cardWidth === 'full' ? 'fill-blue-l2' : 'fill-white'}`,
+                iconClass: cardWidth === 'full' ? 'fill-blue-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, 'full')
             }, {
                 divider: true
+            }, {
+                title: 'Link',
+                icon: 'koenig/kg-link',
+                iconClass: this.payload.href ? 'fill-blue-l2' : 'fill-white',
+                action: run.bind(this, this._editLink)
             }, {
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
@@ -235,6 +240,15 @@ export default Component.extend({
             // ensure focus is returned to the editor so that the card which
             // appears selected behaves as if it's selected
             this.editor.focus();
+        },
+
+        updateHref(href) {
+            this._updatePayloadAttr('href', href);
+        },
+
+        cancelEditLink() {
+            this.set('isEditing', false);
+            this.set('isEditingLink', false);
         }
     },
 
@@ -308,5 +322,15 @@ export default Component.extend({
             .closest('.__mobiledoc-card')
             .find('input[type="file"]')
             .click();
+    },
+
+    _editLink(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const rect = this.element.getBoundingClientRect();
+        rect.x = rect.x - 5;
+        this.set('linkRect', rect);
+        this.set('isEditing', true); // hide snippet icon in toolbar
+        this.set('isEditingLink', true);
     }
 });

@@ -96,3 +96,13 @@
             close=(action "closeImageSelector")}}
     {{/if}}
 </KoenigCard>
+
+{{#if this.isEditingLink}}
+    <KoenigLinkInput
+        @source="direct"
+        @href={{this.payload.href}}
+        @linkRect={{this.linkRect}}
+        @update={{action "updateHref"}}
+        @cancel={{action "cancelEditLink"}}
+    />
+{{/if}}
