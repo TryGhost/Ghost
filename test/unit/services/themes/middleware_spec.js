@@ -53,7 +53,7 @@ describe('Themes middleware', function () {
             // labs data is deep cloned,
             // if we want to compare it
             // we will need some unique content
-            '@@REQUIRED@@': true
+            members: true
         };
 
         sandbox.stub(activeTheme, 'get')

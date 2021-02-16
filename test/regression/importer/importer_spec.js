@@ -113,7 +113,7 @@ const exportedLegacyBody = () => {
 };
 
 // Tests in here do an import for each test
-describe.only('Integration: Importer', function () {
+describe('Integration: Importer', function () {
     before(testUtils.teardownDb);
 
     beforeEach(function () {

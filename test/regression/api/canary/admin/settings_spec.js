@@ -62,7 +62,6 @@ const defaultSettingsKeyTypes = [
     {key: 'email_track_opens', type: 'bulk_email'},
     {key: 'amp', type: 'blog'},
     {key: 'amp_gtag_id', type: 'blog'},
-    {key: 'labs', type: 'blog'},
     {key: 'slack', type: 'blog'},
     {key: 'slack_url', type: 'blog'},
     {key: 'slack_username', type: 'blog'},
@@ -190,7 +189,7 @@ describe('Settings API (canary)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    Object.keys(settings).length.should.equal(68);
+                    Object.keys(settings).length.should.equal(defaultSettingsKeyTypes.length);
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
