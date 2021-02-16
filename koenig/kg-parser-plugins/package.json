@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-parser-plugins",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-parser-plugins",
   "author": "Ghost Foundation",
   "license": "MIT",
