@@ -8,7 +8,7 @@
     </div>
     <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-green gh-btn-icon gh-post-preview-copy-url-trigger">
         <span>
-            {{#if this.copyPreviewUrl.isRunning}} 
+            {{#if this.copyPreviewUrl.isRunning}}
                 Copied!
             {{else}}
                 copy
@@ -16,8 +16,8 @@
         </span>
     </button>
     <div>
-        <button type="button" class="gh-btn gh-btn-editor gh-btn-icon gh-btn-icon-right gh-btn-external">
+        <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-editor gh-btn-icon gh-btn-icon-right gh-btn-external">
             <span>Open in new tab {{svg-jar "external"}}</span>
-        </button>
+        </a>
     </div>
 </div>
