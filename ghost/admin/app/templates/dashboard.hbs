@@ -5,9 +5,71 @@
         </h2>
     </GhCanvasHeader>
 
-    <section class="view-container">
-        {{#if (and this.session.user.isOwner (not this.feature.launchComplete))}}
-            <LinkTo @route="launch">Launch site - Finish setup</LinkTo>
-        {{/if}}
+    <section class="view-container gh-dashboard">
+        <div class="gh-dashboard-area grey mrr">
+            <h4 class="gh-dashboard-header">MRR</h4>
+            <div class="gh-dashboard-chart-container">
+                <div class="gh-dashboard-summary">
+                    <div class="data">$359</div>
+                    <div class="growth positive">+1.8%</div>
+                </div>
+                <div class="gh-dashboard-chart nodata">
+                    No data
+                </div>
+            </div>
+        </div>
+        <div class="gh-dashboard-area grey total-members">
+            <div class="gh-dashboard-chart-container">
+                <div class="gh-dashboard-summary small">
+                    <h4 class="gh-dashboard-header">Total members</h4>
+                    <div class="data-container">
+                        <div class="data">1,842</div>
+                        <div class="growth positive">+1.8%</div>
+                    </div>
+                    <h4 class="gh-dashboard-header">Paid members</h4>
+                    <div class="data-container">
+                        <div class="data">733</div>
+                        <div class="growth negative">-2.8%</div>
+                    </div>
+                </div>
+                <div class="gh-dashboard-chart small nodata">
+                    No data
+                </div>
+            </div>
+        </div>
+        <div class="gh-dashboard-area grey newsletter-open-rate">
+            <div class="gh-dashboard-chart-container">
+                <div class="gh-dashboard-summary small">
+                    <h4 class="gh-dashboard-header">Newsletter open rate</h4>
+                    <div class="data-container">
+                        <div class="data">92%</div>
+                        <div class="growth positive">+29%</div>
+                    </div>
+                </div>
+                <div class="gh-dashboard-chart small nodata">
+                    No data
+                </div>
+            </div>
+        </div>
+        <div class="gh-dashboard-area grey top-members">
+            <h4 class="gh-dashboard-header">Top members</h4>
+            <div class="gh-dashboard-list nodata">
+                No data
+            </div>
+        </div>
+        <div class="gh-dashboard-area activity-feed">
+            <h4 class="gh-dashboard-header">Activity feed</h4>
+            <div class="gh-dashboard-list nodata">
+                No data
+            </div>
+        </div>
+
+        <div class="gh-dashboard-area mixed">
+            <div>Mixed content</div>
+
+            {{#if (and this.session.user.isOwner (not this.feature.launchComplete))}}
+                <LinkTo @route="launch">Launch site - Finish setup</LinkTo>
+            {{/if}}
+        </div>
     </section>
 </section>
