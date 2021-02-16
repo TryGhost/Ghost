@@ -62,7 +62,6 @@ const defaultSettingsKeyTypes = [
     {key: 'email_track_opens', type: 'bulk_email'},
     {key: 'amp', type: 'blog'},
     {key: 'amp_gtag_id', type: 'blog'},
-    {key: 'labs', type: 'blog'},
     {key: 'slack', type: 'blog'},
     {key: 'slack_url', type: 'blog'},
     {key: 'slack_username', type: 'blog'},
