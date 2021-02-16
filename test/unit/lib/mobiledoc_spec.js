@@ -22,6 +22,7 @@ describe('lib/mobiledoc', function () {
         it('renders all default cards and atoms', function () {
             let mobiledoc = {
                 version: '0.3.1',
+                ghostVersion: '0.3',
                 atoms: [
                     ['soft-return', '', {}]
                 ],
@@ -78,6 +79,29 @@ describe('lib/mobiledoc', function () {
 
             mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
                 .should.eql('<p>One<br>Two</p><!--kg-card-begin: markdown--><h1 id="markdowncard">Markdown card</h1>\n<p>Some markdown</p>\n<!--kg-card-end: markdown--><p>Three</p><hr><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt srcset="/content/images/size/w600/2018/04/NatGeo06.jpg 600w, /content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, /content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, /content/images/size/w2400/2018/04/NatGeo06.jpg 2400w" sizes="(min-width: 1200px) 1200px"><figcaption>Birdies</figcaption></figure><p>Four</p><!--kg-card-begin: html--><h2>HTML card</h2>\n<div><p>Some HTML</p></div><!--kg-card-end: html--><figure class="kg-card kg-embed-card"><h2>Embed card</h2></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/test.png" width="1000" height="500" alt srcset="/content/images/size/w600/test.png 600w, /content/images/test.png 1000w" sizes="(min-width: 720px) 720px"></div></div></div></figure>');
+        });
+
+        it('renders according to ghostVersion', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                ghostVersion: '4.0',
+                atoms: [],
+                cards: [
+                    ['markdown', {
+                        markdown: '# Header One'
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [1, 'h2', [
+                        [0, [], 0, 'Héader Two']]
+                    ]
+                ]
+            };
+
+            mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
+                .should.eql('<!--kg-card-begin: markdown--><h1 id="header-one">Header One</h1>\n<!--kg-card-end: markdown--><h2 id="h%C3%A9ader-two">Héader Two</h2>');
         });
 
         it('respects srcsets config', function () {
