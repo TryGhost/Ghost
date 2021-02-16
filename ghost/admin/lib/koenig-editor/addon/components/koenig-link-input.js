@@ -262,7 +262,6 @@ export default Component.extend({
     _handleMousedown(event) {
         if (!event.target.closest(`#${this.elementId}`)) {
             // no need to re-select for mouse clicks
-            console.log('mousedown cancel');
             this.cancel();
         }
     },
