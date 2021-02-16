@@ -30,15 +30,15 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/core": "7.12.13",
-    "@babel/preset-env": "7.12.13",
-    "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
-    "jsdom": "16.4.0",
-    "mocha": "8.3.0",
-    "rollup": "2.38.5",
-    "rollup-plugin-babel": "4.4.0",
-    "should": "13.2.3",
-    "sinon": "9.2.4"
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "@tryghost/mobiledoc-kit": "~0.11.2-ghost.4",
+    "jsdom": "^16.4.0",
+    "mocha": "^8.3.0",
+    "rollup": "^2.38.5",
+    "rollup-plugin-babel": "^4.4.0",
+    "should": "^13.2.3",
+    "sinon": "^9.2.4"
   },
   "dependencies": {
     "@tryghost/kg-clean-basic-html": "^1.0.11"
