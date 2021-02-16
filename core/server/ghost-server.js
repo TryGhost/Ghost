@@ -108,8 +108,8 @@ class GhostServer {
                     self._startTestMode();
                 }
 
-                debug('server announcing readiness');
-                return GhostServer.announceServerReadiness()
+                debug('server notifying started');
+                return GhostServer.notifyServerStarted()
                     .finally(() => {
                         resolve(self);
                     });
@@ -290,13 +290,13 @@ class GhostServer {
 module.exports = GhostServer;
 
 /**
- * We call announce server readiness when the server is ready
+ * We call notify server started when the server is ready to serve traffic
  * When the server is started, but not ready, it is only able to serve 503s
  *
- * If the server isn't able to reach readiness, announceServerReadiness is called with an error
+ * If the server isn't able to reach started, notifyServerStarted is called with an error
  * A status message, any error, and debug info are all passed to managing processes via IPC and the bootstrap socket
  */
-let announceServerReadinessCalled = false;
+let notifyServerStartedCalled = false;
 
 const debugInfo = {
     versions: process.versions,
@@ -305,14 +305,14 @@ const debugInfo = {
     release: process.release
 };
 
-module.exports.announceServerReadiness = function (error = null) {
-    // If we already announced readiness, we should not do it again
-    if (announceServerReadinessCalled) {
+module.exports.notifyServerStarted = function (error = null) {
+    // If we already sent a ready notification, we should not do it again
+    if (notifyServerStartedCalled) {
         return Promise.resolve();
     }
 
     // Mark this function as called
-    announceServerReadinessCalled = true;
+    notifyServerStartedCalled = true;
 
     // Build our message
     // - if there's no error then the server is ready

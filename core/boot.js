@@ -255,8 +255,9 @@ async function bootGhost() {
 
         // We are technically done here
         bootLogger.log('booted');
-        debug('boot announcing readiness');
-        GhostServer.announceServerReadiness();
+        // @TODO: make this notification different
+        // debug('boot notifying readiness');
+        // GhostServer.notifyServerStarted();
 
         // Init our background jobs, we don't wait for this to finish
         initRecurringJobs({config});
@@ -277,7 +278,7 @@ async function bootGhost() {
         }
 
         logging.error(serverStartError);
-        GhostServer.announceServerReadiness(serverStartError);
+        GhostServer.notifyServerStarted(serverStartError);
 
         // If ghost was started and something else went wrong, we shut it down
         if (ghostServer) {
