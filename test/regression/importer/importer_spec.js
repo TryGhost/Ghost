@@ -1517,7 +1517,7 @@ describe('1.0', function () {
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="markdown">markdown</h2>\n<!--kg-card-end: markdown-->');
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## markdown"}]],"sections":[[10,0]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## markdown"}]],"sections":[[10,0]],"ghostVersion":"3.0"}');
                 });
         });
 
@@ -1541,8 +1541,10 @@ describe('1.0', function () {
                     const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h1 id="this-is-my-post-content">This is my post content</h1>\n<!--kg-card-end: markdown-->');
-                    posts[0].mobiledoc.should.eql(exportData.data.posts[0].mobiledoc);
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h1 id="thisismypostcontent">This is my post content</h1>\n<!--kg-card-end: markdown-->');
+                    const expectedMobiledoc = JSON.parse(exportData.data.posts[0].mobiledoc);
+                    expectedMobiledoc.ghostVersion = '3.0';
+                    posts[0].mobiledoc.should.eql(JSON.stringify(expectedMobiledoc));
                 });
         });
 
@@ -1602,11 +1604,11 @@ describe('1.0', function () {
 
                     posts.length.should.eql(2);
 
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
+                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt></figure>');
 
-                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
-                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt></figure><!--kg-card-begin: markdown--><h1 id="post-content">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
+                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
     });
