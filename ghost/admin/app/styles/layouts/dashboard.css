@@ -7,8 +7,6 @@
 .gh-dashboard-area {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--whitegrey);
-    border-radius: 3px;
     padding: 24px;
 }
 
@@ -142,6 +140,48 @@
     color: var(--midlightgrey);
 }
 
+.gh-dashboard-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+}
+
+.gh-dashboard-container.col-2 {
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 32px;
+}
+
+/* Generic box containers */
+.gh-dashboard-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--whitegrey);
+    border-radius: 3px;
+    padding: 24px;
+    margin-bottom: 32px;
+}
+
+.gh-dashboard-box .content {
+    color: var(--darkgrey);
+}
+
+.gh-dashboard-box .content h4 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--black);
+}
+
+.gh-dashboard-box .content p {
+    margin-bottom: 12px;
+}
+
+.gh-dashboard-box .footer {
+    display: flex;
+    align-items: center;
+}
+
 /* MRR */
 .gh-dashboard-area.mrr {
     grid-column: 1 / 3;
@@ -159,7 +199,6 @@
     max-height: 250px;
 }
 
-/* Top members */
 .gh-dashboard-area.total-members .gh-dashboard-chart,
 .gh-dashboard-area.newsletter-open-rate .gh-dashboard-chart {
     height: 6vw;
@@ -167,9 +206,14 @@
     max-height: 150px;
 }
 
+/* Top members */
 .gh-dashboard-area.top-members {
     grid-column: 3 / 4;
     grid-row: 1 / 3;
+}
+
+.gh-dashboard-area.top-members .gh-dashboard-list {
+    justify-content: space-between;
 }
 
 .gh-dashboard-top-members {
@@ -229,6 +273,31 @@
     font-size: 1.3rem;
 }
 
+.gh-dashboard-top-members-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--whitegrey-d1);
+    padding-top: 12px;
+    margin-bottom: -4px;
+}
+
+.gh-dashboard-top-members-footer a {
+    display: flex;
+    align-items: center;
+    color: var(--black);
+    font-weight: 500;
+}
+
+.gh-dashboard-top-members-footer a svg {
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+}
+
+.gh-dashboard-top-members-footer a svg path {
+    fill: var(--black);
+}
+
 /* Open rate */
 .gh-dashboard-area.newsletter-open-rate {
     grid-column: 2 / 3;
@@ -239,6 +308,8 @@
 .gh-dashboard-area.activity-feed {
     grid-column: 3 / 4;
     grid-row: 3 / 4;
+    padding: 0;
+    margin: 0;
 }
 
 /* Mixed content */
@@ -248,6 +319,6 @@
     border: none;
     border-radius: unset;
     padding: 0;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: flex-start;
 }
