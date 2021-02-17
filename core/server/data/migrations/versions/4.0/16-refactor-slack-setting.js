@@ -1,7 +1,29 @@
 const ObjectId = require('bson-objectid').default;
 const {createIrreversibleMigration} = require('../../utils');
+const logging = require('../../../../../shared/logging');
 
 module.exports = createIrreversibleMigration(async (knex) => {
+    logging.info('Populating slack_url and slack_username setting values');
+
+    const slackURLSetting = await knex('settings')
+        .select('value')
+        .where({
+            key: 'slack_url'
+        })
+        .first();
+
+    const slackUsernameSetting = await knex('settings')
+        .select('value')
+        .where({
+            key: 'slack_username'
+        })
+        .first();
+
+    if (slackURLSetting && slackUsernameSetting) {
+        logging.warn('slack_url and slack_username setting already exitst');
+        return;
+    }
+
     const slackSetting = await knex('settings')
         .select('value')
         .where({
@@ -28,33 +50,43 @@ module.exports = createIrreversibleMigration(async (knex) => {
 
     const now = knex.raw('CURRENT_TIMESTAMP');
 
-    await knex('settings')
-        .insert({
-            id: ObjectId.generate(),
-            key: 'slack_url',
-            group: 'slack',
-            type: 'string',
-            flags: null,
-            value: slackUrl,
-            created_by: 1,
-            created_at: now,
-            updated_by: 1,
-            updated_at: now
-        });
+    if (!slackURLSetting) {
+        logging.info(`Populating slack_url setting with value: ${slackUrl}`);
 
-    await knex('settings')
-        .insert({
-            id: ObjectId.generate(),
-            key: 'slack_username',
-            group: 'slack',
-            type: 'string',
-            flags: null,
-            value: slackUsername,
-            created_by: 1,
-            created_at: now,
-            updated_by: 1,
-            updated_at: now
-        });
+        await knex('settings')
+            .insert({
+                id: ObjectId.generate(),
+                key: 'slack_url',
+                group: 'slack',
+                type: 'string',
+                flags: null,
+                value: slackUrl,
+                created_by: 1,
+                created_at: now,
+                updated_by: 1,
+                updated_at: now
+            });
+    }
+
+    if (!slackUsernameSetting) {
+        logging.info(`Populating slack_username setting with value: ${slackUsername}`);
+
+        await knex('settings')
+            .insert({
+                id: ObjectId.generate(),
+                key: 'slack_username',
+                group: 'slack',
+                type: 'string',
+                flags: null,
+                value: slackUsername,
+                created_by: 1,
+                created_at: now,
+                updated_by: 1,
+                updated_at: now
+            });
+    }
+
+    logging.info(`Removing slack setting`);
 
     await knex('settings')
         .where({
