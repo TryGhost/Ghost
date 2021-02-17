@@ -186,7 +186,11 @@ input:focus,
 .ember-power-select-options:not([role="group"]),
 .ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
     border-color: color-mod(var(--lightgrey));
-    background: color-mod(var(--lightgrey));
+    background: var(--whitegrey-l1);
+}
+
+.ember-power-select-option[aria-current="true"] {
+    background: var(--whitegrey-d1);
 }
 
 .ember-basic-dropdown--opened > .ember-power-select-trigger,
@@ -302,6 +306,11 @@ input:focus,
     border-bottom: 1px solid var(--hairline-color-1);
 }
 
+.gh-main-section.no-heading,
+.gh-main-section.bt {
+    border-top: 1px solid var(--hairline-color-1);
+}
+
 .gh-btn-tabs .gh-btn {
     background: transparent !important;
 }
@@ -329,7 +338,7 @@ input:focus,
 .dropdown-menu li > a:hover, .dropdown-menu li > a:focus,
 .dropdown-menu li > button:hover, .dropdown-menu li > button:focus {
     color: var(--lightgrey);
-    background: color-mod(var(--dark-main-bg-color) l(-2%));
+    background: var(--whitegrey-d1);
 }
 
 .gh-cardmenu {
@@ -566,7 +575,7 @@ input:focus,
 }
 
 .id-item {
-    background: #191b1f;
+    background: var(--dark-main-bg-color);
 }
 
 .CodeMirror .cm-spell-error:not(.cm-url):not(.cm-comment):not(.cm-tag):not(.cm-word) {
@@ -610,7 +619,7 @@ input:focus,
 }
 
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
-    background: var(--whitegrey-l2);
+    background: var(--whitegrey);
 }
 
 .gh-nav-btn-search:hover {
@@ -640,13 +649,16 @@ input:focus,
 }
 
 .gh-posts-list-item:hover,
-.ember-power-select-option[aria-current=true],
 .ember-power-select-group .ember-power-select-option[aria-current=true],
 .gh-list-row:not(.header):not(.loading):hover .gh-list-cell,
 .gh-list-row:not(.header):not(.loading):hover .gh-list-data,
 .settings-tag .tag-edit-button.active,
 .gh-portal-site-frame-cover {
     background: var(--whitegrey);
+}
+
+.gh-content-status-published {
+    background: var(--whitegrey-l1);
 }
 
 .gh-browserpreview-browser {
