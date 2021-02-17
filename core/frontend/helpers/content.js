@@ -45,7 +45,8 @@ module.exports = function content(options = {}) {
     }
 
     if (!_.isUndefined(this.access) && !this.access) {
-        return restrictedCta.apply(self, args);
+        const cta = restrictedCta.apply(self, args);
+        return new SafeString([this.html, cta].join('\n'));
     }
 
     if (runTruncate) {
