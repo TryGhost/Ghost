@@ -3,28 +3,26 @@
         <h4>Branding</h4>
         <div class="gh-branding-settings-actions">
              <button
-                        class="gh-btn mr3"
-                        {{action "closeModal"}}
-                        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-                        {{on "mousedown" (optional this.noop)}}
-                        data-test-button="cancel-custom-view-form"
-                    >
-                        <span>Cancel</span>
-                    </button>
+                class="gh-btn mr3"
+                {{action "closeModal"}}
+                {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+                {{on "mousedown" (optional this.noop)}}
+                data-test-button="cancel-custom-view-form"
+            >
+                <span>Cancel</span>
+            </button>
+
             <GhTaskButton
-                        @buttonText="Save and close"
-                        @successText="Saved"
-                        @task={{this.saveTask}}
-                        @idleClass="gh-btn-primary"
-                        @class="gh-btn gh-btn-icon"
-                        data-test-button="save-members-modal-setting"
-                    />
+                @buttonText="Save and close"
+                @successText="Saved"
+                @task={{this.saveTask}}
+                @idleClass="gh-btn-primary"
+                @class="gh-btn gh-btn-icon"
+                data-test-button="save-members-modal-setting"
+            />
         </div>
-
-
-
-
     </div>
+
     <div class="gh-branding-settings">
         <section class="gh-branding-settings-options">
             <div class="gh-stack">
