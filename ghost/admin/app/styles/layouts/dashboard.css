@@ -28,6 +28,10 @@
     color: var(--black);
 }
 
+.gh-dashboard-header.secondary {
+    color: var(--midgrey);
+}
+
 .gh-dashboard-summary.small .gh-dashboard-header {
     margin-bottom: 6px;
 }
@@ -123,8 +127,8 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
 }
 
 .gh-dashboard-chart.nodata {
@@ -138,11 +142,12 @@
     color: var(--midlightgrey);
 }
 
-/* Specific content */
+/* MRR */
 .gh-dashboard-area.mrr {
     grid-column: 1 / 3;
 }
 
+/* Total members */
 .gh-dashboard-area.total-members {
     grid-column: 1 / 2;
     grid-row: 2;
@@ -154,6 +159,7 @@
     max-height: 250px;
 }
 
+/* Top members */
 .gh-dashboard-area.total-members .gh-dashboard-chart,
 .gh-dashboard-area.newsletter-open-rate .gh-dashboard-chart {
     height: 6vw;
@@ -161,21 +167,81 @@
     max-height: 150px;
 }
 
-.gh-dashboard-area.newsletter-open-rate {
-    grid-column: 2 / 3;
-    grid-row: 2;
-}
-
 .gh-dashboard-area.top-members {
     grid-column: 3 / 4;
     grid-row: 1 / 3;
 }
 
+.gh-dashboard-top-members {
+    display: flex;  
+    flex-direction: column;
+    align-items: stretch;
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    width: 100%;
+}
+
+.gh-dashboard-top-member {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    width: 100%;
+    justify-content: stretch;
+    margin: 8px 0;
+    padding: 0;
+}
+
+.gh-dashboard-top-member .member-details {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.gh-dashboard-top-member .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 999px;
+    background: var(--blue);
+    margin-right: 8px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-align: center;
+    color: #fff;
+    line-height: 1;
+}
+
+.gh-dashboard-top-member .name {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--black);
+}
+
+.gh-dashboard-top-member .open-rate {
+    white-space: nowrap;
+    margin-left: 12px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+/* Open rate */
+.gh-dashboard-area.newsletter-open-rate {
+    grid-column: 2 / 3;
+    grid-row: 2;
+}
+
+/* Activity feed */
 .gh-dashboard-area.activity-feed {
     grid-column: 3 / 4;
     grid-row: 3 / 4;
 }
 
+/* Mixed content */
 .gh-dashboard-area.mixed {
     grid-column: 1 / 3;
     grid-row: 3 / 4;
