@@ -115,6 +115,34 @@ const createEmailedPost = async function createEmailedPost({postOptions, emailOp
 
 let ghostServer;
 
+const dirtyDataFunction = () => {
+    /**
+     * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
+     * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
+     * I can do `testUtils.existingData.roles[0].id`.
+     */
+    module.exports.existingData = {};
+    return models.Role.findAll({columns: ['id']})
+        .then((roles) => {
+            module.exports.existingData.roles = roles.toJSON();
+
+            return models.User.findAll({columns: ['id', 'email']});
+        })
+        .then((users) => {
+            module.exports.existingData.users = users.toJSON(context.internal);
+
+            return models.Tag.findAll({columns: ['id']});
+        })
+        .then((tags) => {
+            module.exports.existingData.tags = tags.toJSON();
+
+            return models.ApiKey.findAll({withRelated: 'integration'});
+        })
+        .then((keys) => {
+            module.exports.existingData.apiKeys = keys.toJSON(context.internal);
+        });
+};
+
 /**
  * 1. reset & init db
  * 2. start the server once
@@ -166,149 +194,70 @@ const startGhost = async function startGhost(options) {
     // truncate database and re-run fixtures
     // we have to ensure that some components in Ghost are reloaded
     if (ghostServer && ghostServer.httpServer && !options.forceStart) {
-        return dbUtils.teardown()
-            .then(function () {
-                return knexMigrator.init({only: 2});
-            })
-            .then(function () {
-                settingsCache.shutdown();
-                return settingsService.init();
-            })
-            .then(function () {
-                return frontendSettingsService.init();
-            })
-            .then(function () {
-                return themes.init();
-            })
-            .then(function () {
-                urlServiceUtils.reset();
-                return urlServiceUtils.isFinished();
-            })
-            .then(function () {
-                web.shared.middlewares.customRedirects.reload();
+        await dbUtils.teardown();
 
-                events.emit('server.start');
+        await knexMigrator.init({only: 2});
 
-                /**
-                 * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
-                 * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
-                 * I can do `testUtils.existingData.roles[0].id`.
-                 */
-                module.exports.existingData = {};
-                return models.Role.findAll({columns: ['id']})
-                    .then((roles) => {
-                        module.exports.existingData.roles = roles.toJSON();
+        settingsCache.shutdown();
+        await settingsService.init();
 
-                        return models.User.findAll({columns: ['id', 'email']});
-                    })
-                    .then((users) => {
-                        module.exports.existingData.users = users.toJSON(context.internal);
+        await frontendSettingsService.init();
+        await themes.init();
 
-                        return models.Tag.findAll({columns: ['id']});
-                    })
-                    .then((tags) => {
-                        module.exports.existingData.tags = tags.toJSON();
-                        return models.ApiKey.findAll({withRelated: 'integration'});
-                    })
-                    .then((keys) => {
-                        module.exports.existingData.apiKeys = keys.toJSON(context.internal);
-                        console.timeEnd('Start Ghost'); // eslint-disable-line no-console
-                    })
-                    .return(ghostServer);
-            });
+        urlServiceUtils.reset();
+        await urlServiceUtils.isFinished();
+        web.shared.middlewares.customRedirects.reload();
+
+        events.emit('server.start');
+        await dirtyDataFunction();
+        console.log('Restart Mode'); // eslint-disable-line no-console
+        console.timeEnd('Start Ghost'); // eslint-disable-line no-console
+
+        return ghostServer;
     }
 
-    return knexMigrator.reset({force: true})
-        .then(function () {
-            if (ghostServer && ghostServer.httpServer) {
-                return ghostServer.stop();
-            }
-        })
-        .then(function initialiseDatabase() {
-            settingsCache.shutdown();
-            settingsCache.reset();
-            return knexMigrator.init();
-        })
-        .then(function setPragma() {
-            if (config.get('database:client') === 'sqlite3') {
-                return db.knex.raw('PRAGMA journal_mode = TRUNCATE;');
-            } else {
-                return Promise.resolve();
-            }
-        })
-        .then(function initializeGhost() {
-            urlService.resetGenerators();
+    await knexMigrator.reset({force: true});
 
-            return ghost();
-        })
-        .then(function startGhostServer(_ghostServer) {
-            ghostServer = _ghostServer;
+    if (ghostServer && ghostServer.httpServer) {
+        await ghostServer.stop();
+    }
 
-            if (options.subdir) {
-                parentApp = express('test parent');
-                parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
-                return ghostServer.start(parentApp);
-            }
+    settingsCache.shutdown();
+    settingsCache.reset();
+    await knexMigrator.init();
 
-            return ghostServer.start();
-        })
-        .then(function () {
-            let timeout;
+    if (config.get('database:client') === 'sqlite3') {
+        await db.knex.raw('PRAGMA journal_mode = TRUNCATE;');
+    }
 
-            GhostServer.announceServerReadiness();
+    urlService.resetGenerators();
 
-            return new Promise(function (resolve) {
-                (function retry() {
-                    clearTimeout(timeout);
+    ghostServer = await ghost();
 
-                    if (urlService.hasFinished()) {
-                        return resolve();
-                    }
+    if (options.subdir) {
+        parentApp = express('test parent');
+        parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
+        await ghostServer.start(parentApp);
+    } else {
+        await ghostServer.start();
+    }
 
-                    timeout = setTimeout(retry, 50);
-                })();
-            });
-        })
-        .then(function returnGhost() {
-            /**
-             * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
-             * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
-             * I can do `testUtils.existingData.roles[0].id`.
-             */
-            module.exports.existingData = {};
-            return models.Role.findAll({columns: ['id']})
-                .then((roles) => {
-                    module.exports.existingData.roles = roles.toJSON();
+    GhostServer.announceServerReadiness();
+    await urlServiceUtils.isFinished({disableDbReadyEvent: true});
 
-                    return models.User.findAll({columns: ['id', 'email']});
-                })
-                .then((users) => {
-                    module.exports.existingData.users = users.toJSON(context.internal);
-
-                    return models.Tag.findAll({columns: ['id']});
-                })
-                .then((tags) => {
-                    module.exports.existingData.tags = tags.toJSON();
-
-                    return models.ApiKey.findAll({withRelated: 'integration'});
-                })
-                .then((keys) => {
-                    module.exports.existingData.apiKeys = keys.toJSON();
-                    console.timeEnd('Start Ghost'); // eslint-disable-line no-console
-                })
-                .return(ghostServer);
-        });
+    await dirtyDataFunction();
+    console.log('Fresh Start Mode'); // eslint-disable-line no-console
+    console.timeEnd('Start Ghost'); // eslint-disable-line no-console
+    return ghostServer;
 };
 
 module.exports = {
     startGhost: startGhost,
 
-    stopGhost: () => {
+    stopGhost: async () => {
         if (ghostServer && ghostServer.httpServer) {
-            return ghostServer.stop()
-                .then(() => {
-                    urlService.resetGenerators();
-                });
+            await ghostServer.stop();
+            urlService.resetGenerators();
         }
     },
     teardownDb: dbUtils.teardown,
@@ -351,7 +300,6 @@ module.exports = {
     initFixtures: initFixtures,
     initData: dbUtils.initData,
     clearData: dbUtils.clearData,
-    clearBruteData: dbUtils.clearBruteData,
     setupRedirectsFile: redirects.setupFile,
 
     fixtures: fixtureUtils.fixtures,
