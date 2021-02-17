@@ -449,6 +449,28 @@ export default function (mobiledocEditor, koenig) {
         }
     });
 
+    /* non-markdown expansions -----------------------------------------------*/
+
+    mobiledocEditor.onTextInput({
+        name: 'paywall',
+        match: /^===$/,
+        run(editor) {
+            let {range: {head, head: {section}}} = editor;
+
+            // Skip if cursor is not at end of section
+            if (!head.isTail()) {
+                return;
+            }
+
+            // Skip if section is a list item
+            if (section.isListItem) {
+                return;
+            }
+
+            koenig.send('replaceWithCardSection', 'paywall', section.toRange());
+        }
+    });
+
     /* inline markdown -------------------------------------------------------*/
 
     // must come after block expansions so that the smart hyphens expansion
