@@ -175,6 +175,7 @@ module.exports = {
             }
         },
         key: {type: 'string', maxlength: 50, nullable: false, unique: true},
+        // NOTE: as JSON objects are no longer stored in `value` we could pottentialy reduce the maxlength
         value: {type: 'text', maxlength: 65535, nullable: true},
         type: {
             type: 'string',
@@ -185,9 +186,7 @@ module.exports = {
                     'array',
                     'string',
                     'number',
-                    'boolean',
-                    // TODO: `object` type needs to be removed once all existing object settings are removed
-                    'object'
+                    'boolean'
                 ]]
             }
         },
