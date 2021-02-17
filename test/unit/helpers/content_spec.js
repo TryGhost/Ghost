@@ -107,9 +107,19 @@ describe('{{content}} helper with no access', function () {
 
         should.exist(rendered);
     });
+
+    it('outputs free content if available via paywall card', function () {
+        const html = 'Free content<!--members-only-->Members content';
+        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        rendered.string.should.containEql('Free content');
+        rendered.string.should.not.containEql('Members content');
+        rendered.string.should.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('gh-post-upgrade-cta-content');
+        rendered.string.should.containEql('"background-color: #abcdef"');
+    });
 });
 
-describe('{{content}} helper with no access', function () {
+describe('{{content}} helper with custom template', function () {
     let optionsData;
     before(function (done) {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
