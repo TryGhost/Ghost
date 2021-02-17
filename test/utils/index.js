@@ -35,6 +35,7 @@ const fixtureUtils = require('./fixture-utils');
 const urlServiceUtils = require('./url-service-utils');
 const oldIntegrationUtils = require('./old-integration-utils');
 const redirects = require('./redirects');
+const cacheRules = require('./fixtures/cache-rules');
 const context = require('./fixtures/context');
 const DataGenerator = require('./fixtures/data-generator');
 const filterData = require('./fixtures/filter-param');
@@ -120,7 +121,7 @@ let ghostServer;
  *
  * @TODO: tidy up the tmp folders
  */
-const startGhost = function startGhost(options) {
+const startGhost = async function startGhost(options) {
     console.time('Start Ghost'); // eslint-disable-line no-console
     options = _.merge({
         redirectsFile: true,
@@ -390,11 +391,5 @@ module.exports = {
             contributor: DataGenerator.Content.roles[4].id
         }
     },
-    cacheRules: {
-        public: 'public, max-age=0',
-        hour: 'public, max-age=' + 3600,
-        day: 'public, max-age=' + 86400,
-        year: 'public, max-age=' + 31536000,
-        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-    }
+    cacheRules: cacheRules
 };
