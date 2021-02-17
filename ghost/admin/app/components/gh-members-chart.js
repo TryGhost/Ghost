@@ -18,6 +18,10 @@ export default Component.extend({
     stats: null,
     chartData: null,
     chartOptions: null,
+    showSummary: true,
+    showRange: true,
+    chartType: '',
+    chartHeading: 'Total Members',
 
     startDateLabel: computed('membersStats.stats', function () {
         if (!this.membersStats?.stats?.total_on_date) {
@@ -74,9 +78,54 @@ export default Component.extend({
 
     fetchStatsTask: task(function* () {
         this.set('stats', null);
+        let stats;
+        if (this.chartType === 'mrr') {
+            stats = yield this.membersStats.fetchMRR();
+            this.setMRRChartData(stats);
+        } else if (this.chartType === 'counts') {
+            stats = yield this.membersStats.fetchCounts();
+            this.setCountsChartData(stats);
+        } else {
+            stats = yield this.membersStats.fetch();
+            this.setOriginalChartData(stats);
+        }
+    }),
 
-        let stats = yield this.membersStats.fetch();
+    setMRRChartData(stats) {
+        const statsForCurrency = stats[0];
+        statsForCurrency.data = this.membersStats.fillDates(statsForCurrency.data) || {};
+        if (stats) {
+            this.set('stats', statsForCurrency);
 
+            this.setChartOptions({
+                rangeInDays: 30
+            });
+            this.set('chartHeading', 'MRR');
+            this.setChartData({
+                label: 'Total MRR',
+                dateLabels: Object.keys(statsForCurrency.data),
+                dateValues: Object.values(statsForCurrency.data).map(val => val / 100)
+            });
+        }
+    },
+
+    setCountsChartData(stats) {
+        if (stats) {
+            this.set('stats', stats);
+
+            this.setChartOptions({
+                rangeInDays: 30
+            });
+            this.set('chartHeading', 'Total Members');
+            this.setChartData({
+                label: 'Total Members',
+                dateLabels: stats.data.map(d => d.date),
+                dateValues: stats.data.map(d => d.paid)
+            });
+        }
+    },
+
+    setOriginalChartData(stats) {
         if (stats) {
             this.set('stats', stats);
 
@@ -89,15 +138,15 @@ export default Component.extend({
                 dateValues: Object.values(stats.total_on_date)
             });
         }
-    }),
+    },
 
     // Internal ----------------------------------------------------------------
 
-    setChartData({dateLabels, dateValues}) {
+    setChartData({dateLabels, dateValues, label = 'Total Members'}) {
         this.set('chartData', {
             labels: dateLabels,
             datasets: [{
-                label: 'Total members',
+                label: label,
                 cubicInterpolationMode: 'monotone',
                 data: dateValues,
                 fill: false,
@@ -144,8 +193,14 @@ export default Component.extend({
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
                 titleMarginBottom: 4,
                 callbacks: {
-                    label: function (tooltipItems, data) {
-                        return data.datasets[0].label + `: ` + data.datasets[0].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    label: (tooltipItems, data) => {
+                        const labelText = data.datasets[tooltipItems.datasetIndex].label;
+                        let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        if (this.chartType === 'mrr') {
+                            const currency = this.stats.currency;
+                            valueText = `${currency.toUpperCase()} ${valueText}`;
+                        }
+                        return `${labelText}: ${valueText}`;
                     },
                     title: function (tooltipItems) {
                         return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
