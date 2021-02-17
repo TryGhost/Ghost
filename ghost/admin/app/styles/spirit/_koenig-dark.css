@@ -42,7 +42,7 @@
 
 /* Card menu */
 .koenig-cardmenu {
-    background: var(--extra-darkgrey);
+    background: var(--main-color-content-greybg);
     box-shadow: 0 0 0 1px rgba(99,114,130,.16), 0 8px 16px rgba(27,39,51,.08);
 }
 
@@ -52,7 +52,7 @@
 
 .kg-cardmenu-card-selected,
 .kg-cardmenu-card-hover:hover {
-    background: var(--whitegrey);
+    background: var(--whitegrey-l1);
 }
 
 .kg-card-type-codepen g,
@@ -63,11 +63,11 @@
 }
 
 .kg-cardmenu-card-hover svg [data-selector="bg"] {
-    fill: var(--lightgrey-d2);
+    fill: var(--lightgrey);
 }
 
 .kg-cardmenu-card-hover svg [data-selector="fold"] {
-    fill: var(--midlightgrey-l2);
+    fill: var(--midlightgrey);
 }
 
 .kg-cardmenu-card-hover svg [data-selector="line"] {
@@ -75,7 +75,7 @@
 }
 
 .kg-cardmenu-card-hover:hover svg [data-selector="bg"] {
-    fill: var(--lightgrey-d2);
+    fill: var(--lightgrey-l1);
 }
 
 
