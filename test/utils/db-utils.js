@@ -15,38 +15,27 @@ const schemaTables = Object.keys(schema);
 // Other Test Utilities
 const urlServiceUtils = require('./url-service-utils');
 
-module.exports.initData = () => {
-    return knexMigrator.init()
-        .then(function () {
-            return urlServiceUtils.isFinished();
-        });
+module.exports.initData = async () => {
+    await knexMigrator.init();
+    await urlServiceUtils.isFinished();
 };
 
-module.exports.clearBruteData = () => {
-    return db.knex('brute').truncate();
-};
-
-module.exports.truncate = (tableName) => {
+module.exports.truncate = async (tableName) => {
     if (config.get('database:client') === 'sqlite3') {
-        return db.knex(tableName).truncate();
+        await db.knex(tableName).truncate();
+        return;
     }
 
-    return db.knex.raw('SET FOREIGN_KEY_CHECKS=0;')
-        .then(function () {
-            return db.knex(tableName).truncate();
-        })
-        .then(function () {
-            return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
-        });
+    await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;');
+    await db.knex(tableName).truncate();
+    await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
 };
 
 // we must always try to delete all tables
-module.exports.clearData = () => {
+module.exports.clearData = async () => {
     debug('Database reset');
-    return knexMigrator.reset({force: true})
-        .then(function () {
-            urlServiceUtils.reset();
-        });
+    await knexMigrator.reset({force: true});
+    urlServiceUtils.reset();
 };
 
 /**
