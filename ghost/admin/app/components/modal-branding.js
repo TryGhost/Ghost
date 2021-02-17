@@ -8,6 +8,7 @@ import {
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {timeout} from 'ember-concurrency';
@@ -69,11 +70,12 @@ export default ModalComponent.extend({
     },
 
     didInsertElement() {
-        window.addEventListener('message', (event) => {
-            if (event && event.data && event.data === 'loaded') {
-                this.replacePreview();
-            }
-        });
+        this._previewListener = run.bind(this, this.handlePreviewIframeMessage);
+        window.addEventListener('message', this._previewListener);
+    },
+
+    willDestroyElement() {
+        window.removeEventListener('message', this._previewListener);
     },
 
     actions: {
@@ -177,10 +179,10 @@ export default ModalComponent.extend({
         this.ajax
             .post(ghostFrontendUrl, options)
             .then((response) => {
-                this.getPreviewIframe().contentWindow.postMessage(response, '*');
-            })
-            .catch(() => {
-                this.notifications.showAlert('Sorry, there was an error with preview. Please let the Ghost team know what happened.', {type: 'error'});
+                const iframe = this.getPreviewIframe();
+                if (iframe) {
+                    iframe.contentWindow.postMessage(response, '*');
+                }
             });
     },
 
@@ -189,8 +191,15 @@ export default ModalComponent.extend({
         // REset the src and trigger a reload
         this.getPreviewIframe().src = this.themePreviewUrl;
     },
+
     getPreviewIframe() {
         return document.getElementById('site-frame');
+    },
+
+    handlePreviewIframeMessage(event) {
+        if (event && event.data && event.data === 'loaded') {
+            this.replacePreview();
+        }
     },
 
     debounceUpdateAccentColor: task(function* (event) {
@@ -254,5 +263,4 @@ export default ModalComponent.extend({
             return;
         }
     }
-
 });
