@@ -5,88 +5,65 @@
         </h2>
     </GhCanvasHeader>
 
-    <section class="view-container gh-dashboard">
-        <div class="gh-dashboard-area grey mrr">
-            <h4 class="gh-dashboard-header">MRR</h4>
-            <div class="gh-dashboard-chart-container">
-                <div class="gh-dashboard-summary">
-                    <div class="data">$359</div>
-                    <div class="growth positive">+1.8%</div>
-                </div>
-                <div class="gh-dashboard-chart nodata">
-                    No data
-                </div>
-            </div>
-        </div>
-        <div class="gh-dashboard-area grey total-members">
-            <div class="gh-dashboard-chart-container">
-                <div class="gh-dashboard-summary small">
-                    <h4 class="gh-dashboard-header">Total members</h4>
-                    <div class="data-container">
-                        <div class="data">1,842</div>
+    <div class="view-container gh-dashboard">
+        <section class="gh-dashboard-area charts">
+            <div class="gh-dashboard-box mrr">
+                <h4 class="gh-dashboard-header">MRR</h4>
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-summary">
+                        <div class="data">$359</div>
                         <div class="growth positive">+1.8%</div>
                     </div>
-                    <h4 class="gh-dashboard-header">Paid members</h4>
-                    <div class="data-container">
-                        <div class="data">733</div>
-                        <div class="growth negative">-2.8%</div>
+                    <div class="gh-dashboard-chart nodata">
+                        No data
                     </div>
                 </div>
-                <div class="gh-dashboard-chart small nodata">
-                    No data
-                </div>
             </div>
-        </div>
-        <div class="gh-dashboard-area grey newsletter-open-rate">
-            <div class="gh-dashboard-chart-container">
-                <div class="gh-dashboard-summary small">
-                    <h4 class="gh-dashboard-header">Newsletter open rate</h4>
-                    <div class="data-container">
-                        <div class="data">92%</div>
-                        <div class="growth positive">+29%</div>
+            <div class="gh-dashboard-box total-members">
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-summary small">
+                        <h4 class="gh-dashboard-header">Total members</h4>
+                        <div class="data-container">
+                            <div class="data">1,842</div>
+                            <div class="growth positive">+1.8%</div>
+                        </div>
+                    </div>
+                    <div class="gh-dashboard-chart small nodata">
+                        No data
                     </div>
                 </div>
-                <div class="gh-dashboard-chart small nodata">
-                    No data
-                </div>
             </div>
-        </div>
-        <div class="gh-dashboard-area grey top-members">
-            <div class="flex items-center justify-between">
-                <h4 class="gh-dashboard-header">Top members</h4>
-                <h4 class="gh-dashboard-header secondary">Open rate</h4>
-            </div>
-            <div class="gh-dashboard-list nodata">
-                <ul class="gh-dashboard-top-members">
-                    <li class="gh-dashboard-top-member">
-                        <div class="member-details">
-                            <div class="avatar">AV</div>
-                            <span class="name">Name</span>
+            <div class="gh-dashboard-box paid-members">
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-summary small">
+                        <h4 class="gh-dashboard-header">Paid members</h4>
+                        <div class="data-container">
+                            <div class="data">733</div>
+                            <div class="growth negative">-9.1%</div>
                         </div>
-                        <span class="open-rate">%</span>
-                    </li>
-                    <li class="gh-dashboard-top-member">
-                        <div class="member-details">
-                            <div class="avatar">AV</div>
-                            <span class="name">Name</span>
+                    </div>
+                    <div class="gh-dashboard-chart small nodata">
+                        No data
+                    </div>
+                </div>
+            </div>
+            <div class="gh-dashboard-box newsletter-open-rate">
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-summary small">
+                        <h4 class="gh-dashboard-header">Newsletter open rate</h4>
+                        <div class="data-container">
+                            <div class="data">92%</div>
+                            <div class="growth positive">+29%</div>
                         </div>
-                        <span class="open-rate">%</span>
-                    </li>
-                </ul>
-                <div class="gh-dashboard-top-members-footer">
-                    <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
+                    </div>
+                    <div class="gh-dashboard-chart small nodata">
+                        No data
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="gh-dashboard-area activity-feed">
-            <div class="gh-dashboard-box">
-                <h4 class="gh-dashboard-header">Activity feed</h4>
-                <div class="content">
-                </div>
-            </div>
-        </div>
+        </section>
 
-        <div class="gh-dashboard-area mixed">
+        <section class="gh-dashboard-area mixed">
             {{#if (and this.session.user.isOwner (not this.feature.launchComplete))}}
             <div class="gh-dashboard-box">
                 <div class="content">
@@ -120,6 +97,43 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <section class="gh-dashboard-area members-activity">
+            <div class="gh-dashboard-box grey activity-feed">
+                <div class="flex items-center justify-between">
+                    <h4 class="gh-dashboard-header">Top members</h4>
+                    <h4 class="gh-dashboard-header secondary">Open rate</h4>
+                </div>
+                <div class="gh-dashboard-list nodata">
+                    <ul class="gh-dashboard-top-members">
+                        <li class="gh-dashboard-top-member">
+                            <div class="member-details">
+                                <div class="avatar">AV</div>
+                                <span class="name">Name</span>
+                            </div>
+                            <span class="open-rate">%</span>
+                        </li>
+                        <li class="gh-dashboard-top-member">
+                            <div class="member-details">
+                                <div class="avatar">AV</div>
+                                <span class="name">Name</span>
+                            </div>
+                            <span class="open-rate">%</span>
+                        </li>
+                    </ul>
+                    <div class="gh-dashboard-top-members-footer">
+                        <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-dashboard-box grey activity-feed">
+                <div class="gh-dashboard-box">
+                    <h4 class="gh-dashboard-header">Activity feed</h4>
+                    <div class="content">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </section>
