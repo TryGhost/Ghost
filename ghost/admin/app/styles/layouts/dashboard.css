@@ -18,7 +18,7 @@
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: .2px;
-    margin: -8px 0 4px;
+    margin: -4px 0 4px;
     padding: 0;
     color: var(--black);
 }
@@ -133,7 +133,7 @@
 .gh-dashboard-area.charts .gh-dashboard-box {
     border: none;
     border-radius: 0;
-    padding: 16px 0 0 24px;
+    padding: 22px 0 0 24px;
     margin: 0;
 }
 
@@ -265,7 +265,7 @@
 }
 
 .gh-dashboard-top-members {
-    display: flex;  
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     list-style: none;
@@ -352,4 +352,53 @@
     grid-row: 3 / 4;
     padding: 0;
     margin: 0;
+}
+
+.gh-dashboard-activity-feed {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    width: 100%;
+}
+
+.gh-dashboard-activity-feed li {
+    display: flex;
+    align-items: baseline;
+    flex-grow: 1;
+    width: 100%;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 0;
+}
+
+.gh-dashboard-activity-feed .activity {
+    display: flex;
+    align-items: baseline;
+    margin-right: 32px;
+    color: var(--midgrey);
+    line-height: 1.5em;
+    font-size: 1.3rem;
+}
+
+.gh-dashboard-activity-feed .member {
+    font-weight: 500;
+    color: var(--black);
+    font-size: 1.4rem;
+}
+
+.gh-dashboard-activity-feed .activity svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    margin-top: 1px;
+}
+
+.gh-dashboard-activity-feed .time {
+    white-space: nowrap;
+    margin-left: 12px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
 }
