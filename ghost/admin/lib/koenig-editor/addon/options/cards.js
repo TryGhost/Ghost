@@ -26,7 +26,8 @@ export const CARD_ICON_MAP = {
     embed: 'koenig/kg-card-type-gen-embed',
     bookmark: 'koenig/kg-card-type-bookmark',
     gallery: 'koenig/kg-card-type-gallery',
-    email: 'koenig/kg-card-type-gen-embed'
+    email: 'koenig/kg-card-type-gen-embed',
+    paywall: 'koenig/kg-card-type-divider'
 };
 
 // TODO: move koenigOptions directly into cards now that card components register
@@ -43,7 +44,8 @@ export default [
     }}),
     createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'}),
     createComponentCard('gallery', {hasEditMode: false}),
-    createComponentCard('email', {deleteIfEmpty: 'payload.html'})
+    createComponentCard('email', {deleteIfEmpty: 'payload.html'}),
+    createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 
 export const CARD_MENU = [
@@ -122,7 +124,7 @@ export const CARD_MENU = [
             desc: 'Mark end of free preview',
             matches: ['paywall'],
             type: 'card',
-            replaceArg: 'hr'
+            replaceArg: 'paywall'
         }]
     },
     {
