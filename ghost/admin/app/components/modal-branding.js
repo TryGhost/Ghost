@@ -85,7 +85,7 @@ export default ModalComponent.extend({
             this.save.perform();
         },
 
-        async removeImage(image) {
+        removeImage(image) {
             // setting `null` here will error as the server treats it as "null"
             this.settings.set(image, '');
             this.refreshPreview();
@@ -112,7 +112,7 @@ export default ModalComponent.extend({
          * @param  {UploadResult[]} results - Array of UploadResult objects
          * @return {string} The URL that was set on `this.settings.property`
          */
-        async imageUploaded(property, results) {
+        imageUploaded(property, results) {
             if (results[0]) {
                 let result = this.settings.set(property, results[0].url);
                 this.refreshPreview();
