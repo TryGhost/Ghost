@@ -2,6 +2,8 @@ const logging = require('../../../../../shared/logging');
 const {createIrreversibleMigration} = require('../../utils');
 
 module.exports = createIrreversibleMigration(async (knex) => {
+    logging.info('Updating unsplash setting value');
+
     const unsplashSetting = await knex('settings')
         .select('value')
         .where({
@@ -10,6 +12,12 @@ module.exports = createIrreversibleMigration(async (knex) => {
         .first();
 
     let isActive;
+
+    if (unsplashSetting && (unsplashSetting.value === 'true' || unsplashSetting.value === 'false')) {
+        logging.warn(`Skipping update of unsplash value. Current value is already boolean: ${unsplashSetting.value}`);
+        return;
+    }
+
     try {
         const value = JSON.parse(unsplashSetting.value);
         isActive = typeof value.isActive === 'boolean' ? value.isActive : true;
