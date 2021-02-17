@@ -257,6 +257,7 @@ describe('api/v3/content/posts', function () {
         let publicPost;
         let membersPost;
         let paidPost;
+        let membersPostWithPaywallCard;
 
         before(function () {
             // NOTE: ideally this would be set through Admin API request not a stub
@@ -282,10 +283,19 @@ describe('api/v3/content/posts', function () {
                 published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
             });
 
+            membersPostWithPaywallCard = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-have-a-taste',
+                visibility: 'members',
+                mobiledoc: '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}',
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                published_at: moment().add(5, 'seconds').toDate()
+            });
+
             return testUtils.fixtures.insertPosts([
                 publicPost,
                 membersPost,
-                paidPost
+                paidPost,
+                membersPostWithPaywallCard
             ]);
         });
 
@@ -362,6 +372,24 @@ describe('api/v3/content/posts', function () {
                 });
         });
 
+        it('can read "free" html and plaintext content of members post when using paywall card', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext&fields=html,plaintext`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    const post = jsonResponse.posts[0];
+
+                    localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
+                    post.html.should.eql('<p>Free content</p>');
+                    post.plaintext.should.eql('Free content');
+                });
+        });
+
         it('cannot browse members only posts content', function () {
             return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
                 .set('Origin', testUtils.API.getURL())
@@ -376,7 +404,7 @@ describe('api/v3/content/posts', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(14);
+                    jsonResponse.posts.should.have.length(15);
                     localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, null);
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -385,18 +413,19 @@ describe('api/v3/content/posts', function () {
                     jsonResponse.posts[0].slug.should.eql('thou-shalt-not-be-seen');
                     jsonResponse.posts[1].slug.should.eql('thou-shalt-be-paid-for');
                     jsonResponse.posts[2].slug.should.eql('free-to-see');
-                    jsonResponse.posts[7].slug.should.eql('organising-content');
+                    jsonResponse.posts[3].slug.should.eql('thou-shalt-have-a-taste');
+                    jsonResponse.posts[8].slug.should.eql('organising-content');
 
                     jsonResponse.posts[0].html.should.eql('');
                     jsonResponse.posts[1].html.should.eql('');
                     jsonResponse.posts[2].html.should.not.eql('');
-                    jsonResponse.posts[7].html.should.not.eql('');
+                    jsonResponse.posts[8].html.should.not.eql('');
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
                     jsonResponse.meta.pagination.limit.should.eql(15);
                     jsonResponse.meta.pagination.pages.should.eql(1);
-                    jsonResponse.meta.pagination.total.should.eql(14);
+                    jsonResponse.meta.pagination.total.should.eql(15);
                     jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                     jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
                     should.not.exist(jsonResponse.meta.pagination.next);
