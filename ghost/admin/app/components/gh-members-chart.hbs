@@ -5,25 +5,27 @@
     {{!-- Chart title/filter graph --}}
     <div class="gh-members-chart-box">
         <div class="gh-members-chart-header">
-            <h2 class="gh-heading-xs">Total members</h2>
-            <div class="view-actions">
-                <div class="gh-contentfilter gh-contentfilter-menu gh-contentfilter-type">
-                    <PowerSelect
-                        @selected={{this.selectedRange}}
-                        @options={{this.availableRanges}}
-                        @searchEnabled={{false}}
-                        @onChange={{action "changeDateRange"}}
-                        @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="gh-contentfilter-menu-trigger"
-                        @dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
-                        @matchTriggerWidth={{false}}
-                        data-test-type-select="true"
-                        as |range|
-                    >
-                        {{range.name}}
-                    </PowerSelect>
+            <h2 class="gh-heading-xs">{{chartHeading}}</h2>
+            {{#if this.showRange}}
+                <div class="view-actions">
+                    <div class="gh-contentfilter gh-contentfilter-menu gh-contentfilter-type">
+                        <PowerSelect
+                            @selected={{this.selectedRange}}
+                            @options={{this.availableRanges}}
+                            @searchEnabled={{false}}
+                            @onChange={{action "changeDateRange"}}
+                            @triggerComponent="gh-power-select/trigger"
+                            @triggerClass="gh-contentfilter-menu-trigger"
+                            @dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
+                            @matchTriggerWidth={{false}}
+                            data-test-type-select="true"
+                            as |range|
+                        >
+                            {{range.name}}
+                        </PowerSelect>
+                    </div>
                 </div>
-            </div>
+            {{/if}}
         </div>
         <div class="gh-members-chart-container">
             {{#if (not this.stats)}}
@@ -43,22 +45,24 @@
     </div>
 
     {{!-- Summary --}}
-    <div class="gh-content-box vertical gh-members-chart-summary">
-        <section>
-            <h3 class="gh-heading-xs">Total Members</h3>
-            <div class="gh-data-summary">{{if (not this.stats) "-" (format-number this.stats.total)}}</div>
-        </section>
-        <section>
-            {{#if (eq this.selectedRange.days "all-time")}}
-                <h3 class="gh-heading-xs">All time signups</h3>
-            {{else}}
-                <h3 class="gh-heading-xs">Signed up in the last {{this.selectedRange.days}} days</h3>
-            {{/if}}
-            <div class="gh-data-summary">{{if (not this.stats) "-" (format-number this.stats.total_in_range)}}</div>
-        </section>
-        <section>
-            <h3 class="gh-heading-xs">Signed up today</h3>
-            <div class="gh-data-summary">{{if (not this.stats) "-" (format-number this.stats.new_today)}}</div>
-        </section>
-    </div>
+    {{#if this.showSummary}}
+        <div class="gh-content-box vertical gh-members-chart-summary">
+            <section>
+                <h3 class="gh-heading-xs">{{chartHeading}}</h3>
+                <div class="gh-data-summary">{{if (not this.stats) "-" (format-number this.stats.total)}}</div>
+            </section>
+            <section>
+                {{#if (eq this.selectedRange.days "all-time")}}
+                    <h3 class="gh-heading-xs">All time signups</h3>
+                {{else}}
+                    <h3 class="gh-heading-xs">Signed up in the last {{this.selectedRange.days}} days</h3>
+                {{/if}}
+                <div class="gh-data-summary">{{if (not this.stats) "-" (format-number this.stats.total_in_range)}}</div>
+            </section>
+            <section>
+                <h3 class="gh-heading-xs">Signed up today</h3>
+                <div class="gh-data-summary">{{if (not this.stats) "-" (format-number this.stats.new_today)}}</div>
+            </section>
+        </div>
+    {{/if}}
 </div>

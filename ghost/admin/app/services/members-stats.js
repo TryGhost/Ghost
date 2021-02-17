@@ -1,4 +1,5 @@
 import Service from '@ember/service';
+import moment from 'moment';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
@@ -10,6 +11,8 @@ export default class MembersStatsService extends Service {
     @tracked days = '30';
     @tracked stats = null;
     @tracked events = null;
+    @tracked countStats = null;
+    @tracked mrrStats = null;
 
     fetch() {
         let daysChanged = this._lastFetchedDays !== this.days;
@@ -42,8 +45,80 @@ export default class MembersStatsService extends Service {
         return this._fetchTimelineTask.perform();
     }
 
+    fetchCounts() {
+        let daysChanged = this._lastFetchedDays !== this.days;
+        let staleData = this._lastFetched && this._lastFetched - new Date() > 1 * 60 * 1000;
+
+        // return an already in-progress promise unless params have changed
+        if (this._fetchCountsTask.isRunning && !this._forceRefresh && !daysChanged) {
+            return this._fetchCountsTask.last;
+        }
+
+        // return existing stats unless data is > 1 min old
+        if (this.countStats && !this._forceRefresh && !daysChanged && !staleData) {
+            return Promise.resolve(this.stats);
+        }
+
+        return this._fetchCountsTask.perform();
+    }
+
+    fillDates(data) {
+        let currentRangeDate = moment().subtract(29, 'days');
+
+        let endDate = moment().add(1, 'hour');
+        const output = {};
+
+        while (currentRangeDate.isBefore(endDate)) {
+            let dateStr = currentRangeDate.format('YYYY-MM-DD');
+            const dataOnDate = data.find(d => d.date === dateStr);
+            output[dateStr] = dataOnDate ? dataOnDate.value : 0;
+
+            currentRangeDate = currentRangeDate.add(1, 'day');
+        }
+        return output;
+    }
+
+    fetchMRR() {
+        let daysChanged = this._lastFetchedDays !== this.days;
+        let staleData = this._lastFetched && this._lastFetched - new Date() > 1 * 60 * 1000;
+
+        // return an already in-progress promise unless params have changed
+        if (this._fetchMRRTask.isRunning && !this._forceRefresh && !daysChanged) {
+            return this._fetchMRRTask.last;
+        }
+
+        // return existing stats unless data is > 1 min old
+        if (this.mrrStats && !this._forceRefresh && !daysChanged && !staleData) {
+            return Promise.resolve(this.stats);
+        }
+
+        return this._fetchMRRTask.perform();
+    }
+
     invalidate() {
         this._forceRefresh = true;
+    }
+
+    @task
+    *_fetchCountsTask() {
+        this._lastFetched = new Date();
+        this._forceRefresh = false;
+
+        let statsUrl = this.ghostPaths.url.api('members/stats/count');
+        let stats = yield this.ajax.request(statsUrl);
+        this.countStats = stats;
+        return stats;
+    }
+
+    @task
+    *_fetchMRRTask() {
+        this._lastFetched = new Date();
+        this._forceRefresh = false;
+
+        let statsUrl = this.ghostPaths.url.api('members/stats/mrr');
+        let stats = yield this.ajax.request(statsUrl);
+        this.mrrStats = stats;
+        return stats;
     }
 
     @task
