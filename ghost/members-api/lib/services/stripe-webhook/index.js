@@ -157,11 +157,11 @@ module.exports = class StripeWebhookService {
                 setupIntent.payment_method
             );
 
-            const subscriptions = member.related('stripeSubscriptions').fetch();
+            const subscriptions = await member.related('stripeSubscriptions').fetch();
 
             for (const subscription of subscriptions.models) {
                 const updatedSubscription = await this._stripeAPIService.updateSubscriptionDefaultPaymentMethod(
-                    subscription.id,
+                    subscription.get('subscription_id'),
                     setupIntent.payment_method
                 );
                 await this._memberRepository.linkSubscription({
