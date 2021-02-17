@@ -122,8 +122,8 @@
     --lightgrey-d2: color-mod(var(--lightgrey) h(-2) s(-2%) l(-7%));
 
     --whitegrey-l2: color-mod(var(--whitegrey) h(+7) s(-4%) l(+5%));
-    --whitegrey-l1: color-mod(var(--whitegrey) h(+1) s(-2%) l(+3%));
-    --whitegrey-d1: color-mod(var(--whitegrey) h(-1) s(-5%) l(-3%));
+    --whitegrey-l1: color-mod(var(--whitegrey) h(+1) s(-2%) l(+2%));
+    --whitegrey-d1: color-mod(var(--whitegrey) h(-1) s(-2%) l(-2%));
     --whitegrey-d2: color-mod(var(--whitegrey) h(-1) s(-11%) l(-6%));
 
     /* Global, high-level UI colors */
