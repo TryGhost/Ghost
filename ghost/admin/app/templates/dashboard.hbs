@@ -73,21 +73,53 @@
                         <span class="open-rate">%</span>
                     </li>
                 </ul>
+                <div class="gh-dashboard-top-members-footer">
+                    <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
+                </div>
             </div>
         </div>
         <div class="gh-dashboard-area activity-feed">
-            <h4 class="gh-dashboard-header">Activity feed</h4>
-            <div class="gh-dashboard-list nodata">
-                No data
+            <div class="gh-dashboard-box">
+                <h4 class="gh-dashboard-header">Activity feed</h4>
+                <div class="content">
+                </div>
             </div>
         </div>
 
         <div class="gh-dashboard-area mixed">
-            <div>Mixed content</div>
-
             {{#if (and this.session.user.isOwner (not this.feature.launchComplete))}}
-                <LinkTo @route="launch">Launch site - Finish setup</LinkTo>
+            <div class="gh-dashboard-box">
+                <div class="content">
+                    <h4>Launch your site</h4>
+                    <p>You are just a few steps away from launching your membership Ghost site.</p>
+                </div>
+                <div class="footer">
+                    <LinkTo class="gh-btn gh-btn-green" @route="launch"><span>Set up your site</span></LinkTo>
+                </div>
+            </div>
             {{/if}}
+
+            <div class="gh-dashboard-container col-2">
+                <div class="gh-dashboard-box">
+                    <div class="content">
+                        <h4>Introduction to Members</h4>
+                        <p>The native Members feature makes it possible to launch a membership business, develop a direct relationship with your audience and generate revenue from your creative work.</p>
+                    </div>
+                    <div class="footer">
+                        <a class="gh-btn gh-btn-outline" href="https://ghost.org/help/members-introduction/" target="_blank" rel="noopener"><span>Learn more about Members</span></a>
+                    </div>
+                </div>
+                <div class="gh-dashboard-box">
+                    <div class="content">
+                        <h4>Customise Members experience</h4>
+                        <p>Set membership signup details in Portal settings, remove or add your site's name and logo in newsletter emails.</p>
+                    </div>
+                    <div class="footer">
+                        <LinkTo class="gh-btn gh-btn-outline" @route="settings"><span>Portal settings</span></LinkTo>
+                        <LinkTo class="gh-btn gh-btn-outline ml2" @route="settings.members-email"><span>Email design</span></LinkTo>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 </section>
