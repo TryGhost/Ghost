@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'hr',
+    name: 'paywall',
     type: 'dom',
 
     render({env: {dom}}) {
