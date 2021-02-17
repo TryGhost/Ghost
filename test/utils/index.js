@@ -21,11 +21,9 @@ const db = require('../../core/server/data/db');
 const models = require('../../core/server/models');
 const urlUtils = require('../../core/shared/url-utils');
 const urlService = require('../../core/frontend/services/url');
-const routingService = require('../../core/frontend/services/routing');
 const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
-const imageLib = require('../../core/server/lib/image');
 const web = require('../../core/server/web');
 const themes = require('../../core/frontend/services/themes');
 
@@ -34,6 +32,8 @@ const APIUtils = require('./api');
 const configUtils = require('./configUtils');
 const dbUtils = require('./db-utils');
 const fixtureUtils = require('./fixture-utils');
+const urlServiceUtils = require('./url-service-utils');
+const oldIntegrationUtils = require('./old-integration-utils');
 const redirects = require('./redirects');
 const context = require('./fixtures/context');
 const DataGenerator = require('./fixtures/data-generator');
@@ -180,22 +180,8 @@ const startGhost = function startGhost(options) {
                 return themes.init();
             })
             .then(function () {
-                urlService.softReset();
-                events.emit('db.ready');
-
-                let timeout;
-
-                return new Promise(function (resolve) {
-                    (function retry() {
-                        clearTimeout(timeout);
-
-                        if (urlService.hasFinished()) {
-                            return resolve();
-                        }
-
-                        timeout = setTimeout(retry, 50);
-                    })();
-                });
+                urlServiceUtils.reset();
+                return urlServiceUtils.isFinished();
             })
             .then(function () {
                 web.shared.middlewares.customRedirects.reload();
@@ -324,99 +310,14 @@ module.exports = {
                 });
         }
     },
-
-    integrationTesting: {
-        overrideGhostConfig: function overrideGhostConfig(utils) {
-            utils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
-            utils.set('times:getImageSizeTimeoutInMS', 1);
-        },
-
-        defaultMocks: function defaultMocks(sandbox, options) {
-            options = options || {};
-
-            configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
-
-            const cacheStub = sandbox.stub(settingsCache, 'get');
-
-            cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
-            cacheStub.withArgs('timezone').returns('Etc/UTC');
-            cacheStub.withArgs('permalinks').returns('/:slug/');
-            cacheStub.withArgs('ghost_private_key').returns('-----BEGIN RSA PRIVATE KEY-----\nMB8CAQACAgPBAgMBAAECAgMFAgEfAgEfAgEXAgEXAgEA\n-----END RSA PRIVATE KEY-----\n');
-            cacheStub.withArgs('ghost_public_key').returns('-----BEGIN RSA PUBLIC KEY-----\nMAkCAgPBAgMBAAE=\n-----END RSA PUBLIC KEY-----\n');
-
-            if (options.amp) {
-                cacheStub.withArgs('amp').returns(true);
-            }
-
-            sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
-        },
-
-        initGhost: function () {
-            models.init();
-
-            settingsCache.shutdown();
-
-            return settingsService.init()
-                .then(() => {
-                    return themes.init();
-                });
-        },
-
-        routing: {
-            reset: function () {
-                routingService.registry.resetAll();
-            }
-        },
-
-        urlService: {
-            waitTillFinished: function (options = {dbIsReady: false}) {
-                let timeout;
-
-                if (!options.dbIsReady) {
-                    events.emit('db.ready');
-                }
-
-                return new Promise(function (resolve) {
-                    (function retry() {
-                        clearTimeout(timeout);
-
-                        if (urlService.hasFinished()) {
-                            return resolve();
-                        }
-
-                        timeout = setTimeout(retry, 50);
-                    })();
-                });
-            },
-
-            init: function () {
-                const routes = frontendSettingsService.get('routes');
-
-                const collectionRouter = new routingService.CollectionRouter('/', routes.collections['/']);
-                const tagRouter = new routingService.TaxonomyRouter('tag', routes.taxonomies.tag);
-                const authorRouter = new routingService.TaxonomyRouter('author', routes.taxonomies.author);
-
-                events.emit('db.ready');
-
-                return this.waitTillFinished();
-            },
-
-            reset: function () {
-                urlService.softReset();
-            },
-
-            resetGenerators: function () {
-                urlService.resetGenerators();
-                urlService.resources.reset({ignoreDBReady: true});
-            }
-        }
-    },
     teardownDb: dbUtils.teardown,
     truncate: dbUtils.truncate,
     setup: setup,
     createUser: createUser,
     createPost: createPost,
     createEmailedPost,
+
+    integrationTesting: oldIntegrationUtils,
 
     /**
      * renderObject:    res.render(view, dbResponse)

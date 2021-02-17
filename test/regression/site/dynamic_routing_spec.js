@@ -731,7 +731,7 @@ describe('Dynamic Routing', function () {
                     path: path.join(config.get('paths:appRoot'), 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
                 }
             }).then(() => {
-                return testUtils.integrationTesting.urlService.waitTillFinished({dbIsReady: true});
+                return testUtils.integrationTesting.urlService.isFinished({disableDbReadyEvent: true});
             });
         });
 

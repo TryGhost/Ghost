@@ -12,26 +12,13 @@ const db = require('../../core/server/data/db');
 const schema = require('../../core/server/data/schema').tables;
 const schemaTables = Object.keys(schema);
 
-const urlService = require('../../core/frontend/services/url');
+// Other Test Utilities
+const urlServiceUtils = require('./url-service-utils');
 
 module.exports.initData = () => {
     return knexMigrator.init()
         .then(function () {
-            events.emit('db.ready');
-
-            let timeout;
-
-            return new Promise(function (resolve) {
-                (function retry() {
-                    clearTimeout(timeout);
-
-                    if (urlService.hasFinished()) {
-                        return resolve();
-                    }
-
-                    timeout = setTimeout(retry, 50);
-                })();
-            });
+            return urlServiceUtils.isFinished();
         });
 };
 
@@ -58,7 +45,7 @@ module.exports.clearData = () => {
     debug('Database reset');
     return knexMigrator.reset({force: true})
         .then(function () {
-            urlService.softReset();
+            urlServiceUtils.reset();
         });
 };
 
@@ -68,7 +55,7 @@ module.exports.clearData = () => {
  */
 module.exports.teardown = () => {
     debug('Database teardown');
-    urlService.softReset();
+    urlServiceUtils.reset();
 
     const tables = schemaTables.concat(['migrations']);
 
