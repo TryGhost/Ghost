@@ -17,9 +17,15 @@
                         <div class="data">$0</div>
                         <div class="growth">0.0%</div>
                     </div>
-                    <div class="gh-dashboard-chart">
-                        <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" style="width:100%" />
-                    </div>
+                    {{#if this.mrrStats.data}}
+                        <div class="gh-dashboard-chart">
+                            <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" style="width:100%" @chartStats={{this.mrrStats.data}} />
+                        </div>
+                    {{else}}
+                        <div class="gh-dashboard-chart nodata">
+                            No data
+                        </div>
+                    {{/if}}
                 </div>
             </div>
             <div class="gh-dashboard-box total-members">
@@ -32,7 +38,7 @@
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
-                        <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="counts" style="width:100%" />
+                        No data
                     </div>
                 </div>
             </div>

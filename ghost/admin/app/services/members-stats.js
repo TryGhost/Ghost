@@ -46,16 +46,15 @@ export default class MembersStatsService extends Service {
     }
 
     fetchCounts() {
-        let daysChanged = this._lastFetchedDays !== this.days;
-        let staleData = this._lastFetched && this._lastFetched - new Date() > 1 * 60 * 1000;
+        let staleData = this._lastFetchedCounts && this._lastFetchedCounts - new Date() > 1 * 60 * 1000;
 
         // return an already in-progress promise unless params have changed
-        if (this._fetchCountsTask.isRunning && !this._forceRefresh && !daysChanged) {
+        if (this._fetchCountsTask.isRunning) {
             return this._fetchCountsTask.last;
         }
 
         // return existing stats unless data is > 1 min old
-        if (this.countStats && !this._forceRefresh && !daysChanged && !staleData) {
+        if (this.countStats && !this._forceRefresh && !staleData) {
             return Promise.resolve(this.stats);
         }
 
@@ -79,16 +78,15 @@ export default class MembersStatsService extends Service {
     }
 
     fetchMRR() {
-        let daysChanged = this._lastFetchedDays !== this.days;
-        let staleData = this._lastFetched && this._lastFetched - new Date() > 1 * 60 * 1000;
+        let staleData = this._lastFetchedMRR && this._lastFetchedMRR - new Date() > 1 * 60 * 1000;
 
         // return an already in-progress promise unless params have changed
-        if (this._fetchMRRTask.isRunning && !this._forceRefresh && !daysChanged) {
+        if (this._fetchMRRTask.isRunning) {
             return this._fetchMRRTask.last;
         }
 
         // return existing stats unless data is > 1 min old
-        if (this.mrrStats && !this._forceRefresh && !daysChanged && !staleData) {
+        if (this.mrrStats && !this._forceRefresh && !staleData) {
             return Promise.resolve(this.stats);
         }
 
@@ -101,8 +99,7 @@ export default class MembersStatsService extends Service {
 
     @task
     *_fetchCountsTask() {
-        this._lastFetched = new Date();
-        this._forceRefresh = false;
+        this._lastFetchedCounts = new Date();
 
         let statsUrl = this.ghostPaths.url.api('members/stats/count');
         let stats = yield this.ajax.request(statsUrl);
@@ -112,8 +109,7 @@ export default class MembersStatsService extends Service {
 
     @task
     *_fetchMRRTask() {
-        this._lastFetched = new Date();
-        this._forceRefresh = false;
+        this._lastFetchedMRR = new Date();
 
         let statsUrl = this.ghostPaths.url.api('members/stats/mrr');
         let stats = yield this.ajax.request(statsUrl);
