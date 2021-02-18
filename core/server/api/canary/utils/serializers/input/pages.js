@@ -5,7 +5,7 @@ const mobiledoc = require('../../../../../lib/mobiledoc');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
-const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const metaSchema = require('../../../../../data/schema').tables.meta;
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
@@ -72,10 +72,10 @@ function defaultFormat(frame) {
     frame.options.formats = 'mobiledoc';
 }
 
-function handlePostsMeta(frame) {
-    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+function handleMeta(frame) {
+    let metaAttrs = _.keys(_.omit(metaSchema, ['id', 'post_id']));
     let meta = _.pick(frame.data.pages[0], metaAttrs);
-    frame.data.pages[0].posts_meta = meta;
+    frame.data.pages[0].meta = meta;
 }
 
 /**
@@ -180,7 +180,7 @@ module.exports = {
             });
         }
 
-        handlePostsMeta(frame);
+        handleMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);
     },
@@ -189,7 +189,7 @@ module.exports = {
         debug('edit');
         this.add(...arguments, {add: false});
 
-        handlePostsMeta(frame);
+        handleMeta(frame);
         forceStatusFilter(frame);
         forcePageFilter(frame);
     },

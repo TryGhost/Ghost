@@ -62,7 +62,7 @@ module.exports = {
             ['slug', 'type']
         ]
     },
-    posts_meta: {
+    meta: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
         og_image: {type: 'string', maxlength: 2000, nullable: true},

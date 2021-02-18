@@ -55,7 +55,7 @@ describe('Post Model', function () {
                         return testUtils.truncate('posts');
                     })
                     .then(function () {
-                        return testUtils.truncate('posts_meta');
+                        return testUtils.truncate('meta');
                     });
             });
 
@@ -184,7 +184,7 @@ describe('Post Model', function () {
                         return testUtils.truncate('posts');
                     })
                     .then(function () {
-                        return testUtils.truncate('posts_meta');
+                        return testUtils.truncate('meta');
                     });
             });
 
@@ -705,7 +705,7 @@ describe('Post Model', function () {
                         return testUtils.truncate('posts');
                     })
                     .then(function () {
-                        return testUtils.truncate('posts_meta');
+                        return testUtils.truncate('meta');
                     });
             });
 
@@ -1136,7 +1136,7 @@ describe('Post Model', function () {
                     codeinjection_foot: '<script src="http://127.0.0.1:2369/assets/foot.js"></script>',
                     feature_image: 'http://127.0.0.1:2369/content/images/feature.png',
                     canonical_url: 'http://127.0.0.1:2369/canonical',
-                    posts_meta: {
+                    meta: {
                         og_image: 'http://127.0.0.1:2369/content/images/og.png',
                         twitter_image: 'http://127.0.0.1:2369/content/images/twitter.png'
                     }
@@ -1151,10 +1151,10 @@ describe('Post Model', function () {
                     createdPost.get('feature_image').should.equal('/content/images/feature.png');
                     createdPost.get('canonical_url').should.equal('/canonical');
 
-                    const postMeta = createdPost.relations.posts_meta;
+                    const meta = createdPost.relations.meta;
 
-                    postMeta.get('og_image').should.equal('/content/images/og.png');
-                    postMeta.get('twitter_image').should.equal('/content/images/twitter.png');
+                    meta.get('og_image').should.equal('/content/images/og.png');
+                    meta.get('twitter_image').should.equal('/content/images/twitter.png');
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
@@ -1183,7 +1183,7 @@ describe('Post Model', function () {
                         return testUtils.truncate('posts');
                     })
                     .then(function () {
-                        return testUtils.truncate('posts_meta');
+                        return testUtils.truncate('meta');
                     });
             });
 
@@ -1368,7 +1368,7 @@ describe('Post Model', function () {
                         return testUtils.truncate('posts');
                     })
                     .then(function () {
-                        return testUtils.truncate('posts_meta');
+                        return testUtils.truncate('meta');
                     });
             });
 
@@ -1609,7 +1609,7 @@ describe('Post Model', function () {
                     return testUtils.truncate('posts');
                 })
                 .then(function () {
-                    return testUtils.truncate('posts_meta');
+                    return testUtils.truncate('meta');
                 });
         });
 

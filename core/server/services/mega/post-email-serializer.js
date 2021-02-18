@@ -128,8 +128,8 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     post.published_at = momentDate.tz(timezone).format('DD MMM YYYY');
 
     post.authors = post.authors && post.authors.map(author => author.name).join(',');
-    if (post.posts_meta) {
-        post.email_subject = post.posts_meta.email_subject;
+    if (post.meta) {
+        post.email_subject = post.meta.email_subject;
     }
 
     // we use post.excerpt as a hidden piece of text that is picked up by some email

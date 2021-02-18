@@ -74,8 +74,8 @@ fixtures = {
                 });
             })
             .then(function () {
-                return Promise.map(DataGenerator.forKnex.posts_meta, function (postMeta) {
-                    return models.PostsMeta.add(postMeta, module.exports.context.internal);
+                return Promise.map(DataGenerator.forKnex.meta, function (meta) {
+                    return models.Meta.add(meta, module.exports.context.internal);
                 });
             });
     },

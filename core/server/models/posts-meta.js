@@ -1,8 +1,8 @@
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils');
 
-const PostsMeta = ghostBookshelf.Model.extend({
-    tableName: 'posts_meta',
+const Meta = ghostBookshelf.Model.extend({
+    tableName: 'meta',
 
     onSaving: function onSaving() {
         const urlTransformMap = {
@@ -34,5 +34,5 @@ const PostsMeta = ghostBookshelf.Model.extend({
 });
 
 module.exports = {
-    PostsMeta: ghostBookshelf.model('PostsMeta', PostsMeta)
+    Meta: ghostBookshelf.model('Meta', Meta)
 };

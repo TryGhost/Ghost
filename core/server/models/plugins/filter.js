@@ -25,8 +25,8 @@ const RELATIONS = {
         joinFrom: 'member_id',
         joinTo: 'label_id'
     },
-    posts_meta: {
-        tableName: 'posts_meta',
+    meta: {
+        tableName: 'meta',
         type: 'oneToOne',
         joinFrom: 'post_id'
     }

@@ -21,7 +21,7 @@ module.exports = {
         ],
         permissions: true,
         query(frame) {
-            const options = Object.assign(frame.options, {formats: 'html,plaintext', withRelated: ['authors', 'posts_meta']});
+            const options = Object.assign(frame.options, {formats: 'html,plaintext', withRelated: ['authors', 'meta']});
             const data = Object.assign(frame.data, {status: 'all'});
             return models.Post.findOne(data, options)
                 .then((model) => {

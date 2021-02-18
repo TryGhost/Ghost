@@ -4,15 +4,15 @@ const uuid = require('uuid');
 const BaseImporter = require('./base');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const validation = require('../../../validation');
-const postsMetaSchema = require('../../../schema').tables.posts_meta;
-const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
+const metaSchema = require('../../../schema').tables.meta;
+const metaAttrs = _.keys(_.omit(metaSchema, ['id']));
 
 class PostsImporter extends BaseImporter {
     constructor(allDataFromFile) {
         super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors', 'posts_meta'],
+            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors', 'meta'],
             requiredImportedData: ['tags'],
             requiredExistingData: ['tags']
         });
@@ -48,10 +48,10 @@ class PostsImporter extends BaseImporter {
     /**
      * Sanitizes post metadata, picking data from sepearate table(for >= v3) or post itself(for < v3)
      */
-    sanitizePostsMeta(model) {
-        let postsMetaFromFile = _.find(this.requiredFromFile.posts_meta, {post_id: model.id}) || _.pick(model, metaAttrs);
-        let postsMetaData = Object.assign({}, _.mapValues(postsMetaSchema, () => null), postsMetaFromFile);
-        model.posts_meta = postsMetaData;
+    sanitizeMeta(model) {
+        let metaFromFile = _.find(this.requiredFromFile.meta, {post_id: model.id}) || _.pick(model, metaAttrs);
+        let metaData = Object.assign({}, _.mapValues(metaSchema, () => null), metaFromFile);
+        model.meta = metaData;
         _.each(metaAttrs, (attr) => {
             delete model[attr];
         });
@@ -238,7 +238,7 @@ class PostsImporter extends BaseImporter {
                 model.mobiledoc = JSON.stringify(mobiledoc);
                 model.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
             }
-            this.sanitizePostsMeta(model);
+            this.sanitizeMeta(model);
         });
 
         // NOTE: We only support removing duplicate posts within the file to import.

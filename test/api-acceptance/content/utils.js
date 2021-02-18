@@ -32,9 +32,9 @@ const expectedProperties = {
         .concat('excerpt')
         // Access is a calculated property in >= v3
         .concat('access')
-        // returns meta fields from `posts_meta` schema
+        // returns meta fields from `meta` schema
         .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
+            ..._(schema.meta).keys().without('post_id', 'id')
         )
         .concat('reading_time')
     ,
