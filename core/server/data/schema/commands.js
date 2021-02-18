@@ -64,6 +64,46 @@ function dropColumn(tableName, column, transaction) {
 }
 
 /**
+ * Checks if unique index exists in a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to add unique constraint to
+ * @param {string|[string]} columns - column(s) to form unique constraint with
+ * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction.knex - knex instance
+ */
+async function hasUnique(tableName, columns, transaction) {
+    const knex = (transaction || db.knex);
+    const client = knex.client.config.client;
+    const columnNames = _.isArray(columns) ? columns.join('_') : columns;
+    const constraintName = `${tableName}_${columnNames}_unique`;
+
+    if (client === 'mysql') {
+        const dbName = knex.client.config.connection.database;
+        const [rawConstraints] = await knex.raw(`
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE 1=1
+                AND CONSTRAINT_SCHEMA=:dbName
+                AND TABLE_NAME=:tableName
+                AND CONSTRAINT_TYPE='UNIQUE'`, {dbName, tableName});
+        const dbConstraints = rawConstraints.map(c => c.CONSTRAINT_NAME);
+
+        if (dbConstraints.includes(constraintName)) {
+            return true;
+        }
+    } else {
+        const rawConstraints = await knex.raw(`PRAGMA index_list('${tableName}');`);
+        const dbConstraints = rawConstraints.map(c => c.name);
+
+        if (dbConstraints.includes(constraintName)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Adds an unique index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add unique constraint to
@@ -71,10 +111,17 @@ function dropColumn(tableName, column, transaction) {
  * @param {Object} transaction - connnection object containing knex reference
  * @param {Object} transaction.knex - knex instance
  */
-function addUnique(tableName, columns, transaction) {
-    return (transaction || db.knex).schema.table(tableName, function (table) {
-        table.unique(columns);
-    });
+async function addUnique(tableName, columns, transaction) {
+    const hasUniqueConstraint = await hasUnique(tableName, columns, transaction);
+
+    if (!hasUniqueConstraint) {
+        logging.info(`Adding unique constraint for: ${columns} in table ${tableName}`);
+        return (transaction || db.knex).schema.table(tableName, function (table) {
+            table.unique(columns);
+        });
+    } else {
+        logging.warn(`Constraint for: ${columns} already exists for table: ${tableName}`);
+    }
 }
 
 /**
@@ -85,10 +132,17 @@ function addUnique(tableName, columns, transaction) {
  * @param {Object} transaction - connnection object containing knex reference
  * @param {Object} transaction.knex - knex instance
  */
-function dropUnique(tableName, columns, transaction) {
-    return (transaction || db.knex).schema.table(tableName, function (table) {
-        table.dropUnique(columns);
-    });
+async function dropUnique(tableName, columns, transaction) {
+    const hasUniqueConstraint = await hasUnique(tableName, columns, transaction);
+
+    if (hasUniqueConstraint) {
+        logging.info(`Dropping unique constraint for: ${columns} in table: ${tableName}`);
+        return (transaction || db.knex).schema.table(tableName, function (table) {
+            table.dropUnique(columns);
+        });
+    } else {
+        logging.warn(`Constraint for: ${columns} does not exist for table: ${tableName}`);
+    }
 }
 
 /**
