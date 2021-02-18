@@ -115,31 +115,34 @@ const createEmailedPost = async function createEmailedPost({postOptions, emailOp
 
 let ghostServer;
 
-const dirtyDataFunction = () => {
-    /**
-     * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
-     * has no easy way to access existing resource id's, which are added from the Ghost fixtures.
-     * I can do `testUtils.existingData.roles[0].id`.
-     */
+/**
+ * Because we use ObjectID we don't know the ID of fixtures ahead of time
+ * This function fetches all of our fixtures and exposes them so that tests can use them
+ * @TODO: Optimise this by making it optional / selective
+ */
+const exposeFixtures = async () => {
+    console.time('Expose fixtures'); // eslint-disable-line no-console
+    const fixturePromises = {
+        roles: models.Role.findAll({columns: ['id']}),
+        users: models.User.findAll({columns: ['id', 'email']}),
+        tags: models.Tag.findAll({columns: ['id']}),
+        apiKeys: models.ApiKey.findAll({withRelated: 'integration'})
+    };
+    const keys = Object.keys(fixturePromises);
     module.exports.existingData = {};
-    return models.Role.findAll({columns: ['id']})
-        .then((roles) => {
-            module.exports.existingData.roles = roles.toJSON();
 
-            return models.User.findAll({columns: ['id', 'email']});
-        })
-        .then((users) => {
-            module.exports.existingData.users = users.toJSON(context.internal);
+    return Promise
+        .all(Object.values(fixturePromises))
+        .then((results) => {
+            for (let i = 0; i < keys.length; i += 1) {
+                module.exports.existingData[keys[i]] = results[i].toJSON(context.internal);
+            }
 
-            return models.Tag.findAll({columns: ['id']});
+            console.timeEnd('Expose fixtures'); // eslint-disable-line no-console
         })
-        .then((tags) => {
-            module.exports.existingData.tags = tags.toJSON();
-
-            return models.ApiKey.findAll({withRelated: 'integration'});
-        })
-        .then((keys) => {
-            module.exports.existingData.apiKeys = keys.toJSON(context.internal);
+        .catch((err) => {
+            console.error('Unable to expose fixtures', err); // eslint-disable-line no-console
+            process.exit(1);
         });
 };
 
@@ -223,8 +226,8 @@ const startGhost = async function startGhost(options) {
         // Trigger server start, which is ONLY used for theme reload
         events.emit('server.start');
 
-        // Expose some data, wrap-up and return
-        await dirtyDataFunction();
+        // Expose fixture data, wrap-up and return
+        await exposeFixtures();
         console.log('Restart Mode'); // eslint-disable-line no-console
         console.timeEnd('Start Ghost'); // eslint-disable-line no-console
 
@@ -281,8 +284,8 @@ const startGhost = async function startGhost(options) {
     // Wait for the URL service to be ready, which happens after boot, but don't re-trigger db.ready
     await urlServiceUtils.isFinished({disableDbReadyEvent: true});
 
-    // Expose some data, wrap-up and return
-    await dirtyDataFunction();
+    // Expose fixture data, wrap-up and return
+    await exposeFixtures();
     console.log('Fresh Start Mode'); // eslint-disable-line no-console
     console.timeEnd('Start Ghost'); // eslint-disable-line no-console
     return ghostServer;
