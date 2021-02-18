@@ -154,7 +154,7 @@
     grid-column-gap: var(--dashboard-gap);
     height: 18vw;
     min-height: 180px;
-    max-height: 350px;
+    max-height: 280px;
     padding: 0 24px 24px;
 }
 
@@ -234,12 +234,12 @@
 }
 
 .gh-dashboard-summary .growth {
-    background: var(--lightgrey);
+    background: var(--whitegrey-d1);
     border-radius: 3px;
     font-size: 1.8rem;
     line-height: 1;
     font-weight: 500;
-    color: var(--darkgrey);
+    color: var(--midgrey);
     padding: 6px 8px;
     margin: 12px 0;
 }
