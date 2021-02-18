@@ -100,8 +100,8 @@ describe('Email Preview API', function () {
                 title: 'Post with email-only card',
                 slug: 'email-only-card',
                 mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[["a",["href","https://ghost.org"]]],"sections":[[1,"p",[[0,[],0,"Testing "],[0,[0],1,"links"],[0,[],0," in email excerpt and apostrophes \'"]]]]}',
-                html: '<p>This is the actual post content...</p>',
-                plaintext: 'This is the actual post content...',
+                html: '<p>Testing <a href="https://ghost.org">links</a> in email excerpt and apostrophes \'</p>',
+                plaintext: 'Testing links [https://ghost.org] in email excerpt and apostrophes \'',
                 status: 'draft',
                 uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c904'
             });
