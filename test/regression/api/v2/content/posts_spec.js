@@ -326,7 +326,7 @@ describe('api/v2/content/posts', function () {
 
         it('can read "free" html and plaintext content of members post when using paywall card', function () {
             return request
-                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext&fields=html,plaintext`))
+                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -336,7 +336,7 @@ describe('api/v2/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
-                    localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
+                    localUtils.API.checkResponse(post, 'post', ['plaintext'], null);
                     post.html.should.eql('<p>Free content</p>');
                     post.plaintext.should.eql('Free content');
                     post.excerpt.should.eql('Free content');
@@ -344,7 +344,7 @@ describe('api/v2/content/posts', function () {
         });
 
         it('cannot browse members only posts content', function () {
-            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -358,7 +358,7 @@ describe('api/v2/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(15);
-                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext']);
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
