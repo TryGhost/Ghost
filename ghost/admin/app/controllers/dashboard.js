@@ -13,10 +13,27 @@ export default class DashboardController extends Controller {
         error: null,
         loading: false
     };
+    @tracked
+    mrrStats = {
+        data: null,
+        error: null,
+        loading: false
+    };
 
     constructor(...args) {
         super(...args);
         this.loadEvents();
+        this.loadCharts();
+    }
+
+    loadCharts() {
+        this.membersStats.fetchMRR().then((stats) => {
+            this.mrrStats.data = stats;
+            this.events.loading = false;
+        }, (error) => {
+            this.mrrStats.error = error;
+            this.events.loading = false;
+        });
     }
 
     loadEvents() {
