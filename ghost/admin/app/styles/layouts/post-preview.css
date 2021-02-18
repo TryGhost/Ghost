@@ -424,6 +424,15 @@
     white-space: nowrap;
 }
 
+@media (max-width: 1080px) {
+    .gh-social-twitter-preview-title,
+    .gh-social-twitter-preview-desc,
+    .gh-social-twitter-preview-meta {
+        width: 100%;
+        max-width: 487px;
+    }
+}
+
 .gh-social-twitter-preview-meta svg {
     width: 16px;
     height: auto;
@@ -472,13 +481,18 @@
     margin-bottom: 40px;
 }
 
+@media (max-width: 1080px) {
+    .gh-seo-preview {
+        width: 100%;
+    }
+}
+
 .gh-seo-search-bar {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     width: 100%;
     height: 28px;
-    margin-bottom: 48px;
     background: #f4f5f6;
     border-radius: 14px;
 }
@@ -491,7 +505,7 @@
 }
 
 .gh-seo-preview-link {
-    width: 340px;
+    max-width: 340px;
     overflow: hidden;
     margin: 2px 0;
     color: #202124;
