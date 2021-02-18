@@ -68,9 +68,9 @@
 
         <section class="gh-dashboard-area mixed">
             {{#if (and this.session.user.isOwner (not this.feature.launchComplete))}}
-            <div class="gh-dashboard-box">
+            <div class="gh-dashboard-box green">
                 <div class="content">
-                    <h4>Launch your site</h4>
+                    <h3>Launch your site</h3>
                     <p>You are just a few steps away from launching your membership Ghost site.</p>
                 </div>
                 <div class="footer">
@@ -100,6 +100,13 @@
                     </div>
                 </div>
             </div>
+            <div class="gh-dashboard-container">
+                <div class="gh-dashboard-box">
+                    <div class="content">
+                        <p>...</p>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section class="gh-dashboard-area members-activity">
@@ -112,17 +119,17 @@
                     <ul class="gh-dashboard-top-members">
                         <li class="gh-dashboard-top-member">
                             <div class="member-details">
-                                <div class="avatar">AV</div>
-                                <span class="name">Name</span>
+                                <div class="avatar">KL</div>
+                                <span class="name">Kadin Levin</span>
                             </div>
-                            <span class="open-rate">%</span>
+                            <span class="open-rate">97%</span>
                         </li>
                         <li class="gh-dashboard-top-member">
                             <div class="member-details">
-                                <div class="avatar">AV</div>
-                                <span class="name">Name</span>
+                                <div class="avatar">TS</div>
+                                <span class="name">Terry Stanton</span>
                             </div>
-                            <span class="open-rate">%</span>
+                            <span class="open-rate">91%</span>
                         </li>
                     </ul>
                     <div class="gh-dashboard-top-members-footer">
@@ -159,6 +166,11 @@
                             <span class="time">3 days ago</span>
                         </li>
                     </ul>
+                </div>
+            </div>
+            <div class="gh-dashboard-box">
+                <div class="content">
+                    <p>...</p>
                 </div>
             </div>
         </section>
