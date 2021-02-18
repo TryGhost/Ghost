@@ -20,7 +20,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         .first();
 
     if (slackURLSetting && slackUsernameSetting) {
-        logging.warn('slack_url and slack_username setting already exitst');
+        logging.warn('slack_url and slack_username settings already exist');
         return;
     }
 
