@@ -1,6 +1,5 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
-import UnsplashObject from 'ghost-admin/models/unsplash-integration';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
@@ -24,11 +23,8 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
                 // server doesn't have any unsplash settings by default but it can provide
                 // overrides via config:
-                // - isActive: use as default but allow settings override
-                // - applicationId: total override, no field is shown if present
-                let unsplash = UnsplashObject.create({
-                    isActive: true
-                });
+                // - unsplash: use as default but allow settings override
+                let unsplash = true;
 
                 settings.set('unsplash', unsplash);
             });

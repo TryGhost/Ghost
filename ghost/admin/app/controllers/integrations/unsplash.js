@@ -21,9 +21,9 @@ export default Controller.extend({
 
         update(value) {
             if (!this.dirtyAttributes) {
-                this.set('rollbackValue', this.get('unsplashSettings.isActive'));
+                this.set('rollbackValue', this.get('unsplashSettings'));
             }
-            this.set('unsplashSettings.isActive', value);
+            this.set('unsplashSettings', value);
             this.set('dirtyAttributes', true);
         },
 
@@ -60,7 +60,7 @@ export default Controller.extend({
             }
 
             // roll back changes on model props
-            this.set('unsplashSettings.isActive', this.rollbackValue);
+            this.set('unsplashSettings', this.rollbackValue);
             this.set('dirtyAttributes', false);
             this.set('rollbackValue', null);
 
