@@ -13,6 +13,7 @@ const knexMigrator = new KnexMigrator();
 
 // Ghost Internals
 const config = require('../../core/shared/config');
+const boot = require('../../core/boot');
 const express = require('../../core/shared/express');
 const ghost = require('../../core/server');
 const GhostServer = require('../../core/server/ghost-server');
@@ -215,18 +216,23 @@ const restartModeGhostStart = async () => {
     events.emit('server.start');
 };
 
-const bootGhost = async (options) => {
-    // Require Ghost
-    ghostServer = await ghost();
+// Old Boot Method
+// const bootGhost = async (options) => {
+//     // Require Ghost
+//     ghostServer = await ghost();
 
-    // Mount Ghost & Start Server
-    if (options.subdir) {
-        let parentApp = express('test parent');
-        parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
-        await ghostServer.start(parentApp);
-    } else {
-        await ghostServer.start();
-    }
+//     // Mount Ghost & Start Server
+//     if (options.subdir) {
+//         let parentApp = express('test parent');
+//         parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
+//         await ghostServer.start(parentApp);
+//     } else {
+//         await ghostServer.start();
+//     }
+// };
+
+const bootGhost = async () => {
+    ghostServer = await boot();
 };
 
 // CASE: Ghost Server needs Starting

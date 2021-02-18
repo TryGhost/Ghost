@@ -136,6 +136,7 @@ const bootGhost = async () => {
         const GhostServer = require('./server/ghost-server');
         ghostServer = new GhostServer();
         await ghostServer.start(rootApp);
+        ghostServer.rootApp = rootApp;
 
         const logging = require('./shared/logging');
         logging.info('Ghost server start', (Date.now() - startTime) / 1000 + 's');
@@ -161,6 +162,9 @@ const bootGhost = async () => {
         logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
         debug('boot announcing readiness');
         GhostServer.announceServerReadiness();
+
+        // We return the server for testing purposes
+        return ghostServer;
     } catch (error) {
         const errors = require('@tryghost/errors');
         // @TODO: fix these extra requires
