@@ -146,26 +146,10 @@ const exposeFixtures = async () => {
         });
 };
 
-/**
- * 1. reset & init db
- * 2. start the server once
- *
- * @TODO: tidy up the tmp folders
- */
-const startGhost = async function startGhost(options) {
-    console.time('Start Ghost'); // eslint-disable-line no-console
-    options = _.merge({
-        redirectsFile: true,
-        redirectsFileExt: '.json',
-        forceStart: false,
-        copyThemes: true,
-        copySettings: true,
-        contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
-        subdir: false
-    }, options);
+const prepareContentFolder = (options) => {
+    console.time('Prepare Content Folder'); // eslint-disable-line no-console
 
     const contentFolderForTests = options.contentFolder;
-    let parentApp;
 
     /**
      * We never use the root content folder for testing!
@@ -194,53 +178,56 @@ const startGhost = async function startGhost(options) {
         fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
 
-    // CASE: Ghost Server is Running
-    // In this case we need to reset things so it's as though Ghost just booted:
-    // - truncate database
-    // - re-run default fixtures
-    //
-    // - reload affected services
-    if (ghostServer && ghostServer.httpServer && !options.forceStart) {
-        // Teardown truncates all tables and also calls urlServiceUtils.reset();
-        await dbUtils.teardown();
+    console.timeEnd('Prepare Content Folder'); // eslint-disable-line no-console
+};
 
-        // The tables have been truncated, this runs the fixture init task (init file 2) to re-add our default fixtures
-        await knexMigrator.init({only: 2});
+// CASE: Ghost Server is Running
+// In this case we need to reset things so it's as though Ghost just booted:
+// - truncate database
+// - re-run default fixtures
+// - reload affected services
+const restartModeGhostStart = async () => {
+    console.log('Restart Mode'); // eslint-disable-line no-console
 
-        // Reset the settings cache
-        // @TODO: Prob A: why/how is this different to using settingsCache.reset()
-        settingsCache.shutdown();
-        await settingsService.init();
+    // Teardown truncates all tables and also calls urlServiceUtils.reset();
+    await dbUtils.teardown();
 
-        // Reload the frontend
-        await frontendSettingsService.init();
-        await themes.init();
+    // The tables have been truncated, this runs the fixture init task (init file 2) to re-add our default fixtures
+    await knexMigrator.init({only: 2});
 
-        // Reload the URL service & wait for it to be ready again
-        // @TODO: Prob B: why/how is this different to urlService.resetGenerators?
-        urlServiceUtils.reset();
-        await urlServiceUtils.isFinished();
-        // @TODO: why does this happen _after_ URL service
-        web.shared.middlewares.customRedirects.reload();
+    // Reset the settings cache
+    // @TODO: Prob A: why/how is this different to using settingsCache.reset()
+    settingsCache.shutdown();
+    await settingsService.init();
 
-        // Trigger server start, which is ONLY used for theme reload
-        events.emit('server.start');
+    // Reload the frontend
+    await frontendSettingsService.init();
+    await themes.init();
 
-        // Expose fixture data, wrap-up and return
-        await exposeFixtures();
-        console.log('Restart Mode'); // eslint-disable-line no-console
-        console.timeEnd('Start Ghost'); // eslint-disable-line no-console
+    // Reload the URL service & wait for it to be ready again
+    // @TODO: Prob B: why/how is this different to urlService.resetGenerators?
+    urlServiceUtils.reset();
+    await urlServiceUtils.isFinished();
+    // @TODO: why does this happen _after_ URL service
+    web.shared.middlewares.customRedirects.reload();
 
-        return ghostServer;
+    // Trigger server start, which is ONLY used for theme reload
+    events.emit('server.start');
+};
+
+// CASE: Ghost Server needs Starting
+// In this case we need to ensure that Ghost is started cleanly:
+// - ensure the DB is reset
+// - CASE: If we are in force start mode the server is already running so we
+//      - stop the server (if we are in force start mode it will be running)
+//      - reload affected services - just settings and not the frontend!?
+// - Start Ghost: Uses OLD Boot process
+const freshModeGhostStart = async (options) => {
+    if (options.forceStart) {
+        console.log('Force Start Mode'); // eslint-disable-line no-console
+    } else {
+        console.log('Fresh Start Mode'); // eslint-disable-line no-console
     }
-
-    // CASE: Ghost Server needs Starting
-    // In this case we need to ensure that Ghost is started cleanly:
-    // - ensure the DB is reset
-    // - CASE: If we are in force start mode the server is already running so we
-    //      - stop the server (if we are in force start mode it will be running)
-    //      - reload affected services - just settings and not the frontend!?
-    // - Start Ghost: Uses OLD Boot process
 
     // Reset the DB
     await knexMigrator.reset({force: true});
@@ -271,7 +258,7 @@ const startGhost = async function startGhost(options) {
 
     // Mount Ghost & Start Server
     if (options.subdir) {
-        parentApp = express('test parent');
+        let parentApp = express('test parent');
         parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
         await ghostServer.start(parentApp);
     } else {
@@ -283,23 +270,47 @@ const startGhost = async function startGhost(options) {
 
     // Wait for the URL service to be ready, which happens after boot, but don't re-trigger db.ready
     await urlServiceUtils.isFinished({disableDbReadyEvent: true});
+};
+
+const startGhost = async (options) => {
+    console.time('Start Ghost'); // eslint-disable-line no-console
+    options = _.merge({
+        redirectsFile: true,
+        redirectsFileExt: '.json',
+        forceStart: false,
+        copyThemes: true,
+        copySettings: true,
+        contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
+        subdir: false
+    }, options);
+
+    // Ensure we have tmp content folders populated ready for testing
+    // @TODO: tidy up the tmp folders after tests
+    prepareContentFolder(options);
+
+    if (ghostServer && ghostServer.httpServer && !options.forceStart) {
+        await restartModeGhostStart(options);
+    } else {
+        await freshModeGhostStart(options);
+    }
 
     // Expose fixture data, wrap-up and return
     await exposeFixtures();
-    console.log('Fresh Start Mode'); // eslint-disable-line no-console
     console.timeEnd('Start Ghost'); // eslint-disable-line no-console
     return ghostServer;
 };
 
+const stopGhost = async () => {
+    if (ghostServer && ghostServer.httpServer) {
+        await ghostServer.stop();
+        urlService.resetGenerators();
+    }
+};
+
 module.exports = {
     startGhost: startGhost,
+    stopGhost: stopGhost,
 
-    stopGhost: async () => {
-        if (ghostServer && ghostServer.httpServer) {
-            await ghostServer.stop();
-            urlService.resetGenerators();
-        }
-    },
     teardownDb: dbUtils.teardown,
     truncate: dbUtils.truncate,
     setup: setup,
