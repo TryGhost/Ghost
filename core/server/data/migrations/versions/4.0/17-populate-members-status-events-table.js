@@ -6,7 +6,9 @@ const {createTransactionalMigration} = require('../../utils');
 module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Populating members_status_events from members table');
+
         await knex('members_status_events').del();
+
         const allMembers = await knex.select(
             'id as member_id',
             'status as to_status',

@@ -1,9 +1,12 @@
 const {chunk} = require('lodash');
 const ObjectID = require('bson-objectid');
 const {createTransactionalMigration} = require('../../utils');
+const logging = require('../../../../../shared/logging');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
+        logging.info('Populating members_subscribe_events from members');
+
         const allMembers = await knex.select(
             'id as member_id',
             'created_at'
