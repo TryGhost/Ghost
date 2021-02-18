@@ -7,6 +7,7 @@ const {events, i18n} = require('../lib/common');
 const logging = require('../../shared/logging');
 const request = require('../lib/request');
 const settingsCache = require('./settings/cache');
+const sentry = require('../../shared/sentry');
 
 const defaultPostSlugs = [
     'welcome',
@@ -83,12 +84,14 @@ function ping(post) {
             })
             .catch(function (err) {
                 if (err.statusCode === 429) {
-                    logging.error(new errors.TooManyRequestsError({
+                    const error = new errors.TooManyRequestsError({
                         err,
                         message: err.message,
                         context: i18n.t('errors.services.ping.requestFailed.error', {service: 'xmlrpc'}),
                         help: i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
-                    }));
+                    });
+                    logging.error(error);
+                    sentry.captureException(error);
                 } else {
                     logging.error(new errors.GhostError({
                         err: err,
