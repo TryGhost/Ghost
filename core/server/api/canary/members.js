@@ -475,5 +475,17 @@ module.exports = {
             });
             return volumeStats;
         }
+    },
+
+    activityFeed: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const events = await membersService.api.events.getEventTimeline();
+            return {
+                events
+            };
+        }
     }
 };

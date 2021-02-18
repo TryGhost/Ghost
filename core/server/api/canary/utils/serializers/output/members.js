@@ -18,7 +18,8 @@ module.exports = {
     memberStats: createSerializer('memberStats', passthrough),
     mrrStats: createSerializer('mrrStats', passthrough),
     subscriberStats: createSerializer('subscriberStats', passthrough),
-    grossVolumeStats: createSerializer('grossVolumeStats', passthrough)
+    grossVolumeStats: createSerializer('grossVolumeStats', passthrough),
+    activityFeed: createSerializer('activityFeed', passthrough)
 };
 
 /**
