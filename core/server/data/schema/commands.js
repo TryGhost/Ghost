@@ -159,8 +159,6 @@ function checkTables(transaction) {
     }
 }
 
-const createLog = type => msg => logging[type](msg);
-
 function createColumnMigration(...migrations) {
     async function runColumnMigration(conn, migration) {
         const {
@@ -175,11 +173,10 @@ function createColumnMigration(...migrations) {
         const hasColumn = await conn.schema.hasColumn(table, column);
         const isInCorrectState = dbIsInCorrectState(hasColumn);
 
-        const log = createLog(isInCorrectState ? 'warn' : 'info');
-
-        log(`${operationVerb} ${table}.${column} column`);
-
-        if (!isInCorrectState) {
+        if (isInCorrectState) {
+            logging.warn(`${operationVerb} ${table}.${column} column - skipping as table is correct`);
+        } else {
+            logging.info(`${operationVerb} ${table}.${column} column`);
             await operation(table, column, conn, columnDefinition);
         }
     }
