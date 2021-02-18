@@ -213,7 +213,7 @@ describe('api/v2/content/posts', function () {
             sinon.stub(labs, 'isSet').withArgs('members').returns(true);
         });
 
-        before (function () {
+        before(function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
                 visibility: 'public',
@@ -273,6 +273,7 @@ describe('api/v2/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-not-be-seen');
                     post.html.should.eql('');
+                    post.excerpt.should.eql('');
                 });
         });
 
@@ -291,6 +292,7 @@ describe('api/v2/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-be-paid-for');
                     post.html.should.eql('');
+                    post.excerpt.should.eql('');
                 });
         });
 
@@ -341,6 +343,12 @@ describe('api/v2/content/posts', function () {
                     jsonResponse.posts[1].html.should.eql('');
                     jsonResponse.posts[2].html.should.not.eql('');
                     jsonResponse.posts[7].html.should.not.eql('');
+
+                    jsonResponse.posts[0].excerpt.should.eql('');
+                    jsonResponse.posts[1].excerpt.should.eql('');
+                    jsonResponse.posts[2].excerpt.should.not.eql('');
+                    jsonResponse.posts[3].excerpt.should.not.eql('');
+                    jsonResponse.posts[8].excerpt.should.not.eql('');
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
