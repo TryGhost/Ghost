@@ -12,6 +12,9 @@ import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 
 export default class GhLaunchWizardCustomiseDesignComponent extends Component {
+    @service ajax;
+    @service config;
+    @service ghostPaths;
     @service settings;
 
     iconExtensions = ICON_EXTENSIONS;
@@ -35,9 +38,19 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
         return htmlSafe(`background-color: ${this.accentColorPickerValue}`);
     }
 
-    constructor() {
-        super(...arguments);
-        this.args.updatePreview('');
+    get previewData() {
+        const params = new URLSearchParams();
+
+        params.append('c', this.accentColorPickerValue);
+        params.append('icon', this.settings.get('icon'));
+        params.append('logo', this.settings.get('logo'));
+        params.append('cover', this.settings.get('coverImage'));
+
+        return params.toString();
+    }
+
+    willDestroy() {
+        this.settings.rollbackAttributes();
     }
 
     @action
@@ -49,16 +62,14 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
     async imageUploaded(property, results) {
         if (results[0]) {
             this.settings.set(property, results[0].url);
-            await this.settings.save();
-            this.args.refreshPreview();
+            this.updatePreviewTask.perform();
         }
     }
 
     @action
     async removeImage(imageName) {
         this.settings.set(imageName, '');
-        await this.settings.save();
-        this.args.refreshPreview();
+        this.updatePreviewTask.perform();
     }
 
     @action
@@ -77,8 +88,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
 
             // clear out the accent color
             this.settings.set('accentColor', '');
-            await this.settings.save();
-            this.args.refreshPreview();
+            this.updatePreviewTask.perform();
             return;
         }
 
@@ -97,8 +107,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
             }
 
             this.settings.set('accentColor', newColor);
-            await this.settings.save();
-            this.args.refreshPreview();
+            this.updatePreviewTask.perform();
         } else {
             this.settings.errors.add('accentColor', 'The colour should be in valid hex format');
             this.settings.hasValidated.pushObject('accentColor');
@@ -109,5 +118,34 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
     *debounceUpdateAccentColor(event) {
         yield timeout(500);
         this.updateAccentColor(event);
+    }
+
+    @task
+    *saveAndContinueTask() {
+        try {
+            yield this.settings.save();
+            this.args.nextStep();
+        } catch (error) {
+            if (error) {
+                this.notifications.showAPIError(error);
+                throw error;
+            }
+        }
+    }
+
+    @task
+    *updatePreviewTask() {
+        const ajaxOptions = {
+            contentType: 'text/html;charset=utf-8',
+            dataType: 'text',
+            headers: {
+                'x-ghost-preview': this.previewData
+            }
+        };
+
+        const frontendUrl = this.config.get('blogUrl');
+        const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
+
+        this.args.replacePreviewContents(previewContents);
     }
 }

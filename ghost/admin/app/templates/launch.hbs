@@ -5,7 +5,7 @@
             <h2>{{this.currentStep.title}}</h2>
         </div>
         <button type="button" class="close gh-btn gh-btn-outline" title="Close" {{on "click" this.close}} data-test-button="close-wizard">
-            <span>Save and exit</span>
+            <span>Exit</span>
         </button>
     </div>
 
@@ -17,12 +17,13 @@
                 skipStep=this.skipStep
                 refreshPreview=this.refreshPreview
                 updatePreview=this.updatePreview
+                replacePreviewContents=this.replacePreviewContents
             }}
         </div>
 
         <div class="gh-launch-wizard-content-right">
             <GhBrowserPreview class="gh-launch-wizard-preview-container" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
-                <GhSiteIframe class="gh-launch-wizard-preview" @src={{this.previewSrc}} @guid={{this.previewGuid}}></GhSiteIframe>
+                <GhSiteIframe class="gh-launch-wizard-preview" @src={{this.previewSrc}} @guid={{this.previewGuid}} {{did-insert this.registerPreviewIframe}}></GhSiteIframe>
             </GhBrowserPreview>
         </div>
     </div>

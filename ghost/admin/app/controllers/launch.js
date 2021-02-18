@@ -85,6 +85,11 @@ export default class LaunchController extends Controller {
     }
 
     @action
+    registerPreviewIframe(element) {
+        this.previewIframe = element;
+    }
+
+    @action
     refreshPreview() {
         this.previewGuid = (new Date()).valueOf();
     }
@@ -92,6 +97,15 @@ export default class LaunchController extends Controller {
     @action
     updatePreview(url) {
         this.previewSrc = url;
+    }
+
+    @action
+    replacePreviewContents(html) {
+        if (this.previewIframe) {
+            this.previewIframe.contentWindow.document.open();
+            this.previewIframe.contentWindow.document.write(html);
+            this.previewIframe.contentWindow.document.close();
+        }
     }
 
     @action
