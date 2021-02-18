@@ -15,7 +15,8 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
         sinon.stub(urlUtil, 'forTag').returns({});
         sinon.stub(urlUtil, 'forUser').returns({});
 
-        sinon.stub(extraAttrsUtils, 'forPost').returns({});
+        sinon.stub(extraAttrsUtils, 'postExcerpt').returns({});
+        sinon.stub(extraAttrsUtils, 'postReadingTime').returns({});
 
         sinon.stub(cleanUtil, 'post').returns({});
         sinon.stub(cleanUtil, 'tag').returns({});
@@ -67,7 +68,8 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
 
             dateUtil.forPost.callCount.should.equal(1);
 
-            extraAttrsUtils.forPost.callCount.should.equal(1);
+            extraAttrsUtils.postExcerpt.callCount.should.equal(1);
+            extraAttrsUtils.postReadingTime.callCount.should.equal(1);
 
             cleanUtil.post.callCount.should.eql(1);
             cleanUtil.tag.callCount.should.eql(1);

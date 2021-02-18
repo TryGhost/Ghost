@@ -333,6 +333,7 @@ describe('api/canary/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-not-be-seen');
                     post.html.should.eql('');
+                    should.equal(post.excerpt, null);
                 });
         });
 
@@ -351,6 +352,7 @@ describe('api/canary/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-be-paid-for');
                     post.html.should.eql('');
+                    should.equal(post.excerpt, null);
                 });
         });
 
@@ -374,7 +376,7 @@ describe('api/canary/content/posts', function () {
 
         it('can read "free" html and plaintext content of members post when using paywall card', function () {
             return request
-                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext&fields=html,plaintext`))
+                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -384,14 +386,15 @@ describe('api/canary/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
-                    localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
+                    localUtils.API.checkResponse(post, 'post', ['plaintext'], null);
                     post.html.should.eql('<p>Free content</p>');
                     post.plaintext.should.eql('Free content');
+                    post.excerpt.should.eql('Free content');
                 });
         });
 
         it('cannot browse members only posts content', function () {
-            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -405,7 +408,7 @@ describe('api/canary/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
                     jsonResponse.posts.should.have.length(15);
-                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, null);
+                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['plaintext'], null);
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
@@ -421,6 +424,12 @@ describe('api/canary/content/posts', function () {
                     jsonResponse.posts[2].html.should.not.eql('');
                     jsonResponse.posts[3].html.should.not.eql('');
                     jsonResponse.posts[8].html.should.not.eql('');
+
+                    should.equal(jsonResponse.posts[0].excerpt, null);
+                    should.equal(jsonResponse.posts[1].excerpt, null);
+                    should.notEqual(jsonResponse.posts[2].excerpt, null);
+                    should.notEqual(jsonResponse.posts[3].excerpt, null);
+                    should.notEqual(jsonResponse.posts[8].excerpt, null);
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
