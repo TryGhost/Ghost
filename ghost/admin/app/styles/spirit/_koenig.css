@@ -1044,7 +1044,10 @@
     align-items: center;
     height: 1em;
     text-align: center;
-    color: var(--midlightgrey);
+    color: var(--midlightgrey-d1);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .kg-paywall-separator::before,
