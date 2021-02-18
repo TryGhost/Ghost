@@ -16,7 +16,6 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', function () {
         sinon.stub(urlUtil, 'forUser').returns({});
 
         sinon.stub(extraAttrsUtils, 'postExcerpt').returns({});
-        sinon.stub(extraAttrsUtils, 'postReadingTime').returns({});
 
         sinon.stub(cleanUtil, 'post').returns({});
         sinon.stub(cleanUtil, 'tag').returns({});
