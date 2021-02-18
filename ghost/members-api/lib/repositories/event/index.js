@@ -3,6 +3,7 @@ module.exports = class EventRepository {
         MemberSubscribeEvent,
         MemberPaymentEvent,
         MemberStatusEvent,
+        MemberLoginEvent,
         MemberPaidSubscriptionEvent,
         logger
     }) {
@@ -10,6 +11,7 @@ module.exports = class EventRepository {
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberPaymentEvent = MemberPaymentEvent;
         this._MemberStatusEvent = MemberStatusEvent;
+        this._MemberLoginEvent = MemberLoginEvent;
         this._logging = logger;
     }
 
@@ -18,6 +20,92 @@ module.exports = class EventRepository {
             ...data,
             source: 'stripe'
         });
+    }
+
+    async getNewsletterSubscriptionEvents(options = {}) {
+        options.withRelated = ['member'];
+        const {data: models, meta} = await this._MemberSubscribeEvent.findPage(options);
+
+        const data = models.map((data) => {
+            return {
+                type: 'newsletter_event',
+                data: data.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getSubscriptionEvents(options = {}) {
+        options.withRelated = ['member'];
+        const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
+
+        const data = models.map((data) => {
+            return {
+                type: 'subscription_event',
+                data: data.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getPaymentEvents(options = {}) {
+        options.withRelated = ['member'];
+        const {data: models, meta} = await this._MemberPaymentEvent.findPage(options);
+
+        const data = models.map((data) => {
+            return {
+                type: 'payment_event',
+                data: data.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getLoginEvents(options = {}) {
+        options.withRelated = ['member'];
+        const {data: models, meta} = await this._MemberLoginEvent.findPage(options);
+
+        const data = models.map((data) => {
+            return {
+                type: 'login_event',
+                data: data.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getEventTimeline(options = {}) {
+        if (!options.limit) {
+            options.limit = 10;
+        }
+
+        const allEventPages = await Promise.all([
+            this.getNewsletterSubscriptionEvents(options),
+            this.getSubscriptionEvents(options),
+            this.getLoginEvents(options)
+        ]);
+
+        const allEvents = allEventPages.reduce((allEvents, page) => allEvents.concat(page.data), []);
+
+        return allEvents.sort((a, b) => {
+            return new Date(b.data.created_at) - new Date(a.data.created_at);
+        }).slice(0, options.limit);
     }
 
     async getSubscriptions() {

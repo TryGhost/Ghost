@@ -83,6 +83,7 @@ module.exports = function MembersApi({
         MemberPaidSubscriptionEvent,
         MemberPaymentEvent,
         MemberStatusEvent,
+        MemberLoginEvent,
         MemberEmailChangeEvent
     });
 
