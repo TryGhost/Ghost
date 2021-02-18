@@ -140,32 +140,18 @@
             <div class="gh-dashboard-box grey activity-feed">
                 <h4 class="gh-dashboard-header">Activity feed</h4>
                 <div class="content">
-                    <ul class="gh-dashboard-activity-feed">
-                        <li>
-                            <div class="activity">
-                                <div>
-                                    <span class="member">Kadin Levin</span> subscribed <span class="highlight">(MRR +$38)</span>
-                                </div>
-                            </div>
-                            <span class="time">29 mins ago</span>
-                        </li>
-                        <li>
-                            <div class="activity">
-                                <div>
-                                    <span class="member">Terry Stanton</span> subscribed <span class="highlight">(MRR +$38)</span>
-                                </div>
-                            </div>
-                            <span class="time">1 day ago</span>
-                        </li>
-                        <li>
-                            <div class="activity">
-                                <div>
-                                    <span class="member">Angel Rhiel Madsen</span> subscribed <span class="highlight">(MRR +$38)</span>
-                                </div>
-                            </div>
-                            <span class="time">3 days ago</span>
-                        </li>
-                    </ul>
+                    {{#if this.events.loading}}
+                        Loading...
+                    {{else}}
+                        {{#if this.events.error}}
+                            <p class="error">
+                                There was an error loading events
+                                <code>{{this.events.error.message}}</code>
+                            </p>
+                        {{else}}
+                            <GhEventTimeline @events={{this.events.data}}/>
+                        {{/if}}
+                    {{/if}}
                 </div>
             </div>
             <div class="gh-dashboard-box">
