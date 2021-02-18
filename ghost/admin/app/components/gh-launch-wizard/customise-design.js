@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import config from 'ghost-admin/config/environment';
 import {
     ICON_EXTENSIONS,
     ICON_MIME_TYPES,
@@ -140,6 +141,11 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
 
     @task
     *updatePreviewTask() {
+        // skip during testing because we don't have mocks for the front-end
+        if (config.environment === 'test') {
+            return;
+        }
+
         // grab the preview html
         const ajaxOptions = {
             contentType: 'text/html;charset=utf-8',
