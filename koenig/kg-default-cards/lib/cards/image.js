@@ -32,6 +32,8 @@ module.exports = {
         img.setAttribute('src', payload.src);
         img.setAttribute('class', 'kg-image');
         img.setAttribute('alt', payload.alt || '');
+        img.setAttribute('loading', 'lazy');
+
         if (payload.title) {
             img.setAttribute('title', payload.title);
         }

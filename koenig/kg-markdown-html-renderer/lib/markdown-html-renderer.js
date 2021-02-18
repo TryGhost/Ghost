@@ -70,6 +70,7 @@ const selectRenderer = function (options) {
             .use(require('markdown-it-footnote'))
             .use(require('markdown-it-lazy-headers'))
             .use(require('markdown-it-mark'))
+            .use(require('markdown-it-image-lazy-loading'))
             .use(namedHeaders(options));
 
         markdownIt.linkify.set({
@@ -87,6 +88,7 @@ const selectRenderer = function (options) {
             .use(require('markdown-it-footnote'))
             .use(require('markdown-it-lazy-headers'))
             .use(require('markdown-it-mark'))
+            .use(require('markdown-it-image-lazy-loading'))
             .use(namedHeaders(options));
 
         markdownIt.linkify.set({

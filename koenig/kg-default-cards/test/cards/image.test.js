@@ -17,7 +17,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"></figure>');
     });
 
     it('renders an image with caption', function () {
@@ -31,7 +31,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://www.ghost.org/image.png" class="kg-image" alt><figcaption><b>Test caption</b></figcaption></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"><figcaption><b>Test caption</b></figcaption></figure>');
     });
 
     it('renders an image with alt text', function () {
@@ -45,7 +45,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image"></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image" loading="lazy"></figure>');
     });
 
     it('renders an image with blank alt text', function () {
@@ -58,7 +58,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"></figure>');
     });
 
     it('renders an image with title attribute', function () {
@@ -72,7 +72,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image"></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy" title="example image"></figure>');
     });
 
     it('renders an image with a link', function () {
@@ -87,7 +87,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><a href="https://example.com"><img src="https://www.ghost.org/image.png" class="kg-image" alt title="example image"></a></figure>');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><a href="https://example.com"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy" title="example image"></a></figure>');
     });
 
     it('renders nothing with no src', function () {
