@@ -49,6 +49,11 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
         return params.toString();
     }
 
+    constructor() {
+        super(...arguments);
+        this.updatePreviewTask.perform();
+    }
+
     willDestroy() {
         this.settings.rollbackAttributes();
     }
@@ -135,6 +140,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
 
     @task
     *updatePreviewTask() {
+        // grab the preview html
         const ajaxOptions = {
             contentType: 'text/html;charset=utf-8',
             dataType: 'text',
@@ -142,10 +148,20 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
                 'x-ghost-preview': this.previewData
             }
         };
-
         const frontendUrl = this.config.get('blogUrl');
         const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
 
-        this.args.replacePreviewContents(previewContents);
+        // inject extra CSS to disable navigation and prevent clicks
+        const injectedCss = `html { pointer-events: none; }`;
+
+        const domParser = new DOMParser();
+        const htmlDoc = domParser.parseFromString(previewContents, 'text/html');
+
+        const stylesheet = htmlDoc.querySelector('style');
+        const originalCSS = stylesheet.innerHTML;
+        stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+
+        // replace the iframe contents with the doctored preview html
+        this.args.replacePreviewContents(htmlDoc.documentElement.innerHTML);
     }
 }
