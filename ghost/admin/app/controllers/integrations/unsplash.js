@@ -1,6 +1,5 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
-import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -8,23 +7,15 @@ export default Controller.extend({
     notifications: service(),
     settings: service(),
 
-    dirtyAttributes: null,
-    rollbackValue: null,
     leaveSettingsTransition: null,
 
-    unsplashSettings: alias('settings.unsplash'),
-
     actions: {
-        save() {
-            this.save.perform();
+        update(value) {
+            this.settings.set('unsplash', value);
         },
 
-        update(value) {
-            if (!this.dirtyAttributes) {
-                this.set('rollbackValue', this.get('unsplashSettings'));
-            }
-            this.set('unsplashSettings', value);
-            this.set('dirtyAttributes', true);
+        save() {
+            this.save.perform();
         },
 
         toggleLeaveSettingsModal(transition) {
@@ -53,35 +44,27 @@ export default Controller.extend({
 
         leaveSettings() {
             let transition = this.leaveSettingsTransition;
+            let settings = this.settings;
 
             if (!transition) {
                 this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
-            // roll back changes on model props
-            this.set('unsplashSettings', this.rollbackValue);
-            this.set('dirtyAttributes', false);
-            this.set('rollbackValue', null);
+            // roll back changes on settings model
+            settings.rollbackAttributes();
 
             return transition.retry();
         }
     },
 
     save: task(function* () {
-        let unsplash = this.unsplashSettings;
-        let settings = this.settings;
-
         try {
-            settings.set('unsplash', unsplash);
-            this.set('dirtyAttributes', false);
-            this.set('rollbackValue', null);
-            return yield settings.save();
+            yield this.settings.validate();
+            return yield this.settings.save();
         } catch (error) {
-            if (error) {
-                this.notifications.showAPIError(error);
-                throw error;
-            }
+            this.notifications.showAPIError(error);
+            throw error;
         }
     }).drop()
 });
