@@ -73,11 +73,6 @@
     margin-bottom: var(--dashboard-gap);
 }
 
-.gh-dashboard-box.grey {
-    background: var(--main-color-content-greybg);
-    border: none;
-}
-
 .gh-dashboard-box .content {
     color: var(--darkgrey);
 }
@@ -85,7 +80,16 @@
 .gh-dashboard-box .content h4 {
     font-size: 1.6rem;
     font-weight: 600;
+    line-height: 1.4em;
     margin-bottom: 8px;
+    color: var(--black);
+}
+
+.gh-dashboard-box .content h3 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.4em;
+    margin-bottom: 6px;
     color: var(--black);
 }
 
@@ -96,6 +100,30 @@
 .gh-dashboard-box .footer {
     display: flex;
     align-items: center;
+}
+
+.gh-dashboard-box.grey {
+    background: var(--main-color-content-greybg);
+    border: none;
+}
+
+.gh-dashboard-box.black {
+    background: var(--black);
+    border: none;
+    color: var(--white);
+}
+
+.gh-dashboard-box.black .content h4 {
+    color: var(--white);
+}
+
+.gh-dashboard-box.black .content p {
+    color: var(--whitegrey);
+}
+
+.gh-dashboard-box.green {
+    background: color-mod(var(--green) a(4%));
+    border-color: color-mod(var(--green) a(60%));
 }
 
 /* Main areas in grid */
@@ -403,7 +431,7 @@
     font-size: 1.3rem;
 }
 
-@media (max-width: 1240px) {
+@media (max-width: 1320px) {
     .gh-dashboard {
         grid-template-columns: 1fr 1fr;
     }
