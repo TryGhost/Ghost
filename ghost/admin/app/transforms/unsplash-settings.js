@@ -1,28 +1,25 @@
 /* eslint-disable camelcase */
 import Transform from '@ember-data/serializer/transform';
-import UnsplashObject from 'ghost-admin/models/unsplash-integration';
 
-const DEFAULT_SETTINGS = {
-    isActive: true
-};
+const DEFAULT_VALUE = true;
 
 export default Transform.extend({
     deserialize(serialized) {
         if (serialized) {
             let settingsObject;
             try {
-                settingsObject = JSON.parse(serialized) || DEFAULT_SETTINGS;
+                settingsObject = JSON.parse(serialized) || DEFAULT_VALUE;
             } catch (e) {
-                settingsObject = DEFAULT_SETTINGS;
+                settingsObject = DEFAULT_VALUE;
             }
 
-            return UnsplashObject.create(settingsObject);
+            return settingsObject;
         }
 
-        return DEFAULT_SETTINGS;
+        return DEFAULT_VALUE;
     },
 
     serialize(deserialized) {
-        return deserialized ? JSON.stringify(deserialized) : JSON.stringify(DEFAULT_SETTINGS);
+        return deserialized ? JSON.stringify(deserialized) : JSON.stringify(DEFAULT_VALUE);
     }
 });

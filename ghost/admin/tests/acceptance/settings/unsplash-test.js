@@ -84,7 +84,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
             // server should now have an unsplash setting
             let [setting] = this.server.db.settings.where({key: 'unsplash'});
             expect(setting, 'unsplash setting after save').to.exist;
-            expect(setting.value).to.equal('{"isActive":true}');
+            expect(setting.value).to.equal(true);
 
             // disable
             await click('[data-test-checkbox="unsplash"]');
@@ -98,7 +98,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
 
             // server should have an updated setting
             [setting] = this.server.db.settings.where({key: 'unsplash'});
-            expect(setting.value).to.equal('{"isActive":false}');
+            expect(setting.value).to.equal(false);
         });
 
         it('warns when leaving without saving', async function () {
