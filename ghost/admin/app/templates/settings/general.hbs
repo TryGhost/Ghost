@@ -120,8 +120,8 @@
                 <div class="gh-expandable-content">
                     {{#liquid-if this.metaDataOpen}}
                         <div class="gh-setting-content-extended">
-                            <div class="flex flex-column flex-row-ns">
-                                <div class="flex-basis-1-2-m flex-basis-2-3-l mr5">
+                            <div class="gh-seo-settings">
+                                <div class="gh-seo-settings-left flex-basis-1-2-m flex-basis-2-3-l">
                                     <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="metaTitle">
                                         <label for="metaTitle">Meta title</label>
                                         <GhTextInput
@@ -151,10 +151,18 @@
                                 </div>
                                 <div class="flex-basis-1-2-m flex-basis-1-3-l">
                                     <label>Search engine result preview</label>
-                                    <div class="seo-preview">
-                                        <div class="seo-preview-title">{{truncate (or this.settings.metaTitle this.settings.title) 70}}</div>
-                                        <div class="seo-preview-link">{{truncate this.config.blogUrl 70}}</div>
-                                        <div class="seo-preview-description">{{truncate (or this.settings.metaDescription this.settings.description) 300}}</div>
+                                    <div class="gh-seo-container">
+                                        <div class="gh-seo-preview">
+                                            <div class="flex mb6">
+                                                {{svg-jar "google"}}
+                                                <div class="gh-seo-search-bar">{{svg-jar "google-search"}}</div>
+                                            </div>
+                                            <div class="gh-seo-preview-link">{{this.config.blogDomain}}</div>
+                                            <div class="gh-seo-preview-title">{{or this.settings.metaTitle this.settings.title}}</div>
+                                            <div class="gh-seo-preview-desc">
+                                                {{moment-format (now) "DD MMM YYYY"}} — {{truncate (or this.settings.metaDescription this.settings.description) 170}}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -174,8 +182,9 @@
                 <div class="gh-expandable-content">
                     {{#liquid-if this.twitterCardOpen}}
                     <div class="gh-setting-content-extended">
-                        <div class="flex flex-column flex-row-ns">
-                            <div class="flex-basis-1-2-m flex-basis-2-3-l mr5 nudge-top--7">
+                        <div class="gh-twitter-settings">
+                            <div class="gh-twitter-settings-left flex-basis-1-2-m flex-basis-2-3-l">
+                                <label>Twitter image</label>
                                 <GhFormGroup>
                                     <GhImageUploaderWithPreview
                                         @image={{this.settings.twitterImage}}
@@ -209,20 +218,36 @@
                                     <GhErrorMessage @errors={{this.settings.errors}} @property="twitterDescription" data-test-error="twitterDescription" />
                                 </GhFormGroup>
                             </div>
-                            <div class="flex-basis-1-2-m flex-basis-1-3-l nt4-ns">
-                                <label>Preview</label>
-                                <div class="gh-twitter-preview">
-                                    {{#if this.settings.twitterImage}}
-                                    <div class="gh-twitter-preview-image" style={{background-image-style this.settings.twitterImage}}></div>
-                                    {{/if}}
-                                    <div class="gh-twitter-preview-content">
-                                        <div class="gh-twitter-preview-title">{{or this.settings.twitterTitle this.settings.title}}</div>
-                                        <div class="gh-twitter-preview-description">{{truncate (or this.settings.twitterDescription this.settings.description) 155}}</div>
-                                        <div class="gh-twitter-preview-footer">
-                                            <div class="gh-twitter-preview-footer-left">
-                                                {{this.config.blogDomain}}
+                            <div class="flex-basis-1-2-m flex-basis-1-3-l">
+                                <label>Twitter preview</label>
+                                <div class="gh-twitter-container">
+                                    <div class="flex ma4">
+                                        <span>{{svg-jar "social-twitter" class="social-icon"}}</span>
+                                        <div class="w-100">
+                                            <span class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</span>
+                                            <span class="gh-social-og-time">12 hrs</span>
+                                            <div class="flex flex-column mt2 mb3">
+                                                <span class="gh-social-og-desc w-100 mb2" />
+                                                <span class="gh-social-og-desc w-60" />
                                             </div>
-                                            <div class="gh-twitter-preview-footer-right">
+                                            <div class="gh-social-twitter-post-preview">
+                                                {{#if this.settings.twitterImage}}
+                                                    <div class="gh-social-twitter-preview-image" style={{background-image-style this.settings.twitterImage}}></div>
+                                                {{/if}}
+                                                <div class="gh-social-twitter-preview-content">
+                                                    <div class="gh-social-twitter-preview-title">{{or this.settings.twitterTitle this.settings.title}}</div>
+                                                    <div class="gh-social-twitter-preview-desc">{{truncate (or this.settings.twitterDescription this.settings.description)}}</div>
+                                                    <div class="gh-social-twitter-preview-meta">
+                                                        {{svg-jar "twitter-link"}}
+                                                        {{this.config.blogDomain}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="gh-social-twitter-reactions">
+                                                <div class="flex items-center">{{svg-jar "twitter-comment"}}2</div>
+                                                <div class="flex items-center">{{svg-jar "twitter-retweet"}}11</div>
+                                                <div class="flex items-center">{{svg-jar "twitter-like"}}32</div>
+                                                <div class="flex items-center">{{svg-jar "twitter-share"}}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -245,8 +270,9 @@
                 <div class="gh-expandable-content">
                     {{#liquid-if this.facebookCardOpen}}
                         <div class="gh-setting-content-extended">
-                            <div class="flex flex-column flex-row-ns">
-                                <div class="flex-basis-1-2-m flex-basis-2-3-l mr5 nudge-top--7">
+                            <div class="gh-og-settings">
+                                <div class="gh-og-settings-left flex-basis-1-2-m flex-basis-2-3-l">
+                                    <label>Facebook image</label>
                                     <GhFormGroup>
                                         <GhImageUploaderWithPreview
                                             @image={{this.settings.ogImage}}
@@ -280,21 +306,36 @@
                                         <GhErrorMessage @errors={{this.settings.errors}} @property="ogDescription" data-test-error="ogDescription" />
                                     </GhFormGroup>
                                 </div>
-                                <div class="flex-basis-1-2-m flex-basis-1-3-l nt4-ns">
-                                    <label>Preview</label>
-                                    <div class="gh-og-preview">
-                                        {{#if this.settings.ogImage}}
-                                        <div class="gh-og-preview-image" style={{background-image-style this.settings.ogImage}}></div>
-                                        {{/if}}
-                                        <div class="gh-og-preview-content">
-                                            <div class="gh-og-preview-title">{{truncate (or this.settings.ogTitle this.settings.title) 88}}</div>
-                                            <div class="gh-og-preview-description">{{truncate (or this.settings.ogDescription this.settings.description) 300}}</div>
-                                            <div class="gh-og-preview-footer">
-                                                <div class="gh-og-preview-footer-left">
+                                <div class="flex-basis-1-2-m flex-basis-1-3-l">
+                                    <label>Facebook preview</label>
+                                    <div class="gh-og-container">
+                                        <div class="flex ma3 mb2">
+                                            <span>{{svg-jar "social-facebook" class="social-icon"}}</span>
+                                            <div>
+                                                <div class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</div>
+                                                <div class="gh-social-og-time">12 hrs</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-column ma3 mt2">
+                                            <span class="gh-social-og-desc w-100 mb2" />
+                                            <span class="gh-social-og-desc w-60" />
+                                        </div>
+                                        <div class="gh-social-og-preview">
+                                            {{#if this.settings.ogImage}}
+                                                <div class="gh-social-og-preview-image" style={{background-image-style this.settings.ogImage}}></div>
+                                            {{/if}}
+                                            <div class="gh-social-og-preview-content">
+                                                <div class="gh-social-og-preview-meta">
                                                     {{this.config.blogDomain}}
                                                 </div>
-                                                <div class="gh-og-preview-footer-right"></div>
+                                                <div class="gh-social-og-preview-title">{{truncate (or this.settings.ogTitle this.settings.title) 88}}</div>
+                                                <div class="gh-social-og-preview-desc">{{truncate (or this.settings.ogDescription this.settings.description)}}</div>
                                             </div>
+                                        </div>
+                                        <div class="gh-social-og-reactions">
+                                            <span class="gh-social-og-likes">{{svg-jar "facebook-like" class="z-999"}}{{svg-jar "facebook-heart" class="nl1"}}182</span>
+                                            <span class="gh-social-og-comments">7 comments</span>
+                                            <span class="gh-social-og-comments ml2">2 shares</span>
                                         </div>
                                     </div>
                                 </div>
