@@ -16,6 +16,7 @@ export default Component.extend({
     nightShift: false,
 
     stats: null,
+    chartStats: null,
     chartData: null,
     chartOptions: null,
     showSummary: true,
@@ -64,6 +65,10 @@ export default Component.extend({
         if (this._lastNightShift !== undefined && this.nightShift !== this._lastNightShift) {
             this.setChartOptions();
         }
+
+        if (this.chartStats) {
+            this.setMRRChartData(this.chartStats);
+        }
         this._lastNightShift = this.nightShift;
     },
 
@@ -77,24 +82,19 @@ export default Component.extend({
     // Tasks -------------------------------------------------------------------
 
     fetchStatsTask: task(function* () {
-        this.set('stats', null);
         let stats;
-        if (this.chartType === 'mrr') {
-            stats = yield this.membersStats.fetchMRR();
-            this.setMRRChartData(stats);
-        } else if (this.chartType === 'counts') {
-            stats = yield this.membersStats.fetchCounts();
-            this.setCountsChartData(stats);
-        } else {
+        if (this.chartType !== 'mrr') {
+            this.set('stats', null);
             stats = yield this.membersStats.fetch();
             this.setOriginalChartData(stats);
         }
     }),
 
     setMRRChartData(stats) {
-        const statsForCurrency = stats[0];
-        statsForCurrency.data = this.membersStats.fillDates(statsForCurrency.data) || {};
-        if (stats) {
+        const statsForCurrency = stats && stats[0];
+        if (statsForCurrency) {
+            statsForCurrency.data = this.membersStats.fillDates(statsForCurrency.data) || {};
+
             this.set('stats', statsForCurrency);
 
             this.setChartOptions({
@@ -105,6 +105,15 @@ export default Component.extend({
                 label: 'Total MRR',
                 dateLabels: Object.keys(statsForCurrency.data),
                 dateValues: Object.values(statsForCurrency.data).map(val => val / 100)
+            });
+        } else {
+            this.set('stats', {});
+            this.set('chartHeading', 'MRR');
+
+            this.setChartData({
+                label: 'Total MRR',
+                dateLabels: [],
+                dateValues: []
             });
         }
     },
