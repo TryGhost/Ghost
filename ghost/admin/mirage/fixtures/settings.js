@@ -202,5 +202,15 @@ export default [
         updated_at: '2019-11-20T13:32:49.868Z',
         updated_by: 1,
         value: JSON.stringify([])
+    },
+    {
+        id: 26,
+        created_at: '2020-01-09T08:40:59.000Z',
+        created_by: 1,
+        key: 'unsplash',
+        group: 'unsplash',
+        updated_at: '2020-01-09T08:49:42.991Z',
+        updated_by: 1,
+        value: 'true'
     }
 ];
