@@ -36,7 +36,8 @@ const mapPost = (model, frame) => {
 
     url.forPost(model.id, jsonModel, frame);
 
-    extraAttrs.forPost(frame, model, jsonModel);
+    // add reading time before html is stripped/truncated by content gating
+    extraAttrs.postReadingTime(frame, model, jsonModel);
 
     if (utils.isContentAPI(frame)) {
         // Content api v2 still expects page prop
@@ -46,6 +47,9 @@ const mapPost = (model, frame) => {
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
     }
+
+    // add excerpt after content gating to avoid leaking members-only content
+    extraAttrs.postExcerpt(frame, model, jsonModel);
 
     if (typeof jsonModel.email_recipient_filter === 'undefined') {
         jsonModel.send_email_when_published = null;

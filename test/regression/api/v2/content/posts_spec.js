@@ -283,6 +283,7 @@ describe('api/v2/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-not-be-seen');
                     post.html.should.eql('');
+                    should.equal(post.excerpt, null);
                 });
         });
 
@@ -301,6 +302,7 @@ describe('api/v2/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-be-paid-for');
                     post.html.should.eql('');
+                    should.equal(post.excerpt, null);
                 });
         });
 
@@ -337,6 +339,7 @@ describe('api/v2/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
                     post.html.should.eql('<p>Free content</p>');
                     post.plaintext.should.eql('Free content');
+                    post.excerpt.should.eql('Free content');
                 });
         });
 
@@ -371,6 +374,12 @@ describe('api/v2/content/posts', function () {
                     jsonResponse.posts[2].html.should.not.eql('');
                     jsonResponse.posts[3].html.should.not.eql('');
                     jsonResponse.posts[8].html.should.not.eql('');
+
+                    should.equal(jsonResponse.posts[0].excerpt, null);
+                    should.equal(jsonResponse.posts[1].excerpt, null);
+                    should.notEqual(jsonResponse.posts[2].excerpt, null);
+                    should.notEqual(jsonResponse.posts[3].excerpt, null);
+                    should.notEqual(jsonResponse.posts[8].excerpt, null);
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
