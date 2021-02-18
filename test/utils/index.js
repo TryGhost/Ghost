@@ -215,6 +215,20 @@ const restartModeGhostStart = async () => {
     events.emit('server.start');
 };
 
+const bootGhost = async (options) => {
+    // Require Ghost
+    ghostServer = await ghost();
+
+    // Mount Ghost & Start Server
+    if (options.subdir) {
+        let parentApp = express('test parent');
+        parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
+        await ghostServer.start(parentApp);
+    } else {
+        await ghostServer.start();
+    }
+};
+
 // CASE: Ghost Server needs Starting
 // In this case we need to ensure that Ghost is started cleanly:
 // - ensure the DB is reset
@@ -253,17 +267,8 @@ const freshModeGhostStart = async (options) => {
     // @TODO: Prob B: why/how is this different to urlService.reset?
     urlService.resetGenerators();
 
-    // Require Ghost
-    ghostServer = await ghost();
-
-    // Mount Ghost & Start Server
-    if (options.subdir) {
-        let parentApp = express('test parent');
-        parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
-        await ghostServer.start(parentApp);
-    } else {
-        await ghostServer.start();
-    }
+    // Actually boot Ghost
+    await bootGhost(options);
 
     // Ensure readiness was called (this is idempotent)
     GhostServer.announceServerReadiness();
