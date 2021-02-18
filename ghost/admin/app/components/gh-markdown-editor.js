@@ -161,7 +161,7 @@ export default Component.extend(ShortcutsMixin, {
             toolbar.splice(index, 1);
         }
 
-        if (this.get('settings.unsplash.isActive')) {
+        if (this.get('settings.unsplash')) {
             let image = toolbar.findBy('name', 'image');
             let index = toolbar.indexOf(image) + 1;
 

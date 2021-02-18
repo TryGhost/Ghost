@@ -28,11 +28,7 @@ export default Model.extend(ValidationEngine, {
     ampGtagId: attr('string'),
     firstpromoter: attr('boolean'),
     firstpromoterId: attr('string'),
-    unsplash: attr('unsplash-settings', {
-        defaultValue() {
-            return {isActive: true};
-        }
-    }),
+    unsplash: attr('boolean'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     twitterTitle: attr('string'),
