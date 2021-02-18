@@ -59,7 +59,7 @@
 
 .gh-dashboard-container.col-2 {
     grid-template-columns: 1fr 1fr;
-    grid-gap: 32px;
+    grid-gap: var(--dashboard-gap);
 }
 
 /* Generic box containers */
@@ -70,7 +70,7 @@
     border: 1px solid var(--whitegrey);
     border-radius: 3px;
     padding: 24px;
-    margin-bottom: 32px;
+    margin-bottom: var(--dashboard-gap);
 }
 
 .gh-dashboard-box.grey {
@@ -401,4 +401,35 @@
     margin-left: 12px;
     color: var(--midgrey);
     font-size: 1.3rem;
+}
+
+@media (max-width: 1240px) {
+    .gh-dashboard {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .gh-dashboard-area.charts {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .gh-dashboard-summary {
+        flex-basis: 140px;
+    }
+
+    .gh-dashboard-summary:not(.small) .data {
+        font-size: 3.4rem;
+    }
+
+    .gh-dashboard-summary:not(.small) .growth {
+        font-size: 1.5rem;
+    }
+
+    .gh-dashboard-container.col-2 {
+        grid-template-columns: 1fr;
+        grid-gap: 0;
+    }
+
+    .gh-dashboard-area.charts {
+        min-height: 240px;
+    }
 }
