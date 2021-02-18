@@ -333,6 +333,7 @@ describe('api/v3/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-not-be-seen');
                     post.html.should.eql('');
+                    post.excerpt.should.eql('');
                 });
         });
 
@@ -351,6 +352,7 @@ describe('api/v3/content/posts', function () {
                     localUtils.API.checkResponse(post, 'post', null, null);
                     post.slug.should.eql('thou-shalt-be-paid-for');
                     post.html.should.eql('');
+                    post.excerpt.should.eql('');
                 });
         });
 
@@ -374,7 +376,7 @@ describe('api/v3/content/posts', function () {
 
         it('can read "free" html and plaintext content of members post when using paywall card', function () {
             return request
-                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext&fields=html,plaintext`))
+                .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -384,7 +386,7 @@ describe('api/v3/content/posts', function () {
                     should.exist(jsonResponse.posts);
                     const post = jsonResponse.posts[0];
 
-                    localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
+                    localUtils.API.checkResponse(post, 'post', ['plaintext']);
                     post.html.should.eql('<p>Free content</p>');
                     post.plaintext.should.eql('Free content');
                 });
@@ -420,6 +422,12 @@ describe('api/v3/content/posts', function () {
                     jsonResponse.posts[1].html.should.eql('');
                     jsonResponse.posts[2].html.should.not.eql('');
                     jsonResponse.posts[8].html.should.not.eql('');
+
+                    jsonResponse.posts[0].excerpt.should.eql('');
+                    jsonResponse.posts[1].excerpt.should.eql('');
+                    jsonResponse.posts[2].excerpt.should.not.eql('');
+                    jsonResponse.posts[3].excerpt.should.not.eql('');
+                    jsonResponse.posts[8].excerpt.should.not.eql('');
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
