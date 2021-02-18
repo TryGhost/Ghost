@@ -423,23 +423,24 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-2.0.3.tgz#b4a7a4c502a7b9940854cbcf7868b0a4f23b9edd"
   integrity sha512-ZC3Lk7X0fGB+nPBSVF3PeirYuEX9sjNd5awmr5X//q8B5UdtUdKqzkW7DvYyABmI0/iL7HkUeZvETx22b3V7bw==
 
-"@tryghost/kg-default-cards@4.0.0-rc.5":
-  version "4.0.0-rc.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-4.0.0-rc.5.tgz#96b402b109abe85810c9caa3b5610bc5cc426808"
-  integrity sha512-7k/qp/QYjQjFbzCR8a9CnCoYY2FFaAEhktZsPSxPDyLy8laVD3nAatcuGA2zfvFmUErZZfg0CWsLVl7Mzsh1CQ==
+"@tryghost/kg-default-cards@4.0.0-rc.6":
+  version "4.0.0-rc.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-4.0.0-rc.6.tgz#896a22d4c5bf660d85786234142d6571973bcffc"
+  integrity sha512-Ra6qI251y8/2WKV6WEPnDIiy4Abw4zsnryn8V6aRacYTWD2WmAq/ISaiIQok+YntE9F1V00vIMR6bmj1KSy+VQ==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^3.0.1-4.0.0-rc.0.0"
     "@tryghost/url-utils" "^0.6.14"
     handlebars "^4.7.6"
     juice "^7.0.0"
 
-"@tryghost/kg-markdown-html-renderer@4.0.0-rc.1":
-  version "4.0.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-4.0.0-rc.1.tgz#b67af54351eba062a9c81d8ce40e5968da8d1402"
-  integrity sha512-uf8GGSeAZVfTKG0ePk+4jStObaQxGHE7FMItSH4zzhAp6g6U4w1DCvv1SST7wUw/Pug2XMa1VJtpm+jAJTZrhA==
+"@tryghost/kg-markdown-html-renderer@4.0.0-rc.2":
+  version "4.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-4.0.0-rc.2.tgz#080b96cb5dc3a95151964f133fad760bbfdf8fea"
+  integrity sha512-OPF8R/lB7akGYNaTT1ooQBwXxqT9y2jrleM65u1/w9qztwSLYfqF6YUazh88YHFVrT7B0rQjQQ3pnHmXeiULzw==
   dependencies:
     markdown-it "^12.0.0"
     markdown-it-footnote "^3.0.2"
+    markdown-it-image-lazy-loading "^1.0.2"
     markdown-it-lazy-headers "^0.1.3"
     markdown-it-mark "^3.0.0"
     semver "^7.3.4"
@@ -6131,6 +6132,11 @@ markdown-it-footnote@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/markdown-it-footnote/-/markdown-it-footnote-3.0.2.tgz#1575ee7a093648d4e096aa33386b058d92ac8bc1"
   integrity sha512-JVW6fCmZWjvMdDQSbOT3nnOQtd9iAXmw7hTSh26+v42BnvXeVyGMDBm5b/EZocMed2MbCAHiTX632vY0FyGB8A==
+
+markdown-it-image-lazy-loading@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/markdown-it-image-lazy-loading/-/markdown-it-image-lazy-loading-1.0.2.tgz#fbacba9818a9657286295b2a9a15ec722b27d550"
+  integrity sha512-FBGKcF+zDSE7HEN9rGar6+36RtO3ozakqNLpbl2uL91DZQEIkXxN8uUZXJGCjvQL4O5f9IxeP5lagxX3FZ2SgA==
 
 markdown-it-lazy-headers@^0.1.3:
   version "0.1.3"
