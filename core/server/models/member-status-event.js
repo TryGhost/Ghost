@@ -18,17 +18,17 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
                 .select(knex.raw('DATE(created_at) as date'))
                 .select(knex.raw(`SUM(
                     CASE WHEN to_status='paid' THEN 1
-                    CASE WHEN from_status='paid' THEN -1
+                    WHEN from_status='paid' THEN -1
                     ELSE 0 END
                 ) as paid_delta`))
                 .select(knex.raw(`SUM(
                     CASE WHEN to_status='comped' THEN 1
-                    CASE WHEN from_status='comped' THEN -1
+                    WHEN from_status='comped' THEN -1
                     ELSE 0 END
                 ) as comped_delta`))
                 .select(knex.raw(`SUM(
                     CASE WHEN to_status='free' THEN 1
-                    CASE WHEN from_status='free' THEN -1
+                    WHEN from_status='free' THEN -1
                     ELSE 0 END
                 ) as free_delta`))
                 .groupByRaw('DATE(created_at)')
@@ -36,6 +36,15 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
         }
     }
 }, {
+    permittedOptions(methodName) {
+        const options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+
+        if (methodName === 'findAll') {
+            return options.concat('aggregateStatusCounts');
+        }
+
+        return options;
+    },
     async edit() {
         throw new errors.IncorrectUsageError('Cannot edit MemberStatusEvent');
     },
