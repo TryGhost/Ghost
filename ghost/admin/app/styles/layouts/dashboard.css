@@ -205,11 +205,7 @@
 .gh-dashboard-summary .data-container {
     display: flex;
     align-items: flex-end;
-    margin-bottom: 28px;
-}
-
-.gh-dashboard-summary .data-container:last-of-type {
-    margin-bottom: -8px;
+    margin-top: 2px;
 }
 
 .gh-dashboard-summary .data {
@@ -219,6 +215,7 @@
     color: var(--black);
     letter-spacing: -0.1px;
     line-height: 1;
+    white-space: nowrap;
 }
 
 .gh-dashboard-summary.small .data {
@@ -297,9 +294,24 @@
     transform-origin: top right;
 }
 
-@media (max-width: 1500px) {
+/* Chart.js requires relative width to be in vw units to make responsive re-rendering work */
+@media (max-width: 1600px) {
     .gh-dashboard-chart-box.small {
         width: 10vw;
+    }
+}
+
+@media (max-width: 1500px) {
+    .gh-dashboard-chart-box {
+        width: 33vw;
+    }
+
+    .gh-dashboard-chart-box.small {
+        width: 10vw;
+    }
+
+    .gh-dashboard-chart.small {
+        max-width: 120px;
     }
 }
 
@@ -477,6 +489,8 @@
     .gh-dashboard-area.charts .mrr .gh-dashboard-chart-container {
         flex-direction: column;
         align-items: stretch;
+        justify-content: space-between;
+        flex-grow: 1;
     }
 
     .gh-dashboard-area.charts .mrr .gh-members-chart-box {
@@ -513,7 +527,34 @@
         min-height: 240px;
     }
 
-    .gh-dashboard-chart-box {
-        margin: 0 0 24px;
+    .gh-dashboard-area.charts .mrr .gh-dashboard-chart-box {
+        height: 140px;
+        width: 100%;
+    }
+
+    .gh-dashboard-area.charts .mrr .gh-dashboard-chart {
+        margin-left: -20px;
+    }
+
+    .gh-dashboard-area.charts .mrr .gh-dashboard-summary {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+
+    .gh-dashboard-area.charts .mrr .growth {
+        margin: 0 0 0 12px;
+        padding: 4px 6px;
+    }
+
+    .gh-dashboard-header {
+        white-space: nowrap;
+    }
+
+    .gh-dashboard-chart.small {
+        min-width: 50%;
+    }
+
+    .gh-dashboard-chart-box.small {
+        width: 100%;
     }
 }
