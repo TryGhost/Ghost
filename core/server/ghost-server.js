@@ -96,7 +96,11 @@ class GhostServer {
                     });
                 }
 
-                reject(ghostError);
+                debug('Notifying server started (error)');
+                return notify.notifyServerStarted()
+                    .finally(() => {
+                        reject(ghostError);
+                    });
             });
 
             self.httpServer.on('listening', function () {
@@ -108,7 +112,7 @@ class GhostServer {
                     self._startTestMode();
                 }
 
-                debug('server notifying started');
+                debug('Notifying server ready (success)');
                 return notify.notifyServerStarted()
                     .finally(() => {
                         resolve(self);

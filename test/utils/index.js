@@ -251,9 +251,6 @@ const freshModeGhostStart = async (options) => {
     // Actually boot Ghost
     await bootGhost(options);
 
-    // Ensure notify was called (this is idempotent)
-    notify.notifyServerStarted();
-
     // Wait for the URL service to be ready, which happens after boot, but don't re-trigger db.ready
     await urlServiceUtils.isFinished({disableDbReadyEvent: true});
 };
