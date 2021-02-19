@@ -50,13 +50,19 @@ export default class DashboardController extends Controller {
         this.membersStats.fetchMRR().then((stats) => {
             this.events.loading = false;
 
-            const currencyStats = stats[0];
+            let currencyStats = stats[0] || {
+                data: [],
+                currency: 'usd'
+            };
             if (currencyStats) {
                 currencyStats.data = this.membersStats.fillDates(currencyStats.data) || {};
                 const dateValues = Object.values(currencyStats.data).map(val => val / 100);
                 const currentMRR = dateValues.length ? dateValues[dateValues.length - 1] : 0;
+                const rangeStartMRR = dateValues.length ? dateValues[0] : 0;
+                const percentChange = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0.0;
                 this.mrrStats.data = {
                     current: `${getSymbol(currencyStats.currency)}${currentMRR}`,
+                    percentChange,
                     options: {
                         rangeInDays: 30
                     },
