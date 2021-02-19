@@ -86,6 +86,7 @@ export default class EventTimeline extends Component {
             let info = this.getInfo(event);
             let timestamp = moment(event.data.created_at).fromNow();
             return {
+                member_id: event.data.member_id,
                 icon,
                 subject,
                 action,
