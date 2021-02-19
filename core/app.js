@@ -1,5 +1,5 @@
+const sentry = require('./shared/sentry');
 const express = require('./shared/express');
-const rootApp = express('root');
 
 const fs = require('fs');
 const path = require('path');
@@ -15,6 +15,9 @@ const maintenanceMiddleware = (req, res, next) => {
     res.writeHead(503, {'content-type': 'text/html'});
     fs.createReadStream(path.resolve(__dirname, './server/views/maintenance.html')).pipe(res);
 };
+
+const rootApp = express('root');
+rootApp.use(sentry.requestHandler);
 
 rootApp.enable('maintenance');
 rootApp.use(maintenanceMiddleware);
