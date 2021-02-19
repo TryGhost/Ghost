@@ -12,12 +12,19 @@
     --lime: #B5FF18;
 
     /* Secondary colours */
-    --blue: #23AAF4;
-    --green: #45C32E;
-    --purple: #F71D81;
-    --yellow: #FFC701;
-    --red: #f05230;
-    --pink: #fa3a57;
+    --blue: #14b8ff;
+    --green: #30cf43;
+    --purple: #8e42ff;
+    --yellow: #ffb41f;
+    --red: #ff344a;
+    --pink: #fb2d8d;
+
+    /* Gradients */
+    --lgr-blue: linear-gradient(135deg,#14b8ff 40%,#0083f5);
+    --lgr-pink: linear-gradient(135deg,#fb2d8d 40%,#ff1453);
+    --lgr-green: linear-gradient(135deg,#30cf43 40%,#00c687);
+    --lgr-yellow: linear-gradient(135deg,#ffb41f 40%,#ff8c00);
+    --lrg-black: linear-gradient(135deg,#4e6b77 40%,#0f2230);
 
     /* Greys */
     --blackgrey: #15171A;

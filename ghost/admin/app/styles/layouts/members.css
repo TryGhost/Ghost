@@ -631,11 +631,11 @@ textarea.gh-member-details-textarea {
 
 .gh-member-cancels-on-label {
     display: inline-block;
-    background: color-mod(var(--purple) a(10%));
+    background: color-mod(var(--pink) a(10%));
     border-radius: 4px;
     padding: 0px 5px;
     margin: -2px 0 -2px -5px;
-    color: var(--purple);
+    color: var(--pink);
     font-size: 1.3rem;
     font-weight: 400;
 }
@@ -1150,7 +1150,7 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-member-import-icon-confetti {
-    color: var(--purple);
+    color: var(--pink);
     margin-left: 12px;
 }
 

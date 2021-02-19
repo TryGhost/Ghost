@@ -110,9 +110,9 @@
 }
 
 .gh-badge.administrator {
-    background: color-mod(var(--purple) a(15%));
+    background: color-mod(var(--pink) a(15%));
     text-transform: uppercase;
-    color: var(--purple-d2);
+    color: var(--pink-d2);
 }
 
 .gh-badge.editor {

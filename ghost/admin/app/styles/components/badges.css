@@ -27,9 +27,9 @@
     background: color-mod(var(--red) a(20%));
 }
 
-.gh-badge-purple {
-    color: var(--purple);
-    background: color-mod(var(--purple) a(20%));
+.gh-badge-pink {
+    color: var(--pink);
+    background: color-mod(var(--pink) a(20%));
 }
 
 .gh-badge-black {
