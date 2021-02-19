@@ -1,4 +1,6 @@
 const Nconf = require('nconf');
+const _ = require('lodash');
+const os = require('os');
 const path = require('path');
 const _debug = require('ghost-ignition').debug._base;
 const debug = _debug('ghost:config');
@@ -53,6 +55,14 @@ _private.loadNconf = function loadNconf(options) {
     nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
     if (nconf.get('database:client') === 'sqlite3') {
         nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
+
+        // In the default SQLite test config we set the path to /tmp/ghost-test.db,
+        // but this won't work on Windows, so we need to replace the /tmp bit with
+        // the Windows temp folder
+        const filename = nconf.get('database:connection:filename');
+        if (_.isString(filename) && filename.match(/^\/tmp/)) {
+            nconf.set('database:connection:filename', filename.replace(/^\/tmp/, os.tmpdir()));
+        }
     }
     /**
   * Check if the URL in config has a protocol
