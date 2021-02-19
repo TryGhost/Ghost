@@ -27,7 +27,7 @@
                 </div>
             {{/if}}
         </div>
-        <div class="gh-members-chart-container">
+        <div class="gh-members-chart-container {{if this.isSmall "gh-members-chart-container-small"}}">
             {{#if (not this.stats)}}
                 <GhLoadingSpinner />
             {{else}}
