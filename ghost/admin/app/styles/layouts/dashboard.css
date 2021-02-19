@@ -140,8 +140,8 @@
     border: 1px solid var(--whitegrey);
     border-radius: 3px;
     grid-column-gap: var(--dashboard-gap);
-    height: 300px;
-    padding: 5px 0 24px;
+    align-items: stretch;
+    padding: 20px 0;
 }
 
 .gh-dashboard-area.charts .gh-dashboard-box {
@@ -158,32 +158,34 @@
 .gh-dashboard-area.charts .mrr {
     grid-column: 1 / 2;
     grid-row: 1 / 4;
-    padding-left: 24px;
+    padding: 0 0 0 24px;
 }
 
 .gh-dashboard-area.charts .total-members {
     grid-column: 2 / 3;
     grid-row: 1 / 2;
-    padding-right: 24px;
+    padding: 0 24px 0 24px;
+    height: 75px;
 }
 
 .gh-dashboard-area.charts .paid-members {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
-    padding-right: 24px;
+    padding: 0 24px 0 24px;
+    height: 75px;
 }
 
 .gh-dashboard-area.charts .newsletter-open-rate {
     grid-column: 2 / 3;
     grid-row: 3 / 4;
-    padding-right: 24px;
+    padding: 0 24px 0 24px;
+    height: 75px;
 }
 
 .gh-dashboard-chart-container {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    height: 100%;
 }
 
 .gh-dashboard-summary {
@@ -191,7 +193,6 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    height: 100%;
     margin-top: 8px;
 }
 
@@ -240,7 +241,7 @@
     font-size: 1.2rem;
     letter-spacing: 0;
     padding: 2px 4px;
-    margin: 6px 0 0;
+    margin: 0 0 1px 11px;
 }
 
 .gh-dashboard-summary .growth.positive {
@@ -258,7 +259,6 @@
     flex-direction: column;
     align-items: flex-end;
     justify-content: flex-end;
-    height: 100%;
 }
 
 .gh-dashboard-chart.nodata {
@@ -274,6 +274,33 @@
 
 .gh-dashboard-chart.small {
     max-width: 180px;
+    margin-bottom: -6px;
+}
+
+.gh-dashboard-chart-box {
+    position: relative;
+    display: flex;
+    justify-content: stretch;
+    height: 208px;
+    width: 35.5vw;
+    padding-top: 12px;
+    margin-right: -10px;
+}
+
+.gh-dashboard-chart-box.small {
+    position: relative;
+    width: 12vw;
+    height: 70px;
+    padding-top: 0;
+    margin-right: -6px;
+    transform: scale(0.9);
+    transform-origin: top right;
+}
+
+@media (max-width: 1500px) {
+    .gh-dashboard-chart-box.small {
+        width: 10vw;
+    }
 }
 
 /* Total members */
@@ -484,5 +511,9 @@
 
     .gh-dashboard-area.charts {
         min-height: 240px;
+    }
+
+    .gh-dashboard-chart-box {
+        margin: 0 0 24px;
     }
 }

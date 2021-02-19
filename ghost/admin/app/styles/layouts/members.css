@@ -177,41 +177,6 @@ p.gh-members-list-email {
     margin-right: 32px;
 }
 
-.gh-members-chart-box {
-    position: relative;
-    /* flex: 1 1 auto; */
-    display: flex;
-    justify-content: stretch;
-    height: 240px;
-    width: 35vw;
-    padding-top: 12px;
-}
-
-.gh-members-chart-box.small {
-    position: relative;
-    width: 12vw;
-    height: 70px;
-    padding-top: 0;
-    margin-right: -6px;
-}
-
-@media (max-width: 1500px) {
-    .gh-members-chart-box.small {
-        width: 10vw;
-    }
-}
-
-.gh-members-chart-box.small::before {
-    position: absolute;
-    content: "";
-    display: block;
-    height: 1px;
-    bottom: 1px;
-    left: 10px;
-    right: 6px;
-    background: var(--list-color-divider);
-}
-
 .gh-members-chart-header {
     display: flex;
     align-items: center;
@@ -344,10 +309,6 @@ p.gh-members-list-email {
 @media (max-width: 1000px) {
     .members-list .gh-list-header, .gh-list-hidecell-m {
         display: table-cell;
-    }
-
-    .gh-members-chart-box {
-        margin: 0 0 24px;
     }
 }
 
