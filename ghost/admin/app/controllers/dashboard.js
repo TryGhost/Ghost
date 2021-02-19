@@ -11,30 +11,32 @@ export default class DashboardController extends Controller {
     @service settings;
 
     @tracked
-    events = {
-        data: null,
-        error: null,
-        loading: false
-    };
+    eventsData = null;
     @tracked
-    mrrStats = {
-        data: null,
-        error: null,
-        loading: false
-    };
+    eventsError = null;
     @tracked
-    memberCountStats = {
-        data: null,
-        error: null,
-        loading: false
-    };
+    eventsLoading = false;
 
     @tracked
-    topMembers = {
-        data: null,
-        error: null,
-        loading: false
-    };
+    mrrStatsData = null;
+    @tracked
+    mrrStatsError = null;
+    @tracked
+    mrrStatsLoading = false;
+
+    @tracked
+    memberCountStatsData = null;
+    @tracked
+    memberCountStatsError = null;
+    @tracked
+    memberCountStatsLoading = false;
+
+    @tracked
+    topMembersData = null;
+    @tracked
+    topMembersError = null;
+    @tracked
+    topMembersLoading = false;
 
     get showTopMembers() {
         return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
@@ -49,7 +51,7 @@ export default class DashboardController extends Controller {
 
     loadMRRStats() {
         this.membersStats.fetchMRR().then((stats) => {
-            this.events.loading = false;
+            this.mrrStatsLoading = false;
 
             let currencyStats = stats[0] || {
                 data: [],
@@ -61,7 +63,7 @@ export default class DashboardController extends Controller {
                 const currentMRR = dateValues.length ? dateValues[dateValues.length - 1] : 0;
                 const rangeStartMRR = dateValues.length ? dateValues[0] : 0;
                 const percentChange = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0.0;
-                this.mrrStats.data = {
+                this.mrrStatsData = {
                     current: `${getSymbol(currencyStats.currency)}${currentMRR}`,
                     percentChange,
                     options: {
@@ -77,20 +79,20 @@ export default class DashboardController extends Controller {
                 };
             }
         }, (error) => {
-            this.mrrStats.error = error;
-            this.events.loading = false;
+            this.mrrStatsError = error;
+            this.mrrStatsLoading = false;
         });
     }
 
     loadMemberCountStats() {
         this.membersStats.fetchCounts().then((stats) => {
-            this.events.loading = false;
+            this.memberCountStatsLoading = false;
 
             if (stats) {
                 stats.data = this.membersStats.fillCountDates(stats.data) || {};
                 const dateValues = Object.values(stats.data);
 
-                this.memberCountStats.data = {
+                this.memberCountStatsData = {
                     all: {
                         total: dateValues.length ? dateValues[dateValues.length - 1].total : 0,
                         options: {
@@ -120,8 +122,8 @@ export default class DashboardController extends Controller {
                 };
             }
         }, (error) => {
-            this.mrrStats.error = error;
-            this.events.loading = false;
+            this.memberCountStatsError = error;
+            this.memberCountStatsLoading = false;
         });
     }
 
@@ -131,29 +133,29 @@ export default class DashboardController extends Controller {
     }
 
     loadEvents() {
-        this.events.loading = true;
+        this.eventsLoading = true;
         this.membersStats.fetchTimeline().then(({events}) => {
-            this.events.data = events;
-            this.events.loading = false;
+            this.eventsData = events;
+            this.eventsLoading = false;
         }, (error) => {
-            this.events.error = error;
-            this.events.loading = false;
+            this.eventsError = error;
+            this.eventsLoading = false;
         });
     }
 
     loadTopMembers() {
-        this.topMembers.loading = true;
+        this.topMembersLoading = true;
         let query = {
             filter: 'email_open_rate:-null',
             order: 'email_open_rate desc',
             limit: 10
         };
         this.store.query('member', query).then((result) => {
-            this.topMembers.data = result;
-            this.topMembers.loading = false;
+            this.topMembersData = result;
+            this.topMembersLoading = false;
         }, (error) => {
-            this.topMembers.error = error;
-            this.topMembers.loading = false;
+            this.topMembersError = error;
+            this.topMembersLoading = false;
         });
     }
 }
