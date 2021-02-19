@@ -106,6 +106,7 @@ table.list .data-label {
     font-size: 1.4rem;
     white-space: nowrap;
     padding-right: 8px;
+    vertical-align: top;
 }
 
 .table.list .data, 
