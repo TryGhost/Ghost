@@ -39,18 +39,6 @@
     justify-content: flex-start;
 }
 
-.gh-dashboard-chart.nodata {
-    border: 1px dashed var(--lightgrey);
-    font-size: 1.3rem;
-    color: var(--midlightgrey);
-    height: 100%;
-}
-
-.gh-dashboard-chart.nodata {
-    font-size: 1.3rem;
-    color: var(--midlightgrey);
-}
-
 .gh-dashboard-container {
     display: grid;
     grid-template-columns: 1fr;
@@ -152,48 +140,49 @@
     border: 1px solid var(--whitegrey);
     border-radius: 3px;
     grid-column-gap: var(--dashboard-gap);
-    height: 18vw;
-    min-height: 180px;
-    max-height: 280px;
-    padding: 0 24px 24px;
+    height: 300px;
+    padding: 5px 0 24px;
 }
 
 .gh-dashboard-area.charts .gh-dashboard-box {
     border: none;
     border-radius: 0;
-    padding: 22px 0 0 24px;
+    padding: 16px 0 0 24px;
     margin: 0;
 }
 
 .gh-dashboard-area.charts .gh-dashboard-header {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
 }
 
 .gh-dashboard-area.charts .mrr {
     grid-column: 1 / 2;
     grid-row: 1 / 4;
-    padding-left: 0;
+    padding-left: 24px;
 }
 
 .gh-dashboard-area.charts .total-members {
     grid-column: 2 / 3;
     grid-row: 1 / 2;
+    padding-right: 24px;
 }
 
 .gh-dashboard-area.charts .paid-members {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
+    padding-right: 24px;
 }
 
 .gh-dashboard-area.charts .newsletter-open-rate {
     grid-column: 2 / 3;
     grid-row: 3 / 4;
+    padding-right: 24px;
 }
 
 .gh-dashboard-chart-container {
     display: flex;
     align-items: flex-start;
-    justify-content: stretch;
+    justify-content: space-between;
     height: 100%;
 }
 
@@ -203,6 +192,7 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
+    height: 100%;
 }
 
 .gh-dashboard-summary.small {
@@ -264,9 +254,25 @@
 .gh-dashboard-chart {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
     align-items: center;
     justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.gh-dashboard-chart.nodata {
+    border: 1px dashed var(--lightgrey);
+    font-size: 1.3rem;
+    color: var(--midlightgrey);
+}
+
+.gh-dashboard-chart.nodata {
+    font-size: 1.3rem;
+    color: var(--midlightgrey);
+}
+
+.gh-dashboard-chart.small {
+    max-width: 180px;
 }
 
 /* Total members */

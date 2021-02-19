@@ -24,7 +24,7 @@ export default Component.extend({
     showRange: true,
     chartType: '',
     chartSize: '',
-    chartHeading: 'Total Members',
+    chartHeading: 'Total members',
 
     isSmall: computed('chartSize', function () {
         if (this.chartSize === 'small') {
@@ -166,10 +166,11 @@ export default Component.extend({
                 cornerRadius: 5,
                 caretSize: 7,
                 caretPadding: 5,
-                bodyFontSize: 13,
+                bodyFontSize: 11,
+                titleFontSize: 10,
                 titleFontStyle: 'normal',
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 4,
+                titleMarginBottom: 3,
                 callbacks: {
                     label: (tooltipItems, data) => {
                         const labelText = data.datasets[tooltipItems.datasetIndex].label;

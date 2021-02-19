@@ -24,7 +24,7 @@
                     </div>
                     {{#if this.mrrStats.data}}
                         <div class="gh-dashboard-chart">
-                            <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" style="width:100%" @chartStats={{this.mrrStats.data}} />
+                            <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStats.data}} />
                         </div>
                     {{else}}
                         <div class="gh-dashboard-chart nodata">
@@ -43,7 +43,7 @@
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
-                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} style="width:100%" @chartStats={{this.memberCountStats.data.all}} />
+                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStats.data.all}} />
                     </div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
-                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} style="width:100%" @chartStats={{this.memberCountStats.data.paid}} />
+                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStats.data.paid}} />
                     </div>
                 </div>
             </div>

@@ -67,13 +67,6 @@
 
     {{#unless this.members.loading}}
         <section class="view-container">
-
-            {{#if (and this.members this.showingAll)}}
-                <section class="gh-members-chart">
-                    <GhMembersChart @nightShift={{feature "nightShift"}} />
-                </section>
-            {{/if}}
-
             <section class="content-list">
                 <ol class="members-list gh-list {{unless this.members "no-posts"}}">
                     {{#if this.members}}
