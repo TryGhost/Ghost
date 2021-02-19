@@ -3,7 +3,7 @@
     "database": {
         "client": "sqlite3",
         "connection": {
-            "filename": "content/data/ghost-test.db"
+            "filename": "/tmp/ghost-test.db"
         },
         "useNullAsDefault": true,
         "debug": false
