@@ -209,8 +209,8 @@ const restartModeGhostStart = async () => {
     // @TODO: why does this happen _after_ URL service
     web.shared.middlewares.customRedirects.reload();
 
-    // Trigger server start, which is ONLY used for theme reload
-    events.emit('server.start');
+    // Trigger themes to load again
+    events.emit('themes.ready');
 };
 
 const bootGhost = async () => {
