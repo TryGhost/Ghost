@@ -119,7 +119,7 @@
         </section>
 
         <section class="gh-dashboard-area members-activity">
-            {{#if this.showTopMembers}}
+            {{#if (and this.showTopMembers this.topMembers.data)}}
                 <div class="gh-dashboard-box grey activity-feed">
                     <div class="flex items-center justify-between">
                         <h4 class="gh-dashboard-header">Top members</h4>
@@ -138,10 +138,10 @@
                             <ul class="gh-dashboard-top-members">
                                 {{#each this.topMembers.data as |member|}}
                                     <li class="gh-dashboard-top-member">
-                                        <div class="member-details">
+                                        <LinkTo class="member-details" @route="members">
                                             <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                                             <span class="name">{{member.name}}</span>
-                                        </div>
+                                        </LinkTo>
                                         <span class="open-rate">{{member.emailOpenRate}}%</span>
                                     </li>
                                 {{/each}}

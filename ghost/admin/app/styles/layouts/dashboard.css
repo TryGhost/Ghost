@@ -364,21 +364,31 @@
     flex-grow: 1;
 }
 
-.gh-dashboard-top-member .avatar {
-    display: flex;
+.gh-dashboard-top-member .gh-member-gravatar {
+    /* display: flex;
     align-items: center;
     justify-content: center;
     flex-grow: 0;
-    width: 32px;
-    height: 32px;
     min-width: 32px;
     border-radius: 999px;
     background: var(--blue);
     margin-right: 8px;
+    color: #fff;
+    line-height: 1; */
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    width: 34px;
+    height: 34px;
+}
+
+.gh-dashboard-top-member .gh-member-initials {
+    width: 34px;
+    height: 34px;
+}
+
+.gh-dashboard-top-member .gh-member-list-avatar {
     font-size: 1.5rem;
     font-weight: 500;
     text-align: center;
-    color: #fff;
     line-height: 1;
 }
 
