@@ -187,7 +187,6 @@
 }
 
 .gh-dashboard-summary {
-    flex-basis: 220px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -197,7 +196,8 @@
 }
 
 .gh-dashboard-summary.small {
-    flex-basis: 180px;
+    flex-basis: 160px;
+    min-width: 160px;
     margin-top: 0;
 }
 
@@ -259,7 +259,6 @@
     align-items: flex-end;
     justify-content: flex-end;
     height: 100%;
-    width: 100%;
 }
 
 .gh-dashboard-chart.nodata {
@@ -448,8 +447,26 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .gh-dashboard-summary {
-        flex-basis: 140px;
+    .gh-dashboard-area.charts .mrr .gh-dashboard-chart-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gh-dashboard-area.charts .mrr .gh-members-chart-box {
+        width: 100%;
+    }
+
+    .gh-dashboard-chart {
+        height: auto;
+    }
+
+    .gh-members-chart-box {
+        height: 140px;
+    }
+
+    .gh-dashboard-summary.small{
+        flex-basis: 100px;
+        min-width: 100px;
     }
 
     .gh-dashboard-summary:not(.small) .data {
