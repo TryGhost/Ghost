@@ -37,10 +37,8 @@
                 <div class="gh-dashboard-chart-container">
                     <div class="gh-dashboard-summary small">
                         <h4 class="gh-dashboard-header">Total members</h4>
-                        <div class="data-container">
-                            <div class="data">{{this.memberCountStats.data.all.total}}</div>
-                            <div class="growth">0.0%</div>
-                        </div>
+                        <div class="data">{{this.memberCountStats.data.all.total}}</div>
+                        <div class="growth">0.0%</div>
                     </div>
                     <div class="gh-dashboard-chart small">
                         <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStats.data.all}} />
@@ -51,10 +49,8 @@
                 <div class="gh-dashboard-chart-container">
                     <div class="gh-dashboard-summary small">
                         <h4 class="gh-dashboard-header">Paid members</h4>
-                        <div class="data-container">
-                            <div class="data">{{this.memberCountStats.data.paid.total}}</div>
-                            <div class="growth">0.0%</div>
-                        </div>
+                        <div class="data">{{this.memberCountStats.data.paid.total}}</div>
+                        <div class="growth">0.0%</div>
                     </div>
                     <div class="gh-dashboard-chart small">
                         <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStats.data.paid}} />
@@ -65,10 +61,8 @@
                 <div class="gh-dashboard-chart-container">
                     <div class="gh-dashboard-summary small">
                         <h4 class="gh-dashboard-header">Newsletter open rate</h4>
-                        <div class="data-container">
-                            <div class="data">0%</div>
-                            <div class="growth">0.0%</div>
-                        </div>
+                        <div class="data">0%</div>
+                        <div class="growth">0.0%</div>
                     </div>
                     <div class="gh-dashboard-chart small nodata">
                         No data
