@@ -36,6 +36,7 @@ jobs:
         DB: ['sqlite3', 'mysql']
     env:
       database__client: ${{ matrix.DB }}
+      database__connection__filename: /dev/shm/ghost-test.db
       database__connection__host: 127.0.0.1
       database__connection__user: root
       database__connection__password: root
@@ -104,8 +105,12 @@ jobs:
 
       - run: yarn
       - run: grunt test-acceptance --verbose
+        env:
+          database__connection__filename: /dev/shm/ghost-test.db
       - run: grunt test-unit --verbose
       - run: grunt test-regression --verbose
+        env:
+          database__connection__filename: /dev/shm/ghost-test.db
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
