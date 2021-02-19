@@ -9,7 +9,7 @@ const _ = require('lodash');
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const errors = require('@tryghost/errors');
-const {events, i18n} = require('./lib/common');
+const {i18n} = require('./lib/common');
 const logging = require('../shared/logging');
 const moment = require('moment');
 const bootstrapSocket = require('@tryghost/bootstrap-socket');
@@ -162,7 +162,6 @@ class GhostServer {
             await this._cleanup();
         } finally {
             // Wrap up
-            events.emit('server.stop');
             this.httpServer = null;
             this._logStopMessages();
         }
@@ -326,9 +325,6 @@ module.exports.announceServerReadiness = function (error = null) {
     if (error) {
         message.started = false;
         message.error = error;
-    } else {
-        debug('emit: server.start');
-        events.emit('server.start');
     }
 
     // CASE: IPC communication to the CLI for local process manager
