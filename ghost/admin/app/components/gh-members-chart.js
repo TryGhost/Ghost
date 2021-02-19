@@ -17,6 +17,7 @@ export default Component.extend({
     nightShift: false,
 
     stats: null,
+    tagName: '',
     chartStats: null,
     chartData: null,
     chartOptions: null,
@@ -144,6 +145,7 @@ export default Component.extend({
         this.setChartJSDefaults();
         let options = {
             responsive: true,
+            responsiveAnimationDuration: 5,
             maintainAspectRatio: false,
             layout: {
                 padding: {

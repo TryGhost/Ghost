@@ -178,20 +178,27 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-box {
-    flex: 1 1 auto;
+    position: relative;
+    /* flex: 1 1 auto; */
     display: flex;
     justify-content: stretch;
     height: 240px;
-    width: 650px;
+    width: 35vw;
     padding-top: 12px;
 }
 
 .gh-members-chart-box.small {
     position: relative;
-    width: 180px;
-    height: 76px;
+    width: 12vw;
+    height: 70px;
     padding-top: 0;
     margin-right: -6px;
+}
+
+@media (max-width: 1500px) {
+    .gh-members-chart-box.small {
+        width: 10vw;
+    }
 }
 
 .gh-members-chart-box.small::before {
