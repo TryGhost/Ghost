@@ -181,16 +181,17 @@ p.gh-members-list-email {
     flex: 1 1 auto;
     display: flex;
     justify-content: stretch;
-    min-width: 0;
-    min-height: 0;
-    border: 1px solid var(--list-color-divider);
-    border-left: none;
+    height: 240px;
+    width: 650px;
+    padding-top: 12px;
 }
 
 .gh-members-chart-box.small {
-    border: none;
-    max-height: 76px;
-    max-width: 180px;
+    width: 180px;
+    height: 76px;
+    border: 1px solid var(--list-color-divider);
+    border-top: none;
+    padding-top: 0;
 }
 
 .gh-members-chart-header {

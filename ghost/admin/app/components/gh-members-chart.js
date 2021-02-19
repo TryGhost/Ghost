@@ -214,7 +214,7 @@ export default Component.extend({
                             let step = (values.length - 1) / (maxTicksAllowed);
                             let steps = [];
                             for (let i = 0; i < maxTicksAllowed; i++) {
-                                steps.push(Math.round(i * step));
+                                steps.push(Math.ceil(i * step));
                             }
 
                             if (index === 0) {
@@ -238,9 +238,10 @@ export default Component.extend({
                     },
                     ticks: {
                         maxTicksLimit: 5,
-                        fontColor: '#626D79',
+                        fontColor: '#7C8B9A',
                         padding: 8,
                         precision: 0,
+                        suggestedMin: 0,
                         callback: function (value) {
                             return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                         }
@@ -257,11 +258,11 @@ export default Component.extend({
 
     getTicksForRange(rangeInDays) {
         if (rangeInDays <= 30) {
-            return 6;
+            return 5;
         } else if (rangeInDays <= 90) {
-            return 18;
+            return 10;
         } else {
-            return 24;
+            return 15;
         }
     },
 
