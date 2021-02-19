@@ -2,11 +2,13 @@
     <ul class="gh-dashboard-activity-feed">
         {{#each this.parsedEvents as |event|}}
         <li>
+            <LinkTo class="member-details" @route="member" @model="{{event.member_id}}">
             <div class="activity">
                 <div>
                     <span class="member">{{event.subject}}</span> {{event.action}} {{event.object}} <span class="highlight">{{event.info}}</span>
                 </div>
             </div>
+            </LinkTo>
             <span class="time">{{event.timestamp}}</span>
         </li>
         {{/each}}
