@@ -280,8 +280,8 @@ fieldset[disabled] .gh-btn {
 svg.gh-btn-icon-right {
     margin-left: 0.5em;
     margin-right: 0;
-    width: 16px;
-    height: auto;
+    width: auto;
+    height: 16px;
 }
 
 .gh-btn-icon svg path {
