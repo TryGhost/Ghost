@@ -111,7 +111,7 @@ const mountGhost = (rootApp, ghostApp) => {
 };
 
 const bootGhost = async () => {
-    // Metrics & debugging
+    // Metrics
     const startTime = Date.now();
     let ghostServer;
 
@@ -121,10 +121,16 @@ const bootGhost = async () => {
         const config = require('./shared/config');
         debug('End: Load config');
 
+        // Version is required by sentry & Migratior config & so is fundamental to booting
+        // However, it involves reading package.json, so put it here for visibility on how slow it is
         debug('Begin: Load version info');
-        const version = require('./server/lib/ghost-version');
-        config.set('version', version);
+        require('./server/lib/ghost-version');
         debug('End: Load version info');
+
+        // Sentry must be initialised early, but requires config
+        debug('Begin: Load sentry');
+        require('./shared/sentry');
+        debug('End: Load sentry');
 
         debug('Begin: load server + minimal app');
         process.env.NODE_ENV = process.env.NODE_ENV || 'development';
