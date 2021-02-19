@@ -16,7 +16,7 @@
                     <div class="gh-dashboard-summary">
                         {{#if this.mrrStats.data}}
                             <div class="data">{{this.mrrStats.data.current}}</div>
-                            <div class="growth">0.0%</div>
+                            <div class="growth">{{this.mrrStats.data.percentChange}}%</div>
                         {{else}}
                             <div class="data">$0</div>
                             <div class="growth">0.0%</div>
