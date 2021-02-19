@@ -187,16 +187,15 @@ function mountGhost(rootApp, ghostApp) {
     debug('End: mountGhost');
 }
 
-// @TODO: make this notification different
-function notifyReadiness(error) {
+function notifyServerReady(error) {
     const notify = require('./server/notify');
 
     if (error) {
-        debug('Notifying readiness (error)');
-        notify.notifyServerStarted(error);
+        debug('Notifying server ready (error)');
+        notify.notifyServerReady(error);
     } else {
-        debug('Notifying readiness (success)');
-        notify.notifyServerStarted();
+        debug('Notifying server ready (success)');
+        notify.notifyServerReady();
     }
 }
 
@@ -269,7 +268,7 @@ async function bootGhost() {
         // We are technically done here
         bootLogger.log('booted');
 
-        notifyReadiness();
+        notifyServerReady();
 
         // Init our background jobs, we don't wait for this to finish
         initRecurringJobs({config});
@@ -289,10 +288,10 @@ async function bootGhost() {
         }
 
         logging.error(serverStartError);
-        notifyReadiness(serverStartError);
 
         // If ghost was started and something else went wrong, we shut it down
         if (ghostServer) {
+            notifyServerReady(serverStartError);
             ghostServer.shutdown(2);
         } else {
             // Ghost server failed to start, set a timeout to give logging a chance to flush

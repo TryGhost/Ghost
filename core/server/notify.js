@@ -10,7 +10,10 @@
 const config = require('../shared/config');
 const logging = require('../shared/logging');
 
-let notifyServerStartedCalled = false;
+let notified = {
+    started: false,
+    ready: false
+};
 
 const debugInfo = {
     versions: process.versions,
@@ -19,27 +22,27 @@ const debugInfo = {
     release: process.release
 };
 
-module.exports.notifyServerStarted = function (error = null) {
-    // If we already sent a ready notification, we should not do it again
-    if (notifyServerStartedCalled) {
-        return Promise.resolve();
+async function notify(type, error = null) {
+    // If we already sent this notification, we should not do it again
+    if (notified[type]) {
+        return;
     }
 
     // Mark this function as called
-    notifyServerStartedCalled = true;
+    notified[type] = true;
 
     // Build our message
-    // - if there's no error then the server is ready
-    let message = {
-        started: true,
-        debug: debugInfo
-    };
-
     // - if there's an error then the server is not ready, include the errors
+    // - if there's no error then the server has started
+    let message = {};
     if (error) {
-        message.started = false;
+        message[type] = false;
         message.error = error;
+    } else {
+        message[type] = true;
     }
+    // Add debug info to the message
+    message.debug = debugInfo;
 
     // CASE: IPC communication to the CLI for local process manager
     if (process.send) {
@@ -54,4 +57,12 @@ module.exports.notifyServerStarted = function (error = null) {
     }
 
     return Promise.resolve();
+}
+
+module.exports.notifyServerStarted = async function (error = null) {
+    return await notify('started', error);
+};
+
+module.exports.notifyServerReady = async function (error = null) {
+    return await notify('ready', error);
 };
