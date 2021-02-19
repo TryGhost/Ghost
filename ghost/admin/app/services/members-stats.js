@@ -62,7 +62,7 @@ export default class MembersStatsService extends Service {
     }
 
     fillDates(data) {
-        let currentRangeDate = moment().subtract(29, 'days');
+        let currentRangeDate = moment().subtract(30, 'days');
 
         let endDate = moment().add(1, 'hour');
         const output = {};
@@ -78,7 +78,7 @@ export default class MembersStatsService extends Service {
     }
 
     fillCountDates(data) {
-        let currentRangeDate = moment().subtract(29, 'days');
+        let currentRangeDate = moment().subtract(30, 'days');
 
         let endDate = moment().add(1, 'hour');
         const output = {};
