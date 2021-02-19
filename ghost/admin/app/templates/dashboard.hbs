@@ -14,15 +14,15 @@
                 </div>
                 <div class="gh-dashboard-chart-container">
                     <div class="gh-dashboard-summary">
-                        {{#if this.mrrStats.data}}
-                            <div class="data">{{this.mrrStats.data.current}}</div>
-                            <div class="growth">{{this.mrrStats.data.percentChange}}%</div>
+                        {{#if this.mrrStatsData}}
+                            <div class="data">{{this.mrrStatsData.current}}</div>
+                            <div class="growth">{{this.mrrStatsData.percentChange}}%</div>
                         {{else}}
                             <div class="data">$0</div>
                             <div class="growth">0.0%</div>
                         {{/if}}
                     </div>
-                    {{#if this.mrrStats.data}}
+                    {{#if this.mrrStatsData}}
                         <div class="gh-dashboard-chart">
                             <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStats.data}} />
                         </div>
@@ -38,12 +38,12 @@
                     <div class="gh-dashboard-summary small">
                         <h4 class="gh-dashboard-header">Total members</h4>
                         <div class="data-container">
-                            <div class="data">{{this.memberCountStats.data.all.total}}</div>
+                            <div class="data">{{this.memberCountStatsData.all.total}}</div>
                             <div class="growth">0.0%</div>
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
-                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStats.data.all}} />
+                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.all}} />
                     </div>
                 </div>
             </div>
@@ -52,12 +52,12 @@
                     <div class="gh-dashboard-summary small">
                         <h4 class="gh-dashboard-header">Paid members</h4>
                         <div class="data-container">
-                            <div class="data">{{this.memberCountStats.data.paid.total}}</div>
+                            <div class="data">{{this.memberCountStatsData.paid.total}}</div>
                             <div class="growth">0.0%</div>
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
-                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStats.data.paid}} />
+                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.paid}} />
                     </div>
                 </div>
             </div>
@@ -126,17 +126,17 @@
                         <h4 class="gh-dashboard-header secondary">Open rate</h4>
                     </div>
                     <div class="gh-dashboard-list nodata">
-                        {{#if this.events.loading}}
+                        {{#if this.topMembersLoading}}
                             Loading...
                         {{else}}
-                            {{#if this.events.error}}
+                            {{#if this.topMembersError}}
                                 <p class="error">
                                     There was an error loading events
                                     <code>{{this.events.error.message}}</code>
                                 </p>
                             {{else}}
                             <ul class="gh-dashboard-top-members">
-                                {{#each this.topMembers.data as |member|}}
+                                {{#each this.topMembersData as |member|}}
                                     <li class="gh-dashboard-top-member">
                                         <LinkTo class="member-details" @route="members">
                                             <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
@@ -157,16 +157,16 @@
             <div class="gh-dashboard-box grey activity-feed">
                 <h4 class="gh-dashboard-header">Activity feed</h4>
                 <div class="content">
-                    {{#if this.events.loading}}
+                    {{#if this.eventsLoading}}
                         Loading...
                     {{else}}
-                        {{#if this.events.error}}
+                        {{#if this.eventsError}}
                             <p class="error">
                                 There was an error loading events
-                                <code>{{this.events.error.message}}</code>
+                                <code>{{this.eventsError.message}}</code>
                             </p>
                         {{else}}
-                            <GhEventTimeline @events={{this.events.data}}/>
+                            <GhEventTimeline @events={{this.eventsData}}/>
                         {{/if}}
                     {{/if}}
                 </div>
