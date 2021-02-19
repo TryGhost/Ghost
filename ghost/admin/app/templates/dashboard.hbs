@@ -115,33 +115,41 @@
         </section>
 
         <section class="gh-dashboard-area members-activity">
-            <div class="gh-dashboard-box grey activity-feed">
-                <div class="flex items-center justify-between">
-                    <h4 class="gh-dashboard-header">Top members</h4>
-                    <h4 class="gh-dashboard-header secondary">Open rate</h4>
-                </div>
-                <div class="gh-dashboard-list nodata">
-                    <ul class="gh-dashboard-top-members">
-                        <li class="gh-dashboard-top-member">
-                            <div class="member-details">
-                                <div class="avatar">KL</div>
-                                <span class="name">Kadin Levin</span>
-                            </div>
-                            <span class="open-rate">97%</span>
-                        </li>
-                        <li class="gh-dashboard-top-member">
-                            <div class="member-details">
-                                <div class="avatar">TS</div>
-                                <span class="name">Terry Stanton</span>
-                            </div>
-                            <span class="open-rate">91%</span>
-                        </li>
-                    </ul>
-                    <div class="gh-dashboard-top-members-footer">
-                        <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
+            {{#if this.showTopMembers}}
+                <div class="gh-dashboard-box grey activity-feed">
+                    <div class="flex items-center justify-between">
+                        <h4 class="gh-dashboard-header">Top members</h4>
+                        <h4 class="gh-dashboard-header secondary">Open rate</h4>
+                    </div>
+                    <div class="gh-dashboard-list nodata">
+                        {{#if this.events.loading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.events.error}}
+                                <p class="error">
+                                    There was an error loading events
+                                    <code>{{this.events.error.message}}</code>
+                                </p>
+                            {{else}}
+                            <ul class="gh-dashboard-top-members">
+                                {{#each this.topMembers.data as |member|}}
+                                    <li class="gh-dashboard-top-member">
+                                        <div class="member-details">
+                                            <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                            <span class="name">{{member.name}}</span>
+                                        </div>
+                                        <span class="open-rate">{{member.emailOpenRate}}%</span>
+                                    </li>
+                                {{/each}}
+                            </ul>
+                            {{/if}}
+                        {{/if}}
+                        <div class="gh-dashboard-top-members-footer">
+                            <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {{/if}}
             <div class="gh-dashboard-box grey activity-feed">
                 <h4 class="gh-dashboard-header">Activity feed</h4>
                 <div class="content">

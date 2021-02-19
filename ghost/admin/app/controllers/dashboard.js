@@ -7,6 +7,7 @@ export default class DashboardController extends Controller {
     @service feature;
     @service session;
     @service membersStats;
+    @service store;
 
     @tracked
     events = {
@@ -27,9 +28,21 @@ export default class DashboardController extends Controller {
         loading: false
     };
 
+    @tracked
+    topMembers = {
+        data: null,
+        error: null,
+        loading: false
+    };
+
+    get showTopMembers() {
+        return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
+    }
+
     constructor(...args) {
         super(...args);
         this.loadEvents();
+        this.loadTopMembers();
         this.loadCharts();
     }
 
@@ -118,6 +131,22 @@ export default class DashboardController extends Controller {
         }, (error) => {
             this.events.error = error;
             this.events.loading = false;
+        });
+    }
+
+    loadTopMembers() {
+        this.topMembers.loading = true;
+        let query = {
+            filter: 'email_open_rate:-null',
+            order: 'email_open_rate desc',
+            limit: 10
+        };
+        this.store.query('member', query).then((result) => {
+            this.topMembers.data = result;
+            this.topMembers.loading = false;
+        }, (error) => {
+            this.topMembers.error = error;
+            this.topMembers.loading = false;
         });
     }
 }
