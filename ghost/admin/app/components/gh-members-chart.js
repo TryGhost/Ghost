@@ -72,10 +72,6 @@ export default Component.extend({
     },
 
     didReceiveAttrs() {
-        if (this._lastNightShift !== undefined && this.nightShift !== this._lastNightShift) {
-            this.setChartOptions();
-        }
-
         if (this.chartStats) {
             const {options, data, title, stats} = this.chartStats;
 
@@ -83,6 +79,10 @@ export default Component.extend({
             this.set('chartHeading', title);
             this.setChartOptions(options);
             this.setChartData(data);
+        }
+
+        if (this._lastNightShift !== undefined && this.nightShift !== this._lastNightShift) {
+            this.setChartOptions();
         }
         this._lastNightShift = this.nightShift;
     },
@@ -140,7 +140,7 @@ export default Component.extend({
     },
 
     setChartOptions({rangeInDays}) {
-        let maxTicksAllowed = this.getTicksForRange(rangeInDays);
+        let maxTicksAllowed = this.isSmall ? 3 : this.getTicksForRange(rangeInDays);
 
         this.setChartJSDefaults();
         let options = {
@@ -168,8 +168,8 @@ export default Component.extend({
                 cornerRadius: 5,
                 caretSize: 7,
                 caretPadding: 5,
-                bodyFontSize: 11,
-                titleFontSize: 10,
+                bodyFontSize: 12.5,
+                titleFontSize: 12,
                 titleFontStyle: 'normal',
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
                 titleMarginBottom: 3,
@@ -245,7 +245,14 @@ export default Component.extend({
                         precision: 0,
                         suggestedMin: 0,
                         callback: function (value) {
-                            return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            // const currency = getSymbol(this.stats.currency);
+                            const currency = '$';
+                            if (parseInt(value) >= 1000){
+                                return currency + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            } else {
+                                return currency + value;
+                            }
+                            // return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                         }
                     }
                 }]
@@ -253,7 +260,7 @@ export default Component.extend({
         };
         if (this.isSmall) {
             options.scales.yAxes[0].ticks.display = false;
-            options.scales.xAxes[0].gridLines.display = false;
+            options.scales.xAxes[0].gridLines.display = true;
         }
         this.set('chartOptions', options);
     },
