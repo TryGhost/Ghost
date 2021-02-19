@@ -104,6 +104,21 @@ const initServices = async ({config}) => {
     debug('End: initialiseServices');
 };
 
+async function initRecurringJobs({config}) {
+    debug('Begin: initRecurringJobs');
+    // we don't want to kick off scheduled/recurring jobs that will interfere with tests
+    if (process.env.NODE_ENV.match(/^testing/)) {
+        return;
+    }
+
+    if (config.get('backgroundJobs:emailAnalytics')) {
+        const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
+        await emailAnalyticsJobs.scheduleRecurringJobs();
+    }
+
+    debug('End: initRecurringJobs');
+}
+
 const mountGhost = (rootApp, ghostApp) => {
     const urlService = require('./frontend/services/url');
     rootApp.disable('maintenance');
@@ -169,6 +184,8 @@ const bootGhost = async () => {
         debug('boot announcing readiness');
         GhostServer.announceServerReadiness();
 
+        // Init our background jobs, we don't wait for this to finish
+        initRecurringJobs({config});
         // We return the server for testing purposes
         return ghostServer;
     } catch (error) {
