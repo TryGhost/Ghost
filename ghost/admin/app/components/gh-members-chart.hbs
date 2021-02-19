@@ -1,4 +1,4 @@
-<div class="gh-members-chart-box {{if this.isSmall "small"}}" {{did-insert (perform this.fetchStatsTask)}}>    
+<div class="gh-dashboard-chart-box {{if this.isSmall "small"}}" {{did-insert (perform this.fetchStatsTask)}}>    
     {{#if (not this.stats)}}
         <GhLoadingSpinner />
     {{else}}
