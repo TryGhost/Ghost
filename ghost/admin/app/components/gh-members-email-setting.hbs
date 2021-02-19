@@ -41,7 +41,7 @@
                                     @successText="Confirmation email sent"
                                     @disabled={{this.disableUpdateSupportAddressButton}}
                                     @task={{this.updateSupportAddress}}
-                                    @class="gh-btn gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
+                                    @class="gh-btn gh-btn-green gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
                                     data-test-button="update-support-address"
                                 />
                             </div>
@@ -53,7 +53,7 @@
                         </div>
                         {{#if this.showSupportAddressConfirmation}}
                         <div class="flex items-center green-d1 nt3 lh-1">
-                            {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
+                            {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and confirm before saving your settings</span>
                         </div>
                         {{/if}}
                     </div>
@@ -72,7 +72,7 @@
                                     @successText="Confirmation email sent"
                                     @disabled={{this.disableUpdateFromAddressButton}}
                                     @task={{this.updateFromAddress}}
-                                    @class="gh-btn gh-btn-icon gh-btn-textfield-group gh-labs-members-emaildropdown"
+                                    @class="gh-btn gh-btn-icon gh-btn-green gh-btn-textfield-group gh-labs-members-emaildropdown"
                                     data-test-button="update-from-address"
                                 />
                             </div>
@@ -84,7 +84,7 @@
                         </div>
                         {{#if this.showFromAddressConfirmation}}
                         <div class="flex items-center green-d1 nt3 lh-1">
-                            {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
+                            {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and confirm before saving your settings</span>
                         </div>
                         {{/if}}
                     </div>
