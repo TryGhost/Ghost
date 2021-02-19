@@ -119,7 +119,6 @@ let ghostServer;
  * @TODO: Optimise this by making it optional / selective
  */
 const exposeFixtures = async () => {
-    console.time('Expose fixtures'); // eslint-disable-line no-console
     const fixturePromises = {
         roles: models.Role.findAll({columns: ['id']}),
         users: models.User.findAll({columns: ['id', 'email']}),
@@ -135,8 +134,6 @@ const exposeFixtures = async () => {
             for (let i = 0; i < keys.length; i += 1) {
                 module.exports.existingData[keys[i]] = results[i].toJSON(context.internal);
             }
-
-            console.timeEnd('Expose fixtures'); // eslint-disable-line no-console
         })
         .catch((err) => {
             console.error('Unable to expose fixtures', err); // eslint-disable-line no-console
@@ -145,8 +142,6 @@ const exposeFixtures = async () => {
 };
 
 const prepareContentFolder = (options) => {
-    console.time('Prepare Content Folder'); // eslint-disable-line no-console
-
     const contentFolderForTests = options.contentFolder;
 
     /**
@@ -175,8 +170,6 @@ const prepareContentFolder = (options) => {
     if (options.copySettings) {
         fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
-
-    console.timeEnd('Prepare Content Folder'); // eslint-disable-line no-console
 };
 
 // CASE: Ghost Server is Running
