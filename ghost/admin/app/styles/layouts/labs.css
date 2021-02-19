@@ -177,13 +177,14 @@
     }
 }
 
-.gh-labs-members-emailinput {
-
-}
-
 .gh-labs-members-emaildropdown {
     min-width: 208px;
     margin-left: 8px;
+}
+
+.gh-labs-members-emaildropdown[disabled] {
+    background: var(--whitegrey-d2);
+    color: var(--darkgrey);
 }
 
 .gh-labs-members-defaultemaildd {
