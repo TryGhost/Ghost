@@ -14,8 +14,8 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    background: var(--purple);
-    background: linear-gradient(135deg, color-mod(var(--purple) h(-10) s(+5%) l(-10%)) 0%, rgba(173,38,180,1) 100%);
+    background: var(--pink);
+    background: linear-gradient(135deg, color-mod(var(--pink) h(-10) s(+5%) l(-10%)) 0%, rgba(173,38,180,1) 100%);
 }
 
 .gh-wn-header .background-img {
