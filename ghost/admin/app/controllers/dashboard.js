@@ -8,6 +8,7 @@ export default class DashboardController extends Controller {
     @service session;
     @service membersStats;
     @service store;
+    @service settings;
 
     @tracked
     events = {
