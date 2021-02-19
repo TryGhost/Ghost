@@ -3,6 +3,7 @@ import Component from '@ember/component';
 import moment from 'moment';
 import {action} from '@ember/object';
 import {computed, get} from '@ember/object';
+import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -22,7 +23,15 @@ export default Component.extend({
     showSummary: true,
     showRange: true,
     chartType: '',
+    chartSize: '',
     chartHeading: 'Total Members',
+
+    isSmall: computed('chartSize', function () {
+        if (this.chartSize === 'small') {
+            return true;
+        }
+        return false;
+    }),
 
     startDateLabel: computed('membersStats.stats', function () {
         if (!this.membersStats?.stats?.total_on_date) {
@@ -67,7 +76,12 @@ export default Component.extend({
         }
 
         if (this.chartStats) {
-            this.setMRRChartData(this.chartStats);
+            const {options, data, title, stats} = this.chartStats;
+
+            this.set('stats', stats);
+            this.set('chartHeading', title);
+            this.setChartOptions(options);
+            this.setChartData(data);
         }
         this._lastNightShift = this.nightShift;
     },
@@ -83,56 +97,12 @@ export default Component.extend({
 
     fetchStatsTask: task(function* () {
         let stats;
-        if (this.chartType !== 'mrr') {
+        if (!this.chartType) {
             this.set('stats', null);
             stats = yield this.membersStats.fetch();
             this.setOriginalChartData(stats);
         }
     }),
-
-    setMRRChartData(stats) {
-        const statsForCurrency = stats && stats[0];
-        if (statsForCurrency) {
-            statsForCurrency.data = this.membersStats.fillDates(statsForCurrency.data) || {};
-
-            this.set('stats', statsForCurrency);
-
-            this.setChartOptions({
-                rangeInDays: 30
-            });
-            this.set('chartHeading', 'MRR');
-            this.setChartData({
-                label: 'Total MRR',
-                dateLabels: Object.keys(statsForCurrency.data),
-                dateValues: Object.values(statsForCurrency.data).map(val => val / 100)
-            });
-        } else {
-            this.set('stats', {});
-            this.set('chartHeading', 'MRR');
-
-            this.setChartData({
-                label: 'Total MRR',
-                dateLabels: [],
-                dateValues: []
-            });
-        }
-    },
-
-    setCountsChartData(stats) {
-        if (stats) {
-            this.set('stats', stats);
-
-            this.setChartOptions({
-                rangeInDays: 30
-            });
-            this.set('chartHeading', 'Total Members');
-            this.setChartData({
-                label: 'Total Members',
-                dateLabels: stats.data.map(d => d.date),
-                dateValues: stats.data.map(d => d.paid)
-            });
-        }
-    },
 
     setOriginalChartData(stats) {
         if (stats) {
@@ -172,8 +142,7 @@ export default Component.extend({
         let maxTicksAllowed = this.getTicksForRange(rangeInDays);
 
         this.setChartJSDefaults();
-
-        this.set('chartOptions', {
+        let options = {
             responsive: true,
             maintainAspectRatio: false,
             layout: {
@@ -206,8 +175,8 @@ export default Component.extend({
                         const labelText = data.datasets[tooltipItems.datasetIndex].label;
                         let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                         if (this.chartType === 'mrr') {
-                            const currency = this.stats.currency;
-                            valueText = `${currency.toUpperCase()} ${valueText}`;
+                            const currency = getSymbol(this.stats.currency);
+                            valueText = `${currency}${valueText}`;
                         }
                         return `${labelText}: ${valueText}`;
                     },
@@ -277,7 +246,12 @@ export default Component.extend({
                     }
                 }]
             }
-        });
+        };
+        if (this.isSmall) {
+            options.scales.yAxes[0].ticks.display = false;
+            options.scales.xAxes[0].gridLines.display = false;
+        }
+        this.set('chartOptions', options);
     },
 
     getTicksForRange(rangeInDays) {

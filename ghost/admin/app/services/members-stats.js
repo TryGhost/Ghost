@@ -66,12 +66,38 @@ export default class MembersStatsService extends Service {
 
         let endDate = moment().add(1, 'hour');
         const output = {};
-
+        let lastVal = 0;
         while (currentRangeDate.isBefore(endDate)) {
             let dateStr = currentRangeDate.format('YYYY-MM-DD');
             const dataOnDate = data.find(d => d.date === dateStr);
-            output[dateStr] = dataOnDate ? dataOnDate.value : 0;
+            output[dateStr] = dataOnDate ? dataOnDate.value : lastVal;
+            lastVal = output[dateStr];
+            currentRangeDate = currentRangeDate.add(1, 'day');
+        }
+        return output;
+    }
 
+    fillCountDates(data) {
+        let currentRangeDate = moment().subtract(29, 'days');
+
+        let endDate = moment().add(1, 'hour');
+        const output = {};
+        let lastVal = {
+            paid: 0,
+            free: 0,
+            comped: 0,
+            total: 0
+        };
+        while (currentRangeDate.isBefore(endDate)) {
+            let dateStr = currentRangeDate.format('YYYY-MM-DD');
+            const dataOnDate = data.find(d => d.date === dateStr);
+            output[dateStr] = dataOnDate ? {
+                paid: dataOnDate.paid,
+                free: dataOnDate.free,
+                comped: dataOnDate.comped,
+                total: dataOnDate.paid + dataOnDate.free + dataOnDate.comped
+            } : lastVal;
+            lastVal = output[dateStr];
             currentRangeDate = currentRangeDate.add(1, 'day');
         }
         return output;
