@@ -187,11 +187,22 @@ p.gh-members-list-email {
 }
 
 .gh-members-chart-box.small {
+    position: relative;
     width: 180px;
     height: 76px;
-    border: 1px solid var(--list-color-divider);
-    border-top: none;
     padding-top: 0;
+    margin-right: -6px;
+}
+
+.gh-members-chart-box.small::before {
+    position: absolute;
+    content: "";
+    display: block;
+    height: 1px;
+    bottom: 1px;
+    left: 10px;
+    right: 6px;
+    background: var(--list-color-divider);
 }
 
 .gh-members-chart-header {

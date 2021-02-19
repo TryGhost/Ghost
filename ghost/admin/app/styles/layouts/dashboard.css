@@ -237,10 +237,10 @@
 }
 
 .gh-dashboard-summary.small .growth {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     letter-spacing: 0;
     padding: 2px 4px;
-    margin: 0 0 3px 10px;
+    margin: 6px 0 0;
 }
 
 .gh-dashboard-summary .growth.positive {
