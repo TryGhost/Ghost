@@ -1,11 +1,32 @@
-// # The Ghost Boot Sequence
+// The Ghost Boot Sequence
+// -----------------------
+// - This is intentionally one big file at the moment, so that we don't have to follow boot logic all over the place
+// - This file is FULL of debug statements so we can see timings for the various steps because the boot needs to be as fast as possible
+// - As we manage to break the codebase down into distinct components for e.g. the frontend, their boot logic can be offloaded to them
+// - app.js is separate as the first example of each component having it's own app.js file colocated with it, instead of inside of server/web
 
-// IMPORTANT: The only global requires here should be debug + overrides
-const debug = require('ghost-ignition').debug('boot');
+// IMPORTANT: The only global requires here should be overrides + debug so we can monitor timings with DEBUG=ghost:boot* node ghost
 require('./server/overrides');
+const debug = require('ghost-ignition').debug('boot');
 // END OF GLOBAL REQUIRES
 
-const initCore = async ({ghostServer}) => {
+/**
+  * Get the Database into a ready state
+  * - DatabaseStateManager handles doing all this for us
+  * - Passing logging makes it output state messages
+  */
+async function initDatabase({config, logging}) {
+    const DatabaseStateManager = require('./server/data/db/state-manager');
+    const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
+    await dbStateManager.makeReady({logging});
+}
+
+/**
+ * Core is intended to be all the bits of Ghost that are shared and we can't do anything without
+ * (There's more to do to make this true)
+ */
+async function initCore({ghostServer}) {
+    debug('Begin: initCore');
     const settings = require('./server/services/settings');
     const jobService = require('./server/services/jobs');
     const models = require('./server/models');
@@ -31,10 +52,16 @@ const initCore = async ({ghostServer}) => {
 
     // @TODO: fix this location
     events.emit('db.ready');
-};
+    debug('End: initCore');
+}
 
-const initExpressApps = async () => {
-    debug('Begin: initExpressApps');
+/**
+ * Frontend is intended to be just Ghost's frontend
+ * This is technically wrong atm because the theme service & frontend settings services contain
+ * code used by the API to upload themes and settings
+ */
+async function initFrontend() {
+    debug('Begin: initFrontend');
     const themeService = require('./frontend/services/themes');
     const frontendSettings = require('./frontend/services/settings');
 
@@ -44,6 +71,16 @@ const initExpressApps = async () => {
     await themeService.init();
     debug('Themes done');
 
+    debug('End: initFrontend');
+}
+
+/**
+ * At the moment we load our express apps all in one go, they require themselves and are co-located
+ * What we want is to be able to optionally load various components and mount them
+ * So eventually this function should go away
+ */
+async function initExpressApps() {
+    debug('Begin: initExpressApps');
     const parentApp = require('./server/web/parent/app')();
 
     // @TODO: fix this
@@ -52,10 +89,15 @@ const initExpressApps = async () => {
 
     debug('End: initExpressApps');
     return parentApp;
-};
+}
 
-const initServices = async ({config}) => {
-    debug('Begin: initialiseServices');
+/**
+ * Services are components that make up part of Ghost and need initialising on boot
+ * These services should all be part of core, frontend services should be loaded with the frontend
+ * We are working towards this being a service loader, with the ability to make certain services optional
+ */
+async function initServices({config}) {
+    debug('Begin: initServices');
     const themeService = require('./frontend/services/themes');
     const frontendSettings = require('./frontend/services/settings');
     const appService = require('./frontend/services/apps');
@@ -64,7 +106,7 @@ const initServices = async ({config}) => {
     // CASE: When Ghost is ready with bootstrapping (db migrations etc.), we can trigger the router creation.
     //       Reason is that the routers access the routes.yaml, which shouldn't and doesn't have to be validated to
     //       start Ghost in maintenance mode.
-    // Routing is a bridge between the frontend and API
+    // Routing is currently a bridge between the frontend and API
     const routing = require('./frontend/services/routing');
     // We pass the themeService API version here, so that the frontend services are less tightly-coupled
     routing.bootstrap.start(themeService.getApiVersion());
@@ -79,7 +121,6 @@ const initServices = async ({config}) => {
     const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
 
     await Promise.all([
-        // Initialize the permissions actions and objects
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
@@ -101,9 +142,13 @@ const initServices = async ({config}) => {
         require('./server/analytics-events').init();
     }
 
-    debug('End: initialiseServices');
-};
+    debug('End: initServices');
+}
 
+/**
+ * Kick off recurring and background jobs
+ * These are things that happen on boot, but we don't need to wait for them to finish
+ */
 async function initRecurringJobs({config}) {
     debug('Begin: initRecurringJobs');
     // we don't want to kick off scheduled/recurring jobs that will interfere with tests
@@ -119,15 +164,30 @@ async function initRecurringJobs({config}) {
     debug('End: initRecurringJobs');
 }
 
-const mountGhost = (rootApp, ghostApp) => {
+/**
+ * Mount the now loaded main Ghost App onto our pre-loaded root app
+ * - Now that we have the Ghost App ready to receive requests, disable global maintenance mode
+ */
+function mountGhost(rootApp, ghostApp) {
+    debug('Begin: mountGhost');
     const urlService = require('./frontend/services/url');
     rootApp.disable('maintenance');
     rootApp.use(urlService.utils.getSubdir(), ghostApp);
-};
+    debug('End: mountGhost');
+}
 
-const bootGhost = async () => {
+/**
+ * ----------------------------------
+ * Boot Ghost - The magic starts here
+ * ----------------------------------
+ *
+ * - This function is written with async/await so you can read, line by line, what happens on boot
+ * - All the functions above handle init/boot logic for a single component
+ */
+async function bootGhost() {
     // Metrics
     const startTime = Date.now();
+    debug('Begin Boot');
     let ghostServer;
 
     try {
@@ -165,12 +225,13 @@ const bootGhost = async () => {
 
         debug('Begin: Get DB ready');
         // Get the DB ready
-        await require('./db').ready();
+        await initDatabase({config, logging});
         debug('End: Get DB ready');
 
         // Load Ghost with all its services
         debug('Begin: Load Ghost Core Services');
         await initCore({ghostServer});
+        await initFrontend();
 
         const ghostApp = await initExpressApps({});
         await initServices({config});
@@ -186,7 +247,9 @@ const bootGhost = async () => {
 
         // Init our background jobs, we don't wait for this to finish
         initRecurringJobs({config});
+
         // We return the server for testing purposes
+        debug('End Boot: Returning Ghost Server');
         return ghostServer;
     } catch (error) {
         const errors = require('@tryghost/errors');
@@ -203,14 +266,16 @@ const bootGhost = async () => {
         logging.error(serverStartError);
         GhostServer.announceServerReadiness(serverStartError);
 
+        // If ghost was started and something else went wrong, we shut it down
         if (ghostServer) {
             ghostServer.shutdown(2);
         } else {
+            // Ghost server failed to start, set a timeout to give logging a chance to flush
             setTimeout(() => {
                 process.exit(2);
             }, 100);
         }
     }
-};
+}
 
 module.exports = bootGhost;
