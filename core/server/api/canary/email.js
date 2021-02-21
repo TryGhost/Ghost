@@ -6,6 +6,20 @@ const megaService = require('../../services/mega');
 module.exports = {
     docName: 'emails',
 
+    browse: {
+        options: [
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'page'
+        ],
+        permissions: true,
+        async query(frame) {
+            return await models.Email.findPage(frame.options);
+        }
+    },
+
     read: {
         options: [
             'fields'
