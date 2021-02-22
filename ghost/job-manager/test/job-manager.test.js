@@ -225,6 +225,26 @@ describe('Job Manager', function () {
                 should(spyHandler.args[0][0].message).equal('job error');
                 should(spyHandler.args[0][1].name).equal('will-fail');
             });
+
+            it('uses worker message handler when job sends a message', async function (){
+                const workerMessageHandlerSpy = sinon.spy();
+                const jobManager = new JobManager({logging, workerMessageHandler: workerMessageHandlerSpy});
+
+                jobManager.addJob({
+                    job: path.resolve(__dirname, './jobs/message.js'),
+                    name: 'will-send-msg'
+                });
+                jobManager.bree.run('will-send-msg');
+
+                jobManager.bree.workers['will-send-msg'].postMessage('hello from Ghost!');
+
+                // Give time for worker (worker thread) <-> parent process (job manager) communication
+                await delay(1000);
+
+                should(workerMessageHandlerSpy.called).be.true();
+                should(workerMessageHandlerSpy.args[0][0].name).equal('will-send-msg');
+                should(workerMessageHandlerSpy.args[0][0].message).equal('hello from Ghost!');
+            });
         });
     });
 

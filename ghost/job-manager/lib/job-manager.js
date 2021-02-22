@@ -30,8 +30,9 @@ class JobManager {
      * @param {Object} options
      * @param {Object} [options.logging] - custom logging handler, defaults to console
      * @param {Function} [options.errorHandler] - custom job error handler
+     * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
      */
-    constructor({logging, errorHandler}) {
+    constructor({logging, errorHandler, workerMessageHandler}) {
         this.queue = fastq(this, worker, 1);
 
         this.bree = new Bree({
@@ -39,7 +40,8 @@ class JobManager {
             hasSeconds: true, // precision is needed to avoid task overlaps after immediate execution
             outputWorkerMetadata: true,
             logger: logging,
-            errorHandler: errorHandler
+            errorHandler: errorHandler,
+            workerMessageHandler: workerMessageHandler
         });
 
         this.logging = logging;
