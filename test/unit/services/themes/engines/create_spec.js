@@ -131,7 +131,19 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v3'
+                'ghost-api': 'v4'
+            });
+        });
+
+        it('v4', function () {
+            const engines = themeEngines.create({
+                engines: {
+                    'ghost-api': 'v4'
+                }
+            });
+
+            engines.should.eql({
+                'ghost-api': 'v4'
             });
         });
     });
