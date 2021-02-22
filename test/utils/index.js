@@ -203,7 +203,7 @@ const restartModeGhostStart = async () => {
     web.shared.middlewares.customRedirects.reload();
 
     // Trigger themes to load again
-    events.emit('themes.ready');
+    themes.loadInactiveThemes();
 };
 
 const bootGhost = async () => {
