@@ -41,7 +41,7 @@ async function initCore({ghostServer}) {
     const settings = require('./server/services/settings');
     const jobService = require('./server/services/jobs');
     const models = require('./server/models');
-    const {events, i18n} = require('./server/lib/common');
+    const {i18n} = require('./server/lib/common');
 
     ghostServer.registerCleanupTask(async () => {
         await jobService.shutdown();
@@ -56,13 +56,16 @@ async function initCore({ghostServer}) {
 
     await settings.init();
 
-    // @TODO: fix this - has to happen before db.ready is emitted
+    // The URLService is a core part of Ghost, which depends on models
+    // It needs moving from the frontend to make this clear
     debug('Begin: Url Service');
-    require('./frontend/services/url');
+    const urlService = require('./frontend/services/url');
+    // Note: there is no await here, we do not wait for the url service to finish
+    // We can return, but the site will remain in (the shared, not global) maintenance mode until this finishes
+    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/server/web/shared/middlewares/maintenance.js#L13
+    urlService.init();
     debug('End: Url Service');
 
-    // @TODO: fix this location
-    events.emit('db.ready');
     debug('End: initCore');
 }
 
@@ -239,7 +242,7 @@ async function bootGhost() {
         require('./shared/sentry');
         debug('End: Load sentry');
 
-        // Start server with minimal app in maintenance mode
+        // Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
         const GhostServer = require('./server/ghost-server');

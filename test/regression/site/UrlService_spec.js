@@ -114,7 +114,8 @@ describe('Integration: services/url/UrlService', function () {
             events.emit('router.created', router3);
             events.emit('router.created', router4);
 
-            events.emit('db.ready');
+            // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
+            urlService.init();
 
             let timeout;
             (function retry() {
@@ -318,7 +319,8 @@ describe('Integration: services/url/UrlService', function () {
             events.emit('router.created', router4);
             events.emit('router.created', router5);
 
-            events.emit('db.ready');
+            // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
+            urlService.init();
 
             let timeout;
             (function retry() {
@@ -515,7 +517,8 @@ describe('Integration: services/url/UrlService', function () {
             events.emit('router.created', router4);
             events.emit('router.created', router5);
 
-            events.emit('db.ready');
+            // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
+            urlService.init();
 
             let timeout;
             (function retry() {
