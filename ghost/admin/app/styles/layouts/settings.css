@@ -790,7 +790,7 @@
     min-width: 250px;
     min-height: 300px;
     max-width: 1224px;
-    width: calc(100vw - 360px);
+    width: calc(100vw - 416px) !important;
     height: auto;
     line-height: 22px;
     border: 1px solid var(--lightgrey);
@@ -831,7 +831,7 @@
 
 @media (max-width: 800px) {
     .settings-code-editor {
-        width: calc(100vw - 8vw - 40px);
+        width: calc(100vw - 8vw - 40px) !important;
     }
 }
 
