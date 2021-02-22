@@ -111,7 +111,7 @@ export const CARD_MENU = [
             params: ['url']
         },
         {
-            label: 'Email',
+            label: 'Email content',
             icon: 'koenig/kg-card-type-email',
             desc: 'Only visible when delivered by email',
             matches: ['email'],
@@ -119,10 +119,10 @@ export const CARD_MENU = [
             replaceArg: 'email'
         },
         {
-            label: 'Paywall',
+            label: 'Public preview',
             icon: 'koenig/kg-card-type-paywall',
-            desc: 'Mark end of free preview',
-            matches: ['paywall'],
+            desc: 'Attract signups with a public intro',
+            matches: ['public preview'],
             type: 'card',
             replaceArg: 'paywall'
         }]
