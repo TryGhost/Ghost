@@ -1,4 +1,3 @@
-const logging = require('../../../../shared/logging');
 const {parentPort} = require('bthreads');
 const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-latest');
 
@@ -7,7 +6,7 @@ const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-latest
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
 // where it left off on next run
 function cancel() {
-    logging.info('Email analytics fetch-latest job cancelled before completion');
+    parentPort.postMessage('Email analytics fetch-latest job cancelled before completion');
 
     if (parentPort) {
         parentPort.postMessage('cancelled');
@@ -49,7 +48,7 @@ if (parentPort) {
     const aggregateEndDate = new Date();
     debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
 
-    logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
+    parentPort.postMessage(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
 
     if (parentPort) {
         parentPort.postMessage('done');
