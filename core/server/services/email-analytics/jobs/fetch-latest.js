@@ -26,15 +26,44 @@ if (parentPort) {
 }
 
 (async () => {
-    const models = require('../../../models');
-    const settingsService = require('../../settings');
+    const config = require('../../../../shared/config');
+    const db = require('../../../data/db');
 
-    // must be initialized before emailAnalyticsService is required otherwise
-    // requires are in the wrong order and settingsCache will always be empty
-    await models.init();
-    await settingsService.init();
+    const logging = {
+        info(message) {
+            parentPort.postMessage(message);
+        },
+        warn(message) {
+            parentPort.postMessage(message);
+        },
+        error(message) {
+            parentPort.postMessage(message);
+        }
+    };
 
-    const emailAnalyticsService = require('../');
+    const settingsRows = await db.knex('settings')
+        .whereIn('key', ['mailgun_api_key', 'mailgun_domain', 'mailgun_base_url']);
+
+    const settingsCache = {};
+
+    settingsRows.forEach((row) => {
+        settingsCache[row.key] = row.value;
+    });
+
+    const settings = {
+        get(key) {
+            return settingsCache[key];
+        }
+    };
+
+    const EmailAnalyticsService = require('../email-analytics');
+
+    const emailAnalyticsService = new EmailAnalyticsService({
+        config,
+        db,
+        settings,
+        logging
+    });
 
     const fetchStartDate = new Date();
     debug('Starting email analytics fetch of latest events');
