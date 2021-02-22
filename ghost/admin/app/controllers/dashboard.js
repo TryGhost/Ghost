@@ -69,10 +69,10 @@ export default class DashboardController extends Controller {
                 const dateValues = Object.values(currencyStats.data).map(val => val / 100);
                 const currentMRR = dateValues.length ? dateValues[dateValues.length - 1] : 0;
                 const rangeStartMRR = dateValues.length ? dateValues[0] : 0;
-                const percentChange = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0.0;
+                const percentGrowth = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0;
                 this.mrrStatsData = {
                     current: `${getSymbol(currencyStats.currency)}${currentMRR}`,
-                    percentChange,
+                    percentGrowth: percentGrowth.toFixed(1),
                     options: {
                         rangeInDays: 30
                     },
@@ -98,9 +98,16 @@ export default class DashboardController extends Controller {
             if (stats) {
                 stats.data = this.membersStats.fillCountDates(stats.data) || {};
                 const dateValues = Object.values(stats.data);
+                const currentAllCount = dateValues.length ? dateValues[dateValues.length - 1].total : 0;
+                const currentPaidCount = dateValues.length ? dateValues[dateValues.length - 1].paid : 0;
+                const rangeStartAllCount = dateValues.length ? dateValues[0].total : 0;
+                const rangeStartPaidCount = dateValues.length ? dateValues[0].paid : 0;
+                const allCountPercentGrowth = rangeStartAllCount !== 0 ? ((currentAllCount - rangeStartAllCount) / rangeStartAllCount) * 100 : 0;
+                const paidCountPercentGrowth = rangeStartPaidCount !== 0 ? ((currentPaidCount - rangeStartPaidCount) / rangeStartPaidCount) * 100 : 0;
 
                 this.memberCountStatsData = {
                     all: {
+                        percentGrowth: allCountPercentGrowth.toFixed(1),
                         total: dateValues.length ? dateValues[dateValues.length - 1].total : 0,
                         options: {
                             rangeInDays: 30
@@ -114,6 +121,7 @@ export default class DashboardController extends Controller {
                         stats: stats
                     },
                     paid: {
+                        percentGrowth: paidCountPercentGrowth.toFixed(1),
                         total: dateValues.length ? dateValues[dateValues.length - 1].paid : 0,
                         options: {
                             rangeInDays: 30
