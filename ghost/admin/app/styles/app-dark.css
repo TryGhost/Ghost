@@ -693,6 +693,10 @@ input:focus,
     fill: color-mod(var(--midgrey) l(-5%));
 }
 
+.gh-tag-setting-codeinjection .CodeMirror {
+    background: var(--dark-main-bg-color);
+}
+
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
     background-color: var(--whitegrey);
     border-right: 1px solid var(--lightgrey);

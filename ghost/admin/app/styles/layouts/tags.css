@@ -145,10 +145,11 @@ textarea.gh-tag-details-textarea {
 .gh-tag-setting-codeinjection .CodeMirror {
     padding: 0 !important;
     min-height: 240px;
-    background: var(--dark-main-bg-color);
+    background: var(--white);
     color: var(--darkgrey);
-    border: 1px solid var(--lightgrey);
+    border: 1px solid var(--whitegrey);
     border-radius: 4px;
+    margin-bottom: 24px;
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
