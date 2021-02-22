@@ -49,8 +49,8 @@ export default Controller.extend({
     uploadButtonText: 'Import',
 
     importMimeType: null,
-    jsonExtension: null,
-    jsonMimeType: null,
+    redirectsFileExtensions: null,
+    redirectsFileMimeTypes: null,
     yamlExtension: null,
     yamlMimeType: null,
 
@@ -59,8 +59,9 @@ export default Controller.extend({
     init() {
         this._super(...arguments);
         this.importMimeType = IMPORT_MIME_TYPES;
-        this.jsonExtension = JSON_EXTENSION;
-        this.jsonMimeType = JSON_MIME_TYPE;
+        this.redirectsFileExtensions = [...JSON_EXTENSION, ...YAML_EXTENSION];
+        // .yaml is added below for file dialogs to show .yaml by default.
+        this.redirectsFileMimeTypes = [...JSON_MIME_TYPE, ...YAML_MIME_TYPE, '.yaml'];
         this.yamlExtension = YAML_EXTENSION;
         this.yamlMimeType = YAML_MIME_TYPE;
         // (macOS) Safari only allows files with the `yml` extension to be selected with the specified MIME types
