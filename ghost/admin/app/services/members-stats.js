@@ -149,7 +149,8 @@ export default class MembersStatsService extends Service {
             limit: 10
         };
         const results = yield this.store.query('email', query);
-        const stats = results.map((d) => {
+
+        let stats = results.map((d) => {
             const {emailCount, openedCount, subject, submittedAt} = d;
             const openRate = (emailCount && emailCount !== 0) ? (openedCount / emailCount).toFixed(1) : 0;
             return {
@@ -158,6 +159,21 @@ export default class MembersStatsService extends Service {
                 openRate
             };
         });
+
+        const paddedResults = [];
+        if (results.length < 10) {
+            const pad = 10 - results.length;
+            const lastSubmittedAt = results.length > 0 ? results[results.length - 1].submittedAt : moment();
+            for (let i = 0; i < pad; i++) {
+                paddedResults.push({
+                    subject: '',
+                    submittedAt: moment(lastSubmittedAt).subtract(i + 1, 'days').format('YYYY-MM-DD'),
+                    openRate: 0
+                });
+            }
+        }
+        stats = stats.concat(paddedResults);
+        stats.reverse();
         this.newsletterStats = stats;
         return stats;
     }
