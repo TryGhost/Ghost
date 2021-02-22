@@ -150,7 +150,7 @@
     grid-column-gap: var(--dashboard-gap);
     grid-row-gap: 12px;
     align-items: stretch;
-    padding: 20px 0;
+    padding: 16px 0 20px;
 }
 
 .gh-dashboard-area.charts .gh-dashboard-box {
@@ -161,7 +161,7 @@
 }
 
 .gh-dashboard-area.charts .gh-dashboard-header {
-    margin: 0 0 6px;
+    margin: 3px 0 4px;
 }
 
 .gh-dashboard-chart-container {
@@ -206,15 +206,15 @@
 }
 
 .gh-dashboard-summary.small {
-    flex-basis: 160px;
-    min-width: 160px;
+    flex-basis: 120px;
+    min-width: 120px;
     margin-top: 0;
 }
 
 .gh-dashboard-summary .data-container {
     display: flex;
-    align-items: flex-end;
-    margin-top: 2px;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .gh-dashboard-summary .data {
@@ -247,7 +247,7 @@
     font-size: 1.2rem;
     letter-spacing: 0;
     padding: 2px 4px;
-    margin: 0 0 1px 11px;
+    margin: 5px 0 1px 0;
 }
 
 .gh-dashboard-summary .growth.positive {
@@ -279,8 +279,8 @@
 }
 
 .gh-dashboard-chart.small {
-    max-width: 180px;
     margin-bottom: -6px;
+    flex-grow: 1;
 }
 
 .gh-dashboard-chart-box {
@@ -295,7 +295,8 @@
 
 .gh-dashboard-chart-box.small {
     position: relative;
-    width: 12vw;
+    width: 14vw;
+    min-width: 165px;
     height: 110px;
     padding-top: 0;
     margin-top: -13px;
@@ -308,7 +309,7 @@
 /* Chart.js requires relative width to be in vw units to make responsive re-rendering work */
 @media (max-width: 1600px) {
     .gh-dashboard-chart-box.small {
-        width: 10vw;
+        width: 13vw;
     }
 }
 
@@ -318,7 +319,7 @@
     }
 
     .gh-dashboard-chart-box.small {
-        width: 10vw;
+        width: 12vw;
     }
 
     .gh-dashboard-chart.small {
@@ -557,7 +558,7 @@
         margin-left: -20px;
     }
 
-    .gh-dashboard-area.charts .mrr .gh-dashboard-summary {
+    /* .gh-dashboard-area.charts .mrr .gh-dashboard-summary {
         flex-direction: row;
         align-items: flex-end;
     }
@@ -565,7 +566,7 @@
     .gh-dashboard-area.charts .mrr .growth {
         margin: 0 0 0 12px;
         padding: 4px 6px;
-    }
+    } */
 
     .gh-dashboard-header {
         white-space: nowrap;
