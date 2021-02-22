@@ -82,7 +82,7 @@ describe('Acceptance: Settings - Labs', function () {
             await visit('/settings/labs');
 
             // successful upload
-            this.server.post('/redirects/json/', {}, 200);
+            this.server.post('/redirects/upload/', {}, 200);
 
             await fileUpload(
                 '[data-test-file-input="redirects"] input',
@@ -123,7 +123,7 @@ describe('Acceptance: Settings - Labs', function () {
             ).to.have.string('Upload redirects');
 
             // failed upload
-            this.server.post('/redirects/json/', {
+            this.server.post('/redirects/upload/', {
                 errors: [{
                     type: 'BadRequestError',
                     message: 'Test failure message'
@@ -175,7 +175,7 @@ describe('Acceptance: Settings - Labs', function () {
             ).to.have.string('Upload redirects');
 
             // successful upload clears error
-            this.server.post('/redirects/json/', {}, 200);
+            this.server.post('/redirects/upload/', {}, 200);
             await fileUpload(
                 '[data-test-file-input="redirects"] input',
                 ['test'],
@@ -188,7 +188,7 @@ describe('Acceptance: Settings - Labs', function () {
             await click('[data-test-link="download-redirects"]');
 
             let iframe = document.querySelector('#iframeDownload');
-            expect(iframe.getAttribute('src')).to.have.string('/redirects/json/');
+            expect(iframe.getAttribute('src')).to.have.string('/redirects/download/');
         });
 
         it('can upload/download routes.yaml', async function () {
