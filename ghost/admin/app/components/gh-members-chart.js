@@ -248,14 +248,12 @@ export default Component.extend({
                         precision: 0,
                         suggestedMin: 0,
                         callback: function (value) {
-                            // const currency = getSymbol(this.stats.currency);
-                            const currency = '$';
-                            if (parseInt(value) >= 1000){
+                            const currency = this.chartType === 'mrr' ? getSymbol(this.stats.currency) : '';
+                            if (parseInt(value) >= 1000) {
                                 return currency + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                             } else {
                                 return currency + value;
                             }
-                            // return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                         }
                     }
                 }]
