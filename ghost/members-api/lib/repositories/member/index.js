@@ -310,7 +310,7 @@ module.exports = class MemberRepository {
             // NOTE: we should only ever have 1 active subscription, but just in case there is more update is done on all of them
             for (const subscription of activeSubscriptions) {
                 const updatedSubscription = await this._stripeAPIService.changeSubscriptionPlan(
-                    subscription.id,
+                    subscription.get('subscription_id'),
                     complimentaryPlan.id
                 );
 
