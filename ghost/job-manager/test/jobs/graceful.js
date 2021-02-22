@@ -38,7 +38,7 @@ if (!isMainThread) {
                 // 'cancelled' is an allternative method to signal job was terminated
                 // because of parent initiated reason (e.g.: parent process interuption)
                 // differs from 'done' by producing different
-                // logging - shows the job was cancelle instead of completing
+                // logging - shows the job was cancelled instead of completing
                 parentPort.postMessage('done');
                 // parentPort.postMessage('cancelled');
             } else {
