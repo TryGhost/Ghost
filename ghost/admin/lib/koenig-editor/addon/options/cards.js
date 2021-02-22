@@ -122,7 +122,7 @@ export const CARD_MENU = [
             label: 'Public preview',
             icon: 'koenig/kg-card-type-paywall',
             desc: 'Attract signups with a public intro',
-            matches: ['public preview'],
+            matches: ['public preview', 'paywall'],
             type: 'card',
             replaceArg: 'paywall'
         }]
