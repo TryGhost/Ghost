@@ -465,15 +465,15 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.7.1.tgz#bbbfc9679cada353f9ee82b31eb8d32febf4e246"
-  integrity sha512-I59N9MXggwwXpy2qsN6Xo9T4a/sijOURkp3CmCtGK9TSCE/q1Y2piZjLx2HUe19hRhbbDPvQifr4zCa556COjA==
+"@tryghost/job-manager@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.0.tgz#b3e042b7dd6746d8e9e44b71c95d7e2ec75e2881"
+  integrity sha512-fXgyYaIw0ol99Kr1Nq0DDAH6sbgjIbUxQNsciQPPaUBqfPjdHEhRvrO+PD60nTAM1mZi74BnvCPJwoKAFMy6KA==
   dependencies:
     "@breejs/later" "4.0.2"
-    bree "4.1.0"
+    bree "4.1.1"
     cron-validate "1.4.2"
-    fastq "1.10.0"
+    fastq "1.10.1"
     p-wait-for "3.2.0"
 
 "@tryghost/kg-card-factory@2.1.5":
