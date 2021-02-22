@@ -1,4 +1,3 @@
-const logging = require('../../../../shared/logging');
 const {parentPort} = require('bthreads');
 const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
 
@@ -6,7 +5,7 @@ const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
 // NB. can be a _very_ long job for sites with many members and frequent emails
 
 function cancel() {
-    logging.info('Email analytics fetch-all job cancelled before completion');
+    parentPort.postMessage('Email analytics fetch-all job cancelled before completion');
 
     if (parentPort) {
         parentPort.postMessage('cancelled');
@@ -48,7 +47,7 @@ if (parentPort) {
     const aggregateEndDate = new Date();
     debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
 
-    logging.info(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
+    parentPort.postMessage(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
 
     if (parentPort) {
         parentPort.postMessage('done');
