@@ -21,7 +21,6 @@ class Resources {
         this.data = {};
 
         this.listeners = [];
-        this._listeners();
     }
 
     /**
@@ -39,16 +38,6 @@ class Resources {
         });
 
         events.on(eventName, listener);
-    }
-
-    /**
-     * @description Little helper which get's called on class instantiation. It will subscribe to the
-     *              database ready event to start fetching the data as early as possible.
-     *
-     * @private
-     */
-    _listeners() {
-        this._listenOn('db.ready', this.fetchResources.bind(this));
     }
 
     /**
@@ -441,12 +430,8 @@ class Resources {
      *
      * @param {Object} options
      */
-    reset(options = {ignoreDBReady: false}) {
+    reset() {
         _.each(this.listeners, (obj) => {
-            if (obj.eventName === 'db.ready' && options.ignoreDBReady) {
-                return;
-            }
-
             events.removeListener(obj.eventName, obj.listener);
         });
 

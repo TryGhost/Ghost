@@ -33,7 +33,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();
@@ -402,7 +402,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -519,7 +519,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -580,7 +580,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -682,7 +682,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -768,7 +768,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -926,7 +926,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -1043,7 +1043,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -1113,7 +1113,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -1172,7 +1172,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -1358,7 +1358,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -1608,7 +1608,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
             });
 
@@ -1731,7 +1731,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();
@@ -2100,7 +2100,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2219,7 +2219,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2280,7 +2280,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2382,7 +2382,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2468,7 +2468,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2626,7 +2626,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2743,7 +2743,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2813,7 +2813,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -2872,7 +2872,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -3058,7 +3058,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -3308,7 +3308,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
             });
 
@@ -3431,7 +3431,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();
@@ -3802,7 +3802,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -3919,7 +3919,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -3980,7 +3980,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4082,7 +4082,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4168,7 +4168,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4326,7 +4326,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4443,7 +4443,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4513,7 +4513,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4572,7 +4572,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -4758,7 +4758,7 @@ describe('Integration - Web - Site', function () {
                             sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                             app = siteApp({start: true});
-                            return testUtils.integrationTesting.urlService.isFinished();
+                            return testUtils.integrationTesting.urlServiceInitAndWait();
                         });
                 });
 
@@ -5009,7 +5009,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
             });
 
@@ -5133,7 +5133,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();
@@ -5252,7 +5252,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();
@@ -5414,7 +5414,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();
@@ -5461,7 +5461,7 @@ describe('Integration - Web - Site', function () {
                         sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.isFinished();
+                        return testUtils.integrationTesting.urlServiceInitAndWait();
                     })
                     .then(() => {
                         return appService.init();

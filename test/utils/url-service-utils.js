@@ -1,12 +1,7 @@
 const urlService = require('../../core/frontend/services/url');
-const events = require('../../core/server/lib/common/events');
 
 module.exports.isFinished = async (options = {disableDbReadyEvent: false}) => {
     let timeout;
-
-    if (options.disableDbReadyEvent === false) {
-        events.emit('db.ready');
-    }
 
     return new Promise(function (resolve) {
         (function retry() {
@@ -21,11 +16,16 @@ module.exports.isFinished = async (options = {disableDbReadyEvent: false}) => {
     });
 };
 
+// @TODO: unify all the reset/softTeset helpers so they either work how the main code works or the reasons why they are different are clear
+module.exports.init = () => {
+    urlService.init();
+};
+
 module.exports.reset = () => {
     urlService.softReset();
 },
 
 module.exports.resetGenerators = () => {
     urlService.resetGenerators();
-    urlService.resources.reset({ignoreDBReady: true});
+    urlService.resources.reset();
 };

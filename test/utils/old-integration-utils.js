@@ -56,5 +56,11 @@ module.exports = {
         }
     },
 
+    // Temporary function just for test/regression/site/site_spec.js
+    async urlServiceInitAndWait() {
+        urlServiceUtils.init();
+        return await urlServiceUtils.isFinished();
+    },
+
     urlService: urlServiceUtils
 };

@@ -198,6 +198,7 @@ const restartModeGhostStart = async () => {
     // Reload the URL service & wait for it to be ready again
     // @TODO: Prob B: why/how is this different to urlService.resetGenerators?
     urlServiceUtils.reset();
+    urlServiceUtils.init();
     await urlServiceUtils.isFinished();
     // @TODO: why does this happen _after_ URL service
     web.shared.middlewares.customRedirects.reload();
@@ -246,13 +247,14 @@ const freshModeGhostStart = async (options) => {
 
     // Reset the URL service generators
     // @TODO: Prob B: why/how is this different to urlService.reset?
+    // @TODO: why would we do this on a fresh boot?!
     urlService.resetGenerators();
 
     // Actually boot Ghost
     await bootGhost(options);
 
-    // Wait for the URL service to be ready, which happens after boot, but don't re-trigger db.ready
-    await urlServiceUtils.isFinished({disableDbReadyEvent: true});
+    // Wait for the URL service to be ready, which happens after boot
+    await urlServiceUtils.isFinished();
 };
 
 const startGhost = async (options) => {
