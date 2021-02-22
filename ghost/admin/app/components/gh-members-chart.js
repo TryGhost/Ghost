@@ -247,7 +247,7 @@ export default Component.extend({
                         padding: 8,
                         precision: 0,
                         suggestedMin: 0,
-                        callback: function (value) {
+                        callback: (value) => {
                             const currency = this.chartType === 'mrr' ? getSymbol(this.stats.currency) : '';
                             if (parseInt(value) >= 1000) {
                                 return currency + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
