@@ -1473,7 +1473,7 @@
     align-items: center;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1450px) {
     .gh-canvas-header.break.tablet .gh-canvas-header-content {
         border-bottom: 1px solid var(--main-color-area-divider);
     }
@@ -1508,18 +1508,6 @@
         overflow-x: scroll;
         overflow-y: hidden;
         justify-content: space-between;
-    }
-
-    .gh-canvas-header.break.tablet .view-actions:before {
-        position: absolute;
-        content: "";
-        display: block;
-        top: 50px;
-        right: 0;
-        width: 1px;
-        height: 34px;
-        background: var(--whitegrey);
-        z-index: 999;
     }
 
     .view-actions-top-row {
@@ -1615,18 +1603,6 @@
 
     .gh-canvas-header.break .view-actions-bottom-row {
         max-width: calc(100vw - 56px) !important;
-    }
-
-    .gh-canvas-header.break .view-actions:before {
-        position: absolute;
-        content: "";
-        display: block;
-        top: 50px;
-        right: 0;
-        bottom: 5px;
-        width: 1px;
-        background: var(--whitegrey);
-        z-index: 999;
     }
 }
 
