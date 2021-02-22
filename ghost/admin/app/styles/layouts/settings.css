@@ -207,6 +207,10 @@
     margin: 4px 0 12px;
 }
 
+.gh-setting-desc.mb0 {
+    margin-bottom: 0;
+}
+
 .gh-setting-error {
     margin-top: 1em;
     line-height: 1.3em;
@@ -218,6 +222,13 @@
 .gh-setting-action {
     flex-shrink: 0;
     margin: 1px 0 0 0;
+    align-self: center;
+}
+
+.gh-setting-action .for-checkbox label, 
+.gh-setting-action .for-radio label {
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .gh-setting-content-extended label {
