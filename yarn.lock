@@ -686,10 +686,10 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/vhost-middleware@1.0.12":
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.12.tgz#f963b2c2826a31186c5a9b92c87629666d4aee88"
-  integrity sha512-QtggCEsnVqCkeKA1tQY4MzpMQGIuFbT8I59Fsxg6Fus89MpKkgXBBynZ98OIrPiM2VtQ0gyW5wN+ZQlS3YdHVg==
+"@tryghost/vhost-middleware@1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.13.tgz#a69234507dd46c27329aa89bade66341265e4c4a"
+  integrity sha512-oWmgf3fpP1f5f+QY5K6y1ePdNr38uh0dYOqV2etx/wXlf7OobONSSDUG/ou5YajQQcv3p8faBJvHTwMAPEXImg==
 
 "@tryghost/zip@1.1.8":
   version "1.1.8"
