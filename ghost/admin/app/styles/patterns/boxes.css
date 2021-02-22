@@ -42,7 +42,9 @@
 }
 
 .gh-box-error {
-    border-left-color: var(--red);
+    border-radius: 3px;
+    border: 1px solid color-mod(var(--red) a(70%));
+    background: color-mod(var(--red) a(3%));
 }
 
 .gh-box-error svg:first-of-type {
