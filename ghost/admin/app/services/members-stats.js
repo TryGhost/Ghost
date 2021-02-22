@@ -7,12 +7,14 @@ import {tracked} from '@glimmer/tracking';
 export default class MembersStatsService extends Service {
     @service ajax;
     @service ghostPaths;
+    @service store;
 
     @tracked days = '30';
     @tracked stats = null;
     @tracked events = null;
     @tracked countStats = null;
     @tracked mrrStats = null;
+    @tracked newsletterStats = null;
 
     fetch() {
         let daysChanged = this._lastFetchedDays !== this.days;
@@ -59,6 +61,22 @@ export default class MembersStatsService extends Service {
         }
 
         return this._fetchCountsTask.perform();
+    }
+
+    fetchNewsletterStats() {
+        let staleData = this._lastFetchedNewsletterStats && this._lastFetchedNewsletterStats - new Date() > 1 * 60 * 1000;
+
+        // return an already in-progress promise unless params have changed
+        if (this._fetchNewsletterStatsTask.isRunning) {
+            return this._fetchNewsletterStatsTask.last;
+        }
+
+        // return existing stats unless data is > 1 min old
+        if (this.newsletterStats && !this._forceRefresh && !staleData) {
+            return Promise.resolve(this.countStats);
+        }
+
+        return this._fetchNewsletterStatsTask.perform();
     }
 
     fillDates(data) {
@@ -121,6 +139,27 @@ export default class MembersStatsService extends Service {
 
     invalidate() {
         this._forceRefresh = true;
+    }
+
+    @task
+    *_fetchNewsletterStatsTask() {
+        let query = {
+            filter: 'email_count:-0',
+            order: 'submitted_at desc',
+            limit: 10
+        };
+        const results = yield this.store.query('email', query);
+        const stats = results.map((d) => {
+            const {emailCount, openedCount, subject, submittedAt} = d;
+            const openRate = (emailCount && emailCount !== 0) ? (openedCount / emailCount).toFixed(1) : 0;
+            return {
+                subject,
+                submittedAt: moment(submittedAt).format('YYYY-MM-DD'),
+                openRate
+            };
+        });
+        this.newsletterStats = stats;
+        return stats;
     }
 
     @task
