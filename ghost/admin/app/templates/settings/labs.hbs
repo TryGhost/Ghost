@@ -84,8 +84,8 @@
             <div class="gh-expandable">
                 <div class="gh-expandable-block">
                     <GhUploader
-                        @extensions={{this.jsonExtension}}
-                        @uploadUrl="/redirects/json/"
+                        @extensions={{this.redirectsFileExtensions}}
+                        @uploadUrl="/redirects/upload/"
                         @paramName="redirects"
                         @onUploadSuccess={{perform this.redirectUploadResult true}}
                         @onUploadFailure={{perform this.redirectUploadResult false}}
@@ -112,11 +112,11 @@
                                         {{else if this.redirectFailure}}
                                             {{svg-jar "retry"}} Upload Failed
                                         {{else}}
-                                            Upload redirects JSON
+                                            Upload redirects YAML/JSON
                                         {{/if}}
                                     </span>
                                 </button>
-                                <div><a href="#" {{action "downloadFile" "redirects/json"}} data-test-link="download-redirects">Download current redirects</a></div>
+                                <div><a href="#" {{action "downloadFile" "redirects/download"}} data-test-link="download-redirects">Download current redirects</a></div>
                             {{/if}}
 
                             {{#each uploader.errors as |error|}}
@@ -124,7 +124,7 @@
                             {{/each}}
 
                             <div style="display:none">
-                                <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsonMimeType}} data-test-file-input="redirects" />
+                                <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.redirectsFileMimeTypes}} data-test-file-input="redirects" />
                             </div>
                         </div>
                     </div>
