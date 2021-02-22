@@ -24,7 +24,7 @@
                     </div>
                     {{#if this.mrrStatsData}}
                         <div class="gh-dashboard-chart">
-                            <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStats.data}} />
+                            <GhMembersChart @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStatsData}} />
                         </div>
                     {{else}}
                         <div class="gh-dashboard-chart nodata">

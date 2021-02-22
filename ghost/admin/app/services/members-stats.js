@@ -57,7 +57,7 @@ export default class MembersStatsService extends Service {
 
         // return existing stats unless data is > 1 min old
         if (this.countStats && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.stats);
+            return Promise.resolve(this.countStats);
         }
 
         return this._fetchCountsTask.perform();
@@ -131,7 +131,7 @@ export default class MembersStatsService extends Service {
 
         // return existing stats unless data is > 1 min old
         if (this.mrrStats && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.stats);
+            return Promise.resolve(this.mrrStats);
         }
 
         return this._fetchMRRTask.perform();
