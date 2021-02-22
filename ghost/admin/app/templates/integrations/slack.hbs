@@ -33,14 +33,14 @@
         <section class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Slack configuration</h4>
             <div class="gh-main-section-block">
-                <div class="gh-main-section-content padding-top-s grey">
+                <div class="gh-main-section-content grey">
                     <form class="app-config-form" id="slack-settings" novalidate="novalidate" {{action "save" on="submit"}}>
 
                         <div class="gh-main-section-block">
                             <div class="gh-setting-first">
                                 <div class="gh-setting-content gh-setting-content--no-action">
                                     <div class="gh-setting-title">Webhook URL</div>
-                                    <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost.</div>
+                                    <div class="gh-setting-desc mb0">Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost.</div>
                                     <div class="gh-setting-content-extended">
                                         <GhFormGroup @errors={{this.slackSettings.errors}} @hasValidated={{this.slackSettings.hasValidated}} @property="url">
                                             <GhTextInput
@@ -66,7 +66,7 @@
                             <div class="gh-setting-last">
                                 <div class="gh-setting-content gh-setting-content--no-action">
                                     <div class="gh-setting-title">Username</div>
-                                    <div class="gh-setting-desc">The username to display messages from</div>
+                                    <div class="gh-setting-desc mb0">The username to display messages from</div>
                                     <div class="gh-setting-content-extended">
                                         <GhFormGroup @errors={{this.slackSettings.errors}} @hasValidated={{this.slackSettings.hasValidated}} @property="username">
                                             <GhTextInput

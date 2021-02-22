@@ -33,12 +33,12 @@
         <div class="gh-main-section">
         <h4 class="gh-main-section-header small bn">FirstPromoter configuration</h4>
         <section class="gh-main-section-block">
-            <div class="gh-main-section-content grey padding-top-s">
+            <div class="gh-main-section-content grey">
                 <div>
                     <div class="gh-setting-first {{unless this.settings.firstpromoter "gh-setting-last"}}">
                         <div class="gh-setting-content">
                             <div class="gh-setting-title">Enable FirstPromoter</div>
-                            <div class="gh-setting-desc">Enable <a href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" target="_blank">FirstPromoter</a> for tracking referrals</div>
+                            <div class="gh-setting-desc mb0">Enable <a href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" target="_blank">FirstPromoter</a> for tracking referrals</div>
                         </div>
                         <div class="gh-setting-action">
                             <div class="for-checkbox">
@@ -60,7 +60,7 @@
                     <div class="gh-setting-last gh-setting-firstpromoter-liquid">
                         <div class="gh-setting-content gh-setting-content--no-action">
                             <div class="gh-setting-title">FirstPromoter Account ID</div>
-                            <div class="gh-setting-desc"> Affiliate and referral tracking, find your ID <a href="https://ghost.org/help/firstpromoter-id/">here</a></div>
+                            <div class="gh-setting-desc mb0"> Affiliate and referral tracking, find your ID <a href="https://ghost.org/help/firstpromoter-id/">here</a></div>
                             <div class="gh-setting-content-extended">
                                 <GhFormGroup @class="no-margin" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="firstpromoterId">
                                     <GhTextInput
