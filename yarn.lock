@@ -691,6 +691,16 @@
   resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.13.tgz#a69234507dd46c27329aa89bade66341265e4c4a"
   integrity sha512-oWmgf3fpP1f5f+QY5K6y1ePdNr38uh0dYOqV2etx/wXlf7OobONSSDUG/ou5YajQQcv3p8faBJvHTwMAPEXImg==
 
+"@tryghost/zip@1.1.10":
+  version "1.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.10.tgz#a9002f887b02396a22d5daa9b4ba0082441271e4"
+  integrity sha512-LaveRosrV8kUG9Kn3XE2EQ0M75MamihfRuGz6ZgOzZylH6NKT0WLJgBPUaLR2Hiwff/3S2IXuNtJVp7SOMOJ4w==
+  dependencies:
+    archiver "4.0.2"
+    bluebird "3.7.2"
+    extract-zip "2.0.0"
+    fs-extra "9.1.0"
+
 "@tryghost/zip@1.1.8":
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.8.tgz#313240002192d773c3b9e74c66d84a76ed13f543"
@@ -700,16 +710,6 @@
     bluebird "3.7.2"
     extract-zip "2.0.0"
     fs-extra "9.0.1"
-
-"@tryghost/zip@1.1.9":
-  version "1.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.9.tgz#f1b9f1aec4c8f14833afaac7b35591ff3f514add"
-  integrity sha512-/0Bl8G8Qpx+6Bhm+U57/kR1ZJrr3Wqbuuvw/lyec1oCqnLn8GznUfR8ADYY3EqBf9kk07fZ5c5oS6QuLY8Umiw==
-  dependencies:
-    archiver "4.0.1"
-    bluebird "3.7.2"
-    extract-zip "2.0.0"
-    fs-extra "9.1.0"
 
 "@types/body-parser@*":
   version "1.19.0"
@@ -1110,6 +1110,19 @@ archiver@4.0.1:
     tar-stream "^2.1.2"
     zip-stream "^3.0.1"
 
+archiver@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/archiver/-/archiver-4.0.2.tgz#43c72865eadb4ddaaa2fb74852527b6a450d927c"
+  integrity sha512-B9IZjlGwaxF33UN4oPbfBkyA4V1SxNLeIhR1qY8sRXSsbdUkEHrrOvwlYFPx+8uQeCe9M+FG6KgO+imDmQ79CQ==
+  dependencies:
+    archiver-utils "^2.1.0"
+    async "^3.2.0"
+    buffer-crc32 "^0.2.1"
+    glob "^7.1.6"
+    readable-stream "^3.6.0"
+    tar-stream "^2.1.2"
+    zip-stream "^3.0.1"
+
 archiver@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/archiver/-/archiver-1.3.0.tgz#4f2194d6d8f99df3f531e6881f14f15d55faaf22"
@@ -1229,7 +1242,7 @@ async@^2.0.0, async@^2.1.2, async@^2.6.0, async@^2.6.1, async@^2.6.3:
   dependencies:
     lodash "^4.17.14"
 
-async@^3.0.1:
+async@^3.0.1, async@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.0.tgz#b3a2685c5ebb641d3de02d161002c60fc9f85720"
   integrity sha512-TR2mEZFVOj2pLStYxLht7TyfuRzaydfpxr3k9RpHIzMgw7A64dzsdqCxH1WJyQdoe8T10nDXd9wnEigmiuHIZw==
