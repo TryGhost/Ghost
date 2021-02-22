@@ -17,6 +17,8 @@ const urlServiceUtils = require('./url-service-utils');
 
 module.exports.initData = async () => {
     await knexMigrator.init();
+    await urlServiceUtils.reset();
+    await urlServiceUtils.init();
     await urlServiceUtils.isFinished();
 };
 
