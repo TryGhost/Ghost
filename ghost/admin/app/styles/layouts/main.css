@@ -878,6 +878,7 @@
         right: 0;
         background: #fff;
         border-top: var(--lightgrey) 1px solid;
+        z-index: 9999;
     }
 
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
