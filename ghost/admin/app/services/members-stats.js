@@ -149,21 +149,19 @@ export default class MembersStatsService extends Service {
             limit: 10
         };
         const results = yield this.store.query('email', query);
-
-        let stats = results.map((d) => {
-            const {emailCount, openedCount, subject, submittedAt} = d;
-            const openRate = (emailCount && emailCount !== 0) ? (openedCount / emailCount).toFixed(1) : 0;
+        const data = results.toArray();
+        let stats = data.map((d) => {
             return {
-                subject,
-                submittedAt: moment(submittedAt).format('YYYY-MM-DD'),
-                openRate
+                subject: d.subject,
+                submittedAt: moment(d.submittedAtUTC).format('YYYY-MM-DD'),
+                openRate: d.openRate
             };
         });
 
         const paddedResults = [];
-        if (results.length < 10) {
-            const pad = 10 - results.length;
-            const lastSubmittedAt = results.length > 0 ? results[results.length - 1].submittedAt : moment();
+        if (data.length < 10) {
+            const pad = 10 - data.length;
+            const lastSubmittedAt = data.length > 0 ? data[results.length - 1].submittedAtUTC : moment();
             for (let i = 0; i < pad; i++) {
                 paddedResults.push({
                     subject: '',
