@@ -70,7 +70,9 @@
                             <div class="growth">0.0%</div>
                         </div>
                     </div>
-                    <div class="gh-dashboard-chart small"></div>
+                    <div class="gh-dashboard-chart small">
+                        <GhMembersChart @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.newsletterOpenRatesData}} />
+                    </div>
                 </div>
             </div>
         </section>
