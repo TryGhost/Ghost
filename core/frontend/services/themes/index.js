@@ -22,12 +22,6 @@ module.exports = {
         i18n.init(activeThemeName);
 
         debug('init themes', activeThemeName);
-
-        // Register a listener for when the server says we can start to load all themes
-        events.on('themes.ready', function readAllThemesOnReady() {
-            themeLoader.loadAllThemes();
-        });
-
         // Just read the active theme for now
         return themeLoader
             .loadOneTheme(activeThemeName)
@@ -109,5 +103,11 @@ module.exports = {
     },
     storage: require('./storage'),
     middleware: require('./middleware'),
-    loadCoreHelpers: require('./handlebars/helpers').loadCoreHelpers
+    loadCoreHelpers: require('./handlebars/helpers').loadCoreHelpers,
+    /**
+     * Load all inactive themes
+     */
+    loadInactiveThemes: async () => {
+        return await themeLoader.loadAllThemes();
+    }
 };

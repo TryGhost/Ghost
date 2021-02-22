@@ -93,11 +93,6 @@ async function initFrontend() {
 async function initExpressApps() {
     debug('Begin: initExpressApps');
     const parentApp = require('./server/web/parent/app')();
-
-    // @TODO: fix this
-    const {events} = require('./server/lib/common');
-    events.emit('themes.ready');
-
     debug('End: initExpressApps');
     return parentApp;
 }
@@ -157,22 +152,29 @@ async function initServices({config}) {
 }
 
 /**
- * Kick off recurring and background jobs
+ * Kick off recurring jobs and background services
  * These are things that happen on boot, but we don't need to wait for them to finish
+ * Later, this might be a service hook
  */
-async function initRecurringJobs({config}) {
-    debug('Begin: initRecurringJobs');
-    // we don't want to kick off scheduled/recurring jobs that will interfere with tests
+async function initBackgroundServices({config}) {
+    debug('Begin: initBackgroundServices');
+
+    // we don't want to kick off background services that will interfere with tests
     if (process.env.NODE_ENV.match(/^testing/)) {
         return;
     }
 
+    // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
         await emailAnalyticsJobs.scheduleRecurringJobs();
     }
 
-    debug('End: initRecurringJobs');
+    // Load all inactive themes
+    const themeService = require('./frontend/services/themes');
+    themeService.loadInactiveThemes();
+
+    debug('End: initBackgroundServices');
 }
 
 /**
@@ -270,8 +272,8 @@ async function bootGhost() {
 
         notifyServerReady();
 
-        // Init our background jobs, we don't wait for this to finish
-        initRecurringJobs({config});
+        // Init our background services, we don't wait for this to finish
+        initBackgroundServices({config});
 
         // We return the server for testing purposes
         debug('End Boot: Returning Ghost Server');
