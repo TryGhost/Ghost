@@ -7,7 +7,7 @@ let shutdown = false;
 
 if (!isMainThread) {
     parentPort.on('message', (message) => {
-        console.log(`paret message received: ${message}`);
+        console.log(`parent message received: ${message}`);
 
         // 'cancel' event is triggered when job has to to terminated before it finishes execution
         // usually it would come in when SIGINT signal is sent to a parent process
