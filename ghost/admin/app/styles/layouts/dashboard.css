@@ -580,3 +580,67 @@
         width: 100%;
     }
 }
+
+@media (max-width: 680px) {
+    .gh-dashboard {
+        grid-template-columns: 1fr;
+        grid-column-gap: 0;
+    }
+
+    .gh-dashboard-area.charts {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .gh-dashboard-area.charts .mrr,
+    .gh-dashboard-area.charts .total-members,
+    .gh-dashboard-area.charts .paid-members,
+    .gh-dashboard-area.charts .newsletter-open-rate {
+        grid-column: unset;
+    }
+
+    .gh-dashboard-area.members-activity {
+        display: none;
+    }
+
+    .gh-dashboard-area.charts .mrr,
+    .gh-dashboard-area.charts .total-members,
+    .gh-dashboard-area.charts .paid-members,
+    .gh-dashboard-area.charts .newsletter-open-rate {
+        grid-row: unset;
+    }
+
+    .gh-dashboard-area.charts .mrr {
+        padding: 0 24px;
+    }
+
+    .gh-dashboard-area.charts .total-members,
+    .gh-dashboard-area.charts .paid-members,
+    .gh-dashboard-area.charts .newsletter-open-rate {
+        height: 55px;
+    }
+
+    .gh-dashboard-chart-box {
+        padding: 24px 0;
+    }
+
+    .gh-dashboard-summary:not(.small) {
+        flex-direction: row;
+    }
+
+    .gh-dashboard-summary .growth {
+        margin-left: 8px;
+    }
+
+    .gh-dashboard-summary.small .data-container {
+        flex-direction: row;
+    }
+
+    .gh-dashboard-summary.small .growth {
+        margin: 3px 0px 0px 8px;
+    }
+
+    .gh-dashboard-summary.small .data {
+        font-size: 2.0rem;
+    }
+}
