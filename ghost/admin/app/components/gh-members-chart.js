@@ -152,9 +152,9 @@ export default Component.extend({
             maintainAspectRatio: false,
             layout: {
                 padding: {
-                    top: 5, // Needed otherwise the top dot is cut
+                    top: (this.isSmall ? 20 : 5), // Needed otherwise the top dot is cut
                     right: 10,
-                    bottom: 5,
+                    bottom: (this.isSmall ? 20 : 5),
                     left: 10
                 }
             },
