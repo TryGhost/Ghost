@@ -137,7 +137,7 @@ p.gh-members-list-email {
 
 .gh-members-list-open-rate,
 .gh-members-list-geolocation {
-    width: 120px;
+    width: 150px;
 }
 
 .gh-members-list-subscribed-at {
@@ -397,7 +397,7 @@ p.gh-members-list-email {
         display: inline-block;
         width: auto;
         margin-top: -16px;
-        padding: 0 0 0 64px;
+        padding: 0 0 0 49px;
     }
 
     .gh-members-list-open-rate-noname {
