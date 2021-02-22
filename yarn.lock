@@ -414,6 +414,13 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
+"@tryghost/elasticsearch-bunyan@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch-bunyan/-/elasticsearch-bunyan-0.1.1.tgz#5a36d81dd020825dd563b1357ae6c249580c46f5"
+  integrity sha512-ILhumzdwJNoRG44S0FkgzZQlkCYioTKWEiY+FFFQpTFWwZ3Jd5a6us5k8tEsd+Wf2rZOvul/ehV45j2c2l1BMw==
+  dependencies:
+    "@elastic/elasticsearch" "^7.10.0"
+
 "@tryghost/errors@0.2.6":
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.6.tgz#4554c97a1666e4db323d8c664a4df5a714f77452"
@@ -536,27 +543,27 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^0.6.6":
-  version "0.6.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.6.6.tgz#ca48379d3cd8351dd216fa4134cfd14662c5a672"
-  integrity sha512-G2nZ/6koR5qUoQ8CCcbiq50EF/HuhfnXSSXQnS/aw/g5muimDoSsdo8rBdim4oeva3nR863H+ndps07YakM92g==
+"@tryghost/magic-link@^0.6.7":
+  version "0.6.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.6.7.tgz#9bdf76fa014f08a09cc38c308d659900626902c9"
+  integrity sha512-6sG0iqW+yUoBnJVKRhvOAc+dexHfFf0UJeVOmQXDL8/Ei5CSfyI4IsPV3i2yvYSLzmwqSKayG9dFkyjkvN6w8g==
   dependencies:
     bluebird "^3.5.5"
-    ghost-ignition "4.4.3"
+    ghost-ignition "4.4.4"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.37.9":
-  version "0.37.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.37.9.tgz#a612063a449fd000a764e093739f7e957235dcbc"
-  integrity sha512-pMjtNTaYh/SBuJL5A7vpQNCGV6vqHoXhWzve+x+cz/IuJ9Yjnr9BWQahFzgiH2WE9AENZOz0an5FxhhPBZQAnQ==
+"@tryghost/members-api@0.37.10":
+  version "0.37.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.37.10.tgz#73fedfdba1c060109a6df84a5e96a4b4a717e5d4"
+  integrity sha512-Q4rdNmaouNk3YBv02yUelzL+ETPiGkWGfeuBcw6bcMTOtp4GbsT1MUWxRY8pK50EZJjL1+4+Fj8QlmiCtpfTdQ==
   dependencies:
-    "@tryghost/magic-link" "^0.6.6"
+    "@tryghost/magic-link" "^0.6.7"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "4.4.3"
+    ghost-ignition "4.4.4"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     leaky-bucket "2.2.0"
@@ -1454,10 +1461,10 @@ braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
-bree@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/bree/-/bree-4.1.0.tgz#c27c942d6d32fd2ac4809a2a80509298a31fca3e"
-  integrity sha512-4mQMvYGrTtVp6apa/t4bXMcug7q0Eb6cXgWbly7OdhECT9PFsjyaGrSGr2+2TWUD2TFVEeZEtkk1rl8oGcjvgQ==
+bree@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/bree/-/bree-4.1.1.tgz#a29371d45adfb21225885e23030fa708c18da8eb"
+  integrity sha512-jTCqlI0Ll4pYxLoSdpv3lndY3++Ksgqq40bdtTNyufNVBpFzJNSXuL7/iEv2257MleprKJw28SIK8YhJpLBlJg==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@breejs/later" "^4.0.2"
@@ -3604,10 +3611,10 @@ fast-safe-stringify@^2.0.7:
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
-fastq@1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.10.0.tgz#74dbefccade964932cdf500473ef302719c652bb"
-  integrity sha512-NL2Qc5L3iQEsyYzweq7qfgy5OtXCmGzGvhElGEd/SoFWEMOEczNh5s5ocaF01HDetxz+p8ecjNPA6cZxxIHmzA==
+fastq@1.10.1:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.10.1.tgz#8b8f2ac8bf3632d67afcd65dac248d5fdc45385e"
+  integrity sha512-AWuv6Ery3pM+dY7LYS8YIaCiQvUaos9OB1RyNgaOWnaX+Tik7Onvcsf8x8c+YtDeT0maYLniBip2hox5KtEXXA==
   dependencies:
     reusify "^1.0.4"
 
@@ -4122,6 +4129,26 @@ ghost-ignition@4.4.3:
   integrity sha512-eViE/ae+AGV/YmVbTq2W5TBWVu724EUJ0pjtSwa4q6o1+fXxMIqoELJaxMX+Gc9PBK0nI3J+E0JI8GdrEiqndg==
   dependencies:
     "@tryghost/elasticsearch-bunyan" "^0.1.0"
+    bunyan "1.8.15"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.3.1"
+    find-root "1.1.0"
+    fs-extra "9.1.0"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.20"
+    moment "2.27.0"
+    nconf "0.10.0"
+    prettyjson "1.2.1"
+    uuid "8.3.2"
+
+ghost-ignition@4.4.4:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.4.tgz#6d16912a733a21582680d859de3a1dff868d4c67"
+  integrity sha512-tYWDirmtBtTq2etRr2co7n1PPhyoeVIHZhPfG7NDIH5GUDZ8QYlCmxC8nlhy3nnDve5ZunDAg0FlA3Rjqa0kug==
+  dependencies:
+    "@tryghost/elasticsearch-bunyan" "^0.1.1"
     bunyan "1.8.15"
     bunyan-loggly "1.4.2"
     caller "1.0.1"
