@@ -15,6 +15,7 @@ export default Component.extend({
 
     // public attrs
     nightShift: false,
+    lineColor: '#14b8ff',
 
     stats: null,
     tagName: '',
@@ -132,10 +133,10 @@ export default Component.extend({
                 cubicInterpolationMode: 'monotone',
                 data: dateValues,
                 fill: false,
-                backgroundColor: '#45C32E',
+                backgroundColor: this.lineColor,
                 pointRadius: 0,
                 pointHitRadius: 10,
-                borderColor: '#45C32E',
+                borderColor: this.lineColor,
                 borderJoinStyle: 'miter'
             }]
         });
