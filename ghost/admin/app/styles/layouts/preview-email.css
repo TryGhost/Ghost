@@ -37,7 +37,8 @@
 .gh-pe-header h2 {
     margin: 0;
     margin-right: auto;
-    flex: 1;
+    position: absolute;
+    left: 24px;
 }
 
 .gh-pe-header .gh-btn-group {
@@ -69,24 +70,21 @@
 }
 
 .gh-pe-btn-group button span {
-    border: 1px solid var(--whitegrey);
     border-radius: 0;
 }
 
 .gh-pe-btn-group button:first-of-type span {
     border-right: none;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
 }
 
 .gh-pe-btn-group button:last-of-type span {
     border-left: none;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
 }
 
 .fullscreen-modal-email-preview .gh-pe-desktop-container {
-    height: calc(100vh - 135px);
+    height: calc(100vh - 119px);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -152,6 +150,9 @@
     align-items: center;
     background: var(--whitegrey-l1);
     padding: 30px 30px 45px;
+    height: calc(100vh - 119px);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 .gh-pe-mobile-bezel {

@@ -1,8 +1,10 @@
 <header class="modal-header gh-pe-header gh-pe-header-border" data-test-modal="preview-email" style="display:flex">
     <h2 class="f6 fw6">{{this.subject}}</h2>
-    <div class="gh-contentfilter gh-btn-group gh-pe-btn-group" style="display:flex;flex-grow:1;justify-content:center">
-        <button class="gh-btn {{if (eq this.type "desktop") "gh-btn-group-selected"}}" {{action "changeType" "desktop"}}><span>Desktop</span></button>
-        <button class="gh-btn {{if (eq this.type "mobile") "gh-btn-group-selected"}}" {{action "changeType" "mobile"}}><span>Mobile</span></button>
+    <div>
+        <div class="gh-contentfilter gh-btn-group gh-pe-btn-group" style="display:flex;flex-grow:1;justify-content:center">
+            <button class="gh-btn {{if (eq this.type "desktop") "gh-btn-group-selected"}}" {{action "changeType" "desktop"}}><span>Desktop</span></button>
+            <button class="gh-btn {{if (eq this.type "mobile") "gh-btn-group-selected"}}" {{action "changeType" "mobile"}}><span>Mobile</span></button>
+        </div>
     </div>
     <div class="gh-pe-close">
         <button class="close" href title="Close" {{on "click" this.closeModal}}>

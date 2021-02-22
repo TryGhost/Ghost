@@ -695,13 +695,13 @@ textarea.gh-member-details-textarea {
     background: var(--red);
 }
 
-.gh-member-feed-row {
-    display: flex;
-    padding: 0 2rem;
+.gh-member-feed {
+    margin-top: -12px;
 }
 
-.gh-member-feed-row:hover {
-    background: var(--whitegrey-l2);
+.gh-member-feed-row {
+    display: flex;
+    padding: 0;
 }
 
 .gh-member-feed-activity {
@@ -720,10 +720,11 @@ textarea.gh-member-details-textarea {
     vertical-align: middle;
     color: var(--darkgrey);
     text-align: left;
+    font-weight: 500;
 }
 
 .gh-member-feed-title:hover {
-    color: var(--blue-d2);
+    color: var(--black);
 }
 
 .gh-member-feed-date {
