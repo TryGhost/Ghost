@@ -82,7 +82,9 @@ export default Component.extend({
         }
 
         if (this._lastNightShift !== undefined && this.nightShift !== this._lastNightShift) {
-            this.setChartOptions();
+            const {options = {}} = this.chartStats;
+
+            this.setChartOptions(options);
         }
         this._lastNightShift = this.nightShift;
     },
