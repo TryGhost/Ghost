@@ -38,6 +38,13 @@ export default class DashboardController extends Controller {
     @tracked
     topMembersLoading = false;
 
+    @tracked
+    newsletterOpenRatesData = null;
+    @tracked
+    newsletterOpenRatesError = null;
+    @tracked
+    newsletterOpenRatesLoading = false;
+
     get showTopMembers() {
         return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
     }
@@ -130,6 +137,7 @@ export default class DashboardController extends Controller {
     loadCharts() {
         this.loadMRRStats();
         this.loadMemberCountStats();
+        this.loadNewsletterOpenRates();
     }
 
     loadEvents() {
@@ -140,6 +148,28 @@ export default class DashboardController extends Controller {
         }, (error) => {
             this.eventsError = error;
             this.eventsLoading = false;
+        });
+    }
+
+    loadNewsletterOpenRates() {
+        this.newsletterOpenRatesLoading = true;
+        this.membersStats.fetchNewsletterStats().then((results) => {
+            this.newsletterOpenRatesData = {
+                options: {
+                    rangeInDays: 30
+                },
+                data: {
+                    label: 'Open Rate',
+                    dateLabels: results.map(d => d.submittedAt),
+                    dateValues: results.map(d => d.openRate)
+                },
+                title: 'Open Rate',
+                stats: results
+            };
+            this.newsletterOpenRatesLoading = false;
+        }, (error) => {
+            this.newsletterOpenRatesError = error;
+            this.newsletterOpenRatesLoading = false;
         });
     }
 
