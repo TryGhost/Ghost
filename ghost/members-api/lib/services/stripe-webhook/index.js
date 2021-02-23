@@ -157,17 +157,35 @@ module.exports = class StripeWebhookService {
                 setupIntent.payment_method
             );
 
-            const subscriptions = await member.related('stripeSubscriptions').fetch();
-
-            for (const subscription of subscriptions.models) {
+            if (setupIntent.metadata.subscription_id) {
                 const updatedSubscription = await this._stripeAPIService.updateSubscriptionDefaultPaymentMethod(
-                    subscription.get('subscription_id'),
+                    setupIntent.metadata.subscription_id,
                     setupIntent.payment_method
                 );
                 await this._memberRepository.linkSubscription({
                     id: member.id,
                     subscription: updatedSubscription
                 });
+                return;
+            }
+
+            const subscriptions = await member.related('stripeSubscriptions').fetch();
+
+            const activeSubscriptions = subscriptions.models.filter((subscription) => {
+                return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status'));
+            });
+
+            for (const subscription of activeSubscriptions) {
+                if (subscription.get('customer_id') === setupIntent.metadata.customer_id) {
+                    const updatedSubscription = await this._stripeAPIService.updateSubscriptionDefaultPaymentMethod(
+                        subscription.get('subscription_id'),
+                        setupIntent.payment_method
+                    );
+                    await this._memberRepository.linkSubscription({
+                        id: member.id,
+                        subscription: updatedSubscription
+                    });
+                }
             }
         }
 

@@ -172,11 +172,27 @@ module.exports = class RouterController {
             res.writeHead(403);
             return res.end('Bad Request.');
         }
-        const customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+
+        let customer;
+        if (!req.body.subscription_id) {
+            customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+        } else {
+            const subscriptions = await member.related('stripeSubscriptions').fetch();
+            const subscription = subscriptions.models.find((sub) => {
+                return sub.get('subscription_id') === req.body.subscription_id;
+            });
+
+            if (!subscription) {
+                res.writeHead(404);
+                res.end(`Could not find subscription ${req.body.subscription_id}`);
+            }
+            customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
+        }
 
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
             successUrl: req.body.successUrl || this._config.billingSuccessUrl,
-            cancelUrl: req.body.cancelUrl || this._config.billingCancelUrl
+            cancelUrl: req.body.cancelUrl || this._config.billingCancelUrl,
+            subscription_id: req.body.subscription_id
         });
         const publicKey = this._stripeAPIService.getPublicKey();
         const sessionInfo = {
