@@ -35,7 +35,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v3'
+                'ghost-api': 'v4'
             });
         });
 
@@ -47,7 +47,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v3'
+                'ghost-api': 'v4'
             });
         });
 
