@@ -206,7 +206,6 @@
 }
 
 .gh-dashboard-summary.small {
-    flex-basis: 120px;
     min-width: 120px;
     margin-top: 0;
 }
