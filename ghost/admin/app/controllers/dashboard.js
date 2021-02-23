@@ -49,8 +49,7 @@ export default class DashboardController extends Controller {
         return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
     }
 
-    constructor(...args) {
-        super(...args);
+    initialise() {
         this.loadEvents();
         this.loadTopMembers();
         this.loadCharts();
