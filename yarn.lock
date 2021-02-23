@@ -5709,10 +5709,10 @@ knex-migrator@3.5.0:
     mysql "2.18.1"
     sqlite3 "4.2.0"
 
-knex@0.21.17:
-  version "0.21.17"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.17.tgz#f99f5b90132b9bb9c6eb5c81f0a035e0232c870f"
-  integrity sha512-kAt58lRwjzqwedApKF7luYPa7HsLb0oDiczwKrkZcekIzTmSow5YGK149S2C8HjH63R3NcOBo9+1rjvWnC1Paw==
+knex@0.21.18:
+  version "0.21.18"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.18.tgz#ca16e95b8b5c0891a6b012fb3fb34185e067b0e2"
+  integrity sha512-hP4Qyy2LjQLsabQYc6YgDFHb+CJJBjQz1TMPTKyN85CF2NLIsZsF4FDe0NvQXeXMeak3E/kKr5iJog1JBm6ZCQ==
   dependencies:
     colorette "1.2.1"
     commander "^6.2.0"
