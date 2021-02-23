@@ -39,5 +39,8 @@
             "hijiki51",
             "Takeno_hito"
         ]
+    },
+    "imageOptimization": {
+        "resize": false
     }
 }
