@@ -449,6 +449,11 @@
     margin: 0;
 }
 
+.gh-dashboard-box.activity-feed .gh-dashboard-header {
+    border-bottom: 1px solid var(--whitegrey-d2);
+    padding-bottom: 14px;
+}
+
 .gh-dashboard-activity-feed {
     display: flex;
     flex-direction: column;
@@ -496,6 +501,25 @@
     margin-left: 12px;
     color: var(--midgrey);
     font-size: 1.3rem;
+}
+
+.gh-no-data-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--midgrey-l2);
+}
+
+.gh-no-data-list svg {
+    margin-top: 60px;
+    width: 80px;
+    height: auto;
+}
+
+.gh-no-data-list span {
+    margin-top: 16px;
+    font-size: 1.3rem;
+    margin-bottom: 50px;
 }
 
 @media (max-width: 1320px) {
