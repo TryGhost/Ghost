@@ -128,9 +128,11 @@ export default Component.extend({
     setChartData({dateLabels, dateValues, label = 'Total Members'}) {
         let backgroundColors = this.lineColor;
 
+        
         if (this.chartType === 'open-rate') {
-            backgroundColors = dateValues.map((dateValue) => {
-                if (dateValue) {
+            console.log(dateLabels);
+            backgroundColors = dateLabels.map((val) => {
+                if (val) {
                     return this.lineColor;
                 } else {
                     return (this.nightShift ? '#7C8B9A' : '#CED4D9');
