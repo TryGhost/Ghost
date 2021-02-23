@@ -1,4 +1,10 @@
 <div class="gh-event-timeline">
+    {{#unless this.parsedEvents}}
+        <div class="gh-no-data-list">
+            {{svg-jar "no-data-list"}}
+            <span>No member activity available.</span>
+        </div>
+    {{/unless}}
     <ul class="gh-dashboard-activity-feed">
         {{#each this.parsedEvents as |event|}}
         <li>
