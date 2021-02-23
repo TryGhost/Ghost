@@ -251,8 +251,6 @@ async function bootGhost() {
         ghostServer = new GhostServer();
         await ghostServer.start(rootApp);
         bootLogger.log('server started');
-        // @TODO: move this
-        ghostServer.rootApp = rootApp;
         debug('End: load server + minimal app');
 
         // Get the DB ready
