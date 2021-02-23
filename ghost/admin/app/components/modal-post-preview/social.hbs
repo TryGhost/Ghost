@@ -15,23 +15,95 @@
                     <span class="gh-social-og-desc w-100 mb2" />
                     <span class="gh-social-og-desc w-60" />
                 </div>
-                <div class="gh-social-og-preview">
-                    {{#if this.facebookImage}}
-                        <div class="gh-social-og-preview-image" style={{background-image-style this.facebookImage}}></div>
+                <div
+                    class="gh-social-og-preview"
+                    {{on "mouseenter" (action (mut this.facebookHovered) true)}}
+                    {{on "mouseleave" (action (mut this.facebookHovered) false)}}
+                >
+                    {{#if (and this.facebookHovered (not this.facebookImage))}}
+                        {{!-- only shown on hover when there's no image or fallback --}}
+                        <button class="w-100 ba bw2 bb-0 br4 br--top" {{on "click" (fn this.triggerFileDialog "facebook")}}>+ Add Image</button>
                     {{/if}}
+
+                    <GhUploader
+                        @extensions={{this.imageExtensions}}
+                        @onComplete={{this.setFacebookImage}}
+                        as |uploader|
+                    >
+                        {{#each uploader.errors as |error|}}
+                            <div class="error pa2"><span class="response">{{or error.context error.message}}</span></div>
+                        {{/each}}
+
+                        {{#if (or this.facebookImage uploader.isUploading)}}
+                            <div class="gh-social-og-preview-image relative" style={{background-image-style this.facebookImage}}>
+                                <div class="flex h-100 items-center justify-center">
+                                    {{#if (or this.facebookHovered uploader.isUploading)}}
+                                        {{#if uploader.isUploading}}
+                                            {{uploader.progressBar}}
+                                        {{else}}
+                                            <button type="button" class="gh-btn" {{on "click" (fn this.triggerFileDialog "facebook")}}><span>{{if @post.ogImage "Change" "Upload"}} image</span></button>
+                                        {{/if}}
+                                    {{/if}}
+
+                                    {{#if (and this.facebookHovered @post.ogImage)}}
+                                        <button type="button" class="gh-btn gh-btn-black gh-btn-icon gh-social-preview-img-delete" title="Remove custom Facebook image" {{on "click" this.clearFacebookImage}}>
+                                            <span>{{svg-jar "trash"}}</span>
+                                            <span class="hidden">Remove custom Facebook image</span>
+                                        </button>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{/if}}
+
+                        <div style="display:none">
+                            <GhFileInput id="facebookFileInput" @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} />
+                        </div>
+                    </GhUploader>
+
                     <div class="gh-social-og-preview-content">
                         <div class="gh-social-og-preview-meta">
                             {{this.config.blogDomain}}
                         </div>
-                        <div class="gh-social-og-preview-title">{{truncate this.facebookTitle 88}}</div>
-                        <div class="gh-social-og-preview-desc">{{truncate this.facebookDescription}}</div>
+                        <div class="gh-social-og-preview-title editable">
+                            {{#if this.editingFacebookTitle}}
+                                <input
+                                    type="text"
+                                    class="gh-input"
+                                    value={{@post.ogTitle}}
+                                    maxlength="300"
+                                    title="Facebook title"
+                                    {{on "blur" this.setFacebookTitle}}
+                                    {{on-key "Enter" this.blurElement}}
+                                    {{on-key "Escape" (fn this.cancelEdit "ogTitle")}}
+                                    {{autofocus}}
+                                    data-prevent-escape-close-modal="true"
+                                />
+                            {{else}}
+                                <span class="pointer" {{on "click" this.editFacebookTitle}}>{{truncate this.facebookTitle 88}}</span>
+                            {{/if}}
+                        </div>
+                        {{#if this.editingFacebookDescription}}
+                            <textarea
+                                class="gh-input"
+                                maxlength="500"
+                                title="Facebook description"
+                                {{on "blur" this.setFacebookDescription}}
+                                {{on-key "Enter" this.blurElement}}
+                                {{on-key "Escape" (fn this.cancelEdit "ogDescription")}}
+                                {{autofocus}}
+                                data-prevent-escape-close-modal="true"
+                            >{{@post.ogDescription}}</textarea>
+                        {{else}}
+                            <div class="gh-social-og-preview-desc">
+                                <span class="pointer" {{on "click" this.editFacebookDescription}}>{{truncate this.facebookDescription}}</span>
+                            </div>
+                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-social-og-reactions">
                     <span class="gh-social-og-likes">{{svg-jar "facebook-like" class="z-999"}}{{svg-jar "facebook-heart" class="nl1"}}182</span>
                     <span class="gh-social-og-comments">7 comments</span>
                     <span class="gh-social-og-comments ml2">2 shares</span>
-
                 </div>
             </div>
 
@@ -45,13 +117,81 @@
                             <span class="gh-social-og-desc w-100 mb2" />
                             <span class="gh-social-og-desc w-60" />
                         </div>
-                        <div class="gh-social-twitter-post-preview">
-                            {{#if this.twitterImage}}
-                                <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
+                        <div class="gh-social-twitter-post-preview"
+                            {{on "mouseenter" (action (mut this.twitterHovered) true)}}
+                            {{on "mouseleave" (action (mut this.twitterHovered) false)}}
+                        >
+                            {{#if (and this.twitterHovered (not this.twitterImage))}}
+                                {{!-- only shown on hover when there's no image or fallback --}}
+                                <button class="w-100 ba bw2 bb-0 br4 br--top" {{on "click" (fn this.triggerFileDialog "twitter")}}>+ Add Image</button>
                             {{/if}}
+
+                            <GhUploader
+                                @extensions={{this.imageExtensions}}
+                                @onComplete={{this.setTwitterImage}}
+                                as |uploader|
+                            >
+                                {{#each uploader.errors as |error|}}
+                                    <div class="error pa2"><span class="response">{{or error.context error.message}}</span></div>
+                                {{/each}}
+
+                                {{#if (or this.twitterImage uploader.isUploading)}}
+                                    <div class="gh-social-twitter-preview-image relative" style={{background-image-style this.twitterImage}}>
+                                        <div class="flex h-100 items-center justify-center">
+                                            {{#if (or this.twitterHovered uploader.isUploading)}}
+                                                {{#if uploader.isUploading}}
+                                                    {{uploader.progressBar}}
+                                                {{else}}
+                                                    <button type="button" class="gh-btn" {{on "click" (fn this.triggerFileDialog "twitter")}}><span>{{if @post.twitterImage "Change" "Upload"}} image</span></button>
+                                                {{/if}}
+                                            {{/if}}
+
+                                            {{#if (and this.twitterHovered @post.twitterImage)}}
+                                                <button type="button" class="gh-btn gh-btn-black gh-btn-icon gh-social-preview-img-delete" title="Remove custom Twitter image" {{on "click" this.clearTwitterImage}}>
+                                                    <span>{{svg-jar "trash"}}</span>
+                                                    <span class="hidden">Remove custom Twitter image</span>
+                                                </button>
+                                            {{/if}}
+                                        </div>
+                                    </div>
+                                {{/if}}
+
+                                <div style="display:none">
+                                    <GhFileInput id="twitterFileInput" @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} />
+                                </div>
+                            </GhUploader>
+
                             <div class="gh-social-twitter-preview-content">
-                                <div class="gh-social-twitter-preview-title">{{this.twitterTitle}}</div>
-                                <div class="gh-social-twitter-preview-desc">{{truncate this.twitterDescription}}</div>
+                                {{#if this.editingTwitterTitle}}
+                                    <input
+                                        type="text"
+                                        class="gh-input"
+                                        value={{@post.twitterTitle}}
+                                        maxlength="300"
+                                        title="Twitter title"
+                                        {{on "blur" this.setTwitterTitle}}
+                                        {{on-key "Enter" this.blurElement}}
+                                        {{on-key "Escape" (fn this.cancelEdit "twitterTitle")}}
+                                        {{autofocus}}
+                                        data-prevent-escape-close-modal="true"
+                                    />
+                                {{else}}
+                                    <div class="gh-social-twitter-preview-title editable pointer" {{on "click" this.editTwitterTitle}}>{{this.twitterTitle}}</div>
+                                {{/if}}
+                                {{#if this.editingTwitterDescription}}
+                                    <textarea
+                                        class="gh-input"
+                                        maxlength="500"
+                                        title="Twitter description"
+                                        {{on "blur" this.setTwitterDescription}}
+                                        {{on-key "Enter" this.blurElement}}
+                                        {{on-key "Escape" (fn this.cancelEdit "twitterDescription")}}
+                                        {{autofocus}}
+                                        data-prevent-escape-close-modal="true"
+                                    >{{@post.twitterDescription}}</textarea>
+                                {{else}}
+                                    <div class="gh-social-twitter-preview-desc editable pointer" {{on "click" this.editTwitterDescription}}>{{truncate this.twitterDescription}}</div>
+                                {{/if}}
                                 <div class="gh-social-twitter-preview-meta">
                                     {{svg-jar "twitter-link"}}
                                     {{this.config.blogDomain}}
@@ -74,9 +214,39 @@
             <div class="gh-seo-preview">
                 <div class="gh-seo-search-bar mb12">{{svg-jar "google-search"}}</div>
                 <div class="gh-seo-preview-link">{{this.config.blogDomain}} > {{#if this.ghostPaths.subdir}}{{this.ghostPaths.subdir}} > {{/if}}{{@post.slug}}</div>
-                <div class="gh-seo-preview-title">{{this.serpTitle}}</div>
-                <div class="gh-seo-preview-desc">
-                    {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 170}}
+                <div class="gh-seo-preview-title editable">
+                    {{#if this.editingMetaTitle}}
+                        <input
+                            type="text"
+                            class="gh-input"
+                            value={{@post.metaTitle}}
+                            maxlength="300"
+                            title="Meta title"
+                            {{on "blur" this.setMetaTitle}}
+                            {{on-key "Enter" this.blurElement}}
+                            {{on-key "Escape" (fn this.cancelEdit "metaTitle")}}
+                            {{autofocus}}
+                            data-prevent-escape-close-modal="true"
+                        >
+                    {{else}}
+                        <span class="pointer" {{on "click" this.editMetaTitle}}>{{this.serpTitle}}</span>
+                    {{/if}}
+                </div>
+                <div class="gh-seo-preview-desc editable">
+                    {{#if this.editingMetaDescription}}
+                        <textarea
+                            class="gh-input"
+                            maxlength="500"
+                            title="Meta description"
+                            {{on "blur" this.setMetaDescription}}
+                            {{on-key "Enter" this.blurElement}}
+                            {{on-key "Escape" (fn this.cancelEdit "metaDescription")}}
+                            {{autofocus}}
+                            data-prevent-escape-close-modal="true"
+                        >{{@post.metaDescription}}</textarea>
+                    {{else}}
+                        <span class="pointer" {{on "click" this.editMetaDescription}}>{{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 170}}</span>
+                    {{/if}}
                 </div>
             </div>
         </div>

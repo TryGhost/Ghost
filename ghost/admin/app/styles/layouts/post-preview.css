@@ -304,6 +304,17 @@
     word-wrap: break-word;
 }
 
+.gh-social-og-preview-title.editable:hover {
+    margin: 2px -1px -1px -1px;
+    border: 1px solid var(--lightgrey-l1);
+    background: var(--white);
+    border-radius: 3px;
+}
+
+.gh-social-og-preview-title .gh-input {
+    margin-top: -2px !important;
+}
+
 .gh-social-og-preview-desc {
     max-height: 20px;
     overflow: hidden;
@@ -315,6 +326,15 @@
     white-space: nowrap;
     word-wrap: break-word;
     word-break: break-word;
+}
+
+.gh-social-og-preview-desc.editable:hover {
+    max-height: 24px;
+    margin: 2px 0 -3px -1px;
+    padding-bottom: 2px;
+    border: 1px solid var(--lightgrey-l1);
+    background: var(--white);
+    border-radius: 3px;
 }
 
 .gh-social-og-reactions {
@@ -384,16 +404,25 @@
 
 .gh-social-twitter-preview-title {
     width: 487px;
-    max-height: 1.3em;
+    max-height: 20px;
     overflow: hidden;
     overflow-wrap: break-word;
-    margin: 0 0 0.15em;
+    margin: 0 0 2px;
     color: #0f1419;
     font-size: 15px;
-    line-height: 1.3125;
+    line-height: 20px;
     font-weight: 400;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.gh-social-twitter-preview-title.editable:hover {
+    max-height: 25px;
+    margin: -2px 0 -3px -2px;
+    padding: 1px 0 4px 1px;
+    border: 1px solid var(--lightgrey);
+    background: var(--white);
+    border-radius: 3px;
 }
 
 .gh-social-twitter-preview-desc {
@@ -401,13 +430,22 @@
     max-height: 40px;
     overflow: hidden;
     overflow-wrap: break-word;
-    margin-top: 0.32333em;
+    margin-top: 5px;
     color: #5b7083;
     font-size: 15px;
-    line-height: 1.3125;
+    line-height: 20px;
     font-weight: 400;
     text-overflow: ellipsis;
     white-space: pre-wrap;
+}
+
+.gh-social-twitter-preview-desc.editable:hover {
+    max-height: 42px;
+    margin: 4px 0 -1px -2px;
+    padding: 0 0 1px 1px;
+    border: 1px solid var(--lightgrey);
+    background: var(--white);
+    border-radius: 3px;
 }
 
 .gh-social-twitter-preview-meta {
@@ -456,6 +494,18 @@
     height: 18px;
     margin-right: 12px;
     fill: #5b7083;
+}
+
+.gh-social-preview-img-delete {
+    margin-left: 1.2rem;
+}
+
+.gh-social-preview-img-delete:hover {
+    background: var(--red) !important;
+}
+
+.gh-social-preview-img-delete svg {
+    margin: 0 !important;
 }
 
 .gh-seo-preview-container {
@@ -534,13 +584,38 @@
     -webkit-text-overflow: ellipsis;
 }
 
+.gh-seo-preview-title.editable:hover {
+    margin: 0 0 2px -1px;
+    padding: 3px 0 0;
+    background: var(--white);
+    border: 1px solid var(--lightgrey);
+    border-radius: 3px;
+}
+
+.gh-seo-preview-title .gh-input {
+    margin-top: -3px;
+}
+
 .gh-seo-preview-desc {
     max-height: 45px;
     overflow: hidden;
     color: #4d5156;
     font-family: Arial, sans-serif;
     font-size: 14px;
-    line-height: 1.58;
+    line-height: 22px;
     font-weight: 400;
     text-overflow: ellipsis;
+}
+
+.gh-seo-preview-desc.editable:hover {
+    max-height: 47px;
+    margin: -1px 0 -2px -1px;
+    padding-bottom: 2px;
+    background: var(--white);
+    border: 1px solid var(--lightgrey);
+    border-radius: 3px;
+}
+
+.gh-seo-preview-desc .gh-input {
+    max-width: 100%;
 }

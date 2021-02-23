@@ -42,8 +42,10 @@ export default Component.extend({
             this.send('confirm');
         });
 
-        key('escape', 'modal', () => {
-            this.send('closeModal');
+        key('escape', 'modal', (event) => {
+            if (!event.target.dataset.preventEscapeCloseModal) {
+                this.send('closeModal');
+            }
         });
 
         key.setScope('modal');
