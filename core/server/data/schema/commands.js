@@ -68,7 +68,7 @@ function dropColumn(tableName, column, transaction) {
  *
  * @param {string} tableName - name of the table to add unique constraint to
  * @param {string|[string]} columns - column(s) to form unique constraint with
- * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction - connection object containing knex reference
  * @param {Object} transaction.knex - knex instance
  */
 async function hasUnique(tableName, columns, transaction) {
@@ -108,7 +108,7 @@ async function hasUnique(tableName, columns, transaction) {
  *
  * @param {string} tableName - name of the table to add unique constraint to
  * @param {string|[string]} columns - column(s) to form unique constraint with
- * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction - connection object containing knex reference
  * @param {Object} transaction.knex - knex instance
  */
 async function addUnique(tableName, columns, transaction) {
@@ -129,7 +129,7 @@ async function addUnique(tableName, columns, transaction) {
  *
  * @param {string} tableName - name of the table to drop unique constraint from
  * @param {string|[string]} columns - column(s) unique constraint was formed
- * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction - connection object containing knex reference
  * @param {Object} transaction.knex - knex instance
  */
 async function dropUnique(tableName, columns, transaction) {
