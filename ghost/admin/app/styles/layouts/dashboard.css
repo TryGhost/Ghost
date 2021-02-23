@@ -419,9 +419,10 @@
 .gh-dashboard-top-members-footer {
     display: flex;
     justify-content: flex-end;
-    border-top: 1px solid var(--whitegrey-d1);
+    border-top: 1px solid var(--whitegrey-d2);
     padding-top: 12px;
     margin-bottom: -4px;
+    margin-top: 8px;
 }
 
 .gh-dashboard-top-members-footer a {
