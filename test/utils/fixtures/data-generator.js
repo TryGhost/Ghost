@@ -478,8 +478,7 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             email_id: null, // emails[0] relation added later
-            // TODO: cleanup <> in provider_id
-            provider_id: '<email1@testing.mailgun.net>',
+            provider_id: 'email1@testing.mailgun.net',
             status: 'submitted'
         }
     ],

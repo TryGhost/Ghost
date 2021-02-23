@@ -168,7 +168,7 @@ module.exports = {
             // update batch success status
             return await emailBatchModel.save({
                 status: 'submitted',
-                provider_id: sendResponse.id
+                provider_id: sendResponse.id.trim().replace(/^<|>$/g, '')
             }, Object.assign({}, knexOptions, {patch: true}));
         } catch (error) {
             // update batch failed status
