@@ -188,6 +188,7 @@
     "fs-extra": "11.1.1",
     "ghost-pagination": "^0.1.3",
     "ghost-storage-base": "1.0.0",
+    "ghost-storage-adapter-openstack": "traPtitech/ghost-storage-adapter-openstack#c85711e",
     "glob": "8.1.0",
     "got": "11.8.6",
     "gscan": "4.37.1",
