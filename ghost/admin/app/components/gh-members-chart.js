@@ -126,6 +126,18 @@ export default Component.extend({
     // Internal ----------------------------------------------------------------
 
     setChartData({dateLabels, dateValues, label = 'Total Members'}) {
+        let backgroundColors = this.lineColor;
+
+        if (this.chartType === 'open-rate') {
+            backgroundColors = dateValues.map((dateValue) => {
+                if (dateValue) {
+                    return this.lineColor;
+                } else {
+                    return (this.nightShift ? '#7C8B9A' : '#CED4D9');
+                }
+            });
+        }
+
         this.set('chartData', {
             labels: dateLabels,
             datasets: [{
@@ -133,17 +145,23 @@ export default Component.extend({
                 cubicInterpolationMode: 'monotone',
                 data: dateValues,
                 fill: false,
-                backgroundColor: this.lineColor,
+                backgroundColor: backgroundColors,
                 pointRadius: 0,
                 pointHitRadius: 10,
                 borderColor: this.lineColor,
-                borderJoinStyle: 'miter'
+                borderJoinStyle: 'miter',
+                maxBarThickness: 20,
+                minBarLength: 2
             }]
         });
     },
 
     setChartOptions({rangeInDays}) {
         let maxTicksAllowed = this.isSmall ? 3 : this.getTicksForRange(rangeInDays);
+
+        if (this.chartType === 'open-rate') {
+            maxTicksAllowed = 0;
+        }
 
         this.setChartJSDefaults();
         let options = {
@@ -176,6 +194,15 @@ export default Component.extend({
                 titleFontStyle: 'normal',
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
                 titleMarginBottom: 3,
+                filter: (tooltipItems, data) => {
+                    if (this.chartType === 'open-rate') {
+                        let label = data.labels[tooltipItems.index];
+                        if (label === '') {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
                 callbacks: {
                     label: (tooltipItems, data) => {
                         const labelText = data.datasets[tooltipItems.datasetIndex].label;
@@ -184,9 +211,19 @@ export default Component.extend({
                             const currency = getSymbol(this.stats.currency);
                             valueText = `${currency}${valueText}`;
                         }
+                        if (this.chartType === 'open-rate') {
+                            valueText = `${valueText}%`;
+                        }
                         return `${labelText}: ${valueText}`;
                     },
-                    title: function (tooltipItems) {
+                    title: (tooltipItems) => {
+                        if (this.chartType === 'open-rate') {
+                            if (tooltipItems.length) {
+                                return tooltipItems[0].xLabel;
+                            } else {
+                                return '';
+                            }
+                        }
                         return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
                     }
                 }
@@ -215,7 +252,7 @@ export default Component.extend({
                         autoSkip: false,
                         fontColor: '#626D79',
                         maxTicksLimit: 10,
-                        callback: function (value, index, values) {
+                        callback: (value, index, values) => {
                             let step = (values.length - 1) / (maxTicksAllowed);
                             let steps = [];
                             for (let i = 0; i < maxTicksAllowed; i++) {
@@ -225,7 +262,7 @@ export default Component.extend({
                             if (index === 0) {
                                 return value;
                             }
-                            if (index === (values.length - 1)) {
+                            if (index === (values.length - 1) && this.chartType !== 'open-rate') {
                                 return 'Today';
                             }
 
