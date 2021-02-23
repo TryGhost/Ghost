@@ -127,10 +127,8 @@ export default Component.extend({
 
     setChartData({dateLabels, dateValues, label = 'Total Members'}) {
         let backgroundColors = this.lineColor;
-
         
         if (this.chartType === 'open-rate') {
-            console.log(dateLabels);
             backgroundColors = dateLabels.map((val) => {
                 if (val) {
                     return this.lineColor;
