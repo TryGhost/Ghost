@@ -23,7 +23,10 @@
                     </button>
                 {{/if}}
             {{else}}
-                <p class="ma0 pa12 tc midgrey">No member activity yet</p>
+                <div class="gh-no-data-list">
+                    {{svg-jar "no-data-list"}}
+                    <span>No member activity.</span>
+                </div>
             {{/if}}
         </div>
     </div>
