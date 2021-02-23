@@ -441,6 +441,14 @@
     fill: var(--black);
 }
 
+.gh-dashboard-box.top-members .gh-dashboard-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--whitegrey-d2);
+    padding-bottom: 14px;
+}
+
 /* Activity feed */
 .gh-dashboard-area.activity-feed {
     grid-column: 3 / 4;
