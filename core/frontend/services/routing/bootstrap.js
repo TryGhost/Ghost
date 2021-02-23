@@ -10,7 +10,7 @@ const PreviewRouter = require('./PreviewRouter');
 const ParentRouter = require('./ParentRouter');
 const UnsubscribeRouter = require('./UnsubscribeRouter');
 
-const defaultApiVersion = 'v3';
+const defaultApiVersion = 'v4';
 
 const registry = require('./registry');
 let siteRouter;
