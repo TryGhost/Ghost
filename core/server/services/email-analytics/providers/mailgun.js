@@ -114,11 +114,7 @@ class EmailAnalyticsMailgunProvider {
     }
 
     normalizeEvent(event) {
-        // TODO: clean up the <> surrounding email_batches.provider_id values
         let providerId = event.message && event.message.headers && event.message.headers['message-id'];
-        if (providerId) {
-            providerId = `<${providerId}>`;
-        }
 
         return {
             type: event.event,
