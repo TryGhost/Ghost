@@ -404,8 +404,10 @@ export default class AccountHomePage extends React.Component {
         }
     }
 
-    onEditBilling() {
-        this.context.onAction('editBilling');
+    onEditBilling({subscriptionId = ''} = {}) {
+        const {member} = this.context;
+        const subscription = getMemberSubscription({member});
+        this.context.onAction('editBilling', {subscriptionId: subscription.id});
     }
 
     onToggleSubscription(e, subscribed) {

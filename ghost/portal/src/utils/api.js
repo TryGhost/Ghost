@@ -177,7 +177,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async editBilling({successUrl, cancelUrl} = {}) {
+        async editBilling({successUrl, cancelUrl, subscriptionId} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
@@ -200,6 +200,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 },
                 body: JSON.stringify({
                     identity: identity,
+                    subscription_id: subscriptionId,
                     successUrl,
                     cancelUrl
                 })

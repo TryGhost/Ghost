@@ -186,7 +186,7 @@ async function cancelSubscription({data, state, api}) {
 
 async function editBilling({data, state, api}) {
     try {
-        await api.member.editBilling();
+        await api.member.editBilling(data);
     } catch (e) {
         return {
             action: 'editBilling:failed',
