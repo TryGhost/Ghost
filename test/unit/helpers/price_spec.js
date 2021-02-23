@@ -42,4 +42,63 @@ describe('{{price}} helper', function () {
             .with({})
             .should.equal('20');
     });
+
+    it('will format with plan object', function () {
+        const plan = {
+            nickname: 'Monthly',
+            amount: 500,
+            interval: 'month',
+            currency: 'USD',
+            currency_symbol: '$'
+        };
+        const rendered = helpers.price.call({}, plan, {});
+        rendered.should.be.equal('$5');
+    });
+
+    it('will format with plan object with number format', function () {
+        const plan = {
+            nickname: 'Monthly',
+            amount: 500,
+            interval: 'month',
+            currency: 'USD',
+            currency_symbol: '$'
+        };
+        const rendered = helpers.price.call({}, plan, {hash: {numberFormat: 'long'}});
+        rendered.should.be.equal('$5.00');
+    });
+
+    it('will format symbol if only currency - USD', function () {
+        const rendered = helpers.price.call({}, {hash: {currency: 'USD'}});
+        rendered.should.be.equal('$');
+    });
+
+    it('will format symbol if only currency - EUR', function () {
+        const rendered = helpers.price.call({}, {hash: {currency: 'EUR'}});
+        rendered.should.be.equal('€');
+    });
+
+    it('will format with amount and currency', function () {
+        const rendered = helpers.price.call({}, 500, {hash: {currency: 'USD'}});
+        rendered.should.be.equal('$5');
+    });
+
+    it('will format with long number format', function () {
+        const rendered = helpers.price.call({}, 500, {hash: {currency: 'USD', numberFormat: 'long'}});
+        rendered.should.be.equal('$5.00');
+    });
+
+    it('will format with short number format with decimal value', function () {
+        const rendered = helpers.price.call({}, 505, {hash: {currency: 'EUR', numberFormat: 'short'}});
+        rendered.should.be.equal('€5.05');
+    });
+
+    it('will format with short number format without decimal value', function () {
+        const rendered = helpers.price.call({}, 500, {hash: {currency: 'EUR', numberFormat: 'short'}});
+        rendered.should.be.equal('€5');
+    });
+
+    it('will format with name currency format', function () {
+        const rendered = helpers.price.call({}, 500, {hash: {currency: 'USD', currencyFormat: 'name'}});
+        rendered.should.be.equal('5 US dollars');
+    });
 });
