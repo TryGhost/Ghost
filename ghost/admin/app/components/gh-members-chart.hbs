@@ -3,7 +3,7 @@
         <GhLoadingSpinner />
     {{else}}
         <EmberChart
-            @type="LineWithLine"
+            @type={{this.type}}
             @options={{this.chartOptions}}
             @data={{this.chartData}}
             @height={{300}} />

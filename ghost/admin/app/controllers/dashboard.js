@@ -167,11 +167,11 @@ export default class DashboardController extends Controller {
                     rangeInDays: 30
                 },
                 data: {
-                    label: 'Open Rate',
-                    dateLabels: results.map(d => d.submittedAt),
+                    label: 'Open rate',
+                    dateLabels: results.map(d => d.subject),
                     dateValues: results.map(d => d.openRate)
                 },
-                title: 'Open Rate',
+                title: 'Open rate',
                 stats: results
             };
             this.newsletterOpenRatesLoading = false;

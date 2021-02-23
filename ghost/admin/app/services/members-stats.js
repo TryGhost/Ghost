@@ -144,10 +144,11 @@ export default class MembersStatsService extends Service {
 
     @task
     *_fetchNewsletterStatsTask() {
+        const limit = 5;
         let query = {
             filter: 'email_count:-0',
             order: 'submitted_at desc',
-            limit: 10
+            limit: limit
         };
         const results = yield this.store.query('email', query);
         const data = results.toArray();
@@ -160,8 +161,8 @@ export default class MembersStatsService extends Service {
         });
 
         const paddedResults = [];
-        if (data.length < 10) {
-            const pad = 10 - data.length;
+        if (data.length < limit) {
+            const pad = limit - data.length;
             const lastSubmittedAt = data.length > 0 ? data[results.length - 1].submittedAtUTC : moment();
             for (let i = 0; i < pad; i++) {
                 paddedResults.push({
@@ -171,7 +172,7 @@ export default class MembersStatsService extends Service {
                 });
             }
         }
-        stats = stats.concat(paddedResults);
+        stats = stats .concat(paddedResults);
         stats.reverse();
         this.newsletterStats = stats;
         return stats;
