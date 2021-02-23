@@ -33,18 +33,19 @@ export default class MembersStatsService extends Service {
         return this._fetchTask.perform();
     }
 
-    fetchTimeline() {
+    fetchTimeline(options = {}) {
         let staleData = this._lastFetchedTimeline && this._lastFetchedTimeline - new Date() > 1 * 60 * 1000;
+        let differentLimit = this._lastFetchedTimelineLimit && this._lastFetchedTimelineLimit !== options.limit;
 
         if (this._fetchTimelineTask.isRunning) {
             return this._fetchTask.last;
         }
 
-        if (this.events && !this._forceRefresh && !staleData) {
+        if (this.events && !this._forceRefresh && !staleData && !differentLimit) {
             return Promise.resolve(this.events);
         }
 
-        return this._fetchTimelineTask.perform();
+        return this._fetchTimelineTask.perform(options.limit);
     }
 
     fetchCounts() {
@@ -211,10 +212,11 @@ export default class MembersStatsService extends Service {
     }
 
     @task
-    *_fetchTimelineTask() {
+    *_fetchTimelineTask(limit) {
         this._lastFetchedTimeline = new Date();
+        this._lastFetchedTimelineLimit = limit;
         let eventsUrl = this.ghostPaths.url.api('members/events');
-        let events = yield this.ajax.request(eventsUrl);
+        let events = yield this.ajax.request(eventsUrl, {data: {limit}});
         this.events = events;
         return events;
     }
