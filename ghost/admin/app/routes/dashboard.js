@@ -6,4 +6,8 @@ export default class DashboardRoute extends AuthenticatedRoute {
             mainClasses: ['gh-main-wide']
         };
     }
+
+    setupController() {
+        this.controller.initialise();
+    }
 }
