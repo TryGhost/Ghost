@@ -41,9 +41,9 @@ const expectedProperties = {
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
         .concat('tags', 'authors', 'email')
-        // returns meta fields from `posts_meta` schema
+        // returns meta fields from `metadata` schema
         .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
+            ..._(schema.metadata).keys().without('post_id', 'id')
         )
     ,
 
@@ -64,9 +64,9 @@ const expectedProperties = {
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
         .concat('tags', 'authors')
-        // returns meta fields from `posts_meta` schema
+        // returns meta fields from `metadata` schema
         .concat(
-            ..._(schema.posts_meta).keys()
+            ..._(schema.metadata).keys()
                 .without('post_id', 'id')
                 // pages are not sent as emails
                 .without('email_subject')

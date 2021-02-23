@@ -33,9 +33,9 @@ const expectedProperties = {
         // only because authors and tags are always included
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         .concat('authors', 'tags', 'email')
-        // returns meta fields from `posts_meta` schema
+        // returns meta fields from `metadata` schema
         .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
+            ..._(schema.metadata).keys().without('post_id', 'id')
         )
         .concat('send_email_when_published')
     ,

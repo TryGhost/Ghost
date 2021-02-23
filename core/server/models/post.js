@@ -59,18 +59,18 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'metadata'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
         tags: 'tags',
         authors: 'users',
-        posts_meta: 'posts_meta'
+        metadata: 'metadata'
     },
 
     relationsMeta: {
-        posts_meta: {
-            targetTableName: 'posts_meta',
+        metadata: {
+            targetTableName: 'metadata',
             foreignKey: 'post_id'
         },
         email: {
@@ -97,10 +97,10 @@ Post = ghostBookshelf.Model.extend({
     orderAttributes: function orderAttributes() {
         let keys = ghostBookshelf.Model.prototype.orderAttributes.apply(this, arguments);
 
-        // extend ordered keys with post_meta keys
-        let postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
+        // extend ordered keys with metadata keys
+        let metadataKeys = _.without(ghostBookshelf.model('Metadata').prototype.orderAttributes(), 'metadata.id', 'metadata.post_id');
 
-        return [...keys, ...postsMetaKeys];
+        return [...keys, ...metadataKeys];
     },
 
     orderRawQuery: function orderRawQuery(field, direction, withRelated) {
@@ -120,9 +120,9 @@ Post = ghostBookshelf.Model.extend({
     },
 
     filterExpansions: function filterExpansions() {
-        const postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
+        const metadataKeys = _.without(ghostBookshelf.model('Metadata').prototype.orderAttributes(), 'metadata.id', 'metadata.post_id');
 
-        return postsMetaKeys.map((pmk) => {
+        return metadataKeys.map((pmk) => {
             return {
                 key: pmk.split('.')[1],
                 replacement: pmk
@@ -386,18 +386,18 @@ Post = ghostBookshelf.Model.extend({
         }
 
         /**
-         * CASE: Attach id to update existing posts_meta entry for a post
-         * CASE: Don't create new posts_meta entry if post meta is empty
+         * CASE: Attach id to update existing metadata entry for a post
+         * CASE: Don't create new metadata entry if metadata is empty
          */
-        if (!_.isUndefined(this.get('posts_meta')) && !_.isNull(this.get('posts_meta'))) {
-            let postsMetaData = this.get('posts_meta');
-            let relatedModelId = model.related('posts_meta').get('id');
-            let hasNoData = !_.values(postsMetaData).some(x => !!x);
-            if (relatedModelId && !_.isEmpty(postsMetaData)) {
-                postsMetaData.id = relatedModelId;
-                this.set('posts_meta', postsMetaData);
-            } else if (_.isEmpty(postsMetaData) || hasNoData) {
-                this.set('posts_meta', null);
+        if (!_.isUndefined(this.get('metadata')) && !_.isNull(this.get('metadata'))) {
+            let metadataData = this.get('metadata');
+            let relatedModelId = model.related('metadata').get('id');
+            let hasNoData = !_.values(metadataData).some(x => !!x);
+            if (relatedModelId && !_.isEmpty(metadataData)) {
+                metadataData.id = relatedModelId;
+                this.set('metadata', metadataData);
+            } else if (_.isEmpty(metadataData) || hasNoData) {
+                this.set('metadata', null);
             }
         }
 
@@ -648,8 +648,8 @@ Post = ghostBookshelf.Model.extend({
         return this.hasMany('MobiledocRevision', 'post_id');
     },
 
-    posts_meta: function postsMeta() {
-        return this.hasOne('PostsMeta', 'post_id');
+    metadata: function metadata() {
+        return this.hasOne('Metadata', 'post_id');
     },
 
     email: function email() {
@@ -728,15 +728,15 @@ Post = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // NOTE: overloads models base method to take `post_meta` changes into account
+    // NOTE: overloads models base method to take `metadata` changes into account
     wasChanged() {
         if (!this._changed) {
             return true;
         }
 
-        const postMetaChanged = this.relations.posts_meta && this.relations.posts_meta._changed && Object.keys(this.relations.posts_meta._changed).length;
+        const metadataChanged = this.relations.metadata && this.relations.metadata._changed && Object.keys(this.relations.metadata._changed).length;
 
-        if (!Object.keys(this._changed).length && !postMetaChanged) {
+        if (!Object.keys(this._changed).length && !metadataChanged) {
             return false;
         }
 
@@ -872,19 +872,19 @@ Post = ghostBookshelf.Model.extend({
      * that event listeners have to re-fetch a resource. This function is used in the context of inserting
      * and updating resources. We won't return the relations by default for now.
      *
-     * We also always fetch posts metadata to keep current behavior consistent
+     * We also always fetch `metadata` to keep current behavior consistent
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
             options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
         }
 
-        const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');
+        const METADATA_ATTRIBUTES = _.without(ghostBookshelf.model('Metadata').prototype.permittedAttributes(), 'id', 'post_id');
 
-        // NOTE: only include post_meta relation when requested in 'columns' or by default
+        // NOTE: only include metadata relation when requested in 'columns' or by default
         //       optimization is needed to be able to perform .findAll on large SQLite datasets
-        if (!options.columns || (options.columns && _.intersection(META_ATTRIBUTES, options.columns).length)) {
-            options.withRelated = _.union(['posts_meta'], options.withRelated || []);
+        if (!options.columns || (options.columns && _.intersection(METADATA_ATTRIBUTES, options.columns).length)) {
+            options.withRelated = _.union(['metadata'], options.withRelated || []);
         }
 
         return options;
@@ -947,10 +947,10 @@ Post = ghostBookshelf.Model.extend({
                                 found._previousAttributes = post._previousAttributes;
                                 found._changed = post._changed;
 
-                                // NOTE: `posts_meta` fields are equivalent in terms of "wasChanged" logic to the rest of posts's table fields.
+                                // NOTE: `metadata` fields are equivalent in terms of "wasChanged" logic to the rest of posts's table fields.
                                 //       Keeping track of them is needed to check if anything was changed in post's resource.
-                                if (found.relations.posts_meta) {
-                                    found.relations.posts_meta._changed = post.relations.posts_meta._changed;
+                                if (found.relations.metadata) {
+                                    found.relations.metadata._changed = post.relations.metadata._changed;
                                 }
 
                                 return found;

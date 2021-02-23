@@ -30,9 +30,9 @@ const expectedProperties = {
         .without('type')
         // v2 returns a calculated excerpt field
         .concat('excerpt')
-        // returns meta fields from `posts_meta` schema
+        // returns meta fields from `metadata` schema
         .concat(
-            ..._(schema.posts_meta).keys()
+            ..._(schema.metadata).keys()
                 .without('post_id', 'id')
                 // emails are not supported in API v2
                 .without('email_subject')

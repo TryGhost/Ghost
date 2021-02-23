@@ -4,7 +4,7 @@ const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:po
 const url = require('./utils/url');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
-const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const metadataSchema = require('../../../../../data/schema').tables.metadata;
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
@@ -67,10 +67,10 @@ function defaultFormat(frame) {
     frame.options.formats = 'mobiledoc';
 }
 
-function handlePostsMeta(frame) {
-    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
-    let meta = _.pick(frame.data.posts[0], metaAttrs);
-    frame.data.posts[0].posts_meta = meta;
+function handleMetadata(frame) {
+    let metadataAttrs = _.keys(_.omit(metadataSchema, ['id', 'post_id']));
+    let metadata = _.pick(frame.data.posts[0], metadataAttrs);
+    frame.data.posts[0].metadata = metadata;
 }
 
 /**
@@ -191,7 +191,7 @@ module.exports = {
             });
         }
 
-        handlePostsMeta(frame);
+        handleMetadata(frame);
         defaultFormat(frame);
         defaultRelations(frame);
     },
@@ -200,7 +200,7 @@ module.exports = {
         debug('edit');
         this.add(apiConfig, frame, {add: false});
 
-        handlePostsMeta(frame);
+        handleMetadata(frame);
         forceStatusFilter(frame);
         forcePageFilter(frame);
     },

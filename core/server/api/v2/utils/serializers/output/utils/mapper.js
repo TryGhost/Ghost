@@ -5,7 +5,7 @@ const date = require('./date');
 const gating = require('./post-gating');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
-const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
+const metadataSchema = require('../../../../../../data/schema').tables.metadata;
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -68,14 +68,14 @@ const mapPost = (model, frame) => {
     }
 
     // Transforms post/page metadata to flat structure
-    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+    let metaAttrs = _.keys(_.omit(metadataSchema, ['id', 'post_id']));
     _(metaAttrs).filter((k) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
-        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
+        jsonModel[attr] = _.get(jsonModel.metadata, attr) || null;
     });
 
-    delete jsonModel.posts_meta;
+    delete jsonModel.metadata;
     delete jsonModel.send_email_when_published;
     delete jsonModel.email_recipient_filter;
     delete jsonModel.email_subject;

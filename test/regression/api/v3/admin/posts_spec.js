@@ -91,7 +91,7 @@ describe('Posts API', function () {
                 });
         });
 
-        it('can filter by fields coming from posts_meta table non null meta_description', function (done) {
+        it('can filter by fields coming from metadata table non null meta_description', function (done) {
             request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:-null`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -122,7 +122,7 @@ describe('Posts API', function () {
                 });
         });
 
-        it('can filter by fields coming from posts_meta table by value', function (done) {
+        it('can filter by fields coming from metadata table by value', function (done) {
             request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:'meta description for short and sweet'`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -152,7 +152,7 @@ describe('Posts API', function () {
                 });
         });
 
-        it('can order by fields coming from posts_meta table', function (done) {
+        it('can order by fields coming from metadata table', function (done) {
             request.get(localUtils.API.getApiQuery('posts/?order=meta_description%20ASC'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)

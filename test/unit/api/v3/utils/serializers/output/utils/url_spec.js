@@ -36,7 +36,7 @@ describe('Unit: v3/utils/serializers/output/utils/url', function () {
                 codeinjection_head: 'codeinjectionHead',
                 codeinjection_foot: 'codeinjectionFoot',
                 feature_image: 'featureImage',
-                posts_meta: {
+                metadata: {
                     og_image: 'ogImage',
                     twitter_image: 'twitterImage'
                 },

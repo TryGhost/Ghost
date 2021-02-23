@@ -60,7 +60,7 @@ describe('Exporter', function () {
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
                 knexMock.getCall(0).args[0].should.eql('posts');
-                knexMock.getCall(1).args[0].should.eql('posts_meta');
+                knexMock.getCall(1).args[0].should.eql('metadata');
                 knexMock.getCall(2).args[0].should.eql('users');
                 knexMock.getCall(3).args[0].should.eql('posts_authors');
                 knexMock.getCall(4).args[0].should.eql('roles');
@@ -98,7 +98,7 @@ describe('Exporter', function () {
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
                 knexMock.getCall(0).args[0].should.eql('posts');
-                knexMock.getCall(1).args[0].should.eql('posts_meta');
+                knexMock.getCall(1).args[0].should.eql('metadata');
                 knexMock.getCall(2).args[0].should.eql('users');
                 knexMock.getCall(3).args[0].should.eql('posts_authors');
                 knexMock.getCall(4).args[0].should.eql('roles');

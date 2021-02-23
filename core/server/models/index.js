@@ -34,7 +34,7 @@ const models = [
     'member-email-change-event',
     'member-payment-event',
     'member-status-event',
-    'posts-meta',
+    'metadata',
     'member-stripe-customer',
     'stripe-customer-subscription',
     'email',

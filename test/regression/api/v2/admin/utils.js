@@ -32,9 +32,9 @@ const expectedProperties = {
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         .concat('authors', 'tags')
-        // returns meta fields from `posts_meta` schema
+        // returns meta fields from `metadata` schema
         .concat(
-            ..._(schema.posts_meta).keys()
+            ..._(schema.metadata).keys()
                 .without('post_id', 'id')
                 // emails are not supported in API v2
                 .without('email_subject')

@@ -916,7 +916,7 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
-    const posts_meta = [
+    const metadata = [
         {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[2].id,
@@ -1130,7 +1130,7 @@ DataGenerator.forKnex = (function () {
         invites,
         posts,
         tags,
-        posts_meta,
+        metadata,
         posts_tags,
         posts_authors,
         roles,

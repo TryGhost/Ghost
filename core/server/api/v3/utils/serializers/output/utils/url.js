@@ -46,7 +46,7 @@ const forPost = (id, attrs, frame) => {
         }
     });
 
-    ['feature_image', 'canonical_url', 'posts_meta.og_image', 'posts_meta.twitter_image'].forEach((path) => {
+    ['feature_image', 'canonical_url', 'metadata.og_image', 'metadata.twitter_image'].forEach((path) => {
         const value = _.get(attrs, path);
         if (value) {
             _.set(attrs, path, urlUtils.relativeToAbsolute(value));

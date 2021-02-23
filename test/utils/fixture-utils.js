@@ -56,8 +56,8 @@ const fixtures = {
                 });
             })
             .then(function () {
-                return Promise.map(DataGenerator.forKnex.posts_meta, function (postMeta) {
-                    return models.PostsMeta.add(postMeta, context.internal);
+                return Promise.map(DataGenerator.forKnex.metadata, function (metadata) {
+                    return models.Metadata.add(metadata, context.internal);
                 });
             });
     },
