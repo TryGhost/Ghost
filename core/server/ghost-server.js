@@ -35,15 +35,15 @@ class GhostServer {
      *
      * ### Start
      * Starts the ghost server listening on the configured port.
-     * Alternatively you can pass in your own express instance and let Ghost
-     * start listening for you.
-     * @param  {Object} externalApp - Optional express app instance.
+     * Requires an express app to be passed in
+     *
+     * @param  {Object} rootApp - Required express app instance.
      * @return {Promise} Resolves once Ghost has started
      */
-    start(externalApp) {
+    start(rootApp) {
         debug('Starting...');
         const self = this;
-        const rootApp = externalApp ? externalApp : self.rootApp;
+        self.rootApp = rootApp;
         let socketConfig;
 
         const socketValues = {
