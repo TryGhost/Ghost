@@ -305,14 +305,15 @@
 }
 
 .gh-social-og-preview-title.editable:hover {
-    margin: 2px -1px -1px -1px;
+    margin: 2px -1px -1px -4px;
+    padding-left: 3px;
     border: 1px solid var(--lightgrey-l1);
     background: var(--white);
     border-radius: 3px;
 }
 
 .gh-social-og-preview-title .gh-input {
-    margin-top: -2px !important;
+    margin: -2px 0 0 -3px !important;
 }
 
 .gh-social-og-preview-desc {
@@ -330,7 +331,8 @@
 
 .gh-social-og-preview-desc.editable:hover {
     max-height: 24px;
-    margin: 2px 0 -3px -1px;
+    margin: 2px 0 -3px -4px;
+    padding: 0 0 2px 3px;
     padding-bottom: 2px;
     border: 1px solid var(--lightgrey-l1);
     background: var(--white);
@@ -418,8 +420,8 @@
 
 .gh-social-twitter-preview-title.editable:hover {
     max-height: 25px;
-    margin: -2px 0 -3px -2px;
-    padding: 1px 0 4px 1px;
+    margin: -2px 0 -3px -5px;
+    padding: 1px 0 4px 4px;
     border: 1px solid var(--lightgrey);
     background: var(--white);
     border-radius: 3px;
@@ -441,8 +443,8 @@
 
 .gh-social-twitter-preview-desc.editable:hover {
     max-height: 42px;
-    margin: 4px 0 -1px -2px;
-    padding: 0 0 1px 1px;
+    margin: 4px 0 -1px -5px;
+    padding: 0 0 1px 4px;
     border: 1px solid var(--lightgrey);
     background: var(--white);
     border-radius: 3px;
@@ -585,8 +587,8 @@
 }
 
 .gh-seo-preview-title.editable:hover {
-    margin: 0 0 2px -1px;
-    padding: 3px 0 0;
+    margin: 0 0 2px -6px;
+    padding: 3px 0 0 5px;
     background: var(--white);
     border: 1px solid var(--lightgrey);
     border-radius: 3px;
@@ -609,13 +611,13 @@
 
 .gh-seo-preview-desc.editable:hover {
     max-height: 47px;
-    margin: -1px 0 -2px -1px;
-    padding-bottom: 2px;
+    margin: -1px 0 -2px -6px;
+    padding: 0 0 2px 5px;
     background: var(--white);
     border: 1px solid var(--lightgrey);
     border-radius: 3px;
 }
 
-.gh-seo-preview-desc .gh-input {
+.gh-seo-preview .gh-input {
     max-width: 100%;
 }
