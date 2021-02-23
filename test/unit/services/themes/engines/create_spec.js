@@ -10,7 +10,7 @@ describe('Themes: engines', function () {
     it('no engines', function () {
         const engines = themeEngines.create();
         engines.should.eql({
-            'ghost-api': 'v3'
+            'ghost-api': 'v4'
         });
     });
 
