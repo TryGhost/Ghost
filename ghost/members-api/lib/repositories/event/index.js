@@ -153,7 +153,7 @@ module.exports = class EventRepository {
                 ...cumulativeResults,
                 [result.currency]: cumulativeResults[result.currency].concat([{
                     date: result.date,
-                    mrr: result.mrr_delta + cumulativeResults[result.currency].slice(-1)[0],
+                    mrr: result.mrr_delta + cumulativeResults[result.currency].slice(-1)[0].mrr,
                     currency: result.currency
                 }])
             };
@@ -184,7 +184,7 @@ module.exports = class EventRepository {
                 ...cumulativeResults,
                 [result.currency]: cumulativeResults[result.currency].concat([{
                     date: result.date,
-                    volume: result.volume_delta + cumulativeResults[result.currency].slice(-1)[0],
+                    volume: result.volume_delta + cumulativeResults[result.currency].slice(-1)[0].volume,
                     currency: result.currency
                 }])
             };
