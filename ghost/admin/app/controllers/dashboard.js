@@ -150,7 +150,7 @@ export default class DashboardController extends Controller {
 
     loadEvents() {
         this.eventsLoading = true;
-        this.membersStats.fetchTimeline().then(({events}) => {
+        this.membersStats.fetchTimeline({limit: 5}).then(({events}) => {
             this.eventsData = events;
             this.eventsLoading = false;
         }, (error) => {
