@@ -216,7 +216,10 @@ async function bootGhost() {
     // Metrics
     const startTime = Date.now();
     debug('Begin Boot');
+
+    // We need access to these variables in both the try and catch block
     let ghostServer;
+    let logging;
 
     try {
         // Config must be the first thing we do, because it is required for absolutely everything
@@ -224,18 +227,17 @@ async function bootGhost() {
         const config = require('./shared/config');
         debug('End: Load config');
 
+        // Logging is used absolutely everywhere
+        debug('Begin: Load logging');
+        logging = require('./shared/logging');
+        const bootLogger = new BootLogger(logging, startTime);
+        debug('End: Load logging');
+
         // Version is required by sentry & Migratior config & so is fundamental to booting
-        // However, it involves reading package.json so its slow
-        // It's here for visibility on slowness
+        // However, it involves reading package.json so its slow & it's here for visibility on that slowness
         debug('Begin: Load version info');
         require('./server/lib/ghost-version');
         debug('End: Load version info');
-
-        // Logging is used absolutely everywhere
-        debug('Begin: Load logging');
-        const logging = require('./shared/logging');
-        const bootLogger = new BootLogger(logging, startTime);
-        debug('End: Load logging');
 
         // Sentry must be initialised early, but requires config
         debug('Begin: Load sentry');
@@ -283,11 +285,9 @@ async function bootGhost() {
         return ghostServer;
     } catch (error) {
         const errors = require('@tryghost/errors');
-        // @TODO: fix this extra require
-        const logging = require('./shared/logging');
 
+        // Ensure the error we have is an ignition error
         let serverStartError = error;
-
         if (!errors.utils.isIgnitionError(serverStartError)) {
             serverStartError = new errors.GhostError({message: serverStartError.message, err: serverStartError});
         }
