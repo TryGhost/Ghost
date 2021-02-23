@@ -10,7 +10,9 @@ require('./server/overrides');
 const debug = require('ghost-ignition').debug('boot');
 // END OF GLOBAL REQUIRES
 
-class BootLogger {
+/**
+ * Helper class to create consistent log messages
+ */class BootLogger {
     constructor(logging, startTime) {
         this.logging = logging;
         this.startTime = startTime;
@@ -18,6 +20,21 @@ class BootLogger {
     log(message) {
         let {logging, startTime} = this;
         logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
+    }
+}
+
+/**
+ * Helper function to handle sending server ready notifications
+ */
+function notifyServerReady(error) {
+    const notify = require('./server/notify');
+
+    if (error) {
+        debug('Notifying server ready (error)');
+        notify.notifyServerReady(error);
+    } else {
+        debug('Notifying server ready (success)');
+        notify.notifyServerReady();
     }
 }
 
@@ -33,31 +50,31 @@ async function initDatabase({config, logging}) {
 }
 
 /**
- * Core is intended to be all the bits of Ghost that are shared and we can't do anything without
+ * Core is intended to be all the bits of Ghost that are fundamental and we can't do anything without them!
  * (There's more to do to make this true)
  */
 async function initCore({ghostServer}) {
     debug('Begin: initCore');
-    const settings = require('./server/services/settings');
-    const jobService = require('./server/services/jobs');
-    const models = require('./server/models');
+
+    // Initialize Ghost core internationalization - this is basically used to colocate all of our error message strings
+    debug('Begin: i18n');
     const {i18n} = require('./server/lib/common');
-
-    ghostServer.registerCleanupTask(async () => {
-        await jobService.shutdown();
-    });
-
-    // Initialize Ghost core internationalization
     i18n.init();
-    debug('Default i18n done for core');
+    debug('End: i18n');
 
+    // Models are the heart of Ghost - this is a syncronous operation
+    debug('Begin: models');
+    const models = require('./server/models');
     models.init();
-    debug('Models done');
+    debug('End: models');
 
+    // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
+    debug('Begin: settings');
+    const settings = require('./server/services/settings');
     await settings.init();
+    debug('End: settings');
 
-    // The URLService is a core part of Ghost, which depends on models
-    // It needs moving from the frontend to make this clear
+    // The URLService is a core part of Ghost, which depends on models. It needs moving from the frontend to make this clear.
     debug('Begin: Url Service');
     const urlService = require('./frontend/services/url');
     // Note: there is no await here, we do not wait for the url service to finish
@@ -66,24 +83,33 @@ async function initCore({ghostServer}) {
     urlService.init();
     debug('End: Url Service');
 
+    // Job Service allows parts of Ghost to run in the background
+    debug('Begin: Job Service');
+    const jobService = require('./server/services/jobs');
+    ghostServer.registerCleanupTask(async () => {
+        await jobService.shutdown();
+    });
+    debug('End: Job Service');
+
     debug('End: initCore');
 }
 
 /**
  * Frontend is intended to be just Ghost's frontend
- * This is technically wrong atm because the theme service & frontend settings services contain
- * code used by the API to upload themes and settings
+ * This is technically wrong currently because the theme & frontend settings services contain code used by the API to upload themes & settings
  */
 async function initFrontend() {
     debug('Begin: initFrontend');
-    const themeService = require('./frontend/services/themes');
+
+    debug('Begin: Frontend Settings');
     const frontendSettings = require('./frontend/services/settings');
-
     await frontendSettings.init();
-    debug('Frontend settings done');
+    debug('End: Frontend Settings');
 
+    debug('Begin: Themes');
+    const themeService = require('./frontend/services/themes');
     await themeService.init();
-    debug('Themes done');
+    debug('End: Themes');
 
     debug('End: initFrontend');
 }
@@ -107,27 +133,32 @@ async function initExpressApps() {
  */
 async function initServices({config}) {
     debug('Begin: initServices');
-    const themeService = require('./frontend/services/themes');
-    const frontendSettings = require('./frontend/services/settings');
-    const appService = require('./frontend/services/apps');
-    const urlUtils = require('./shared/url-utils');
 
-    // CASE: When Ghost is ready with bootstrapping (db migrations etc.), we can trigger the router creation.
-    //       Reason is that the routers access the routes.yaml, which shouldn't and doesn't have to be validated to
-    //       start Ghost in maintenance mode.
-    // Routing is currently a bridge between the frontend and API
+    debug('Begin: Dynamic Routing');
+    // Dynamic routing is generated from the routes.yaml file, which is part of the settings service
+    // When Ghost's DB and core are loaded, we can access this file and call routing.bootstrap.start
+    // However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
+    // Routing is currently tightly coupled between the frontend and backend
     const routing = require('./frontend/services/routing');
-    // We pass the themeService API version here, so that the frontend services are less tightly-coupled
+    const themeService = require('./frontend/services/themes');
+    // We pass the themeService API version here, so that the frontend services are slightly less tightly-coupled
     routing.bootstrap.start(themeService.getApiVersion());
-
     const settings = require('./server/services/settings');
+    const frontendSettings = require('./frontend/services/settings');
+    const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
+    await settings.syncRoutesHash(getRoutesHash);
+    debug('End: Dynamic Routing');
+
+    debug('Begin: Services');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
     const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
+    const appService = require('./frontend/services/apps');
     const scheduling = require('./server/adapters/scheduling');
-    const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
+
+    const urlUtils = require('./shared/url-utils');
 
     await Promise.all([
         permissions.init(),
@@ -135,7 +166,6 @@ async function initServices({config}) {
         slack.listen(),
         mega.listen(),
         webhooks.listen(),
-        settings.syncRoutesHash(getRoutesHash),
         appService.init(),
         scheduling.init({
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
@@ -143,8 +173,7 @@ async function initServices({config}) {
             apiUrl: urlUtils.urlFor('api', {version: 'v3', versionType: 'admin'}, true)
         })
     ]);
-
-    debug('XMLRPC, Slack, MEGA, Webhooks, Scheduling, Permissions done');
+    debug('End: Services');
 
     // Initialise analytics events
     if (config.get('segment:key')) {
@@ -181,30 +210,6 @@ async function initBackgroundServices({config}) {
 }
 
 /**
- * Mount the now loaded main Ghost App onto our pre-loaded root app
- * - Now that we have the Ghost App ready to receive requests, disable global maintenance mode
- */
-function mountGhost(rootApp, ghostApp) {
-    debug('Begin: mountGhost');
-    const urlService = require('./frontend/services/url');
-    rootApp.disable('maintenance');
-    rootApp.use(urlService.utils.getSubdir(), ghostApp);
-    debug('End: mountGhost');
-}
-
-function notifyServerReady(error) {
-    const notify = require('./server/notify');
-
-    if (error) {
-        debug('Notifying server ready (error)');
-        notify.notifyServerReady(error);
-    } else {
-        debug('Notifying server ready (success)');
-        notify.notifyServerReady();
-    }
-}
-
-/**
  * ----------------------------------
  * Boot Ghost - The magic starts here
  * ----------------------------------
@@ -222,6 +227,7 @@ async function bootGhost() {
     let logging;
 
     try {
+        // Step 0 - Do initial requires of fundamental shared components
         // Config must be the first thing we do, because it is required for absolutely everything
         debug('Begin: Load config');
         const config = require('./shared/config');
@@ -244,7 +250,7 @@ async function bootGhost() {
         require('./shared/sentry');
         debug('End: Load sentry');
 
-        // Start server with minimal app in global maintenance mode
+        // Step 1 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
         const GhostServer = require('./server/ghost-server');
@@ -253,32 +259,35 @@ async function bootGhost() {
         bootLogger.log('server started');
         debug('End: load server + minimal app');
 
-        // Get the DB ready
+        // Step 2 - Get the DB ready
         debug('Begin: Get DB ready');
         await initDatabase({config, logging});
         bootLogger.log('database ready');
         debug('End: Get DB ready');
 
-        // Load Ghost with all its services
-        debug('Begin: Load Ghost Core Services');
+        // Step 3 - Load Ghost with all its services
+        debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer});
         await initFrontend();
         const ghostApp = await initExpressApps({});
         await initServices({config});
-        debug('End: Load Ghost Core Services');
+        debug('End: Load Ghost Services & Apps');
 
-        // Mount the full Ghost app onto the minimal root app & disable maintenance mode
-        mountGhost(rootApp, ghostApp);
+        // Step 4 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
+        debug('Begin: mountGhost');
+        const urlUtils = require('./shared/url-utils');
+        rootApp.disable('maintenance');
+        rootApp.use(urlUtils.getSubdir(), ghostApp);
+        debug('End: mountGhost');
 
-        // We are technically done here
+        // Step 5 - We are technically done here - let everyone know!
         bootLogger.log('booted');
-
         notifyServerReady();
 
-        // Init our background services, we don't wait for this to finish
+        // Step 6 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
 
-        // We return the server for testing purposes
+        // We return the server purely for testing purposes
         debug('End Boot: Returning Ghost Server');
         return ghostServer;
     } catch (error) {
