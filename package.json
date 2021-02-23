@@ -60,7 +60,7 @@
     "@tryghost/members-ssr": "0.8.10",
     "@tryghost/mw-session-from-token": "0.1.15",
     "@tryghost/promise": "0.1.5",
-    "@tryghost/security": "0.2.5",
+    "@tryghost/security": "0.2.6",
     "@tryghost/session-service": "0.1.16",
     "@tryghost/social-urls": "0.1.19",
     "@tryghost/string": "0.1.17",
