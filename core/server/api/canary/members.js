@@ -478,11 +478,14 @@ module.exports = {
     },
 
     activityFeed: {
+        options: [
+            'limit'
+        ],
         permissions: {
             method: 'browse'
         },
-        async query() {
-            const events = await membersService.api.events.getEventTimeline();
+        async query(frame) {
+            const events = await membersService.api.events.getEventTimeline(frame.options);
             return {
                 events
             };
