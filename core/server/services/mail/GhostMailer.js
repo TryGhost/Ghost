@@ -105,7 +105,7 @@ module.exports = class GhostMailer {
     handleDirectTransportResponse(response) {
         return new Promise((resolve, reject) => {
             response.statusHandler.once('failed', function (data) {
-                if (data.error && data.error.errno === 'ENOTFOUND') {
+                if (data.error && data.error.code === 'ENOTFOUND') {
                     reject(createMailError({
                         message: i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain})
                     }));
