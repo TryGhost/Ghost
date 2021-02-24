@@ -295,6 +295,9 @@ export default Component.extend({
                 }]
             }
         };
+        if (this.chartType === 'mrr' || this.chartType === 'all-members' || this.chartType === 'open-rate') {
+            options.scales.yAxes[0].ticks.suggestedMin = 0;
+        }
         if (this.isSmall) {
             options.scales.yAxes[0].ticks.display = false;
             options.scales.xAxes[0].gridLines.display = true;
