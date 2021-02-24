@@ -20,14 +20,14 @@ describe('Acceptance: Members', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects non-admins to posts', async function () {
+    it('redirects non-admins to site', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role]});
 
         await authenticateSession();
         await visit('/members');
 
-        expect(currentURL()).to.equal('/dashboard');
+        expect(currentURL()).to.equal('/site');
         expect(find('[data-test-nav="members"]'), 'sidebar link')
             .to.not.exist;
     });
