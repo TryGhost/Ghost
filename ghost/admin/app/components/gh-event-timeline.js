@@ -72,7 +72,7 @@ export default class EventTimeline extends Component {
             }
             let sign = mrrDelta > 0 ? '+' : '-';
             let symbol = getSymbol(event.data.currency);
-            return `(MRR ${sign}${symbol}${mrrDelta})`;
+            return `(MRR ${sign}${symbol}${Math.abs(mrrDelta)})`;
         }
         return;
     }
