@@ -185,6 +185,22 @@ function getTables(transaction) {
     return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
+/**
+ * Copies all data from one table to another. The schemas of the tables have to be identical
+ *
+ * @param {string} from from table name
+ * @param {string} to name of the table to copy to
+ * @param {Object} connection  knex instance
+ */
+async function copyTableData(from, to, transaction) {
+    const knex = (transaction || db.knex);
+
+    await knex.raw(`
+        INSERT INTO ${to}
+        SELECT * FROM ${from};`
+    );
+}
+
 function getIndexes(table, transaction) {
     const client = (transaction || db.knex).client.config.client;
 
@@ -247,6 +263,7 @@ module.exports = {
     createTable: createTable,
     deleteTable: deleteTable,
     getTables: getTables,
+    copyTableData: copyTableData,
     getIndexes: getIndexes,
     addUnique: addUnique,
     dropUnique: dropUnique,

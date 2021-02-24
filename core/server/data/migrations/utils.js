@@ -34,6 +34,42 @@ function addTable(name, tableSpec) {
 }
 
 /**
+ * Renames the table. Note, this utility is only meant to be used during
+ * major version migration that's why it is irreversible.
+ *
+ * @param {string} from - table name to rename from
+ * @param {string} to table name to rename to
+ * @param {Object} tableSpec table schema JSON definition
+ */
+function renameTable(from, to, tableSpec) {
+    return createIrreversibleMigration(
+        async function up(connection) {
+            const fromTableExists = await connection.schema.hasTable(from);
+
+            if (!fromTableExists) {
+                logging.warn(`Skipping renaming table ${from}- table does not exist`);
+                return;
+            }
+
+            const toTableExists = await connection.schema.hasTable(to);
+
+            if (toTableExists) {
+                logging.warn(`Skipping renaming table ${from}- table exist with the name ${to} renaming to`);
+                return;
+            }
+
+            logging.info(`Renaming ${from} table to ${to}`);
+
+            await addTable(to, tableSpec).up({connection});
+
+            await commands.copyTableData(from, to);
+
+            await dropTables([from]).up({connection});
+        }
+    );
+}
+
+/**
  * Creates migration which will drop a table
  *
  * @param {[string]} names  - names of the tables to drop
@@ -393,6 +429,7 @@ function createDropColumnMigration(table, column, columnDefinition) {
 
 module.exports = {
     addTable,
+    renameTable,
     dropTables,
     addPermission,
     addPermissionToRole,
