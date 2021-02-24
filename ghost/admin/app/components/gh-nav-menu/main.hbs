@@ -17,9 +17,11 @@
 <section class="gh-nav-body">
     <div class="gh-nav-top">
         <ul class="gh-nav-list gh-nav-main">
+            {{#if (gh-user-can-admin this.session.user)}}
             <li class="relative">
                 <LinkTo @route="dashboard" @alt="Dashboard" @title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
             </li>
+            {{/if}}
             <li class="relative">
                 <span {{action "transitionToOrRefreshSite" on="click"}}>
                     <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
