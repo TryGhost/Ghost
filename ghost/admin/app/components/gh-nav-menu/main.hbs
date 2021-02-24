@@ -79,9 +79,24 @@
                 <li>
                     <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "module"}}Integrations</LinkTo>
                 </li>
+                <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
             {{/if}}
-            <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
         </ul>
+
+        {{#if (gh-user-can-admin this.session.user)}}
+        <ul class="gh-nav-list">
+            {{#if this.showBilling}}
+                <li class="relative">
+                    <a href="javascript:void(0)" {{action "toggleBillingModal" }} data-test-nav="billing">
+                        {{svg-jar "credit-card"}} View billing
+                    </a>
+                </li>
+                <li class="relative gh-nav-pro">
+                    <GhBillingUpdateButton />
+                </li>
+            {{/if}}
+        </ul>
+        {{/if}}
 
         {{#if this.showMenuExtension}}
             <ul class="gh-nav-list gh-nav-settings">
