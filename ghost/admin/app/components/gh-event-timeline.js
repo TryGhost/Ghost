@@ -79,7 +79,7 @@ export default class EventTimeline extends Component {
 
     parseEvents(events) {
         this.parsedEvents = events.map((event) => {
-            let subject = event.data.member.name;
+            let subject = event.data.member.name || event.data.member.email;
             let icon = this.getIcon(event);
             let action = this.getAction(event);
             let object = this.getObject(event);
