@@ -6,18 +6,20 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const models = require('../../../core/server/models');
 const {events} = require('../../../core/server/lib/common');
-const themes = require('../../../core/frontend/services/themes');
 const UrlService = rewire('../../../core/frontend/services/url/UrlService');
 
+/**
+ * @NOTE
+ *
+ * If this test fails for you, you are probably modifying supported theme engines
+ * and thus should check if the there is a configuration added for the new API version
+ *
+ */
 describe('Integration: services/url/UrlService', function () {
     let urlService;
 
     before(function () {
         models.init();
-
-        sinon.stub(themes, 'getActive').returns({
-            engine: () => 'v2'
-        });
     });
 
     before(testUtils.teardownDb);
