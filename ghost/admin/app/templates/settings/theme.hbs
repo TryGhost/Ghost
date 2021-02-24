@@ -15,57 +15,29 @@
     {{/if}}
 
     <section class="view-container">
+        <div class="gh-setting-header gh-first-header">Ghost theme directory</div>
         <div class="gh-theme-directory-container">
             <div class="theme-directory">
-                <a class="td-item" href="https://github.com/TryGhost/Massively" target="_blank" rel="noopener noreferrer">
-                    <div class="td-item-screenshot relative">
-                        <img style="object-fit:contain;" src="assets/img/themes/massively.jpg" alt="Massively Theme" />
-                        <div class="td-item-overlay">
-                            <LinkTo class="td-item-action gh-btn gh-btn-black mb4" @route="settings.theme.install" @query={{hash source="github" ref="TryGhost/Massively"}}><span>Install</span></LinkTo>
-                            <a href="https://massively.ghost.io" class="td-item-action gh-btn" target="_blank" rel="noopener"><span>Preview</span></a>
+                {{#each this.marketplaceThemes as |theme|}}
+                    <a class="td-item" href={{theme.url}} target="_blank" rel="noopener noreferrer">
+                        <div class="td-item-screenshot relative">
+                            <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
+                            <div class="td-item-overlay">
+                                <LinkTo class="td-item-action gh-btn gh-btn-black mb4" @route="settings.theme.install" @query={{hash source="github" ref=theme.ref}}><span>Install</span></LinkTo>
+                                <a href={{theme.previewUrl}} class="td-item-action gh-btn" target="_blank" rel="noopener"><span>Preview</span></a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="td-item-desc">
-                        <div>Massively <span>— Free</span></div>
-                    </div>
-                </a>
-                <a class="td-item" href="https://themeforest.net/item/nurui-multipurpose-ghost-blog-theme/22243886" target="_blank" rel="noopener noreferrer">
-                    <div class="td-item-screenshot">
-                        <img style="object-fit:contain;" src="assets/img/themes/nurui.jpg" alt="Nurui Theme" />
-                    </div>
-                    <div class="td-item-desc">
-                        <div>Nurui <span>— Premium</span></div>
-                    </div>
-                </a>
-                <a class="td-item" href="https://themeforest.net/item/pacific-big-bold-photographydriven-theme/19774541" target="_blank" rel="noopener noreferrer">
-                    <div class="td-item-screenshot">
-                        <img style="object-fit:contain;" src="assets/img/themes/pacific.jpg" alt="Pacific Theme" />
-                    </div>
-                    <div class="td-item-desc">
-                        <div>Pacific <span>— Premium</span></div>
-                    </div>
-                </a>
-                <a class="td-item" href="https://www.hauntedthemes.com/" target="_blank" rel="noopener noreferrer">
-                    <div class="td-item-screenshot">
-                        <img style="object-fit:contain;" src="assets/img/themes/farafra.jpg" alt="Farafra Theme" />
-                    </div>
-                    <div class="td-item-desc">
-                        <div>Farafra <span>— Premium</span></div>
-                    </div>
-                </a>
+                        <div class="td-item-desc">
+                            <div>{{theme.name}}</div>
+                            <span>• {{theme.category}}</span>
+                        </div>
+                    </a>
+                {{/each}}
                 <a class="td-item" href="https://ghost.org/marketplace/" target="_blank" rel="noopener noreferrer">
                     <div class="td-item-empty">
                         {{svg-jar "circle-ellipsis" class="w5"}}
                         <h4 class="fw6 f6 pt3 pb1">More themes</h4>
                         <div class="midgrey f7">Explore more free and premium themes on our Marketplace</div>
-                    </div>
-                </a>
-                <a class="td-item" href="https://themeforest.net/item/sente-magazine-ghost-blog-theme/21019644" target="_blank" rel="noopener noreferrer">
-                    <div class="td-item-screenshot">
-                        <img style="object-fit:contain;" src="assets/img/themes/sente.jpg" alt="Sente Theme" />
-                    </div>
-                    <div class="td-item-desc">
-                        <div>Sente <span>— Premium</span></div>
                     </div>
                 </a>
             </div>
