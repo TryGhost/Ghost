@@ -19,13 +19,13 @@ describe('Acceptance: Setup', function () {
         await authenticateSession();
 
         await visit('/setup/one');
-        expect(currentURL()).to.equal('/dashboard');
+        expect(currentURL()).to.equal('/site');
 
         await visit('/setup/two');
-        expect(currentURL()).to.equal('/dashboard');
+        expect(currentURL()).to.equal('/site');
 
         await visit('/setup/three');
-        expect(currentURL()).to.equal('/dashboard');
+        expect(currentURL()).to.equal('/site');
     });
 
     it('redirects to signin if already set up', async function () {
