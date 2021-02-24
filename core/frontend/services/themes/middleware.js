@@ -47,14 +47,6 @@ function ensureActiveTheme(req, res, next) {
  * members settings as publicly readable
  */
 function haxGetMembersPriceData() {
-    const CURRENCY_SYMBOLS = {
-        USD: '$',
-        AUD: '$',
-        CAD: '$',
-        GBP: '£',
-        EUR: '€',
-        INR: '₹'
-    };
     const defaultPriceData = {
         monthly: 0,
         yearly: 0
@@ -72,7 +64,6 @@ function haxGetMembersPriceData() {
         }, {});
 
         priceData.currency = stripePlans[0].currency;
-        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency.toUpperCase()];
 
         if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
             return priceData;

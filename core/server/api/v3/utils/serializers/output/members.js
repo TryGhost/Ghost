@@ -183,7 +183,6 @@ function createSerializer(debugString, serialize) {
  * @prop {string} plan.nickname
  * @prop {number} plan.amount
  * @prop {string} plan.currency
- * @prop {string} plan.currency_symbol
  */
 
 /**
