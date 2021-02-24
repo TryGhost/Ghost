@@ -7,6 +7,40 @@ import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {notEmpty} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
+export const MARKETPLACE_THEMES = [{
+    name: 'Edition',
+    category: 'Newsletter',
+    url: 'https://github.com/TryGhost/Edition',
+    previewUrl: 'https://edition.ghost.io',
+    ref: 'TryGhost/Edition',
+    image: 'assets/img/themes/Edition.jpg',
+    shortImage: 'assets/img/themes/Edition-cut.jpg'
+}, {
+    name: 'Alto',
+    category: 'Blog',
+    url: 'https://github.com/TryGhost/Alto',
+    previewUrl: 'https://alto.ghost.io',
+    ref: 'TryGhost/Alto',
+    image: 'assets/img/themes/Alto.jpg',
+    shortImage: 'assets/img/themes/Alto-cut.jpg'
+}, {
+    name: 'London',
+    category: 'Photography',
+    url: 'https://github.com/TryGhost/London',
+    previewUrl: 'https://london.ghost.io',
+    ref: 'TryGhost/London',
+    image: 'assets/img/themes/London.jpg',
+    shortImage: 'assets/img/themes/London-cut.jpg'
+}, {
+    name: 'Ease',
+    category: 'Documentation',
+    url: 'https://github.com/TryGhost/Ease',
+    previewUrl: 'https://edition.ghost.io',
+    ref: 'TryGhost/Ease',
+    image: 'assets/img/themes/Ease.jpg',
+    shortImage: 'assets/img/themes/Ease-cut.jpg'
+}];
+
 export default Controller.extend({
     config: service(),
     ghostPaths: service(),
@@ -22,6 +56,7 @@ export default Controller.extend({
 
     init() {
         this._super(...arguments);
+        this.marketplaceThemes = MARKETPLACE_THEMES;
     },
 
     showDeleteThemeModal: notEmpty('themeToDelete'),
