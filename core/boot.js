@@ -239,7 +239,7 @@ async function bootGhost() {
         const bootLogger = new BootLogger(logging, startTime);
         debug('End: Load logging');
 
-        // Version is required by sentry & Migratior config & so is fundamental to booting
+        // Version is required by sentry & Migration config & so is fundamental to booting
         // However, it involves reading package.json so its slow & it's here for visibility on that slowness
         debug('Begin: Load version info');
         require('./server/lib/ghost-version');
