@@ -824,6 +824,10 @@ input:focus,
     color: #f8e5b9;
 }
 
+.members-list .gh-list-header {
+    background: var(--dark-main-bg-color);
+}
+
 /* Portal */
 .gh-portal-settings-maintabs {
     border: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
