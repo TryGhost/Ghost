@@ -968,10 +968,10 @@ amperize@0.6.1:
     uuid "^7.0.1"
     validator "^12.0.0"
 
-analytics-node@3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-3.5.0.tgz#b33ff92195f006b20f1c4e28af86d975c98e4636"
-  integrity sha512-XgQq6ejZHCehUSnZS4V7QJPLIP7S9OAWwQDYl4WTLtsRvc5fCxIwzK/yihzmIW51v9PnyBmrl9dMcqvwfOE8WA==
+analytics-node@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-4.0.0.tgz#ad19a913d5a4e4ff0c464e2cfd47943f60c7375e"
+  integrity sha512-5MFW1lWls5IPUN8y1Eo25h4D+Qp/XrVE+2ZBKAs7Sbwl6BABSyh7Y+NpO1zbMHHb/AMRylwIRrSTOUuDDqOOSg==
   dependencies:
     "@segment/loosely-validate-event" "^2.0.0"
     axios "^0.21.1"
