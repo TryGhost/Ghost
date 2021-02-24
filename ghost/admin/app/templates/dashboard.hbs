@@ -89,7 +89,7 @@
             <div class="gh-dashboard-container col-2">
                 <div class="gh-dashboard-box">
                     <div class="content">
-                        <h4>Introduction to Members</h4>
+                        <h2>Introduction to Members</h2>
                         <p>The native Members feature makes it possible to launch a membership business, develop a direct relationship with your audience and generate revenue from your creative work.</p>
                     </div>
                     <div class="footer">
@@ -98,7 +98,7 @@
                 </div>
                 <div class="gh-dashboard-box">
                     <div class="content">
-                        <h4>Customise Members experience</h4>
+                        <h2>Customise Members experience</h2>
                         <p>Set membership signup details in Portal settings, remove or add your site's name and logo in newsletter emails.</p>
                     </div>
                     <div class="footer">
@@ -123,7 +123,7 @@
                         <h4 class="gh-dashboard-header">Top members</h4>
                         <h4 class="gh-dashboard-header secondary">Open rate</h4>
                     </div>
-                    <div class="gh-dashboard-list nodata">
+                    <div class="gh-dashboard-list">
                         {{#if this.topMembersLoading}}
                             Loading...
                         {{else}}
@@ -169,9 +169,24 @@
                     {{/if}}
                 </div>
             </div>
-            <div class="gh-dashboard-box">
+            <div class="gh-dashboard-box whats-new">
+                <div class="gh-dashboard-header-container">
+                    <h4 class="gh-dashboard-header">What's new?</h4>
+                    {{svg-jar "gift"}}
+                </div>
                 <div class="content">
-                    <p>...</p>
+                    {{#each this.whatsNewEntries as |entry|}}
+                        <a href={{entry.url}} target="_blank" rel="noopener noreferrer">
+                            <h2>{{entry.title}}</h2>
+                            <span class="wn-date">{{moment-format entry.published_at "D MMM YYYY"}}</span>
+                            {{#if entry.custom_excerpt}}
+                                <p>{{entry.custom_excerpt}}</p>
+                            {{/if}}
+                        </a>
+                    {{/each}}
+                </div>
+                <div class="footer">
+                    <a href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates</a>
                 </div>
             </div>
         </section>
