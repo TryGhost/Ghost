@@ -22,7 +22,7 @@ describe('Acceptance: Signin', function () {
         await authenticateSession();
         await visit('/signin');
 
-        expect(currentURL(), 'current url').to.equal('/dashboard');
+        expect(currentURL(), 'current url').to.equal('/site');
     });
 
     describe('when attempting to signin', function () {
