@@ -2,7 +2,20 @@ const should = require('should');
 const sinon = require('sinon');
 const themeEngines = require('../../../../../core/frontend/services/themes/engines');
 
+/**
+ * @NOTE
+ *
+ * If this test fails for you, you are probably modifying supported theme engines.
+ *
+ * When you make a change, please test that:
+ *
+ * 1. Please check that uploading a theme with newly added/modified engine version works
+ * 2. Check other places that potentially need updates (e.g.: frontends resource cache config, )
+ * 3. Add the a protective test for when next verstion (v6?) is planned it has to be changed again
+ */
 describe('Themes: engines', function () {
+    const DEFAULT_ENGINE_VERSION = 'v4';
+
     afterEach(function () {
         sinon.restore();
     });
@@ -10,11 +23,47 @@ describe('Themes: engines', function () {
     it('no engines', function () {
         const engines = themeEngines.create();
         engines.should.eql({
-            'ghost-api': 'v4'
+            'ghost-api': DEFAULT_ENGINE_VERSION
         });
     });
 
     describe('ghost-api', function () {
+        it('unknown version falls back to default version', function () {
+            const engines = themeEngines.create({
+                engines: {
+                    'ghost-api': 'v100'
+                }
+            });
+
+            engines.should.eql({
+                'ghost-api': DEFAULT_ENGINE_VERSION
+            });
+        });
+
+        it('deprecated and not supported version falls back to default version', function () {
+            const engines = themeEngines.create({
+                engines: {
+                    'ghost-api': '^0.1'
+                }
+            });
+
+            engines.should.eql({
+                'ghost-api': DEFAULT_ENGINE_VERSION
+            });
+        });
+
+        it('not supported upcoming version falls back to default version', function () {
+            const engines = themeEngines.create({
+                engines: {
+                    'ghost-api': 'v5'
+                }
+            });
+
+            engines.should.eql({
+                'ghost-api': DEFAULT_ENGINE_VERSION
+            });
+        });
+
         it('v2', function () {
             const engines = themeEngines.create({
                 engines: {
@@ -24,30 +73,6 @@ describe('Themes: engines', function () {
 
             engines.should.eql({
                 'ghost-api': 'v2'
-            });
-        });
-
-        it('v10', function () {
-            const engines = themeEngines.create({
-                engines: {
-                    'ghost-api': 'v10'
-                }
-            });
-
-            engines.should.eql({
-                'ghost-api': 'v4'
-            });
-        });
-
-        it('^0.1', function () {
-            const engines = themeEngines.create({
-                engines: {
-                    'ghost-api': '^0.1'
-                }
-            });
-
-            engines.should.eql({
-                'ghost-api': 'v4'
             });
         });
 
@@ -131,7 +156,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v4'
+                'ghost-api': DEFAULT_ENGINE_VERSION
             });
         });
 
@@ -143,7 +168,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v4'
+                'ghost-api': DEFAULT_ENGINE_VERSION
             });
         });
     });
