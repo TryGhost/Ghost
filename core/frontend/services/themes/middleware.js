@@ -173,7 +173,11 @@ function updateLocalTemplateOptions(req, res, next) {
         name: req.member.name,
         firstname: req.member.name && req.member.name.split(' ')[0],
         avatar_image: req.member.avatar_image,
-        subscriptions: req.member.subscriptions,
+        subscriptions: req.member.subscriptions && req.member.subscriptions.map((sub) => {
+            return Object.assign({}, sub, {
+                default_payment_card_last4: sub.default_payment_card_last4 || '****'
+            });
+        }),
         paid: req.member.status === 'paid'
     } : null;
 
