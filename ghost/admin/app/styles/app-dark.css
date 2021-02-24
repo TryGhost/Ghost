@@ -878,3 +878,11 @@ input:focus,
 .gh-launch-wizard-btn svg {
     fill: var(--black);
 }
+
+.gh-lw-banner {
+    border: 1px solid color-mod(var(--green) a(60%));
+}
+
+.gh-dashboard-box {
+    border-color: var(--lightgrey);
+}
