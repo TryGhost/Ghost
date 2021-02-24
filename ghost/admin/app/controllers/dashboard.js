@@ -72,6 +72,7 @@ export default class DashboardController extends Controller {
                 this.mrrStatsData = {
                     current: `${getSymbol(currencyStats.currency)}${currentMRR}`,
                     percentGrowth: percentGrowth.toFixed(1),
+                    percentClass: (percentGrowth > 0 ? 'positive' : (percentGrowth < 0 ? 'negative' : '')),
                     options: {
                         rangeInDays: 30
                     },
@@ -107,6 +108,7 @@ export default class DashboardController extends Controller {
                 this.memberCountStatsData = {
                     all: {
                         percentGrowth: allCountPercentGrowth.toFixed(1),
+                        percentClass: (allCountPercentGrowth > 0 ? 'positive' : (allCountPercentGrowth < 0 ? 'negative' : '')),
                         total: dateValues.length ? dateValues[dateValues.length - 1].total : 0,
                         options: {
                             rangeInDays: 30
@@ -121,6 +123,7 @@ export default class DashboardController extends Controller {
                     },
                     paid: {
                         percentGrowth: paidCountPercentGrowth.toFixed(1),
+                        percentClass: (paidCountPercentGrowth > 0 ? 'positive' : (paidCountPercentGrowth < 0 ? 'negative' : '')),
                         total: dateValues.length ? dateValues[dateValues.length - 1].paid : 0,
                         options: {
                             rangeInDays: 30

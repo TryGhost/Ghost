@@ -16,7 +16,7 @@
                     <div class="gh-dashboard-summary">
                         {{#if this.mrrStatsData}}
                             <div class="data">{{this.mrrStatsData.current}}</div>
-                            <div class="growth">{{this.mrrStatsData.percentGrowth}}%</div>
+                            <div class="growth {{this.mrrStatsData.percentClass}}">{{this.mrrStatsData.percentGrowth}}%</div>
                         {{else}}
                             <div class="data">$0</div>
                             <div class="growth">0.0%</div>
@@ -25,10 +25,6 @@
                     {{#if this.mrrStatsData}}
                         <div class="gh-dashboard-chart">
                             <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStatsData}} />
-                        </div>
-                    {{else}}
-                        <div class="gh-dashboard-chart nodata">
-                            No data
                         </div>
                     {{/if}}
                 </div>
@@ -39,7 +35,7 @@
                         <h4 class="gh-dashboard-header">Total members</h4>
                         <div class="data-container">
                             <div class="data">{{this.memberCountStatsData.all.total}}</div>
-                            <div class="growth">{{this.memberCountStatsData.all.percentGrowth}}%</div>
+                            <div class="growth {{this.memberCountStatsData.all.percentClass}}">{{this.memberCountStatsData.all.percentGrowth}}%</div>
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
@@ -53,7 +49,7 @@
                         <h4 class="gh-dashboard-header">Paid members</h4>
                         <div class="data-container">
                             <div class="data">{{this.memberCountStatsData.paid.total}}</div>
-                            <div class="growth">{{this.memberCountStatsData.paid.percentGrowth}}%</div>
+                            <div class="growth {{this.memberCountStatsData.paid.percentClass}}">{{this.memberCountStatsData.paid.percentGrowth}}%</div>
                         </div>
                     </div>
                     <div class="gh-dashboard-chart small">
