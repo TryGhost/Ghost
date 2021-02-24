@@ -429,12 +429,12 @@
     ghost-ignition "4.2.4"
     lodash "4.17.20"
 
-"@tryghost/errors@0.2.8", "@tryghost/errors@^0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.8.tgz#887531bd41dc6f6fdfc8a6dda8ef08acccddf08b"
-  integrity sha512-PF6vFZnRhMKxZ9FeNtYOHTn3wKMF2u+rgC4Iw33O2tHPCPtRzQTGUU8kO02sY5pjx19OjBOlYyye5n9fRHwJPA==
+"@tryghost/errors@0.2.9", "@tryghost/errors@^0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.9.tgz#b27fb31633735975ce62e53e88bc2412dc6fd876"
+  integrity sha512-ULWfgTYqSO2uU9Sb75+MQpuYsy3sCF5QTXy5RqpzJdACWKW2Mtg3fPGS6fVEHuxbUhOxEhq1eu9gsWFWLljTEA==
   dependencies:
-    ghost-ignition "4.4.3"
+    ghost-ignition "4.4.4"
     lodash "4.17.20"
 
 "@tryghost/errors@^0.2.3":
@@ -445,12 +445,12 @@
     ghost-ignition "4.2.2"
     lodash "4.17.20"
 
-"@tryghost/errors@^0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.9.tgz#b27fb31633735975ce62e53e88bc2412dc6fd876"
-  integrity sha512-ULWfgTYqSO2uU9Sb75+MQpuYsy3sCF5QTXy5RqpzJdACWKW2Mtg3fPGS6fVEHuxbUhOxEhq1eu9gsWFWLljTEA==
+"@tryghost/errors@^0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.8.tgz#887531bd41dc6f6fdfc8a6dda8ef08acccddf08b"
+  integrity sha512-PF6vFZnRhMKxZ9FeNtYOHTn3wKMF2u+rgC4Iw33O2tHPCPtRzQTGUU8kO02sY5pjx19OjBOlYyye5n9fRHwJPA==
   dependencies:
-    ghost-ignition "4.4.4"
+    ghost-ignition "4.4.3"
     lodash "4.17.20"
 
 "@tryghost/helpers@1.1.38":
