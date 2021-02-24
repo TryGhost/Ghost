@@ -65,7 +65,7 @@
     justify-content: space-between;
     border: 1px solid var(--whitegrey);
     border-radius: 3px;
-    padding: 24px;
+    padding: 28px;
     margin-bottom: var(--dashboard-gap);
 }
 
@@ -140,6 +140,52 @@
     justify-content: flex-start;
 }
 
+.gh-dashboard-area.lw-banner {
+    grid-column: 1 / 3;
+}
+
+/* Launch Wizard Banner */
+.gh-lw-banner {
+    border-radius: 3px;
+    background: #15171A;
+    padding: 28px;
+    color: #fff;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: 35vw;
+}
+
+.gh-lw-banner h1 {
+    font-size: 2.5rem;
+    letter-spacing: -0.1px;
+    color: #fff;
+}
+
+.gh-lw-banner p {
+    font-size: 1.5rem;
+    color: #C5D2D9;
+    max-width: 480px;
+}
+
+.gh-dashboard-box.blogpost {
+    flex-direction: row;
+    align-items: center;
+}
+
+.gh-dashboard-box.blogpost h2 {
+    font-size: 2.4rem;
+    line-height: 1.2em;
+}
+
+.gh-dashboard-box.blogpost p {
+    margin-bottom: 8px;
+}
+
+.gh-dashboard-box.blogpost img {
+    max-width: 200px;
+    margin-right: 32px;
+}
+
 /* Charts */
 .gh-dashboard-area.charts {
     display: grid;
@@ -156,7 +202,7 @@
 .gh-dashboard-area.charts .gh-dashboard-box {
     border: none;
     border-radius: 0;
-    padding: 16px 0 0 24px;
+    padding: 16px 0 0 28px;
     margin: 0;
 }
 
@@ -173,27 +219,27 @@
 .gh-dashboard-area.charts .mrr {
     grid-column: 1 / 2;
     grid-row: 1 / 4;
-    padding: 0 0 0 24px;
+    padding: 0 0 0 28px;
 }
 
 .gh-dashboard-area.charts .total-members {
     grid-column: 2 / 3;
     grid-row: 1 / 2;
-    padding: 0 24px 0 24px;
+    padding: 0 28px 0 28px;
     height: 75px;
 }
 
 .gh-dashboard-area.charts .paid-members {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
-    padding: 0 24px 0 24px;
+    padding: 0 28px 0 28px;
     height: 75px;
 }
 
 .gh-dashboard-area.charts .newsletter-open-rate {
     grid-column: 2 / 3;
     grid-row: 3 / 4;
-    padding: 0 24px 0 24px;
+    padding: 0 28px 0 28px;
     height: 75px;
 }
 
@@ -687,7 +733,7 @@
     }
 
     .gh-dashboard-area.charts .mrr {
-        padding: 0 24px;
+        padding: 0 28px;
     }
 
     .gh-dashboard-area.charts .total-members,
@@ -697,7 +743,7 @@
     }
 
     .gh-dashboard-chart-box {
-        padding: 24px 0;
+        padding: 28px 0;
     }
 
     .gh-dashboard-summary:not(.small) {
