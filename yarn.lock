@@ -402,10 +402,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.7.tgz#3532a7a68fad69fe15a9918c1c2ff3acc7a54706"
   integrity sha512-pnMgvXPvaF7h6Wb5vgJO8dSPXhAKCpW327iBEP55Npxk3hKPi0sawaAxmMzTqU8bYo0hJrsde5ska6ZLM40yYQ==
 
-"@tryghost/constants@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.5.tgz#26bcceb8f885848df325d1fccfc98b902fd0802f"
-  integrity sha512-+slsdsHuUIWfPr9Fp+3rbK0iOdRmQUQijbkjKlhCaVYXI9PaN4I0KxMUncUn5xTG6acg/gRXjZ1F2yX/enFgeQ==
+"@tryghost/constants@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.6.tgz#e24927daf919bb3e426c2312db290c89a65f7fc3"
+  integrity sha512-6/H9At4IbMMVtT705a0Tuu9jnfaIvsPBtVIvqfgex9ddM7767Ckobc5fWWdTalTjak4ho504/AZflBnI+eJdJA==
 
 "@tryghost/elasticsearch-bunyan@^0.1.0":
   version "0.1.0"
