@@ -64,6 +64,7 @@
     position: sticky;
     top: 84px;
     z-index: 1;
+    background: var(--white);
 }
 
 .members-list-header-overlay {
@@ -696,7 +697,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed {
-    margin-top: -12px;
+    margin: -12px 0;
 }
 
 .gh-member-feed-row {
