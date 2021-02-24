@@ -2,14 +2,14 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const cheerio = require('cheerio');
-const testUtils = require('../../utils');
-const mockUtils = require('../../utils/mocks');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
-const appService = require('../../../core/frontend/services/apps');
-const frontendSettingsService = require('../../../core/frontend/services/settings');
-const themeService = require('../../../core/frontend/services/themes');
-const siteApp = require('../../../core/server/web/parent/app');
+const testUtils = require('../../../utils');
+const mockUtils = require('../../../utils/mocks');
+const configUtils = require('../../../utils/configUtils');
+const urlUtils = require('../../../utils/urlUtils');
+const appService = require('../../../../core/frontend/services/apps');
+const frontendSettingsService = require('../../../../core/frontend/services/settings');
+const themeService = require('../../../../core/frontend/services/themes');
+const siteApp = require('../../../../core/server/web/parent/app');
 
 describe('Integration - Web - Site', function () {
     let app;
@@ -46,7 +46,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../core/server/api/v2/posts-public');
+                const postsAPI = require('../../../../core/server/api/v2/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
@@ -1744,7 +1744,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../core/server/api/canary/posts-public');
+                const postsAPI = require('../../../../core/server/api/canary/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
@@ -3444,7 +3444,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../core/server/api/v3/posts-public');
+                const postsAPI = require('../../../../core/server/api/v3/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
