@@ -11,12 +11,12 @@
     right: 0;
     bottom: 0;
     z-index: 500;
-    width: 350px;
+    width: 500px;
     max-width: 100%;
     overflow: hidden;
     background: var(--white);
     transition: all 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    transform: translate3d(360px, 0px, 0px);
+    transform: translate3d(510px, 0px, 0px);
     box-shadow: none;
 }
 
