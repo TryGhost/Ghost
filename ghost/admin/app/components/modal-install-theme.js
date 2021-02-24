@@ -51,7 +51,7 @@ export default class ModalInstallThemeComponent extends ModalBase {
     }
 
     get isReady() {
-        return !this.installSuccess && !this.installError && !this.installFailure;
+        return !this.installSuccess && !this.installError && !this.installFailure && !this.willOverwriteDefault;
     }
 
     get hasWarningsOrErrors() {
