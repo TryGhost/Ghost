@@ -283,7 +283,6 @@ export default Component.extend({
                         fontColor: '#7C8B9A',
                         padding: 8,
                         precision: 0,
-                        suggestedMin: 0,
                         callback: (value) => {
                             const currency = this.chartType === 'mrr' ? getSymbol(this.stats.currency) : '';
                             if (parseInt(value) >= 1000) {
