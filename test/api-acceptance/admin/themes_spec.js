@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const supertest = require('supertest');
+const nock = require('nock');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
@@ -262,5 +263,41 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(testTheme2, 'theme', ['warnings', 'templates']);
         testTheme2.active.should.be.true();
         testTheme2.warnings.should.be.an.Array();
+    });
+
+    it('Can download and install a theme from GitHub', async function () {
+        const githubZipball = nock('https://api.github.com')
+            .get('/repos/tryghost/test/zipball')
+            .reply(302, null, {Location: 'https://codeload.github.com/TryGhost/Test/legacy.zip/main'});
+
+        const githubDownload = nock('https://codeload.github.com')
+            .get('/TryGhost/Test/legacy.zip/main')
+            .replyWithFile(200, path.join(__dirname, '/../../utils/fixtures/themes/warnings.zip'), {
+                'Content-Type': 'application/zip',
+                'Content-Disposition': 'attachment; filename=TryGhost-Test-3.1.2-38-gfc8cf0b.zip'
+            });
+
+        const res = await ownerRequest
+            .post(localUtils.API.getApiQuery('themes/install/?source=github&ref=TryGhost/Test'))
+            .set('Origin', config.get('url'));
+
+        githubZipball.isDone().should.be.true();
+        githubDownload.isDone().should.be.true();
+
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse.themes);
+        localUtils.API.checkResponse(jsonResponse, 'themes');
+        jsonResponse.themes.length.should.eql(1);
+        localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
+        jsonResponse.themes[0].name.should.eql('test');
+        jsonResponse.themes[0].active.should.be.false();
+        jsonResponse.themes[0].warnings.should.be.an.Array();
+
+        // Delete the theme to clean up after the test
+        await ownerRequest
+            .del(localUtils.API.getApiQuery('themes/test'))
+            .set('Origin', config.get('url'))
+            .expect(204);
     });
 });
