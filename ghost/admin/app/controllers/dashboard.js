@@ -9,6 +9,7 @@ export default class DashboardController extends Controller {
     @service membersStats;
     @service store;
     @service settings;
+    @service whatsNew;
 
     @tracked
     eventsData = null;
@@ -45,6 +46,9 @@ export default class DashboardController extends Controller {
     @tracked
     newsletterOpenRatesLoading = false;
 
+    @tracked
+    whatsNewEntries = null;
+
     get showTopMembers() {
         return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
     }
@@ -53,6 +57,7 @@ export default class DashboardController extends Controller {
         this.loadEvents();
         this.loadTopMembers();
         this.loadCharts();
+        this.loadWhatsNew();
     }
 
     loadMRRStats() {
@@ -196,6 +201,12 @@ export default class DashboardController extends Controller {
         }, (error) => {
             this.topMembersError = error;
             this.topMembersLoading = false;
+        });
+    }
+
+    loadWhatsNew() {
+        this.whatsNew.fetchLatest.perform().then(() => {
+            this.whatsNewEntries = this.whatsNew.entries.slice(0, 3);
         });
     }
 }

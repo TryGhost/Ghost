@@ -73,8 +73,8 @@
     color: var(--darkgrey);
 }
 
-.gh-dashboard-box .content h4 {
-    font-size: 1.6rem;
+.gh-dashboard-box .content h2 {
+    font-size: 1.65rem;
     font-weight: 600;
     line-height: 1.4em;
     margin-bottom: 8px;
@@ -442,12 +442,16 @@
     fill: var(--black);
 }
 
-.gh-dashboard-box.top-members .gh-dashboard-header-container {
+.gh-dashboard-header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid var(--whitegrey-d2);
-    padding-bottom: 14px;
+    border-bottom: 1px solid var(--whitegrey);
+    padding-bottom: 10px;
+}
+
+.gh-dashboard-box.grey .gh-dashboard-header-container {
+    border-color: var(--whitegrey-d2);
 }
 
 /* Activity feed */
@@ -530,6 +534,46 @@
     font-size: 1.3rem;
     margin-bottom: 46px;
 }
+
+/* What's new? */
+
+.gh-dashboard-box.whats-new .gh-dashboard-header-container svg {
+    width: 20px;
+    height: 20px;
+    margin-top: -12px;
+}
+
+.gh-dashboard-box.whats-new .gh-dashboard-header-container svg path {
+    fill: var(--pink);
+}
+
+.gh-dashboard-box.whats-new .content a {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    color: var(--darkgrey);
+    margin: 12px 0;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-dashboard-box.whats-new .content a h2 {
+    margin-bottom: 0;
+}
+
+.gh-dashboard-box.whats-new .content a span {
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-dashboard-box.whats-new .content a p {
+    margin-top: 4px;
+}
+
+.gh-dashboard-box.whats-new .footer {
+
+}
+
 
 @media (max-width: 1320px) {
     .gh-dashboard {
