@@ -19,14 +19,19 @@
     <div class="modal-body">
         {{#if this.isReady}}
             <p>
-                Are you sure you want to install <strong>{{this.themeName}}</strong> from
-                <a href="https://github.com/{{this.model.ref}}" target="_blank" rel="noopener noreferrer">https://github.com/{{this.model.ref}}</a>?
+                You're about to install <strong>{{this.themeName}}</strong> from the theme directory.
             </p>
             {{#if this.willOverwriteExisting}}
                 <p>
                     This will overwrite your existing version of {{this.themeName}}{{if this.willOverwriteExisting.active " which is your active theme"}}.
                     Any custom changes will be lost.
                 </p>
+            {{/if}}
+
+            {{#if this.marketplaceTheme.shortImage}}
+                <div class="theme-validation-screenshot relative">
+                    <img style="object-fit:contain;" src={{this.marketplaceTheme.shortImage}} alt="Edition Theme" />
+                </div>
             {{/if}}
         {{/if}}
 

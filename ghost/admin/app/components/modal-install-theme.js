@@ -6,6 +6,8 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
+import {MARKETPLACE_THEMES} from 'ghost-admin/controllers/settings/theme';
+
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalInstallThemeComponent extends ModalBase {
@@ -22,6 +24,10 @@ export default class ModalInstallThemeComponent extends ModalBase {
 
     get themeName() {
         return this.model.ref.split('/')[1];
+    }
+
+    get marketplaceTheme() {
+        return MARKETPLACE_THEMES.find(theme => theme.name.toLowerCase() === this.themeName.toLowerCase());
     }
 
     get currentThemeNames() {
