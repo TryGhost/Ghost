@@ -269,6 +269,11 @@
     background: #f2f3f5;
 }
 
+.gh-social-og-preview.no-container {
+    border-left: 1px solid #dddfe2;
+    border-right: 1px solid #dddfe2;
+}
+
 .gh-social-og-preview-image {
     width: 100%;
     height: 247px;
@@ -428,7 +433,8 @@
 }
 
 .gh-social-twitter-preview-desc {
-    width: 487px;
+    width: 100%;
+    max-width: 487px;
     max-height: 40px;
     overflow: hidden;
     overflow-wrap: break-word;
@@ -530,7 +536,7 @@
     display: flex;
     flex-direction: column;
     width: 600px;
-    margin-bottom: 40px;
+    margin-bottom: 28px;
 }
 
 @media (max-width: 1080px) {
