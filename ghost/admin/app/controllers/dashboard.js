@@ -48,6 +48,10 @@ export default class DashboardController extends Controller {
 
     @tracked
     whatsNewEntries = null;
+    @tracked
+    whatsNewEntriesLoading = null;
+    @tracked
+    whatsNewEntriesError = null;
 
     get showTopMembers() {
         return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
@@ -212,8 +216,13 @@ export default class DashboardController extends Controller {
     }
 
     loadWhatsNew() {
+        this.whatsNewEntriesLoading = true;
         this.whatsNew.fetchLatest.perform().then(() => {
+            this.whatsNewEntriesLoading = false;
             this.whatsNewEntries = this.whatsNew.entries.slice(0, 3);
+        }, (error) => {
+            this.whatsNewEntriesError = error;
+            this.whatsNewEntriesLoading = false;
         });
     }
 }
