@@ -71,9 +71,15 @@
                     <div class="gh-dashboard-chart-container">
                         <div class="gh-dashboard-summary small">
                             <h4 class="gh-dashboard-header">Email open rate</h4>
+
                             <div class="data-container">
-                                <div class="data">0%</div>
-                                <div class="growth">0.0%</div>
+                                {{#if this.newsletterOpenRatesData}}
+                                    <div class="data">{{this.newsletterOpenRatesData.current}}%</div>
+                                    <div class="growth {{this.mrrStatsData.percentClass}}">{{this.newsletterOpenRatesData.percentGrowth}}%</div>
+                                {{else}}
+                                    <div class="data">$0</div>
+                                    <div class="growth">0.0%</div>
+                                {{/if}}
                             </div>
                         </div>
                         <div class="gh-dashboard-chart small">
