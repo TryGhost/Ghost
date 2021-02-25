@@ -215,6 +215,7 @@
                 </div>
             {{/unless}}
 
+            {{#unless (or  whatsNewEntriesLoading whatsNewEntriesError)}}
             <div class="gh-dashboard-box whats-new">
                 <div class="gh-dashboard-header-container">
                     <h4 class="gh-dashboard-header">What's new?</h4>
@@ -235,6 +236,7 @@
                     <a href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates</a>
                 </div>
             </div>
+            {{/unless}}
         </section>
     </div>
-</section>
+</section>fwh
