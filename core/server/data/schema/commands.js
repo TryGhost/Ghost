@@ -146,6 +146,57 @@ async function dropUnique(tableName, columns, transaction) {
 }
 
 /**
+ * Checks if primary key index exists in a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to add primary key constraint to
+ * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction.knex - knex instance
+ */
+async function hasPrimaryKey(tableName, transaction) {
+    const knex = (transaction || db.knex);
+    const client = knex.client.config.client;
+
+    if (client === 'mysql') {
+        const dbName = knex.client.config.connection.database;
+        const [rawConstraints] = await knex.raw(`
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE 1=1
+                AND CONSTRAINT_SCHEMA=:dbName
+                AND TABLE_NAME=:tableName
+                AND CONSTRAINT_TYPE='PRIMARY KEY'`, {dbName, tableName});
+
+        return rawConstraints.length > 0;
+    } else {
+        const rawConstraints = await knex.raw(`PRAGMA index_list('${tableName}');`);
+        const tablePrimaryKey = rawConstraints.find(c => c.origin === 'pk');
+
+        return tablePrimaryKey;
+    }
+}
+
+/**
+ * Adds an primary key index to a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to add primaykey  constraint to
+ * @param {string|[string]} columns - column(s) to form primary key constraint with
+ * @param {Object} transaction - connnection object containing knex reference
+ * @param {Object} transaction.knex - knex instance
+ */
+async function addPrimaryKey(tableName, columns, transaction) {
+    const hasUniqueConstraint = await hasPrimaryKey(tableName, transaction);
+
+    if (!hasUniqueConstraint) {
+        logging.info(`Adding primary key constraint for: ${columns} in table ${tableName}`);
+        return (transaction || db.knex).schema.table(tableName, function (table) {
+            table.primary(columns);
+        });
+    } else {
+        logging.warn(`Primary key constraint for: ${columns} already exists for table: ${tableName}`);
+    }
+}
+
+/**
  * https://github.com/tgriesser/knex/issues/1303
  * createTableIfNotExists can throw error if indexes are already in place
  */
@@ -250,6 +301,7 @@ module.exports = {
     getIndexes: getIndexes,
     addUnique: addUnique,
     dropUnique: dropUnique,
+    addPrimaryKey: addPrimaryKey,
     addColumn: addColumn,
     dropColumn: dropColumn,
     getColumns: getColumns,
