@@ -22,7 +22,7 @@
                 >
                     {{#if (and this.facebookHovered (not this.facebookImage))}}
                         {{!-- only shown on hover when there's no image or fallback --}}
-                        <button class="w-100 ba bw2 bb-0 br4 br--top" {{on "click" (fn this.triggerFileDialog "facebook")}}>+ Add Image</button>
+                        <button class="gh-social-og-preview-img-add" {{on "click" (fn this.triggerFileDialog "facebook")}}>+ Add image</button>
                     {{/if}}
 
                     <GhUploader
@@ -123,7 +123,7 @@
                         >
                             {{#if (and this.twitterHovered (not this.twitterImage))}}
                                 {{!-- only shown on hover when there's no image or fallback --}}
-                                <button class="w-100 ba bw2 bb-0 br4 br--top" {{on "click" (fn this.triggerFileDialog "twitter")}}>+ Add Image</button>
+                                <button class="gh-social-twitter-preview-img-add" {{on "click" (fn this.triggerFileDialog "twitter")}}>+ Add image</button>
                             {{/if}}
 
                             <GhUploader
