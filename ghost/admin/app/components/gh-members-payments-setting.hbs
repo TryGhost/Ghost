@@ -166,7 +166,7 @@
                                     {{one-way-select this.selectedCurrency
                                         id="currency"
                                         name="currency"
-                                        options=(readonly this.currencies)
+                                        options=(readonly this.allCurrencies)
                                         optionValuePath="value"
                                         optionLabelPath="label"
                                         update=(action "setStripePlansCurrency")
