@@ -252,7 +252,7 @@ module.exports = {
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
     brute: {
-        key: {type: 'string', maxlength: 191},
+        key: {type: 'string', maxlength: 191, primary: true},
         firstRequest: {type: 'bigInteger'},
         lastRequest: {type: 'bigInteger'},
         lifetime: {type: 'bigInteger'},
