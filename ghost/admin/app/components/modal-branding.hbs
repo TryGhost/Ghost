@@ -26,7 +26,54 @@
     <div class="gh-branding-settings">
         <section class="gh-branding-settings-options">
             <div class="gh-stack">
-                <div class="gh-stack-item gh-setting-first" data-test-setting="icon">
+                <div class="gh-stack-item gh-setting-first">
+                    <div class="gh-setting-content">
+                        <div class="gh-setting-title">Accent color</div>
+                        <div class="gh-setting-desc">Primary color used in your publication theme</div>
+                        {{#each uploader.errors as |error|}}
+                            <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
+                        {{/each}}
+                    </div>
+
+                    <div class="gh-setting-action" data-test-setting="accentColor">
+                        <GhFormGroup
+                            @errors={{this.settings.errors}}
+                            @hasValidated={{this.settings.hasValidated}}
+                            @property="accentColor"
+                            @class="input-color-form-group"
+                        >
+                            <div class="input-color">
+                                <input
+                                    type="text"
+                                    placeholder="abcdef"
+                                    name="accent-color"
+                                    autocorrect="off"
+                                    maxlength="6"
+                                    value={{this.accentColor}}
+                                    class="gh-input"
+                                    {{on "input" (perform this.debounceUpdateAccentColor)}}
+                                    {{on "blur" (action 'updateAccentColor')}}
+                                    data-test-input="accentColor"
+                                />
+                                <div class="color-picker-horizontal-divider"></div>
+                                <div
+                                    class="color-box-container"
+                                    style={{this.accentColorBgStlye}}
+                                >
+                                    <input
+                                        type="color"
+                                        name="accent-color"
+                                        class="color-picker"
+                                        value="{{this.accentColorPickerValue}}"
+                                        {{on "input" (perform this.debounceUpdateAccentColor)}}
+                                    >
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+
+                </div>
+                <div class="gh-setting gh-stack-item" data-test-setting="icon">
                     <GhUploader
                         @extensions={{this.iconExtensions}}
                         @paramsHash={{hash purpose="icon"}}
@@ -96,7 +143,7 @@
                     </div>
                     </GhUploader>
                 </div>
-                <div class="gh-stack-item gh-setting" data-test-setting="coverImage">
+                <div class="gh-stack-item gh-setting gh-setting-last" data-test-setting="coverImage">
                     <GhUploader
                         @extensions={{this.imageExtensions}}
                         @onComplete={{action "imageUploaded" "coverImage"}}
@@ -130,53 +177,6 @@
                         </div>
                     </div>
                     </GhUploader>
-                </div>
-                <div class="gh-stack-item gh-setting-last">
-                    <div class="gh-setting-content">
-                        <div class="gh-setting-title">Accent color</div>
-                        <div class="gh-setting-desc">Primary color used in your publication theme</div>
-                        {{#each uploader.errors as |error|}}
-                            <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
-                        {{/each}}
-                    </div>
-
-                    <div class="gh-setting-action" data-test-setting="accentColor">
-                        <GhFormGroup
-                            @errors={{this.settings.errors}}
-                            @hasValidated={{this.settings.hasValidated}}
-                            @property="accentColor"
-                            @class="input-color-form-group"
-                        >
-                            <div class="input-color">
-                                <input
-                                    type="text"
-                                    placeholder="abcdef"
-                                    name="accent-color"
-                                    autocorrect="off"
-                                    maxlength="6"
-                                    value={{this.accentColor}}
-                                    class="gh-input"
-                                    {{on "input" (perform this.debounceUpdateAccentColor)}}
-                                    {{on "blur" (action 'updateAccentColor')}}
-                                    data-test-input="accentColor"
-                                />
-                                <div class="color-picker-horizontal-divider"></div>
-                                <div
-                                    class="color-box-container"
-                                    style={{this.accentColorBgStlye}}
-                                >
-                                    <input
-                                        type="color"
-                                        name="accent-color"
-                                        class="color-picker"
-                                        value="{{this.accentColorPickerValue}}"
-                                        {{on "input" (perform this.debounceUpdateAccentColor)}}
-                                    >
-                                </div>
-                            </div>
-                        </GhFormGroup>
-                    </div>
-
                 </div>
             </div>
         </section>
