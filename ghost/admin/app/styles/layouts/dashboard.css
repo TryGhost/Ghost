@@ -423,16 +423,6 @@
 }
 
 .gh-dashboard-top-member .gh-member-gravatar {
-    /* display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 0;
-    min-width: 32px;
-    border-radius: 999px;
-    background: var(--blue);
-    margin-right: 8px;
-    color: #fff;
-    line-height: 1; */
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
     width: 34px;
     height: 34px;
@@ -654,6 +644,7 @@
     left: auto;
     right: 0;
     min-width: 90px;
+    line-height: 1;
 }
 
 .gh-dashboard-dismiss-dropdown.fade-out {
