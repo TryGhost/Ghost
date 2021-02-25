@@ -1,9 +1,17 @@
 import Component from '@glimmer/component';
-import {CURRENCIES} from 'ghost-admin/components/gh-members-payments-setting';
 import {action} from '@ember/object';
+import {currencies} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
+
+const CURRENCIES = currencies.map((currency) => {
+    return {
+        value: currency.isoCode.toLowerCase(),
+        label: `${currency.isoCode} - ${currency.name}`,
+        isoCode: currency.isoCode
+    };
+});
 
 export default class GhLaunchWizardSetPricingComponent extends Component {
     @service config;
