@@ -20,8 +20,9 @@
   },
   "devDependencies": {
     "mocha": "8.2.1",
+    "nock": "^13.0.8",
     "should": "13.2.3",
-    "sinon": "9.2.3"
+    "sinon": "^9.2.4"
   },
   "dependencies": {
     "@tryghost/email-analytics-service": "^0.0.0",
