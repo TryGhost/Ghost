@@ -1,29 +1,9 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
+import {currencies} from 'ghost-admin/utils/currency';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
-
-export const CURRENCIES = [
-    {
-        label: 'USD - US Dollar', value: 'usd', symbol: '$'
-    },
-    {
-        label: 'AUD - Australian Dollar', value: 'aud', symbol: '$'
-    },
-    {
-        label: 'CAD - Canadian Dollar', value: 'cad', symbol: '$'
-    },
-    {
-        label: 'EUR - Euro', value: 'eur', symbol: '€'
-    },
-    {
-        label: 'GBP - British Pound', value: 'gbp', symbol: '£'
-    },
-    {
-        label: 'INR - Indian Rupee', value: 'inr', symbol: '₹'
-    }
-];
 
 export default Component.extend({
     feature: service(),
@@ -47,7 +27,7 @@ export default Component.extend({
     stripeDirect: reads('config.stripeDirect'),
 
     allowSelfSignup: reads('settings.membersAllowFreeSignup'),
-    
+
     /** OLD **/
     stripeDirectPublicKey: reads('settings.stripePublishableKey'),
     stripeDirectSecretKey: reads('settings.stripeSecretKey'),
@@ -59,7 +39,7 @@ export default Component.extend({
     portalSettingsBorderColor: reads('settings.accentColor'),
 
     selectedCurrency: computed('stripePlans.monthly.currency', function () {
-        return CURRENCIES.findBy('value', this.get('stripePlans.monthly.currency'));
+        return this.get('currencies').findBy('value', this.get('stripePlans.monthly.currency'));
     }),
 
     blogDomain: computed('config.blogDomain', function () {
@@ -87,7 +67,13 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        this.set('currencies', CURRENCIES);
+        this.set('currencies', currencies.map((currency) => {
+            return {
+                value: currency.isoCode.toLowerCase(),
+                label: `${currency.isoCode} - ${currency.name}`,
+                isoCode: currency.isoCode
+            };
+        }));
         if (this.get('stripeConnectAccountId')) {
             this.set('membersStripeOpen', false);
         } else {
@@ -124,45 +110,7 @@ export default Component.extend({
         },
 
         validateStripePlans() {
-            this.get('settings.errors').remove('stripePlans');
-            this.get('settings.hasValidated').removeObject('stripePlans');
-
-            if (this._scratchStripeYearlyAmount === null) {
-                this._scratchStripeYearlyAmount = this.get('stripePlans').yearly.amount;
-            }
-            if (this._scratchStripeMonthlyAmount === null) {
-                this._scratchStripeMonthlyAmount = this.get('stripePlans').monthly.amount;
-            }
-
-            try {
-                const selectedCurrency = this.selectedCurrency;
-                const yearlyAmount = parseInt(this._scratchStripeYearlyAmount);
-                const monthlyAmount = parseInt(this._scratchStripeMonthlyAmount);
-                if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
-                    throw new TypeError(`Subscription amount must be at least ${selectedCurrency.symbol}1.00`);
-                }
-
-                const updatedPlans = this.get('settings.stripePlans').map((plan) => {
-                    if (plan.name !== 'Complimentary') {
-                        let newAmount;
-                        if (plan.interval === 'year') {
-                            newAmount = yearlyAmount * 100;
-                        } else if (plan.interval === 'month') {
-                            newAmount = monthlyAmount * 100;
-                        }
-                        return Object.assign({}, plan, {
-                            amount: newAmount
-                        });
-                    }
-                    return plan;
-                });
-
-                this.set('settings.stripePlans', updatedPlans);
-            } catch (err) {
-                this.get('settings.errors').add('stripePlans', err.message);
-            } finally {
-                this.get('settings.hasValidated').pushObject('stripePlans');
-            }
+            this.validateStripePlans();
         },
 
         setStripePlansCurrency(event) {
@@ -190,6 +138,9 @@ export default Component.extend({
             }
 
             this.set('settings.stripePlans', updatedPlans);
+            this.set('_scratchStripeYearlyAmount', null);
+            this.set('_scratchStripeMonthlyAmount', null);
+            this.validateStripePlans();
         },
 
         setStripeConnectIntegrationToken(event) {
@@ -221,6 +172,53 @@ export default Component.extend({
 
         openStripeSettings() {
             this.set('membersStripeOpen', true);
+        }
+    },
+
+    validateStripePlans() {
+        this.get('settings.errors').remove('stripePlans');
+        this.get('settings.hasValidated').removeObject('stripePlans');
+
+        if (this._scratchStripeYearlyAmount === null) {
+            this._scratchStripeYearlyAmount = this.get('stripePlans').yearly.amount;
+        }
+        if (this._scratchStripeMonthlyAmount === null) {
+            this._scratchStripeMonthlyAmount = this.get('stripePlans').monthly.amount;
+        }
+
+        try {
+            const selectedCurrency = this.selectedCurrency;
+            const yearlyAmount = parseInt(this._scratchStripeYearlyAmount);
+            const monthlyAmount = parseInt(this._scratchStripeMonthlyAmount);
+            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
+                const minimum = Intl.NumberFormat(this.settings.get('lang'), {
+                    currency: selectedCurrency.isoCode,
+                    style: 'currency'
+                }).format(1);
+
+                throw new TypeError(`Subscription amount must be at least ${minimum}`);
+            }
+
+            const updatedPlans = this.get('settings.stripePlans').map((plan) => {
+                if (plan.name !== 'Complimentary') {
+                    let newAmount;
+                    if (plan.interval === 'year') {
+                        newAmount = yearlyAmount * 100;
+                    } else if (plan.interval === 'month') {
+                        newAmount = monthlyAmount * 100;
+                    }
+                    return Object.assign({}, plan, {
+                        amount: newAmount
+                    });
+                }
+                return plan;
+            });
+
+            this.set('settings.stripePlans', updatedPlans);
+        } catch (err) {
+            this.get('settings.errors').add('stripePlans', err.message);
+        } finally {
+            this.get('settings.hasValidated').pushObject('stripePlans');
         }
     },
 
