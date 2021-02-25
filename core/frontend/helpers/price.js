@@ -23,7 +23,7 @@ function formatter({amount, currency, numberFormat = 'short', currencyFormat = '
     if (numberFormat === 'short') {
         formatterOptions.minimumFractionDigits = 0;
     }
-    if (amount) {
+    if (_.isNumber(amount)) {
         return new Intl.NumberFormat(locale, formatterOptions).format(amount);
     } else {
         const val = new Intl.NumberFormat('en', {
