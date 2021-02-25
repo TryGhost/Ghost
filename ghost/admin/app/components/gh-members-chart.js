@@ -78,8 +78,8 @@ export default Component.extend({
 
             this.set('stats', stats);
             this.set('chartHeading', title);
-            this.setChartOptions(options);
             this.setChartData(data);
+            this.setChartOptions(options);
         }
 
         if (this._lastNightShift !== undefined && this.nightShift !== this._lastNightShift) {
@@ -295,7 +295,24 @@ export default Component.extend({
                 }]
             }
         };
-        if (this.chartType === 'mrr' || this.chartType === 'all-members' || this.chartType === 'open-rate') {
+
+        if (this.chartType === 'mrr') {
+            const chartData = this.get('chartData').datasets[0].data;
+            let allZeros = true;
+            for (let i = 0; i < chartData.length; i++) {
+                const element = chartData[i];
+                if (element !== 0) {
+                    allZeros = false;
+                    break;
+                }
+            }
+            if (allZeros) {
+                options.scales.yAxes[0].ticks.suggestedMin = 0;
+                options.scales.yAxes[0].ticks.suggestedMax = 100;
+            }
+        }
+
+        if (this.chartType === 'all-members' || this.chartType === 'open-rate') {
             options.scales.yAxes[0].ticks.suggestedMin = 0;
         }
         if (this.isSmall) {
