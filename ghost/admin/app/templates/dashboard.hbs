@@ -13,6 +13,17 @@
                     <h1>Launch your site!</h1>
                     <p>Customize your brand and connect to Stripe to get your membership site ready to be shown to the world.</p>
                     <LinkTo class="gh-btn gh-btn-green" @route="launch"><span>Start setup guide</span></LinkTo>
+                    <div class="gh-dashboard-dismiss">
+                        <GhDropdownButton @dropdownName="launch-wizard-dismiss"
+                            @classNames="gh-btn gh-btn-icon only-has-icon gh-dashboard-dismissbutton dark">
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown @name="launch-wizard-dismiss" @classNames="gh-dashboard-dismiss-dropdown dropdown-menu dropdown-triangle-top-right">
+                            <button class="gh-btn" {{action "dismissLaunchBanner"}}><span>Dismiss</span></button>
+                        </GhDropdown>
+                    </div>
                 </div>
             </section>
         {{else}}

@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
@@ -224,5 +225,10 @@ export default class DashboardController extends Controller {
             this.whatsNewEntriesError = error;
             this.whatsNewEntriesLoading = false;
         });
+    }
+
+    @action 
+    dismissLaunchBanner() {
+        this.feature.set('launchComplete', true);
     }
 }
