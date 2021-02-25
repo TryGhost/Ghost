@@ -146,6 +146,7 @@
 
 /* Launch Wizard Banner */
 .gh-lw-banner {
+    position: relative;
     border-radius: 3px;
     background: #15171A;
     padding: 28px;
@@ -617,7 +618,59 @@
 }
 
 .gh-dashboard-box.whats-new .footer {
+    margin-bottom: -12px;
+}
 
+.gh-dashboard-dismiss {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.gh-dashboard-dismissbutton.dark {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.gh-dashboard-dismissbutton svg {
+    margin: 0;
+}
+
+.gh-dashboard-dismissbutton.dark svg {
+    color: #fff;
+    opacity: 0.75;
+}
+
+.gh-dashboard-dismissbutton.dark:hover svg {
+    opacity: 1.0;
+}
+
+.gh-dashboard-dismissbutton span {
+    height: 32px;
+    line-height: 32px;
+}
+
+.gh-dashboard-dismiss-dropdown {
+    top: calc(100% + 2px);
+    left: auto;
+    right: 0;
+    min-width: 90px;
+}
+
+.gh-dashboard-dismiss-dropdown.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
+}
+
+.gh-dashboard-dismiss-dropdown button {
+    background: var(--white);
+    width: 100%;
+    border-radius: 0;
+}
+
+.gh-dashboard-dismiss-dropdown button span {
+    line-height: 28px;
+    height: 28px;
+    font-size: 1.3rem;
 }
 
 
