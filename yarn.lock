@@ -5690,10 +5690,10 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@3.5.1:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.5.1.tgz#2123b4a5d62b034a1211a8eeae8f790472a7a929"
-  integrity sha512-FKHW99h7B57BEL6LuZzearhmhs5a7gqsBzlGKsp9lVBk7RS16GbBNcH1/NJW/lg8js9PyzIU/Rn2EID3qr7PFw==
+knex-migrator@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.0.tgz#399343117c7d3c92944225ef16ac68ad0a8137ba"
+  integrity sha512-E/MBmIXcrI2Q/aDfk5tmI9omx2wPi+miX6SfgRYJCBJYDasj/vow/SBu6pwWjxL4Vi0+t0YyvFmL1YVb8QfRfA==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
