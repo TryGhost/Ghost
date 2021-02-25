@@ -13,7 +13,9 @@ export default Component.extend({
     ajax: service(),
     settings: service(),
 
+    topCurrencies: null,
     currencies: null,
+    allCurrencies: null,
     stripePlanInvalidAmount: false,
     _scratchStripeYearlyAmount: null,
     _scratchStripeMonthlyAmount: null,
@@ -67,13 +69,35 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        this.set('currencies', currencies.map((currency) => {
+
+        const noOfTopCurrencies = 5;
+        this.set('topCurrencies', currencies.slice(0, noOfTopCurrencies).map((currency) => {
             return {
                 value: currency.isoCode.toLowerCase(),
                 label: `${currency.isoCode} - ${currency.name}`,
                 isoCode: currency.isoCode
             };
         }));
+
+        this.set('currencies', currencies.slice(noOfTopCurrencies, currencies.length).map((currency) => {
+            return {
+                value: currency.isoCode.toLowerCase(),
+                label: `${currency.isoCode} - ${currency.name}`,
+                isoCode: currency.isoCode
+            };
+        }));
+
+        this.set('allCurrencies', [
+            {
+                groupName: '—',
+                options: this.get('topCurrencies')
+            },
+            {
+                groupName: '—',
+                options: this.get('currencies')
+            }
+        ]);
+
         if (this.get('stripeConnectAccountId')) {
             this.set('membersStripeOpen', false);
         } else {
