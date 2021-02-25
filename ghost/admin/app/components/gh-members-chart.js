@@ -296,7 +296,7 @@ export default Component.extend({
             }
         };
 
-        if (this.chartType === 'mrr') {
+        if (this.chartType === 'mrr' || this.chartType === 'all-members') {
             const chartData = this.get('chartData').datasets[0].data;
             let allZeros = true;
             for (let i = 0; i < chartData.length; i++) {
@@ -312,9 +312,10 @@ export default Component.extend({
             }
         }
 
-        if (this.chartType === 'all-members' || this.chartType === 'open-rate') {
+        if (this.chartType === 'open-rate') {
             options.scales.yAxes[0].ticks.suggestedMin = 0;
         }
+        
         if (this.isSmall) {
             options.scales.yAxes[0].ticks.display = false;
             options.scales.xAxes[0].gridLines.display = true;
