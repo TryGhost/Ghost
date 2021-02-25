@@ -75,8 +75,8 @@ export default class DashboardController extends Controller {
                 currency: 'usd'
             };
             if (currencyStats) {
-                currencyStats.data = this.membersStats.fillDates(currencyStats.data) || {};
-                const dateValues = Object.values(currencyStats.data).map(val => val / 100);
+                const currencyStatsData = this.membersStats.fillDates(currencyStats.data) || {};
+                const dateValues = Object.values(currencyStatsData).map(val => val / 100);
                 const currentMRR = dateValues.length ? dateValues[dateValues.length - 1] : 0;
                 const rangeStartMRR = dateValues.length ? dateValues[0] : 0;
                 const percentGrowth = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0;
@@ -89,7 +89,7 @@ export default class DashboardController extends Controller {
                     },
                     data: {
                         label: 'MRR',
-                        dateLabels: Object.keys(currencyStats.data),
+                        dateLabels: Object.keys(currencyStatsData),
                         dateValues
                     },
                     title: 'MRR',
@@ -108,8 +108,8 @@ export default class DashboardController extends Controller {
             this.memberCountStatsLoading = false;
 
             if (stats) {
-                stats.data = this.membersStats.fillCountDates(stats.data) || {};
-                const dateValues = Object.values(stats.data);
+                const statsDateObj = this.membersStats.fillCountDates(stats.data) || {};
+                const dateValues = Object.values(statsDateObj);
                 const currentAllCount = dateValues.length ? dateValues[dateValues.length - 1].total : 0;
                 const currentPaidCount = dateValues.length ? dateValues[dateValues.length - 1].paid : 0;
                 const rangeStartAllCount = dateValues.length ? dateValues[0].total : 0;
@@ -127,7 +127,7 @@ export default class DashboardController extends Controller {
                         },
                         data: {
                             label: 'Members',
-                            dateLabels: Object.keys(stats.data),
+                            dateLabels: Object.keys(statsDateObj),
                             dateValues: dateValues.map(d => d.total)
                         },
                         title: 'Total Members',
@@ -142,7 +142,7 @@ export default class DashboardController extends Controller {
                         },
                         data: {
                             label: 'Members',
-                            dateLabels: Object.keys(stats.data),
+                            dateLabels: Object.keys(statsDateObj),
                             dateValues: dateValues.map(d => d.paid)
                         },
                         title: 'Paid Members',
@@ -227,7 +227,7 @@ export default class DashboardController extends Controller {
         });
     }
 
-    @action 
+    @action
     dismissLaunchBanner() {
         this.feature.set('launchComplete', true);
     }
