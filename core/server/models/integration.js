@@ -21,44 +21,6 @@ const Integration = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    add(data, options) {
-        const addIntegration = () => {
-            return ghostBookshelf.Model.add.call(this, data, options)
-                .then(({id}) => {
-                    return this.findOne({id}, options);
-                });
-        };
-
-        if (!options.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                options.transacting = transacting;
-
-                return addIntegration();
-            });
-        }
-
-        return addIntegration();
-    },
-
-    edit(data, options) {
-        const editIntegration = () => {
-            return ghostBookshelf.Model.edit.call(this, data, options)
-                .then(({id}) => {
-                    return this.findOne({id}, options);
-                });
-        };
-
-        if (!options.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                options.transacting = transacting;
-
-                return editIntegration();
-            });
-        }
-
-        return editIntegration();
-    },
-
     onSaving(integration, attrs, options) {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
