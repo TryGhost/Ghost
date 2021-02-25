@@ -124,13 +124,13 @@ export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
         {
             type: 'month',
             price: plans.monthly,
-            currency: plans.currency_symbol,
+            currency_symbol: getCurrencySymbol(plans.currency),
             name: 'Monthly'
         },
         {
             type: 'year',
             price: plans.yearly,
-            currency: plans.currency_symbol,
+            currency_symbol: getCurrencySymbol(plans.currency),
             name: 'Yearly',
             discount
         }
@@ -140,7 +140,7 @@ export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
         plansData.push({
             type: 'free',
             price: 0,
-            currency: plans.currency_symbol,
+            currency_symbol: getCurrencySymbol(plans.currency),
             name: 'Free'
         });
     }
@@ -188,15 +188,7 @@ export const getSiteDomain = ({site}) => {
 };
 
 export const getCurrencySymbol = (currency) => {
-    const CURRENCY_SYMBOLS = {
-        USD: '$',
-        AUD: '$',
-        CAD: '$',
-        GBP: '£',
-        EUR: '€',
-        INR: '₹'
-    };
-    return CURRENCY_SYMBOLS[currency] || '';
+    return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 };
 
 export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta = {}}) => {

@@ -266,20 +266,20 @@ class SignupPage extends React.Component {
             {
                 type: 'month',
                 price: plans.monthly,
-                currency: plans.currency_symbol,
+                currency_symbol: plans.currency_symbol,
                 name: 'Monthly'
             },
             {
                 type: 'year',
                 price: plans.yearly,
-                currency: plans.currency_symbol,
+                currency_symbol: plans.currency_symbol,
                 name: 'Yearly',
                 discount
             }
         ];
 
         if (allowSelfSignup && (portalPlans === undefined || portalPlans.includes('free'))) {
-            plansData.push({type: 'free', price: 0, currency: plans.currency_symbol, name: 'Free'});
+            plansData.push({type: 'free', price: 0, currency_symbol: plans.currency_symbol, name: 'Free'});
         }
 
         if (isStripeConfigured && pageQuery !== 'free') {

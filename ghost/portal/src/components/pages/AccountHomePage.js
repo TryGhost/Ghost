@@ -132,8 +132,8 @@ const UserHeader = ({member, brandColor}) => {
 
 const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
     const PlanLabel = ({plan, isComplimentary}) => {
-        const {amount = 0, currency_symbol: currencySymbol = '$', interval} = plan;
-        let label = `${currencySymbol}${amount / 100}/${interval}`;
+        const {amount = 0, currency, interval} = plan;
+        let label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
         if (isComplimentary) {
             label = `Complimentary (${label})`;
         }
