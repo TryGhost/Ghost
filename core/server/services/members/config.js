@@ -60,20 +60,10 @@ class MembersConfigProvider {
     }
 
     getPublicPlans() {
-        const CURRENCY_SYMBOLS = {
-            USD: '$',
-            AUD: '$',
-            CAD: '$',
-            GBP: '£',
-            EUR: '€',
-            INR: '₹'
-        };
-
         const defaultPriceData = {
             monthly: 0,
             yearly: 0,
-            currency: 'USD',
-            currency_symbol: CURRENCY_SYMBOLS.USD
+            currency: 'USD'
         };
 
         try {
@@ -88,7 +78,6 @@ class MembersConfigProvider {
             }, {});
 
             priceData.currency = plans[0].currency || 'USD';
-            priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency.toUpperCase()];
 
             if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
                 return priceData;
