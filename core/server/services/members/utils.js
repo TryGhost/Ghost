@@ -10,6 +10,6 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         avatar_image: member.avatar_image,
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
-        paid: member.status === 'paid'
+        paid: member.status !== 'free'
     };
 };
