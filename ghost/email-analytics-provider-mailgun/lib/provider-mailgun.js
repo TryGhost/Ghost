@@ -8,7 +8,7 @@ const TRUST_THRESHOLD_S = 30 * 60; // 30 minutes
 const DEFAULT_TAGS = ['bulk-email'];
 
 class EmailAnalyticsProviderMailgun {
-    constructor({config, settings, mailgun, logging = console}) {
+    constructor({config, settings, mailgun, logging = console} = {}) {
         this.config = config;
         this.settings = settings;
         this.logging = logging;
@@ -57,14 +57,14 @@ class EmailAnalyticsProviderMailgun {
 
     // do not start from a particular time, grab latest then work back through
     // pages until we get a blank response
-    fetchAll(batchHandler) {
-        const options = {
+    fetchAll(batchHandler, options) {
+        const mailgunOptions = {
             event: EVENT_FILTER,
             limit: PAGE_LIMIT,
             tags: this.tags.join(' AND ')
         };
 
-        return this._fetchPages(options, batchHandler);
+        return this._fetchPages(mailgunOptions, batchHandler, options);
     }
 
     // fetch from the last known timestamp-TRUST_THRESHOLD then work forwards
