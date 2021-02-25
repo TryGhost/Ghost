@@ -282,6 +282,15 @@
     background-position: center center;
 }
 
+.gh-social-og-preview-img-add {
+    width: 100%;
+    padding: .6rem 0;
+    color: var(--green-d1);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    border: 1px dashed var(--lightgrey-d1);
+}
+
 .gh-social-og-preview-content {
     padding: 10px 12px;
     border-bottom: 1px solid #dddfe2;
@@ -403,6 +412,15 @@
     border-bottom: solid 1px #c4cfd6;
     background-size: cover;
     background-position: center center;
+}
+
+.gh-social-twitter-preview-img-add {
+    width: 100%;
+    padding: .6rem 0;
+    color: var(--green-d1);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    border-bottom: 1px dashed var(--lightgrey-d1);
 }
 
 .gh-social-twitter-preview-content {
