@@ -74,7 +74,7 @@ export default class MembersStatsService extends Service {
 
         // return existing stats unless data is > 1 min old
         if (this.newsletterStats && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.countStats);
+            return Promise.resolve(this.newsletterStats);
         }
 
         return this._fetchNewsletterStatsTask.perform();

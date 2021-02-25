@@ -169,7 +169,12 @@ export default class DashboardController extends Controller {
     loadNewsletterOpenRates() {
         this.newsletterOpenRatesLoading = true;
         this.membersStats.fetchNewsletterStats().then((results) => {
+            const rangeStartOpenRate = results.length > 1 ? results[results.length - 2].openRate : 0;
+            const rangeEndOpenRate = results.length > 0 ? results[results.length - 1].openRate : 0;
+            const percentGrowth = rangeStartOpenRate !== 0 ? ((rangeEndOpenRate - rangeStartOpenRate) / rangeStartOpenRate) * 100 : 0;
             this.newsletterOpenRatesData = {
+                percentGrowth: percentGrowth.toFixed(1),
+                current: rangeEndOpenRate,
                 options: {
                     rangeInDays: 30
                 },
