@@ -23,68 +23,102 @@
                         <h4 class="gh-dashboard-header secondary">30 days</h4>
                     </div>
                     <div class="gh-dashboard-chart-container">
-                        <div class="gh-dashboard-summary">
-                            {{#if this.mrrStatsData}}
-                                <div class="data">{{this.mrrStatsData.current}}</div>
-                                <div class="growth {{this.mrrStatsData.percentClass}}">{{this.mrrStatsData.percentGrowth}}%</div>
+                        {{#if this.mrrStatsLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.mrrStatsError}}
+                                <p class="error">
+                                    There was an error loading MRR
+                                    <code>{{this.mrrStatsError.message}}</code>
+                                </p>
                             {{else}}
-                                <div class="data">$0</div>
-                                <div class="growth">0.0%</div>
+                                <div class="gh-dashboard-summary">
+                                    <div class="data">{{this.mrrStatsData.current}}</div>
+                                    <div class="growth {{this.mrrStatsData.percentClass}}">{{this.mrrStatsData.percentGrowth}}%</div>
+                                </div>
+                                {{#if this.mrrStatsData}}
+                                    <div class="gh-dashboard-chart">
+                                        <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStatsData}} />
+                                    </div>
+                                {{/if}}
                             {{/if}}
-                        </div>
-                        {{#if this.mrrStatsData}}
-                            <div class="gh-dashboard-chart">
-                                <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStatsData}} />
-                            </div>
                         {{/if}}
                     </div>
                 </div>
                 <div class="gh-dashboard-box total-members">
                     <div class="gh-dashboard-chart-container">
-                        <div class="gh-dashboard-summary small">
-                            <h4 class="gh-dashboard-header">Total members</h4>
-                            <div class="data-container">
-                                <div class="data">{{this.memberCountStatsData.all.total}}</div>
-                                <div class="growth {{this.memberCountStatsData.all.percentClass}}">{{this.memberCountStatsData.all.percentGrowth}}%</div>
-                            </div>
-                        </div>
-                        <div class="gh-dashboard-chart small">
-                            <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.all}} />
-                        </div>
+                        {{#if this.memberCountStatsLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.memberCountStatsError}}
+                                <p class="error">
+                                    There was an error loading total members
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Total members</h4>
+                                    <div class="data-container">
+                                        <div class="data">{{this.memberCountStatsData.all.total}}</div>
+                                        <div class="growth {{this.memberCountStatsData.all.percentClass}}">{{this.memberCountStatsData.all.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.all}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-dashboard-box paid-members">
                     <div class="gh-dashboard-chart-container">
-                        <div class="gh-dashboard-summary small">
-                            <h4 class="gh-dashboard-header">Paid members</h4>
-                            <div class="data-container">
-                                <div class="data">{{this.memberCountStatsData.paid.total}}</div>
-                                <div class="growth {{this.memberCountStatsData.paid.percentClass}}">{{this.memberCountStatsData.paid.percentGrowth}}%</div>
-                            </div>
-                        </div>
-                        <div class="gh-dashboard-chart small">
-                            <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.paid}} />
-                        </div>
+                        {{#if this.memberCountStatsLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.memberCountStatsError}}
+                                <p class="error">
+                                    There was an error loading paid members
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Paid members</h4>
+                                    <div class="data-container">
+                                        <div class="data">{{this.memberCountStatsData.paid.total}}</div>
+                                        <div class="growth {{this.memberCountStatsData.paid.percentClass}}">{{this.memberCountStatsData.paid.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.paid}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-dashboard-box newsletter-open-rate">
                     <div class="gh-dashboard-chart-container">
-                        <div class="gh-dashboard-summary small">
-                            <h4 class="gh-dashboard-header">Email open rate</h4>
+                        {{#if this.newsletterOpenRatesLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.newsletterOpenRatesError}}
+                                <p class="error">
+                                    There was an error loading newsletter open rates
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Email open rate</h4>
 
-                            <div class="data-container">
-                                {{#if this.newsletterOpenRatesData}}
-                                    <div class="data">{{this.newsletterOpenRatesData.current}}%</div>
-                                    <div class="growth {{this.mrrStatsData.percentClass}}">{{this.newsletterOpenRatesData.percentGrowth}}%</div>
-                                {{else}}
-                                    <div class="data">$0</div>
-                                    <div class="growth">0.0%</div>
-                                {{/if}}
-                            </div>
-                        </div>
-                        <div class="gh-dashboard-chart small">
-                            <GhMembersChart @type="bar" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="open-rate" @showRange={{false}} @chartStats={{this.newsletterOpenRatesData}} />
-                        </div>
+                                    <div class="data-container">
+                                        <div class="data">{{this.newsletterOpenRatesData.current}}%</div>
+                                        <div class="growth {{this.mrrStatsData.percentClass}}">{{this.newsletterOpenRatesData.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="bar" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="open-rate" @showRange={{false}} @chartStats={{this.newsletterOpenRatesData}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
                     </div>
                 </div>
             </section>
@@ -180,7 +214,7 @@
                     </div>
                 </div>
             {{/unless}}
-            
+
             <div class="gh-dashboard-box whats-new">
                 <div class="gh-dashboard-header-container">
                     <h4 class="gh-dashboard-header">What's new?</h4>

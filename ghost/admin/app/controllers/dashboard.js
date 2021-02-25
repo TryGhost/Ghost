@@ -61,6 +61,7 @@ export default class DashboardController extends Controller {
     }
 
     loadMRRStats() {
+        this.mrrStatsLoading = true;
         this.membersStats.fetchMRR().then((stats) => {
             this.mrrStatsLoading = false;
 
@@ -97,6 +98,7 @@ export default class DashboardController extends Controller {
     }
 
     loadMemberCountStats() {
+        this.memberCountStatsLoading = true;
         this.membersStats.fetchCounts().then((stats) => {
             this.memberCountStatsLoading = false;
 
