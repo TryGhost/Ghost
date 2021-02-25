@@ -80,7 +80,7 @@ export default class MembersStatsService extends Service {
         return this._fetchNewsletterStatsTask.perform();
     }
 
-    fillDates(data) {
+    fillDates(data = []) {
         let currentRangeDate = moment().subtract(30, 'days');
 
         let endDate = moment().add(1, 'hour');
@@ -96,16 +96,20 @@ export default class MembersStatsService extends Service {
         return output;
     }
 
-    fillCountDates(data) {
+    fillCountDates(data = {}) {
         let currentRangeDate = moment().subtract(30, 'days');
 
         let endDate = moment().add(1, 'hour');
         const output = {};
+        const firstDateInRangeIndex = data.findIndex((val) => {
+            return moment(val.date).isAfter(currentRangeDate);
+        });
+        const initialDateInRangeVal = firstDateInRangeIndex > 0 ? data[firstDateInRangeIndex - 1] : null;
         let lastVal = {
-            paid: 0,
-            free: 0,
-            comped: 0,
-            total: 0
+            paid: initialDateInRangeVal ? initialDateInRangeVal.paid : 0,
+            free: initialDateInRangeVal ? initialDateInRangeVal.free : 0,
+            comped: initialDateInRangeVal ? initialDateInRangeVal.comped : 0,
+            total: initialDateInRangeVal ? (initialDateInRangeVal.paid + initialDateInRangeVal.free + initialDateInRangeVal.comped) : 0
         };
         while (currentRangeDate.isBefore(endDate)) {
             let dateStr = currentRangeDate.format('YYYY-MM-DD');
