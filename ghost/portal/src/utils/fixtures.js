@@ -8,8 +8,7 @@ export const site = {
     plans: {
         monthly: 5,
         yearly: 15,
-        currency: 'USD',
-        currency_symbol: '$'
+        currency: 'USD'
     },
     allow_self_signup: true,
     is_stripe_configured: true,
@@ -52,8 +51,7 @@ export const member = {
                 nickname: 'Yearly',
                 interval: 'year',
                 amount: 1500,
-                currency: 'USD',
-                currency_symbol: '$'
+                currency: 'USD'
             },
             status: 'active',
             start_date: '2019-05-01T11:42:40.000Z',
@@ -82,8 +80,7 @@ export const member = {
                 nickname: 'Complimentary',
                 amount: 0,
                 interval: 'year',
-                currency: 'USD',
-                currency_symbol: '$'
+                currency: 'USD'
             },
             status: 'active',
             start_date: '2020-09-03T11:12:37.000Z',
@@ -112,8 +109,7 @@ export const member = {
                 nickname: 'Yearly',
                 interval: 'year',
                 amount: 500,
-                currency: 'USD',
-                currency_symbol: '$'
+                currency: 'USD'
             },
             status: 'active',
             start_date: '2019-05-01T11:42:40.000Z',
