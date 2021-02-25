@@ -59,6 +59,7 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-pricelabel {
+        display: flex;
         margin-top: 8px;
     }
 
@@ -72,10 +73,17 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-currency {
         position: relative;
-        bottom: 5px;
+        bottom: 2px;
         font-size: 1.4rem;
         font-weight: 500;
         letter-spacing: 0.4px;
+    }
+
+    .gh-portal-plan-currency-code {
+        bottom: -4px;
+        order: 2;
+        margin-left: 3px;
+        font-size: 1.15rem;
     }
 
     .gh-portal-plan-price {
