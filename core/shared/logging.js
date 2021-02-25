@@ -11,5 +11,6 @@ module.exports = logging({
     transports: config.get('logging:transports'),
     gelf: config.get('logging:gelf'),
     loggly: config.get('logging:loggly'),
+    elasticsearch: config.get('logging:elasticsearch'),
     rotation: config.get('logging:rotation')
 });
