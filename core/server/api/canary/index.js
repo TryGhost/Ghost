@@ -38,6 +38,10 @@ module.exports = {
     get redirects() {
         return shared.pipeline(require('./redirects'), localUtils);
     },
+	
+	get headers() {
+        return shared.pipeline(require('./headers'), localUtils);
+    },
 
     get roles() {
         return shared.pipeline(require('./roles'), localUtils);
