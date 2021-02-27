@@ -113,9 +113,31 @@
   for = "/*"
 
   [headers.values]
-    X-Frame-Options = "DENY"
+    X-Frame-Options = "SAMEORIGIN"
     X-XSS-Protection = "1; mode=block"
-    Content-Security-Policy = "frame-ancestors https://www.facebook.com"
+    Referrer-Policy =  "no-referrer-when-downgrade"
+    Strict-Transport-Security = '''
+    max-age=31536000
+    includeSubDomains
+    preload
+    '''
+    Content-Security-Policy =  '''
+    default-src
+    'self'
+    '''
+    Cache-Control = "no-store"
+    Clear-Site-Data = "*"
+    X-Content-Type-Options = "nosniff"
+    Feature-Policy = '''
+    accelerometer 'none'
+    camera 'none'
+    geolocation 'none'
+    gyroscope 'none'
+    magnetometer 'none'
+    microphone 'none'
+    payment 'none'
+    usb 'none'
+    '''
 
     # Multi-value headers are expressed with multi-line strings.
 	cache-control = '''
