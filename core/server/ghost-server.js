@@ -119,6 +119,8 @@ class GhostServer {
                     });
             });
 
+            self.httpServer.response().removeHeader("X-Powered-By");
+
             stoppable(self.httpServer, config.get('server:shutdownTimeout'));
 
             // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
