@@ -1,0 +1,83 @@
+# Redirects and headers are GLOBAL for all builds – they do not get scoped to
+# contexts no matter where you define them in the file.
+# For context-specific rules, use _headers or _redirects files, which are
+# PER-DEPLOY.
+
+# A basic redirect rule
+[[redirects]]
+  from = "/*"
+  to = "/blog/:splat"
+
+# A redirect rule with many of the supported properties
+[[redirects]]
+  from = "/old-path"
+  to = "/new-path"
+
+  # The default HTTP status code is 301, but you can define a different one.
+  status = 302
+
+  # By default, redirects won’t be applied if there’s a file with the same
+  # path as the one defined in the `from` property. Setting `force` to `true`
+  # will make the redirect rule take precedence over any existing files.
+  force = true
+
+  # Redirect from /old-path?id=123 to /new-path. Each combination of query
+  # params needs to be defined in a separate [[redirects]] block.
+  # More information at https://docs.netlify.com/routing/redirects/redirect-options/#query-parameters
+  query = {id = ":id"}
+
+  # Redirect based on browser language and geolocation.
+  conditions = {Language = ["en"], Country = ["US"]}
+
+  # Sign each request with a value defined in an environment variable
+  signed = "API_SIGNATURE_TOKEN"
+
+  # You can also define custom headers within your redirects blocks.
+  [redirects.headers]
+    X-From = "Netlify"
+    X-Api-Key = "some-api-key-string"
+
+# Role-based redirects do not have a “to” property.
+[[redirects]]
+  from = "/gated-path"
+  status = 200
+  conditions = {Role = ["admin"]}
+  force = true
+
+# The following redirect is intended for use with most SPAs that handle
+# routing internally.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover.
+  for = "/*"
+
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy =  "no-referrer-when-downgrade"
+    Strict-Transport-Security = '''
+    max-age=31536000
+    includeSubDomains
+    preload
+    '''
+    Content-Security-Policy =  '''
+    default-src
+    'self'
+    '''
+    Cache-Control = "no-store"
+    Clear-Site-Data = "*"
+    X-Content-Type-Options = "nosniff"
+    Feature-Policy = '''
+    accelerometer 'none'
+    camera 'none'
+    geolocation 'none'
+    gyroscope 'none'
+    magnetometer 'none'
+    microphone 'none'
+    payment 'none'
+    usb 'none'
+    '''
