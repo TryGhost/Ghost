@@ -18,4 +18,19 @@ collections:
 taxonomies:
   tag: /tag/{slug}/
   author: /author/{slug}/
+
+
+### headers.yaml
+
+The headers file provides the user the ability to customize headers.
+
+[[headers]]
+  for = "*/"
+  [headers.values]
+    Cache-control: must-revalidate
+    X-Forwarded-*: <client>, <proxy>
+    X-Ghost-*: ''
+    Locattion: ''
+
+
 ```
