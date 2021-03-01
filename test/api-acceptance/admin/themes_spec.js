@@ -160,7 +160,7 @@ describe('Themes API', function () {
         // ensure tmp theme folder contains one theme again now
         const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
         tmpFolderContents.forEach((theme, index) => {
-            if (theme.match(/^\./)) {
+            if (theme.match(/^\./) || theme === 'README.md') {
                 tmpFolderContents.splice(index, 1);
             }
         });
