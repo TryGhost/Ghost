@@ -260,9 +260,25 @@ describe('{{#foreach}} helper', function () {
             }
         };
 
+        const objectHashWithVis = {
+            posts: {
+                first: {title: 'first', visibility: 'members', slug: 'first', html: ''},
+                second: {title: 'second'},
+                third: {title: 'third'},
+                fourth: {title: 'fourth'},
+                fifth: {title: 'fifth'}
+            }
+        };
+
         const arrayHash = {
             posts: [
                 {title: 'first'}, {title: 'second'}, {title: 'third'}, {title: 'fourth'}, {title: 'fifth'}
+            ]
+        };
+
+        const arrayHashWithVis = {
+            posts: [
+                {title: 'first', visibility: 'members', slug: 'first', html: ''}, {title: 'second'}, {title: 'third'}, {title: 'fourth'}, {title: 'fifth'}
             ]
         };
 
@@ -384,6 +400,13 @@ describe('{{#foreach}} helper', function () {
 
             shouldCompileToExpected(templateString, arrayHash, expected);
             shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('foreach with limit 3 and post with members visibility', function () {
+            const templateString = '<ul>{{#foreach posts limit="3"}}<li>{{title}}</li>{{else}}not this{{/foreach}}</ul>';
+            const expected = '<ul><li>first</li><li>second</li><li>third</li></ul>';
+            shouldCompileToExpected(templateString, arrayHashWithVis, expected);
+            shouldCompileToExpected(templateString, objectHashWithVis, expected);
         });
 
         it('foreach with from 2', function () {
