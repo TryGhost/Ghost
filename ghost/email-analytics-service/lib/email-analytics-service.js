@@ -2,7 +2,7 @@ const EventProcessingResult = require('./event-processing-result');
 const debug = require('ghost-ignition').debug('services:email-analytics');
 
 module.exports = class EmailAnalyticsService {
-    constructor({config, settings, queries, eventProcessor, providers, logging}) {
+    constructor({config, settings, queries, eventProcessor, providers, logging} = {}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
@@ -12,13 +12,13 @@ module.exports = class EmailAnalyticsService {
     }
 
     async fetchAll() {
+        const result = new EventProcessingResult();
+
         const shouldFetchStats = await this.queries.shouldFetchStats();
         if (!shouldFetchStats) {
             debug('fetchAll: skipping - fetch requirements not met');
             return result;
         }
-
-        const result = new EventProcessingResult();
 
         const startFetch = new Date();
         debug('fetchAll: starting');
@@ -32,13 +32,14 @@ module.exports = class EmailAnalyticsService {
     }
 
     async fetchLatest({maxEvents = Infinity} = {}) {
+        const result = new EventProcessingResult();
+
         const shouldFetchStats = await this.queries.shouldFetchStats();
         if (!shouldFetchStats) {
             debug('fetchLatest: skipping - fetch requirements not met');
             return result;
         }
 
-        const result = new EventProcessingResult();
         const lastTimestamp = await this.queries.getLastSeenEventTimestamp();
 
         const startFetch = new Date();
@@ -77,11 +78,11 @@ module.exports = class EmailAnalyticsService {
         }
     }
 
-    aggregateEmailStats(emailId) {
+    async aggregateEmailStats(emailId) {
         return this.queries.aggregateEmailStats(emailId);
     }
 
-    aggregateMemberStats(memberId) {
+    async aggregateMemberStats(memberId) {
         return this.queries.aggregateMemberStats(memberId);
     }
 };
