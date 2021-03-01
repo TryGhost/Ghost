@@ -137,6 +137,7 @@
     background: var(--lightgrey);
     text-transform: uppercase;
     color: var(--middarkgrey);
+    margin-left: 1.2rem;
 }
 
 .gh-badge.locked {
