@@ -258,7 +258,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1.5rem;
-    line-height: 1.15em;
+    line-height: 1.3em;
     font-weight: 600;
 }
 @media (max-width: 500px) {
