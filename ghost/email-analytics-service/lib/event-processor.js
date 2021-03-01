@@ -1,5 +1,5 @@
 module.exports = class EventProcessor {
-    constructor({logging}) {
+    constructor({logging} = {}) {
         this.logging = logging || console;
     }
 
@@ -189,7 +189,7 @@ module.exports = class EventProcessor {
         }
 
         return {
-            complained: 1
+            unprocessable: 1
         };
     }
 
