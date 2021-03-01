@@ -166,6 +166,17 @@
     "@sentry/utils" "6.2.0"
     tslib "^1.9.3"
 
+"@sentry/core@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.2.1.tgz#8b177e9bf591e2e7ddcb04f0b1403de3f5aa8755"
+  integrity sha512-jPqQEtafxxDtLONhCbTHh/Uq8mZRhsfbwJTSVYfPVEe/ELfFZLQK7tP6rOh7zEWKbTkE0mE6XcaoH3ZRAhgrqg==
+  dependencies:
+    "@sentry/hub" "6.2.1"
+    "@sentry/minimal" "6.2.1"
+    "@sentry/types" "6.2.1"
+    "@sentry/utils" "6.2.1"
+    tslib "^1.9.3"
+
 "@sentry/hub@6.2.0":
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.2.0.tgz#e7502652bc9608cf8fb63e43cd49df9019a28f29"
@@ -175,6 +186,15 @@
     "@sentry/utils" "6.2.0"
     tslib "^1.9.3"
 
+"@sentry/hub@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.2.1.tgz#35bc6bf841a93f4354b3a17592c938b3dba20b73"
+  integrity sha512-pG7wCQeRpzeP6t0bT4T0X029R19dbDS3/qswF8BL6bg0AI3afjfjBAZm/fqn1Uwe/uBoMHVVdbxgJDZeQ5d4rQ==
+  dependencies:
+    "@sentry/types" "6.2.1"
+    "@sentry/utils" "6.2.1"
+    tslib "^1.9.3"
+
 "@sentry/minimal@6.2.0":
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.2.0.tgz#718b70babb55912eeb38babaf7823d1bcdd77d1e"
@@ -182,6 +202,15 @@
   dependencies:
     "@sentry/hub" "6.2.0"
     "@sentry/types" "6.2.0"
+    tslib "^1.9.3"
+
+"@sentry/minimal@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.2.1.tgz#8f01480e1b56bc7dd54adf925e5317f233e19384"
+  integrity sha512-wuSXB4Ayxv9rBEQ4pm7fnG4UU2ZPtPnnChoEfd4/mw1UthXSvmPFEn6O4pdo2G8fTkl8eqm6wT/Q7uIXMEmw+A==
+  dependencies:
+    "@sentry/hub" "6.2.1"
+    "@sentry/types" "6.2.1"
     tslib "^1.9.3"
 
 "@sentry/node@6.2.0":
@@ -199,6 +228,21 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
+"@sentry/node@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-6.2.1.tgz#111418d2cc2245512bc5e46786c373d7d5202525"
+  integrity sha512-JlixtJHS6xMzh2G4Pz7oMM8Nd40mGUALQYtuGMwW2QE3IduOaaGsn1+eVpN6PwZetMnvRIn6VVFOc2UmFIzWpA==
+  dependencies:
+    "@sentry/core" "6.2.1"
+    "@sentry/hub" "6.2.1"
+    "@sentry/tracing" "6.2.1"
+    "@sentry/types" "6.2.1"
+    "@sentry/utils" "6.2.1"
+    cookie "^0.4.1"
+    https-proxy-agent "^5.0.0"
+    lru_map "^0.3.3"
+    tslib "^1.9.3"
+
 "@sentry/tracing@6.2.0":
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.2.0.tgz#76c17e5dd3f1e61c8a4e3bd090f904a63d674765"
@@ -210,10 +254,26 @@
     "@sentry/utils" "6.2.0"
     tslib "^1.9.3"
 
+"@sentry/tracing@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.2.1.tgz#61c18c43c5390c348b35dafe73947ab379252d8f"
+  integrity sha512-bvStY1SnL08wkSeVK3j9K5rivQQJdKFCPR2VYRFOCaUoleZ6ChPUnBvxQ/E2LXc0hk/y/wo1q4r5B0dfCCY+bQ==
+  dependencies:
+    "@sentry/hub" "6.2.1"
+    "@sentry/minimal" "6.2.1"
+    "@sentry/types" "6.2.1"
+    "@sentry/utils" "6.2.1"
+    tslib "^1.9.3"
+
 "@sentry/types@6.2.0":
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.2.0.tgz#ca020ff42913c6b9f88a9d0c375b5ee3965a2590"
   integrity sha512-vN4P/a+QqAuVfWFB9G3nQ7d6bgnM9jd/RLVi49owMuqvM24pv5mTQHUk2Hk4S3k7ConrHFl69E7xH6Dv5VpQnQ==
+
+"@sentry/types@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.2.1.tgz#28c946230b2023f72307b65606d32052ad9e5353"
+  integrity sha512-h0OV1QT+fv5ojfK5/+iEXClu33HirmvbjcQC2jf05IHj9yXIOWy6EB10S8nBjuLiiFqQiAQYj3FN9Ip4eN8NJA==
 
 "@sentry/utils@6.2.0":
   version "6.2.0"
@@ -221,6 +281,14 @@
   integrity sha512-YToUC7xYf2E/pIluI7upYTlj8fKXOtdwoOBkcQZifHgX/dP+qDaHibbBFe5PyZwdmU2UiLnWFsBr0gjo0QFo1g==
   dependencies:
     "@sentry/types" "6.2.0"
+    tslib "^1.9.3"
+
+"@sentry/utils@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.2.1.tgz#bfcb12c20d44bf2aeb0073b1264703c11c179ebd"
+  integrity sha512-6kQgM/yBPdXu+3qbJnI6HBcWztN9QfiMkH++ZiKk4ERhg9d2LYWlze478uTU5Fyo/JQYcp+McpjtjpR9QIrr0g==
+  dependencies:
+    "@sentry/types" "6.2.1"
     tslib "^1.9.3"
 
 "@simple-dom/document@^1.4.0":
