@@ -133,6 +133,10 @@ jobs:
           node-version: '10.13.0'
       - run: npm install -g ghost-cli@latest
       - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
+
+      - run: git checkout 4.0
+        working-directory: content/themes/casper
+
       - run: zip -r ghost.zip .
 
       - name: Clean Install
