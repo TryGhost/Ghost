@@ -5,7 +5,7 @@
 
 .fullscreen-modal-portal-settings .modal-content {
     position: relative;
-    overflow: scroll;
+    overflow: auto;
     height: 100%;
     padding: 0;
 }
