@@ -13,6 +13,13 @@ function configure(dbConfig) {
         // Backwards compatibility with old knex behaviour
         dbConfig.useNullAsDefault = Object.prototype.hasOwnProperty.call(dbConfig, 'useNullAsDefault') ? dbConfig.useNullAsDefault : true;
 
+        // Enables foreign key checks and delete on cascade
+        dbConfig.pool = {
+            afterCreate(conn, cb) {
+                conn.run('PRAGMA foreign_keys = ON', cb);
+            }
+        };
+
         // Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
         // https://github.com/mapbox/node-sqlite3/issues/1386
         process.env.BTHREADS_BACKEND = 'child_process';
