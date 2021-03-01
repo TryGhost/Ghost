@@ -937,7 +937,7 @@
 /*Errors */
 .theme-validation-container {
     max-height: calc(100vh - 12vw - 110px);
-    overflow-y: scroll;
+    overflow-y: auto;
     margin: -32px -32px 0;
     padding: 32px 32px 0;
 }
@@ -1154,7 +1154,7 @@ p.theme-validation-details {
 
 .fullscreen-modal-branding-modal .modal-content {
     position: relative;
-    overflow: scroll;
+    overflow: auto;
     height: 100%;
     padding: 0;
 }
@@ -1206,7 +1206,7 @@ p.theme-validation-details {
     max-width: 400px;
     margin: 20px 0 -20px;
     padding: 24px 24px 24px 0;
-    overflow: scroll;
+    overflow-y: auto;
     height: calc(100vh - 136px);
 }
 

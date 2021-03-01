@@ -7,7 +7,7 @@
     z-index: 1000;
     height: 100vh;
     background: var(--white);
-    overflow: auto;
+    overflow: hidden;
 }
 
 .gh-launch-wizard-step-indicator {
