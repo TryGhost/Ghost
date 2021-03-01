@@ -50,7 +50,7 @@ describe('Basic Members Routes', function () {
 
         it('should error for invalid member token on member data endpoint', async function () {
             await request.get('/members/api/member')
-                .expect(400);
+                .expect(401);
         });
 
         it('should serve member site endpoint', async function () {
