@@ -41,8 +41,8 @@ module.exports = createIrreversibleMigration(async (knex) => {
         // }]
         const value = JSON.parse(slackSetting.value)[0];
 
-        slackUrl = value.url;
-        slackUsername = value.username;
+        slackUrl = value.url || '';
+        slackUsername = value.username || 'Ghost';
     } catch (err) {
         slackUrl = '';
         slackUsername = 'Ghost';
