@@ -20,7 +20,6 @@ const loadMemberSession = async function (req, res, next) {
         res.locals.member = req.member;
         next();
     } catch (err) {
-        logging.warn(err.message);
         Object.assign(req, {member: null});
         next();
     }
@@ -32,7 +31,6 @@ const getIdentityToken = async function (req, res) {
         res.writeHead(200);
         res.end(token);
     } catch (err) {
-        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
@@ -44,7 +42,6 @@ const deleteSession = async function (req, res) {
         res.writeHead(204);
         res.end();
     } catch (err) {
-        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
@@ -59,7 +56,6 @@ const getMemberData = async function (req, res) {
             res.json(null);
         }
     } catch (err) {
-        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
@@ -81,7 +77,6 @@ const updateMemberData = async function (req, res) {
             res.json(null);
         }
     } catch (err) {
-        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
