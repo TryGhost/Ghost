@@ -24,7 +24,14 @@ module.exports.initData = async () => {
 
 module.exports.truncate = async (tableName) => {
     if (config.get('database:client') === 'sqlite3') {
+        const [foreignKeysEnabled] = await db.knex.raw('PRAGMA foreign_keys;');
+        if (foreignKeysEnabled.foreign_keys) {
+            await db.knex.raw('PRAGMA foreign_keys = OFF;');
+        }
         await db.knex(tableName).truncate();
+        if (foreignKeysEnabled.foreign_keys) {
+            await db.knex.raw('PRAGMA foreign_keys = ON;');
+        }
         return;
     }
 
@@ -53,7 +60,16 @@ module.exports.teardown = () => {
     if (config.get('database:client') === 'sqlite3') {
         return Promise
             .mapSeries(tables, function createTable(table) {
-                return db.knex.raw('DELETE FROM ' + table + ';');
+                return (async function () {
+                    const [foreignKeysEnabled] = await db.knex.raw('PRAGMA foreign_keys;');
+                    if (foreignKeysEnabled.foreign_keys) {
+                        await db.knex.raw('PRAGMA foreign_keys = OFF;');
+                    }
+                    await db.knex.raw('DELETE FROM ' + table + ';');
+                    if (foreignKeysEnabled.foreign_keys) {
+                        await db.knex.raw('PRAGMA foreign_keys = ON;');
+                    }
+                })();
             })
             .catch(function (err) {
                 // CASE: table does not exist
