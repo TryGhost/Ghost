@@ -43,10 +43,9 @@ const createUnsubscribeUrl = (uuid) => {
 
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
-const serializePostModel = async (model) => {
+const serializePostModel = async (model, apiVersion = 'v4') => {
     // fetch mobiledoc rather than html and plaintext so we can render email-specific contents
     const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
-    const apiVersion = model.get('api_version') || 'v3';
     const docName = 'posts';
 
     await api.shared
@@ -120,8 +119,8 @@ const parseReplacements = (email) => {
     return replacements;
 };
 
-const serialize = async (postModel, options = {isBrowserPreview: false}) => {
-    const post = await serializePostModel(postModel);
+const serialize = async (postModel, options = {isBrowserPreview: false, apiVersion: 'v4'}) => {
+    const post = await serializePostModel(postModel, options.apiVersion);
 
     const timezone = settingsCache.get('timezone');
     const momentDate = post.published_at ? moment(post.published_at) : moment();
