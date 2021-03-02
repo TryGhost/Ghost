@@ -30,10 +30,11 @@
 
         <section class="gh-branding-settings-right">
             <GhBrowserPreview class="gh-branding-settings-previewcontainer" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
-                <GhSiteIframe
-                    class="gh-branding-settings-preview"
+                <iframe
+                    id="site=frame"
+                    class="site-frame gh-branding-settings-preview"
                     {{did-insert this.registerPreviewIframe}}
-                ></GhSiteIframe>
+                ></iframe>
             </GhBrowserPreview>
         </section>
     </div>
