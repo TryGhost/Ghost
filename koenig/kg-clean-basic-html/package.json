@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.13.8",
-    "@babel/preset-env": "7.13.8",
+    "@babel/preset-env": "7.13.9",
     "jsdom": "16.4.0",
     "mocha": "8.3.0",
     "rollup": "2.40.0",
