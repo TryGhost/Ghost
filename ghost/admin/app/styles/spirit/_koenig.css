@@ -1048,6 +1048,7 @@
     text-transform: uppercase;
     font-size: 1.2rem;
     font-weight: 600;
+    white-space: pre;
 }
 
 .kg-paywall-separator::before,
