@@ -42,7 +42,6 @@ export default Service.extend({
     isFullScreen: false,
     showMobileMenu: false,
     showSettingsMenu: false,
-    showTour: true,
     mainClass: '',
 
     hasSideNav: not('isSideNavHidden'),
