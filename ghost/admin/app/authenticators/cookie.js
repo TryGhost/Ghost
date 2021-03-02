@@ -9,7 +9,6 @@ export default Authenticator.extend({
     feature: service(),
     ghostPaths: service(),
     settings: service(),
-    tour: service(),
     whatsNew: service(),
 
     sessionEndpoint: computed('ghostPaths.apiRoot', function () {
@@ -34,8 +33,7 @@ export default Authenticator.extend({
             let preloadPromises = [
                 this.config.fetchAuthenticated(),
                 this.feature.fetch(),
-                this.settings.fetch(),
-                this.tour.fetchViewed()
+                this.settings.fetch()
             ];
 
             // kick off background update of "whats new"

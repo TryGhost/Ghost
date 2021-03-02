@@ -3393,7 +3393,7 @@ broccoli-funnel@3.0.3, broccoli-funnel@^3.0.0, broccoli-funnel@^3.0.3:
     path-posix "^1.0.0"
     walk-sync "^2.0.2"
 
-broccoli-funnel@^1.0.1, broccoli-funnel@^1.1.0:
+broccoli-funnel@^1.0.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-1.2.0.tgz#cddc3afc5ff1685a8023488fff74ce6fb5a51296"
   integrity sha1-zdw6/F/xaFqAI0iP/3TOb7WlEpY=
@@ -3461,7 +3461,7 @@ broccoli-merge-trees@4.2.0, broccoli-merge-trees@^4.0.0, broccoli-merge-trees@^4
     broccoli-plugin "^4.0.2"
     merge-trees "^2.0.0"
 
-broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.1, broccoli-merge-trees@^1.2.4:
+broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-1.2.4.tgz#a001519bb5067f06589d91afa2942445a2d0fdb5"
   integrity sha1-oAFRm7UGfwZYnZGvopQkRaLQ/bU=
@@ -9505,19 +9505,7 @@ liquid-fire@0.31.0:
     match-media "^0.2.0"
     velocity-animate "^1.5.2"
 
-liquid-tether@2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/liquid-tether/-/liquid-tether-2.0.7.tgz#c859e0caad2fd25b4dd57f6c8c51b10eb5529f53"
-  integrity sha512-cekrPA2Ue7jA5X0y6FQ0/ChCpd40QFzVbOJnko7KoMn5kng+xkrWHkNg20VJhOIFrPgikREZpoGtYoFCg3/V1g==
-  dependencies:
-    broccoli-funnel "^1.1.0"
-    broccoli-merge-trees "^1.2.4"
-    ember-cli-babel "^6.12.0"
-    ember-cli-htmlbars "^2.0.3"
-    liquid-wormhole "^2.1.4"
-    tether "^1.4.0"
-
-liquid-wormhole@2.1.5, liquid-wormhole@^2.1.4:
+liquid-wormhole@2.1.5:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-2.1.5.tgz#23ebdd85dd40d1dad424ab346f755baebc2d93d8"
   integrity sha512-dmnXYkxF+N8JUibDS937ucClQ+ApMLht7CCv09tWZLCFonuRPzt98pisuUxRVnFo95+kdwEVR+S2guB3JUny7A==
@@ -13339,11 +13327,6 @@ testem@3.2.0, testem@^3.2.0:
     tap-parser "^7.0.0"
     tmp "0.0.33"
     xmldom "^0.1.19"
-
-tether@^1.4.0:
-  version "1.4.7"
-  resolved "https://registry.yarnpkg.com/tether/-/tether-1.4.7.tgz#d56a818590d8fe72e387f77a67f93ab96d8e1fb2"
-  integrity sha512-Z0J1aExjoFU8pybVkQAo/vD2wfSO63r+XOPfWQMC5qtf1bI7IWqNk4MiyBcgvvnY8kqnY06dVdvwTK2S3PU/Fw==
 
 text-table@^0.2.0:
   version "0.2.0"

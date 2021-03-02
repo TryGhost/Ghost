@@ -16,7 +16,6 @@
 @import "patterns/tables.css";
 @import "patterns/navlist.css";
 @import "patterns/boxes.css";
-@import "patterns/throbber.css";
 
 
 /* Components: Groups of Patterns
@@ -34,7 +33,6 @@
 @import "components/power-calendar.css";
 @import "components/publishmenu.css";
 @import "components/popovers.css";
-@import "components/tour.css";
 @import "components/unsplash.css";
 @import "components/codemirror.css";
 @import "components/lists.css";

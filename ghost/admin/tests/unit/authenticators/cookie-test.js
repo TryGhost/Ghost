@@ -35,13 +35,6 @@ const mockSettings = Service.extend({
     }
 });
 
-const mockTour = Service.extend({
-    init() {
-        this._super(...arguments);
-        this.fetchViewed = sinon.stub().resolves();
-    }
-});
-
 const mockGhostPaths = Service.extend({
     apiRoot: ghostPaths().apiRoot
 });
@@ -54,7 +47,6 @@ describe('Unit: Authenticator: cookie', () => {
         this.owner.register('service:config', mockConfig);
         this.owner.register('service:feature', mockFeature);
         this.owner.register('service:settings', mockSettings);
-        this.owner.register('service:tour', mockTour);
         this.owner.register('service:ghost-paths', mockGhostPaths);
     });
 
@@ -72,7 +64,6 @@ describe('Unit: Authenticator: cookie', () => {
             let config = this.owner.lookup('service:config');
             let feature = this.owner.lookup('service:feature');
             let settings = this.owner.lookup('service:settings');
-            let tour = this.owner.lookup('service:tour');
 
             return authenticator.authenticate('AzureDiamond', 'hunter2').then(() => {
                 expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
@@ -93,7 +84,6 @@ describe('Unit: Authenticator: cookie', () => {
                 expect(config.fetchAuthenticated.calledOnce, 'config.fetchAuthenticated called').to.be.true;
                 expect(feature.fetch.calledOnce, 'feature.fetch called').to.be.true;
                 expect(settings.fetch.calledOnce, 'settings.fetch called').to.be.true;
-                expect(tour.fetchViewed.calledOnce, 'tour.fetchViewed called').to.be.true;
             });
         });
     });
