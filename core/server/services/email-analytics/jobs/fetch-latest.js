@@ -56,13 +56,20 @@ if (parentPort) {
         }
     };
 
-    const EmailAnalyticsService = require('../email-analytics');
+    const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
+    const EventProcessor = require('../lib/event-processor');
+    const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
+    const queries = require('../lib/queries');
 
     const emailAnalyticsService = new EmailAnalyticsService({
         config,
-        db,
         settings,
-        logging
+        logging,
+        eventProcessor: new EventProcessor({db, logging}),
+        providers: [
+            new MailgunProvider({config, settings, logging})
+        ],
+        queries
     });
 
     const fetchStartDate = new Date();
