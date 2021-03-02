@@ -21,7 +21,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         fromColumn: 'member_id',
         toTable: 'members',
         toColumn: 'id',
-        cascade: true,
+        cascadeDelete: true,
         transaction: knex
     });
 
@@ -37,7 +37,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         fromColumn: 'label_id',
         toTable: 'labels',
         toColumn: 'id',
-        cascade: true,
+        cascadeDelete: true,
         transaction: knex
     });
 
@@ -53,7 +53,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         fromColumn: 'member_id',
         toTable: 'members',
         toColumn: 'id',
-        cascade: true,
+        cascadeDelete: true,
         transaction: knex
     });
 
@@ -69,7 +69,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         fromColumn: 'customer_id',
         toTable: 'members_stripe_customers',
         toColumn: 'id',
-        cascade: true,
+        cascadeDelete: true,
         transaction: knex
     });
 });
