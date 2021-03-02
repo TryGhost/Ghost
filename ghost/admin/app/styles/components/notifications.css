@@ -230,14 +230,6 @@
     width: 12px;
 }
 
-.gh-alert-close:hover {
-    color: var(--red);
-}
-
-.gh-alert-close svg:hover {
-    fill: var(--red);
-}
-
 
 /* Blue alert
 /* ---------------------------------------------------------- */
