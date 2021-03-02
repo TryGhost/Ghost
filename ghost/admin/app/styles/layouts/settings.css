@@ -364,9 +364,9 @@
     display: inline-block;
     outline: none;
     color: var(--green-d1);
+    font-weight: 500;
     text-decoration: none !important;
     text-transform: none;
-    font-weight: 500;
 }
 
 .gh-td-marketplace span {
