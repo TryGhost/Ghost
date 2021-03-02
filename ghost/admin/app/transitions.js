@@ -11,20 +11,6 @@ export default function () {
         this.use('crossFade', {duration: 100})
     );
 
-    this.transition(
-        this.hasClass('tour-container'),
-        this.toValue(true),
-        this.use('fade', {duration: 150}),
-        this.reverse('fade', {duration: 150})
-    );
-
-    this.transition(
-        this.hasClass('tour'),
-        this.toValue(true),
-        this.use('fade', {duration: 300}),
-        this.reverse('fade', {duration: 300})
-    );
-
     // TODO: Maybe animate with explode. gh-unsplash-window should ideally slide in from bottom to top of screen
     // this.transition(
     //     this.hasClass('gh-unsplash-window'),

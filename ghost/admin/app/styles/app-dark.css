@@ -16,7 +16,6 @@
 @import "patterns/tables.css";
 @import "patterns/navlist.css";
 @import "patterns/boxes.css";
-@import "patterns/throbber.css";
 
 
 /* Components: Groups of Patterns
@@ -34,7 +33,6 @@
 @import "components/power-calendar.css";
 @import "components/publishmenu.css";
 @import "components/popovers.css";
-@import "components/tour.css";
 @import "components/unsplash.css";
 @import "components/codemirror.css";
 @import "components/lists.css";
@@ -291,13 +289,13 @@ input:focus,
 /* ---------------------------------------------------------------------- */
 
 .gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red), 
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
 .gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
     background: var(--lightgrey);
 }
 
 .gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover, 
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
 .gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
     background: var(--lightgrey-l1);
 }
@@ -433,19 +431,6 @@ input:focus,
 
 .seo-preview-description {
     color: var(--midgrey);
-}
-
-.tour-dismiss {
-    border: none;
-    background: linear-gradient( rgb(50, 50, 50), rgb(23, 23, 23) );
-}
-
-.tour-dismiss span {
-    background: linear-gradient( rgb(69, 69, 69), rgb(42, 44, 45) 60%, rgb(42, 44, 45) 90%, rgb(49, 52, 53) );
-}
-
-.throbber:before {
-    background: rgba(0,0,0,0.2);
 }
 
 .gh-editor-header-small {
