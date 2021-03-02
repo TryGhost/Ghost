@@ -5,11 +5,7 @@ import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
-
-const PSM_ANIMATION_LENGTH = 400;
 
 export default Component.extend(SettingsMenuMixin, {
     feature: service(),
@@ -26,7 +22,6 @@ export default Component.extend(SettingsMenuMixin, {
     post: null,
 
     _showSettingsMenu: false,
-    _showThrobbers: false,
 
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
@@ -102,14 +97,6 @@ export default Component.extend(SettingsMenuMixin, {
     didReceiveAttrs() {
         this._super(...arguments);
 
-        // HACK: ugly method of working around the CSS animations so that we
-        // can add throbbers only when the animation has finished
-        // TODO: use liquid-fire to handle PSM slide-in and replace tabs manager
-        // with something more ember-like
-        if (this.showSettingsMenu && !this._showSettingsMenu) {
-            this.showThrobbers.perform();
-        }
-
         // fired when menu is closed
         if (!this.showSettingsMenu && this._showSettingsMenu) {
             let post = this.post;
@@ -120,9 +107,6 @@ export default Component.extend(SettingsMenuMixin, {
                 post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
                 post.validate({attribute: 'publishedAtBlog'});
             }
-
-            // remove throbbers
-            this.set('_showThrobbers', false);
         }
 
         this._showSettingsMenu = this.showSettingsMenu;
@@ -131,22 +115,12 @@ export default Component.extend(SettingsMenuMixin, {
     actions: {
         showSubview(subview) {
             this._super(...arguments);
-
             this.set('subview', subview);
-
-            // Chrome appears to have an animation bug that cancels the slide
-            // transition unless there's a delay between the animation starting
-            // and the throbbers being removed
-            run.later(this, function () {
-                this.set('_showThrobbers', false);
-            }, 50);
         },
 
         closeSubview() {
             this._super(...arguments);
-
             this.set('subview', null);
-            this.showThrobbers.perform();
         },
 
         discardEnter() {
@@ -513,11 +487,6 @@ export default Component.extend(SettingsMenuMixin, {
             }
         }
     },
-
-    showThrobbers: task(function* () {
-        yield timeout(PSM_ANIMATION_LENGTH);
-        this.set('_showThrobbers', true);
-    }).restartable(),
 
     showError(error) {
         // TODO: remove null check once ValidationEngine has been removed
