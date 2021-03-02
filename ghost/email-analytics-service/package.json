@@ -19,9 +19,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "8.2.1",
+    "mocha": "8.3.0",
     "should": "13.2.3",
-    "sinon": "9.2.3"
+    "sinon": "9.2.4"
   },
   "dependencies": {
     "ghost-ignition": "^4.2.4",
