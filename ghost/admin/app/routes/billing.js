@@ -1,7 +1,7 @@
-import Route from '@ember/routing/route';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
-export default Route.extend({
+export default AuthenticatedRoute.extend({
     billing: service(),
 
     queryParams: {
