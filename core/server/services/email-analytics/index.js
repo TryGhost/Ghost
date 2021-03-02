@@ -5,7 +5,7 @@ const settings = require('../settings/cache');
 const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
 const EventProcessor = require('./lib/event-processor');
 const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
-const queries = require('../lib/queries');
+const queries = require('./lib/queries');
 
 module.exports = new EmailAnalyticsService({
     config,
