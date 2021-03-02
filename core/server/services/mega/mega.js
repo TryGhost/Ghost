@@ -37,6 +37,12 @@ const getReplyToAddress = () => {
     return (replyAddressOption === 'support') ? supportAddress : fromAddress;
 };
 
+/**
+ *
+ * @param {Object} postModel - post model instance
+ * @param {Object} options
+ * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
+ */
 const getEmailData = async (postModel, options) => {
     const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, options);
 
@@ -49,6 +55,12 @@ const getEmailData = async (postModel, options) => {
     };
 };
 
+/**
+ *
+ * @param {Object} postModel - post model instance
+ * @param {[string]} toEmails - member email addresses to send email to
+ * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
+ */
 const sendTestEmail = async (postModel, toEmails, apiVersion) => {
     const emailData = await getEmailData(postModel, {apiVersion});
     emailData.subject = `[Test] ${emailData.subject}`;
@@ -88,6 +100,8 @@ const sendTestEmail = async (postModel, toEmails, apiVersion) => {
  * record per post
  *
  * @param {object} postModel Post Model Object
+ * @param {object} options
+ * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  */
 
 const addEmail = async (postModel, options) => {
@@ -394,3 +408,7 @@ module.exports = {
     sendTestEmail,
     handleUnsubscribeRequest
 };
+
+/**
+ * @typedef {'v2' | 'v3' | 'v4' | 'canary' } ValidAPIVersion
+ */
