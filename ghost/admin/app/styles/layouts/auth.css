@@ -4,7 +4,7 @@
     position: relative;
     margin: 30px auto;
     padding: 40px;
-    max-width: 509px;
+    max-width: 620px;
     width: 100%;
     text-align: left;
 }
@@ -18,19 +18,20 @@
 }
 
 .gh-signin .gh-btn.login {
-    height: 56px;
+    height: 54px;
     border-radius: 8px;
-    line-height: 56px;
+    line-height: 54px;
     margin-top: 40px;
     max-width: unset;
     font-weight: 300;
 }
 
 .gh-signin .gh-btn.login span {
-    font-size: 2.0rem;
+    font-size: 1.8rem;
 }
 
 .gh-signin label {
+    font-size: 1.3rem;
     font-weight: 600 !important;
 }
 
@@ -74,15 +75,29 @@
     text-decoration: underline;
 }
 
-.gh-signin input {
+.gh-signin input,
+.gh-signin input:-webkit-autofill::first-line {
     padding: 12px 16px;
-    height: 56px;
+    height: 54px;
     border-radius: 8px;
-    font-size: 2.0rem;
+    font-size: 1.8rem;
 }
 
 .gh-signin input:focus {
     border-color: var(--midgrey) !important;
+}
+
+.gh-signin h1 {
+    font-size: 4.1rem;
+    font-weight: 600;
+    letter-spacing: -.025em;
+    line-height: 1.15em;
+    font-weight: 700;
+    color: var(--black);
+    max-width: 620px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 40px;
 }
 
 /* Email notification */
