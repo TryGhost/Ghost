@@ -1570,7 +1570,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<style>:root {--accent-color: #123456;}</style>');
+                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;}</style>');
                 done();
             }).catch(done);
         });
@@ -1591,7 +1591,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.not.containEql('--accent-color');
+                rendered.string.should.not.containEql('--ghost-accent-color');
                 done();
             }).catch(done);
         });
