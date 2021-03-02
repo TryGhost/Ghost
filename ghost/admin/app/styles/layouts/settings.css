@@ -360,6 +360,35 @@
 /* Theme Directory
 /* ---------------------------------------------------------- */
 
+.gh-td-marketplace {
+    display: inline-block;
+    outline: none;
+    color: var(--green-d1);
+    text-decoration: none !important;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.gh-td-marketplace span {
+    display: block;
+    overflow: hidden;
+    font-size: 1.35rem;
+    letter-spacing: 0.2px;
+}
+
+.gh-td-marketplace span svg {
+    position: relative;
+    top: 1px;
+    width: .7em;
+    height: .7em;
+    margin-left: 4px;
+}
+
+.gh-td-marketplace span svg path {
+    stroke: var(--green-d1);
+    stroke-width: 4px;
+}
+
 .gh-theme-directory-container {
     padding: 25px 0 0;
 }
@@ -367,7 +396,7 @@
 .theme-directory {
     display: grid;
     justify-content: space-between;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-gap: 25px;
     max-width: 1320px;
     margin: 0 0 4vw;
@@ -447,34 +476,17 @@
 .td-item-overlay:hover,
 .td-item-overlay:focus {
     background-color: var(--white-90);
+    transition: all .3s ease;
 }
 
 .td-item-action {
-    display: none;
-}
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;}
 
 .td-item-overlay:hover .td-item-action {
-    display: block;
-}
-
-.td-item-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    margin-bottom: 39px;
-    padding: 2rem;
-    background: var(--white);
-    border-radius: 3px;
-    box-shadow: 0 0 1px rgba(0,0,0,.02), 0 9px 25px -10px rgba(0,0,0,0.2);
-    transition: all .8s ease;
-}
-
-.td-item-empty:hover {
-    box-shadow: 0 0 1px rgba(0,0,0,.02), 0 19px 35px -14px rgba(0,0,0,.2);
-    transition: all .3s ease;
+    visibility: visible;
+    opacity: 1;
 }
 
 @media (max-width: 1400px) {
