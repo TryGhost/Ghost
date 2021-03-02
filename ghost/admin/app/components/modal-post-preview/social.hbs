@@ -60,44 +60,47 @@
                         </div>
                     </GhUploader>
 
-                    <div class="gh-social-og-preview-content">
-                        <div class="gh-social-og-preview-meta">
-                            {{this.config.blogDomain}}
+                    <div class="gh-social-og-preview-bookmark">
+                        {{!-- Ensures description is hidden if title exceeds one line --}}
+                        <div class="gh-social-og-preview-content">
+                            <div class="gh-social-og-preview-meta">
+                                {{this.config.blogDomain}}
+                            </div>
+                            {{#if this.editingFacebookTitle}}
+                                <input
+                                    type="text"
+                                    class="gh-input"
+                                    value={{@post.ogTitle}}
+                                    maxlength="300"
+                                    title="Facebook title"
+                                    {{on "blur" this.setFacebookTitle}}
+                                    {{on-key "Enter" this.blurElement}}
+                                    {{on-key "Escape" (fn this.cancelEdit "ogTitle")}}
+                                    {{autofocus}}
+                                    data-prevent-escape-close-modal="true"
+                                />
+                            {{else}}
+                                <div class="gh-social-og-preview-title editable">
+                                    <span class="pointer" {{on "click" this.editFacebookTitle}}>{{truncate this.facebookTitle}}</span>
+                                </div>
+                            {{/if}}
+                            {{#if this.editingFacebookDescription}}
+                                <textarea
+                                    class="gh-input"
+                                    maxlength="500"
+                                    title="Facebook description"
+                                    {{on "blur" this.setFacebookDescription}}
+                                    {{on-key "Enter" this.blurElement}}
+                                    {{on-key "Escape" (fn this.cancelEdit "ogDescription")}}
+                                    {{autofocus}}
+                                    data-prevent-escape-close-modal="true"
+                                >{{@post.ogDescription}}</textarea>
+                            {{else}}
+                                <div class="gh-social-og-preview-desc editable">
+                                    <span class="pointer" {{on "click" this.editFacebookDescription}}>{{truncate this.facebookDescription}}</span>
+                                </div>
+                            {{/if}}
                         </div>
-                        {{#if this.editingFacebookTitle}}
-                            <input
-                                type="text"
-                                class="gh-input"
-                                value={{@post.ogTitle}}
-                                maxlength="300"
-                                title="Facebook title"
-                                {{on "blur" this.setFacebookTitle}}
-                                {{on-key "Enter" this.blurElement}}
-                                {{on-key "Escape" (fn this.cancelEdit "ogTitle")}}
-                                {{autofocus}}
-                                data-prevent-escape-close-modal="true"
-                            />
-                        {{else}}
-                            <div class="gh-social-og-preview-title editable">
-                                <span class="pointer" {{on "click" this.editFacebookTitle}}>{{truncate this.facebookTitle 88}}</span>
-                            </div>
-                        {{/if}}
-                        {{#if this.editingFacebookDescription}}
-                            <textarea
-                                class="gh-input"
-                                maxlength="500"
-                                title="Facebook description"
-                                {{on "blur" this.setFacebookDescription}}
-                                {{on-key "Enter" this.blurElement}}
-                                {{on-key "Escape" (fn this.cancelEdit "ogDescription")}}
-                                {{autofocus}}
-                                data-prevent-escape-close-modal="true"
-                            >{{@post.ogDescription}}</textarea>
-                        {{else}}
-                            <div class="gh-social-og-preview-desc editable">
-                                <span class="pointer" {{on "click" this.editFacebookDescription}}>{{truncate this.facebookDescription}}</span>
-                            </div>
-                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-social-og-reactions">

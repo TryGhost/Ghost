@@ -376,12 +376,15 @@
                                         {{#if this.facebookImage}}
                                             <div class="gh-social-og-preview-image" style={{background-image-style this.facebookImage}}></div>
                                         {{/if}}
-                                        <div class="gh-social-og-preview-content">
-                                            <div class="gh-social-og-preview-meta">
-                                                {{this.config.blogDomain}}
+                                        <div class="gh-social-og-preview-bookmark">
+                                            {{!-- Ensures description is hidden if title exceeds one line --}}
+                                            <div class="gh-social-og-preview-content">
+                                                <div class="gh-social-og-preview-meta">
+                                                    {{this.config.blogDomain}}
+                                                </div>
+                                                <div class="gh-social-og-preview-title">{{truncate this.facebookTitle}}</div>
+                                                <div class="gh-social-og-preview-desc">{{truncate this.facebookDescription}}</div>
                                             </div>
-                                            <div class="gh-social-og-preview-title">{{truncate this.facebookTitle 88}}</div>
-                                            <div class="gh-social-og-preview-desc">{{truncate this.facebookDescription}}</div>
                                         </div>
                                     </div>
                                 </div>
