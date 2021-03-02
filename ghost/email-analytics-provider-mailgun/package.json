@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "mocha": "8.3.0",
-    "nock": "13.0.9",
+    "nock": "13.0.10",
     "should": "13.2.3",
     "sinon": "9.2.4"
   },
