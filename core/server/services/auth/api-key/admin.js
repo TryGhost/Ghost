@@ -119,7 +119,7 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
         const {pathname} = url.parse(req.originalUrl);
-        const [hasMatch, version = 'v2', api = 'admin'] = pathname.match(/ghost\/api\/([^/]+)\/([^/]+)\/(.+)*/); // eslint-disable-line no-unused-vars
+        const [hasMatch, version = 'v4', api = 'admin'] = pathname.match(/ghost\/api\/([^/]+)\/([^/]+)\/(.+)*/); // eslint-disable-line no-unused-vars
 
         // ensure the token was meant for this api version
         const options = Object.assign({
