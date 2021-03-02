@@ -191,21 +191,38 @@ async function hasForeign({fromTable, fromColumn, toTable, toColumn, transaction
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTableName - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
+ * @param {Boolean} configuration.cascadeDelete - adds the "on delete cascade" option if true
  * @param {Object} configuration.transaction - connection object containing knex reference
  * @param {Object} configuration.transaction.knex - knex instance
  */
-async function addForeign({fromTable, fromColumn, toTable, toColumn, cascade = false, transaction}) {
+async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, transaction}) {
     const hasForeignKey = await hasForeign({fromTable, fromColumn, toTable, toColumn, transaction});
 
     if (!hasForeignKey) {
         logging.info(`Adding foreign key for: ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable}`);
-        return (transaction || db.knex).schema.table(fromTable, function (table) {
-            if (cascade) {
+
+        //disable and re-enable foreign key checks on sqlite because of https://github.com/knex/knex/issues/4155
+        let foreignKeysEnabled;
+        if (db.knex.client.config.client === 'sqlite3') {
+            foreignKeysEnabled = await db.knex.raw('PRAGMA foreign_keys;');
+            if (foreignKeysEnabled[0].foreign_keys) {
+                await db.knex.raw('PRAGMA foreign_keys = OFF;');
+            }
+        }
+
+        await (transaction || db.knex).schema.table(fromTable, function (table) {
+            if (cascadeDelete) {
                 table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('CASCADE');
             } else {
                 table.foreign(fromColumn).references(`${toTable}.${toColumn}`);
             }
         });
+
+        if (db.knex.client.config.client === 'sqlite3') {
+            if (foreignKeysEnabled[0].foreign_keys) {
+                await db.knex.raw('PRAGMA foreign_keys = ON;');
+            }
+        }
     } else {
         logging.warn(`Skipped adding foreign key for ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable} - foreign key already exists`);
     }
@@ -227,9 +244,25 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
 
     if (hasForeignKey) {
         logging.info(`Dropping foreign key for: ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable}`);
-        return (transaction || db.knex).schema.table(fromTable, function (table) {
+
+        //disable and re-enable foreign key checks on sqlite because of https://github.com/knex/knex/issues/4155
+        let foreignKeysEnabled;
+        if (db.knex.client.config.client === 'sqlite3') {
+            foreignKeysEnabled = await db.knex.raw('PRAGMA foreign_keys;');
+            if (foreignKeysEnabled[0].foreign_keys) {
+                await db.knex.raw('PRAGMA foreign_keys = OFF;');
+            }
+        }
+
+        await (transaction || db.knex).schema.table(fromTable, function (table) {
             table.dropForeign(fromColumn);
         });
+
+        if (db.knex.client.config.client === 'sqlite3') {
+            if (foreignKeysEnabled[0].foreign_keys) {
+                await db.knex.raw('PRAGMA foreign_keys = ON;');
+            }
+        }
     } else {
         logging.warn(`Skipped dropping foreign key for ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable} - foreign key does not exist`);
     }
