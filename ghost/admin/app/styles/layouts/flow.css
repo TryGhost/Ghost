@@ -7,6 +7,7 @@
     flex-direction: column;
     overflow-y: auto;
     min-height: 100%;
+    background: linear-gradient(135deg, #fff, #f4f4f4);
 }
 
 .gh-flow-head {
