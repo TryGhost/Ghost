@@ -1552,4 +1552,69 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
     });
+
+    describe('accent_color', function () {
+        it('includes style tag when set', function (done) {
+            settingsCache.get.withArgs('accent_color').returns('#123456');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.containEql('<style>:root {--accent-color: #123456;}</style>');
+                done();
+            }).catch(done);
+        });
+
+        it('does not include style tag when not set', function (done) {
+            settingsCache.get.withArgs('accent_color').returns(null);
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.containEql('--accent-color');
+                done();
+            }).catch(done);
+        });
+
+        it('attaches style tag to existing script/style tag', function (done) {
+            settingsCache.get.withArgs('accent_color').returns('#123456');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/[^\s]<style>:root/);
+                done();
+            }).catch(done);
+        });
+    });
 });
