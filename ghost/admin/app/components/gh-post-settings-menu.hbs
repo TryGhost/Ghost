@@ -435,19 +435,3 @@
         </div>
     </div>
 </div>
-
-{{!--
-    _showThrobbers is on a timer so that throbbers don't get positioned until
-    the slide-in animation has finished and it gets toggled when the meta
-    pane is shown
---}}
-{{#if this._showThrobbers}}
-    {{#unless this.session.user.isAuthorOrContributor}}
-        <GhTourItem @throbberId="featured-post"
-            @target="label[for='featured'] p"
-            @throbberAttachment="middle middle"
-            @throbberOffset="0px -20px"
-            @popoverTriangleClass="bottom-right"
-        />
-    {{/unless}}
-{{/if}}
