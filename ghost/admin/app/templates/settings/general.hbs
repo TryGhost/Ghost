@@ -324,12 +324,15 @@
                                             {{#if this.settings.ogImage}}
                                                 <div class="gh-social-og-preview-image" style={{background-image-style this.settings.ogImage}}></div>
                                             {{/if}}
-                                            <div class="gh-social-og-preview-content">
-                                                <div class="gh-social-og-preview-meta">
-                                                    {{this.config.blogDomain}}
+                                            <div class="gh-social-og-preview-bookmark">
+                                                {{!-- Ensures description is hidden if title exceeds one line --}}
+                                                <div class="gh-social-og-preview-content">
+                                                    <div class="gh-social-og-preview-meta">
+                                                        {{this.config.blogDomain}}
+                                                    </div>
+                                                    <div class="gh-social-og-preview-title">{{truncate (or this.settings.ogTitle this.settings.title)}}</div>
+                                                    <div class="gh-social-og-preview-desc">{{truncate (or this.settings.ogDescription this.settings.description)}}</div>
                                                 </div>
-                                                <div class="gh-social-og-preview-title">{{truncate (or this.settings.ogTitle this.settings.title) 88}}</div>
-                                                <div class="gh-social-og-preview-desc">{{truncate (or this.settings.ogDescription this.settings.description)}}</div>
                                             </div>
                                         </div>
                                         <div class="gh-social-og-reactions">

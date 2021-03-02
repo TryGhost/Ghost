@@ -291,9 +291,14 @@
     border: 1px dashed var(--lightgrey-d1);
 }
 
-.gh-social-og-preview-content {
+.gh-social-og-preview-bookmark {
     padding: 10px 12px;
     border-bottom: 1px solid #dddfe2;
+}
+
+.gh-social-og-preview-content {
+    height: 66px;
+    overflow: hidden;
 }
 
 .gh-social-og-preview-meta {
