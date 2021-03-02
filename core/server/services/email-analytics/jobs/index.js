@@ -14,8 +14,9 @@ module.exports = {
             config.get('backgroundJobs:emailAnalytics') &&
             !process.env.NODE_ENV.match(/^testing/)
         ) {
-            // don't register email analytics job if we have no emails,
-            // processer usage from many sites spinning up threads can be high
+            // Don't register email analytics job if we have no emails,
+            // processer usage from many sites spinning up threads can be high.
+            // Mega service will re-run this scheduling task when an email is sent
             const emailCount = await models.Email
                 .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
                 .where('status', '<>', 'failed')

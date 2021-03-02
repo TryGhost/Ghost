@@ -45,6 +45,8 @@
     "@tryghost/admin-api-schema": "2.0.0-rc.1",
     "@tryghost/bootstrap-socket": "0.2.7",
     "@tryghost/constants": "0.1.6",
+    "@tryghost/email-analytics-provider-mailgun": "1.0.0-rc.1",
+    "@tryghost/email-analytics-service": "1.0.0-rc.1",
     "@tryghost/errors": "0.2.9",
     "@tryghost/helpers": "1.1.38",
     "@tryghost/image-transform": "1.0.3",

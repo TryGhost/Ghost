@@ -420,6 +420,23 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
+"@tryghost/email-analytics-provider-mailgun@1.0.0-rc.1":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.0-rc.1.tgz#47e41613cea9d6a82292d9f2d7763d7c9abc02e2"
+  integrity sha512-+KtipyooNZyQHdsoA0uPkefyZAqQl/u/IYe07L1e/IqYQQ/W1FKG0eXThPQG9770dkf8NcvQ6hODuC4qbRcTSg==
+  dependencies:
+    "@tryghost/email-analytics-service" "^1.0.0-rc.1"
+    mailgun-js "^0.22.0"
+    moment "^2.29.1"
+
+"@tryghost/email-analytics-service@1.0.0-rc.1", "@tryghost/email-analytics-service@^1.0.0-rc.1":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.0-rc.1.tgz#1d190f2c709579d92776d11c52c3ec2665f6039f"
+  integrity sha512-o6w5eBVO+/1PK0WBNheVnEdvNYT8UjbxlmP3QxEVR5r64IshYUdVTmNo75BER/B1OW6rNxmAH/IpogbFbFw5OQ==
+  dependencies:
+    ghost-ignition "^4.2.4"
+    lodash "^4.17.20"
+
 "@tryghost/errors@0.2.6":
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.6.tgz#4554c97a1666e4db323d8c664a4df5a714f77452"
@@ -4143,7 +4160,7 @@ ghost-ignition@4.4.3:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.4.4:
+ghost-ignition@4.4.4, ghost-ignition@^4.2.4:
   version "4.4.4"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.4.4.tgz#6d16912a733a21582680d859de3a1dff868d4c67"
   integrity sha512-tYWDirmtBtTq2etRr2co7n1PPhyoeVIHZhPfG7NDIH5GUDZ8QYlCmxC8nlhy3nnDve5ZunDAg0FlA3Rjqa0kug==
@@ -6150,7 +6167,7 @@ mailcomposer@~0.2.10:
     mime "~1.2.11"
     mimelib "~0.2.15"
 
-mailgun-js@0.22.0:
+mailgun-js@0.22.0, mailgun-js@^0.22.0:
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/mailgun-js/-/mailgun-js-0.22.0.tgz#128942b5e47a364a470791608852bf68c96b3a05"
   integrity sha512-a2alg5nuTZA9Psa1pSEIEsbxr1Zrmqx4VkgGCQ30xVh0kIH7Bu57AYILo+0v8QLSdXtCyLaS+KVmdCrQo0uWFA==
@@ -6618,7 +6635,7 @@ moment-timezone@0.5.23, moment-timezone@0.5.28, moment-timezone@0.5.31:
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1, moment@^2.19.3:
+moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.10.6, moment@^2.15.2, moment@^2.18.1, moment@^2.19.3, moment@^2.29.1:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
