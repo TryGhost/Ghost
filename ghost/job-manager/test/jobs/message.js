@@ -13,7 +13,8 @@ if (parentPort) {
             return;
         }
 
-        parentPort.postMessage(message);
+        // post the message back
+        parentPort.postMessage(`Worker received: ${message}`);
         process.exit(0);
     });
 }
