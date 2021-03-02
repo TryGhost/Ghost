@@ -15,7 +15,12 @@
     {{/if}}
 
     <section class="view-container">
-        <div class="gh-setting-header gh-first-header">Ghost theme directory</div>
+        <div class="gh-setting-header gh-first-header flex justify-between">
+            <span>Ghost theme directory</span>
+            <a href="https://ghost.org/marketplace/" target="_blank" rel="noopener noreferrer" class="gh-td-marketplace">
+                <span>View more {{svg-jar "arrow-right-small"}}</span>
+            </a>
+        </div>
         <div class="gh-theme-directory-container">
             <div class="theme-directory">
                 {{#each this.marketplaceThemes as |theme|}}
@@ -33,13 +38,6 @@
                         </div>
                     </a>
                 {{/each}}
-                <a class="td-item" href="https://ghost.org/marketplace/" target="_blank" rel="noopener noreferrer">
-                    <div class="td-item-empty">
-                        {{svg-jar "circle-ellipsis" class="w5"}}
-                        <h4 class="fw6 f6 pt3 pb1">More themes</h4>
-                        <div class="midgrey f7">Explore more free and premium themes on our Marketplace</div>
-                    </div>
-                </a>
             </div>
         </div>
 
