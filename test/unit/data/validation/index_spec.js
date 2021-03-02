@@ -114,8 +114,9 @@ describe('Validation', function () {
                             throw err;
                         }
 
-                        err.length.should.eql(1);
+                        err.length.should.eql(2);
                         err[0].errorType.should.eql('ValidationError');
+                        err[1].errorType.should.eql('ValidationError');
                     });
             });
         });
