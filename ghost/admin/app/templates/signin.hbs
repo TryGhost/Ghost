@@ -21,8 +21,8 @@
             {{else}}
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
                 <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
+                    <label>Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
-                        {{svg-jar "email"}}
                         <GhTrimFocusInput
                             @class="email"
                             @type="email"
@@ -39,8 +39,8 @@
                     </span>
                 </GhFormGroup>
                 <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="password">
+                    <label>Password</label>
                     <span class="gh-input-icon gh-icon-lock forgotten-wrap">
-                        {{svg-jar "lock"}}
                         <GhTextInput
                             @class="password"
                             @type="password"
@@ -66,10 +66,10 @@
                     </span>
                 </GhFormGroup>
 
-                <GhTaskButton @buttonText="Sign in"
+                <GhTaskButton @buttonText="Sign in →"
                     @task={{this.validateAndAuthenticate}}
                     @showSuccess={{false}}
-                    @class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon"
+                    @class="login gh-btn gh-btn-primary gh-btn-block gh-btn-icon"
                     @type="submit"
                     @tabindex="3" />
             </form>
