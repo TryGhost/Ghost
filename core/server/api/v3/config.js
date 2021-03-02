@@ -10,6 +10,8 @@ module.exports = {
         permissions: false,
         query() {
             const billingUrl = config.get('host_settings:billing:enabled') ? config.get('host_settings:billing:url') : '';
+            const domainUrl = config.get('host_settings:domain:enabled') ? config.get('host_settings:domain:url') : '';
+            const updateUrl = config.get('host_settings:update:enabled') ? config.get('host_settings:update:url') : '';
             const response = {
                 version: ghostVersion.full,
                 environment: config.get('env'),
@@ -26,6 +28,13 @@ module.exports = {
             if (billingUrl) {
                 response.billingUrl = billingUrl;
             }
+            if (domainUrl) {
+                response.domainUrl = domainUrl;
+            }
+            if (updateUrl) {
+                response.updateUrl = updateUrl;
+            }
+
             return response;
         }
     }
