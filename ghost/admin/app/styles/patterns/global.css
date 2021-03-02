@@ -139,18 +139,18 @@
     --main-color-content-greybg: #f5f6f6;
 
     --list-color-divider: var(--whitegrey-d1);
-    
+
     /* Special colours */
     --transparent:transparent;
     --errorbg-lightred: rgba(240, 82, 48, 0.05);
-    
+
     /* Global layout values */
     --main-layout-content-sidepadding: 48px;
     --main-layout-content-maxwidth: 1320px;
     --main-layout-area-padding: 32px;
     --main-layout-vpanel-height: 96px;
     --main-layout-section-vpadding: 3vw;
-    
+
     /* Style values */
     --border-radius: 3px;
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -723,4 +723,16 @@ img {
 .liquid-container.show-overflow.liquid-animating,
 .liquid-container.show-overflow.liquid-animating .liquid-child {
     overflow: hidden;
+}
+
+.site-frame {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    transform: translate3d(0, 0, 0);
 }
