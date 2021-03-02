@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 
 const handleDataAttributes = require('./data-attributes');
-const ROOT_DIV_ID = 'ghost-membersjs-root';
+const ROOT_DIV_ID = 'ghost-portal-root';
 
 function addRootDiv() {
     const elem = document.createElement('div');
