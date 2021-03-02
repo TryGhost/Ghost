@@ -258,25 +258,6 @@ module.exports = {
         lifetime: {type: 'bigInteger'},
         count: {type: 'integer'}
     },
-    webhooks: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        event: {type: 'string', maxlength: 50, nullable: false, validations: {isLowercase: true}},
-        target_url: {type: 'string', maxlength: 2000, nullable: false},
-        name: {type: 'string', maxlength: 191, nullable: true},
-        secret: {type: 'string', maxlength: 191, nullable: true},
-        // NOTE: the defaultTo does not make sense to set on DB layer as it leads to unnecessary maintenance every major release
-        //       it might make sense to introduce "isIn" validation checking if it's a valid version e.g: 'v3', 'v4', 'canary'
-        api_version: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'v2'},
-        integration_id: {type: 'string', maxlength: 24, nullable: true},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'available'},
-        last_triggered_at: {type: 'dateTime', nullable: true},
-        last_triggered_status: {type: 'string', maxlength: 50, nullable: true},
-        last_triggered_error: {type: 'string', maxlength: 50, nullable: true},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
     sessions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         session_id: {type: 'string', maxlength: 32, nullable: false, unique: true},
@@ -298,6 +279,25 @@ module.exports = {
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         icon_image: {type: 'string', maxlength: 2000, nullable: true},
         description: {type: 'string', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    webhooks: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        event: {type: 'string', maxlength: 50, nullable: false, validations: {isLowercase: true}},
+        target_url: {type: 'string', maxlength: 2000, nullable: false},
+        name: {type: 'string', maxlength: 191, nullable: true},
+        secret: {type: 'string', maxlength: 191, nullable: true},
+        // NOTE: the defaultTo does not make sense to set on DB layer as it leads to unnecessary maintenance every major release
+        //       it might make sense to introduce "isIn" validation checking if it's a valid version e.g: 'v3', 'v4', 'canary'
+        api_version: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'v2'},
+        integration_id: {type: 'string', maxlength: 24, nullable: false, references: 'integrations.id', cascadeDelete: true},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'available'},
+        last_triggered_at: {type: 'dateTime', nullable: true},
+        last_triggered_status: {type: 'string', maxlength: 50, nullable: true},
+        last_triggered_error: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
