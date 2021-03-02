@@ -49,8 +49,8 @@ const getEmailData = async (postModel, options) => {
     };
 };
 
-const sendTestEmail = async (postModel, toEmails) => {
-    const emailData = await getEmailData(postModel);
+const sendTestEmail = async (postModel, toEmails, apiVersion) => {
+    const emailData = await getEmailData(postModel, {apiVersion});
     emailData.subject = `[Test] ${emailData.subject}`;
 
     // fetch any matching members so that replacements use expected values
@@ -128,7 +128,7 @@ const addEmail = async (postModel, options) => {
     if (!existing) {
         // get email contents and perform replacements using no member data so
         // we have a decent snapshot of email content for later display
-        const emailData = await getEmailData(postModel);
+        const emailData = await getEmailData(postModel, options);
 
         return models.Email.add({
             post_id: postId,
