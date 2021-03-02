@@ -173,6 +173,18 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 }
             }
 
+            if (settingsCache.get('accent_color')) {
+                const accentColor = escapeExpression(settingsCache.get('accent_color'));
+                const styleTag = `<style>:root {--accent-color: ${accentColor};}</style>`;
+                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+
+                if (existingScriptIndex) {
+                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+                } else {
+                    head.push(styleTag);
+                }
+            }
+
             head.push('<meta name="generator" content="Ghost ' +
                 escapeExpression(safeVersion) + '" />');
 
