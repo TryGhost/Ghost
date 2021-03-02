@@ -243,7 +243,7 @@ describe('Job Manager', function () {
 
                 should(workerMessageHandlerSpy.called).be.true();
                 should(workerMessageHandlerSpy.args[0][0].name).equal('will-send-msg');
-                should(workerMessageHandlerSpy.args[0][0].message).equal('hello from Ghost!');
+                should(workerMessageHandlerSpy.args[0][0].message).equal('Worker received: hello from Ghost!');
             });
         });
     });
