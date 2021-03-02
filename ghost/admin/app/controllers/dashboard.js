@@ -54,8 +54,10 @@ export default class DashboardController extends Controller {
     @tracked
     whatsNewEntriesError = null;
 
-    get showTopMembers() {
-        return this.feature.get('emailAnalytics') && this.settings.get('emailTrackOpens');
+    get topMembersDataHasOpenRates() {
+        return this.topMembersData && this.topMembersData.find((member) => {
+            return member.emailOpenRate !== null;
+        });
     }
 
     initialise() {
@@ -208,9 +210,18 @@ export default class DashboardController extends Controller {
             limit: 10
         };
         this.store.query('member', query).then((result) => {
+            if (!result.length) {
+                return this.store.query('member', {
+                    filter: 'status:paid',
+                    order: 'created_at asc',
+                    limit: 10
+                });
+            }
+            return result;
+        }).then((result) => {
             this.topMembersData = result;
             this.topMembersLoading = false;
-        }, (error) => {
+        }).catch((error) => {
             this.topMembersError = error;
             this.topMembersLoading = false;
         });
