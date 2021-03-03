@@ -502,7 +502,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.11"
 
-"@tryghost/limit-service@^0.1.0":
+"@tryghost/limit-service@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.1.0.tgz#df0b7c4a04858cf655640e1750ad6923da132de2"
   integrity sha512-9BRAqjSNlqZAedSbry2lULvaCaY4ahAbv+7daRfCLu1ieZPBfQ1wc0pqfgdvGnK2pQRb6X/1WNRHkuaCQigPtg==
