@@ -1,0 +1,30 @@
+{
+  "name": "@tryghost/limit-service",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/limit-service",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "./lib/limit-service.js",
+  "exports": "./lib/limit-service.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "8.3.0",
+    "should": "13.2.3",
+    "sinon": "9.2.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
