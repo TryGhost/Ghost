@@ -56,6 +56,7 @@
     "@tryghost/kg-default-cards": "4.0.0-rc.6",
     "@tryghost/kg-markdown-html-renderer": "4.0.0-rc.2",
     "@tryghost/kg-mobiledoc-html-renderer": "4.0.0-rc.1",
+    "@tryghost/limit-service": "^0.1.0",
     "@tryghost/magic-link": "0.6.7",
     "@tryghost/members-api": "1.0.0-rc.4",
     "@tryghost/members-csv": "0.4.5",
