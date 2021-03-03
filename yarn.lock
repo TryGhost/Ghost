@@ -333,22 +333,29 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.7.tgz#3532a7a68fad69fe15a9918c1c2ff3acc7a54706"
   integrity sha512-pnMgvXPvaF7h6Wb5vgJO8dSPXhAKCpW327iBEP55Npxk3hKPi0sawaAxmMzTqU8bYo0hJrsde5ska6ZLM40yYQ==
 
+"@tryghost/bunyan-rotating-filestream@0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/bunyan-rotating-filestream/-/bunyan-rotating-filestream-0.0.6.tgz#c5a55ca3a7d0759394b94c8fb34e3d5810aa2a09"
+  integrity sha512-dN3F+TbV1UrkKR7eoEFQezuneinZArJvP4r1KvF3ukDJWmEalQrbstvfg4SyuCPgbZluy4if1xL7mShQR9pMcA==
+  dependencies:
+    long-timeout "^0.1.1"
+
 "@tryghost/constants@0.1.6":
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.6.tgz#e24927daf919bb3e426c2312db290c89a65f7fc3"
   integrity sha512-6/H9At4IbMMVtT705a0Tuu9jnfaIvsPBtVIvqfgex9ddM7767Ckobc5fWWdTalTjak4ho504/AZflBnI+eJdJA==
 
+"@tryghost/elasticsearch-bunyan@0.1.1", "@tryghost/elasticsearch-bunyan@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch-bunyan/-/elasticsearch-bunyan-0.1.1.tgz#5a36d81dd020825dd563b1357ae6c249580c46f5"
+  integrity sha512-ILhumzdwJNoRG44S0FkgzZQlkCYioTKWEiY+FFFQpTFWwZ3Jd5a6us5k8tEsd+Wf2rZOvul/ehV45j2c2l1BMw==
+  dependencies:
+    "@elastic/elasticsearch" "^7.10.0"
+
 "@tryghost/elasticsearch-bunyan@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch-bunyan/-/elasticsearch-bunyan-0.1.0.tgz#cb66b2eba0c5e5970645b4548e2a41b1ce7a33cc"
   integrity sha512-Qg/6JfMU5l5+dWJDuXLTrq4CIzucIeZ2H3bH5cOY6Yp+rLqBAADhRzAdlwL6s2Ab/X7/156Ljl58Ik+dpsgWRQ==
-  dependencies:
-    "@elastic/elasticsearch" "^7.10.0"
-
-"@tryghost/elasticsearch-bunyan@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch-bunyan/-/elasticsearch-bunyan-0.1.1.tgz#5a36d81dd020825dd563b1357ae6c249580c46f5"
-  integrity sha512-ILhumzdwJNoRG44S0FkgzZQlkCYioTKWEiY+FFFQpTFWwZ3Jd5a6us5k8tEsd+Wf2rZOvul/ehV45j2c2l1BMw==
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
@@ -4119,6 +4126,27 @@ ghost-ignition@4.4.4, ghost-ignition@^4.2.4:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
+ghost-ignition@4.5.3:
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.5.3.tgz#ec0e72602bc89e0a9c5e1b99183daaa06b3e7091"
+  integrity sha512-ubvUZO3KruM16i9TM0+rJFLa21xfqN2iDSYQmKYYQP1d4qXgykPHlEjMUTA1ThZ5wU7kNTVswmls+iuOpMJjfw==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "0.0.6"
+    "@tryghost/elasticsearch-bunyan" "0.1.1"
+    bunyan "1.8.15"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.3.1"
+    find-root "1.1.0"
+    fs-extra "9.1.0"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.21"
+    moment "2.27.0"
+    nconf "0.10.0"
+    prettyjson "1.2.1"
+    uuid "8.3.2"
+
 ghost-ignition@^2.9.6:
   version "2.9.6"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.6.tgz#cc8358f0a356bae490e5abeca3c3bda8383352fe"
@@ -6020,7 +6048,7 @@ logd-console-output@^1.2.1:
     ee-types "^2.2.0"
     glob "^7.1.2"
 
-long-timeout@~0.1.1:
+long-timeout@^0.1.1, long-timeout@~0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/long-timeout/-/long-timeout-0.1.1.tgz#9721d788b47e0bcb5a24c2e2bee1a0da55dab514"
   integrity sha1-lyHXiLR+C8taJMLivuGg2lXatRQ=
