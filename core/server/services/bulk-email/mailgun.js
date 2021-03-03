@@ -101,7 +101,7 @@ function send(message, recipientData, replacements) {
 
         return new Promise((resolve, reject) => {
             mailgunInstance.messages().send(messageData, (error, body) => {
-                if (error) {
+                if (error || !body) {
                     return reject(error);
                 }
 
