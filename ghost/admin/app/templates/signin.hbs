@@ -21,6 +21,7 @@
             {{else}}
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
                 <header>
+                    <div class="gh-site-icon" style="{{this.siteIconStyle}}"></div>
                     <h1>Sign in to {{this.config.blogTitle}}.</h1>
                 </header>
                 <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
