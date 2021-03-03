@@ -243,7 +243,7 @@
 .gh-portal-button-icon {
     display: inline-block;
     cursor: pointer;
-    width: 40px;
+    width: 38px;
     height: 40px;
     padding: 10px;
     background-repeat: no-repeat;
@@ -282,7 +282,7 @@
 .gh-portal-button-uploadicon:hover,
 .gh-portal-button-uploadicon:focus {
     height: 44px;
-    width: 46px;
+    width: 44px;
     border: none;
     box-shadow: none;
     background: transparent;
