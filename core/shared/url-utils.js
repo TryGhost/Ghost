@@ -1,11 +1,13 @@
 const UrlUtils = require('@tryghost/url-utils');
 const config = require('./config');
 
+const DEFAULT_GHOST_API_VERSION = 'v4';
+
 const urlUtils = new UrlUtils({
     url: config.get('url'),
     adminUrl: config.get('admin:url'),
     apiVersions: config.get('api:versions'),
-    defaultApiVersion: 'v3',
+    defaultApiVersion: DEFAULT_GHOST_API_VERSION,
     slugs: config.get('slugs').protected,
     redirectCacheMaxAge: config.get('caching:301:maxAge'),
     baseApiPath: '/ghost/api',
