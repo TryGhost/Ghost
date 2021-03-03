@@ -292,13 +292,20 @@
 }
 
 .gh-social-og-preview-bookmark {
-    padding: 10px 12px;
+    padding: 10px 12px 8px;
     border-bottom: 1px solid #dddfe2;
 }
 
 .gh-social-og-preview-content {
-    height: 66px;
+    height: 69px;
     overflow: hidden;
+    margin: 0 -1px 0 -4px;
+    padding: 0 1px 0 4px;
+}
+
+.gh-social-og-preview-content.edit-mode {
+    height: auto;
+    overflow-y: visible;
 }
 
 .gh-social-og-preview-meta {

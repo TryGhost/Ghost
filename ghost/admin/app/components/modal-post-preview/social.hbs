@@ -62,7 +62,7 @@
 
                     <div class="gh-social-og-preview-bookmark">
                         {{!-- Ensures description is hidden if title exceeds one line --}}
-                        <div class="gh-social-og-preview-content">
+                        <div class="gh-social-og-preview-content {{if this.editingFacebookTitle 'edit-mode'}} {{if this.editingFacebookDescription 'edit-mode'}}">
                             <div class="gh-social-og-preview-meta">
                                 {{this.config.blogDomain}}
                             </div>
