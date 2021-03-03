@@ -495,6 +495,13 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.11"
 
+"@tryghost/limit-service@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.1.0.tgz#df0b7c4a04858cf655640e1750ad6923da132de2"
+  integrity sha512-9BRAqjSNlqZAedSbry2lULvaCaY4ahAbv+7daRfCLu1ieZPBfQ1wc0pqfgdvGnK2pQRb6X/1WNRHkuaCQigPtg==
+  dependencies:
+    lodash "^4.17.21"
+
 "@tryghost/magic-link@0.6.7", "@tryghost/magic-link@^0.6.7":
   version "0.6.7"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.6.7.tgz#9bdf76fa014f08a09cc38c308d659900626902c9"
@@ -5991,7 +5998,7 @@ lodash@4.17.20, lodash@^4.17.20, lodash@~4.17.20:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
   integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
 
-lodash@4.17.21:
+lodash@4.17.21, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
