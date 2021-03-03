@@ -45,7 +45,8 @@
     margin: 0;
 }
 
-.gh-signin .gh-btn-login {
+.gh-signin .gh-btn-login,
+.gh-signin .gh-btn-reset {
     height: 54px;
     border-radius: 8px;
     line-height: 54px;
@@ -56,17 +57,23 @@
     -webkit-font-smoothing: subpixel-antialiased;
 }
 
+.gh-signin .gh-btn-login span,
+.gh-signin .gh-btn-reset span {
+    font-size: 1.8rem;
+    color: #fff;
+}
+
+.gh-signin .gh-btn-reset {
+    background: var(--black) !important;
+    margin-top: 20px;
+}
+
 .gh-signin .gh-btn-login svg.gh-icon-spinner rect {
     fill: #fff !important;
 }
 
 .gh-signin .gh-btn-login:hover {
     opacity: 0.9;
-}
-
-.gh-signin .gh-btn-login span {
-    font-size: 1.8rem;
-    color: #fff;
 }
 
 .gh-signin label {
