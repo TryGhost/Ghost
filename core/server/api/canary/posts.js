@@ -195,7 +195,7 @@ module.exports = {
                     let postEmail = model.relations.email;
 
                     if (!postEmail) {
-                        const email = await mega.addEmail(model, Object.assign({}, frame.options, {apiVersion: 'v3'}));
+                        const email = await mega.addEmail(model, Object.assign({}, frame.options, {apiVersion: 'canary'}));
                         model.set('email', email);
                     } else if (postEmail && postEmail.get('status') === 'failed') {
                         const email = await mega.retryFailedEmail(postEmail);
