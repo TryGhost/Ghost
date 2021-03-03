@@ -5683,42 +5683,24 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.0.tgz#399343117c7d3c92944225ef16ac68ad0a8137ba"
-  integrity sha512-E/MBmIXcrI2Q/aDfk5tmI9omx2wPi+miX6SfgRYJCBJYDasj/vow/SBu6pwWjxL4Vi0+t0YyvFmL1YVb8QfRfA==
+knex-migrator@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.1.tgz#97ea6b6e576eb3d1273d97bc65a2de17ae29414e"
+  integrity sha512-cqbPazwzZzauOudDVFgM+cVLZGs+hGX/kYbZRtUItI+vMN5sBBX81ikgHCt5WrU1R2QIsaL52UM+TiA4/ckkCQ==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.1"
     ghost-ignition "4.4.4"
-    knex "0.21.18"
+    knex "0.21.19"
     lodash "4.17.21"
     moment "2.24.0"
-    nconf "0.10.0"
+    nconf "0.11.2"
     resolve "1.20.0"
   optionalDependencies:
     mysql "2.18.1"
     sqlite3 "4.2.0"
-
-knex@0.21.18:
-  version "0.21.18"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.18.tgz#ca16e95b8b5c0891a6b012fb3fb34185e067b0e2"
-  integrity sha512-hP4Qyy2LjQLsabQYc6YgDFHb+CJJBjQz1TMPTKyN85CF2NLIsZsF4FDe0NvQXeXMeak3E/kKr5iJog1JBm6ZCQ==
-  dependencies:
-    colorette "1.2.1"
-    commander "^6.2.0"
-    debug "4.3.1"
-    esm "^3.2.25"
-    getopts "2.2.5"
-    interpret "^2.2.0"
-    liftoff "3.1.0"
-    lodash "^4.17.20"
-    pg-connection-string "2.4.0"
-    tarn "^3.0.1"
-    tildify "2.0.0"
-    v8flags "^3.2.0"
 
 knex@0.21.19:
   version "0.21.19"
