@@ -33,7 +33,8 @@ class Invites {
                     blogName: this.settingsCache.get('title'),
                     invitedByName: user.name,
                     invitedByEmail: user.email,
-                    resetLink: this.urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
+                    resetLink: this.urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/'),
+                    recipientEmail: invite.get('email')
                 };
 
                 return this.mailService.utils.generateContent({data: emailData, template: 'invite-user'});
