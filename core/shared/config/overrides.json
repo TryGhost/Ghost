@@ -67,8 +67,8 @@
                 "content": "canary/content"
             },
             "v4": {
-                "admin": "canary/admin",
-                "content": "canary/content"
+                "admin": "v4/admin",
+                "content": "v4/content"
             },
             "v3": {
                 "admin": "v3/admin",
