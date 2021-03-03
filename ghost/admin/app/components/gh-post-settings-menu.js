@@ -1,7 +1,6 @@
 import Component from '@ember/component';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
