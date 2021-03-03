@@ -10,14 +10,12 @@ describe('Webhooks API (v2)', function () {
     let request;
     const API_VERSION = 'v2';
 
-    before(function () {
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'api_keys', 'webhooks');
-            });
+    before(async function () {
+        await ghost();
+
+        request = supertest.agent(config.get('url'));
+
+        await localUtils.doAuth(request, 'integrations', 'api_keys', 'webhooks');
     });
 
     it('Can create a webhook using integration', function () {
