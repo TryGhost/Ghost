@@ -1278,6 +1278,13 @@ p.theme-validation-details {
     margin: 32px 68px 68px;
 }
 
+.gh-branding-settings-previewcontainer .site-frame {
+    width: 133.33333%;
+    height: 133.33333%;
+    transform: scale(0.75);
+    transform-origin: 0 0;
+}
+
 .gh-branding-settings .input-color input {
     position: relative;
     height: 30px;
