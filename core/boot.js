@@ -156,6 +156,7 @@ async function initServices({config}) {
     const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
     const appService = require('./frontend/services/apps');
+    const limits = require('./server/services/limits');
     const scheduling = require('./server/adapters/scheduling');
 
     const urlUtils = require('./shared/url-utils');
@@ -167,6 +168,7 @@ async function initServices({config}) {
         mega.listen(),
         webhooks.listen(),
         appService.init(),
+        limits.init(),
         scheduling.init({
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
             //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
