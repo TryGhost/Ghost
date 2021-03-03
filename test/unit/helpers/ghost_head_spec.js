@@ -1555,13 +1555,18 @@ describe('{{ghost_head}} helper', function () {
 
     describe('accent_color', function () {
         it('includes style tag when set', function (done) {
-            settingsCache.get.withArgs('accent_color').returns('#123456');
-
             const renderObject = {
                 post: posts[1]
             };
 
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
             helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1576,13 +1581,18 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include style tag when not set', function (done) {
-            settingsCache.get.withArgs('accent_color').returns(null);
-
             const renderObject = {
                 post: posts[1]
             };
 
+            const templateOptions = {
+                site: {
+                    accent_color: null
+                }
+            };
+
             helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1597,13 +1607,18 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('attaches style tag to existing script/style tag', function (done) {
-            settingsCache.get.withArgs('accent_color').returns('#123456');
-
             const renderObject = {
                 post: posts[1]
             };
 
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
             helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
