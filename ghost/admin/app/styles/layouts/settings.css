@@ -247,7 +247,7 @@
 
 .gh-setting-content-extended .gh-image-uploader {
     margin: 0;
-    border: 1px solid var(--lightgrey);
+    border: 1px solid var(--whitegrey-d2);
 }
 
 .gh-setting-liquid-section .liquid-container,
@@ -576,9 +576,10 @@
     width: 100%;
     margin-bottom: 2.4rem;
     padding: 20px 30px 16px;
-    border: 1px solid var(--whitegrey);
+    border: 1px solid var(--whitegrey-d1);
     font-family: Arial, sans-serif;
     background: #fff;
+    border-radius: 3px;
 }
 
 .gh-seo-container svg {
@@ -614,8 +615,9 @@
 .gh-twitter-container {
     width: 591px;
     margin-bottom: 2.4rem;
-    border: 1px solid #ebeef0;
+    border: 1px solid var(--whitegrey-d1);
     background: #fff;
+    border-radius: 3px;
 }
 
 @media (max-width: 1080px) {
@@ -652,7 +654,7 @@
 .gh-og-container {
     width: 476px;
     margin-bottom: 2.4rem;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--whitegrey-d1);
     background: #fff;
     border-radius: 3px;
 }

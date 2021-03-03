@@ -138,7 +138,7 @@ textarea.gh-tag-details-textarea {
 .gh-tag-image-uploader .gh-image-uploader {
     margin: 4px 0 0;
     background: transparent;
-    border: 1px dashed var(--lightgrey);
+    border: 1px solid var(--whitegrey-d2);
     min-height: 147px;
 }
 
