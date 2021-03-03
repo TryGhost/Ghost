@@ -10,14 +10,12 @@ describe('Webhooks API (canary)', function () {
     let request;
     const API_VERSION = 'canary';
 
-    before(function () {
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'api_keys', 'webhooks');
-            });
+    before(async function () {
+        await ghost();
+
+        request = supertest.agent(config.get('url'));
+
+        await localUtils.doAuth(request, 'integrations', 'api_keys', 'webhooks');
     });
 
     it('Can create a webhook using integration', function () {
