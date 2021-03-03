@@ -193,6 +193,7 @@
                                         @class="post-setting-meta-title"
                                         @id="meta-title"
                                         @name="post-setting-meta-title"
+                                        @placeholder={{this.seoTitle}}
                                         @value={{readonly this.metaTitleScratch}}
                                         @input={{action (mut this.metaTitleScratch) value="target.value"}}
                                         @focus-out={{action "setMetaTitle" this.metaTitleScratch}}
@@ -208,6 +209,7 @@
                                         @class="post-setting-meta-description"
                                         @id="meta-description"
                                         @name="post-setting-meta-description"
+                                        @placeholder={{truncate this.seoDescription 150}}
                                         @value={{readonly this.metaDescriptionScratch}}
                                         @input={{action (mut this.metaDescriptionScratch) value="target.value"}}
                                         @focus-out={{action "setMetaDescription" this.metaDescriptionScratch}}
@@ -286,7 +288,7 @@
                                         @class="post-setting-twitter-description"
                                         @id="twitter-description"
                                         @name="post-setting-twitter-description"
-                                        @placeholder={{truncate this.twitterDescription 155}}
+                                        @placeholder={{truncate this.twitterDescription 150}}
                                         @stopEnterKeyDownPropagation="true"
                                         @value={{readonly this.twitterDescriptionScratch}}
                                         @input={{action (mut this.twitterDescriptionScratch) value="target.value"}}
@@ -361,7 +363,7 @@
                                     <GhTextarea
                                         @class="post-setting-og-description"
                                         @id="og-description" @name="post-setting-og-description"
-                                        @placeholder={{truncate this.facebookDescription 160}}
+                                        @placeholder={{truncate this.facebookDescription 150}}
                                         @value={{readonly this.ogDescriptionScratch}}
                                         @input={{action (mut this.ogDescriptionScratch) value="target.value"}}
                                         @focus-out={{action "setOgDescription" this.ogDescriptionScratch}}

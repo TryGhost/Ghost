@@ -70,9 +70,9 @@
                                 <input
                                     type="text"
                                     class="gh-input"
+                                    placeholder={{this.facebookTitle}}
                                     value={{@post.ogTitle}}
                                     maxlength="300"
-                                    title="Facebook title"
                                     {{on "blur" this.setFacebookTitle}}
                                     {{on-key "Enter" this.blurElement}}
                                     {{on-key "Escape" (fn this.cancelEdit "ogTitle")}}
@@ -80,15 +80,15 @@
                                     data-prevent-escape-close-modal="true"
                                 />
                             {{else}}
-                                <div class="gh-social-og-preview-title editable">
-                                    <span class="pointer" {{on "click" this.editFacebookTitle}}>{{truncate this.facebookTitle}}</span>
+                                <div class="gh-social-og-preview-title editable pointer" {{on "click" this.editFacebookTitle}}>
+                                    {{truncate this.facebookTitle}}
                                 </div>
                             {{/if}}
                             {{#if this.editingFacebookDescription}}
                                 <textarea
                                     class="gh-input"
                                     maxlength="500"
-                                    title="Facebook description"
+                                    placeholder={{truncate this.facebookDescription 160}}
                                     {{on "blur" this.setFacebookDescription}}
                                     {{on-key "Enter" this.blurElement}}
                                     {{on-key "Escape" (fn this.cancelEdit "ogDescription")}}
@@ -96,8 +96,8 @@
                                     data-prevent-escape-close-modal="true"
                                 >{{@post.ogDescription}}</textarea>
                             {{else}}
-                                <div class="gh-social-og-preview-desc editable">
-                                    <span class="pointer" {{on "click" this.editFacebookDescription}}>{{truncate this.facebookDescription}}</span>
+                                <div class="gh-social-og-preview-desc editable pointer" {{on "click" this.editFacebookDescription}}>
+                                    {{truncate this.facebookDescription}}
                                 </div>
                             {{/if}}
                         </div>
@@ -169,9 +169,9 @@
                                     <input
                                         type="text"
                                         class="gh-input"
+                                        placeholder={{this.twitterTitle}}
                                         value={{@post.twitterTitle}}
                                         maxlength="300"
-                                        title="Twitter title"
                                         {{on "blur" this.setTwitterTitle}}
                                         {{on-key "Enter" this.blurElement}}
                                         {{on-key "Escape" (fn this.cancelEdit "twitterTitle")}}
@@ -185,7 +185,7 @@
                                     <textarea
                                         class="gh-input"
                                         maxlength="500"
-                                        title="Twitter description"
+                                        placeholder={{truncate this.twitterDescription 160}}
                                         {{on "blur" this.setTwitterDescription}}
                                         {{on-key "Enter" this.blurElement}}
                                         {{on-key "Escape" (fn this.cancelEdit "twitterDescription")}}
@@ -221,9 +221,9 @@
                     <input
                         type="text"
                         class="gh-input"
+                        placeholder={{this.serpTitle}}
                         value={{@post.metaTitle}}
                         maxlength="300"
-                        title="Meta title"
                         {{on "blur" this.setMetaTitle}}
                         {{on-key "Enter" this.blurElement}}
                         {{on-key "Escape" (fn this.cancelEdit "metaTitle")}}
@@ -231,15 +231,15 @@
                         data-prevent-escape-close-modal="true"
                     >
                 {{else}}
-                    <div class="gh-seo-preview-title editable">
-                        <span class="pointer" {{on "click" this.editMetaTitle}}>{{this.serpTitle}}</span>
+                    <div class="gh-seo-preview-title editable pointer" {{on "click" this.editMetaTitle}}>
+                        {{this.serpTitle}}
                     </div>
                 {{/if}}
                 {{#if this.editingMetaDescription}}
                     <textarea
                         class="gh-input"
+                        placeholder={{this.serpDescription}}
                         maxlength="500"
-                        title="Meta description"
                         {{on "blur" this.setMetaDescription}}
                         {{on-key "Enter" this.blurElement}}
                         {{on-key "Escape" (fn this.cancelEdit "metaDescription")}}
@@ -247,8 +247,8 @@
                         data-prevent-escape-close-modal="true"
                     >{{@post.metaDescription}}</textarea>
                 {{else}}
-                    <div class="gh-seo-preview-desc editable">
-                        <span class="pointer" {{on "click" this.editMetaDescription}}>{{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 170}}</span>
+                    <div class="gh-seo-preview-desc editable pointer" {{on "click" this.editMetaDescription}}>
+                        {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 170}}
                     </div>
                 {{/if}}
             </div>
