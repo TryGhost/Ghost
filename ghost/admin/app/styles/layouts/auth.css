@@ -9,6 +9,34 @@
     text-align: left;
 }
 
+.gh-signin header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gh-signin .gh-site-icon {
+    margin-bottom: 20px;
+    width: 70px;
+    height: 70px;
+    background-color: transparent;
+    background-size: 70px;
+    border-radius: 3px;
+}
+
+.gh-signin h1 {
+    font-size: 4.1rem;
+    font-weight: 600;
+    letter-spacing: -.025em;
+    line-height: 1.15em;
+    font-weight: 700;
+    color: var(--black);
+    max-width: 620px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
 .gh-signin .form-group {
     margin-bottom: 1.5rem;
 }
@@ -96,19 +124,6 @@
 
 .gh-signin input:focus {
     border-color: var(--midgrey) !important;
-}
-
-.gh-signin h1 {
-    font-size: 4.1rem;
-    font-weight: 600;
-    letter-spacing: -.025em;
-    line-height: 1.15em;
-    font-weight: 700;
-    color: var(--black);
-    max-width: 620px;
-    width: 100%;
-    text-align: center;
-    margin-bottom: 40px;
 }
 
 /* Email notification */
