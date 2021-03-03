@@ -1,6 +1,6 @@
 <rss>
     <channel>
-        <title>{{@blog.title}}</title>
+        <title>{{@site.title}}</title>
         {{#get "posts" filter="featured:true" limit="20"}}
             {{#foreach posts}}
                 <link>{{url}}</link>
