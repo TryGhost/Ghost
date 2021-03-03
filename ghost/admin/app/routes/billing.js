@@ -9,6 +9,7 @@ export default AuthenticatedRoute.extend({
     },
 
     beforeModel(transition) {
+        this._super(...arguments);
         this.billing.set('previousTransition', transition);
     },
 
