@@ -4,6 +4,7 @@ const path = require('path');
 const security = require('@tryghost/security');
 const {events} = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
+const limitService = require('../../services/limits');
 const models = require('../../models');
 const request = require('../../lib/request');
 const errors = require('@tryghost/errors/lib/errors');
@@ -75,6 +76,10 @@ module.exports = {
             if (frame.options.source === 'github') {
                 const [org, repo] = frame.options.ref.toLowerCase().split('/');
 
+                if (limitService.isLimited('custom_themes') && org.toLowerCase() !== 'tryghost') {
+                    await limitService.errorIfWouldGoOverLimit('custom_themes');
+                }
+
                 // omit /:ref so we fetch the default branch
                 const zipUrl = `https://api.github.com/repos/${org}/${repo}/zipball`;
                 const zipName = `${repo}.zip`;
@@ -133,7 +138,11 @@ module.exports = {
         permissions: {
             method: 'add'
         },
-        query(frame) {
+        async query(frame) {
+            if (limitService.isLimited('custom_themes')) {
+                return await limitService.errorIfWouldGoOverLimit('custom_themes');
+            }
+
             // @NOTE: consistent filename uploads
             frame.options.originalname = frame.file.originalname.toLowerCase();
 
