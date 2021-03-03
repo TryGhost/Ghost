@@ -678,10 +678,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.26":
-  version "0.6.26"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.26.tgz#a73ed9276cc380c180e8032c4b56e10adb6cd381"
-  integrity sha512-+uSUcb0o5mxd8G6lC0r0Dd14cMeboZRgV/Kl3Vp3sJx7UB3Bxa2gVHIE1EIAEw0FkJP5RsPVYrKOBYFHlbgRUQ==
+"@tryghost/url-utils@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-1.0.1.tgz#cf1b1ddb67ffaf1a9af62b4e15fe9b9ed53d91b5"
+  integrity sha512-Jtrk3Qkp8tqllB2rFxxs2uUQs5/X+yQo/idOl33p7A7RZBgGtBbsN1UP82lv99t4ZpBtm75Opv12rZ3bJrvtFg==
   dependencies:
     cheerio "0.22.0"
     moment "2.27.0"
