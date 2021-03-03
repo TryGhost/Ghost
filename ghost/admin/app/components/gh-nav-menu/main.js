@@ -94,15 +94,8 @@ export default Component.extend(ShortcutsMixin, {
             this.set('iconStyle', htmlSafe(`background-image: url(${icon})`));
             return;
         }
-
-        let subdirRegExp = new RegExp(`^${this.get('ghostPaths.subdir')}`);
-        let blogIcon = icon ? icon : 'favicon.ico';
-        let iconUrl;
-
-        blogIcon = blogIcon.replace(subdirRegExp, '');
-
-        iconUrl = this.get('ghostPaths.url').join(this.get('config.blogUrl'), blogIcon).replace(/\/$/, '');
-        iconUrl += `?t=${(new Date()).valueOf()}`;
+        
+        let iconUrl = 'https://static.ghost.org/v3.0.0/images/ghost-squircle.png';
 
         this.set('iconStyle', htmlSafe(`background-image: url(${iconUrl})`));
     }
