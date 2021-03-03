@@ -4453,10 +4453,10 @@ grunt@1.3.0:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.0.0-pre.2:
-  version "4.0.0-pre.2"
-  resolved "https://registry.npmjs.org/gscan/-/gscan-4.0.0-pre.2.tgz#f8962047d7fcd0edd7f201efefc655338ad9208a"
-  integrity sha512-+pCApO1vd8f6oV7xkuv3Qp3Ofgyi+VPVHzbVb3vhh5z6cvq0BgiLl+Z1kNCdjW9ODwcutZRBLV34iBji63B0kg==
+gscan@4.0.0-pre.3:
+  version "4.0.0-pre.3"
+  resolved "https://registry.npmjs.org/gscan/-/gscan-4.0.0-pre.3.tgz#0a0267088600356b52bef5144ef949a8cf62103e"
+  integrity sha512-NAZcguNWVHWvuumJtCo+pObkFNzs3kvAIE+qcHIUGP3t1aZZx/Vg1UMybAGCpustG5DFKKeH3HI2dcNjz+DyTg==
   dependencies:
     "@sentry/node" "6.2.1"
     "@tryghost/pretty-cli" "1.2.15"
