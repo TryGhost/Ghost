@@ -72,9 +72,10 @@
                 <GhTaskButton @buttonText="Sign in →"
                     @task={{this.validateAndAuthenticate}}
                     @showSuccess={{false}}
-                    @class="login gh-btn gh-btn-primary gh-btn-block gh-btn-icon"
+                    @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon js-login-button"
                     @type="submit"
-                    @tabindex="3" />
+                    @tabindex="3"
+                    style="background: {{this.accentColor}};" />
             </form>
 
             <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
