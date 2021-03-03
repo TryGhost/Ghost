@@ -170,7 +170,7 @@ async function initServices({config}) {
         scheduling.init({
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
             //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
-            apiUrl: urlUtils.urlFor('api', {version: 'v3', versionType: 'admin'}, true)
+            apiUrl: urlUtils.urlFor('api', {version: 'v4', versionType: 'admin'}, true)
         })
     ]);
     debug('End: Services');
