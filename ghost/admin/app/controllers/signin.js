@@ -2,6 +2,7 @@ import $ from 'jquery';
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {alias} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -32,6 +33,11 @@ export default Controller.extend(ValidationEngine, {
     },
 
     signin: alias('model'),
+
+    accentColor: computed('config.accent_color', function () {
+        let color = this.get('config.accent_color') || '#15171A';
+        return color;
+    }),
 
     actions: {
         authenticate() {
