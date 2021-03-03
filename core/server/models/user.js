@@ -4,6 +4,7 @@ const validator = require('validator');
 const ObjectId = require('bson-objectid');
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
+const limitService = require('../services/limits');
 const {i18n} = require('../lib/common');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
@@ -655,7 +656,7 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    permissible: async function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
         const self = this;
         const userModel = userModelOrId;
         let origArgs;
@@ -685,6 +686,11 @@ User = ghostBookshelf.Model.extend({
 
                 return self.permissible.apply(self, newArgs);
             });
+        }
+
+        // If we have a staff user limit & the user is being unsuspended
+        if (limitService.isLimited('staff') && action === 'edit' && unsafeAttrs.status && unsafeAttrs.status === 'active' && userModel.get('status') === 'inactive') {
+            await limitService.errorIfWouldGoOverLimit('staff');
         }
 
         if (action === 'edit') {
@@ -741,6 +747,13 @@ User = ghostBookshelf.Model.extend({
                 }));
             }
 
+            if (limitService.isLimited('staff') && userModel.hasRole('Contributor') && role.name !== 'Contributor') {
+                // CASE: if your site is limited to a certain number of staff users
+                // Trying to change the role of a contributor, who doesn't count towards the limit, to any other role requires a limit check
+                // To check if it's OK to add one more staff user
+                await limitService.errorIfWouldGoOverLimit('staff');
+            }
+
             return User.getOwnerUser()
                 .then((owner) => {
                     // CASE: owner can assign role to any user
@@ -765,6 +778,7 @@ User = ghostBookshelf.Model.extend({
                         // CASE: you are trying to change a role, but you are not owner
                         // @NOTE: your role is not the same than the role you try to change (!)
                         // e.g. admin can assign admin role to a user, but not owner
+
                         return permissions.canThis(context).assign.role(role)
                             .then(() => {
                                 if (hasUserPermission && hasApiKeyPermission) {

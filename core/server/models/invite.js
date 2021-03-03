@@ -5,6 +5,7 @@ const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
 const security = require('@tryghost/security');
 const settingsCache = require('../services/settings/cache');
+const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 
 let Invite;
@@ -43,8 +44,14 @@ Invite = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.add.call(this, data, options);
     },
 
-    permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    async permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
         const isAdd = (action === 'add');
+
+        if (isAdd && limitService.isLimited('staff')) {
+            // CASE: if your site is limited to a certain number of staff users
+            // Inviting a new user requires we check we won't go over the limit
+            await limitService.errorIfWouldGoOverLimit('staff');
+        }
 
         if (!isAdd) {
             if (hasUserPermission && hasApiKeyPermission) {

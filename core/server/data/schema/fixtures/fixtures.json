@@ -470,7 +470,7 @@
                     "name": "Ghost",
                     "email": "ghost-author@example.com",
                     "status": "active",
-                    "roles": ["Author"],
+                    "roles": ["Contributor"],
                     "twitter": "ghost",
                     "facebook": "ghost",
                     "location": "The Internet",
