@@ -216,7 +216,7 @@ class MembersConfigProvider {
 
     getTokenConfig() {
         const {href: membersApiUrl} = new URL(
-            this._urlUtils.getApiPath({version: 'v3', type: 'members'}),
+            this._urlUtils.getApiPath({version: 'v4', type: 'members'}),
             this._urlUtils.urlFor('admin', true)
         );
 
