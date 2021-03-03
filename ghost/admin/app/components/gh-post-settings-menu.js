@@ -35,6 +35,7 @@ export default Component.extend(SettingsMenuMixin, {
     twitterTitleScratch: alias('post.twitterTitleScratch'),
     slugValue: boundOneWay('post.slug'),
 
+    seoDescription: or('metaDescriptionScratch', 'customExcerptScratch', 'post.excerpt'),
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),
     facebookImage: or('post.ogImage', 'post.featureImage', 'settings.ogImage', 'settings.coverImage'),
     facebookTitle: or('ogTitleScratch', 'seoTitle'),
@@ -47,28 +48,6 @@ export default Component.extend(SettingsMenuMixin, {
 
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
-    }),
-
-    seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
-        let metaDescription = this.metaDescriptionScratch || '';
-        let mobiledoc = this.get('post.scratch');
-        let [markdownCard] = (mobiledoc && mobiledoc.cards) || [];
-        let markdown = markdownCard && markdownCard[1] && markdownCard[1].markdown;
-        let placeholder;
-
-        if (metaDescription) {
-            placeholder = metaDescription;
-        } else {
-            let div = document.createElement('div');
-            div.innerHTML = formatMarkdown(markdown, false);
-
-            // Strip HTML
-            placeholder = div.textContent;
-            // Replace new lines and trim
-            placeholder = placeholder.replace(/\n+/g, ' ').trim();
-        }
-
-        return placeholder;
     }),
 
     seoURL: computed('post.{slug,canonicalUrl}', 'config.blogUrl', function () {
