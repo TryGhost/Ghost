@@ -1,5 +1,6 @@
 
 <div class="gh-post-preview-social-container">
+    <p class="mb4">This is how your content will look when shared, you can click on any elements you’d like to edit.</p>
     <div class="flex flex-column">
         <div class="flex gh-social-container-responsive">
             <div class="gh-social-og-container">
@@ -41,7 +42,7 @@
                                         {{#if uploader.isUploading}}
                                             {{uploader.progressBar}}
                                         {{else}}
-                                            <button type="button" class="gh-btn" {{on "click" (fn this.triggerFileDialog "facebook")}}><span>{{if @post.ogImage "Change" "Upload"}} image</span></button>
+                                            <button type="button" class="gh-btn gh-btn-white" {{on "click" (fn this.triggerFileDialog "facebook")}}><span>{{if @post.ogImage "Change" "Upload"}} image</span></button>
                                         {{/if}}
                                     {{/if}}
 
@@ -145,7 +146,7 @@
                                                 {{#if uploader.isUploading}}
                                                     {{uploader.progressBar}}
                                                 {{else}}
-                                                    <button type="button" class="gh-btn" {{on "click" (fn this.triggerFileDialog "twitter")}}><span>{{if @post.twitterImage "Change" "Upload"}} image</span></button>
+                                                    <button type="button" class="gh-btn gh-btn-white" {{on "click" (fn this.triggerFileDialog "twitter")}}><span>{{if @post.twitterImage "Change" "Upload"}} image</span></button>
                                                 {{/if}}
                                             {{/if}}
 
