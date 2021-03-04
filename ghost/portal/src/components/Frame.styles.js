@@ -203,16 +203,15 @@ const FrameStyles = `
     .gh-portal-popup-background {
         position: absolute;
         display: block;
-        content: "";
         top: 0;
         right: 0;
         bottom: 0;
         left: 0;
-        background: rgba(0,0,0,0.25);
-        padding-top: 100px;
         animation: fadein 0.2s;
         background: linear-gradient(315deg , rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 100%);
         backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        transform: translate3d(0);
     }
 
     .gh-portal-popup-background.preview {
