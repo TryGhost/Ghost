@@ -211,6 +211,8 @@ const FrameStyles = `
         background: rgba(0,0,0,0.25);
         padding-top: 100px;
         animation: fadein 0.2s;
+        background: linear-gradient(315deg , rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 100%);
+        backdrop-filter: blur(2px);
     }
 
     .gh-portal-popup-background.preview {
@@ -225,7 +227,7 @@ const FrameStyles = `
 
     .gh-portal-popup-wrapper {
         position: relative;
-        padding: 6vw 0 0;
+        padding: 15vmin 0 0;
         height: 100%;
     }
 
@@ -779,7 +781,6 @@ const MobileStyles = `
 @media (min-width: 768px) and (max-height: 768px) {
     .gh-portal-signup-header,
     .gh-portal-signin-header {
-        margin-top: -12px;
         padding-bottom: 16px;
     }
 }

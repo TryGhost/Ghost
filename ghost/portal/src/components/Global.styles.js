@@ -42,6 +42,11 @@ export const GlobalStyles = `
         box-sizing: border-box;
     }
 
+    button,
+    button span {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
     *, ::after, ::before {
         box-sizing: border-box;
     }
