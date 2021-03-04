@@ -15,6 +15,7 @@ const defaultSettingsKeyTypes = [
     {key: 'cover_image', type: 'blog'},
     {key: 'icon', type: 'blog'},
     {key: 'lang', type: 'blog'},
+    {key: 'locale', type: 'blog'},
     {key: 'timezone', type: 'blog'},
     {key: 'codeinjection_head', type: 'blog'},
     {key: 'codeinjection_foot', type: 'blog'},
@@ -324,6 +325,80 @@ describe('Settings API (canary)', function () {
                             testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                             jsonResponse.settings[0].key.should.eql('default_locale');
                             jsonResponse.settings[0].value.should.eql('ua');
+                        });
+                });
+        });
+
+        it('Can edit deprecated lang setting', function () {
+            return request.get(localUtils.API.getApiQuery('settings/lang/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .then(function (res) {
+                    let jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+                    jsonResponse.settings = [{key: 'lang', value: 'ua'}];
+
+                    return jsonResponse;
+                })
+                .then((editedSetting) => {
+                    return request.put(localUtils.API.getApiQuery('settings/'))
+                        .set('Origin', config.get('url'))
+                        .send(editedSetting)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .then(function (res) {
+                            should.exist(res.headers['x-cache-invalidate']);
+                            const jsonResponse = res.body;
+
+                            should.exist(jsonResponse);
+                            should.exist(jsonResponse.settings);
+
+                            jsonResponse.settings.length.should.eql(1);
+
+                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                            jsonResponse.settings[0].key.should.eql('lang');
+                            jsonResponse.settings[0].value.should.eql('ua');
+                        });
+                });
+        });
+
+        it('Can edit newly introduced locale setting', function () {
+            return request.get(localUtils.API.getApiQuery('settings/locale/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .then(function (res) {
+                    let jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+                    jsonResponse.settings = [{key: 'locale', value: 'ge'}];
+
+                    return jsonResponse;
+                })
+                .then((editedSetting) => {
+                    return request.put(localUtils.API.getApiQuery('settings/'))
+                        .set('Origin', config.get('url'))
+                        .send(editedSetting)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .then(function (res) {
+                            should.exist(res.headers['x-cache-invalidate']);
+                            const jsonResponse = res.body;
+
+                            should.exist(jsonResponse);
+                            should.exist(jsonResponse.settings);
+
+                            jsonResponse.settings.length.should.eql(1);
+
+                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                            jsonResponse.settings[0].key.should.eql('locale');
+                            jsonResponse.settings[0].value.should.eql('ge');
                         });
                 });
         });
