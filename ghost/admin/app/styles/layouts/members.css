@@ -1232,6 +1232,10 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailsettings-footer-input p {
+    height: 108px;
+}
+
+.gh-members-emailsettings-footer-input p {
     color: var(--darkgrey);
     font-size: 1.4rem !important;
     line-height: 1.5em !important;
