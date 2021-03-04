@@ -86,6 +86,10 @@ module.exports = {
         if (frame.options.key === 'default_locale') {
             frame.options.key = 'lang';
         }
+
+        if (frame.options.key === 'locale') {
+            frame.options.key = 'lang';
+        }
     },
 
     edit(apiConfig, frame) {
@@ -148,6 +152,10 @@ module.exports = {
             }
 
             if (setting.key === 'default_locale') {
+                setting.key = 'lang';
+            }
+
+            if (setting.key === 'locale') {
                 setting.key = 'lang';
             }
 
