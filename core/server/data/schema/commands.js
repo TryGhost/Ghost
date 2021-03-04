@@ -199,7 +199,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
     const hasForeignKey = await hasForeign({fromTable, fromColumn, toTable, toColumn, transaction});
 
     if (!hasForeignKey) {
-        logging.info(`Adding foreign key for: ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable}`);
+        logging.info(`Adding foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn}`);
 
         //disable and re-enable foreign key checks on sqlite because of https://github.com/knex/knex/issues/4155
         let foreignKeysEnabled;
@@ -224,7 +224,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
             }
         }
     } else {
-        logging.warn(`Skipped adding foreign key for ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable} - foreign key already exists`);
+        logging.warn(`Skipped adding foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn} - foreign key already exists`);
     }
 }
 
@@ -243,7 +243,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
     const hasForeignKey = await hasForeign({fromTable, fromColumn, toTable, toColumn, transaction});
 
     if (hasForeignKey) {
-        logging.info(`Dropping foreign key for: ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable}`);
+        logging.info(`Dropping foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn}`);
 
         //disable and re-enable foreign key checks on sqlite because of https://github.com/knex/knex/issues/4155
         let foreignKeysEnabled;
@@ -264,7 +264,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
             }
         }
     } else {
-        logging.warn(`Skipped dropping foreign key for ${fromColumn} in ${fromTable} to ${toColumn} in ${toTable} - foreign key does not exist`);
+        logging.warn(`Skipped dropping foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn} - foreign key does not exist`);
     }
 }
 
