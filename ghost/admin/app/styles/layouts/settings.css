@@ -1280,7 +1280,8 @@ p.theme-validation-details {
     margin: 32px 68px 68px;
 }
 
-.gh-branding-settings-previewcontainer .site-frame {
+.gh-branding-settings-previewcontainer .site-frame,
+.gh-launch-wizard-preview {
     width: 133.33333%;
     height: 133.33333%;
     transform: scale(0.75);
