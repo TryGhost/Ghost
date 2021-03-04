@@ -2,9 +2,13 @@ const Handlebars = require('handlebars');
 const juice = require('juice');
 const {
     absoluteToRelative,
+    absoluteToTransformReady,
     relativeToAbsolute,
+    relativeToTransformReady,
     htmlAbsoluteToRelative,
-    htmlRelativeToAbsolute
+    htmlAbsoluteToTransformReady,
+    htmlRelativeToAbsolute,
+    htmlRelativeToTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
 /**
@@ -188,6 +192,17 @@ module.exports = {
         return payload;
     },
 
+    absoluteToTransformReady(payload, options) {
+        if (payload.url) {
+            payload.url = payload.url && absoluteToTransformReady(payload.url, options.siteUrl, options);
+        }
+        if (payload.metadata && payload.metadata.url) {
+            payload.metadata.url = payload.metadata.url && absoluteToTransformReady(payload.metadata.url, options.siteUrl, options);
+        }
+        payload.caption = payload.caption && htmlAbsoluteToTransformReady(payload.caption, options.siteUrl, options);
+        return payload;
+    },
+
     relativeToAbsolute(payload, options) {
         if (payload.url) {
             payload.url = payload.url && relativeToAbsolute(payload.url, options.siteUrl, options.itemUrl, options);
@@ -196,6 +211,17 @@ module.exports = {
             payload.metadata.url = payload.metadata.url && relativeToAbsolute(payload.metadata.url, options.siteUrl, options.itemUrl, options);
         }
         payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        return payload;
+    },
+
+    relativeToTransformReady(payload, options) {
+        if (payload.url) {
+            payload.url = payload.url && relativeToTransformReady(payload.url, options.siteUrl, options.itemUrl, options);
+        }
+        if (payload.metadata && payload.metadata.url) {
+            payload.metadata.url = payload.metadata.url && relativeToTransformReady(payload.metadata.url, options.siteUrl, options.itemUrl, options);
+        }
+        payload.caption = payload.caption && htmlRelativeToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
 };

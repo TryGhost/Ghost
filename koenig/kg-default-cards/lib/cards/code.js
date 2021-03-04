@@ -1,6 +1,8 @@
 const {
     htmlAbsoluteToRelative,
-    htmlRelativeToAbsolute
+    htmlAbsoluteToTransformReady,
+    htmlRelativeToAbsolute,
+    htmlRelativeToTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
 module.exports = {
@@ -44,6 +46,16 @@ module.exports = {
 
     relativeToAbsolute(payload, options) {
         payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        return payload;
+    },
+
+    absoluteToTransformReady(payload, options) {
+        payload.caption = payload.caption && htmlAbsoluteToTransformReady(payload.caption, options.siteUrl, options);
+        return payload;
+    },
+
+    relativeToTransformReady(payload, options) {
+        payload.caption = payload.caption && htmlRelativeToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
 };

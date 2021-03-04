@@ -7,9 +7,13 @@ const {
 } = require('../utils');
 const {
     absoluteToRelative,
+    absoluteToTransformReady,
     relativeToAbsolute,
+    relativeToTransformReady,
     htmlAbsoluteToRelative,
-    htmlRelativeToAbsolute
+    htmlAbsoluteToTransformReady,
+    htmlRelativeToAbsolute,
+    htmlRelativeToTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
 module.exports = {
@@ -138,6 +142,18 @@ module.exports = {
     relativeToAbsolute(payload, options) {
         payload.src = payload.src && relativeToAbsolute(payload.src, options.siteUrl, options.itemUrl, options);
         payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
+        return payload;
+    },
+
+    absoluteToTransformReady(payload, options) {
+        payload.src = payload.src && absoluteToTransformReady(payload.src, options.siteUrl, options);
+        payload.caption = payload.caption && htmlAbsoluteToTransformReady(payload.caption, options.siteUrl, options);
+        return payload;
+    },
+
+    relativeToTransformReady(payload, options) {
+        payload.src = payload.src && relativeToTransformReady(payload.src, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlRelativeToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
 };
