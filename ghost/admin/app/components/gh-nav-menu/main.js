@@ -6,6 +6,7 @@ import {computed} from '@ember/object';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 export default Component.extend(ShortcutsMixin, {
     billing: service(),
@@ -55,7 +56,7 @@ export default Component.extend(ShortcutsMixin, {
     // so that we can refresh when a new icon is uploaded
     didReceiveAttrs() {
         this._setIconStyle();
-        // this._loadMemberCount();
+        this._loadMemberCountsTask.perform();
     },
 
     didInsertElement() {
@@ -85,16 +86,20 @@ export default Component.extend(ShortcutsMixin, {
         }
     },
 
-    _loadMemberCount() {
-        this.membersStats.fetchCounts().then((stats) => {
+    _loadMemberCountsTask: task(function* () {
+        try {
+            this.set('memberCountLoading', true);
+            const stats = yield this.membersStats.fetchCounts();
             this.set('memberCountLoading', false);
             if (stats) {
                 const statsDateObj = this.membersStats.fillCountDates(stats.data) || {};
                 const dateValues = Object.values(statsDateObj);
                 this.set('memberCount', dateValues.length ? dateValues[dateValues.length - 1].total : 0);
             }
-        });
-    },
+        } catch (e) {
+            return false;
+        }
+    }),
 
     _setIconStyle() {
         let icon = this.icon;
@@ -109,7 +114,7 @@ export default Component.extend(ShortcutsMixin, {
             this.set('iconStyle', htmlSafe(`background-image: url(${icon})`));
             return;
         }
-        
+
         let iconUrl = 'https://static.ghost.org/v3.0.0/images/ghost-squircle.png';
 
         this.set('iconStyle', htmlSafe(`background-image: url(${iconUrl})`));
