@@ -78,7 +78,7 @@
                         <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
                     {{/if}}
                     {{#unless this.memberCountLoading}}
-                    <span class="gh-nav-member-count">{{this.memberCount}}</span>
+                    <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
                     {{/unless}}
                 </li>
                 <li>
