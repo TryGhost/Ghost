@@ -19,6 +19,7 @@ const defaultSettingsKeys = [
     'facebook',
     'twitter',
     'lang',
+    'locale',
     'timezone',
     'codeinjection_head',
     'codeinjection_foot',
@@ -82,7 +83,7 @@ describe('Settings Content API', function () {
         settings.should.have.properties(publicProperties);
 
         // The length below should only change when public settings have been removed or added
-        Object.keys(settings).length.should.equal(24);
+        Object.keys(settings).length.should.equal(25);
         Object.keys(settings).should.deepEqual(defaultSettingsKeys);
 
         // Verify that we are returning the defaults for each value
