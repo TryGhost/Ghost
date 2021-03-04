@@ -6,6 +6,7 @@ const localUtils = require('./utils');
 
 describe('Webhooks API', function () {
     let request;
+    const API_VERSION = 'canary';
 
     before(async function () {
         await testUtils.startGhost();
@@ -19,7 +20,7 @@ describe('Webhooks API', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2',
+            api_version: API_VERSION,
             integration_id: testUtils.DataGenerator.Content.integrations[0].id
         };
 

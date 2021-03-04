@@ -8,6 +8,7 @@ const ghost = testUtils.startGhost;
 
 describe('Webhooks API (v2)', function () {
     let request;
+    const API_VERSION = 'v2';
 
     before(function () {
         return ghost()
@@ -26,7 +27,7 @@ describe('Webhooks API (v2)', function () {
             integration_id: 'ignore_me',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -47,6 +48,9 @@ describe('Webhooks API (v2)', function () {
                 jsonResponse.webhooks[0].event.should.eql('test.create');
                 jsonResponse.webhooks[0].target_url.should.eql('http://example.com/webhooks/test/extra/v2');
                 jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].integration_id);
+                jsonResponse.webhooks[0].name.should.eql('test');
+                jsonResponse.webhooks[0].secret.should.eql('thisissecret');
+                jsonResponse.webhooks[0].api_version.should.eql('v2');
 
                 localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
             });
