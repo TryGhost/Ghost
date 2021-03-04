@@ -14,7 +14,7 @@ export default Service.extend({
     init() {
         this._super(...arguments);
 
-        if (this.config.get('billingUrl')) {
+        if (this.config.get('hostSettings.billing.url')) {
             window.addEventListener('message', (event) => {
                 if (event && event.data && event.data.route) {
                     this.handleRouteChangeInIframe(event.data.route);
@@ -38,7 +38,7 @@ export default Service.extend({
     },
 
     getIframeURL() {
-        let url = this.config.get('billingUrl');
+        let url = this.config.get('hostSettings.billing.url');
 
         if (window.location.hash && window.location.hash.includes(this.get('billingRouteRoot'))) {
             let destinationRoute = window.location.hash.replace(this.get('billingRouteRoot'), '');

@@ -39,7 +39,7 @@ export default Component.extend(ShortcutsMixin, {
     showTagsNavigation: or('session.user.isOwnerOrAdmin', 'session.user.isEditor'),
     showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwner'),
     showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwner'),
-    showBilling: computed.reads('config.billingUrl'),
+    showBilling: computed.reads('config.hostSettings.billing.enabled'),
 
     init() {
         this._super(...arguments);
