@@ -293,6 +293,8 @@ module.exports = {
         // NOTE: the defaultTo does not make sense to set on DB layer as it leads to unnecessary maintenance every major release
         //       it might make sense to introduce "isIn" validation checking if it's a valid version e.g: 'v3', 'v4', 'canary'
         api_version: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'v2'},
+        // NOTE: integration_id column needs "nullable: true" -> "nullable: false" migration (recreate table with nullable: false)
+        // CASE: Ghost instances initialized pre 4.0 will have this column set to nullable: true in db schema
         integration_id: {type: 'string', maxlength: 24, nullable: false, references: 'integrations.id', cascadeDelete: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'available'},
         last_triggered_at: {type: 'dateTime', nullable: true},
