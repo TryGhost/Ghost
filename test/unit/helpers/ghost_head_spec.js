@@ -1631,5 +1631,31 @@ describe('{{ghost_head}} helper', function () {
                 done();
             }).catch(done);
         });
+
+        it('includes style tag on templates with no context', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/amp/',
+                    context: null,
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;}</style>');
+                done();
+            }).catch(done);
+        });
     });
 });

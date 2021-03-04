@@ -178,7 +178,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
                 const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
 
-                if (existingScriptIndex) {
+                if (existingScriptIndex !== -1) {
                     head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
                 } else {
                     head.push(styleTag);
