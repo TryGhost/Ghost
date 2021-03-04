@@ -11,7 +11,7 @@ export const MARKETPLACE_THEMES = [{
     name: 'Edition',
     category: 'Newsletter',
     url: 'https://github.com/TryGhost/Edition',
-    previewUrl: 'https://edition.ghost.io',
+    previewUrl: 'https://ghost.org/themes/edition',
     ref: 'TryGhost/Edition',
     image: 'assets/img/themes/Edition.jpg',
     shortImage: 'assets/img/themes/Edition-cut.jpg'
@@ -19,7 +19,7 @@ export const MARKETPLACE_THEMES = [{
     name: 'Alto',
     category: 'Blog',
     url: 'https://github.com/TryGhost/Alto',
-    previewUrl: 'https://alto.ghost.io',
+    previewUrl: 'https://ghost.org/themes/alto',
     ref: 'TryGhost/Alto',
     image: 'assets/img/themes/Alto.jpg',
     shortImage: 'assets/img/themes/Alto-cut.jpg'
@@ -27,7 +27,7 @@ export const MARKETPLACE_THEMES = [{
     name: 'London',
     category: 'Photography',
     url: 'https://github.com/TryGhost/London',
-    previewUrl: 'https://london.ghost.io',
+    previewUrl: 'https://ghost.org/themes/london',
     ref: 'TryGhost/London',
     image: 'assets/img/themes/London.jpg',
     shortImage: 'assets/img/themes/London-cut.jpg'
@@ -35,7 +35,7 @@ export const MARKETPLACE_THEMES = [{
     name: 'Ease',
     category: 'Documentation',
     url: 'https://github.com/TryGhost/Ease',
-    previewUrl: 'https://edition.ghost.io',
+    previewUrl: 'https://ghost.org/themes/ease',
     ref: 'TryGhost/Ease',
     image: 'assets/img/themes/Ease.jpg',
     shortImage: 'assets/img/themes/Ease-cut.jpg'
