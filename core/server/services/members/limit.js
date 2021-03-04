@@ -8,10 +8,10 @@ async function getTotalMembers() {
 }
 
 module.exports = async () => {
-    const membersHostLimit = config.get('host_settings:limits:members');
+    const membersHostLimit = config.get('hostSettings:limits:members');
     if (membersHostLimit) {
         const allowedMembersLimit = membersHostLimit.max;
-        const hostUpgradeLink = config.get('host_settings:limits').upgrade_url;
+        const hostUpgradeLink = config.get('hostSettings:limits').upgrade_url;
 
         const totalMembers = await getTotalMembers();
 
