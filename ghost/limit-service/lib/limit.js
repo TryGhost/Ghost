@@ -42,19 +42,22 @@ class MaxLimit extends Limit {
 
     generateError(count) {
         let errorObj = super.generateError();
-        let max = this.max;
 
         errorObj.message = this.fallbackMessage;
 
         if (this.error) {
             try {
-                errorObj.message = _.template(this.error)({max, count});
+                errorObj.message = _.template(this.error)(
+                    {
+                        max: Intl.NumberFormat().format(this.max),
+                        count: Intl.NumberFormat().format(count)
+                    });
             } catch (e) {
                 errorObj.message = this.fallbackMessage;
             }
         }
 
-        errorObj.errorDetails.limit = max;
+        errorObj.errorDetails.limit = this.max;
         errorObj.errorDetails.total = count;
 
         return new errors.HostLimitError(errorObj);
