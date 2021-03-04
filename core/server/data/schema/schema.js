@@ -264,6 +264,8 @@ module.exports = {
         target_url: {type: 'string', maxlength: 2000, nullable: false},
         name: {type: 'string', maxlength: 191, nullable: true},
         secret: {type: 'string', maxlength: 191, nullable: true},
+        // NOTE: the defaultTo does not make sense to set on DB layer as it leads to unnecessary maintenance every major release
+        //       it might make sense to introduce "isIn" validation checking if it's a valid version e.g: 'v3', 'v4', 'canary'
         api_version: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'v2'},
         integration_id: {type: 'string', maxlength: 24, nullable: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'available'},
