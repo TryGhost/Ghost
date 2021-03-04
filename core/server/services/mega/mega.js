@@ -9,6 +9,7 @@ const {events, i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../settings/cache');
 const membersService = require('../members');
+const limitService = require('../limits');
 const bulkEmailService = require('../bulk-email');
 const jobsService = require('../jobs');
 const db = require('../../data/db');
@@ -253,7 +254,9 @@ async function sendEmailJob({emailModel, options}) {
     try {
         // Check host limit for allowed member count and throw error if over limit
         // - do this even if it's a retry so that there's no way around the limit
-        await membersService.checkHostLimit();
+        if (limitService.isLimited('members')) {
+            await limitService.errorIfIsOverLimit('members');
+        }
 
         // Create email batch and recipient rows unless this is a retry and they already exist
         const existingBatchCount = await emailModel.related('emailBatches').count('id');
