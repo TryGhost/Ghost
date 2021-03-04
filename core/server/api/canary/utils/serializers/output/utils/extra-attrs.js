@@ -93,6 +93,9 @@ module.exports.forSettings = (attrs, frame) => {
                 } else if (setting.key === 'default_locale') {
                     const target = _.find(attrs, {key: 'lang'});
                     target.key = 'default_locale';
+                } else if (setting.key === 'locale') {
+                    const target = _.find(attrs, {key: 'lang'});
+                    target.key = 'locale';
                 } else if (setting.key === 'slack') {
                     const slackURL = _.cloneDeep(_.find(attrs, {key: 'slack_url'}));
                     const slackUsername = _.cloneDeep(_.find(attrs, {key: 'slack_username'}));
@@ -120,6 +123,7 @@ module.exports.forSettings = (attrs, frame) => {
         const lang = _.cloneDeep(_.find(attrs, {key: 'lang'}));
         const slackURL = _.cloneDeep(_.find(attrs, {key: 'slack_url'}));
         const slackUsername = _.cloneDeep(_.find(attrs, {key: 'slack_username'}));
+        const locale = _.cloneDeep(_.find(attrs, {key: 'lang'}));
 
         if (ghostHead) {
             ghostHead.key = 'ghost_head';
@@ -150,6 +154,11 @@ module.exports.forSettings = (attrs, frame) => {
             }]);
 
             attrs.push(slack);
+        }
+
+        if (locale) {
+            locale.key = 'locale';
+            attrs.push(locale);
         }
     }
 };
