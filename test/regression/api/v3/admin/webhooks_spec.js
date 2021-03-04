@@ -8,6 +8,7 @@ const ghost = testUtils.startGhost;
 
 describe('Webhooks API (v3)', function () {
     let request;
+    const API_VERSION = 'v3';
 
     before(function () {
         return ghost()
@@ -26,7 +27,7 @@ describe('Webhooks API (v3)', function () {
             integration_id: 'ignore_me',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v3'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -61,7 +62,7 @@ describe('Webhooks API (v3)', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -78,7 +79,7 @@ describe('Webhooks API (v3)', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -91,7 +92,7 @@ describe('Webhooks API (v3)', function () {
 
     it('Fails validation when required fields are not present', function () {
         let webhookData = {
-            api_version: 'v2',
+            api_version: API_VERSION,
             integration_id: 'dummy'
         };
 
