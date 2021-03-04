@@ -293,6 +293,10 @@ p.gh-members-list-email {
     margin-top: var(--main-layout-section-vpadding);
 }
 
+.gh-members-list-subscribed-moment::first-letter {
+    text-transform: uppercase;
+}
+
 @media  (min-width: 1200px) and (max-width: 1370px) {
     .members-header .view-actions input.gh-members-list-searchfield {
         max-width: 130px;
@@ -371,6 +375,23 @@ p.gh-members-list-email {
         padding: 0 0 16px 4px;
         margin-top: -16px;
         font-size: 1.2rem;
+    }
+
+    .gh-members-list-subscribed-at div {
+        display: inline-block;
+        margin-right: 1px;
+    }
+
+    .gh-members-list-subscribed-moment::first-letter {
+        text-transform: none;
+    }
+
+    .gh-members-list-subscribed-moment::before {
+        content: "(";
+    }
+
+    .gh-members-list-subscribed-moment::after {
+        content: ")";
     }
 
     .gh-members-list-chevron {
