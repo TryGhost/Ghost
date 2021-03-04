@@ -1,9 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
+import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     router: service(),
+    config: service(),
 
     init() {
         this._super(...arguments);
@@ -15,9 +17,15 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         });
     },
 
+    disabled: computed('config.hostSettings.limits', function () {
+        return this.config.get('hostSettings.limits.customIntegrations.disabled');
+    }),
+
     beforeModel() {
         this._super(...arguments);
+
         return this.get('session.user')
+            .then(this.transitionDisabled())
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },
@@ -29,6 +37,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         return this
             .controllerFor('integrations')
             .integrationModelHook('slug', 'zapier', this, transition);
+    },
+
+    transitionDisabled() {
+        if (this.get('disabled')) {
+            this.transitionTo('integrations');
+        }
     },
 
     buildRouteInfoMetadata() {
