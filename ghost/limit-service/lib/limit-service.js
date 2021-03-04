@@ -10,6 +10,8 @@ class LimitService {
 
     loadLimits({limits, helpLink, db}) {
         Object.keys(limits).forEach((name) => {
+            name = _.camelCase(name);
+
             if (config[name]) {
                 let limitConfig = _.merge({}, limits[name], config[name]);
 
@@ -23,7 +25,7 @@ class LimitService {
     }
 
     isLimited(limitName) {
-        return !!this.limits[limitName];
+        return !!this.limits[_.camelCase(limitName)];
     }
 
     async checkIsOverLimit(limitName) {
