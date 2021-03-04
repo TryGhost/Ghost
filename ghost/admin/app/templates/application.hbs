@@ -33,6 +33,14 @@
             @modifier="action narrow"
         />
     {{/if}}
+
+    {{#if this.settings.accentColor}}
+        <style>
+        .koenig-editor__editor a:not([class]) {
+            box-shadow: 0 1px 0 #ffffff, 0 2px 0 {{this.settings.accentColor}};
+        }
+        </style>
+    {{/if}}
 </GhApp>
 
 <EmberLoadRemover />
