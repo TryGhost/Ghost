@@ -8,7 +8,7 @@ const React = require('react');
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
         width: 44px;
-        margin: 0 0 2px;
+        margin: 12px 0 10px;
     }
 
     .gh-portal-inbox-notification {
