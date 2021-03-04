@@ -25,7 +25,7 @@
   "dependencies": {
     "@tryghost/errors": "0.2.8",
     "bluebird": "^3.5.3",
-    "ghost-ignition": "4.5.3",
+    "ghost-ignition": "4.5.4",
     "lodash": "^4.17.11"
   }
 }
