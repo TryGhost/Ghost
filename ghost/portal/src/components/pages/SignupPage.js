@@ -386,7 +386,6 @@ class SignupPage extends React.Component {
 
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
-        const underline = (brandColor === '#1d1d1d') ? '0 1px 0 0 rgba(29, 29, 29, 0.35)' : '';
         return (
             <div className='gh-portal-signup-message'>
                 <div>Already a member?</div>
@@ -395,7 +394,7 @@ class SignupPage extends React.Component {
                     style={{color: brandColor}}
                     onClick={() => onAction('switchPage', {page: 'signin'})}
                 >
-                    <span style={{boxShadow: underline}}>Sign in</span>
+                    <span>Sign in</span>
                 </button>
             </div>
         );

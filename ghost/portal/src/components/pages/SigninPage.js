@@ -95,11 +95,10 @@ export default class SigninPage extends React.Component {
 
     renderSignupMessage() {
         const brandColor = this.context.brandColor;
-        const underline = (brandColor === '#1d1d1d') ? '0 1px 0 0 rgba(29, 29, 29, 0.35)' : '';
         return (
             <div className='gh-portal-signup-message'>
                 <div>Don't have an account?</div>
-                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}><span style={{boxShadow: underline}}>Sign up</span></button>
+                <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor}} onClick={() => this.context.onAction('switchPage', {page: 'signup'})}><span>Sign up</span></button>
             </div>
         );
     }
