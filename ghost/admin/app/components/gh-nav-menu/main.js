@@ -18,10 +18,13 @@ export default Component.extend(ShortcutsMixin, {
     session: service(),
     ui: service(),
     whatsNew: service(),
+    membersStats: service(),
 
     tagName: '',
 
     iconStyle: '',
+    memberCountLoading: true,
+    memberCount: 0,
 
     showSearchModal: false,
     shortcuts: null,
@@ -52,6 +55,7 @@ export default Component.extend(ShortcutsMixin, {
     // so that we can refresh when a new icon is uploaded
     didReceiveAttrs() {
         this._setIconStyle();
+        this._loadMemberCount();
     },
 
     didInsertElement() {
@@ -81,6 +85,17 @@ export default Component.extend(ShortcutsMixin, {
         }
     },
 
+    _loadMemberCount() {
+        this.membersStats.fetchCounts().then((stats) => {
+            this.set('memberCountLoading', false);
+            if (stats) {
+                const statsDateObj = this.membersStats.fillCountDates(stats.data) || {};
+                const dateValues = Object.values(statsDateObj);
+                this.set('memberCount', dateValues.length ? dateValues[dateValues.length - 1].total : 0);
+            }
+        });
+    },
+
     _setIconStyle() {
         let icon = this.icon;
 
@@ -99,4 +114,5 @@ export default Component.extend(ShortcutsMixin, {
 
         this.set('iconStyle', htmlSafe(`background-image: url(${iconUrl})`));
     }
+
 });
