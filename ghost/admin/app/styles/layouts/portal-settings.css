@@ -381,7 +381,7 @@
 .gh-portal-settings-previewheader {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     position: relative;
     height: 66px;
     padding: 0 24px;
@@ -403,7 +403,7 @@
 
 .gh-portal-preview-wrapper {
     overflow: hidden;
-    max-height: calc(100vh - 60px - 66px - 20px);
+    max-height: calc(100vh - 60px - 66px);
     height: 100%;
     background: #EDF0F2;
 }
@@ -538,7 +538,7 @@
 
 .gh-portal-links-group-divider {
     margin: 8px -32px;
-    border-top-color: var(--lightgrey);
+    border-top-color: var(--whitegrey);
 }
 
 .gh-portal-links-group-divider.first {
