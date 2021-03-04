@@ -102,7 +102,10 @@ describe('Validation', function () {
 
         describe('webhooks.add', function () {
             it('event name is not lowercase', function () {
-                const webhook = models.Webhook.forge(testUtils.DataGenerator.forKnex.createWebhook({event: 'Test'}));
+                const webhook = models.Webhook.forge(testUtils.DataGenerator.forKnex.createWebhook({
+                    event: 'Test',
+                    integration_id: testUtils.DataGenerator.Content.integrations[0].id
+                }));
 
                 // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
                 return validation.validateSchema('webhooks', webhook, {method: 'insert'})
@@ -114,9 +117,9 @@ describe('Validation', function () {
                             throw err;
                         }
 
-                        err.length.should.eql(2);
+                        err.length.should.eql(1);
                         err[0].errorType.should.eql('ValidationError');
-                        err[1].errorType.should.eql('ValidationError');
+                        err[0].message.should.match(/isLowercase/);
                     });
             });
         });
