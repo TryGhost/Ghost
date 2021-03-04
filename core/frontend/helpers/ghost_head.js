@@ -167,9 +167,29 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                             '\n    </script>\n');
                     }
                 }
+            }
 
-                if (!_.includes(context, 'amp')) {
-                    head.push(getMembersHelper(options.data));
+            head.push('<meta name="generator" content="Ghost ' +
+                escapeExpression(safeVersion) + '" />');
+
+            head.push('<link rel="alternate" type="application/rss+xml" title="' +
+                escapeExpression(meta.site.title) + '" href="' +
+                escapeExpression(meta.rssUrl) + '" />');
+
+            // no code injection for amp context!!!
+            if (!_.includes(context, 'amp')) {
+                head.push(getMembersHelper(options.data));
+
+                if (!_.isEmpty(globalCodeinjection)) {
+                    head.push(globalCodeinjection);
+                }
+
+                if (!_.isEmpty(postCodeInjection)) {
+                    head.push(postCodeInjection);
+                }
+
+                if (!_.isEmpty(tagCodeInjection)) {
+                    head.push(tagCodeInjection);
                 }
             }
 
@@ -185,27 +205,6 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 }
             }
 
-            head.push('<meta name="generator" content="Ghost ' +
-                escapeExpression(safeVersion) + '" />');
-
-            head.push('<link rel="alternate" type="application/rss+xml" title="' +
-                escapeExpression(meta.site.title) + '" href="' +
-                escapeExpression(meta.rssUrl) + '" />');
-
-            // no code injection for amp context!!!
-            if (!_.includes(context, 'amp')) {
-                if (!_.isEmpty(globalCodeinjection)) {
-                    head.push(globalCodeinjection);
-                }
-
-                if (!_.isEmpty(postCodeInjection)) {
-                    head.push(postCodeInjection);
-                }
-
-                if (!_.isEmpty(tagCodeInjection)) {
-                    head.push(tagCodeInjection);
-                }
-            }
             debug('end');
             return new SafeString(head.join('\n    ').trim());
         })
