@@ -402,10 +402,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.5.tgz#9cb42e2287a57e6132b0a98b21ce36c034cffeb2"
   integrity sha512-h4+rwCwszj5ozih57P0W8NjrN9rit6VuuMfLpSUrpbVmRpWcrvmg3JXhlSyqhe/HjHmPA3wNuqLiMLmN8H/VAA==
 
-"@tryghost/bunyan-rotating-filestream@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/bunyan-rotating-filestream/-/bunyan-rotating-filestream-0.0.6.tgz#c5a55ca3a7d0759394b94c8fb34e3d5810aa2a09"
-  integrity sha512-dN3F+TbV1UrkKR7eoEFQezuneinZArJvP4r1KvF3ukDJWmEalQrbstvfg4SyuCPgbZluy4if1xL7mShQR9pMcA==
+"@tryghost/bunyan-rotating-filestream@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/bunyan-rotating-filestream/-/bunyan-rotating-filestream-0.0.7.tgz#3957de91e4e9b58999f0bbe19242080543dcfc4a"
+  integrity sha512-dswM+dxG8J7WpVoSjzAdoWXqqB5Dg0C2T7Zh6eoUvl5hkA8yWWJi/fS4jNXlHF700lWQ0g8/t+leJ7SGSWd+aw==
   dependencies:
     long-timeout "^0.1.1"
 
@@ -4143,12 +4143,12 @@ ghost-ignition@4.4.4:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.5.3:
-  version "4.5.3"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.5.3.tgz#ec0e72602bc89e0a9c5e1b99183daaa06b3e7091"
-  integrity sha512-ubvUZO3KruM16i9TM0+rJFLa21xfqN2iDSYQmKYYQP1d4qXgykPHlEjMUTA1ThZ5wU7kNTVswmls+iuOpMJjfw==
+ghost-ignition@4.5.4:
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.5.4.tgz#09e90721b6df04af048f89f696a7af92e0ab4dfe"
+  integrity sha512-Ab9r4zFNqqWmcYoF3sFAY7IJCi5LUTz1KrwfpOEL4BVZEBF2HfzZ8Px2JVxDpmSRMmyHKmN1h/xjXfj+IT2hxA==
   dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.6"
+    "@tryghost/bunyan-rotating-filestream" "0.0.7"
     "@tryghost/elasticsearch-bunyan" "0.1.1"
     bunyan "1.8.15"
     bunyan-loggly "1.4.2"
