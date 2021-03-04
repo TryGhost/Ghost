@@ -53,8 +53,8 @@ module.exports = {
             method: 'add'
         },
         async query(frame) {
-            if (limitService.isLimited('custom_themes')) {
-                return await limitService.errorIfWouldGoOverLimit('custom_themes');
+            if (limitService.isLimited('customThemes')) {
+                await limitService.errorIfWouldGoOverLimit('customThemes');
             }
 
             // @NOTE: consistent filename uploads

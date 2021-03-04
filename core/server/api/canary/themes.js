@@ -76,8 +76,8 @@ module.exports = {
             if (frame.options.source === 'github') {
                 const [org, repo] = frame.options.ref.toLowerCase().split('/');
 
-                if (limitService.isLimited('custom_themes') && org.toLowerCase() !== 'tryghost') {
-                    await limitService.errorIfWouldGoOverLimit('custom_themes');
+                if (limitService.isLimited('customThemes') && org.toLowerCase() !== 'tryghost') {
+                    await limitService.errorIfWouldGoOverLimit('customThemes');
                 }
 
                 // omit /:ref so we fetch the default branch
@@ -139,8 +139,8 @@ module.exports = {
             method: 'add'
         },
         async query(frame) {
-            if (limitService.isLimited('custom_themes')) {
-                return await limitService.errorIfWouldGoOverLimit('custom_themes');
+            if (limitService.isLimited('customThemes')) {
+                await limitService.errorIfWouldGoOverLimit('customThemes');
             }
 
             // @NOTE: consistent filename uploads

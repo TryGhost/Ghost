@@ -6,17 +6,17 @@ let limitService = new LimitService();
 const initFn = () => {
     let helpLink;
 
-    if (!config.get('host_settings') || !config.get('host_settings:limits')) {
+    if (!config.get('hostSettings') || !config.get('hostSettings:limits')) {
         return;
     }
 
-    if (config.get('host_settings:billing:enabled') && config.get('host_settings:billing:enabled') === true && config.get('host_settings:billing:url')) {
-        helpLink = config.get('host_settings:billing:url');
+    if (config.get('hostSettings:billing:enabled') && config.get('hostSettings:billing:enabled') === true && config.get('hostSettings:billing:url')) {
+        helpLink = config.get('hostSettings:billing:url');
     } else {
         helpLink = 'https://ghost.org/help/';
     }
 
-    limitService.loadLimits({limits: config.get('host_settings:limits'), db, helpLink});
+    limitService.loadLimits({limits: config.get('hostSettings:limits'), db, helpLink});
 };
 
 module.exports = limitService;
