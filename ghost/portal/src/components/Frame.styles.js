@@ -211,7 +211,10 @@ const FrameStyles = `
         background: linear-gradient(315deg , rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 100%);
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(2px);
-        transform: translate3d(0);
+        -webkit-transform: translate3d(0, 0, 0);
+        -moz-transform: translate3d(0, 0, 0);
+        -ms-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
     }
 
     .gh-portal-popup-background.preview {
