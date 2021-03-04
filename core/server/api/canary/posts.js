@@ -3,7 +3,6 @@ const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const {mega} = require('../../services/mega');
-const membersService = require('../../services/members');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -154,11 +153,6 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         async query(frame) {
-            /**Check host limits for members when send email is true**/
-            if ((frame.options.email_recipient_filter && frame.options.email_recipient_filter !== 'none') || frame.options.send_email_when_published) {
-                await membersService.checkHostLimit();
-            }
-
             let model;
             if (!frame.options.email_recipient_filter && frame.options.send_email_when_published) {
                 await models.Base.transaction(async (transacting) => {
