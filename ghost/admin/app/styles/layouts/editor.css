@@ -451,13 +451,9 @@
     font-size: 1.35rem;
     font-weight: 500;
     color: var(--green-d1);
-    letter-spacing: 0.2px;
-    height: 33px;
-    padding: 5px 12px 6px;
     margin-right: 8px;
     outline: none;
     border: none;
-    border-radius: 3px;
     white-space: nowrap;
     transition: all 0.25s ease;
 }

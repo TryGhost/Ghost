@@ -21,7 +21,8 @@
             @postStatus={{@model.post.status}}
             @saveTask={{@model.saveTask}}
             @setSaveType={{@model.setEditorSaveType}}
-            @memberCount={{@model.memberCount}} />
+            @memberCount={{@model.memberCount}}
+            @uiContext="preview" />
     </header>
 
     {{#if (eq this.tab "browser")}}
