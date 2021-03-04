@@ -26,16 +26,31 @@
                     <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="accentColor" class="gh-tag-settings-colorcontainer">
                         <label for="accent-color">Color</label>
                         <div class="input-color">
-                            <GhTextInput
-                                @name="accent-color"
-                                @placeholder="abcdef"
-                                @autocorrect="off"
-                                @maxlength="6"
-                                @focus-out={{action "validateAccentColor"}}
-                                @value={{accentColor}}
+                            <input
+                                type="text"
+                                placeholder="abcdef"
+                                name="accent-color"
+                                autocorrect="off"
+                                maxlength="6"
+                                value={{this.accentColor}}
+                                class="gh-input"
+                                {{on "input" (perform this.debounceUpdateAccentColor)}}
+                                {{on "blur" this.updateAccentColor}}
                                 data-test-input="accentColor"
                             />
-                            <div class="color-box" style={{this.accentColorBackgroundStyle}}></div>
+                            <div class="color-picker-horizontal-divider"></div>
+                            <div
+                                class="color-box-container"
+                                style={{this.accentColorBgStlye}}
+                            >
+                                <input
+                                    type="color"
+                                    name="accent-color"
+                                    class="color-picker"
+                                    value="{{this.accentColorPickerValue}}"
+                                    {{on "input" (perform this.debounceUpdateAccentColor)}}
+                                >
+                            </div>
                         </div>
                     </GhFormGroup>
                 </div>
