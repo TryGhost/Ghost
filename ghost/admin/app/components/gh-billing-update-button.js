@@ -11,7 +11,7 @@ export default Component.extend({
 
     subscription: null,
 
-    showUpgradeButton: computed.equal('billing.subscription.status', 'trialing'),
+    showUpgradeButton: computed.reads('billing.subscription.isActiveTrial'),
 
     actions: {
         openBilling() {
