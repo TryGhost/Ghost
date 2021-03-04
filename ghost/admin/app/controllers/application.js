@@ -12,7 +12,7 @@ export default Controller.extend({
     settings: service(),
     ui: service(),
 
-    showBilling: computed.reads('config.billingUrl'),
+    showBilling: computed.reads('config.hostSettings.billing.enabled'),
     showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
         let {router, session, ui} = this;
 
