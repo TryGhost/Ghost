@@ -24,6 +24,10 @@
             <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="new-integration-name" />
         </GhFormGroup>
     </fieldset>
+
+    {{#if this.errorMessage}}
+        <p class="error"><strong class="response">{{this.errorMessage}}</strong></p>
+    {{/if}}
 </div>
 
 <div class="modal-footer">
