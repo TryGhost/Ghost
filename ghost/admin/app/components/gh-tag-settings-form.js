@@ -5,6 +5,7 @@ import {htmlSafe} from '@ember/string';
 import {or} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+import {task, timeout} from 'ember-concurrency';
 
 const {Handlebars} = Ember;
 
@@ -35,9 +36,12 @@ export default Component.extend({
         return color;
     }),
 
-    accentColorBackgroundStyle: computed('tag.accentColor', function () {
-        let color = this.get('tag.accentColor') || '#ffffff';
-        return htmlSafe(`background-color: ${color}`);
+    accentColorPickerValue: computed('tag.accentColor', function () {
+        return this.tag.get('accentColor') || '#ffffff';
+    }),
+
+    accentColorBgStyle: computed('accentColorPickerValue', function () {
+        return htmlSafe(`background-color: ${this.accentColorPickerValue}`);
     }),
 
     title: computed('tag.isNew', function () {
@@ -154,39 +158,51 @@ export default Component.extend({
                 this.get('tag.errors').add('canonicalUrl', errMessage);
                 this.get('tag.hasValidated').pushObject('canonicalUrl');
             }
-        },
+        }
+    },
 
-        validateAccentColor() {
-            let newColor = this.get('accentColor');
-            let oldColor = this.get('tag.accentColor');
-            let errMessage = '';
+    updateAccentColor: async function (event) {
+        let newColor = event.target.value;
+        const oldColor = this.tag.get('accentColor');
 
-            this.get('tag.errors').remove('accentColor');
-            this.get('tag.hasValidated').removeObject('accentColor');
+        // reset errors and validation
+        this.tag.errors.remove('accentColor');
+        this.tag.hasValidated.removeObject('accentColor');
 
-            if (newColor === '') {
-                this.setProperty('accentColor', '');
+        if (newColor === '') {
+            if (newColor === oldColor) {
                 return;
             }
 
-            if (!newColor) {
-                newColor = oldColor;
-            }
-
-            if (newColor[0] !== '#') {
-                newColor = `#${newColor}`;
-            }
-
-            if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
-                this.setProperty('accentColor', '');
-                run.schedule('afterRender', this, function () {
-                    this.setProperty('accentColor', newColor);
-                });
-            } else {
-                errMessage = 'The color should be in valid hex format';
-                this.get('tag.errors').add('accentColor', errMessage);
-                this.get('tag.hasValidated').pushObject('accentColor');
-            }
+            // clear out the accent color
+            this.tag.set('accentColor', '');
+            return;
         }
-    }
+
+        // accentColor will be null unless the user has input something
+        if (!newColor) {
+            newColor = oldColor;
+        }
+
+        if (newColor[0] !== '#') {
+            newColor = `#${newColor}`;
+        }
+
+        if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
+            if (newColor === oldColor) {
+                return;
+            }
+
+            this.tag.set('accentColor', newColor);
+            this.scratchTag.set('accentColor', newColor);
+        } else {
+            this.tag.errors.add('accentColor', 'The colour should be in valid hex format');
+            this.tag.hasValidated.pushObject('accentColor');
+        }
+    },
+
+    debounceUpdateAccentColor: task(function*(event) {
+        yield timeout(10);
+        this.updateAccentColor(event);
+    })
 });
