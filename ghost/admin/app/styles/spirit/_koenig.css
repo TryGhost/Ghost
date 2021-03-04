@@ -448,7 +448,7 @@
 /* Links
 /* -------------------------------------------------------------------- */
 
-.koenig-editor__editor a {
+.koenig-editor__editor a:not([class]) {
     color: var(--darkgrey-d2);
     text-decoration: none;
     box-shadow: 0 1px 0 var(--white), 0 2px 0 var(--blue);
