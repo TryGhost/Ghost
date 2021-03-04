@@ -66,10 +66,10 @@ const Integration = ghostBookshelf.Model.extend({
     async permissible(integrationModel, action) {
         const isAdd = (action === 'add');
 
-        if (isAdd && limitService.isLimited('custom_integrations')) {
+        if (isAdd && limitService.isLimited('customIntegrations')) {
             // CASE: if your site is limited to a certain number of custom integrations
             // Inviting a new custom integration requires we check we won't go over the limit
-            await limitService.errorIfWouldGoOverLimit('custom_integrations');
+            await limitService.errorIfWouldGoOverLimit('customIntegrations');
         }
         return true;
     }

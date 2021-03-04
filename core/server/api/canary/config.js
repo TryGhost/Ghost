@@ -9,7 +9,7 @@ module.exports = {
     read: {
         permissions: false,
         query() {
-            const billingUrl = config.get('host_settings:billing:enabled') ? config.get('host_settings:billing:url') : '';
+            const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';
             const response = {
                 version: ghostVersion.full,
                 environment: config.get('env'),
