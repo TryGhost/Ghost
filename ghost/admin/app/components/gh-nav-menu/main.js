@@ -55,7 +55,7 @@ export default Component.extend(ShortcutsMixin, {
     // so that we can refresh when a new icon is uploaded
     didReceiveAttrs() {
         this._setIconStyle();
-        this._loadMemberCount();
+        // this._loadMemberCount();
     },
 
     didInsertElement() {
