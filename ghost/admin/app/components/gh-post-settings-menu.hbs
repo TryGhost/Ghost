@@ -1,4 +1,4 @@
-<div class="settings-menu-container">
+<div class="settings-menu-container {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-wide"}}">
     <div id="entry-controls">
         <div class="{{if this.isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
             <div class="settings-menu-header">
@@ -175,7 +175,7 @@
             </div>{{! .settings-menu-content }}
         </div>{{! .post-settings-menu }}
 
-        <div class="{{if this.isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane">
+        <div class="{{if this.isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane {{unless (eq this.subview "email-settings") "settings-menu-pane-wide"}}">
             <div class="active">
                 {{#if this.isViewingSubview}}
                     {{#if (eq this.subview "meta-data")}}
