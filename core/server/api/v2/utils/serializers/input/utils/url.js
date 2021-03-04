@@ -1,15 +1,20 @@
 const urlUtils = require('../../../../../../../shared/url-utils');
 
 const handleImageUrl = (imageUrl) => {
-    const siteDomain = urlUtils.getSiteUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    const imagePathRe = new RegExp(`^${siteDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
+    try {
+        const imageURL = new URL(imageUrl, urlUtils.getSiteUrl());
+        const siteURL = new URL(urlUtils.getSiteUrl());
+        const subdir = siteURL.pathname.replace(/\/$/, '');
+        const imagePathRe = new RegExp(`${subdir}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
 
-    if (imagePathRe.test(imageUrlAbsolute)) {
-        return urlUtils.absoluteToRelative(imageUrl);
+        if (imagePathRe.test(imageURL.pathname)) {
+            return urlUtils.toTransformReady(imageUrl);
+        }
+
+        return imageUrl;
+    } catch (e) {
+        return imageUrl;
     }
-
-    return imageUrl;
 };
 
 const forPost = (attrs, options) => {

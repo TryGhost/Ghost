@@ -419,18 +419,18 @@ Post = ghostBookshelf.Model.extend({
             this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
         }
 
-        // ensure all URLs are stored as relative
+        // ensure all URLs are stored as transform-ready with __GHOST_URL__ representing config.url
         // note: html is not necessary to change because it's a generated later from mobiledoc
         const urlTransformMap = {
-            mobiledoc: 'mobiledocAbsoluteToRelative',
-            custom_excerpt: 'htmlAbsoluteToRelative',
-            codeinjection_head: 'htmlAbsoluteToRelative',
-            codeinjection_foot: 'htmlAbsoluteToRelative',
-            feature_image: 'absoluteToRelative',
-            og_image: 'absoluteToRelative',
-            twitter_image: 'absoluteToRelative',
+            mobiledoc: 'mobiledocToTransformReady',
+            custom_excerpt: 'htmlToTransformReady',
+            codeinjection_head: 'htmlToTransformReady',
+            codeinjection_foot: 'htmlToTransformReady',
+            feature_image: 'toTransformReady',
+            og_image: 'toTransformReady',
+            twitter_image: 'toTransformReady',
             canonical_url: {
-                method: 'absoluteToRelative',
+                method: 'toTransformReady',
                 options: {
                     ignoreProtocol: false
                 }
