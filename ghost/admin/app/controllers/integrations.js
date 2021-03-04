@@ -7,6 +7,7 @@ import {task} from 'ember-concurrency';
 export default Controller.extend({
     settings: service(),
     store: service(),
+    config: service(),
 
     _allIntegrations: null,
 
@@ -14,6 +15,10 @@ export default Controller.extend({
         this._super(...arguments);
         this._allIntegrations = this.store.peekAll('integration');
     },
+
+    zapierDisabled: computed('config.hostSettings.limits', function () {
+        return this.config.get('hostSettings.limits.customIntegrations.disabled');
+    }),
 
     // filter over the live query so that the list is automatically updated
     // as integrations are added/removed
