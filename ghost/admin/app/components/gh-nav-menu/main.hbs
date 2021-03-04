@@ -71,12 +71,15 @@
                 <li><LinkTo @route="tags" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
             {{/if}}
             {{#if (gh-user-can-admin this.session.user)}}
-                <li>
+                <li class="relative">
                     {{#if (eq this.router.currentRouteName "members.index")}}
                         <LinkTo @route="members" @current-when="members member" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
                     {{else}}
                         <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
                     {{/if}}
+                    {{#unless this.memberCountLoading}}
+                    <span class="gh-nav-member-count">{{this.memberCount}}</span>
+                    {{/unless}}
                 </li>
                 <li>
                     <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "module"}}Integrations</LinkTo>

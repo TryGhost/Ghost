@@ -498,8 +498,8 @@
 
 .gh-nav-list .gh-secondary-action span svg {
     margin-right: 0;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     fill: color-mod(var(--middarkgrey) l(-10%));
 }
 
@@ -527,6 +527,10 @@
     height: 16px;
 }
 
+.gh-nav-list .gh-nav-new-post {
+    opacity: 1;
+}
+
 .gh-nav-list .gh-nav-new-post span svg {
     width: 18px;
     height: 18px;
@@ -534,6 +538,23 @@
 
 .gh-nav-list .gh-nav-new-post span svg path {
     stroke: var(--darkgrey);
+    stroke-width: 1.5px;
+}
+
+.gh-nav-list .gh-nav-member-count {
+    position: absolute;
+    z-index: 999;
+    padding: 2px 7px;
+    margin: 0;
+    right: 30px;
+    top: 5px;
+    background: var(--mainmenu-color-hover-bg);
+    color: var(--middarkgrey);
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 1.3rem;
+    min-width: 23px;
+    text-align: center;
 }
 
 .gh-nav-main {
