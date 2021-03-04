@@ -8,7 +8,7 @@
 .settings-menu-container {
     position: absolute;
     top: 0;
-    right: 0;
+    right: calc(380px - 500px);
     bottom: 0;
     z-index: 500;
     width: 500px;
@@ -38,8 +38,17 @@
     left: 0;
     overflow: auto;
     opacity: 1;
+    width: 380px;
     transform: translate3d(0, 0px, 0px);
     -webkit-overflow-scrolling: touch;
+}
+
+.settings-menu-container .settings-menu-pane-wide {
+    width: 500px;
+}
+
+.settings-menu-container-wide {
+    right: 0;
 }
 
 @media (min-width: 901px) {
