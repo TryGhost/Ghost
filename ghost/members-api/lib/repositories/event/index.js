@@ -90,6 +90,24 @@ module.exports = class EventRepository {
         };
     }
 
+    async getSignupEvents(options = {}) {
+        options.withRelated = ['member'];
+        options.filter = 'from_status:null';
+        const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
+
+        const data = models.map((data) => {
+            return {
+                type: 'signup_event',
+                data: data.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
     async getEventTimeline(options = {}) {
         if (!options.limit) {
             options.limit = 10;
@@ -100,7 +118,8 @@ module.exports = class EventRepository {
         const allEventPages = await Promise.all([
             this.getNewsletterSubscriptionEvents(options),
             this.getSubscriptionEvents(options),
-            this.getLoginEvents(options)
+            this.getLoginEvents(options),
+            this.getSignupEvents(options)
         ]);
 
         const allEvents = allEventPages.reduce((allEvents, page) => allEvents.concat(page.data), []);
