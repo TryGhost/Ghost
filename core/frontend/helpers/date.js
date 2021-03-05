@@ -22,7 +22,7 @@ module.exports = function (date, options) {
     }
 
     const {
-        format = 'LL',
+        format = 'll',
         timeago
     } = options.hash;
 

@@ -36,6 +36,45 @@ describe('{{date}} helper', function () {
         });
     });
 
+    it('creates properly localised date strings', function () {
+        const testDates = [
+            '2013-12-31T23:58:58.593+02:00',
+            '2014-01-01T00:28:58.593+11:00',
+            '2014-11-20T01:28:58.593-04:00',
+            '2014-03-01T01:28:58.593+00:00'
+        ];
+
+        const locales = [
+            'en',
+            'en-gb',
+            'de'
+        ];
+
+        const timezones = 'Europe/Dublin';
+        const format = 'll';
+
+        locales.forEach(function (l) {
+            const context = {
+                hash: {
+                    format: format
+                },
+                data: {
+                    site: {
+                        timezone: 'Europe/Dublin',
+                        lang: l
+                    }
+                }
+            };
+
+            testDates.forEach(function (d) {
+                const rendered = helpers.date.call({published_at: d}, context);
+
+                should.exist(rendered);
+                String(rendered).should.equal(moment(d).tz(timezones).locale(l).format(format));
+            });
+        });
+    });
+
     it('creates properly formatted time ago date strings', function () {
         const testDates = [
             '2013-12-31T23:58:58.593+02:00',
