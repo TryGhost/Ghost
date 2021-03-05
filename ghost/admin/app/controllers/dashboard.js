@@ -183,6 +183,7 @@ export default class DashboardController extends Controller {
             const percentGrowth = rangeStartOpenRate !== 0 ? ((rangeEndOpenRate - rangeStartOpenRate) / rangeStartOpenRate) * 100 : 0;
             this.newsletterOpenRatesData = {
                 percentGrowth: percentGrowth.toFixed(1),
+                percentClass: (percentGrowth > 0 ? 'positive' : (percentGrowth < 0 ? 'negative' : '')),
                 current: rangeEndOpenRate,
                 options: {
                     rangeInDays: 30
