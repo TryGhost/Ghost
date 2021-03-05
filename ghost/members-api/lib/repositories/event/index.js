@@ -126,7 +126,30 @@ module.exports = class EventRepository {
 
         return allEvents.sort((a, b) => {
             return new Date(b.data.created_at) - new Date(a.data.created_at);
-        }).slice(0, options.limit);
+        }).reduce((memo, event, i) => {
+            if (event.type === 'newsletter_event' && event.data.subscribed) {
+                const previousEvent = allEvents[i - 1];
+                const nextEvent = allEvents[i + 1];
+                const currentMember = event.data.member_id;
+
+                if (previousEvent && previousEvent.type === 'signup_event') {
+                    const previousMember = previousEvent.data.member_id;
+
+                    if (currentMember === previousMember) {
+                        return memo;
+                    }
+                }
+
+                if (nextEvent && nextEvent.type === 'signup_event') {
+                    const nextMember = nextEvent.data.member_id;
+
+                    if (currentMember === nextMember) {
+                        return memo;
+                    }
+                }
+            }
+            return memo.concat(event);
+        }, []).slice(0, options.limit);
     }
 
     async getSubscriptions() {
