@@ -1,15 +1,15 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
+    <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="staff" data-test-staff-link={{true}}>Staff</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
-            {{user.name}}
+            {{this.user.name}}
         </h2>
 
         <section class="view-actions">
-            <div class="gh-btn gh-btn-blue"><span>Save</span></div>
+            <div class="gh-btn gh-btn-primary"><span>Save</span></div>
         </section>
-    </header>
+    </GhCanvasHeader>
 
     <div class="gh-content">
         <GhLoadingSpinner />
