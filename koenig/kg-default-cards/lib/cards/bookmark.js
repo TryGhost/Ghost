@@ -183,8 +183,12 @@ module.exports = {
         if (payload.url) {
             payload.url = payload.url && absoluteToRelative(payload.url, options.siteUrl, options);
         }
-        if (payload.metadata && payload.metadata.url) {
-            payload.metadata.url = payload.metadata.url && absoluteToRelative(payload.metadata.url, options.siteUrl, options);
+        if (payload.metadata) {
+            ['url', 'icon', 'thumbnail'].forEach((attr) => {
+                if (payload.metadata[attr]) {
+                    payload.metadata[attr] = absoluteToRelative(payload.metadata[attr], options.siteUrl, options);
+                }
+            });
         }
         payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
         return payload;
@@ -194,8 +198,12 @@ module.exports = {
         if (payload.url) {
             payload.url = payload.url && relativeToAbsolute(payload.url, options.siteUrl, options.itemUrl, options);
         }
-        if (payload.metadata && payload.metadata.url) {
-            payload.metadata.url = payload.metadata.url && relativeToAbsolute(payload.metadata.url, options.siteUrl, options.itemUrl, options);
+        if (payload.metadata) {
+            ['url', 'icon', 'thumbnail'].forEach((attr) => {
+                if (payload.metadata[attr]) {
+                    payload.metadata[attr] = relativeToAbsolute(payload.metadata[attr], options.siteUrl, options.itemUrl, options);
+                }
+            });
         }
         payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
@@ -205,8 +213,12 @@ module.exports = {
         if (payload.url) {
             payload.url = payload.url && toTransformReady(payload.url, options.siteUrl, options.itemUrl, options);
         }
-        if (payload.metadata && payload.metadata.url) {
-            payload.metadata.url = payload.metadata.url && toTransformReady(payload.metadata.url, options.siteUrl, options.itemUrl, options);
+        if (payload.metadata) {
+            ['url', 'icon', 'thumbnail'].forEach((attr) => {
+                if (payload.metadata[attr]) {
+                    payload.metadata[attr] = toTransformReady(payload.metadata[attr], options.siteUrl, options.itemUrl, options);
+                }
+            });
         }
         payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
