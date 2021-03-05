@@ -17,6 +17,10 @@ export default class EventTimeline extends Component {
     }
 
     getAction(event) {
+        if (event.type === 'signup_event') {
+            return 'signed up';
+        }
+
         if (event.type === 'login_event') {
             return 'logged in';
         }
@@ -47,14 +51,6 @@ export default class EventTimeline extends Component {
     }
 
     getObject(event) {
-        if (event.type === 'login_event') {
-            return '';
-        }
-
-        if (event.type === 'payment_event') {
-            return '';
-        }
-
         if (event.type === 'newsletter_event') {
             return 'emails';
         }
@@ -62,6 +58,8 @@ export default class EventTimeline extends Component {
         if (event.type === 'subscription_event') {
             return 'their subscription';
         }
+
+        return '';
     }
 
     getInfo(event) {
