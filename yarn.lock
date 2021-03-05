@@ -631,10 +631,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-1.0.1.tgz#cf1b1ddb67ffaf1a9af62b4e15fe9b9ed53d91b5"
-  integrity sha512-Jtrk3Qkp8tqllB2rFxxs2uUQs5/X+yQo/idOl33p7A7RZBgGtBbsN1UP82lv99t4ZpBtm75Opv12rZ3bJrvtFg==
+"@tryghost/url-utils@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-1.0.2.tgz#05d54dd2f89e254d4379d54d2d877be12ade4635"
+  integrity sha512-YjUefzev1vvpYBFGxfhO4U6Wew2Swgy3zXz0/Zb0f+FWG0sJ13tplaRcN+79vF0x4IROjxOyn3wR8STyAvQ8JA==
   dependencies:
     cheerio "0.22.0"
     moment "2.27.0"
