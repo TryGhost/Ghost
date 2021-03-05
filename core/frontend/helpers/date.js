@@ -5,42 +5,51 @@
 
 const {SafeString, themeI18n} = require('../services/proxy');
 const moment = require('moment-timezone');
+const _ = require('lodash');
 
-module.exports = function (date, options) {
-    let timezone;
+module.exports = function (...attrs) {
+    // Options is the last argument
+    const options = attrs.pop();
+    let date;
 
-    if (!options && Object.prototype.hasOwnProperty.call(date, 'hash')) {
-        options = date;
-        date = undefined;
-        timezone = options.data.site.timezone;
+    // If there is any more arguments, date is the first one
+    if (!_.isEmpty(attrs)) {
+        date = attrs.shift();
 
-        // set to published_at by default, if it's available
-        // otherwise, this will print the current date
-        if (this.published_at) {
-            date = moment(this.published_at).tz(timezone).format();
-        }
+    // If there is no date argument & the current context contains published_at use that by default,
+    // else date being undefined means moment will use the current date
+    } else if (this.published_at) {
+        date = this.published_at;
     }
 
+    // ensure that date is undefined, not null, as that can cause errors
+    date = date === null ? undefined : date;
+
+    const timezone = options.data.site.timezone;
     const {
-        format = 'MMM DD, YYYY',
+        format = 'll',
         timeago
     } = options.hash;
 
-    // ensure that context is undefined, not null, as that can cause errors
-    date = date === null ? undefined : date;
-    timezone = options.data.site.timezone;
     const timeNow = moment().tz(timezone);
+    // Our date might be user input
+    let testDateInput = Date.parse(date);
+    let dateMoment;
+    if (isNaN(testDateInput) === false) {
+        dateMoment = moment.parseZone(date);
+    } else {
+        dateMoment = timeNow;
+    }
 
     // i18n: Making dates, including month names, translatable to any language.
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
-    const dateMoment = moment(date);
     dateMoment.locale(themeI18n.locale());
 
     if (timeago) {
-        date = timezone ? dateMoment.tz(timezone).from(timeNow) : dateMoment.fromNow();
+        date = dateMoment.tz(timezone).from(timeNow);
     } else {
-        date = timezone ? dateMoment.tz(timezone).format(format) : dateMoment.format(format);
+        date = dateMoment.tz(timezone).format(format);
     }
 
     return new SafeString(date);

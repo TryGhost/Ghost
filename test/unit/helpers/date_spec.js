@@ -1,11 +1,20 @@
+const sinon = require('sinon');
 const should = require('should');
 
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
+const proxy = require('../../../core/frontend/services/proxy');
+const settingsCache = require('../../../core/server/services/settings/cache');
+
 const moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
+    afterEach(function () {
+        settingsCache.reset();
+        proxy.themeI18n._loadLocale();
+    });
+
     it('creates properly formatted date strings', function () {
         const testDates = [
             '2013-12-31T11:28:58.593+02:00',
@@ -14,7 +23,7 @@ describe('{{date}} helper', function () {
             '2014-03-01T01:28:58.593+00:00'
         ];
 
-        const timezones = 'Europe/Dublin';
+        const timezone = 'Europe/Dublin';
         const format = 'MMM Do, YYYY';
 
         const context = {
@@ -23,16 +32,78 @@ describe('{{date}} helper', function () {
             },
             data: {
                 site: {
-                    timezone: 'Europe/Dublin'
+                    timezone
                 }
             }
         };
 
+        let rendered;
+
         testDates.forEach(function (d) {
-            const rendered = helpers.date.call({published_at: d}, context);
+            rendered = helpers.date.call({published_at: d}, context);
 
             should.exist(rendered);
-            String(rendered).should.equal(moment(d).tz(timezones).format(format));
+            String(rendered).should.equal(moment(d).tz(timezone).format(format));
+
+            rendered = helpers.date.call({}, d, context);
+
+            should.exist(rendered);
+            String(rendered).should.equal(moment(d).tz(timezone).format(format));
+        });
+
+        // No date falls back to now
+        rendered = helpers.date.call({}, context);
+        should.exist(rendered);
+        String(rendered).should.equal(moment().tz(timezone).format(format));
+    });
+
+    it('creates properly localised date strings', function () {
+        const testDates = [
+            '2013-12-31T23:58:58.593+02:00',
+            '2014-01-01T00:28:58.593+11:00',
+            '2014-11-20T01:28:58.593-04:00',
+            '2014-03-01T01:28:58.593+00:00'
+        ];
+
+        const locales = [
+            'en',
+            'en-gb',
+            'de'
+        ];
+
+        const timezone = 'Europe/Dublin';
+        const format = 'll';
+
+        const context = {
+            hash: {},
+            data: {
+                site: {
+                    timezone
+                }
+            }
+        };
+
+        locales.forEach(function (l) {
+            settingsCache.set('lang', {value: l});
+            proxy.themeI18n._loadLocale();
+            let rendered;
+
+            testDates.forEach(function (d) {
+                rendered = helpers.date.call({published_at: d}, context);
+
+                should.exist(rendered);
+                String(rendered).should.equal(moment(d).tz(timezone).locale(l).format(format));
+
+                rendered = helpers.date.call({}, d, context);
+
+                should.exist(rendered);
+                String(rendered).should.equal(moment(d).tz(timezone).locale(l).format(format));
+            });
+
+            // No date falls back to now
+            rendered = helpers.date.call({}, context);
+            should.exist(rendered);
+            String(rendered).should.equal(moment().tz(timezone).locale(l).format(format));
         });
     });
 
@@ -44,7 +115,7 @@ describe('{{date}} helper', function () {
             '2014-03-01T01:28:58.593+00:00'
         ];
 
-        const timezones = 'Europe/Dublin';
+        const timezone = 'Europe/Dublin';
         const timeNow = moment().tz('Europe/Dublin');
 
         const context = {
@@ -53,16 +124,57 @@ describe('{{date}} helper', function () {
             },
             data: {
                 site: {
-                    timezone: 'Europe/Dublin'
+                    timezone
                 }
             }
         };
 
+        let rendered;
+
         testDates.forEach(function (d) {
-            const rendered = helpers.date.call({published_at: d}, context);
+            rendered = helpers.date.call({published_at: d}, context);
 
             should.exist(rendered);
-            String(rendered).should.equal(moment(d).tz(timezones).from(timeNow));
+            String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
+
+            rendered = helpers.date.call({}, d, context);
+
+            should.exist(rendered);
+            String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
         });
+
+        // No date falls back to now
+        rendered = helpers.date.call({}, context);
+        should.exist(rendered);
+        String(rendered).should.equal('a few seconds ago');
+    });
+
+    it('ignores an invalid date, defaulting to now', function () {
+        const timezone = 'Europe/Dublin';
+        const timeNow = moment().tz('Europe/Dublin');
+
+        const context = {
+            hash: {
+                timeago: true
+            },
+            data: {
+                site: {
+                    timezone
+                }
+            }
+        };
+
+        let invalidDate = 'Fred';
+        let rendered;
+
+        rendered = helpers.date.call({published_at: invalidDate}, context);
+
+        should.exist(rendered);
+        String(rendered).should.equal('a few seconds ago');
+
+        rendered = helpers.date.call({}, invalidDate, context);
+
+        should.exist(rendered);
+        String(rendered).should.equal('a few seconds ago');
     });
 });
