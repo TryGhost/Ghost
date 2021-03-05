@@ -7,5 +7,5 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
-    },
+    }
 });
