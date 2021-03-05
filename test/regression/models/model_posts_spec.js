@@ -1129,7 +1129,7 @@ describe('Post Model', function () {
 
             it('transforms absolute urls to relative', function (done) {
                 const post = {
-                    title: 'Absolute->Relative URL Transform Test',
+                    title: 'Absolute->Transform-ready URL Transform Test',
                     mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}',
                     custom_excerpt: 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts',
                     codeinjection_head: '<script src="http://127.0.0.1:2369/assets/head.js"></script>',
@@ -1143,18 +1143,18 @@ describe('Post Model', function () {
                 };
 
                 models.Post.add(post, context).then((createdPost) => {
-                    createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/card.jpg"}]],"markups":[["a",["href","/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    createdPost.get('html').should.equal('<p><a href="/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
-                    createdPost.get('custom_excerpt').should.equal('Testing <a href="/internal">links</a> in custom excerpts');
-                    createdPost.get('codeinjection_head').should.equal('<script src="/assets/head.js"></script>');
-                    createdPost.get('codeinjection_foot').should.equal('<script src="/assets/foot.js"></script>');
-                    createdPost.get('feature_image').should.equal('/content/images/feature.png');
-                    createdPost.get('canonical_url').should.equal('/canonical');
+                    createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
+                    createdPost.get('html').should.equal('<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    createdPost.get('custom_excerpt').should.equal('Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
+                    createdPost.get('codeinjection_head').should.equal('<script src="__GHOST_URL__/assets/head.js"></script>');
+                    createdPost.get('codeinjection_foot').should.equal('<script src="__GHOST_URL__/assets/foot.js"></script>');
+                    createdPost.get('feature_image').should.equal('__GHOST_URL__/content/images/feature.png');
+                    createdPost.get('canonical_url').should.equal('__GHOST_URL__/canonical');
 
                     const postMeta = createdPost.relations.posts_meta;
 
-                    postMeta.get('og_image').should.equal('/content/images/og.png');
-                    postMeta.get('twitter_image').should.equal('/content/images/twitter.png');
+                    postMeta.get('og_image').should.equal('__GHOST_URL__/content/images/og.png');
+                    postMeta.get('twitter_image').should.equal('__GHOST_URL__/content/images/twitter.png');
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
@@ -1164,7 +1164,7 @@ describe('Post Model', function () {
                     });
                 }).then((updatedPost) => {
                     updatedPost.get('canonical_url').should.equal('https://127.0.0.1:2369/https-internal');
-                    updatedPost.get('feature_image').should.equal('/content/images/updated_feature.png');
+                    updatedPost.get('feature_image').should.equal('__GHOST_URL__/content/images/updated_feature.png');
 
                     done();
                 }).catch(done);
