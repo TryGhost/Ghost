@@ -1,11 +1,21 @@
+const sinon = require('sinon');
 const should = require('should');
 
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
+// TODO: This should probably be from the proxy
+const themeI18n = require('../../../core/frontend/services/themes/i18n');
+const settingsCache = require('../../../core/server/services/settings/cache');
+
 const moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
+    afterEach(function () {
+        settingsCache.reset();
+        themeI18n._loadLocale();
+    });
+
     it('creates properly formatted date strings', function () {
         const testDates = [
             '2013-12-31T11:28:58.593+02:00',
@@ -28,12 +38,24 @@ describe('{{date}} helper', function () {
             }
         };
 
+        let rendered;
+
         testDates.forEach(function (d) {
-            const rendered = helpers.date.call({published_at: d}, context);
+            rendered = helpers.date.call({published_at: d}, context);
+
+            should.exist(rendered);
+            String(rendered).should.equal(moment(d).tz(timezones).format(format));
+
+            rendered = helpers.date.call({}, d, context);
 
             should.exist(rendered);
             String(rendered).should.equal(moment(d).tz(timezones).format(format));
         });
+
+        // No date falls back to now
+        rendered = helpers.date.call({}, context);
+        should.exist(rendered);
+        String(rendered).should.equal(moment().tz(timezones).format(format));
     });
 
     it('creates properly localised date strings', function () {
@@ -53,23 +75,36 @@ describe('{{date}} helper', function () {
         const timezones = 'Europe/Dublin';
         const format = 'll';
 
-        locales.forEach(function (l) {
-            const context = {
-                hash: {},
-                data: {
-                    site: {
-                        timezone: 'Europe/Dublin',
-                        locale: l
-                    }
+        const context = {
+            hash: {},
+            data: {
+                site: {
+                    timezone: 'Europe/Dublin'
                 }
-            };
+            }
+        };
+
+        locales.forEach(function (l) {
+            settingsCache.set('lang', {value: l});
+            themeI18n._loadLocale();
+            let rendered;
 
             testDates.forEach(function (d) {
-                const rendered = helpers.date.call({published_at: d}, context);
+                rendered = helpers.date.call({published_at: d}, context);
+
+                should.exist(rendered);
+                String(rendered).should.equal(moment(d).tz(timezones).locale(l).format(format));
+
+                rendered = helpers.date.call({}, d, context);
 
                 should.exist(rendered);
                 String(rendered).should.equal(moment(d).tz(timezones).locale(l).format(format));
             });
+
+            // No date falls back to now
+            rendered = helpers.date.call({}, context);
+            should.exist(rendered);
+            String(rendered).should.equal(moment().tz(timezones).locale(l).format(format));
         });
     });
 
@@ -95,11 +130,23 @@ describe('{{date}} helper', function () {
             }
         };
 
+        let rendered;
+
         testDates.forEach(function (d) {
-            const rendered = helpers.date.call({published_at: d}, context);
+            rendered = helpers.date.call({published_at: d}, context);
+
+            should.exist(rendered);
+            String(rendered).should.equal(moment(d).tz(timezones).from(timeNow));
+
+            rendered = helpers.date.call({}, d, context);
 
             should.exist(rendered);
             String(rendered).should.equal(moment(d).tz(timezones).from(timeNow));
         });
+
+        // No date falls back to now
+        rendered = helpers.date.call({}, context);
+        should.exist(rendered);
+        String(rendered).should.equal('a few seconds ago');
     });
 });

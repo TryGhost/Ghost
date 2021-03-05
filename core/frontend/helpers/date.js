@@ -7,40 +7,37 @@ const {SafeString, themeI18n} = require('../services/proxy');
 const moment = require('moment-timezone');
 
 module.exports = function (date, options) {
-    let timezone;
+    // ensure that context is undefined, not null, as that can cause errors
+    date = date === null ? undefined : date;
 
-    if (!options && Object.prototype.hasOwnProperty.call(date, 'hash')) {
+    if (!options) {
         options = date;
         date = undefined;
-        timezone = options.data.site.timezone;
-
-        // set to published_at by default, if it's available
-        // otherwise, this will print the current date
-        if (this.published_at) {
-            date = moment(this.published_at).tz(timezone).format();
-        }
     }
 
+    // If the current context contains published_at use that by default,
+    /// else date being undefined means moment will use the current date
+    if (!date && this.published_at) {
+        date = this.published_at;
+    }
+
+    const timezone = options.data.site.timezone;
     const {
         format = 'll',
         timeago
     } = options.hash;
 
-    // ensure that context is undefined, not null, as that can cause errors
-    date = date === null ? undefined : date;
-    timezone = options.data.site.timezone;
-    const timeNow = moment().tz(timezone);
-
     // i18n: Making dates, including month names, translatable to any language.
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
     const dateMoment = moment(date);
-    dateMoment.locale(options.data.site.locale || themeI18n.locale());
+    dateMoment.locale(themeI18n.locale());
+    const timeNow = moment().tz(timezone);
 
     if (timeago) {
-        date = timezone ? dateMoment.tz(timezone).from(timeNow) : dateMoment.fromNow();
+        date = dateMoment.tz(timezone).from(timeNow);
     } else {
-        date = timezone ? dateMoment.tz(timezone).format(format) : dateMoment.format(format);
+        date = dateMoment.tz(timezone).format(format);
     }
 
     return new SafeString(date);
