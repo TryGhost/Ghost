@@ -207,14 +207,14 @@ export default class DashboardController extends Controller {
         let query = {
             filter: 'email_open_rate:-null',
             order: 'email_open_rate desc',
-            limit: 10
+            limit: 5
         };
         this.store.query('member', query).then((result) => {
             if (!result.length) {
                 return this.store.query('member', {
                     filter: 'status:paid',
                     order: 'created_at asc',
-                    limit: 10
+                    limit: 5
                 });
             }
             return result;
