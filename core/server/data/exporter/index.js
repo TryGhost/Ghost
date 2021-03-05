@@ -8,7 +8,18 @@ const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const models = require('../../models');
-const EXCLUDED_TABLES = ['sessions', 'mobiledoc_revisions', 'email_batches', 'email_recipients'];
+const EXCLUDED_TABLES = [
+    'sessions',
+    'mobiledoc_revisions',
+    'email_batches',
+    'email_recipients',
+    'members_payment_events',
+    'members_login_events',
+    'members_email_change_events',
+    'members_status_events',
+    'members_paid_subscription_events',
+    'members_subscribe_events'
+];
 const EXCLUDED_SETTING_KEYS = [
     'stripe_connect_publishable_key',
     'stripe_connect_secret_key',
