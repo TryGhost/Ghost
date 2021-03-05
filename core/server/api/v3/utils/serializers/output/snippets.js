@@ -1,5 +1,6 @@
 //@ts-check
 const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:snippets');
+const urlUtils = require('../../../../../../shared/url-utils');
 
 module.exports = {
     browse: createSerializer('browse', paginatedSnippets),
@@ -65,7 +66,8 @@ function serializeSnippet(snippet, options) {
     return {
         id: json.id,
         name: json.name,
-        mobiledoc: json.mobiledoc,
+        // @ts-ignore
+        mobiledoc: urlUtils.transformReadyToAbsolute(json.mobiledoc),
         created_at: json.created_at,
         updated_at: json.updated_at,
         created_by: json.created_by,

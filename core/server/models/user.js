@@ -12,6 +12,7 @@ const {gravatar} = require('../lib/image');
 const {pipeline} = require('@tryghost/promise');
 const validation = require('../data/validation');
 const permissions = require('../services/permissions');
+const urlUtils = require('../../shared/url-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 
 /**
@@ -113,6 +114,26 @@ User = ghostBookshelf.Model.extend({
         const self = this;
         const tasks = [];
         let passwordValidation = {};
+
+        const urlTransformMap = {
+            profile_image: 'toTransformReady',
+            cover_image: 'toTransformReady'
+        };
+
+        Object.entries(urlTransformMap).forEach(([urlAttr, transform]) => {
+            let method = transform;
+            let methodOptions = {};
+
+            if (typeof transform === 'object') {
+                method = transform.method;
+                methodOptions = transform.options || {};
+            }
+
+            if (this.hasChanged(urlAttr) && this.get(urlAttr)) {
+                const transformedValue = urlUtils[method](this.get(urlAttr), methodOptions);
+                this.set(urlAttr, transformedValue);
+            }
+        });
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 

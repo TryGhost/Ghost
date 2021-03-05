@@ -10,7 +10,7 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Posts API', function () {
+describe('Posts API (v3)', function () {
     let ghostServer;
     let ownerCookie;
 

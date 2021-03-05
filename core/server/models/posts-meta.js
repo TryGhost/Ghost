@@ -6,8 +6,8 @@ const PostsMeta = ghostBookshelf.Model.extend({
 
     onSaving: function onSaving() {
         const urlTransformMap = {
-            og_image: 'absoluteToRelative',
-            twitter_image: 'absoluteToRelative'
+            og_image: 'toTransformReady',
+            twitter_image: 'toTransformReady'
         };
 
         Object.entries(urlTransformMap).forEach(([attr, transform]) => {
