@@ -53,7 +53,8 @@
     <GhTaskButton @buttonText="Send invitation now"
         @successText="Sent"
         @task={{this.sendInvitation}}
-        @class="gh-btn gh-btn-green gh-btn-icon"
+        @class="gh-btn gh-btn-black gh-btn-icon"
         @disabled={{this.fetchRoles.isRunning}}
-        @disableMouseDown="true" />
+        @disableMouseDown="true"
+        data-test-button="send-user-invite" />
 </div>

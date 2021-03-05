@@ -25,8 +25,8 @@
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
     {{#if this._isUploading}}
-        <button class="gh-btn gh-btn-blue right gh-btn-icon disabled"><span>Save</span></button>
+        <button class="gh-btn gh-btn-black right gh-btn-icon disabled"><span>Save</span></button>
     {{else}}
-        <GhTaskButton @task={{this.uploadImage}} @class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button={{true}} />
+        <GhTaskButton @task={{this.uploadImage}} @class="gh-btn gh-btn-black right gh-btn-icon" data-test-modal-accept-button={{true}} />
     {{/if}}
 </div>

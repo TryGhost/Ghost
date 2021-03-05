@@ -221,7 +221,7 @@ describe('Acceptance: Staff', function () {
 
             // submit valid invite form
             await fillIn('.fullscreen-modal input[name="email"]', 'invite1@example.com');
-            await click('.fullscreen-modal .gh-btn-green');
+            await click('[data-test-button="send-user-invite"]');
 
             // modal closes
             expect(
@@ -260,7 +260,7 @@ describe('Acceptance: Staff', function () {
             await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'invite2@example.com');
             await fillIn('.fullscreen-modal select[name="role"]', '2');
-            await click('.fullscreen-modal .gh-btn-green');
+            await click('[data-test-button="send-user-invite"]');
 
             // number of invites increases
             expect(
@@ -282,7 +282,7 @@ describe('Acceptance: Staff', function () {
             // submit invite form with existing user
             await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'admin@example.com');
-            await click('.fullscreen-modal .gh-btn-green');
+            await click('[data-test-button="send-user-invite"]');
 
             // validation message is displayed
             expect(
@@ -292,7 +292,7 @@ describe('Acceptance: Staff', function () {
 
             // submit invite form with existing invite
             await fillIn('.fullscreen-modal input[name="email"]', 'invite1@example.com');
-            await click('.fullscreen-modal .gh-btn-green');
+            await click('[data-test-button="send-user-invite"]');
 
             // validation message is displayed
             expect(
@@ -302,7 +302,7 @@ describe('Acceptance: Staff', function () {
 
             // submit invite form with an invalid email
             await fillIn('.fullscreen-modal input[name="email"]', 'test');
-            await click('.fullscreen-modal .gh-btn-green');
+            await click('[data-test-button="send-user-invite"]');
 
             // validation message is displayed
             expect(
@@ -335,7 +335,7 @@ describe('Acceptance: Staff', function () {
             // add another invite to test ordering on resend
             await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'invite3@example.com');
-            await click('.fullscreen-modal .gh-btn-green');
+            await click('[data-test-button="send-user-invite"]');
 
             // new invite should be last in the list
             expect(
