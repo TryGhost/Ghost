@@ -2,13 +2,11 @@ const Handlebars = require('handlebars');
 const juice = require('juice');
 const {
     absoluteToRelative,
-    absoluteToTransformReady,
     relativeToAbsolute,
-    relativeToTransformReady,
     htmlAbsoluteToRelative,
-    htmlAbsoluteToTransformReady,
     htmlRelativeToAbsolute,
-    htmlRelativeToTransformReady
+    htmlToTransformReady,
+    toTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
 /**
@@ -192,17 +190,6 @@ module.exports = {
         return payload;
     },
 
-    absoluteToTransformReady(payload, options) {
-        if (payload.url) {
-            payload.url = payload.url && absoluteToTransformReady(payload.url, options.siteUrl, options);
-        }
-        if (payload.metadata && payload.metadata.url) {
-            payload.metadata.url = payload.metadata.url && absoluteToTransformReady(payload.metadata.url, options.siteUrl, options);
-        }
-        payload.caption = payload.caption && htmlAbsoluteToTransformReady(payload.caption, options.siteUrl, options);
-        return payload;
-    },
-
     relativeToAbsolute(payload, options) {
         if (payload.url) {
             payload.url = payload.url && relativeToAbsolute(payload.url, options.siteUrl, options.itemUrl, options);
@@ -214,14 +201,14 @@ module.exports = {
         return payload;
     },
 
-    relativeToTransformReady(payload, options) {
+    toTransformReady(payload, options) {
         if (payload.url) {
-            payload.url = payload.url && relativeToTransformReady(payload.url, options.siteUrl, options.itemUrl, options);
+            payload.url = payload.url && toTransformReady(payload.url, options.siteUrl, options.itemUrl, options);
         }
         if (payload.metadata && payload.metadata.url) {
-            payload.metadata.url = payload.metadata.url && relativeToTransformReady(payload.metadata.url, options.siteUrl, options.itemUrl, options);
+            payload.metadata.url = payload.metadata.url && toTransformReady(payload.metadata.url, options.siteUrl, options.itemUrl, options);
         }
-        payload.caption = payload.caption && htmlRelativeToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
 };

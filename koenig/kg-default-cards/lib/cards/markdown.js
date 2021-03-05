@@ -2,8 +2,7 @@ const markdownHtmlRenderer = require('@tryghost/kg-markdown-html-renderer');
 const {
     markdownRelativeToAbsolute,
     markdownAbsoluteToRelative,
-    markdownAbsoluteToTransformReady,
-    markdownRelativeToTransformReady
+    markdownToTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
 module.exports = {
@@ -45,20 +44,10 @@ module.exports = {
         return payload;
     },
 
-    absoluteToTransformReady(payload, options) {
-        payload.markdown = payload.markdown && markdownAbsoluteToTransformReady(
+    toTransformReady(payload, options) {
+        payload.markdown = payload.markdown && markdownToTransformReady(
             payload.markdown,
             options.siteUrl,
-            options
-        );
-        return payload;
-    },
-
-    relativeToTransformReady(payload, options) {
-        payload.markdown = payload.markdown && markdownRelativeToTransformReady(
-            payload.markdown,
-            options.siteUrl,
-            options.itemUrl,
             options
         );
         return payload;

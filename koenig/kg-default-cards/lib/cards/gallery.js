@@ -7,13 +7,11 @@ const {
 } = require('../utils');
 const {
     absoluteToRelative,
-    absoluteToTransformReady,
     relativeToAbsolute,
-    relativeToTransformReady,
     htmlAbsoluteToRelative,
-    htmlAbsoluteToTransformReady,
     htmlRelativeToAbsolute,
-    htmlRelativeToTransformReady
+    htmlToTransformReady,
+    toTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
 /**
@@ -215,28 +213,15 @@ module.exports = {
         return payload;
     },
 
-    absoluteToTransformReady(payload, options) {
+    toTransformReady(payload, options) {
         if (payload.images) {
             payload.images.forEach((image) => {
-                image.src = image.src && absoluteToTransformReady(image.src, options.siteUrl, options);
-                image.caption = image.caption && htmlAbsoluteToTransformReady(image.caption, options.siteUrl, options);
+                image.src = image.src && toTransformReady(image.src, options.siteUrl, options);
+                image.caption = image.caption && htmlToTransformReady(image.caption, options.siteUrl, options);
             });
         }
 
-        payload.caption = payload.caption && htmlAbsoluteToTransformReady(payload.caption, options.siteUrl, options);
-
-        return payload;
-    },
-
-    relativeToTransformReady(payload, options) {
-        if (payload.images) {
-            payload.images.forEach((image) => {
-                image.src = image.src && relativeToTransformReady(image.src, options.siteUrl, options.itemUrl, options);
-                image.caption = image.caption && htmlRelativeToTransformReady(image.caption, options.siteUrl, options.itemUrl, options);
-            });
-        }
-
-        payload.caption = payload.caption && htmlRelativeToTransformReady(payload.caption, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlToTransformReady(payload.caption, options.siteUrl, options);
 
         return payload;
     }

@@ -67,6 +67,19 @@ module.exports = class CardFactory {
                 }
 
                 return payload;
+            },
+
+            toTransformReady(payload, _options) {
+                if (card.toTransformReady) {
+                    const defaultOptions = {
+                        assetsOnly: false,
+                        siteUrl: factoryOptions.siteUrl
+                    };
+                    const options = Object.assign({}, defaultOptions, _options);
+                    return card.toTransformReady(payload, options);
+                }
+
+                return payload;
             }
         };
     }
