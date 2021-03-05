@@ -84,8 +84,8 @@
                 <li>
                     <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "module"}}Integrations</LinkTo>
                 </li>
-                <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
             {{/if}}
+            <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
         </ul>
 
         {{#if (gh-user-can-admin this.session.user)}}
