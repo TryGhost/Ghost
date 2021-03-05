@@ -403,8 +403,7 @@ module.exports = {
                         date: moment(d.date).format('YYYY-MM-DD'),
                         paid, free, comped
                     };
-                }),
-                unit: 'day'
+                })
             };
         }
     },
@@ -417,18 +416,19 @@ module.exports = {
             const mrrData = await membersService.api.events.getMRR();
             const mrrStats = Object.keys(mrrData).map((curr) => {
                 return {
-                    resource: 'mrr',
                     currency: curr,
                     data: mrrData[curr].map((d) => {
                         return Object.assign({}, {
                             date: moment(d.date).format('YYYY-MM-DD'),
                             value: d.mrr
                         });
-                    }),
-                    unit: 'day'
+                    })
                 };
             });
-            return mrrStats;
+            return {
+                resource: 'mrr',
+                data: mrrStats
+            };
         }
     },
     subscriberStats: {
@@ -449,8 +449,7 @@ module.exports = {
                         date: moment(d.date).format('YYYY-MM-DD'),
                         value: d.subscribed
                     });
-                }),
-                unit: 'day'
+                })
             };
         }
     },
@@ -462,18 +461,19 @@ module.exports = {
             const volumeData = await membersService.api.events.getVolume();
             const volumeStats = Object.keys(volumeData).map((curr) => {
                 return {
-                    resource: 'gross-volumne',
                     currency: curr,
                     data: volumeData[curr].map((d) => {
                         return Object.assign({}, {
                             date: moment(d.date).format('YYYY-MM-DD'),
                             value: d.volume
                         });
-                    }),
-                    unit: 'day'
+                    })
                 };
             });
-            return volumeStats;
+            return {
+                resource: 'gross-volume',
+                data: volumeStats
+            };
         }
     },
 
