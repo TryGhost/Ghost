@@ -71,8 +71,8 @@ export default class DashboardController extends Controller {
         this.mrrStatsLoading = true;
         this.membersStats.fetchMRR().then((stats) => {
             this.mrrStatsLoading = false;
-
-            let currencyStats = stats[0] || {
+            const statsData = stats.data;
+            let currencyStats = statsData[0] || {
                 data: [],
                 currency: 'usd'
             };
