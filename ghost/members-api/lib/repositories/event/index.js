@@ -95,6 +95,8 @@ module.exports = class EventRepository {
             options.limit = 10;
         }
 
+        options.order = 'created_at desc';
+
         const allEventPages = await Promise.all([
             this.getNewsletterSubscriptionEvents(options),
             this.getSubscriptionEvents(options),
