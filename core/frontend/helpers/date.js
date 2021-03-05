@@ -35,7 +35,7 @@ module.exports = function (date, options) {
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
     const dateMoment = moment(date);
-    dateMoment.locale(themeI18n.locale());
+    dateMoment.locale(options.data.site.locale || themeI18n.locale());
 
     if (timeago) {
         date = timezone ? dateMoment.tz(timezone).from(timeNow) : dateMoment.fromNow();

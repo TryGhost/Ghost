@@ -55,6 +55,7 @@ describe('{{date}} helper', function () {
 
         locales.forEach(function (l) {
             const context = {
+                hash: {},
                 data: {
                     site: {
                         timezone: 'Europe/Dublin',
