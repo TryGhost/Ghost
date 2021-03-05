@@ -732,16 +732,6 @@
         margin-left: -20px;
     }
 
-    /* .gh-dashboard-area.charts .mrr .gh-dashboard-summary {
-        flex-direction: row;
-        align-items: flex-end;
-    }
-
-    .gh-dashboard-area.charts .mrr .growth {
-        margin: 0 0 0 12px;
-        padding: 4px 6px;
-    } */
-
     .gh-dashboard-header {
         white-space: nowrap;
     }
@@ -752,6 +742,17 @@
 
     .gh-dashboard-chart-box.small {
         width: 100%;
+    }
+
+    .gh-dashboard-box.blogpost {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .gh-dashboard-box.blogpost img {
+        max-width: 100%;
+        margin-right: 0;
+        margin-bottom: 20px;
     }
 }
 
