@@ -47,6 +47,7 @@
                     <p>Customize members modal signup flow</p>
                 </div>
             </button>
+            {{#if this.session.user.isOwner}}
             <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="design">
                 <span class="color-4">{{svg-jar "email-stroke"}}</span>
                 <div>
@@ -61,6 +62,7 @@
                     <p>Connect to Stripe and set up prices</p>
                 </div>
             </LinkTo>
+            {{/if}}
         </div>
 
         <div class="gh-setting-header">Advanced</div>
