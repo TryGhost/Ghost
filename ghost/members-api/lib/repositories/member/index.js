@@ -89,6 +89,12 @@ module.exports = class MemberRepository {
             source = 'member';
         }
 
+        await this._MemberStatusEvent.add({
+            member_id: member.id,
+            from_status: null,
+            to_status: member.get('status')
+        }, options);
+
         if (member.get('subscribed')) {
             await this._MemberSubscribeEvent.add({
                 member_id: member.id,
@@ -96,12 +102,6 @@ module.exports = class MemberRepository {
                 source
             }, options);
         }
-
-        await this._MemberStatusEvent.add({
-            member_id: member.id,
-            from_status: null,
-            to_status: member.get('status')
-        }, options);
 
         return member;
     }
