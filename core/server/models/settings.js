@@ -8,6 +8,7 @@ const ghostBookshelf = require('./base');
 const {i18n} = require('../lib/common');
 const errors = require('@tryghost/errors');
 const validation = require('../data/validation');
+const urlUtils = require('../../shared/url-utils');
 const internalContext = {context: {internal: true}};
 let Settings;
 let defaultSettings;
@@ -144,7 +145,6 @@ Settings = ghostBookshelf.Model.extend({
                 attrs.value = attrs.value.toString();
             }
         }
-
         return attrs;
     },
 
@@ -160,6 +160,11 @@ Settings = ghostBookshelf.Model.extend({
         // transform "false" to false for boolean type
         if (settingType === 'boolean' && (attrs.value === 'false' || attrs.value === 'true')) {
             attrs.value = JSON.parse(attrs.value);
+        }
+
+        // transform URLs from __GHOST_URL__ to absolute
+        if (['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
+            attrs.value = urlUtils.transformReadyToAbsolute(attrs.value);
         }
 
         return attrs;
