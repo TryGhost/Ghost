@@ -4,6 +4,7 @@ const supertest = require('supertest');
 const config = require('../../../../../core/shared/config');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
+const db = require('../../../../../core/server/data/db');
 const ghost = testUtils.startGhost;
 
 // NOTE: in future iterations these fields should be fetched from a central module.
@@ -755,6 +756,54 @@ describe('Settings API (canary)', function () {
             localUtils.API.checkResponse(putBody, 'settings');
             putBody.settings[0].key.should.eql('slack_username');
             putBody.settings[0].value.should.eql('can edit me');
+        });
+
+        it('Can edit URLs without internal storage format leaking', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'cover_image', value: `${config.get('url')}/content/images/cover_image.png`},
+                    {key: 'logo', value: `${config.get('url')}/content/images/logo.png`},
+                    {key: 'icon', value: `${config.get('url')}/content/images/icon.png`},
+                    {key: 'portal_button_icon', value: `${config.get('url')}/content/images/portal_button_icon.png`},
+                    {key: 'og_image', value: `${config.get('url')}/content/images/og_image.png`},
+                    {key: 'twitter_image', value: `${config.get('url')}/content/images/twitter_image.png`}
+                ]
+            };
+
+            const {body} = await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const responseSettings = body.settings.reduce((acc, setting) => {
+                acc[setting.key] = setting.value;
+                return acc;
+            }, {});
+
+            responseSettings.should.have.property('cover_image', `${config.get('url')}/content/images/cover_image.png`);
+            responseSettings.should.have.property('logo', `${config.get('url')}/content/images/logo.png`);
+            responseSettings.should.have.property('icon', `${config.get('url')}/content/images/icon.png`);
+            responseSettings.should.have.property('portal_button_icon', `${config.get('url')}/content/images/portal_button_icon.png`);
+            responseSettings.should.have.property('og_image', `${config.get('url')}/content/images/og_image.png`);
+            responseSettings.should.have.property('twitter_image', `${config.get('url')}/content/images/twitter_image.png`);
+
+            const dbSettingsRows = await db.knex('settings')
+                .select('key', 'value')
+                .whereIn('key', ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image']);
+
+            const dbSettings = dbSettingsRows.reduce((acc, setting) => {
+                acc[setting.key] = setting.value;
+                return acc;
+            }, {});
+
+            dbSettings.should.have.property('cover_image', '__GHOST_URL__/content/images/cover_image.png');
+            dbSettings.should.have.property('logo', '__GHOST_URL__/content/images/logo.png');
+            dbSettings.should.have.property('icon', '__GHOST_URL__/content/images/icon.png');
+            dbSettings.should.have.property('portal_button_icon', '__GHOST_URL__/content/images/portal_button_icon.png');
+            dbSettings.should.have.property('og_image', '__GHOST_URL__/content/images/og_image.png');
+            dbSettings.should.have.property('twitter_image', '__GHOST_URL__/content/images/twitter_image.png');
         });
     });
 
