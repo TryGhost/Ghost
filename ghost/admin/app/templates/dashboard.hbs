@@ -44,7 +44,7 @@
                                 </p>
                             {{else}}
                                 <div class="gh-dashboard-summary">
-                                    <div class="data"><span class="currency {{this.mrrStatsData.currencyClass}}">{{this.mrrStatsData.currency}}</span>{{format-number this.mrrStatsData.currentAmount}}</div>
+                                    <div class="data"><span class="currency">{{this.mrrStatsData.currency}}</span>{{format-number this.mrrStatsData.currentAmount}}</div>
                                     <div class="growth {{this.mrrStatsData.percentClass}}">{{this.mrrStatsData.percentGrowth}}%</div>
                                 </div>
                                 {{#if this.mrrStatsData}}
@@ -70,7 +70,7 @@
                                 <div class="gh-dashboard-summary small">
                                     <h4 class="gh-dashboard-header">Total members</h4>
                                     <div class="data-container">
-                                        <div class="data">{{this.memberCountStatsData.all.total}}</div>
+                                        <div class="data">{{format-number this.memberCountStatsData.all.total}}</div>
                                         <div class="growth {{this.memberCountStatsData.all.percentClass}}">{{this.memberCountStatsData.all.percentGrowth}}%</div>
                                     </div>
                                 </div>
@@ -95,7 +95,7 @@
                                 <div class="gh-dashboard-summary small">
                                     <h4 class="gh-dashboard-header">Paid members</h4>
                                     <div class="data-container">
-                                        <div class="data">{{this.memberCountStatsData.paid.total}}</div>
+                                        <div class="data">{{format-number this.memberCountStatsData.paid.total}}</div>
                                         <div class="growth {{this.memberCountStatsData.paid.percentClass}}">{{this.memberCountStatsData.paid.percentGrowth}}%</div>
                                     </div>
                                 </div>
