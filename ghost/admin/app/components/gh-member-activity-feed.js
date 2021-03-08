@@ -7,7 +7,7 @@ class MemberActivity {
         sent: {
             icon: 'send-email',
             iconClass: 'midgrey',
-            tooltip: 'Sent email'
+            tooltip: 'Received email'
         },
         opened: {
             icon: 'eye',

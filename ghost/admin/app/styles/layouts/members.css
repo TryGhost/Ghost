@@ -758,6 +758,10 @@ textarea.gh-member-details-textarea {
     white-space: nowrap;
 }
 
+.gh-member-feed-row:hover .gh-member-feed-date {
+    color: var(--darkgrey);
+}
+
 .gh-member-btn-expandfeed span {
     height: 25px;
     line-height: 25px;
