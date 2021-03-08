@@ -1237,6 +1237,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailsettings-footer-input p {
     height: 108px;
+    overflow-y: scroll;
 }
 
 .gh-members-emailsettings-footer-input p {
