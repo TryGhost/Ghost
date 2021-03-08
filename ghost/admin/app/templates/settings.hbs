@@ -15,13 +15,6 @@
                     <p>Basic publication details and site metadata</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
-                <span class="color-2">{{svg-jar "view-site"}}</span>
-                <div>
-                    <h4>Theme</h4>
-                    <p>Install and update themes</p>
-                </div>
-            </LinkTo>
             <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="design">
                 <span class="color-3">{{svg-jar "paint-palette"}}</span>
                 <div>
@@ -29,6 +22,13 @@
                     <p>Upload site logo and set accent color</p>
                 </div>
             </button>
+            <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
+                <span class="color-2">{{svg-jar "view-site"}}</span>
+                <div>
+                    <h4>Theme</h4>
+                    <p>Install and update themes</p>
+                </div>
+            </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="theme">
                 <span class="color-4">{{svg-jar "compass-2"}}</span>
                 <div>
