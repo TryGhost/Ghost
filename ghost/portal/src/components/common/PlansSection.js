@@ -80,9 +80,7 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-currency-code {
-        bottom: -4px;
-        order: 2;
-        margin-left: 3px;
+        margin-right: 2px;
         font-size: 1.15rem;
     }
 
