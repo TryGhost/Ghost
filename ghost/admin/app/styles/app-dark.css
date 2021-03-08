@@ -871,3 +871,7 @@ input:focus,
 .gh-dashboard-box {
     border-color: var(--lightgrey);
 }
+
+.gh-notification {
+    background: var(--lightgrey);
+}
