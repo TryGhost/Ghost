@@ -191,6 +191,10 @@ export const getCurrencySymbol = (currency) => {
     return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 };
 
+export const formatNumber = (amount) => {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {
