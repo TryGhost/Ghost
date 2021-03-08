@@ -205,8 +205,8 @@
                                             <span class="open-rate">{{member.emailOpenRate}}%</span>
                                         {{else}}
                                             <span class="open-rate">
-                                                {{moment-format @member.createdAtUTC "D MMM YYYY"}}<br>
-                                                <span>{{moment-from-now @member.createdAtUTC}}</span>
+                                                {{moment-format member.createdAtUTC "D MMM YYYY"}}<br>
+                                                <span>{{moment-from-now member.createdAtUTC}}</span>
                                             </span>
                                         {{/if}}
                                     </li>
