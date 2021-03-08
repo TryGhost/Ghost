@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {getMemberActivePlan, getMemberSubscription, getPlanFromSubscription, getSitePlans, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getMemberActivePlan, getMemberSubscription, getPlanFromSubscription, getSitePlans, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -129,7 +129,8 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
     if (currentActivePlan.type !== plan.type) {
         planStartDate = 'today';
     }
-    const planStartMessage = `${plan.currency}${plan.price}/${plan.type} – Starting ${planStartDate}`;
+    const priceString = formatNumber(plan.price);
+    const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.type} – Starting ${planStartDate}`;
     if (type === 'changePlan') {
         return (
             <>
