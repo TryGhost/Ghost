@@ -1311,11 +1311,11 @@
 /* What's new badges
 /* ---------------------------------------------------- */
 .gh-whats-new-badge-account {
-    top: -4px;
+    top: -3px;
     right: -4px;
-    border: 2px solid #fff;
-    width: 14px;
-    height: 14px;
+    border: 1px solid #fff;
+    width: 12px;
+    height: 12px;
 }
 
 
