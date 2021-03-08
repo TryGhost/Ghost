@@ -85,7 +85,6 @@ export default class DashboardController extends Controller {
                 this.mrrStatsData = {
                     currentAmount: currentMRR,
                     currency: getSymbol(currencyStats.currency),
-                    currencyClass: (getSymbol(currencyStats.currency).length === 3 ? 'post' : 'pre'),
                     percentGrowth: percentGrowth.toFixed(1),
                     percentClass: (percentGrowth > 0 ? 'positive' : (percentGrowth < 0 ? 'negative' : '')),
                     options: {
