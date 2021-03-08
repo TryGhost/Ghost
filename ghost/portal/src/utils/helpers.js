@@ -192,7 +192,10 @@ export const getCurrencySymbol = (currency) => {
 };
 
 export const formatNumber = (amount) => {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (amount === undefined || amount === null) {
+        return '';
+    }
+    return amount.toLocaleString();
 };
 
 export const createPopupNotification = ({type, status, autoHide, duration, closeable, state, message, meta = {}}) => {
