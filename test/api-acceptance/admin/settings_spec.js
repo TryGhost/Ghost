@@ -199,7 +199,7 @@ describe('Settings API', function () {
         should.equal(putBody.settings[6].value, 'SEO description');
 
         putBody.settings[7].key.should.eql('og_image');
-        should.equal(putBody.settings[7].value, '/content/images/2019/07/facebook.png');
+        should.equal(putBody.settings[7].value, `${config.get('url')}/content/images/2019/07/facebook.png`);
 
         putBody.settings[8].key.should.eql('og_title');
         should.equal(putBody.settings[8].value, 'facebook title');
@@ -208,7 +208,7 @@ describe('Settings API', function () {
         should.equal(putBody.settings[9].value, 'facebook description');
 
         putBody.settings[10].key.should.eql('twitter_image');
-        should.equal(putBody.settings[10].value, '/content/images/2019/07/twitter.png');
+        should.equal(putBody.settings[10].value, `${config.get('url')}/content/images/2019/07/twitter.png`);
 
         putBody.settings[11].key.should.eql('twitter_title');
         should.equal(putBody.settings[11].value, 'twitter title');

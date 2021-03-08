@@ -58,8 +58,8 @@ const forTag = (attrs) => {
 };
 
 const forSetting = (attrs) => {
-    if (attrs.value) {
-        attrs.value = handleImageUrl(attrs.value);
+    if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
+        attrs.value = urlUtils.relativeToAbsolute(attrs.value);
     }
 
     return attrs;

@@ -73,22 +73,6 @@ const forTag = (id, attrs, options) => {
 };
 
 const forSettings = (attrs) => {
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10106
-    // @NOTE: Admin & Content API return a different format, need to mappers
-    if (_.isArray(attrs)) {
-        attrs.forEach((obj) => {
-            if (['cover_image', 'logo', 'icon', 'portal_button_icon'].includes(obj.key) && obj.value) {
-                obj.value = urlUtils.transformReadyToAbsolute(obj.value);
-            }
-        });
-    } else {
-        ['cover_image', 'logo', 'icon', 'portal_button_icon'].forEach((attr) => {
-            if (attrs[attr]) {
-                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
-            }
-        });
-    }
-
     return attrs;
 };
 
