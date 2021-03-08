@@ -139,9 +139,7 @@ module.exports = {
                 setting.value = JSON.parse(setting.value).isActive;
             }
 
-            if (['cover_image', 'icon', 'logo'].includes(setting.key)) {
-                setting = url.forSetting(setting);
-            }
+            setting = url.forSetting(setting);
         });
 
         // Ignore all deprecated settings
