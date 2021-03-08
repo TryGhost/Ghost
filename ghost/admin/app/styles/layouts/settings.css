@@ -324,6 +324,11 @@
     text-decoration: underline;
 }
 
+.gh-setting-action-smallimg-delete svg path,
+.gh-setting-action-largeimg-delete svg path {
+    fill: #fff;
+}
+
 .gh-setting-action .gh-progress-container {
     width: 113px;
     height: 100%;
