@@ -122,8 +122,8 @@
     </section>
 
 
-    <section class="gh-main-section columns-2">
-        <div class="gh-main-section-block stretch-height">
+    <section class="gh-main-section {{if this.canShowStripeInfo "columns-2"}}">
+        <div class="gh-main-section-block">
             <h4 class="gh-main-section-header small bn">Member activity</h4>
             <div class="gh-main-section-content grey stretch-height">
                 <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
