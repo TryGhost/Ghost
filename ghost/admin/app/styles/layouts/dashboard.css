@@ -301,6 +301,10 @@
     color: color-mod(var(--green) l(-5%));
 }
 
+.gh-dashboard-summary .growth.positive:before {
+    content: "+";
+}
+
 .gh-dashboard-summary .growth.negative {
     background: color-mod(var(--yellow) a(20%));
     color: color-mod(var(--yellow) l(-8%));
