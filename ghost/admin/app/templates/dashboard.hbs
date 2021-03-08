@@ -44,7 +44,7 @@
                                 </p>
                             {{else}}
                                 <div class="gh-dashboard-summary">
-                                    <div class="data">{{this.mrrStatsData.current}}</div>
+                                    <div class="data"><span class="currency {{this.mrrStatsData.currencyClass}}">{{this.mrrStatsData.currency}}</span>{{format-number this.mrrStatsData.currentAmount}}</div>
                                     <div class="growth {{this.mrrStatsData.percentClass}}">{{this.mrrStatsData.percentGrowth}}%</div>
                                 </div>
                                 {{#if this.mrrStatsData}}

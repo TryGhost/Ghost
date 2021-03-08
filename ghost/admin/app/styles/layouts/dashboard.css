@@ -264,6 +264,8 @@
 }
 
 .gh-dashboard-summary .data {
+    display: flex;
+    align-items: flex-start;
     font-size: 3.9rem;
     line-height: 4rem;
     font-weight: 600;
@@ -271,6 +273,12 @@
     letter-spacing: -0.1px;
     line-height: 1;
     white-space: nowrap;
+}
+
+.gh-dashboard-summary .data .currency {
+    font-size: 0.66em;
+    line-height: 1.25em;
+    margin-right: 2px;
 }
 
 .gh-dashboard-summary.small .data {

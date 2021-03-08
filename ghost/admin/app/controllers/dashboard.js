@@ -83,7 +83,9 @@ export default class DashboardController extends Controller {
                 const rangeStartMRR = dateValues.length ? dateValues[0] : 0;
                 const percentGrowth = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0;
                 this.mrrStatsData = {
-                    current: `${getSymbol(currencyStats.currency)}${currentMRR}`,
+                    currentAmount: currentMRR,
+                    currency: getSymbol(currencyStats.currency),
+                    currencyClass: (getSymbol(currencyStats.currency).length === 3 ? 'post' : 'pre'),
                     percentGrowth: percentGrowth.toFixed(1),
                     percentClass: (percentGrowth > 0 ? 'positive' : (percentGrowth < 0 ? 'negative' : '')),
                     options: {
