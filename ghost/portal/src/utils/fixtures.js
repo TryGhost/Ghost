@@ -6,8 +6,8 @@ export const site = {
     accent_color: '',
     url: 'http://localhost:2368/',
     plans: {
-        monthly: 5,
-        yearly: 15,
+        monthly: 5000,
+        yearly: 150000,
         currency: 'USD'
     },
     allow_self_signup: true,

@@ -1,5 +1,5 @@
 import React from 'react';
-import {isCookiesDisabled} from '../../utils/helpers';
+import {isCookiesDisabled, formatNumber} from '../../utils/helpers';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
@@ -255,7 +255,7 @@ function PriceLabel({currencySymbol, price}) {
     return (
         <div className='gh-portal-plan-pricelabel'>
             <span className={currencyClass}>{currencySymbol}</span>
-            <span className='gh-portal-plan-price'>{price}</span>
+            <span className='gh-portal-plan-price'>{formatNumber(price)}</span>
         </div>
     );
 }
