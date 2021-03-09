@@ -56,6 +56,12 @@
     table-layout: fixed;
 }
 
+@media (max-width: 1100px) {
+    .members-list {
+        border-bottom: none    
+    }
+}
+
 .members-list .gh-list-row.header {
     z-index: 1;
 }
@@ -343,7 +349,7 @@ p.gh-members-list-email {
         display: flex;
         position: relative;
         flex-wrap: wrap;
-        border-bottom: 1px solid var(--lightgrey);
+        border-bottom: 1px solid var(--list-color-divider);
         margin: 0;
     }
 
@@ -378,7 +384,7 @@ p.gh-members-list-email {
     }
 
     .gh-members-list-subscribed-at div {
-        display: inline-block;
+        display: inline;
         margin-right: 1px;
     }
 
@@ -465,6 +471,10 @@ p.gh-members-list-email {
         min-height: 120px;
     }
 
+    .gh-canvas-header.break.tablet .gh-canvas-header-content {
+        height: 160px;
+    }
+
     .members-header .gh-canvas-title {
         position: absolute;
         top: 29px;
@@ -472,7 +482,7 @@ p.gh-members-list-email {
     }
 
     .members-header .view-actions {
-        margin-top: 62px;
+        margin-top: 30px;
         width: 100%;
     }
 

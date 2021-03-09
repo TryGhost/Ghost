@@ -1519,7 +1519,6 @@
         right: 0;
         flex-direction: column;
         align-items: flex-end;
-        overflow: hidden;
         width: 100%;
         max-height: 100px;
     }
@@ -1528,10 +1527,8 @@
         position: relative;
         order: 2;
         margin: 0;
-        padding: 24px 0 40px;
+        padding: 6px 0 0;
         max-width: calc(100vw - 390px);
-        overflow-x: scroll;
-        overflow-y: hidden;
         justify-content: space-between;
     }
 
