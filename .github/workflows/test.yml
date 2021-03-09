@@ -192,6 +192,9 @@ jobs:
       - run: yarn
       - run: grunt master
 
+      - run: git checkout 4.0
+        working-directory: content/themes/casper
+
       - run: echo "ghost_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         working-directory: core/client
