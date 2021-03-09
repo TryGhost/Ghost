@@ -1234,9 +1234,11 @@ export default Component.extend({
             return;
         }
 
-        let cardId = cardElement.firstChild.id;
+        let cardId = cardElement.firstChild?.id;
 
-        return this.componentCards.findBy('destinationElementId', cardId);
+        if (cardId) {
+            return this.componentCards.findBy('destinationElementId', cardId);
+        }
     },
 
     getSectionFromCard(card) {
