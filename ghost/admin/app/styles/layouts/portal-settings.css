@@ -478,10 +478,10 @@
 
 .gh-portal-links-table tr.header .gh-portal-links-cell {
     font-size: 1.3rem;
-    font-weight: 400;
+    font-weight: 500;
     cursor: pointer;
     text-transform: none;
-    color: var(--blue);
+    color: var(--green);
 }
 
 .gh-portal-links-table tr td:last-of-type {
