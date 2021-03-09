@@ -102,3 +102,7 @@
     resize: none;
     background: var(--whitegrey-l2);
 }
+
+.gh-setting-desc.skip-step {
+    margin: 12px 0;
+}
