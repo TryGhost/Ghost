@@ -12,8 +12,8 @@ export const handleAuthActions = ({qsParams, action, status}) => {
 };
 
 export const handleStripeActions = ({status, billingOnly}) => {
-    if (!billingOnly && ['portal-success'].includes(status)) {
-        const statusVal = status === 'portal-success' ? 'success' : 'warning';
+    if (!billingOnly && ['success'].includes(status)) {
+        const statusVal = ['success'].includes(status) ? 'success' : 'warning';
         return {
             type: 'stripe:checkout',
             status: statusVal,
@@ -22,8 +22,8 @@ export const handleStripeActions = ({status, billingOnly}) => {
         };
     }
 
-    if (billingOnly && ['portal-billing-update-success', 'portal-billing-update-cancel'].includes(status)) {
-        const statusVal = status === 'portal-billing-update-success' ? 'success' : 'warning';
+    if (billingOnly && ['billing-update-success', 'billing-update-cancel'].includes(status)) {
+        const statusVal = status === 'billing-update-success' ? 'success' : 'warning';
         return {
             type: 'stripe:billing-update',
             status: statusVal,

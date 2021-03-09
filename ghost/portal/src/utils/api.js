@@ -131,13 +131,13 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
             if (!successUrl) {
                 const checkoutSuccessUrl = new URL(siteUrl);
-                checkoutSuccessUrl.searchParams.set('stripe', 'portal-success');
+                checkoutSuccessUrl.searchParams.set('stripe', 'success');
                 successUrl = checkoutSuccessUrl.href;
             }
 
             if (!cancelUrl) {
                 const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
-                checkoutCancelUrl.searchParams.set('stripe', 'portal-cancel');
+                checkoutCancelUrl.searchParams.set('stripe', 'cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
             return makeRequest({
@@ -183,13 +183,13 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
             if (!successUrl) {
                 const checkoutSuccessUrl = new URL(siteUrl);
-                checkoutSuccessUrl.searchParams.set('stripe', 'portal-billing-update-success');
+                checkoutSuccessUrl.searchParams.set('stripe', 'billing-update-success');
                 successUrl = checkoutSuccessUrl.href;
             }
 
             if (!cancelUrl) {
                 const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
-                checkoutCancelUrl.searchParams.set('stripe', 'portal-billing-update-cancel');
+                checkoutCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
             return makeRequest({
