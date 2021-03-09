@@ -9,12 +9,12 @@
 }
 
 .kg-action-bar {
-    background: var(--extra-darkgrey);
-    border: 1px solid var(--whitegrey);
+    background: var(--whitegrey-l2);
+    border: 1px solid var(--whitegrey-l2);
 }
 
 .kg-action-bar:after {
-    border-top-color: var(--extra-darkgrey);
+    border-top-color: var(--whitegrey-l2);
 }
 
 .kg-action-bar:before {
@@ -22,7 +22,7 @@
     top: 36px;
     left: calc(50% - 10px);
     width: 0;
-    border-top: 10px solid var(--whitegrey);
+    border-top: 10px solid var(--whitegrey-l2);
     border-right: 10px solid transparent;
     border-left: 10px solid transparent;
     content: "";
