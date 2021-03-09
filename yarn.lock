@@ -5636,16 +5636,16 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.1.tgz#97ea6b6e576eb3d1273d97bc65a2de17ae29414e"
-  integrity sha512-cqbPazwzZzauOudDVFgM+cVLZGs+hGX/kYbZRtUItI+vMN5sBBX81ikgHCt5WrU1R2QIsaL52UM+TiA4/ckkCQ==
+knex-migrator@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.2.tgz#e00e99e81d7d1138d534627eb2627eaf9ef55ed8"
+  integrity sha512-ZbVi6PJDbZmaloWcT2C5EL8LchyqvoAeHSseisN6T9m3jAoYoqmm5mrOYoyY7ZWvstRczsy+HHcPWdLC050bfg==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.1"
-    ghost-ignition "4.4.4"
+    ghost-ignition "4.5.4"
     knex "0.21.19"
     lodash "4.17.21"
     moment "2.24.0"
