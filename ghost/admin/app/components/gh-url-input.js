@@ -16,6 +16,7 @@ export default class GhUrlInput extends Component {
         this.value = args.value && args.value !== '/' ? (new URL(removeLeadingSlash(args.value), this.baseUrl)).href : '';
         this.setResult = args.setResult;
         this.validateUrl = args.validateUrl;
+        this.placeholder = args.placeholder;
     }
 
     @action
