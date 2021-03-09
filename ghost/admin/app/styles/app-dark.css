@@ -689,7 +689,7 @@ input:focus,
 
 /* Koenig styles */
 .kg-link-input {
-    border-color: var(--blue) !important;
+    border-color: var(--green) !important;
 }
 
 /* Editor  */
