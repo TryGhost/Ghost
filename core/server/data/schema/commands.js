@@ -276,7 +276,7 @@ async function addPrimaryKey(tableName, columns, transaction) {
     const isSQLite = db.knex.client.config.client === 'sqlite3';
     if (isSQLite) {
         const primaryKeyExists = await hasPrimaryKeySQLite(tableName, transaction);
-        if (!primaryKeyExists) {
+        if (primaryKeyExists) {
             logging.warn(`Primary key constraint for: ${columns} already exists for table: ${tableName}`);
             return;
         }
