@@ -148,6 +148,7 @@
 
 .settings-menu-content .gh-image-uploader {
     margin: 0 0 1.6rem 0;
+    background: color-mod(var(--whitegrey-l1) l(+2%));
 }
 
 .settings-menu-content .gh-image-uploader .description {
