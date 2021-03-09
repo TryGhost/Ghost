@@ -68,8 +68,7 @@ function dropColumn(tableName, column, transaction) {
  *
  * @param {string} tableName - name of the table to add unique constraint to
  * @param {string|[string]} columns - column(s) to form unique constraint with
- * @param {Object} transaction - connection object containing knex reference
- * @param {Object} transaction.knex - knex instance
+ * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function addUnique(tableName, columns, transaction) {
     try {
@@ -96,8 +95,7 @@ async function addUnique(tableName, columns, transaction) {
  *
  * @param {string} tableName - name of the table to drop unique constraint from
  * @param {string|[string]} columns - column(s) unique constraint was formed
- * @param {Object} transaction - connection object containing knex reference
- * @param {Object} transaction.knex - knex instance
+ * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function dropUnique(tableName, columns, transaction) {
     try {
@@ -127,8 +125,7 @@ async function dropUnique(tableName, columns, transaction) {
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTableName - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
- * @param {Object} configuration.transaction - connection object containing knex reference
- * @param {Object} configuration.transaction.knex - knex instance
+ * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
 async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction}) {
     const knex = (transaction || db.knex);
@@ -154,8 +151,7 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} configuration.toTableName - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {Boolean} configuration.cascadeDelete - adds the "on delete cascade" option if true
- * @param {Object} configuration.transaction - connection object containing knex reference
- * @param {Object} configuration.transaction.knex - knex instance
+ * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
 async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, transaction}) {
     const isSQLite = db.knex.client.config.client === 'sqlite3';
@@ -208,8 +204,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTableName - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
- * @param {Object} configuration.transaction - connection object containing knex reference
- * @param {Object} configuration.transaction.knex - knex instance
+ * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
 async function dropForeign({fromTable, fromColumn, toTable, toColumn, transaction}) {
     const isSQLite = db.knex.client.config.client === 'sqlite3';
@@ -254,8 +249,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
  * Checks if primary key index exists in a table over the given columns.
  *
  * @param {string} tableName - name of the table to check primary key constraint on
- * @param {Object} transaction - connnection object containing knex reference
- * @param {Object} transaction.knex - knex instance
+ * @param {import('knex')} transaction - connnection object containing knex reference
  */
 async function hasPrimaryKeySQLite(tableName, transaction) {
     const knex = (transaction || db.knex);
@@ -276,8 +270,7 @@ async function hasPrimaryKeySQLite(tableName, transaction) {
  *
  * @param {string} tableName - name of the table to add primaykey  constraint to
  * @param {string|[string]} columns - column(s) to form primary key constraint with
- * @param {Object} transaction - connnection object containing knex reference
- * @param {Object} transaction.knex - knex instance
+ * @param {import('knex')} transaction - connnection object containing knex reference
  */
 async function addPrimaryKey(tableName, columns, transaction) {
     const isSQLite = db.knex.client.config.client === 'sqlite3';
