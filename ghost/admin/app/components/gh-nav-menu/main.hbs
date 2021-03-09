@@ -46,12 +46,12 @@
                             {{#each this.customViews.forPosts as |view|}}
                                 <li>
                                     <LinkTo @route="posts" @query={{reset-query-params "posts" view.filter}} data-test-nav-custom="{{view.route}}-{{view.name}}" title="{{view.name}}">
+                                        <span class="gh-nav-viewname">{{view.name}}</span>
                                         <span class="flex items-center svg-{{view.color}}">
                                             {{#unless view.icon}}
-                                                <span class="circle"></span>
+                                                <span class="absolute circle"></span>
                                             {{/unless}}
                                         </span>
-                                        <span class="gh-nav-viewname">{{view.name}}</span>
                                     </LinkTo>
                                 </li>
                             {{/each}}

@@ -580,6 +580,7 @@
 }
 
 .gh-nav-view-list a {
+    position: relative;
     padding-left: calc(var(--mainmenu-padding) + 42px);
 }
 
@@ -592,12 +593,14 @@
 }
 
 .gh-nav-view-list .circle {
+    position: absolute;
     display: block;
     border-radius: 999px;
     border: 3px solid var(--midgrey);
     width: 8px;
     height: 8px;
-    margin: 0 8px 0 -30px;
+    margin: 0;
+    right: 36px;
 }
 
 .gh-nav-view-list .svg-midgrey .circle {
