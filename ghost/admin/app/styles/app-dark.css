@@ -879,3 +879,7 @@ input:focus,
 ::selection {
     background: color-mod(var(--lightgrey-l1));
 }
+
+.user-image {
+    border-color: var(--dark-main-bg-color);
+}
