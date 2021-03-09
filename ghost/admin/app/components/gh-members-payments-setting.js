@@ -41,7 +41,7 @@ export default Component.extend({
     portalSettingsBorderColor: reads('settings.accentColor'),
 
     selectedCurrency: computed('stripePlans.monthly.currency', function () {
-        return this.get('currencies').findBy('value', this.get('stripePlans.monthly.currency'));
+        return this.get('currencies').findBy('value', this.get('stripePlans.monthly.currency')) || this.get('topCurrencies').findBy('value', this.get('stripePlans.monthly.currency'));
     }),
 
     blogDomain: computed('config.blogDomain', function () {
