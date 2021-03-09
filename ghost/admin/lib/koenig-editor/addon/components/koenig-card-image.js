@@ -88,24 +88,24 @@ export default Component.extend({
             items: [{
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
-                iconClass: !cardWidth ? 'fill-blue-l2' : 'fill-white',
+                iconClass: !cardWidth ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, '')
             }, {
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
-                iconClass: cardWidth === 'wide' ? 'fill-blue-l2' : 'fill-white',
+                iconClass: cardWidth === 'wide' ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, 'wide')
             }, {
                 title: 'Full',
                 icon: 'koenig/kg-img-full',
-                iconClass: cardWidth === 'full' ? 'fill-blue-l2' : 'fill-white',
+                iconClass: cardWidth === 'full' ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, 'full')
             }, {
                 divider: true
             }, {
                 title: 'Link',
                 icon: 'koenig/kg-link',
-                iconClass: this.payload.href ? 'fill-blue-l2' : 'fill-white',
+                iconClass: this.payload.href ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._editLink)
             }, {
                 title: 'Replace image',
