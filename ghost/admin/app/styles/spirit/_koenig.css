@@ -756,7 +756,7 @@
 }
 
 .kg-input-bar:before {
-    border-top: 9px solid var(--blue);
+    border-top: 9px solid var(--green);
     border-right: 9px solid transparent;
     border-left: 9px solid transparent;
 }
