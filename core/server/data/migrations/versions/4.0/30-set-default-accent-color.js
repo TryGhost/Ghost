@@ -16,4 +16,6 @@ module.exports = createTransactionalMigration(async function up(knex) {
 
     logging.info('Setting value of accent_color to default #15171A');
     await knex('settings').update('value', '#15171A').where('key', 'accent_color');
+}, async function down() {
+    // noop
 });
