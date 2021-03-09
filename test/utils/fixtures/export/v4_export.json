@@ -2376,7 +2376,7 @@
                         "id": "6029c95ba526f951dabea4d7",
                         "group": "site",
                         "key": "accent_color",
-                        "value": "",
+                        "value": "#15171A",
                         "type": "string",
                         "flags": "PUBLIC",
                         "created_at": "2021-02-15T14:07:39.000Z",
