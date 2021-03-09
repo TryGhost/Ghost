@@ -159,6 +159,11 @@ class SettingsImporter extends BaseImporter {
                 data.type = keyTypeMapper(data.key);
             }
 
+            // accent_color can be empty pre-4.x
+            if (data.key === 'accent_color' && !data.value) {
+                data.value = '#15171A';
+            }
+
             return data;
         });
 
