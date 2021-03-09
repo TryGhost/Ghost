@@ -171,8 +171,6 @@ jobs:
 
   canary:
     runs-on: ubuntu-18.04
-    needs: [lint, migrations, test, ghost-cli]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     steps:
       - uses: actions/checkout@v2
@@ -191,6 +189,9 @@ jobs:
 
       - run: yarn
       - run: grunt master
+
+      - run: git checkout 4.0
+        working-directory: content/themes/casper
 
       - run: echo "ghost_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
