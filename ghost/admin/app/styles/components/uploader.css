@@ -143,13 +143,13 @@
     width: 36px;
     height: 36px;
     padding: 10px;
-    opacity: 0.17;
-    transition: opacity 0.5s ease;
+    opacity: 0.33;
+    transition: opacity 0.3s ease;
 }
 
 .gh-image-uploader-unsplash:hover {
     cursor: pointer;
-    opacity: 0.8;
+    opacity: 1.0;
     transition: opacity 0.3s ease;
 }
 
