@@ -680,12 +680,12 @@
 }
 
 .kg-card-hover:hover {
-    box-shadow: 0 0 0 1px var(--blue);
+    box-shadow: 0 0 0 1px var(--green);
 }
 
 .kg-card-selected,
 .kg-card-selected:hover {
-    box-shadow: 0 0 0 2px var(--blue);
+    box-shadow: 0 0 0 2px var(--green);
 }
 
 /* Force a 16:10 aspect ratio */
