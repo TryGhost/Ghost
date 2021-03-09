@@ -61,14 +61,14 @@ module.exports = createIrreversibleMigration(async (knex) => {
         fromTable: 'members_stripe_customers_subscriptions',
         fromColumn: 'customer_id',
         toTable: 'members_stripe_customers',
-        toColumn: 'id',
+        toColumn: 'customer_id',
         transaction: knex
     });
     await addForeign({
         fromTable: 'members_stripe_customers_subscriptions',
         fromColumn: 'customer_id',
         toTable: 'members_stripe_customers',
-        toColumn: 'id',
+        toColumn: 'customer_id',
         cascadeDelete: true,
         transaction: knex
     });
