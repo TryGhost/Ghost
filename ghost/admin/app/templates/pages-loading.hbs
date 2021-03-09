@@ -1,31 +1,30 @@
 <section class="gh-canvas" {{did-insert (action "setMainClass" "gh-main-primarybg" target=this.ui)}}>
-    <div class="gh-canvas-header">
-        <header class="gh-canvas-header-content post-header">
-            <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
-            <section class="view-actions">
-                <GhContentfilter
-                    @currentUser={{this.session.user}}
-                    @selectedType={{this.selectedType}}
-                    @availableTypes={{this.availableTypes}}
-                    @onTypeChange={{action (mut k)}}
-                    @selectedVisibility={{this.selectedVisibility}}
-                    @availableVisibilities={{this.availableVisibilities}}
-                    @onVisibilityChange={{action (mut k)}}
-                    @selectedAuthor={{this.selectedAuthor}}
-                    @availableAuthors={{this.availableAuthors}}
-                    @onAuthorChange={{action (mut k)}}
-                    @selectedTag={{this.selectedTag}}
-                    @availableTags={{this.availableTags}}
-                    @onTagChange={{action (mut k)}}
-                    @selectedOrder={{this.selectedOrder}}
-                    @availableOrders={{this.availableOrders}}
-                    @onOrderChange={{action (mut k)}}
-                />
+    <GhCanvasHeader class="gh-canvas-header break tablet post-header">
+        <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
 
-                <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
-            </section>
-        </header>
-    </div>
+        <section class="view-actions">
+            <GhContentfilter
+                @currentUser={{this.session.user}}
+                @selectedType={{this.selectedType}}
+                @availableTypes={{this.availableTypes}}
+                @onTypeChange={{action (mut k)}}
+                @selectedVisibility={{this.selectedVisibility}}
+                @availableVisibilities={{this.availableVisibilities}}
+                @onVisibilityChange={{action (mut k)}}
+                @selectedAuthor={{this.selectedAuthor}}
+                @availableAuthors={{this.availableAuthors}}
+                @onAuthorChange={{action (mut k)}}
+                @selectedTag={{this.selectedTag}}
+                @availableTags={{this.availableTags}}
+                @onTagChange={{action (mut k)}}
+                @selectedOrder={{this.selectedOrder}}
+                @availableOrders={{this.availableOrders}}
+                @onOrderChange={{action (mut k)}}
+            />
+
+            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+        </section>
+    </GhCanvasHeader>
 
     <div class="gh-content">
         <GhLoadingList />
