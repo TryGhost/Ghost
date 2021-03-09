@@ -436,14 +436,17 @@
 }
 
 .gh-editor-post-status {
+    height: 33px;
     display: flex;
     align-items: center;
-    padding: 0 12px;
+    margin-right: 8px;
+    padding: 5px 12px 6px;
     font-size: 1.35rem;
     font-weight: 400;
     color: var(--midgrey-l2);
     letter-spacing: .2px;
-    background: var(--white)
+    background: var(--white);
+    border-radius: 3px;
 }
 
 .gh-editor-preview-trigger {
