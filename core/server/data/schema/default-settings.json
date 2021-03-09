@@ -87,8 +87,11 @@
             "type": "string"
         },
         "accent_color": {
-            "defaultValue": "",
+            "defaultValue": "#15171A",
             "flags": "PUBLIC",
+            "validations": {
+                "isEmpty": false
+            },
             "type": "string"
         },
         "lang": {
