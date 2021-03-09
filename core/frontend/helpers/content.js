@@ -19,7 +19,7 @@ function restrictedCta(options) {
     options = options || {};
     options.data = options.data || {};
     _.merge(this, {
-        accentColor: (options.data.site && options.data.site.accent_color) || '#3db0ef'
+        accentColor: (options.data.site && options.data.site.accent_color) || '#15171A'
     });
     const data = createFrame(options.data);
     return templates.execute('content-cta', this, {data});
