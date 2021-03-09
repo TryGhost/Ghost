@@ -875,3 +875,7 @@ input:focus,
 .gh-notification {
     background: var(--lightgrey);
 }
+
+::selection {
+    background: color-mod(var(--lightgrey-l1));
+}

@@ -295,7 +295,7 @@ body {
 }
 
 ::selection {
-    background: color-mod(var(--midlightgrey) lightness(+15%));
+    background: color-mod(var(--whitegrey-d1));
 }
 
 
