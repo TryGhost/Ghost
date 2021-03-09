@@ -273,6 +273,27 @@ async function updateMemberData({data, state, api}) {
     return null;
 }
 
+async function refreshMemberData({state, api}) {
+    if (state.member) {
+        try {
+            const member = await api.member.sessionData();
+            if (member) {
+                return {
+                    member,
+                    success: true
+                };
+            }
+            return null;
+        } catch (err) {
+            return {
+                success: false,
+                error: err
+            };
+        }
+    }
+    return null;
+}
+
 async function updateProfile({data, state, api}) {
     const [dataUpdate, emailUpdate] = await Promise.all([updateMemberData({data, state, api}), updateMemberEmail({data, state, api})]);
     if (dataUpdate && emailUpdate) {
@@ -345,6 +366,7 @@ const Actions = {
     cancelSubscription,
     updateNewsletter,
     updateProfile,
+    refreshMemberData,
     clearPopupNotification,
     editBilling,
     checkoutPlan
