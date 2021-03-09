@@ -1344,3 +1344,13 @@ p.theme-validation-details {
     width: 50px;
     height: 50px;
 }
+
+.gh-branding-settings .gh-accent-color .gh-setting-action {
+    align-self: flex-start;
+    margin-top: 22px;
+}
+
+.gh-branding-settings .gh-accent-color .response {
+    margin: -8px 0 0;
+    font-size: 1.3rem;
+}

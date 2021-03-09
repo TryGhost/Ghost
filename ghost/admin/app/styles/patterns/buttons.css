@@ -149,13 +149,13 @@ fieldset[disabled] .gh-btn {
 
 .gh-btn-red:hover {
     color: #fff;
-    background: color-mod(var(--red) l(-4%));
+    background: color-mod(var(--red) l(-4%)) !important;
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-red:active,
 .gh-btn-red:focus {
-    background: color-mod(var(--red) l(-7%));
+    background: color-mod(var(--red) l(-7%)) !important;
 }
 
 /* Outline button
