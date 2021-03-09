@@ -19,6 +19,8 @@ const expectedProperties = {
     themes: ['themes'],
     members: ['members', 'meta'],
 
+    site: ['title', 'description', 'logo', 'icon', 'accent_color', 'url', 'version'],
+
     post: _(schema.posts)
         .keys()
         .filter(key => key.indexOf('@@') === -1)
