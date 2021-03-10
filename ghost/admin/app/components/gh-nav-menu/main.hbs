@@ -92,7 +92,7 @@
         <ul class="gh-nav-list">
             {{#if this.showBilling}}
                 <li class="relative">
-                    <a href="javascript:void(0)" {{action "toggleBillingModal" }} data-test-nav="billing">
+                    <a href="javascript:void(0)" class={{if this.billing.billingWindowOpen "active"}} {{action "toggleBillingModal" }} data-test-nav="billing">
                         {{svg-jar "credit-card"}} Ghost(Pro)
                     </a>
                 </li>
