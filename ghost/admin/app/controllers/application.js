@@ -4,6 +4,7 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend({
+    billing: service(),
     customViews: service(),
     config: service(),
     dropdown: service(),

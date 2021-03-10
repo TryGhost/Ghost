@@ -12,7 +12,7 @@
             {{outlet}}
 
             {{#if this.showBilling}}
-                <GhBillingModal />
+                <GhBillingModal @billingWindowOpen={{this.billing.billingWindowOpen}} />
             {{/if}}
 
         </main>
