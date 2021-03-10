@@ -323,6 +323,7 @@ class SignupPage extends React.Component {
                 errorMessage: errors.name || ''
             });
         }
+        fields[0].autoFocus = true;
         if (fieldNames && fieldNames.length > 0) {
             return fields.filter((f) => {
                 return fieldNames.includes(f.name);
