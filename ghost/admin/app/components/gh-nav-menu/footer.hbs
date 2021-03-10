@@ -5,7 +5,7 @@
                 <dropdown.Trigger class="outline-0 pointer">
                     <div class="flex-auto flex items-center">
                         <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
-                            {{#if this.whatsNew.hasNew}}<span class="absolute dib bg-blue ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
+                            {{#if this.whatsNew.hasNew}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
                         </div>
                         {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
                     </div>
@@ -32,7 +32,7 @@
                             <button class="dropdown-item" role="menuitem" tabindex="-1" {{on "click" this.whatsNew.showModal}}>
                                 What's new?
                                 {{#if this.whatsNew.hasNew}}
-                                    <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-blue br-100"></span></div>
+                                    <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
                                 {{/if}}
                             </button>
                         </li>
