@@ -255,7 +255,7 @@ export default class App extends React.Component {
     /** Fetch state from Portal Links */
     fetchLinkData() {
         const [path] = window.location.hash.substr(1).split('?');
-        const linkRegex = /^\/portal(?:\/(\w+(?:\/\w+)?))?$/;
+        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)?))?\/?$/;
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
