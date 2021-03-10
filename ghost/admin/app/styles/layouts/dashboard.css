@@ -174,6 +174,7 @@
     grid-template-columns: 1fr 1fr;
     grid-gap: 32px;
     align-items: center;
+    overflow: hidden;
 }
 
 .gh-dashboard-box.blogpost .content {
@@ -200,8 +201,17 @@
     color: var(--green);
 }
 
+.gh-dashboard-box .content h2 a {
+    color: var(--black);
+}
+
 .gh-dashboard-box .content a:hover {
     color: var(--green-d2);
+}
+
+.gh-dashboard-box .content .read-time {
+    font-size: 1.3rem;
+    color: var(--midgrey);
 }
 
 /* Charts */
@@ -781,10 +791,12 @@
 
     .gh-dashboard-box.blogpost .thumbnail {
         min-height: 220px;
+        grid-row: 1 / 2;
     }
 
     .gh-dashboard-box.blogpost .content {
         padding-top: 0;
+        grid-row: 2 / 3;
     }
 }
 
