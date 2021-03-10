@@ -214,6 +214,29 @@
     color: var(--midgrey);
 }
 
+.gh-dashboard-container.crunched .gh-dashboard-box{
+    padding: 28px;
+}
+
+.gh-dashboard-container.crunched .chart {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 28px 16px 28px 32px;
+    height: 100%;
+}
+
+.gh-dashboard-container.crunched .chart .bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--lightgrey);
+}
+
+.gh-dashboard-container.crunched .chart .bar.green {
+    background: var(--green);
+}
+
 /* Charts */
 .gh-dashboard-area.charts {
     display: grid;
@@ -836,6 +859,11 @@
     .gh-dashboard-box.blogpost .content {
         padding-top: 0;
         grid-row: 2 / 3;
+    }
+
+    .gh-dashboard-container.crunched .chart {
+        padding: 0;
+        min-height: 140px;
     }
 
     .gh-dashboard-join-community {
