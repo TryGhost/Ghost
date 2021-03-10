@@ -45,7 +45,7 @@ describe('Posts Content API', function () {
 
         // Default order 'published_at desc' check
         jsonResponse.posts[0].slug.should.eql('welcome');
-        jsonResponse.posts[6].slug.should.eql('themes');
+        jsonResponse.posts[6].slug.should.eql('integrations');
 
         // check meta response for this test
         jsonResponse.meta.pagination.page.should.eql(1);
@@ -245,7 +245,7 @@ describe('Posts Content API', function () {
         const post = res.body.posts[0];
         const publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
 
-        post.title.should.eql('Welcome to Ghost');
+        post.title.should.eql('Start here for a quick overview of everything you need to know');
 
         const res2 = await request
             .get(localUtils.API.getApiQuery(`posts/?key=${validKey}&limit=1&filter=${createFilter(publishedAt, `<`)}`))
@@ -258,7 +258,7 @@ describe('Posts Content API', function () {
         const post2 = res2.body.posts[0];
         const publishedAt2 = moment(post2.published_at).format('YYYY-MM-DD HH:mm:ss');
 
-        post2.title.should.eql('Writing posts with Ghost ✍️');
+        post2.title.should.eql('Customizing your brand and design settings');
 
         const res3 = await request
             .get(localUtils.API.getApiQuery(`posts/?key=${validKey}&limit=1&filter=${createFilter(publishedAt2, `>`)}`))
@@ -270,7 +270,7 @@ describe('Posts Content API', function () {
         should.exist(res3.body.posts[0]);
         const post3 = res3.body.posts[0];
 
-        post3.title.should.eql('Welcome to Ghost');
+        post3.title.should.eql('Start here for a quick overview of everything you need to know');
     });
 
     it('Can request a single post', async function () {

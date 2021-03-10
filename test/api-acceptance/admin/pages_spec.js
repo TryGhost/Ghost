@@ -26,7 +26,7 @@ describe('Pages API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.pages);
         localUtils.API.checkResponse(jsonResponse, 'pages');
-        jsonResponse.pages.should.have.length(2);
+        jsonResponse.pages.should.have.length(6);
 
         localUtils.API.checkResponse(jsonResponse.pages[0], 'page');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -34,7 +34,7 @@ describe('Pages API', function () {
 
         // Absolute urls by default
         jsonResponse.pages[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
-        jsonResponse.pages[1].url.should.eql(`${config.get('url')}/static-page-test/`);
+        jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
     });
 
     it('Can add a page', async function () {
