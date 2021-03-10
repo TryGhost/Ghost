@@ -133,6 +133,7 @@ const configureGrunt = function (grunt) {
                 reporter: grunt.option('reporter') || 'spec',
                 timeout: '60000',
                 require: ['core/server/overrides'],
+                flags: ['--trace-warnings'],
                 exit: true
             },
 
