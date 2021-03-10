@@ -135,7 +135,30 @@
             </section>
         {{/if}}
 
+
         <section class="gh-dashboard-area mixed">
+            {{#if (not this.feature.launchComplete)}}
+            <div class="gh-dashboard-container start-contents">
+                <div class="gh-dashboard-box blogpost">
+                    <h2>Start creating content</h2>
+                    <LinkTo @route="members">
+                        <span class="icon">{{svg-jar "members"}}</span>
+                        <div>
+                            <h4>Create your first member</h4>
+                            <p>Add yourself or import members from CSV</p>
+                        </div>
+                    </LinkTo>
+                    <LinkTo @route="editor.new" @model="post">
+                        <span class="icon green">{{svg-jar "posts"}}</span>
+                        <div>
+                            <h4>Publish a post</h4>
+                            <p>Get familiar with the Ghost editor and start creating</p>
+                        </div>
+                    </LinkTo>
+                </div>
+            </div>
+            {{/if}}
+
             <div class="gh-dashboard-container col-2">
                 <div class="gh-dashboard-box">
                     <div class="content">
