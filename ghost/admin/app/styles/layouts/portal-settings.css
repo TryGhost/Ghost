@@ -134,7 +134,7 @@
     top: 0;
     left: 29px;
     bottom: 0;
-    background: color-mod(var(--lightgrey) l(-5%) s(-10%));
+    background: var(--input-border-color);
 }
 
 .gh-portal-settings .input-color input:focus + .color-picker-horizontal-divider {
