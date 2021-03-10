@@ -196,7 +196,7 @@ label.gh-tag-setting-codeheader {
     top: 0;
     left: 37px;
     bottom: 0;
-    background: color-mod(var(--lightgrey) l(-5%) s(-10%));
+    background: var(--input-border-color);
 }
 
 .gh-tag-settings-colorcontainer .input-color input:focus + .color-picker-horizontal-divider {
