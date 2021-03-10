@@ -139,21 +139,22 @@
             <div class="gh-dashboard-container col-2">
                 <div class="gh-dashboard-box">
                     <div class="content">
-                        <h2>Introduction to Members</h2>
-                        <p>The native Members feature makes it possible to launch a membership business, develop a direct relationship with your audience and generate revenue from your creative work.</p>
+                        <h2>Customise your site design</h2>
+                        <p>Stand out from the crowd. Ghost lets you customize everything so you can create a publication that doesn’t just look the same as what everyone else has.</p>
                     </div>
                     <div class="footer">
-                        <a class="gh-btn gh-btn-outline" href="https://ghost.org/help/members-introduction/" target="_blank" rel="noopener"><span>Learn more about Members</span></a>
+                        <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings"><span>Brand settings</span></LinkTo>
+                        <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings.members-email"><span>Email settings</span></LinkTo>
+                        <LinkTo class="gh-btn gh-btn-outline mt2" @route="settings.theme"><span>Your theme</span></LinkTo>
                     </div>
                 </div>
                 <div class="gh-dashboard-box">
                     <div class="content">
-                        <h2>Customise Members experience</h2>
-                        <p>Set membership signup details in Portal settings, remove or add your site's name and logo in newsletter emails.</p>
+                        <h2>Looking for help with Ghost features?</h2>
+                        <p>Our product knowledgebase is packed full of guides, tutorials, answers to frequently asked questions, tips for dealing with common errors, and much more. </p>
                     </div>
                     <div class="footer">
-                        <LinkTo class="gh-btn gh-btn-outline" @route="settings"><span>Portal settings</span></LinkTo>
-                        <LinkTo class="gh-btn gh-btn-outline ml2" @route="settings.members-email"><span>Email design</span></LinkTo>
+                        <a class="gh-btn gh-btn-outline mt2" href="https://ghost.org/help/" target="_blank" rel="noopener"><span>Visit the help center &rarr;</span></a>
                     </div>
                 </div>
             </div>
