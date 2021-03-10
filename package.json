@@ -60,7 +60,7 @@
     "@tryghost/magic-link": "0.6.7",
     "@tryghost/members-api": "1.0.0-rc.5",
     "@tryghost/members-csv": "0.4.5",
-    "@tryghost/members-ssr": "0.8.11",
+    "@tryghost/members-ssr": "1.0.0",
     "@tryghost/mw-session-from-token": "0.1.16",
     "@tryghost/promise": "0.1.6",
     "@tryghost/security": "0.2.6",
