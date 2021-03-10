@@ -121,7 +121,7 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://unpkg.com/@tryghost/portal@~1.0.0-rc/umd/portal.min.js",
-        "version": "~1.0.0-rc"
+        "url": "https://unpkg.com/@tryghost/portal@~1.0.0/umd/portal.min.js",
+        "version": "~1.0.0"
     }
 }
