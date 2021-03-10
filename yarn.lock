@@ -333,13 +333,6 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.7.tgz#3532a7a68fad69fe15a9918c1c2ff3acc7a54706"
   integrity sha512-pnMgvXPvaF7h6Wb5vgJO8dSPXhAKCpW327iBEP55Npxk3hKPi0sawaAxmMzTqU8bYo0hJrsde5ska6ZLM40yYQ==
 
-"@tryghost/bunyan-rotating-filestream@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/bunyan-rotating-filestream/-/bunyan-rotating-filestream-0.0.6.tgz#c5a55ca3a7d0759394b94c8fb34e3d5810aa2a09"
-  integrity sha512-dN3F+TbV1UrkKR7eoEFQezuneinZArJvP4r1KvF3ukDJWmEalQrbstvfg4SyuCPgbZluy4if1xL7mShQR9pMcA==
-  dependencies:
-    long-timeout "^0.1.1"
-
 "@tryghost/bunyan-rotating-filestream@0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@tryghost/bunyan-rotating-filestream/-/bunyan-rotating-filestream-0.0.7.tgz#3957de91e4e9b58999f0bbe19242080543dcfc4a"
@@ -4103,27 +4096,6 @@ ghost-ignition@4.4.4, ghost-ignition@^4.2.4:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.5.3:
-  version "4.5.3"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.5.3.tgz#ec0e72602bc89e0a9c5e1b99183daaa06b3e7091"
-  integrity sha512-ubvUZO3KruM16i9TM0+rJFLa21xfqN2iDSYQmKYYQP1d4qXgykPHlEjMUTA1ThZ5wU7kNTVswmls+iuOpMJjfw==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.6"
-    "@tryghost/elasticsearch-bunyan" "0.1.1"
-    bunyan "1.8.15"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.3.1"
-    find-root "1.1.0"
-    fs-extra "9.1.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.21"
-    moment "2.27.0"
-    nconf "0.10.0"
-    prettyjson "1.2.1"
-    uuid "8.3.2"
-
 ghost-ignition@4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.5.4.tgz#09e90721b6df04af048f89f696a7af92e0ab4dfe"
@@ -4451,10 +4423,10 @@ grunt@1.3.0:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.0.0-pre.5:
-  version "4.0.0-pre.5"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.0.0-pre.5.tgz#5a3dc105181695bc9a036371ab9fb5462bc04b96"
-  integrity sha512-vAFvaF/57YEolhdPtQJWmeTwzQ1VhlXcEdEGj2vg+QXZd3TwdMqkyc8i8QK23lq9GQ0NO9uCtcQMt5Yxs8GpXw==
+gscan@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.0.0.tgz#0120c78051b6990e0af78df6ef0e63cb30082305"
+  integrity sha512-YHsuTLbKbzCVAA6oTVYi7e0Y87VUfjCyX7F/VCrp4z+GL3j8Ugxw0qAL3H/FzA8PLihRKrq0yH3y4HsnEGassw==
   dependencies:
     "@sentry/node" "6.2.1"
     "@tryghost/pretty-cli" "1.2.15"
@@ -4465,7 +4437,7 @@ gscan@4.0.0-pre.5:
     express "4.17.1"
     express-hbs "2.3.4"
     fs-extra "9.1.0"
-    ghost-ignition "4.5.3"
+    ghost-ignition "4.5.4"
     glob "7.1.6"
     lodash "4.17.21"
     multer "1.4.2"
