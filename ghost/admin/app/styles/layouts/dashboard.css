@@ -169,22 +169,39 @@
 }
 
 .gh-dashboard-box.blogpost {
-    flex-direction: row;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 32px;
     align-items: center;
 }
 
-.gh-dashboard-box.blogpost h2 {
-    font-size: 2.4rem;
-    line-height: 1.2em;
+.gh-dashboard-box.blogpost .content {
+    padding: 32px 28px 32px 32px;
+    display: flex;
+    flex-direction: column;
 }
 
 .gh-dashboard-box.blogpost p {
     margin-bottom: 8px;
 }
 
-.gh-dashboard-box.blogpost img {
-    max-width: 200px;
-    margin-right: 32px;
+.gh-dashboard-box.blogpost .thumbnail {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+}
+
+.gh-dashboard-box.thebrowser .thumbnail {
+    background-position: top right;
+}
+
+.gh-dashboard-box .content a {
+    color: var(--green);
+}
+
+.gh-dashboard-box .content a:hover {
+    color: var(--green-d2);
 }
 
 /* Charts */
@@ -757,14 +774,17 @@
     }
 
     .gh-dashboard-box.blogpost {
-        flex-direction: column;
-        align-items: flex-start;
+        grid-template-columns: unset;
+        grid-template-rows: auto auto;
+        grid-gap: 24px;
     }
 
-    .gh-dashboard-box.blogpost img {
-        max-width: 100%;
-        margin-right: 0;
-        margin-bottom: 20px;
+    .gh-dashboard-box.blogpost .thumbnail {
+        min-height: 220px;
+    }
+
+    .gh-dashboard-box.blogpost .content {
+        padding-top: 0;
     }
 }
 
