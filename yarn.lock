@@ -318,10 +318,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.9"
 
-"@tryghost/admin-api-schema@2.0.0-rc.3":
-  version "2.0.0-rc.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.0.0-rc.3.tgz#a1df6ee65c6d5c102e660145b2990c218eb6f638"
-  integrity sha512-tdXAYWZOU51GNLmqQUWHw9FLmbWbL18U/1DS49Qa3Hi1/AKnQXvXLTT6433RrFnyx6YzA6ANwOtWcFYKzSBk4A==
+"@tryghost/admin-api-schema@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.0.0.tgz#c4cda4441acc9b08bd57a0b52fa53a451916517b"
+  integrity sha512-W0Sz1wCR4tjt72yyO6whL/hNvFwc0rAiJLVaipxo2PY1sEfP8VpK+smuYR/sVEX5eNLhoI0hxEbr4rnCF/LiuA==
   dependencies:
     "@tryghost/errors" "0.2.8"
     bluebird "^3.5.3"
@@ -620,7 +620,19 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@1.1.0-rc.1", "@tryghost/url-utils@^1.1.0-rc.1":
+"@tryghost/url-utils@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-1.1.0.tgz#0a7dfbe7f7328aebd3fff2db153cd04d958c8608"
+  integrity sha512-gqHoJvgg8yzdEN7FhZLsckPbqWlKZZfxsneaf4X1Kad7l6pNkmmxwq2t67tvQLEVp6Nvvm8bFFmRVtYDpopVUw==
+  dependencies:
+    cheerio "0.22.0"
+    moment "2.27.0"
+    moment-timezone "0.5.31"
+    remark "^11.0.2"
+    remark-footnotes "^1.0.0"
+    unist-util-visit "^2.0.0"
+
+"@tryghost/url-utils@^1.1.0-rc.1":
   version "1.1.0-rc.1"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-1.1.0-rc.1.tgz#796e3518841e5a8e6a83694299ecb147b44aa074"
   integrity sha512-QsWgCk0+HdIphcnD9NuoxbYbebiPAZua5zDIAhgitoR6GhvmCERijYqgUW0qppwu/uIgBJsQGYxTTNHSjp/i6Q==
