@@ -130,7 +130,7 @@
             "type": "array"
         },
         "secondary_navigation": {
-            "defaultValue": "[{\"label\":\"Data & privacy\",\"url\":\"/\"},{\"label\":\"Contact\",\"url\":\"/\"},{\"label\":\"Contribute →\",\"url\":\"/\"}]",
+            "defaultValue": "[{\"label\":\"Data & privacy\",\"url\":\"/privacy/\"},{\"label\":\"Contact\",\"url\":\"/contact/\"},{\"label\":\"Contribute →\",\"url\":\"/contribute/\"}]",
             "type": "array"
         },
         "meta_title": {
