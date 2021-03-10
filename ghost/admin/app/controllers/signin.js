@@ -47,7 +47,7 @@ export default Controller.extend(ValidationEngine, {
             return htmlSafe(`background-image: url(${icon})`);
         }
 
-        icon = 'https://static.ghost.org/v3.0.0/images/ghost-squircle.png';
+        icon = 'https://static.ghost.org/v4.0.0/images/ghost-squircle.png';
         return htmlSafe(`background-image: url(${icon})`);
     }),
 
