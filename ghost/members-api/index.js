@@ -90,6 +90,7 @@ module.exports = function MembersApi({
     const stripeWebhookService = new StripeWebhookService({
         StripeWebhook,
         stripeAPIService,
+        stripePlansService,
         memberRepository,
         eventRepository,
         sendEmailWithMagicLink
@@ -312,7 +313,7 @@ module.exports = function MembersApi({
             res.end();
         } catch (err) {
             common.logging.error(`Error handling webhook ${event.type}`, err);
-            res.writeHead(400);
+            res.writeHead(err.statusCode || 500);
             res.end();
         }
     });

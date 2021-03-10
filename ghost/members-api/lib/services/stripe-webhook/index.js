@@ -1,10 +1,12 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
 
 module.exports = class StripeWebhookService {
     /**
      * @param {object} deps
      * @param {any} deps.StripeWebhook
      * @param {import('../stripe-api')} deps.stripeAPIService
+     * @param {import('../stripe-plans')} deps.stripePlansService
      * @param {import('../../repositories/member')} deps.memberRepository
      * @param {import('../../repositories/event')} deps.eventRepository
      * @param {any} deps.sendEmailWithMagicLink
@@ -12,12 +14,14 @@ module.exports = class StripeWebhookService {
     constructor({
         StripeWebhook,
         stripeAPIService,
+        stripePlansService,
         memberRepository,
         eventRepository,
         sendEmailWithMagicLink
     }) {
         this._StripeWebhook = StripeWebhook;
         this._stripeAPIService = stripeAPIService;
+        this._stripePlansService = stripePlansService;
         this._memberRepository = memberRepository;
         this._eventRepository = eventRepository;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
@@ -152,13 +156,26 @@ module.exports = class StripeWebhookService {
         });
 
         if (member) {
-            if (invoice.paid) {
+            if (invoice.paid && invoice.amount_paid !== 0) {
                 await this._eventRepository.registerPayment({
                     member_id: member.id,
                     currency: invoice.currency,
                     amount: invoice.amount_paid
                 });
             }
+        } else {
+            // Subscription has more than one plan - meaning it is not one created by us - ignore.
+            if (!subscription.plan) {
+                return;
+            }
+            // Subscription is for a different product - ignore.
+            if (this._stripePlansService.getProduct().id !== subscription.plan.product) {
+                return;
+            }
+            // Could not find the member, which we need in order to insert an payment event.
+            throw new errors.NotFoundError({
+                message: `No member found for customer ${subscription.customer}`
+            });
         }
     }
 

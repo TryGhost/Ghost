@@ -25,6 +25,7 @@
     "sinon": "7.5.0"
   },
   "dependencies": {
+    "@tryghost/errors": "^0.2.9",
     "@tryghost/magic-link": "^0.6.7",
     "bluebird": "^3.5.4",
     "body-parser": "^1.19.0",
