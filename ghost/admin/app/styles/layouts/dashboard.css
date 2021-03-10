@@ -96,6 +96,7 @@
 .gh-dashboard-box .footer {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .gh-dashboard-box.grey {
