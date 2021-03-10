@@ -58,7 +58,7 @@ describe('api/v2/content/posts', function () {
 
                 // Default order 'published_at desc' check
                 jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[6].slug.should.eql('themes');
+                jsonResponse.posts[6].slug.should.eql('integrations');
 
                 // check meta response for this test
                 jsonResponse.meta.pagination.page.should.eql(1);
@@ -367,7 +367,7 @@ describe('api/v2/content/posts', function () {
                     jsonResponse.posts[1].slug.should.eql('thou-shalt-be-paid-for');
                     jsonResponse.posts[2].slug.should.eql('free-to-see');
                     jsonResponse.posts[3].slug.should.eql('thou-shalt-have-a-taste');
-                    jsonResponse.posts[8].slug.should.eql('organising-content');
+                    jsonResponse.posts[8].slug.should.eql('sell');
 
                     jsonResponse.posts[0].html.should.eql('');
                     jsonResponse.posts[1].html.should.eql('');

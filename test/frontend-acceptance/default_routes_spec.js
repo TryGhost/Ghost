@@ -122,7 +122,7 @@ describe('Default Frontend routing', function () {
             const $ = cheerio.load(res.text);
 
             // NOTE: This is the title from the settings.
-            $('title').text().should.equal('Welcome to Ghost');
+            $('title').text().should.equal('Start here for a quick overview of everything you need to know');
 
             $('body.post-template').length.should.equal(1);
             $('body.tag-getting-started').length.should.equal(1);
@@ -198,7 +198,7 @@ describe('Default Frontend routing', function () {
 
             const $ = cheerio.load(res.text);
 
-            $('.post-title').text().should.equal('Welcome to Ghost');
+            $('.post-title').text().should.equal('Start here for a quick overview of everything you need to know');
 
             $('.content .post').length.should.equal(1);
             $('.powered').text().should.equal(' Published with Ghost');
@@ -245,7 +245,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect('Content-Type', 'text/xml; charset=utf-8');
 
-            res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
             doEnd(res);
         });
 
@@ -255,7 +255,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect('Content-Type', 'text/xml; charset=utf-8');
 
-            res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
             doEnd(res);
         });
 
@@ -265,7 +265,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect('Content-Type', 'text/xml; charset=utf-8');
 
-            res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
             doEnd(res);
         });
     });
@@ -412,7 +412,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect('Content-Type', 'text/xml; charset=utf-8');
 
-            res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
             doEnd(res);
         });
 
@@ -422,7 +422,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect('Content-Type', 'text/xml; charset=utf-8');
 
-            res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
             doEnd(res);
         });
 

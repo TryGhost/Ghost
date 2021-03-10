@@ -56,7 +56,7 @@ describe('api/canary/content/posts', function () {
 
                 // Default order 'published_at desc' check
                 jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[6].slug.should.eql('themes');
+                jsonResponse.posts[6].slug.should.eql('integrations');
 
                 // check meta response for this test
                 jsonResponse.meta.pagination.page.should.eql(1);
@@ -103,7 +103,7 @@ describe('api/canary/content/posts', function () {
 
                 // Default order 'published_at desc' check
                 jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[6].slug.should.eql('themes');
+                jsonResponse.posts[6].slug.should.eql('integrations');
 
                 // check meta response for this test
                 jsonResponse.meta.pagination.page.should.eql(1);
@@ -180,7 +180,7 @@ describe('api/canary/content/posts', function () {
     });
 
     it('browse posts with slug filter, should order in slug order', function () {
-        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=slug:[themes,ghostly-kitchen-sink,the-editor]`))
+        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=slug:[write,ghostly-kitchen-sink,grow]`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -188,14 +188,14 @@ describe('api/canary/content/posts', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.posts[0].slug.should.equal('themes');
+                jsonResponse.posts[0].slug.should.equal('write');
                 jsonResponse.posts[1].slug.should.equal('ghostly-kitchen-sink');
-                jsonResponse.posts[2].slug.should.equal('the-editor');
+                jsonResponse.posts[2].slug.should.equal('grow');
             });
     });
 
     it('browse posts with slug filter should order taking order parameter into account', function () {
-        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&order=slug%20DESC&filter=slug:[themes,ghostly-kitchen-sink,the-editor]`))
+        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&order=slug%20DESC&filter=slug:[write,ghostly-kitchen-sink,grow]`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -203,8 +203,8 @@ describe('api/canary/content/posts', function () {
                 const jsonResponse = res.body;
 
                 jsonResponse.posts.should.be.an.Array().with.lengthOf(3);
-                jsonResponse.posts[0].slug.should.equal('themes');
-                jsonResponse.posts[1].slug.should.equal('the-editor');
+                jsonResponse.posts[0].slug.should.equal('write');
+                jsonResponse.posts[1].slug.should.equal('grow');
                 jsonResponse.posts[2].slug.should.equal('ghostly-kitchen-sink');
             });
     });
@@ -417,7 +417,7 @@ describe('api/canary/content/posts', function () {
                     jsonResponse.posts[1].slug.should.eql('thou-shalt-be-paid-for');
                     jsonResponse.posts[2].slug.should.eql('free-to-see');
                     jsonResponse.posts[3].slug.should.eql('thou-shalt-have-a-taste');
-                    jsonResponse.posts[8].slug.should.eql('organising-content');
+                    jsonResponse.posts[8].slug.should.eql('sell');
 
                     jsonResponse.posts[0].html.should.eql('');
                     jsonResponse.posts[1].html.should.eql('');
