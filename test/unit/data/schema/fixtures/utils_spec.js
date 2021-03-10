@@ -103,11 +103,11 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 7);
-                result.should.have.property('done', 7);
+                result.should.have.property('expected', 11);
+                result.should.have.property('done', 11);
 
-                postOneStub.callCount.should.eql(7);
-                postAddStub.callCount.should.eql(7);
+                postOneStub.callCount.should.eql(11);
+                postAddStub.callCount.should.eql(11);
 
                 done();
             }).catch(done);
@@ -120,10 +120,10 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 7);
+                result.should.have.property('expected', 11);
                 result.should.have.property('done', 0);
 
-                postOneStub.callCount.should.eql(7);
+                postOneStub.callCount.should.eql(11);
                 postAddStub.callCount.should.eql(0);
 
                 done();

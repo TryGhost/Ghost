@@ -249,8 +249,8 @@ describe('Database Migration (special functions)', function () {
                     // Post
                     should.exist(result.posts);
                     result.posts.length.should.eql(7);
-                    result.posts.at(0).get('title').should.eql('Welcome to Ghost');
-                    result.posts.at(6).get('title').should.eql('Creating a custom theme');
+                    result.posts.at(0).get('title').should.eql('Start here for a quick overview of everything you need to know');
+                    result.posts.at(6).get('title').should.eql('Setting up apps and custom integrations');
 
                     // Tag
                     should.exist(result.tags);

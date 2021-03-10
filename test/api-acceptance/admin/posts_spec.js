@@ -72,7 +72,7 @@ describe('Posts API', function () {
         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
         // ensure order works
-        jsonResponse.posts[0].slug.should.eql('apps-integrations');
+        jsonResponse.posts[0].slug.should.eql('portal');
     });
 
     it('Can include single relation', async function () {
