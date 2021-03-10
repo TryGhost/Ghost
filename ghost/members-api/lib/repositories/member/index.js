@@ -327,7 +327,7 @@ module.exports = class MemberRepository {
                     to_plan: updated.get('plan_id'),
                     currency: subscription.plan.currency,
                     mrr_delta: mrrDelta
-                });
+                }, options);
             }
         } else {
             await this._StripeCustomerSubscription.add(subscriptionData, options);
@@ -338,7 +338,7 @@ module.exports = class MemberRepository {
                 to_plan: subscription.plan.id,
                 currency: subscription.plan.currency,
                 mrr_delta: getMRRDelta({interval: subscription.plan.interval, amount: subscription.plan.amount, status: subscription.status})
-            });
+            }, options);
         }
 
         let status = 'free';
