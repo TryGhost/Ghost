@@ -64,7 +64,8 @@ export default class SigninPage extends React.Component {
                 label: 'Email',
                 name: 'email',
                 required: true,
-                errorMessage: errors.email || ''
+                errorMessage: errors.email || '',
+                autoFocus: true
             }
         ];
         return fields;
