@@ -23,6 +23,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
     @service ajax;
     @service config;
     @service ghostPaths;
+    @service session;
     @service settings;
 
     @tracked html = '';
@@ -46,6 +47,12 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
         }
+    }
+
+    @action
+    async initPreviewEmailAddress() {
+        const user = await this.session.user;
+        this.previewEmailAddress = user.email;
     }
 
     @task({drop: true})
