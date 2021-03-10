@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {isCookiesDisabled} from '../../utils/helpers';
 
 export const InputFieldStyles = `
@@ -92,8 +92,10 @@ function InputField({
     onKeyDown = () => {},
     tabindex,
     maxlength,
+    autoFocus,
     errorMessage
 }) {
+    const fieldNode = useRef(null);
     id = id || `input-${name}`;
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
@@ -116,6 +118,11 @@ function InputField({
     default:
         break;
     }
+    useEffect(() => {
+        if (autoFocus) {
+            fieldNode.current.focus();
+        }
+    }, [autoFocus]);
     return (
         <section className='gh-portal-input-section'>
             <div className='gh-portal-input-labelcontainer'>
@@ -123,6 +130,7 @@ function InputField({
                 <InputError message={errorMessage} name={name} />
             </div>
             <input
+                ref={fieldNode}
                 id={id}
                 className={inputClasses}
                 type={type}
