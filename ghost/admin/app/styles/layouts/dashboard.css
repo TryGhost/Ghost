@@ -238,6 +238,57 @@
     background: var(--green);
 }
 
+.gh-dashboard-container.start-contents .gh-dashboard-box {
+    grid-row-gap: 0;
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box h2 {
+    grid-column: 1 / 3;
+    border-bottom: 1px solid var(--whitegrey);
+    padding: 16px 28px;
+    font-size: 1.65rem;
+    font-weight: 600;
+    line-height: 1.4em;
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box a {
+    display: flex;
+    padding: 16px 28px;
+    color: var(--black);
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box a .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    margin-right: 14px;
+    background: var(--pink);
+    border-radius: 4px;
+    color: #fff;
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box a .icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box a .icon.green {
+    background: var(--green);
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box a h4 {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.gh-dashboard-container.start-contents .gh-dashboard-box a p {
+    font-size: 1.3rem;
+}
+
 /* Charts */
 .gh-dashboard-area.charts {
     display: grid;
@@ -873,6 +924,15 @@
 
     .gh-dashboard-join-community .footer-link {
         margin-bottom: -24px;
+    }
+    
+    .gh-dashboard-container.start-contents .gh-dashboard-box {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .gh-dashboard-container.start-contents .gh-dashboard-box h2 {
+        grid-column: 1 / 2;
     }
 }
 
