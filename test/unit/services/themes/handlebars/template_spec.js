@@ -1,4 +1,5 @@
 const should = require('should');
+const errors = require('@tryghost/errors');
 const proxy = require('../../../../../core/frontend/services/proxy');
 
 describe('Helpers Template', function () {
@@ -9,5 +10,11 @@ describe('Helpers Template', function () {
 
         should.exist(safeString);
         safeString.should.have.property('string').and.equal('<h1>Hello world</h1>');
+    });
+
+    it('will throw an IncorrectUsageError if the partial does not exist', function () {
+        should.throws(() => {
+            proxy.templates.execute('non-existent');
+        }, errors.IncorrectUsageError);
     });
 });
