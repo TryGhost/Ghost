@@ -3,7 +3,7 @@ const templates = {};
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const hbs = require('../engine');
-const {i18n} = require('../../proxy');
+const {i18n} = require('../../../../server/lib/common');
 
 // Execute a template helper
 // All template helpers are register as partial view.
