@@ -91,6 +91,50 @@ const exportedBodyLegacy = () => {
     });
 };
 
+// NOTE: clone the fixture before changing in and alias to v5, v6 or whatever the newest version is
+const exportedBodyLatest = () => {
+    return _.clone({
+        db: [{
+            meta: {
+                exported_on: 1615520875631,
+                version: '4.0.0'
+            },
+            data: {
+                actions: [],
+                api_keys: [],
+                brute: [],
+                emails: [],
+                integrations: [],
+                invites: [],
+                labels: [],
+                members: [],
+                members_labels: [],
+                members_stripe_customers: [],
+                members_stripe_customers_subscriptions: [],
+                migrations: [],
+                migrations_lock: [],
+                permissions: [],
+                permissions_roles: [],
+                permissions_users: [],
+                posts: [],
+                posts_authors: [],
+                posts_meta: [],
+                posts_tags: [],
+                roles: [],
+                roles_users: [],
+                settings: [],
+                snippets: [],
+                tags: [],
+                tokens: [],
+                users: [],
+                webhooks: []
+            }
+        }]
+    });
+};
+
+module.exports.exportedBodyLatest = exportedBodyLatest;
+module.exports.exportedBodyV4 = exportedBodyLatest;
 module.exports.exportedBodyV2 = exportedBodyV2;
 module.exports.exportedBodyV1 = exportedBodyV1;
 module.exports.exportedBodyLegacy = exportedBodyLegacy;
