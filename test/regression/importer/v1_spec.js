@@ -1,5 +1,5 @@
 const testUtils = require('../../utils');
-const {exportedPreviousBody} = require('../../utils/fixtures/export/body-generator');
+const {exportedBodyV1} = require('../../utils/fixtures/export/body-generator');
 
 const models = require('../../../core/server/models');
 const importer = require('../../../core/server/data/importer');
@@ -14,7 +14,7 @@ describe('Integration: Importer 1.0', function () {
     beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
     it('ensure amp field get\'s respected', function () {
-        const exportData = exportedPreviousBody().db[0];
+        const exportData = exportedBodyV1().db[0];
 
         exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
             slug: 'post1',
@@ -42,7 +42,7 @@ describe('Integration: Importer 1.0', function () {
 
     describe('migrate mobiledoc/html', function () {
         it('invalid mobiledoc structure', function () {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
@@ -75,7 +75,7 @@ describe('Integration: Importer 1.0', function () {
         });
 
         it('mobiledoc is null, html field is set', function () {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
@@ -101,7 +101,7 @@ describe('Integration: Importer 1.0', function () {
         });
 
         it('mobiledoc and html is null', function () {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1'
@@ -127,7 +127,7 @@ describe('Integration: Importer 1.0', function () {
         });
 
         it('mobiledoc is set and html is null', function () {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1'
@@ -152,7 +152,7 @@ describe('Integration: Importer 1.0', function () {
         });
 
         it('post has "kg-card-markdown" class', function () {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
@@ -179,7 +179,7 @@ describe('Integration: Importer 1.0', function () {
         });
 
         it('import old Koenig Beta post format', function () {
-            const exportData = exportedPreviousBody().db[0];
+            const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',

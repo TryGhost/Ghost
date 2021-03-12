@@ -21,7 +21,7 @@ const importOptions = {
 
 const knex = db.knex;
 
-const {exportedLatestBody} = require('../../utils/fixtures/export/body-generator');
+const {exportedBodyV2} = require('../../utils/fixtures/export/body-generator');
 
 // Tests in here do an import for each test
 describe('Integration: Importer', function () {
@@ -42,7 +42,7 @@ describe('Integration: Importer', function () {
         it('ensure return structure', function () {
             let exportData;
 
-            return dataImporter.doImport(exportedLatestBody().db[0], importOptions)
+            return dataImporter.doImport(exportedBodyV2().db[0], importOptions)
                 .then(function (importResult) {
                     should.exist(importResult);
                     importResult.hasOwnProperty('data').should.be.true();
@@ -51,7 +51,7 @@ describe('Integration: Importer', function () {
         });
 
         it('cares about invalid dates and date formats', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 created_at: '00-00-0000 00:00:00',
@@ -100,7 +100,7 @@ describe('Integration: Importer', function () {
         });
 
         it('warning that theme was not imported', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'active_theme',
@@ -120,7 +120,7 @@ describe('Integration: Importer', function () {
         });
 
         it('removes duplicate users', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({
                 name: 'Joe Bloggs',
@@ -142,7 +142,7 @@ describe('Integration: Importer', function () {
         });
 
         it('removes duplicate posts', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'same'
@@ -164,7 +164,7 @@ describe('Integration: Importer', function () {
         });
 
         it('does not treat posts without slug as duplicate', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = {
                 title: 'duplicate title'
@@ -189,7 +189,7 @@ describe('Integration: Importer', function () {
         });
 
         it('can import user with missing allowed fields', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
             delete exportData.data.users[0].website;
@@ -207,7 +207,7 @@ describe('Integration: Importer', function () {
         });
 
         it('removes duplicate tags and updates associations', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost();
 
@@ -247,7 +247,7 @@ describe('Integration: Importer', function () {
         });
 
         it('removes broken tags from post (not in db, not in file)', function () {
-            let exportData = exportedLatestBody().db[0];
+            let exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'welcome-to-ghost-2'
@@ -272,7 +272,7 @@ describe('Integration: Importer', function () {
         });
 
         it('imports post status', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({status: 'scheduled', slug: 'post1'});
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({status: 'published', slug: 'post2'});
@@ -290,7 +290,7 @@ describe('Integration: Importer', function () {
 
         // @TODO: ensure permissions, roles etc are not imported (!)
         it('ensure complex JSON get\'s fully imported', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
@@ -322,7 +322,7 @@ describe('Integration: Importer', function () {
         });
 
         it('import owner, ensure original owner stays as is', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
             exportData.data.roles_users[0] = [
@@ -352,7 +352,7 @@ describe('Integration: Importer', function () {
         });
 
         it('imports comment_id correctly', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost();
 
@@ -364,7 +364,7 @@ describe('Integration: Importer', function () {
         });
 
         it('handles validation errors nicely', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({slug: 'post1'});
             exportData.data.posts[0].title = null;
@@ -420,7 +420,7 @@ describe('Integration: Importer', function () {
         });
 
         it('does import data with invalid user references', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({author_id: 2, published_by: 2});
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
@@ -470,7 +470,7 @@ describe('Integration: Importer', function () {
         });
 
         it('invalid uuid', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({uuid: '528258181e668', slug: 'post1'});
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({uuid: '', slug: 'post2'});
@@ -490,7 +490,7 @@ describe('Integration: Importer', function () {
         });
 
         it('ensure post tag order is correct', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({slug: 'post1', published_at: moment().add(3, 'day').toDate()});
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({slug: 'post2', published_at: moment().add(1, 'day').toDate()});
@@ -545,7 +545,7 @@ describe('Integration: Importer', function () {
         });
 
         it('import multiple users, tags, posts', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({email: 'user1@ghost.org', slug: 'user1'});
             exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({email: 'user2@ghost.org', slug: 'user2', created_by: exportData.data.users[0].id});
@@ -703,7 +703,7 @@ describe('Integration: Importer', function () {
         });
 
         it('can handle if user has multiple roles attached', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({
                 email: 'user1@ghost.org',
@@ -740,7 +740,7 @@ describe('Integration: Importer', function () {
         });
 
         it('can handle related tags with missing optional fields', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost();
 
@@ -789,7 +789,7 @@ describe('Integration: Importer', function () {
         });
 
         it('can handle uppercase tags', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost();
 
@@ -822,7 +822,7 @@ describe('Integration: Importer', function () {
         });
 
         it('does not import settings: labs', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'labs',
@@ -840,7 +840,7 @@ describe('Integration: Importer', function () {
         });
 
         it('does not import settings: slack_url', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'slack_url',
@@ -858,7 +858,7 @@ describe('Integration: Importer', function () {
         });
 
         it('does not import settings: slack_url from slack object', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'slack',
@@ -876,7 +876,7 @@ describe('Integration: Importer', function () {
         });
 
         it('imports settings fields deprecated in v2 and removed in v3: slack hook, permalinks', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'default_locale',
@@ -916,7 +916,7 @@ describe('Integration: Importer', function () {
         });
 
         it('does import settings with string booleans', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'amp',
@@ -957,7 +957,7 @@ describe('Integration: Importer', function () {
         });
 
         it('import comment_id', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
@@ -981,7 +981,7 @@ describe('Integration: Importer', function () {
         });
 
         it('ensure authors are imported correctly', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({email: 'user1@ghost.org', slug: 'user1'});
             exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser({email: 'user2@ghost.org', slug: 'user2'});
@@ -1066,7 +1066,7 @@ describe('Integration: Importer', function () {
         });
 
         it('import 1.0 Koenig post format', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
@@ -1107,7 +1107,7 @@ describe('Integration: Importer', function () {
         });
 
         it('import 2.0 Koenig post format', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
@@ -1171,7 +1171,7 @@ describe('Integration: Importer', function () {
         });
 
         it('Can import stripe plans with an "amount" of 0', async function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings.push({
                 id: 'blahblah',
@@ -1203,7 +1203,7 @@ describe('Integration: Importer', function () {
         beforeEach(testUtils.setup('users:roles', 'posts', 'settings'));
 
         it('import multiple users, tags, posts', function () {
-            const exportData = exportedLatestBody().db[0];
+            const exportData = exportedBodyV2().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({
                 email: 'user1@ghost.org',
