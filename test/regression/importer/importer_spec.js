@@ -36,8 +36,6 @@ describe('Integration: Importer', function () {
         sinon.restore();
     });
 
-    should.exist(importer);
-
     describe('Empty database (except of owner user), general tests', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
