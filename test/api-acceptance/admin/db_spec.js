@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const {events} = require('../../../core/server/lib/common');
 const testUtils = require('../../utils');
+const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 const localUtils = require('./utils');
 
 describe('DB API', function () {
@@ -47,7 +48,12 @@ describe('DB API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.db);
         jsonResponse.db.should.have.length(1);
+
+        const dataKeys = Object.keys(exportedBodyLatest().db[0].data);
+
         Object.keys(jsonResponse.db[0].data).length.should.eql(28);
+        Object.keys(jsonResponse.db[0].data).length.should.eql(dataKeys.length);
+        jsonResponse.db[0].data.should.have.only.keys(...dataKeys);
     });
 
     it('Can import a JSON database exported from Ghost v2', async function () {

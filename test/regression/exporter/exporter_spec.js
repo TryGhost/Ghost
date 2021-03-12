@@ -3,10 +3,11 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
 
+const ghostVersion = require('../../../core/server/lib/ghost-version');
+const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
+
 // Stuff we are testing
 const exporter = require('../../../core/server/data/exporter');
-
-const ghostVersion = require('../../../core/server/lib/ghost-version');
 
 describe('Exporter', function () {
     before(testUtils.teardownDb);
@@ -18,20 +19,89 @@ describe('Exporter', function () {
 
     should.exist(exporter);
 
-    it('exports data', function (done) {
+    it('exports expected table data', function (done) {
         exporter.doExport().then(function (exportData) {
-            const tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles',
-                'permissions_users', 'settings', 'tags', 'posts_tags'];
+            const tables = [
+                'actions',
+                'api_keys',
+                'brute',
+                'email_batches',
+                'email_recipients',
+                'emails',
+                'integrations',
+                'invites',
+                'labels',
+                'members',
+                'members_email_change_events',
+                'members_labels',
+                'members_login_events',
+                'members_paid_subscription_events',
+                'members_payment_events',
+                'members_status_events',
+                'members_stripe_customers',
+                'members_stripe_customers_subscriptions',
+                'members_subscribe_events',
+                'migrations',
+                'migrations_lock',
+                'mobiledoc_revisions',
+                'permissions',
+                'permissions_roles',
+                'permissions_users',
+                'posts',
+                'posts_authors',
+                'posts_meta',
+                'posts_tags',
+                'roles',
+                'roles_users',
+                'sessions',
+                'settings',
+                'snippets',
+                'tags',
+                'tokens',
+                'users',
+                'webhooks'
+            ];
 
             should.exist(exportData);
-
             should.exist(exportData.meta);
             should.exist(exportData.data);
 
+            exportData.data.should.have.only.keys(...tables);
+            exportData.data.should.have.keys(...Object.keys(exportedBodyLatest().db[0].data));
             exportData.meta.version.should.equal(ghostVersion.full);
 
-            _.each(tables, function (name) {
-                should.exist(exportData.data[name]);
+            // excludes table should contain no data
+            const excludedTables = [
+                'sessions',
+                'mobiledoc_revisions',
+                'email_batches',
+                'email_recipients',
+                'members_payment_events',
+                'members_login_events',
+                'members_email_change_events',
+                'members_status_events',
+                'members_paid_subscription_events',
+                'members_subscribe_events'
+            ];
+
+            excludedTables.forEach((tableName) => {
+                // NOTE: why is this undefined? The key should probably not even be present
+                should.equal(exportData.data[tableName], undefined);
+            });
+
+            // excludes settings with sensitive data
+            const excludedSettings = [
+                'stripe_connect_publishable_key',
+                'stripe_connect_secret_key',
+                'stripe_connect_account_id',
+                'stripe_secret_key',
+                'stripe_publishable_key',
+                'members_stripe_webhook_id',
+                'members_stripe_webhook_secret'
+            ];
+
+            excludedSettings.forEach((settingKey) => {
+                should.not.exist(_.find(exportData.data.settings, {key: settingKey}));
             });
 
             should.not.exist(_.find(exportData.data.settings, {key: 'permalinks'}));
