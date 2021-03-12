@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const exportedLatestBody = () => {
+const exportedBodyV2 = () => {
     return _.clone({
         db: [{
             meta: {
@@ -31,7 +31,7 @@ const exportedLatestBody = () => {
     });
 };
 
-const exportedPreviousBody = () => {
+const exportedBodyV1 = () => {
     return _.clone({
         db: [{
             meta: {
@@ -62,7 +62,7 @@ const exportedPreviousBody = () => {
     });
 };
 
-const exportedLegacyBody = () => {
+const exportedBodyLegacy = () => {
     return _.clone({
         db: [{
             meta: {
@@ -91,6 +91,6 @@ const exportedLegacyBody = () => {
     });
 };
 
-module.exports.exportedLatestBody = exportedLatestBody;
-module.exports.exportedPreviousBody = exportedPreviousBody;
-module.exports.exportedLegacyBody = exportedLegacyBody;
+module.exports.exportedBodyV2 = exportedBodyV2;
+module.exports.exportedBodyV1 = exportedBodyV1;
+module.exports.exportedBodyLegacy = exportedBodyLegacy;
