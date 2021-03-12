@@ -1,5 +1,5 @@
 const testUtils = require('../../utils');
-const {exportedPreviousBody} = require('./utils/fixtures');
+const {exportedPreviousBody} = require('../../utils/fixtures/export/body-generator');
 
 const models = require('../../../core/server/models');
 const importer = require('../../../core/server/data/importer');

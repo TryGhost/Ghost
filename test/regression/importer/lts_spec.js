@@ -2,7 +2,7 @@ const testUtils = require('../../utils');
 const importer = require('../../../core/server/data/importer');
 const dataImporter = importer.importers[1];
 
-const {exportedLegacyBody} = require('./utils/fixtures');
+const {exportedLegacyBody} = require('../../utils/fixtures/export/body-generator');
 
 const importOptions = {
     returnImportedData: true

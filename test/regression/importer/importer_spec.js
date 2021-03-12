@@ -21,7 +21,7 @@ const importOptions = {
 
 const knex = db.knex;
 
-const {exportedLatestBody} = require('./utils/fixtures');
+const {exportedLatestBody} = require('../../utils/fixtures/export/body-generator');
 
 // Tests in here do an import for each test
 describe('Integration: Importer', function () {
