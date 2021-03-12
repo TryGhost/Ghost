@@ -2,22 +2,22 @@ const testUtils = require('../../utils');
 const importer = require('../../../core/server/data/importer');
 const dataImporter = importer.importers[1];
 
-const {exportedLegacyBody} = require('../../utils/fixtures/export/body-generator');
+const {exportedBodyLegacy} = require('../../utils/fixtures/export/body-generator');
 
 const importOptions = {
     returnImportedData: true
 };
 
-describe('Integration: Importer LTS', function () {
+describe('Integration: Importer Legacy', function () {
     beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
-    it('disallows importing LTS imports', function () {
-        const exportData = exportedLegacyBody().db[0];
+    it('disallows importing Legacy imports', function () {
+        const exportData = exportedBodyLegacy().db[0];
 
         return dataImporter.doImport(exportData, importOptions)
             .then(function () {
-                '0'.should.eql(1, 'LTS import should fail');
+                '0'.should.eql(1, 'Legacy import should fail');
             })
             .catch(function (err) {
                 err.message.should.eql('Detected unsupported file structure.');
