@@ -21,7 +21,7 @@ const importOptions = {
 
 const knex = db.knex;
 
-const {exportedPreviousBody, exportedLegacyBody, exportedLatestBody} = require('./utils/fixtures');
+const {exportedPreviousBody, exportedLatestBody} = require('./utils/fixtures');
 
 // Tests in here do an import for each test
 describe('Integration: Importer', function () {
@@ -1540,22 +1540,5 @@ describe('1.0', function () {
                     posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
-    });
-});
-
-describe('LTS', function () {
-    beforeEach(testUtils.teardownDb);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
-
-    it('disallows importing LTS imports', function () {
-        const exportData = exportedLegacyBody().db[0];
-
-        return dataImporter.doImport(exportData, importOptions)
-            .then(function () {
-                '0'.should.eql(1, 'LTS import should fail');
-            })
-            .catch(function (err) {
-                err.message.should.eql('Detected unsupported file structure.');
-            });
     });
 });
