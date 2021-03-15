@@ -42,7 +42,7 @@ describe('Members API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.members);
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                jsonResponse.members.should.have.length(4);
+                jsonResponse.members.should.have.length(5);
 
                 jsonResponse.members[0].email.should.equal('paid@test.com');
                 jsonResponse.members[0].email_open_rate.should.equal(80);
@@ -63,7 +63,7 @@ describe('Members API', function () {
             .then((res) => {
                 const jsonResponse = res.body;
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                jsonResponse.members.should.have.length(4);
+                jsonResponse.members.should.have.length(5);
 
                 jsonResponse.members[0].email.should.equal('member2@test.com');
                 jsonResponse.members[0].email_open_rate.should.equal(50);
@@ -581,8 +581,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 6 imported in previous tests
-                jsonResponse.total.should.equal(10);
+                // 5 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(11);
             });
     });
 
@@ -605,8 +605,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 6 imported in previous tests
-                jsonResponse.total.should.equal(10);
+                // 5 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(11);
             });
     });
 
@@ -629,8 +629,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 3 from fixtures and 6 imported in previous tests
-                jsonResponse.total.should.equal(10);
+                // 5 from fixtures and 6 imported in previous tests
+                jsonResponse.total.should.equal(11);
             });
     });
 

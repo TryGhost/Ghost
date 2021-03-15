@@ -23,7 +23,7 @@ function checkPostAccess(post, member) {
         return PERMIT_ACCESS;
     }
 
-    if (post.visibility === 'paid' && member.status === 'paid') {
+    if (post.visibility === 'paid' && (member.status === 'paid' || member.status === 'comped' || member.comped)) {
         return PERMIT_ACCESS;
     }
 
