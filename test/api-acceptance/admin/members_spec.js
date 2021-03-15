@@ -36,7 +36,7 @@ describe('Members API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
-        jsonResponse.members.should.have.length(4);
+        jsonResponse.members.should.have.length(5);
         localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
 
         testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
@@ -45,7 +45,7 @@ describe('Members API', function () {
         jsonResponse.meta.pagination.should.have.property('page', 1);
         jsonResponse.meta.pagination.should.have.property('limit', 15);
         jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 4);
+        jsonResponse.meta.pagination.should.have.property('total', 5);
         jsonResponse.meta.pagination.should.have.property('next', null);
         jsonResponse.meta.pagination.should.have.property('prev', null);
     });
@@ -393,8 +393,8 @@ describe('Members API', function () {
         should.exist(jsonResponse.total_on_date);
         should.exist(jsonResponse.new_today);
 
-        // 4 from fixtures, 2 from above posts, 2 from above import
-        jsonResponse.total.should.equal(8);
+        // 5 from fixtures, 2 from above posts, 2 from above import
+        jsonResponse.total.should.equal(9);
 
         return jsonResponse;
     }
@@ -427,8 +427,8 @@ describe('Members API', function () {
         dateStr = currentRangeDate.format('YYYY-MM-DD');
 
         // set the end date to match the number of members added from fixtures posts and imports
-        // 4 from fixtures, 2 from above posts, 2 from above import
-        output[dateStr] = 8;
+        // 5 from fixtures, 2 from above posts, 2 from above import
+        output[dateStr] = 9;
 
         // deep equality check that the objects match...
         jsonResponse.total_on_date.should.eql(output);

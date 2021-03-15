@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
+const moment = require('moment');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const settingsCache = require('../../core/server/services/settings/cache');
@@ -8,11 +9,12 @@ const settingsCache = require('../../core/server/services/settings/cache');
 // @TODO: if only this suite is run some of the tests will fail due to
 //       wrong template loading issues which would need to be investigated
 //       As a workaround run it with some of other tests e.g. "frontend_spec"
-describe('Basic Members Routes', function () {
+describe('Front-end members behaviour', function () {
     let request;
 
     before(async function () {
         await testUtils.startGhost();
+        await testUtils.initFixtures('members');
         request = supertest.agent(configUtils.config.get('url'));
     });
 
@@ -32,7 +34,7 @@ describe('Basic Members Routes', function () {
         sinon.restore();
     });
 
-    describe('Routes', function () {
+    describe('Member routes', function () {
         it('should error serving webhook endpoint without any parameters', async function () {
             await request.post('/members/webhooks/stripe')
                 .expect(400);
@@ -88,6 +90,223 @@ describe('Basic Members Routes', function () {
             await request.get('/members/?token=abc&action=signup')
                 .expect(302)
                 .expect('Location', '/?action=signup&success=false');
+        });
+    });
+
+    describe('Content gating', function () {
+        let publicPost;
+        let membersPost;
+        let paidPost;
+        let membersPostWithPaywallCard;
+
+        before(function () {
+            publicPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'free-to-see',
+                visibility: 'public',
+                published_at: moment().add(15, 'seconds').toDate() // here to ensure sorting is not modified
+            });
+
+            membersPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-not-be-seen',
+                visibility: 'members',
+                published_at: moment().add(45, 'seconds').toDate() // here to ensure sorting is not modified
+            });
+
+            paidPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-be-paid-for',
+                visibility: 'paid',
+                published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+            });
+
+            membersPostWithPaywallCard = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-have-a-taste',
+                visibility: 'members',
+                mobiledoc: '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}',
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                published_at: moment().add(5, 'seconds').toDate()
+            });
+
+            return testUtils.fixtures.insertPosts([
+                publicPost,
+                membersPost,
+                paidPost,
+                membersPostWithPaywallCard
+            ]);
+        });
+
+        describe('as non-member', function () {
+            it('can read public post content', function () {
+                return request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read members post content', function () {
+                return request
+                    .get('/thou-shalt-not-be-seen/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+            it('cannot read paid post content', function () {
+                return request
+                    .get('/thou-shalt-be-paid-for/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+        });
+
+        describe('as free member', function () {
+            before(async function () {
+                // membersService needs to be required after Ghost start so that settings
+                // are pre-populated with defaults
+                const membersService = require('../../core/server/services/members');
+
+                const signinLink = await membersService.api.getMagicLink('member1@test.com');
+                const signinURL = new URL(signinLink);
+                // request needs a relative path rather than full url with host
+                const signinPath = `${signinURL.pathname}${signinURL.search}`;
+
+                // perform a sign-in request to set members cookies on superagent
+                await request.get(signinPath)
+                    .expect(302)
+                    .then((res) => {
+                        const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
+                        should.exist(redirectUrl.searchParams.get('success'));
+                        redirectUrl.searchParams.get('success').should.eql('true');
+                    });
+            });
+
+            it('can read public post content', function () {
+                return request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('can read members post content', function () {
+                return request
+                    .get('/thou-shalt-not-be-seen/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read paid post content', function () {
+                return request
+                    .get('/thou-shalt-be-paid-for/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+        });
+
+        describe('as paid member', function () {
+            before(async function () {
+                // membersService needs to be required after Ghost start so that settings
+                // are pre-populated with defaults
+                const membersService = require('../../core/server/services/members');
+
+                const signinLink = await membersService.api.getMagicLink('paid@test.com');
+                const signinURL = new URL(signinLink);
+                // request needs a relative path rather than full url with host
+                const signinPath = `${signinURL.pathname}${signinURL.search}`;
+
+                // perform a sign-in request to set members cookies on superagent
+                await request.get(signinPath)
+                    .expect(302)
+                    .then((res) => {
+                        const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
+                        should.exist(redirectUrl.searchParams.get('success'));
+                        redirectUrl.searchParams.get('success').should.eql('true');
+                    });
+            });
+
+            it('can read public post content', function () {
+                return request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('can read members post content', function () {
+                return request
+                    .get('/thou-shalt-not-be-seen/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('can read paid post content', function () {
+                return request
+                    .get('/thou-shalt-be-paid-for/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+        });
+
+        describe('as comped member', function () {
+            before(async function () {
+                // membersService needs to be required after Ghost start so that settings
+                // are pre-populated with defaults
+                const membersService = require('../../core/server/services/members');
+
+                const signinLink = await membersService.api.getMagicLink('comped@test.com');
+                const signinURL = new URL(signinLink);
+                // request needs a relative path rather than full url with host
+                const signinPath = `${signinURL.pathname}${signinURL.search}`;
+
+                // perform a sign-in request to set members cookies on superagent
+                await request.get(signinPath)
+                    .expect(302)
+                    .then((res) => {
+                        const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
+                        should.exist(redirectUrl.searchParams.get('success'));
+                        redirectUrl.searchParams.get('success').should.eql('true');
+                    });
+            });
+
+            it('can read public post content', function () {
+                return request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('can read members post content', function () {
+                return request
+                    .get('/thou-shalt-not-be-seen/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('can read paid post content', function () {
+                return request
+                    .get('/thou-shalt-be-paid-for/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
         });
     });
 });
