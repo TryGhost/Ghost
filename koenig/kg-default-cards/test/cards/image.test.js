@@ -256,6 +256,32 @@ describe('Image card', function () {
                 .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
+        it('is included when src is __GHOST_URL__ relative', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '__GHOST_URL__/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 6000
+                },
+                options: {
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="__GHOST_URL__/content/images/size/w600/2020/06/image.png 600w, __GHOST_URL__/content/images/size/w1000/2020/06/image.png 1000w, __GHOST_URL__/content/images/size/w1600/2020/06/image.png 1600w, __GHOST_URL__/content/images/size/w2400/2020/06/image.png 2400w"');
+        });
+
         it('is omitted when target === email', function () {
             let opts = {
                 env: {
@@ -521,6 +547,31 @@ describe('Image card', function () {
                 },
                 payload: {
                     src: '/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+        });
+
+        it('is added for __GHOST_URL__ relative images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '__GHOST_URL__/content/images/2020/06/image.png',
                     width: 3000,
                     height: 2000
                 },

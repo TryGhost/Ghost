@@ -1,3 +1,3 @@
 module.exports = function isLocalContentImage(url, siteUrl) {
-    return /^\/.*\/?content\/images\//.test(url.replace(siteUrl, ''));
+    return /^(\/.*|__GHOST_URL__)\/?content\/images\//.test(url.replace(siteUrl, ''));
 };
