@@ -43,6 +43,7 @@ SECURITY.md
 .travis.yml
 renovate.json
 *.html
+!core/server/views/**
 !core/server/web/admin/views/**
 core/server/web/admin/views/.gitkeep
 !core/server/services/mail/templates/**
