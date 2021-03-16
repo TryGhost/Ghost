@@ -13,12 +13,6 @@ describe('Front-end members behaviour', function () {
     let request;
 
     before(async function () {
-        await testUtils.startGhost();
-        await testUtils.initFixtures('members');
-        request = supertest.agent(configUtils.config.get('url'));
-    });
-
-    before(function () {
         const originalSettingsCacheGetFn = settingsCache.get;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
@@ -28,6 +22,9 @@ describe('Front-end members behaviour', function () {
 
             return originalSettingsCacheGetFn(key, options);
         });
+        await testUtils.startGhost();
+        await testUtils.initFixtures('members');
+        request = supertest.agent(configUtils.config.get('url'));
     });
 
     after(function () {
