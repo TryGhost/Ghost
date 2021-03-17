@@ -136,7 +136,7 @@ jobs:
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR
+          ghost install v3 --local -d $DIR
           ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - name: Upgrade from latest v1
