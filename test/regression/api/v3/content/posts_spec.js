@@ -242,14 +242,19 @@ describe('api/v3/content/posts', function () {
     });
 
     it('can read post with fields', function () {
+        const complexPostId = testUtils.DataGenerator.Content.posts.find(p => p.slug === 'not-so-short-bit-complex').id;
+
         return request
-            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/?key=${validKey}&fields=title,slug`))
+            .get(localUtils.API.getApiQuery(`posts/${complexPostId}/?key=${validKey}&fields=title,slug,excerpt&formats=plaintext`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .then((res) => {
-                localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug']);
+                localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug', 'excerpt', 'plaintext']);
+
+                // excerpt should transform links to absolute URLs
+                res.body.posts[0].excerpt.should.match(/\* Aliquam \[http:\/\/127.0.0.1:2369\/about#nowhere\]/);
             });
     });
 

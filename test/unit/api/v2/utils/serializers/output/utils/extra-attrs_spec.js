@@ -9,38 +9,34 @@ describe('Unit: v2/utils/serializers/output/utils/extra-attrs', function () {
 
     let model;
 
-    beforeEach(function () {
-        model = sinon.stub();
-        model.get = sinon.stub();
-        model.get.withArgs('plaintext').returns(new Array(5000).join('A'));
-    });
-
     describe('for post', function () {
         it('respects custom excerpt', function () {
-            const attrs = {custom_excerpt: 'custom excerpt'};
+            const attrs = {
+                custom_excerpt: 'custom excerpt',
+                plaintext: new Array(5000).join('A')
+            };
 
             extraAttrsUtil.forPost(frame, model, attrs);
-            model.get.called.should.be.false();
 
             attrs.excerpt.should.eql(attrs.custom_excerpt);
         });
 
         it('no custom excerpt', function () {
-            const attrs = {};
+            const attrs = {
+                plaintext: new Array(5000).join('A')
+            };
 
             extraAttrsUtil.forPost(frame, model, attrs);
-            model.get.called.should.be.true();
 
             attrs.excerpt.should.eql(new Array(501).join('A'));
         });
 
         it('has excerpt when plaintext is null', function () {
-            model.get.withArgs('plaintext').returns(null);
-
-            const attrs = {};
+            const attrs = {
+                plaintext: null
+            };
 
             extraAttrsUtil.forPost(frame, model, attrs);
-            model.get.called.should.be.true();
 
             attrs.should.have.property('excerpt');
             (attrs.excerpt === null).should.be.true();
