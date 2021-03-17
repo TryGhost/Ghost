@@ -47,7 +47,7 @@ describe('Redirects API', function () {
             configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/data'));
 
             return request
-                .get(localUtils.API.getApiQuery('redirects/json/'))
+                .get(localUtils.API.getApiQuery('redirects/download/'))
                 .set('Origin', config.get('url'))
                 .expect(200)
                 .then((res) => {
@@ -61,7 +61,7 @@ describe('Redirects API', function () {
 
         it('file exists', function () {
             return request
-                .get(localUtils.API.getApiQuery('redirects/json/'))
+                .get(localUtils.API.getApiQuery('redirects/download/'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /application\/json/)
                 .expect('Content-Disposition', 'Attachment; filename="redirects.json"')
@@ -89,7 +89,7 @@ describe('Redirects API', function () {
 
         it('file exists', function () {
             return request
-                .get(localUtils.API.getApiQuery('redirects/json/'))
+                .get(localUtils.API.getApiQuery('redirects/download/'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /text\/html/)
                 .expect('Content-Disposition', 'Attachment; filename="redirects.yaml"')
@@ -109,7 +109,7 @@ describe('Redirects API', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), 'something');
 
                 return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
+                    .post(localUtils.API.getApiQuery('redirects/upload/'))
                     .set('Origin', config.get('url'))
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
                     .expect('Content-Type', /application\/json/)
@@ -123,7 +123,7 @@ describe('Redirects API', function () {
                 }));
 
                 return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
+                    .post(localUtils.API.getApiQuery('redirects/upload/'))
                     .set('Origin', config.get('url'))
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
                     .expect('Content-Type', /application\/json/)
@@ -134,7 +134,7 @@ describe('Redirects API', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
 
                 return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
+                    .post(localUtils.API.getApiQuery('redirects/upload/'))
                     .set('Origin', config.get('url'))
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
                     .expect('Content-Type', /application\/json/)
@@ -159,7 +159,7 @@ describe('Redirects API', function () {
                     })
                     .then(() => {
                         return request
-                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .post(localUtils.API.getApiQuery('redirects/upload/'))
                             .set('Origin', config.get('url'))
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.json'))
                             .expect('Content-Type', /application\/json/)
@@ -200,7 +200,7 @@ describe('Redirects API', function () {
                     .then(() => {
                         // Override redirects file
                         return request
-                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .post(localUtils.API.getApiQuery('redirects/upload/'))
                             .set('Origin', config.get('url'))
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
                             .expect('Content-Type', /application\/json/)
@@ -240,7 +240,7 @@ describe('Redirects API', function () {
                     .then(() => {
                         // Override redirects file again and ensure the backup file works twice
                         return request
-                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .post(localUtils.API.getApiQuery('redirects/upload/'))
                             .set('Origin', config.get('url'))
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-something.json'))
                             .expect('Content-Type', /application\/json/)
@@ -260,7 +260,7 @@ describe('Redirects API', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.yaml'), 'x');
 
                 return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
+                    .post(localUtils.API.getApiQuery('redirects/upload/'))
                     .set('Origin', config.get('url'))
                     .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.yaml'))
                     .expect('Content-Type', /application\/json/)
@@ -282,7 +282,7 @@ describe('Redirects API', function () {
                     })
                     .then(() => {
                         return request
-                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .post(localUtils.API.getApiQuery('redirects/upload/'))
                             .set('Origin', config.get('url'))
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-init.yaml'))
                             .expect('Content-Type', /application\/json/)
@@ -322,7 +322,7 @@ describe('Redirects API', function () {
                     .then(() => {
                         // Override redirects file
                         return request
-                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .post(localUtils.API.getApiQuery('redirects/upload/'))
                             .set('Origin', config.get('url'))
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.yaml'))
                             .expect('Content-Type', /application\/json/)
@@ -362,7 +362,7 @@ describe('Redirects API', function () {
                     .then(() => {
                         // Override redirects file again and ensure the backup file works twice
                         return request
-                            .post(localUtils.API.getApiQuery('redirects/json/'))
+                            .post(localUtils.API.getApiQuery('redirects/upload/'))
                             .set('Origin', config.get('url'))
                             .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects-something.json'))
                             .expect('Content-Type', /application\/json/)
