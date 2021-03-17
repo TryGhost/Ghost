@@ -119,6 +119,9 @@ class BaseSiteMapGenerator {
 
         // Grab the image url
         imageUrl = urlUtils.urlFor('image', {image: image}, true);
+        
+        // Replace __GHOST_URL__
+        imageUrl = urlUtils.transformReadyToAbsolute(imageUrl);
 
         // Verify the url structure
         if (!this.validateImageUrl(imageUrl)) {
