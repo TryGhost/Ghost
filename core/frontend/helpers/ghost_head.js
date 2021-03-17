@@ -193,7 +193,8 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 }
             }
 
-            if (options.data.site.accent_color) {
+            // AMP template has style injected directly because there can only be one <style amp-custom> tag
+            if (options.data.site.accent_color && !_.includes(context, 'amp')) {
                 const accentColor = escapeExpression(options.data.site.accent_color);
                 const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
                 const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
