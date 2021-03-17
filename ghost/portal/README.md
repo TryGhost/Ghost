@@ -7,24 +7,15 @@ Drop-in script to make the bulk of Ghost membership features work on any theme.
 
 ## Usage
 
-Portal can be enabled on any theme directly by adding the below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
+Ghost automatically injects this Portal script on all sites running Ghost 4 or higher.
+
+Alternatively, Portal can be enabled on non-ghost pages directly by inserting the below script on the page.
 
 ```html
 <script defer src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js" data-ghost="https://mymemberssite.com"></script>
 ```
 
-The `data-ghost` attribute expects the URL for your site which is the only input Portal needs to work with your site's membership data via Ghost APIs.
-
-Alternatively, Ghost automatically injects this Portal script to any site behind a dedicated flag(see below) which can be added via config, which also enables Site owner/admins to customize specific Portal settings from Ghost-Admin.
-
-NOTE: Since this is currently under active development, Portal can be switched on with a new dedicated flag - `portal` - in [Ghost config](https://ghost.org/docs/concepts/config/), which needs to be added to config file before starting the server.
-
-```json
-{
-    ...,
-    "portal": true
-}
-```
+The `data-ghost` attribute expects the URL for your site, which is the only input Portal needs to work with your site's membership data via Ghost APIs.
 
 ### Custom trigger button
 
@@ -60,10 +51,17 @@ Only useful for active UI development without publishing a version on unpkg. Alw
 #### In your theme(Ex. Lyra):
 
 - Copy `portal.min.js` from above and paste it in your theme at `assets/built/portal.min.js`
-- Add below code in your theme's `default.hbs` just before end of body tag
 
-```html
-<script src='{{asset "built/portal.min.js"}}'></script>
+#### In Ghost repo
+
+- Update your `config.local.json` to add "portal" config which points url to the locally built copy.
+
+```json
+    ...,
+    "portal": {
+        "url": "SITE_URL/assets/built/portal.min.js"
+    },
+    ...
 ```
 
 ## Available Scripts
@@ -96,6 +94,8 @@ Run `yarn ship` to publish new version of script.
 
 - Builds the script with latest code using `yarn build` (prePublish)
 - Publishes package on npm as `@tryghost/portal` and creates an unpkg link for script at https://unpkg.com/@tryghost/portal@VERSION
+
+(Core team only)
 
 ## Learn More
 
