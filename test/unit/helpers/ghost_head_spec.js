@@ -1657,5 +1657,31 @@ describe('{{ghost_head}} helper', function () {
                 done();
             }).catch(done);
         });
+
+        it('does not include style tag in AMP context', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post', 'amp'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.containEql('--ghost-accent-color');
+                done();
+            }).catch(done);
+        });
     });
 });

@@ -205,6 +205,10 @@ describe('Default Frontend routing', function () {
             $('body.amp-template').length.should.equal(1);
             $('article.post').length.should.equal(1);
 
+            $('style[amp-custom]').length.should.equal(1);
+
+            res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
+
             doEnd(res);
         });
 
