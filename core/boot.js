@@ -225,22 +225,33 @@ async function bootGhost() {
     debug('Begin Boot');
 
     // We need access to these variables in both the try and catch block
+    let bootLogger;
+    let config;
     let ghostServer;
     let logging;
 
+    // These require their own try-catch block and error format, because we can't log an error if logging isn't working
     try {
-        // Step 0 - Do initial requires of fundamental shared components
+        // Step 0 - Load config and logging - fundamental required components
         // Config must be the first thing we do, because it is required for absolutely everything
         debug('Begin: Load config');
-        const config = require('./shared/config');
+        config = require('./shared/config');
         debug('End: Load config');
 
         // Logging is used absolutely everywhere
         debug('Begin: Load logging');
         logging = require('./shared/logging');
-        const bootLogger = new BootLogger(logging, startTime);
+        bootLogger = new BootLogger(logging, startTime);
         debug('End: Load logging');
 
+        // At this point logging is required, so we can handle errors better
+    } catch (error) {
+        console.error(error); // eslint-disable-line no-console
+        process.exit(1);
+    }
+
+    try {
+        // Step 1 - require more fundamental components
         // Version is required by sentry & Migration config & so is fundamental to booting
         // However, it involves reading package.json so its slow & it's here for visibility on that slowness
         debug('Begin: Load version info');
@@ -252,7 +263,7 @@ async function bootGhost() {
         require('./shared/sentry');
         debug('End: Load sentry');
 
-        // Step 1 - Start server with minimal app in global maintenance mode
+        // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
         const GhostServer = require('./server/ghost-server');
@@ -261,13 +272,13 @@ async function bootGhost() {
         bootLogger.log('server started');
         debug('End: load server + minimal app');
 
-        // Step 2 - Get the DB ready
+        // Step 3 - Get the DB ready
         debug('Begin: Get DB ready');
         await initDatabase({config, logging});
         bootLogger.log('database ready');
         debug('End: Get DB ready');
 
-        // Step 3 - Load Ghost with all its services
+        // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer});
         await initFrontend();
@@ -275,18 +286,18 @@ async function bootGhost() {
         await initServices({config});
         debug('End: Load Ghost Services & Apps');
 
-        // Step 4 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
+        // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
         debug('Begin: mountGhost');
         const urlUtils = require('./shared/url-utils');
         rootApp.disable('maintenance');
         rootApp.use(urlUtils.getSubdir(), ghostApp);
         debug('End: mountGhost');
 
-        // Step 5 - We are technically done here - let everyone know!
+        // Step 6 - We are technically done here - let everyone know!
         bootLogger.log('booted');
         notifyServerReady();
 
-        // Step 6 - Init our background services, we don't wait for this to finish
+        // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
 
         // We return the server purely for testing purposes
