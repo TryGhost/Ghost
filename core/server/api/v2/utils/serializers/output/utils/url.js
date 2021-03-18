@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const urlService = require('../../../../../../../frontend/services/url');
 const urlUtils = require('../../../../../../../shared/url-utils');
 const localUtils = require('../../../index');
@@ -30,21 +29,6 @@ const forPost = (id, attrs, frame) => {
         }
     }
 
-    const urlOptions = {};
-
-    // v2 only transforms asset URLS, v3 will transform all urls so that
-    // input/output transformations are balanced and all URLs are absolute
-    if (!frame.options.absolute_urls) {
-        urlOptions.assetsOnly = true;
-    }
-
-    ['mobiledoc', 'html', 'plaintext', 'codeinjection_head', 'codeinjection_foot', 'feature_image', 'canonical_url', 'posts_meta.og_image', 'posts_meta.twitter_image'].forEach((path) => {
-        const value = _.get(attrs, path);
-        if (value) {
-            _.set(attrs, path, urlUtils.transformReadyToAbsolute(value, urlOptions));
-        }
-    });
-
     if (frame.options.columns && !frame.options.columns.includes('url')) {
         delete attrs.url;
     }
@@ -57,12 +41,6 @@ const forUser = (id, attrs, options) => {
         attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
     }
 
-    ['profile_image', 'cover_image'].forEach((attr) => {
-        if (attrs[attr]) {
-            attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
-        }
-    });
-
     return attrs;
 };
 
@@ -70,12 +48,6 @@ const forTag = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
         attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
     }
-
-    ['feature_image', 'og_image', 'twitter_image', 'codeinjection_head', 'codeinjection_foot'].forEach((attr) => {
-        if (attrs[attr]) {
-            attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
-        }
-    });
 
     return attrs;
 };
