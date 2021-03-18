@@ -2,9 +2,9 @@ const logging = require('../../../../../shared/logging');
 const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(async function up(knex) {
-    const typoedPermisson = await knex.select('*').from('permissions').where('action_type', 'backupContect').first();
+    const typoedPermission = await knex.select('*').from('permissions').where('action_type', 'backupContect').first();
 
-    if (!typoedPermisson) {
+    if (!typoedPermission) {
         return logging.warn('Not updating permissions, no typo found');
     }
 
