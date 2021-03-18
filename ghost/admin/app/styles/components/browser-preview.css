@@ -82,16 +82,12 @@
     height: 16px;
 }
 
-.gh-browserpreview-browser .favicon.default {
-    background: #15171A;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 2px;
-}
-
 .gh-browserpreview-browser .favicon svg {
     width: 8px;
     height: 8px;
+}
+
+.gh-browserpreview-browser .favicon.default svg {
+    width: 16px;
+    height: 16px;
 }
