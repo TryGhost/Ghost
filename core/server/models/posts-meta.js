@@ -4,28 +4,28 @@ const urlUtils = require('../../shared/url-utils');
 const PostsMeta = ghostBookshelf.Model.extend({
     tableName: 'posts_meta',
 
-    onSaving: function onSaving() {
-        const urlTransformMap = {
-            og_image: 'toTransformReady',
-            twitter_image: 'toTransformReady'
-        };
+    format() {
+        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
 
-        Object.entries(urlTransformMap).forEach(([attr, transform]) => {
-            let method = transform;
-            let methodOptions = {};
-
-            if (typeof transform === 'object') {
-                method = transform.method;
-                methodOptions = transform.options || {};
-            }
-
-            if (this.hasChanged(attr) && this.get(attr)) {
-                const transformedValue = urlUtils[method](this.get(attr), methodOptions);
-                this.set(attr, transformedValue);
+        ['og_image', 'twitter_image'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
             }
         });
 
-        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+        return attrs;
+    },
+
+    parse() {
+        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+
+        ['og_image', 'twitter_image'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+            }
+        });
+
+        return attrs;
     }
 }, {
     post() {
