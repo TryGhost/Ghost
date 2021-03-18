@@ -10,6 +10,6 @@ module.exports = createTransactionalMigration(async function up(knex) {
 
     logging.info('Updating permissions, fixing typo by renaming "backupContect" to "backupContent"');
     await knex('permissions').update('action_type', 'backupContent').where('action_type', 'backupContect');
-}, function down() {
+}, async function down() {
     // noop
 });
