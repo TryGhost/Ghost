@@ -25,6 +25,15 @@ describe('RSS: Generate Feed', function () {
         _.each(posts, function (post) {
             post.url = '/' + post.slug + '/';
             post.primary_author = {name: 'Joe Bloggs'};
+
+            // data is from fixtures that are inserted directly into the database via knex
+            // that means it has raw __GHOST_URL__ values that would typically be modified by the model layer
+            // we're not using the model layer here so we need to transform manually
+            Object.entries(post).forEach(([key, value]) => {
+                if (value && typeof value === 'string') {
+                    post[key] = value.replace(/__GHOST_URL__/g, 'http://my-ghost-blog.com');
+                }
+            });
         });
     });
 
@@ -218,11 +227,6 @@ describe('RSS: Generate Feed', function () {
         it('should process urls correctly', function (done) {
             data.posts = [posts[3]];
 
-            // raw data has __GHOST_URL__ urls but normally the API would have transformed those to absolute
-            let serializedPosts = JSON.stringify(data.posts);
-            serializedPosts = serializedPosts.replace(/__GHOST_URL__/g, 'http://my-ghost-blog.com');
-            data.posts = JSON.parse(serializedPosts);
-
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
 
@@ -234,45 +238,6 @@ describe('RSS: Generate Feed', function () {
 
                 // protocol relative URL - <a href="//somewhere.com/link#nowhere" title="Protocol Relative URL">
                 xmlData.should.match(/<a href="\/\/somewhere.com\/link#nowhere" title="Protocol Relative URL">/);
-
-                // absolute URL - <a href="http://somewhere.com/link#nowhere" title="Absolute URL">
-                xmlData.should.match(/<a href="http:\/\/somewhere.com\/link#nowhere" title="Absolute URL">/);
-
-                done();
-            }).catch(done);
-        });
-    });
-
-    describe('with subdirectory', function () {
-        let sandbox;
-
-        beforeEach(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://my-ghost-blog.com/blog/'}, sandbox);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
-        it('should process urls correctly with subdirectory', function (done) {
-            baseUrl = '/blog/rss/';
-            data.posts = [posts[3]];
-            data.meta = {pagination: {pages: 1}};
-
-            // raw data has __GHOST_URL__ urls but normally the API would have transformed those to absolute
-            let serializedData = JSON.stringify(data);
-            serializedData = serializedData.replace(/__GHOST_URL__/g, 'http://my-ghost-blog.com/blog');
-            const transformedData = JSON.parse(serializedData);
-
-            generateFeed(baseUrl, transformedData).then(function (xmlData) {
-                should.exist(xmlData);
-
-                // anchor URL - <a href="#nowhere" title="Anchor URL">
-                xmlData.should.match(/<a href="#nowhere" title="Anchor URL">/);
-
-                // relative URL - <a href="/about#nowhere" title="Relative URL">
-                xmlData.should.match(/<a href="http:\/\/my-ghost-blog.com\/blog\/about#nowhere" title="Relative URL">/);
 
                 // absolute URL - <a href="http://somewhere.com/link#nowhere" title="Absolute URL">
                 xmlData.should.match(/<a href="http:\/\/somewhere.com\/link#nowhere" title="Absolute URL">/);

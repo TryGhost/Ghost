@@ -9,7 +9,7 @@
 const Promise = require('bluebird');
 
 const moment = require('moment');
-const {SafeString, logging, i18n, errors, urlUtils} = require('../../../../services/proxy');
+const {SafeString, logging, i18n, errors} = require('../../../../services/proxy');
 const amperizeCache = {};
 let allowedAMPTags = [];
 let allowedAMPAttributes = {};
@@ -118,9 +118,6 @@ function getAmperizeHTML(html, post) {
     let startedAtMoment = moment();
 
     amperize = amperize || new Amperize();
-
-    // make transform-ready URLs abolute
-    html = urlUtils.transformReadyToAbsolute(html);
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
         return new Promise((resolve) => {

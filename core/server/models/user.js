@@ -37,6 +37,38 @@ User = ghostBookshelf.Model.extend({
         };
     },
 
+    format(options) {
+        if (!_.isEmpty(options.website) &&
+            !validator.isURL(options.website, {
+                require_protocol: true,
+                protocols: ['http', 'https']
+            })) {
+            options.website = 'http://' + options.website;
+        }
+
+        const attrs = ghostBookshelf.Model.prototype.format.call(this, options);
+
+        ['profile_image', 'cover_image'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
+            }
+        });
+
+        return attrs;
+    },
+
+    parse() {
+        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+
+        ['profile_image', 'cover_image'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+            }
+        });
+
+        return attrs;
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'user' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
@@ -114,26 +146,6 @@ User = ghostBookshelf.Model.extend({
         const self = this;
         const tasks = [];
         let passwordValidation = {};
-
-        const urlTransformMap = {
-            profile_image: 'toTransformReady',
-            cover_image: 'toTransformReady'
-        };
-
-        Object.entries(urlTransformMap).forEach(([urlAttr, transform]) => {
-            let method = transform;
-            let methodOptions = {};
-
-            if (typeof transform === 'object') {
-                method = transform.method;
-                methodOptions = transform.options || {};
-            }
-
-            if (this.hasChanged(urlAttr) && this.get(urlAttr)) {
-                const transformedValue = urlUtils[method](this.get(urlAttr), methodOptions);
-                this.set(urlAttr, transformedValue);
-            }
-        });
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
@@ -242,17 +254,6 @@ User = ghostBookshelf.Model.extend({
         delete attrs.password;
 
         return attrs;
-    },
-
-    format: function format(options) {
-        if (!_.isEmpty(options.website) &&
-            !validator.isURL(options.website, {
-                require_protocol: true,
-                protocols: ['http', 'https']
-            })) {
-            options.website = 'http://' + options.website;
-        }
-        return ghostBookshelf.Model.prototype.format.call(this, options);
     },
 
     posts: function posts() {
