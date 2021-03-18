@@ -1,0 +1,54 @@
+{{!< default}}
+{{!-- The tag above means - insert everything in this file into the {body} of the default.hbs template --}}
+
+{{#author}}
+{{!-- Everything inside the #author tags pulls data from the author --}}
+<header class="site-header outer {{#if cover_image}}" style="background-image: url({{cover_image}}){{else}}no-cover{{/if}}">
+    <div class="inner">
+        {{> "site-nav"}}
+        <div class="site-header-content">
+            {{#if profile_image}}
+                <img class="author-profile-image" src="{{profile_image}}" alt="{{name}}" />
+            {{/if}}
+            <h1 class="site-title">{{name}}</h1>
+            {{#if bio}}
+                <h2 class="author-bio">{{bio}}</h2>
+            {{/if}}
+            <div class="author-meta">
+                {{#if location}}
+                    <div class="author-location">{{location}} <span class="bull">&bull;</span></div>
+                {{/if}}
+                <div class="author-stats">
+                    {{plural ../pagination.total empty='No posts' singular='% post' plural='% posts'}} <span class="bull">&bull;</span>
+                </div>
+                {{#if website}}
+                    <a class="social-link social-link-wb" href="{{website}}" target="_blank" rel="noopener">{{> "icons/website"}}</a>
+                {{/if}}
+                {{#if twitter}}
+                    <a class="social-link social-link-tw" href="{{twitter_url}}" target="_blank" rel="noopener">{{> "icons/twitter"}}</a>
+                {{/if}}
+                {{#if facebook}}
+                    <a class="social-link social-link-fb" href="{{facebook_url}}" target="_blank" rel="noopener">{{> "icons/facebook"}}</a>
+                {{/if}}
+                <a class="social-link social-link-rss" href="https://feedly.com/i/subscription/feed/{{url absolute="true"}}rss/" target="_blank" rel="noopener">{{> "icons/rss"}}</a>
+            </div>
+        </div>
+    </div>
+</header>
+{{/author}}
+
+{{!-- The main content area --}}
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <div class="post-feed">
+            {{#foreach posts}}
+
+                {{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
+                {{> "post-card"}}
+
+            {{/foreach}}
+        </div>
+
+    </div>
+</main>
