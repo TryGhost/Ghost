@@ -241,7 +241,7 @@ describe('Unit: models/post', function () {
 
         it('ensure mobiledoc revisions are never exposed', function () {
             const post = {
-                mobiledoc: 'test',
+                mobiledoc: '{}',
                 mobiledoc_revisions: []
             };
 

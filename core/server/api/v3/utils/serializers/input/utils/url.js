@@ -8,7 +8,7 @@ const handleImageUrl = (imageUrl) => {
         const imagePathRe = new RegExp(`${subdir}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
 
         if (imagePathRe.test(imageURL.pathname)) {
-            return urlUtils.toTransformReady(imageUrl);
+            return urlUtils.relativeToAbsolute(imageUrl);
         }
 
         return imageUrl;

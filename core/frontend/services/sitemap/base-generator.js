@@ -45,8 +45,15 @@ class BaseSiteMapGenerator {
             urlset: [XMLNS_DECLS].concat(urlElements)
         };
 
-        // Return the xml
-        return localUtils.getDeclarations() + xml(data);
+        // Generate full xml
+        let sitemapXml = localUtils.getDeclarations() + xml(data);
+
+        // Perform url transformatons
+        // - Necessary because sitemap data is supplied by the router which
+        //   uses knex directly bypassing model-layer attribute transforms
+        sitemapXml = urlUtils.transformReadyToAbsolute(sitemapXml);
+
+        return sitemapXml;
     }
 
     addUrl(url, datum) {

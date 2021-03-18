@@ -1,5 +1,4 @@
 const readingMinutes = require('@tryghost/helpers').utils.readingMinutes;
-const urlUtils = require('../../../../../../../shared/url-utils');
 
 module.exports.forPost = (frame, model, attrs) => {
     const _ = require('lodash');
@@ -10,7 +9,6 @@ module.exports.forPost = (frame, model, attrs) => {
             let plaintext = model.get('plaintext');
 
             if (plaintext) {
-                plaintext = urlUtils.transformReadyToAbsolute(plaintext);
                 attrs.excerpt = plaintext.substring(0, 500);
             } else {
                 attrs.excerpt = null;

@@ -9,6 +9,7 @@ const {sequence} = require('@tryghost/promise');
 const urlService = require('../../../core/frontend/services/url');
 const ghostBookshelf = require('../../../core/server/models/base');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const settingsCache = require('../../../core/server/services/settings/cache');
 const {events} = require('../../../core/server/lib/common');
 const configUtils = require('../../utils/configUtils');
@@ -1127,7 +1128,7 @@ describe('Post Model', function () {
                     }).catch(done);
             });
 
-            it('transforms absolute urls to relative', function (done) {
+            it('uses parse/transform to store urls as transform-ready and read as absolute ', function (done) {
                 const post = {
                     title: 'Absolute->Transform-ready URL Transform Test',
                     mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}',
@@ -1143,18 +1144,18 @@ describe('Post Model', function () {
                 };
 
                 models.Post.add(post, context).then((createdPost) => {
-                    createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    createdPost.get('html').should.equal('<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
-                    createdPost.get('custom_excerpt').should.equal('Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
-                    createdPost.get('codeinjection_head').should.equal('<script src="__GHOST_URL__/assets/head.js"></script>');
-                    createdPost.get('codeinjection_foot').should.equal('<script src="__GHOST_URL__/assets/foot.js"></script>');
-                    createdPost.get('feature_image').should.equal('__GHOST_URL__/content/images/feature.png');
-                    createdPost.get('canonical_url').should.equal('__GHOST_URL__/canonical');
+                    createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
+                    createdPost.get('html').should.equal('<p><a href="http://127.0.0.1:2369/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="http://127.0.0.1:2369/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    createdPost.get('custom_excerpt').should.equal('Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts');
+                    createdPost.get('codeinjection_head').should.equal('<script src="http://127.0.0.1:2369/assets/head.js"></script>');
+                    createdPost.get('codeinjection_foot').should.equal('<script src="http://127.0.0.1:2369/assets/foot.js"></script>');
+                    createdPost.get('feature_image').should.equal('http://127.0.0.1:2369/content/images/feature.png');
+                    createdPost.get('canonical_url').should.equal('http://127.0.0.1:2369/canonical');
 
                     const postMeta = createdPost.relations.posts_meta;
 
-                    postMeta.get('og_image').should.equal('__GHOST_URL__/content/images/og.png');
-                    postMeta.get('twitter_image').should.equal('__GHOST_URL__/content/images/twitter.png');
+                    postMeta.get('og_image').should.equal('http://127.0.0.1:2369/content/images/og.png');
+                    postMeta.get('twitter_image').should.equal('http://127.0.0.1:2369/content/images/twitter.png');
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
@@ -1164,7 +1165,20 @@ describe('Post Model', function () {
                     });
                 }).then((updatedPost) => {
                     updatedPost.get('canonical_url').should.equal('https://127.0.0.1:2369/https-internal');
-                    updatedPost.get('feature_image').should.equal('__GHOST_URL__/content/images/updated_feature.png');
+                    updatedPost.get('feature_image').should.equal('http://127.0.0.1:2369/content/images/updated_feature.png');
+
+                    return updatedPost;
+                }).then((updatedPost) => {
+                    return db.knex('posts').where({id: updatedPost.id});
+                }).then((knexResult) => {
+                    const [knexPost] = knexResult;
+                    knexPost.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
+                    knexPost.html.should.equal('<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                    knexPost.custom_excerpt.should.equal('Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
+                    knexPost.codeinjection_head.should.equal('<script src="__GHOST_URL__/assets/head.js"></script>');
+                    knexPost.codeinjection_foot.should.equal('<script src="__GHOST_URL__/assets/foot.js"></script>');
+                    knexPost.feature_image.should.equal('__GHOST_URL__/content/images/updated_feature.png');
+                    knexPost.canonical_url.should.equal('https://127.0.0.1:2369/https-internal');
 
                     done();
                 }).catch(done);
