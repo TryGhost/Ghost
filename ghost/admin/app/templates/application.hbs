@@ -37,10 +37,10 @@
     {{#if this.settings.accentColor}}
         <style>
             .koenig-editor__editor a:not([class]) {
-                color: {{this.settings.accentColor}};
+                color: {{this.adjustedAccentColor}};
             }
             .koenig-editor__editor blockquote {
-                border-left: 0.25rem solid {{this.settings.accentColor}};
+                border-left: 0.25rem solid {{this.adjustedAccentColor}};
             }
         </style>
     {{/if}}
