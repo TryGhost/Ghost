@@ -13,12 +13,6 @@ describe('Front-end members behaviour', function () {
     let request;
 
     before(async function () {
-        await testUtils.startGhost();
-        await testUtils.initFixtures('members');
-        request = supertest.agent(configUtils.config.get('url'));
-    });
-
-    before(function () {
         const originalSettingsCacheGetFn = settingsCache.get;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
@@ -26,8 +20,15 @@ describe('Front-end members behaviour', function () {
                 return {members: true};
             }
 
+            if (key === 'active_theme') {
+                return 'price-data-test-theme';
+            }
+
             return originalSettingsCacheGetFn(key, options);
         });
+        await testUtils.startGhost();
+        await testUtils.initFixtures('members');
+        request = supertest.agent(configUtils.config.get('url'));
     });
 
     after(function () {
@@ -90,6 +91,21 @@ describe('Front-end members behaviour', function () {
             await request.get('/members/?token=abc&action=signup')
                 .expect(302)
                 .expect('Location', '/?action=signup&success=false');
+        });
+    });
+
+    describe('Price data', function () {
+        it('Can be used as a number, and with the price helper', async function () {
+            const res = await request.get('/');
+
+            // Check out test/utils/fixtures/themes/price-data-test-theme/index.hbs
+            // To see where this is coming from.
+            //
+            const legacyUse = /You can use the price data as a number: 5/;
+            const withPriceHelper = /You can pass price data to the price helper: \$5/;
+
+            should.exist(res.text.match(legacyUse));
+            should.exist(res.text.match(withPriceHelper));
         });
     });
 
