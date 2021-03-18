@@ -24,6 +24,7 @@ export default Component.extend(ShortcutsMixin, {
     tagName: '',
 
     iconStyle: '',
+    iconClass: '',
     memberCountLoading: true,
     memberCount: 0,
 
@@ -115,9 +116,10 @@ export default Component.extend(ShortcutsMixin, {
             return;
         }
 
-        let iconUrl = 'https://static.ghost.org/v4.0.0/images/ghost-squircle.png';
+        let iconUrl = 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
 
         this.set('iconStyle', htmlSafe(`background-image: url(${iconUrl})`));
+        this.set('iconClass', 'gh-nav-logo-default');
     }
 
 });

@@ -496,3 +496,20 @@
 .app-custom-api-table .data-label {
     width: 160px;
 }
+
+.apps-card-app-orb {
+    width: 32px;
+    height: 32px;
+}
+
+.apps-card-app-orb.rot-1 {
+    transform: rotate(90deg);
+}
+
+.apps-card-app-orb.rot-2 {
+    transform: rotate(180deg);
+}
+
+.apps-card-app-orb.rot-3 {
+    transform: rotate(270deg);
+}
