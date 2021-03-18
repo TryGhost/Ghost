@@ -60,13 +60,21 @@ function haxGetMembersPriceData() {
             const numberAmount = 0 + plan.amount;
             const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
             return Object.assign(prices, {
-                [plan.name.toLowerCase()]: dollarAmount
+                [plan.name.toLowerCase()]: {
+                    valueOf() {
+                        return dollarAmount;
+                    },
+                    amount: numberAmount,
+                    currency: plan.currency,
+                    nickname: plan.name,
+                    interval: plan.interval
+                }
             });
         }, {});
 
         priceData.currency = stripePlans[0].currency;
 
-        if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
+        if (Number.isInteger(priceData.monthly.valueOf()) && Number.isInteger(priceData.yearly.valueOf())) {
             return priceData;
         }
 
