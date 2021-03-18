@@ -218,11 +218,6 @@ describe('RSS: Generate Feed', function () {
         it('should process urls correctly', function (done) {
             data.posts = [posts[3]];
 
-            // raw data has __GHOST_URL__ urls but normally the API would have transformed those to absolute
-            let serializedPosts = JSON.stringify(data.posts);
-            serializedPosts = serializedPosts.replace(/__GHOST_URL__/g, 'http://my-ghost-blog.com');
-            data.posts = JSON.parse(serializedPosts);
-
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
 
@@ -260,12 +255,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [posts[3]];
             data.meta = {pagination: {pages: 1}};
 
-            // raw data has __GHOST_URL__ urls but normally the API would have transformed those to absolute
-            let serializedData = JSON.stringify(data);
-            serializedData = serializedData.replace(/__GHOST_URL__/g, 'http://my-ghost-blog.com/blog');
-            const transformedData = JSON.parse(serializedData);
-
-            generateFeed(baseUrl, transformedData).then(function (xmlData) {
+            generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
 
                 // anchor URL - <a href="#nowhere" title="Anchor URL">

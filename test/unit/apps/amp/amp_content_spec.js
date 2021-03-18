@@ -122,30 +122,6 @@ describe('{{amp_content}} helper', function () {
             ampContentHelper.__set__('amperizeCache', {});
         });
 
-        it('transforms URLs to absolute', function (done) {
-            const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
-
-            nock('https://ghost.org/blog/')
-                .get('/image.png')
-                .reply(200, GIF1x1);
-
-            const testData = {
-                html: '<a href="__GHOST_URL__/"><img src="__GHOST_URL__/image.png" alt="Test image" /></a>',
-                updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
-                id: 1
-            };
-
-            const ampResult = ampContentHelper.call(testData);
-
-            ampResult.then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.containEql('__GHOST_URL__');
-                rendered.string.should.containEql('href="https://ghost.org/blog/"');
-                rendered.string.should.containEql('src="https://ghost.org/blog/image.png"');
-                done();
-            }).catch(done);
-        });
-
         it('can transform img tags to amp-img', function (done) {
             const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
 
@@ -154,7 +130,7 @@ describe('{{amp_content}} helper', function () {
                 .reply(200, GIF1x1);
 
             const testData = {
-                html: '<img src="__GHOST_URL__/content/images/2019/06/test.jpg" alt="The Ghost Logo" />',
+                html: '<img src="https://ghost.org/blog/content/images/2019/06/test.jpg" alt="The Ghost Logo" />',
                 updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                 id: 1
             };
@@ -213,7 +189,7 @@ describe('{{amp_content}} helper', function () {
 
         it('removes inline style', function (done) {
             const testData = {
-                html: '<amp-img src="__GHOST_URL__/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%"; !important' +
+                html: '<amp-img src="https://ghost.org/blog/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%"; !important' +
                           'border="0" align="center" font="Arial" width="50" height="50" layout="responsive"></amp-img>' +
                           '<p align="right" style="color: red; !important" bgcolor="white">Hello</p>' +
                           '<table style="width:100%"><tr bgcolor="tomato" colspan="2"><th font="Arial">Name:</th> ' +
@@ -284,7 +260,7 @@ describe('{{amp_content}} helper', function () {
 
         it('can handle not existing img src by returning not Amperized HTML', function (done) {
             const testData = {
-                html: '<img src="__GHOST_URL__/content/images/does-not-exist.jpg" alt="The Ghost Logo" />',
+                html: '<img src="https://ghost.org/blog/content/images/does-not-exist.jpg" alt="The Ghost Logo" />',
                 updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                 id: 1
             };
