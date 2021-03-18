@@ -382,7 +382,7 @@
 
 .gh-social-og-likes svg {
     width: 20px;
-    height: auto;
+    height: 20px;
 }
 
 .gh-social-og-comments {
@@ -488,6 +488,7 @@
 
 .gh-social-twitter-preview-meta {
     display: flex;
+    align-items: center;
     overflow: hidden;
     overflow-wrap: break-word;
     width: 487px;
@@ -511,7 +512,7 @@
 
 .gh-social-twitter-preview-meta svg {
     width: 16px;
-    height: auto;
+    height: 16px;
     margin-right: 2px;
 }
 
