@@ -18,7 +18,7 @@ export default ModalComponent.extend({
     cancelSubscriptions: reads('shouldCancelSubscriptions'),
 
     hasActiveStripeSubscriptions: computed('member', function () {
-        let subscriptions = this.member.get('stripe');
+        let subscriptions = this.member.get('subscriptions');
 
         if (!subscriptions || subscriptions.length === 0) {
             return false;
