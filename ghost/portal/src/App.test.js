@@ -16,8 +16,8 @@ const setup = (overrides) => {
     const {...utils} = render(
         <App testState={testState} />
     );
-    const triggerButtonFrame = utils.getByTitle(/membersjs-trigger/i);
-    const popupFrame = utils.getByTitle(/membersjs-popup/i);
+    const triggerButtonFrame = utils.getByTitle(/portal-trigger/i);
+    const popupFrame = utils.getByTitle(/portal-popup/i);
     return {
         popupFrame,
         triggerButtonFrame,

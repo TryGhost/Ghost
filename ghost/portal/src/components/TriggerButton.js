@@ -250,7 +250,7 @@ export default class TriggerButton extends React.Component {
         }
 
         return (
-            <Frame className='gh-portal-triggerbtn-iframe' style={frameStyle} title="membersjs-trigger" head={this.renderFrameStyles()}>
+            <Frame className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
                 <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );
