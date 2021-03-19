@@ -7,7 +7,7 @@ const setup = (overrides) => {
         <TriggerButton />
     );
 
-    const triggerFrame = utils.getByTitle('membersjs-trigger');
+    const triggerFrame = utils.getByTitle('portal-trigger');
     return {
         triggerFrame,
         ...utils

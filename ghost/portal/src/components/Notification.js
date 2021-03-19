@@ -221,7 +221,7 @@ export default class Notification extends React.Component {
         const {type, status, autoHide, duration} = this.state;
         if (type && status) {
             return (
-                <Frame style={frameStyle} title="membersjs-notification" head={this.renderFrameStyles()}>
+                <Frame style={frameStyle} title="portal-notification" head={this.renderFrameStyles()}>
                     <NotificationContent {...{type, status, autoHide, duration}} onHideNotification={e => this.onHideNotification(e)} />
                 </Frame>
             );
