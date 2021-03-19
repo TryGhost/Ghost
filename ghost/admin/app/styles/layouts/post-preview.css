@@ -149,6 +149,8 @@
 }
 
 .gh-post-preview-email-mockup {
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
     overflow: hidden;
     max-width: 740px;
@@ -168,9 +170,9 @@
 }
 
 .gh-post-preview-email-container iframe {
+    flex-grow: 1;
     border: none;
     width: 100%;
-    height: calc(100% - 67px);
 }
 
 .gh-post-preview-email-input {
