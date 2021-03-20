@@ -13,14 +13,14 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         return;
     }
 
-    if (isLocalContentImage(image.src) && options.canTransformImage && !options.canTransformImage(image.src)) {
+    if (isLocalContentImage(image.src, options.siteUrl) && options.canTransformImage && !options.canTransformImage(image.src)) {
         return;
     }
 
     const srcsetWidths = getAvailableImageWidths(image, options.imageOptimization.contentImageSizes);
 
     // apply srcset if this is a relative image that matches Ghost's image url structure
-    if (isLocalContentImage(image.src)) {
+    if (isLocalContentImage(image.src, options.siteUrl)) {
         const [, imagesPath, filename] = image.src.match(/(.*\/content\/images)\/(.*)/);
         const srcs = [];
 

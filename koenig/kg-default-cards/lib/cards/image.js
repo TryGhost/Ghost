@@ -53,7 +53,7 @@ module.exports = {
         if (
             defaultMaxWidth &&
             payload.width > defaultMaxWidth &&
-            isLocalContentImage(payload.src) &&
+            isLocalContentImage(payload.src, options.siteUrl) &&
             canTransformImage &&
             canTransformImage(payload.src)
         ) {

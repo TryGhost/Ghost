@@ -1,3 +1,5 @@
-module.exports = function isLocalContentImage(url, siteUrl) {
-    return /^(\/.*|__GHOST_URL__)\/?content\/images\//.test(url.replace(siteUrl, ''));
+module.exports = function isLocalContentImage(url, siteUrl = '') {
+    const normalizedSiteUrl = siteUrl.replace(/\/$/, '');
+    const imagePath = url.replace(normalizedSiteUrl, '');
+    return /^(\/.*|__GHOST_URL__)\/?content\/images\//.test(imagePath);
 };

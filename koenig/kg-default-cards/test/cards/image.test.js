@@ -282,6 +282,60 @@ describe('Image card', function () {
                 .should.containEql('srcset="__GHOST_URL__/content/images/size/w600/2020/06/image.png 600w, __GHOST_URL__/content/images/size/w1000/2020/06/image.png 1000w, __GHOST_URL__/content/images/size/w1600/2020/06/image.png 1600w, __GHOST_URL__/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
+        it('is included for absolute images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://localhost:2368/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    siteUrl: 'https://localhost:2368',
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
+        });
+
+        it('is included for absolute images when siteUrl has trailing slash', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://localhost:2368/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    siteUrl: 'https://localhost:2368/',
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
+        });
+
         it('is omitted when target === email', function () {
             let opts = {
                 env: {
@@ -485,6 +539,33 @@ describe('Image card', function () {
                 .should.containEql('srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
+        it('works correctly for absolute subdirectories', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://localhost:2368/blog/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    siteUrl: 'https://localhost:2368/blog',
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts))
+                .should.containEql('srcset="https://localhost:2368/blog/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/blog/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/blog/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/blog/content/images/size/w2400/2020/06/image.png 2400w"');
+        });
+
         it('is included when src is an Unsplash image', function () {
             let opts = {
                 env: {
@@ -576,6 +657,58 @@ describe('Image card', function () {
                     height: 2000
                 },
                 options: {
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+        });
+
+        it('is added for absolute images', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://localhost:2368/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    siteUrl: 'https://localhost:2368',
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+        });
+
+        it('is added for absolute images when siteUrl has trailing slash', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://localhost:2368/content/images/2020/06/image.png',
+                    width: 3000,
+                    height: 2000
+                },
+                options: {
+                    siteUrl: 'https://localhost:2368/',
                     imageOptimization: {
                         contentImageSizes: {
                             w600: {width: 600},
