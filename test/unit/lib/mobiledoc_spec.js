@@ -139,6 +139,39 @@ describe('lib/mobiledoc', function () {
                 .should.eql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="__GHOST_URL__/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt loading="lazy" width="2000" height="1000" srcset="__GHOST_URL__/content/images/size/w600/2018/04/NatGeo06.jpg 600w, __GHOST_URL__/content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, __GHOST_URL__/content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, __GHOST_URL__/content/images/size/w2400/2018/04/NatGeo06.jpg 2400w" sizes="(min-width: 1200px) 1200px"><figcaption>Birdies</figcaption></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="__GHOST_URL__/content/images/test.png" width="1000" height="500" loading="lazy" alt srcset="__GHOST_URL__/content/images/size/w600/test.png 600w, __GHOST_URL__/content/images/test.png 1000w" sizes="(min-width: 720px) 720px"></div></div></div></figure>');
         });
 
+        it('renders srcsets for absolute images', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    ['image', {
+                        cardWidth: 'wide',
+                        src: 'http://127.0.0.1:2369/content/images/2018/04/NatGeo06.jpg',
+                        width: 4000,
+                        height: 2000,
+                        caption: 'Birdies'
+                    }],
+                    ['gallery', {
+                        images: [{
+                            row: 0,
+                            fileName: 'test.png',
+                            src: 'http://127.0.0.1:2369/content/images/test.png',
+                            width: 1000,
+                            height: 500
+                        }]
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [10, 1]
+                ]
+            };
+
+            mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
+                .should.eql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="http://127.0.0.1:2369/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt loading="lazy" width="2000" height="1000" srcset="http://127.0.0.1:2369/content/images/size/w600/2018/04/NatGeo06.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, http://127.0.0.1:2369/content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, http://127.0.0.1:2369/content/images/size/w2400/2018/04/NatGeo06.jpg 2400w" sizes="(min-width: 1200px) 1200px"><figcaption>Birdies</figcaption></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="http://127.0.0.1:2369/content/images/test.png" width="1000" height="500" loading="lazy" alt srcset="http://127.0.0.1:2369/content/images/size/w600/test.png 600w, http://127.0.0.1:2369/content/images/test.png 1000w" sizes="(min-width: 720px) 720px"></div></div></div></figure>');
+        });
+
         it('respects srcsets config', function () {
             configUtils.set('imageOptimization:srcsets', false);
 
