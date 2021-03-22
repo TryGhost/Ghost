@@ -937,7 +937,8 @@
     }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 680px),
+(min-width: 800px) and (max-width: 1000px) {
     .gh-dashboard {
         grid-template-columns: 1fr;
         grid-column-gap: 0;
