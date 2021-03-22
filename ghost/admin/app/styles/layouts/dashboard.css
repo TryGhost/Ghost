@@ -240,6 +240,7 @@
 
 .gh-dashboard-container.start-contents .gh-dashboard-box {
     grid-row-gap: 0;
+    align-items: flex-start;
 }
 
 .gh-dashboard-container.start-contents .gh-dashboard-box h2 {
