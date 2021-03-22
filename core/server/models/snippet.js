@@ -4,9 +4,7 @@ const urlUtils = require('../../shared/url-utils');
 const Snippet = ghostBookshelf.Model.extend({
     tableName: 'snippets',
 
-    format() {
-        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
-
+    formatOnWrite(attrs) {
         if (attrs.mobiledoc) {
             attrs.mobiledoc = urlUtils.mobiledocToTransformReady(attrs.mobiledoc);
         }

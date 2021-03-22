@@ -4,9 +4,7 @@ const urlUtils = require('../../shared/url-utils');
 const PostsMeta = ghostBookshelf.Model.extend({
     tableName: 'posts_meta',
 
-    format() {
-        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
-
+    formatOnWrite(attrs) {
         ['og_image', 'twitter_image'].forEach((attr) => {
             if (attrs[attr]) {
                 attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
