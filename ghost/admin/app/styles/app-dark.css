@@ -625,6 +625,10 @@ input:focus,
     mix-blend-mode: normal;
 }
 
+.apps-card-app-icon.id-typeform {
+    filter: invert(100%);
+}
+
 .gh-nav,
 .gh-contentfilter-menu-trigger,
 .gh-contentfilter-menu-trigger--active,
