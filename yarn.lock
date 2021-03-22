@@ -531,19 +531,7 @@
     handlebars "^4.7.6"
     juice "^7.0.0"
 
-"@tryghost/kg-markdown-html-renderer@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-4.0.0.tgz#1d084904dae8f10c56aee0dfc7d2edfd4db208c5"
-  integrity sha512-VAirSqAve309Rr2PC/Jg4uRGq6+/qbmqXMaSpzW0E/cB1d+I8sWG1Wfkj6RiS0I6Ge1hHYU9nsPYP2DJIRe8uw==
-  dependencies:
-    markdown-it "^12.0.0"
-    markdown-it-footnote "^3.0.2"
-    markdown-it-image-lazy-loading "^1.0.2"
-    markdown-it-lazy-headers "^0.1.3"
-    markdown-it-mark "^3.0.0"
-    semver "^7.3.4"
-
-"@tryghost/kg-markdown-html-renderer@^4.0.1":
+"@tryghost/kg-markdown-html-renderer@4.0.1", "@tryghost/kg-markdown-html-renderer@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-4.0.1.tgz#ebf1e91b6aa2a158f18de18637812da954466680"
   integrity sha512-oElHA6TilCVpu/pWJ00ekcVh98R8z9nJKeToGBx/dzL0l6zHW+pYwjYuU7vtjeh28X81Jq6HLz8vSEIOQ0W/bA==
