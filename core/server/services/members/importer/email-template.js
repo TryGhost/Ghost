@@ -123,7 +123,7 @@ module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
                       </tr>
                       <tr>
                           <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;">
-                            <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${iff(result.imported > 0, `Your member import is complete`, `Your member import was unsuccessful`)}</p>
+                            <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 0px; margin-top: 50px; font-weight: 600; color: #15212A;">${iff(result.imported > 0, `Your member import is complete`, `Your member import was unsuccessful`)}</p>
                           </td>
                       </tr>
                     ${iff(result.imported === 0 && result.errors.length === 0, `
