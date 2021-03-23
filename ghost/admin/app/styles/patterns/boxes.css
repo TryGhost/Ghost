@@ -3,14 +3,14 @@
 
 .gh-box {
     position: relative;
+    margin-top: 3px;
     padding: 12px 10px 14px 40px;
-    border: 1px solid transparent;
+    border: 1px solid var(--blue);
     color: var(--darkgrey);
     line-height: 1.55em;
     letter-spacing: 0.2px;
-    background: color-mod(var(--blue) a(5%));
-    border-radius: 5px;
-    border-color: color-mod(var(--blue) a(30%));
+    background: color-mod(var(--blue) a(4%));
+    border-radius: 3px;
 }
 
 .gh-box a {
@@ -32,7 +32,7 @@
 
 .gh-box-alert {
     border-color: var(--yellow);
-    background: color-mod(var(--yellow) a(5%));
+    background: color-mod(var(--yellow) a(4%));
 }
 
 .gh-box-alert svg:first-of-type {
@@ -42,8 +42,7 @@
 }
 
 .gh-box-error {
-    border-radius: 3px;
-    border: 1px solid color-mod(var(--red) a(70%));
+    border: 1px solid var(--red);
     background: color-mod(var(--red) a(3%));
 }
 
