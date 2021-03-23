@@ -80,45 +80,6 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
-    format() {
-        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
-
-        // ensure all URLs are stored as transform-ready with __GHOST_URL__ representing config.url
-        const urlTransformMap = {
-            mobiledoc: 'mobiledocToTransformReady',
-            html: 'htmlToTransformReady',
-            plaintext: 'markdownToTransformReady',
-            custom_excerpt: 'htmlToTransformReady',
-            codeinjection_head: 'htmlToTransformReady',
-            codeinjection_foot: 'htmlToTransformReady',
-            feature_image: 'toTransformReady',
-            og_image: 'toTransformReady',
-            twitter_image: 'toTransformReady',
-            canonical_url: {
-                method: 'toTransformReady',
-                options: {
-                    ignoreProtocol: false
-                }
-            }
-        };
-
-        Object.entries(urlTransformMap).forEach(([attr, transform]) => {
-            let method = transform;
-            let transformOptions = {};
-
-            if (typeof transform === 'object') {
-                method = transform.method;
-                transformOptions = transform.options || {};
-            }
-
-            if (attrs[attr]) {
-                attrs[attr] = urlUtils[method](attrs[attr], transformOptions);
-            }
-        });
-
-        return attrs;
-    },
-
     parse() {
         const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
@@ -137,6 +98,44 @@ Post = ghostBookshelf.Model.extend({
         ].forEach((attr) => {
             if (attrs[attr]) {
                 attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+            }
+        });
+
+        return attrs;
+    },
+
+    // Alternative to Bookshelf's .format() that is only called when writing to db
+    formatOnWrite(attrs) {
+        // Ensure all URLs are stored as transform-ready with __GHOST_URL__ representing config.url
+        const urlTransformMap = {
+            mobiledoc: 'mobiledocToTransformReady',
+            html: 'htmlToTransformReady',
+            plaintext: 'markdownToTransformReady',
+            custom_excerpt: 'htmlToTransformReady',
+            codeinjection_head: 'htmlToTransformReady',
+            codeinjection_foot: 'htmlToTransformReady',
+            feature_image: 'toTransformReady',
+            og_image: 'toTransformReady',
+            twitter_image: 'toTransformReady',
+            canonical_url: {
+                method: 'toTransformReady',
+                options: {
+                    ignoreProtocol: false
+                }
+            }
+        };
+
+        Object.entries(urlTransformMap).forEach(([attrToTransform, transform]) => {
+            let method = transform;
+            let transformOptions = {};
+
+            if (typeof transform === 'object') {
+                method = transform.method;
+                transformOptions = transform.options || {};
+            }
+
+            if (attrs[attrToTransform]) {
+                attrs[attrToTransform] = urlUtils[method](attrs[attrToTransform], transformOptions);
             }
         });
 
@@ -372,7 +371,7 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
-    onSaving: async function onSaving(model, attr, options) {
+    onSaving: async function onSaving(model, attrs, options) {
         options = options || {};
 
         const self = this;

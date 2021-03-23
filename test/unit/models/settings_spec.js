@@ -185,22 +185,22 @@ describe('Unit: models/settings', function () {
         it('transforms urls when persisting to db', function () {
             const setting = models.Settings.forge();
 
-            let returns = setting.format({key: 'cover_image', value: 'http://127.0.0.1:2369/cover_image.png', type: 'string'});
+            let returns = setting.formatOnWrite({key: 'cover_image', value: 'http://127.0.0.1:2369/cover_image.png', type: 'string'});
             should.equal(returns.value, '__GHOST_URL__/cover_image.png');
 
-            returns = setting.format({key: 'logo', value: 'http://127.0.0.1:2369/logo.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'logo', value: 'http://127.0.0.1:2369/logo.png', type: 'string'});
             should.equal(returns.value, '__GHOST_URL__/logo.png');
 
-            returns = setting.format({key: 'icon', value: 'http://127.0.0.1:2369/icon.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'icon', value: 'http://127.0.0.1:2369/icon.png', type: 'string'});
             should.equal(returns.value, '__GHOST_URL__/icon.png');
 
-            returns = setting.format({key: 'portal_button_icon', value: 'http://127.0.0.1:2369/portal_button_icon.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'portal_button_icon', value: 'http://127.0.0.1:2369/portal_button_icon.png', type: 'string'});
             should.equal(returns.value, '__GHOST_URL__/portal_button_icon.png');
 
-            returns = setting.format({key: 'og_image', value: 'http://127.0.0.1:2369/og_image.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'og_image', value: 'http://127.0.0.1:2369/og_image.png', type: 'string'});
             should.equal(returns.value, '__GHOST_URL__/og_image.png');
 
-            returns = setting.format({key: 'twitter_image', value: 'http://127.0.0.1:2369/twitter_image.png', type: 'string'});
+            returns = setting.formatOnWrite({key: 'twitter_image', value: 'http://127.0.0.1:2369/twitter_image.png', type: 'string'});
             should.equal(returns.value, '__GHOST_URL__/twitter_image.png');
         });
     });
