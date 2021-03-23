@@ -710,8 +710,10 @@ User = ghostBookshelf.Model.extend({
             });
         }
 
-        // If we have a staff user limit & the user is being unsuspended
-        if (limitService.isLimited('staff') && action === 'edit' && unsafeAttrs.status && unsafeAttrs.status === 'active' && userModel.get('status') === 'inactive') {
+        const isUnsuspending = unsafeAttrs.status && unsafeAttrs.status === 'active' && userModel.get('status') === 'inactive';
+
+        // If we have a staff user limit & the staff user is being unsuspended (don't count contributors)
+        if (limitService.isLimited('staff') && action === 'edit' && isUnsuspending && !userModel.hasRole('Contributor')) {
             await limitService.errorIfWouldGoOverLimit('staff');
         }
 
