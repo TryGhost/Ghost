@@ -110,7 +110,7 @@ Post = ghostBookshelf.Model.extend({
         const urlTransformMap = {
             mobiledoc: 'mobiledocToTransformReady',
             html: 'htmlToTransformReady',
-            plaintext: 'markdownToTransformReady',
+            plaintext: 'plaintextToTransformReady',
             custom_excerpt: 'htmlToTransformReady',
             codeinjection_head: 'htmlToTransformReady',
             codeinjection_foot: 'htmlToTransformReady',
