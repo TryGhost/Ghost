@@ -25,7 +25,20 @@ module.exports = {
                 throw new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')});
             }
 
-            return models.Webhook.add(frame.data.webhooks[0], frame.options);
+            try {
+                const newWebhook = await models.Webhook.add(frame.data.webhooks[0], frame.options);
+                return newWebhook;
+            } catch (error) {
+                if (error.errno === 1452 || (error.code === 'SQLITE_CONSTRAINT' && /SQLITE_CONSTRAINT: FOREIGN KEY constraint failed/.test(error.message))) {
+                    throw new errors.ValidationError({
+                        message: i18n.t('notices.data.validation.index.schemaValidationFailed', {
+                            key: 'integration_id'
+                        }),
+                        context: i18n.t('errors.api.webhooks.nonExistingIntegrationIdProvided.context'),
+                        help: i18n.t('errors.api.webhooks.nonExistingIntegrationIdProvided.help')
+                    });
+                }
+            }
         }
     },
 

@@ -54,6 +54,31 @@ describe('Webhooks API', function () {
             .expect(422);
     });
 
+    it('Fails nicely when creating an orphaned webhook', async function () {
+        const webhookData = {
+            event: 'test.create',
+            target_url: 'http://example.com/webhooks/test/extra/10',
+            name: 'test',
+            secret: 'thisissecret',
+            api_version: API_VERSION,
+            integration_id: `fake-integration`
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('webhooks/'))
+            .set('Origin', config.get('url'))
+            .send({webhooks: [webhookData]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse.errors);
+
+        jsonResponse.errors[0].type.should.equal('ValidationError');
+        jsonResponse.errors[0].context.should.equal(`Validation failed for 'integration_id'. 'integration_id' value does not match any existing integration.`);
+    });
+
     it('Can edit a webhook', async function () {
         let createdIntegration;
         let createdWebhook;
