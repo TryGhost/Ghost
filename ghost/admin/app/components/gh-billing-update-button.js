@@ -15,7 +15,7 @@ export default Component.extend({
 
     actions: {
         openBilling() {
-            this.billing.openBillingWindow(this.router.currentURL, '/billing/plans');
+            this.billing.openBillingWindow(this.router.currentURL, '/pro/billing/plans');
         }
     }
 });

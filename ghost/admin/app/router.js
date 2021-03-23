@@ -26,8 +26,8 @@ Router.map(function () {
     this.route('dashboard');
     this.route('launch');
 
-    this.route('billing', function () {
-        this.route('billing-sub', {path: '/*sub'});
+    this.route('pro', function () {
+        this.route('pro-sub', {path: '/*sub'});
     });
 
     this.route('posts');
