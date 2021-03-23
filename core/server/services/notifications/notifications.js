@@ -47,14 +47,15 @@ class Notifications {
             //       after Ghost update. Logic below should be removed when Ghost upgrade detection
             //       is done (https://github.com/TryGhost/Ghost/issues/10236) and notifications are
             //       be removed permanently on upgrade event.
-            const ghost20RegEx = /Ghost 2.0 is now available/gi;
+            const ghostMajorRegEx = /Ghost (?<major>\d).0 is now available/gi;
 
             // CASE: do not return old release notification
-            if (notification.message && (!notification.custom || notification.message.match(ghost20RegEx))) {
+            if (notification.message && (!notification.custom || notification.message.match(ghostMajorRegEx))) {
                 let notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/);
 
-                if (notification.message.match(ghost20RegEx)) {
-                    notificationVersion = '2.0.0';
+                const ghostMajorMatch = ghostMajorRegEx.exec(notification.message);
+                if (ghostMajorMatch.groups.major) {
+                    notificationVersion = `${ghostMajorMatch.groups.major}.0.0`;
                 } else if (notificationVersion){
                     notificationVersion = notificationVersion[0];
                 }
