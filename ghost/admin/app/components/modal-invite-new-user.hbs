@@ -1,5 +1,5 @@
 <header class="modal-header">
-    <h1>Invite a New User</h1>
+    <h1>Invite a new user</h1>
 </header>
 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
 <a class="close" href role="button" title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
@@ -9,12 +9,12 @@
 <div class="modal-body">
     <fieldset>
         <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="email">
-            <label for="new-user-email">Email Address</label>
+            <label for="new-user-email">Email address</label>
             <GhTextInput
                 @class="email"
                 @id="new-user-email"
                 @type="email"
-                @placeholder="Email Address"
+                @placeholder="Email address"
                 @name="email"
                 @shouldFocus={{true}}
                 @autocapitalize="off"
