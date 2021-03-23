@@ -6,6 +6,14 @@ const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid');
 
 class Notifications {
+    /**
+     *
+     * @param {Object} options
+     * @param {Object} options.settingsCache - settings cache instance
+     * @param {Object} options.i18n - i18n instance
+     * @param {Object} options.ghostVersion
+     * @param {String} options.ghostVersion.full - Ghost instance version in "full" format - major.minor.patch
+     */
     constructor({settingsCache, i18n, ghostVersion}) {
         this.settingsCache = settingsCache;
         this.i18n = i18n;
