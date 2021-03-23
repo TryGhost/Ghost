@@ -146,6 +146,10 @@ Settings = ghostBookshelf.Model.extend({
             }
         }
 
+        return attrs;
+    },
+
+    formatOnWrite(attrs) {
         if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
             attrs.value = urlUtils.toTransformReady(attrs.value);
         }

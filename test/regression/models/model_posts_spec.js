@@ -1128,7 +1128,7 @@ describe('Post Model', function () {
                     }).catch(done);
             });
 
-            it('uses parse/transform to store urls as transform-ready and read as absolute ', function (done) {
+            it('it stores urls as transform-ready and reads as absolute', function (done) {
                 const post = {
                     title: 'Absolute->Transform-ready URL Transform Test',
                     mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}',

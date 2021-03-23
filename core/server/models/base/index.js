@@ -274,6 +274,32 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     /**
+     * Bookshelf's .format() is run when fetching as well as saving.
+     * We need a way to transform attributes only on save so we override
+     * .sync() which is run on every database operation where we can
+     * run any transforms needed only on insert and update operations
+     */
+    sync: function sync() {
+        const parentSync = proto.sync.apply(this, arguments);
+        const originalUpdateSync = parentSync.update;
+        const originalInsertSync = parentSync.insert;
+        const self = this;
+
+        // deep clone attrs to avoid modifying underlying model attributes by reference
+        parentSync.update = function update(attrs) {
+            attrs = self.formatOnWrite(_.cloneDeep(attrs));
+            return originalUpdateSync.apply(this, [attrs]);
+        };
+
+        parentSync.insert = function insert(attrs) {
+            attrs = self.formatOnWrite(_.cloneDeep(attrs));
+            return originalInsertSync.apply(this, [attrs]);
+        };
+
+        return parentSync;
+    },
+
+    /**
      * Do not call `toJSON`. This can remove properties e.g. password.
      * @returns {*}
      */
@@ -589,6 +615,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // format date before writing to DB, bools work
     format: function format(attrs) {
         return this.fixDatesWhenSave(attrs);
+    },
+
+    // overridable function for models to format attrs only when saving to db
+    formatOnWrite: function formatOnWrite(attrs) {
+        return attrs;
     },
 
     // format data and bool when fetching from DB
