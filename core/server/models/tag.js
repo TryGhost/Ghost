@@ -16,9 +16,7 @@ Tag = ghostBookshelf.Model.extend({
         };
     },
 
-    format() {
-        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
-
+    formatOnWrite(attrs) {
         const urlTransformMap = {
             feature_image: 'toTransformReady',
             og_image: 'toTransformReady',
