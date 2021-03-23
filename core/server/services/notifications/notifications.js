@@ -54,7 +54,7 @@ class Notifications {
                 let notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/);
 
                 const ghostMajorMatch = ghostMajorRegEx.exec(notification.message);
-                if (ghostMajorMatch.groups.major) {
+                if (ghostMajorMatch && ghostMajorMatch.groups && ghostMajorMatch.groups.major) {
                     notificationVersion = `${ghostMajorMatch.groups.major}.0.0`;
                 } else if (notificationVersion){
                     notificationVersion = notificationVersion[0];
