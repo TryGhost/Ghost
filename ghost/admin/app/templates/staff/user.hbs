@@ -354,34 +354,42 @@
                     <div class="pa5">
                         <fieldset class="user-details-form">
                             <GhFormGroup>
-                                <label for="personal-token">Personal Token</label>
-                                <GhTextInput
-                                        @id="personal-token"
-                                        @value={{readonly this.personalToken}}
-                                        @readonly
-                                        @type="text"
-                                        onclick="this.select()"
-                                    />
+                                <label for="personal-token">Staff Access Token</label>
+                                <div class="relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
+                                    <GhTextInput
+                                            @id="personal-token"
+                                            @value={{readonly this.personalToken}}
+                                            @readonly
+                                            @type="text"
+                                            onclick="this.select()"
+                                        />
+                                    <div class="app-api-personal-token-buttons child">
+                                        <button type="button" {{action "confirmRegenerateTokenModal"}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                            {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                        </button>
+                                        <button type="button" {{action (perform this.copyContentKey)}} class="app-button-copy">
+                                            {{#if this.copyContentKey.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                            {{else}}
+                                            Copy
+                                            {{/if}}
+                                        </button>
+                                    </div>
+                                </div>
                                 <p>
                                     Give apps personal access without sharing your email/password.
                                 </p>
                                 {{#if this.personalTokenRegenerated}}
-                                    <p class="green"> Personal Token was successfully regenerated </p>
+                                    <p class="green"> Staff Access Token was successfully regenerated </p>
                                 {{/if}}
-
-                            </GhFormGroup>
-
-                            <div class="form-group">
-                                <button class="gh-btn gh-btn-icon gh-btn-red" {{action "confirmRegenerateTokenModal"}}>
-                                    <span>Regenerate</span>
-                                </button>
                                 {{#if this.showRegenerateTokenModal}}
                                     <GhFullscreenModal @modal="regenerate-token"
                                         @confirm={{action "regenerateToken"}}
                                         @close={{action "cancelRegenerateTokenModal"}}
                                         @modifier="action wide" />
                                 {{/if}}
-                            </div>
+
+                            </GhFormGroup>
                         </fieldset>
                     </div>
                 </form>

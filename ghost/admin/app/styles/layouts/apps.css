@@ -174,7 +174,7 @@
     border-top: none;
 }
 
-.apps-card-left {   
+.apps-card-left {
     display: flex;
     align-items: center;
 }
@@ -370,6 +370,13 @@
     position: absolute;
     top: -4px;
     right: -3px;
+}
+
+.app-api-personal-token-buttons {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 5px;
 }
 
 .app-button-regenerate {
