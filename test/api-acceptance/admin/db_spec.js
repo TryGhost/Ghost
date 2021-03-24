@@ -12,7 +12,8 @@ describe('DB API', function () {
     let request;
     let eventsTriggered;
 
-    before(async function () {
+    // NOTE: has to be beforeEach otherwise imports overlap and cause duplicate entry errors
+    beforeEach(async function () {
         await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
@@ -31,6 +32,7 @@ describe('DB API', function () {
     });
 
     afterEach(function () {
+        testUtils.stopGhost();
         sinon.restore();
     });
 
@@ -56,7 +58,7 @@ describe('DB API', function () {
         jsonResponse.db[0].data.should.have.only.keys(...dataKeys);
     });
 
-    it('Can import a JSON database exported from Ghost v2', async function () {
+    it('Can import a JSON database exported from Ghost 2.0', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -83,7 +85,7 @@ describe('DB API', function () {
         res2.body.posts.should.have.length(7);
     });
 
-    it('Can import a JSON database exported from Ghost v3', async function () {
+    it('Can import a JSON database exported from Ghost 3.0', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -99,7 +101,7 @@ describe('DB API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.db);
         should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(3);
+        jsonResponse.problems.should.have.length(2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
@@ -110,7 +112,7 @@ describe('DB API', function () {
         res2.body.posts.should.have.length(7);
     });
 
-    it('Can import a JSON database exported from Ghost v4', async function () {
+    it('Can import a JSON database exported from Ghost 4.0', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
