@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import isNumber from 'ghost-admin/utils/isNumber';
 import validator from 'validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
@@ -471,5 +472,10 @@ export default Controller.extend({
                 this.notifications.showAPIError(error, {key: 'user.update'});
             }
         }
-    }).group('saveHandlers')
+    }).group('saveHandlers'),
+
+    copyContentKey: task(function* () {
+        copyTextToClipboard(this.personalToken);
+        yield timeout(this.isTesting ? 50 : 3000);
+    })
 });

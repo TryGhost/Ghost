@@ -1,11 +1,11 @@
 <header class="modal-header">
-    <h1>Regenerate your Personal Token</h1>
+    <h1>Regenerate your Staff Access Token</h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <div class="modal-body">
     <p>
-        You can regenerate your Personal Token any time, but any scripts or applications using it will need to be updated.
+        You can regenerate your Staff Access Token any time, but any scripts or applications using it will need to be updated.
     </p>
     {{#if this.errorMessage}}
         <p class='red'> {{this.errorMessage}}</p>
@@ -15,6 +15,6 @@
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn" autofocus><span>Cancel</span></button>
     <button class="gh-btn gh-btn-icon gh-btn-red" {{action "confirm"}}>
-        <span>Regenerate your Personal Token</span>
+        <span>Regenerate your Staff Access Token</span>
     </button>
 </div>
