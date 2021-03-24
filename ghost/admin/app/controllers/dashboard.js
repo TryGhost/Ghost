@@ -71,10 +71,14 @@ export default class DashboardController extends Controller {
         this.mrrStatsLoading = true;
         this.membersStats.fetchMRR().then((stats) => {
             this.mrrStatsLoading = false;
-            const statsData = stats.data;
-            let currencyStats = statsData[0] || {
+            const statsData = stats.data || [];
+            const defaultCurrency = this.getDefaultCurrency() || 'usd';
+            let currencyStats = statsData.find((stat) => {
+                return stat.currency === defaultCurrency;
+            });
+            currencyStats = currencyStats || {
                 data: [],
-                currency: 'usd'
+                currency: defaultCurrency
             };
             if (currencyStats) {
                 const currencyStatsData = this.membersStats.fillDates(currencyStats.data) || {};
@@ -238,6 +242,12 @@ export default class DashboardController extends Controller {
             this.whatsNewEntriesError = error;
             this.whatsNewEntriesLoading = false;
         });
+    }
+
+    getDefaultCurrency() {
+        const plans = this.settings.get('stripePlans') || [];
+        const monthly = plans.find(plan => plan.interval === 'month');
+        return monthly && monthly.currency;
     }
 
     @action
