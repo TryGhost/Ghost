@@ -471,8 +471,8 @@ export default class App extends React.Component {
 
     /**Get Accent color from site data, fallback to default*/
     getAccentColor() {
-        const {accent_color: accentColor = '#15171A'} = this.state.site || {};
-        return accentColor || '#15171A';
+        const {accent_color: accentColor} = this.state.site || {};
+        return accentColor;
     }
 
     /**Get final page set in App context from state data*/
