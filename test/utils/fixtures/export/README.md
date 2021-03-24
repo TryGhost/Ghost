@@ -16,7 +16,7 @@ Steps to generate a new `vX_export.json` file:
   - `Fixture Ghosty` - Full name
   - {your_email}@ghost.org - Email address (I used naz@ghost.org as an example, this is to prevent spamming test@ghost.org)
   - Password - generate one (for example use 1Password to autofill it)
-4. Go to Admin panels's labs page and download an export (/settings/lab page and "Export your content" section)
+4. Go to Admin panels's labs page and download an export (`/settings/labs` page and "Export your content" section)
 5. Format and rename exported data: `jq . testing-export-fixtures.ghost.2021-03-24-01-15-52.json > v3_export.json` (can use `vX_export.json` where X is a Ghost version number)
 6. Copy the file into `/utils/fixtures/export` project folder by running e.g.: `cp ./v3_export.json ~/Ghost/test/fixtures/export/`
 7. Replace email used during registration with a generic `test@ghost.org` can use following command `sed -i 's/naz@ghost.org/test@ghost.org/g' v3_export.json` (replace naz@ with an email you used and use appropriate json file name)
