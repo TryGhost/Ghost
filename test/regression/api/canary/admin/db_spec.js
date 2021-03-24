@@ -240,7 +240,7 @@ describe('DB API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.db);
         should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(3);
+        jsonResponse.problems.should.have.length(2);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
