@@ -12,8 +12,7 @@ describe('DB API', function () {
     let request;
     let eventsTriggered;
 
-    // NOTE: has to be beforeEach otherwise imports overlap and cause duplicate entry errors
-    beforeEach(async function () {
+    before(async function () {
         await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
@@ -32,7 +31,6 @@ describe('DB API', function () {
     });
 
     afterEach(function () {
-        testUtils.stopGhost();
         sinon.restore();
     });
 
@@ -56,87 +54,6 @@ describe('DB API', function () {
         Object.keys(jsonResponse.db[0].data).length.should.eql(28);
         Object.keys(jsonResponse.db[0].data).length.should.eql(dataKeys.length);
         jsonResponse.db[0].data.should.have.only.keys(...dataKeys);
-    });
-
-    it('Can import a JSON database exported from Ghost 2.0', async function () {
-        await request.delete(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect(204);
-
-        const res = await request.post(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/v2_export.json'))
-            .expect(200);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(3);
-
-        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        res2.body.posts.should.have.length(7);
-    });
-
-    it('Can import a JSON database exported from Ghost 3.0', async function () {
-        await request.delete(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect(204);
-
-        const res = await request.post(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/v3_export.json'))
-            .expect(200);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(2);
-
-        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        res2.body.posts.should.have.length(7);
-    });
-
-    it('Can import a JSON database exported from Ghost 4.0', async function () {
-        await request.delete(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect(204);
-
-        const res = await request.post(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/v4_export.json'))
-            .expect(200);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.db);
-        should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(3);
-
-        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        res2.body.posts.should.have.length(7);
     });
 
     it('Can delete all content', async function () {
