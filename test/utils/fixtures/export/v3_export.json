@@ -2673,7 +2673,7 @@
             "name": "Fixture Ghosty",
             "slug": "fixture",
             "password": "$2a$10$r0NpLiq8/.nzyxQrM96dI.JHyhx56MzsVv7xI6K4wzQDeR6gOAi3m",
-            "email": "naz@ghost.org",
+            "email": "test@ghost.org",
             "profile_image": "//www.gravatar.com/avatar/d94a22d95b540979c98f20e4598e32ee?s=250&d=mm&r=x",
             "cover_image": null,
             "bio": null,

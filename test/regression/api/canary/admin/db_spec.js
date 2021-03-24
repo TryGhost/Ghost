@@ -169,11 +169,23 @@ describe('DB API', function () {
             .expect(200);
     });
 
-    it('Can import a JSON database exported from Ghost 2.0', async function () {
+    it('Can import a JSON database exported from Ghost v2', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect(204);
+
+        // preventively remove default "fixture" user
+        const fixtureUserResponse = await request.get(localUtils.API.getApiQuery('users/slug/fixture/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        if (fixtureUserResponse.body.users) {
+            await request.delete(localUtils.API.getApiQuery(`users/${fixtureUserResponse.body.users[0].id}`))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json');
+        }
 
         const res = await request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
@@ -185,15 +197,23 @@ describe('DB API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.db);
         should.exist(jsonResponse.problems);
-        jsonResponse.problems.should.have.length(3);
+        jsonResponse.problems.should.have.length(2);
 
-        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
+        const postsResponse = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        res2.body.posts.should.have.length(7);
+        postsResponse.body.posts.should.have.length(7);
+
+        const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        usersResponse.body.users.should.have.length(3);
     });
 
     it('Can import a JSON database exported from Ghost 3.0', async function () {
@@ -201,6 +221,18 @@ describe('DB API', function () {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect(204);
+
+        // preventively remove default "fixture" user
+        const fixtureUserResponse = await request.get(localUtils.API.getApiQuery('users/slug/fixture/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        if (fixtureUserResponse.body.users) {
+            await request.delete(localUtils.API.getApiQuery(`users/${fixtureUserResponse.body.users[0].id}`))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json');
+        }
 
         const res = await request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
@@ -221,6 +253,14 @@ describe('DB API', function () {
             .expect(200);
 
         res2.body.posts.should.have.length(7);
+
+        const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        usersResponse.body.users.should.have.length(3);
     });
 
     it('Can import a JSON database exported from Ghost 4.0', async function () {
@@ -228,6 +268,18 @@ describe('DB API', function () {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect(204);
+
+        // preventively remove default "fixture" user
+        const fixtureUserResponse = await request.get(localUtils.API.getApiQuery('users/slug/fixture/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        if (fixtureUserResponse.body.users) {
+            await request.delete(localUtils.API.getApiQuery(`users/${fixtureUserResponse.body.users[0].id}`))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json');
+        }
 
         const res = await request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
@@ -248,5 +300,13 @@ describe('DB API', function () {
             .expect(200);
 
         res2.body.posts.should.have.length(7);
+
+        const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        usersResponse.body.users.should.have.length(3);
     });
 });
