@@ -48,6 +48,12 @@ describe('{{link_class}} helper', function () {
             .should.eql('');
     });
 
+    it('silently accepts an empty SafeString', function () {
+        compile('{{link_class for=blank_safe_string}}')
+            .with({blank_safe_string: new handlebars.SafeString('')})
+            .should.eql('');
+    });
+
     describe('activeClass', function () {
         it('gets applied correctly', function () {
             // Test matching relative URL
