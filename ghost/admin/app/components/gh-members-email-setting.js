@@ -59,7 +59,11 @@ export default Component.extend({
     blogDomain: computed('config.blogDomain', function () {
         let blogDomain = this.config.blogDomain || '';
         const domainExp = blogDomain.replace('https://', '').replace('http://', '').match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        return (domainExp && domainExp[1]) || '';
+        const domain = (domainExp && domainExp[1]) || '';
+        if (domain.startsWith('www.')) {
+            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
+        }
+        return domain;
     }),
 
     mailgunRegion: computed('settings.mailgunBaseUrl', function () {
