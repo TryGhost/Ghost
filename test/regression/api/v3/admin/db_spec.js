@@ -49,9 +49,8 @@ describe('DB API', function () {
         sinon.restore();
     });
 
-    // SKIPPED: we no longer have the "extra" clients and client_trusted_domains tables
-    it.skip('can export the database with more tables', function () {
-        return request.get(localUtils.API.getApiQuery('db/?include=clients,client_trusted_domains'))
+    it('can export the database with more tables', function () {
+        return request.get(localUtils.API.getApiQuery('db/?include=mobiledoc_revisions'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect(200)
