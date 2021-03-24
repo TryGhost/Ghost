@@ -82,7 +82,7 @@ export default class DashboardController extends Controller {
             };
             if (currencyStats) {
                 const currencyStatsData = this.membersStats.fillDates(currencyStats.data) || {};
-                const dateValues = Object.values(currencyStatsData).map(val => val / 100);
+                const dateValues = Object.values(currencyStatsData).map(val => Math.round((val / 100)));
                 const currentMRR = dateValues.length ? dateValues[dateValues.length - 1] : 0;
                 const rangeStartMRR = dateValues.length ? dateValues[0] : 0;
                 const percentGrowth = rangeStartMRR !== 0 ? ((currentMRR - rangeStartMRR) / rangeStartMRR) * 100 : 0;
