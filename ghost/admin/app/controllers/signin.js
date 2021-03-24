@@ -36,7 +36,7 @@ export default Controller.extend(ValidationEngine, {
     signin: alias('model'),
 
     accentColor: computed('config.accent_color', function () {
-        let color = this.get('config.accent_color') || '#15171A';
+        let color = this.get('config.accent_color');
         return color;
     }),
 
