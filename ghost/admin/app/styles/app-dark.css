@@ -894,8 +894,9 @@ input:focus,
     background: var(--lightgrey);
 }
 
+/* Opacity needed to display correctly in Safari */
 ::selection {
-    background: color-mod(var(--lightgrey-l1));
+    background: rgb(55, 59, 67, 0.99);
 }
 
 .user-image {
