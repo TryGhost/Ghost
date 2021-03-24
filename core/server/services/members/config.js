@@ -33,7 +33,7 @@ class MembersConfigProvider {
     _getDomain() {
         const url = this._urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         const domain = (url && url[1]) || '';
-        domain.startsWith('www.') {
+        if (domain.startsWith('www.')) {
             return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
         }
         return domain;
