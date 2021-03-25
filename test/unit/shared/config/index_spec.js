@@ -90,16 +90,23 @@ describe('Config', function () {
             const pathConfig = configUtils.config.get('paths');
 
             // This will fail if there are any extra keys
-            pathConfig.should.have.keys(
-                'appRoot',
-                'internalAdaptersPath',
+            // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
+            //       because when `have.keys` fails there's no useful diff
+            //       and it doesn't make sure to check for "extra" keys
+            Object.keys(pathConfig).should.eql([
                 'contentPath',
+                'appRoot',
                 'corePath',
-                'internalAppPath',
-                'adminViews',
+                'clientAssets',
                 'helperTemplates',
-                'clientAssets'
-            );
+                'adminViews',
+                'defaultViews',
+                'defaultSettings',
+                'internalAppPath',
+                'internalAdaptersPath',
+                'migrationPath',
+                'publicFilePath'
+            ]);
         });
 
         it('should have the correct values for each key', function () {
