@@ -24,10 +24,6 @@ describe('Exporter', function () {
 
     describe('doExport', function () {
         beforeEach(function () {
-            exporter.__set__('ghostVersion', {
-                full: '2.0.0'
-            });
-
             tablesStub = sinon.stub(schema.commands, 'getTables').returns(schemaTables);
 
             queryMock = {
@@ -50,8 +46,7 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                //TODO: Update when 3.0.0 is released
-                exportData.meta.version.should.eql('2.0.0');
+                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
 
                 tablesStub.calledOnce.should.be.true();
                 db.knex.called.should.be.true();
@@ -97,7 +92,7 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                exportData.meta.version.should.eql('2.0.0');
+                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
 
                 tablesStub.calledOnce.should.be.true();
                 db.knex.called.should.be.true();
