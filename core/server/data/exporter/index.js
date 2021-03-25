@@ -32,7 +32,7 @@ const EXCLUDED_SETTING_KEYS = [
 
 const modelOptions = {context: {internal: true}};
 
-const exportFileName = function exportFileName(options) {
+const exportFileName = async function exportFileName(options) {
     const datetime = require('moment')().format('YYYY-MM-DD-HH-mm-ss');
     let title = '';
 
@@ -40,19 +40,21 @@ const exportFileName = function exportFileName(options) {
 
     // custom filename
     if (options.filename) {
-        return Promise.resolve(options.filename + '.json');
+        return options.filename + '.json';
     }
 
-    return models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, _.pick(options, 'transacting'))).then(function (result) {
-        if (result) {
-            title = security.string.safe(result.get('value')) + '.';
+    try {
+        const settingsTitle = await models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, _.pick(options, 'transacting')));
+
+        if (settingsTitle) {
+            title = security.string.safe(settingsTitle.get('value')) + '.';
         }
 
         return title + 'ghost.' + datetime + '.json';
-    }).catch(function (err) {
+    } catch (err) {
         logging.error(new errors.GhostError({err: err}));
         return 'ghost.' + datetime + '.json';
-    });
+    }
 };
 
 const getVersionAndTables = function getVersionAndTables(options) {
@@ -79,20 +81,22 @@ const getSettingsTableData = function getSettingsTableData(settingsData) {
     });
 };
 
-const doExport = function doExport(options) {
+const doExport = async function doExport(options) {
     options = options || {include: []};
 
     let tables;
     let version;
 
-    return getVersionAndTables(options).then(function exportAllTables(result) {
+    try {
+        const result = await getVersionAndTables(options);
+
         tables = result.tables;
         version = result.version;
 
-        return Promise.mapSeries(tables, function (tableName) {
+        const tableData = await Promise.mapSeries(tables, function (tableName) {
             return exportTable(tableName, options);
         });
-    }).then(function formatData(tableData) {
+
         const exportData = {
             meta: {
                 exported_on: new Date().getTime(),
@@ -112,12 +116,12 @@ const doExport = function doExport(options) {
         });
 
         return exportData;
-    }).catch(function (err) {
-        return Promise.reject(new errors.DataExportError({
+    } catch (err) {
+        throw new errors.DataExportError({
             err: err,
             context: i18n.t('errors.data.export.errorExportingData')
-        }));
-    });
+        });
+    }
 };
 
 module.exports = {
