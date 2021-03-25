@@ -11,20 +11,6 @@ const models = require('../../models');
 
 // NOTE: these tables can be optionally included to have full db-like export
 const BACKUP_TABLES = [
-    'sessions',
-    'mobiledoc_revisions',
-    'email_batches',
-    'email_recipients',
-    'members_payment_events',
-    'members_login_events',
-    'members_email_change_events',
-    'members_status_events',
-    'members_paid_subscription_events',
-    'members_subscribe_events'
-];
-
-// NOTE: exposing only tables which are going to be included in a "default" export file
-const TABLES_ALLOWLIST = [
     'actions',
     'api_keys',
     'brute',
@@ -41,6 +27,25 @@ const TABLES_ALLOWLIST = [
     'permissions',
     'permissions_roles',
     'permissions_users',
+    'webhooks',
+    'snippets',
+    'tokens',
+    'sessions',
+    'mobiledoc_revisions',
+    'email_batches',
+    'email_recipients',
+    'members_payment_events',
+    'members_login_events',
+    'members_email_change_events',
+    'members_status_events',
+    'members_paid_subscription_events',
+    'members_subscribe_events'
+];
+
+// NOTE: exposing only tables which are going to be included in a "default" export file
+//       they should match with the data that is supported by the importer.
+//       In the future it's best to move to resource-based exports instead of database-based ones
+const TABLES_ALLOWLIST = [
     'posts',
     'posts_authors',
     'posts_meta',
@@ -48,11 +53,8 @@ const TABLES_ALLOWLIST = [
     'roles',
     'roles_users',
     'settings',
-    'snippets',
     'tags',
-    'tokens',
-    'users',
-    'webhooks'
+    'users'
 ];
 
 // NOTE: these are settings keys which should never end up in the export file
