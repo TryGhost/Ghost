@@ -374,8 +374,9 @@ module.exports = class MemberRepository {
         if (!this._stripeAPIService.configured) {
             throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
         }
+
         const member = await this._Member.findOne({
-            id: data.id
+            email: data.email
         });
 
         const subscription = await member.related('stripeSubscriptions').query({
@@ -388,22 +389,33 @@ module.exports = class MemberRepository {
             throw new Error('Subscription not found');
         }
 
-        if (data.subscription.cancel_at_period_end === undefined) {
-            throw new Error('Incorrect usage');
+        let updatedSubscription;
+        if (data.subscription.plan) {
+            updatedSubscription = await this._stripeAPIService.changeSubscriptionPlan(
+                data.subscription.subscription_id,
+                data.subscription.plan
+            );
         }
 
-        if (data.subscription.cancel_at_period_end) {
-            await this._stripeAPIService.cancelSubscriptionAtPeriodEnd(data.subscription.subscription_id);
-        } else {
-            await this._stripeAPIService.continueSubscriptionAtPeriodEnd(data.subscription.subscription_id);
+        if (data.subscription.cancel_at_period_end !== undefined) {
+            if (data.subscription.cancel_at_period_end) {
+                updatedSubscription = await this._stripeAPIService.cancelSubscriptionAtPeriodEnd(
+                    data.subscription.subscription_id,
+                    data.subscription.cancellationReason
+                );
+            } else {
+                updatedSubscription = await this._stripeAPIService.continueSubscriptionAtPeriodEnd(
+                    data.subscription.subscription_id
+                );
+            }
         }
 
-        await this._StripeCustomerSubscription.edit({
-            subscription_id: data.subscription.subscription_id,
-            cancel_at_period_end: data.subscription.cancel_at_period_end
-        }, {
-            id: subscription.id
-        });
+        if (updatedSubscription) {
+            await this.linkSubscription({
+                id: member.id,
+                subscription: updatedSubscription
+            });
+        }
     }
 
     async setComplimentarySubscription(data, options) {
