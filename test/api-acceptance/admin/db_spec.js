@@ -51,9 +51,9 @@ describe('DB API', function () {
 
         const dataKeys = Object.keys(exportedBodyLatest().db[0].data);
 
-        Object.keys(jsonResponse.db[0].data).length.should.eql(28);
-        Object.keys(jsonResponse.db[0].data).length.should.eql(dataKeys.length);
-        jsonResponse.db[0].data.should.have.only.keys(...dataKeys);
+        // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
+        //       because when `have.only.keys` fails there's no useful diff
+        Object.keys(jsonResponse.db[0].data).should.eql(dataKeys);
     });
 
     it('Can delete all content', async function () {
