@@ -91,8 +91,7 @@ const exportedBodyLegacy = () => {
     });
 };
 
-// NOTE: clone the fixture before changing in and alias to v5, v6 or whatever the newest version is
-const exportedBodyLatest = () => {
+const exportedBodyV4 = () => {
     return _.clone({
         db: [{
             meta: {
@@ -133,8 +132,31 @@ const exportedBodyLatest = () => {
     });
 };
 
+// NOTE: clone the fixture before changing in and alias to v5, v6 or whatever the newest version is
+const exportedBodyLatest = () => {
+    return _.clone({
+        db: [{
+            meta: {
+                exported_on: 1615520875631,
+                version: '4.1.2'
+            },
+            data: {
+                posts: [],
+                posts_authors: [],
+                posts_meta: [],
+                posts_tags: [],
+                roles: [],
+                roles_users: [],
+                settings: [],
+                tags: [],
+                users: []
+            }
+        }]
+    });
+};
+
 module.exports.exportedBodyLatest = exportedBodyLatest;
-module.exports.exportedBodyV4 = exportedBodyLatest;
+module.exports.exportedBodyV4 = exportedBodyV4;
 module.exports.exportedBodyV2 = exportedBodyV2;
 module.exports.exportedBodyV1 = exportedBodyV1;
 module.exports.exportedBodyLegacy = exportedBodyLegacy;

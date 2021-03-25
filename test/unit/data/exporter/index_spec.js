@@ -39,10 +39,9 @@ describe('Exporter', function () {
         });
 
         it('should try to export all the correct tables (without excluded)', function (done) {
-            // Execute
             exporter.doExport().then(function (exportData) {
-                // No tables, less the number of excluded tables
-                const expectedCallCount = schemaTables.length - exporter.BACKUP_TABLES.length;
+                // NOTE: 9 default tables
+                const expectedCallCount = 9;
 
                 should.exist(exportData);
 
@@ -60,26 +59,9 @@ describe('Exporter', function () {
                 knexMock.getCall(3).args[0].should.eql('posts_authors');
                 knexMock.getCall(4).args[0].should.eql('roles');
                 knexMock.getCall(5).args[0].should.eql('roles_users');
-                knexMock.getCall(6).args[0].should.eql('permissions');
-                knexMock.getCall(7).args[0].should.eql('permissions_users');
-                knexMock.getCall(8).args[0].should.eql('permissions_roles');
-                knexMock.getCall(9).args[0].should.eql('settings');
-                knexMock.getCall(10).args[0].should.eql('tags');
-                knexMock.getCall(11).args[0].should.eql('posts_tags');
-                knexMock.getCall(12).args[0].should.eql('invites');
-                knexMock.getCall(13).args[0].should.eql('brute');
-                knexMock.getCall(14).args[0].should.eql('integrations');
-                knexMock.getCall(15).args[0].should.eql('webhooks');
-                knexMock.getCall(16).args[0].should.eql('api_keys');
-                knexMock.getCall(17).args[0].should.eql('members');
-                knexMock.getCall(18).args[0].should.eql('labels');
-                knexMock.getCall(19).args[0].should.eql('members_labels');
-                knexMock.getCall(20).args[0].should.eql('members_stripe_customers');
-                knexMock.getCall(21).args[0].should.eql('members_stripe_customers_subscriptions');
-                knexMock.getCall(22).args[0].should.eql('actions');
-                knexMock.getCall(23).args[0].should.eql('emails');
-                knexMock.getCall(24).args[0].should.eql('tokens');
-                knexMock.getCall(25).args[0].should.eql('snippets');
+                knexMock.getCall(6).args[0].should.eql('settings');
+                knexMock.getCall(7).args[0].should.eql('tags');
+                knexMock.getCall(8).args[0].should.eql('posts_tags');
 
                 done();
             }).catch(done);
@@ -87,8 +69,10 @@ describe('Exporter', function () {
 
         it('should try to export all the correct tables with extra tables', function (done) {
             const include = ['mobiledoc_revisions', 'email_recipients'];
+
             exporter.doExport({include}).then(function (exportData) {
-                const expectedCallCount = schemaTables.length + include.length - exporter.BACKUP_TABLES.length;
+                // NOTE: 9 default tables + 2 includes
+                const expectedCallCount = 11;
 
                 should.exist(exportData);
 
@@ -107,28 +91,11 @@ describe('Exporter', function () {
                 knexMock.getCall(3).args[0].should.eql('posts_authors');
                 knexMock.getCall(4).args[0].should.eql('roles');
                 knexMock.getCall(5).args[0].should.eql('roles_users');
-                knexMock.getCall(6).args[0].should.eql('permissions');
-                knexMock.getCall(7).args[0].should.eql('permissions_users');
-                knexMock.getCall(8).args[0].should.eql('permissions_roles');
-                knexMock.getCall(9).args[0].should.eql('settings');
-                knexMock.getCall(10).args[0].should.eql('tags');
-                knexMock.getCall(11).args[0].should.eql('posts_tags');
-                knexMock.getCall(12).args[0].should.eql('invites');
-                knexMock.getCall(13).args[0].should.eql('brute');
-                knexMock.getCall(14).args[0].should.eql('integrations');
-                knexMock.getCall(15).args[0].should.eql('webhooks');
-                knexMock.getCall(16).args[0].should.eql('api_keys');
-                knexMock.getCall(17).args[0].should.eql('mobiledoc_revisions');
-                knexMock.getCall(18).args[0].should.eql('members');
-                knexMock.getCall(19).args[0].should.eql('labels');
-                knexMock.getCall(20).args[0].should.eql('members_labels');
-                knexMock.getCall(21).args[0].should.eql('members_stripe_customers');
-                knexMock.getCall(22).args[0].should.eql('members_stripe_customers_subscriptions');
-                knexMock.getCall(23).args[0].should.eql('actions');
-                knexMock.getCall(24).args[0].should.eql('emails');
-                knexMock.getCall(25).args[0].should.eql('email_recipients');
-                knexMock.getCall(26).args[0].should.eql('tokens');
-                knexMock.getCall(27).args[0].should.eql('snippets');
+                knexMock.getCall(6).args[0].should.eql('settings');
+                knexMock.getCall(7).args[0].should.eql('tags');
+                knexMock.getCall(8).args[0].should.eql('posts_tags');
+                knexMock.getCall(9).args[0].should.eql('mobiledoc_revisions');
+                knexMock.getCall(10).args[0].should.eql('email_recipients');
 
                 done();
             }).catch(done);
