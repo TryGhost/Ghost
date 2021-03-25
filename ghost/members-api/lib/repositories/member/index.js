@@ -370,6 +370,55 @@ module.exports = class MemberRepository {
         }
     }
 
+    async getSubscription(data, options) {
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot get Stripe Subscription with no Stripe Connection');
+        }
+
+        const member = await this._Member.findOne({
+            email: data.email
+        });
+
+        const subscription = await member.related('stripeSubscriptions').query({
+            where: {
+                subscription_id: data.subscription.subscription_id
+            }
+        }).fetchOne(options);
+
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
+
+        return subscription.toJSON();
+    }
+
+    async cancelSubscription(data, options) {
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
+        }
+
+        const member = await this._Member.findOne({
+            email: data.email
+        });
+
+        const subscription = await member.related('stripeSubscriptions').query({
+            where: {
+                subscription_id: data.subscription.subscription_id
+            }
+        }).fetchOne(options);
+
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
+
+        const updatedSubscription = await this._stripeAPIService.cancelSubscription(data.subscription.subscription_id);
+
+        await this.linkSubscription({
+            id: member.id,
+            subscription: updatedSubscription
+        }, options);
+    }
+
     async updateSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
             throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
@@ -414,7 +463,7 @@ module.exports = class MemberRepository {
             await this.linkSubscription({
                 id: member.id,
                 subscription: updatedSubscription
-            });
+            }, options);
         }
     }
 
