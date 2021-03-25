@@ -49,11 +49,11 @@ describe('DB API', function () {
         should.exist(jsonResponse.db);
         jsonResponse.db.should.have.length(1);
 
-        const dataKeys = Object.keys(exportedBodyLatest().db[0].data);
+        const dataKeys = Object.keys(exportedBodyLatest().db[0].data).sort();
 
         // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion
         //       because when `have.only.keys` fails there's no useful diff
-        Object.keys(jsonResponse.db[0].data).should.eql(dataKeys);
+        Object.keys(jsonResponse.db[0].data).sort().should.be.eql(dataKeys);
     });
 
     it('Can delete all content', async function () {
