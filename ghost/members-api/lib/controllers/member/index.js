@@ -24,20 +24,21 @@ module.exports = class MemberController {
             const identity = req.body.identity;
             const subscriptionId = req.params.id;
             const cancelAtPeriodEnd = req.body.cancel_at_period_end;
+            const smartCancel = req.body.smart_cancel;
             const cancellationReason = req.body.cancellation_reason;
             const planName = req.body.planName;
 
-            if (cancelAtPeriodEnd === undefined && planName === undefined) {
+            if (cancelAtPeriodEnd === undefined && planName === undefined && smartCancel === undefined) {
                 throw new errors.BadRequestError({
                     message: 'Updating subscription failed!',
-                    help: 'Request should contain "cancel_at_period_end" or "planName" field.'
+                    help: 'Request should contain "cancel_at_period_end" or "planName" or "smart_cancel" field.'
                 });
             }
 
-            if ((cancelAtPeriodEnd === undefined || cancelAtPeriodEnd === false) && cancellationReason !== undefined) {
+            if ((cancelAtPeriodEnd === undefined || cancelAtPeriodEnd === false) && !smartCancel && cancellationReason !== undefined) {
                 throw new errors.BadRequestError({
                     message: 'Updating subscription failed!',
-                    help: '"cancellation_reason" field requires the "cancel_at_period_end" field to be true.'
+                    help: '"cancellation_reason" field requires the "cancel_at_period_end" or "smart_cancel" field to be true.'
                 });
             }
 
@@ -92,6 +93,32 @@ module.exports = class MemberController {
                         cancellationReason
                     }
                 });
+            } else if (smartCancel) {
+                const currentSubscription = await this._memberRepository.getSubscription({
+                    email,
+                    subscription: {
+                        subscription_id: subscriptionId
+                    }
+                });
+
+                if (['past_due', 'unpaid'].includes(currentSubscription.status)) {
+                    await this._memberRepository.cancelSubscription({
+                        email,
+                        subscription: {
+                            subscription_id: subscriptionId,
+                            cancellationReason
+                        }
+                    });
+                } else {
+                    await this._memberRepository.updateSubscription({
+                        email,
+                        subscription: {
+                            subscription_id: subscriptionId,
+                            cancel_at_period_end: true,
+                            cancellationReason
+                        }
+                    });
+                }
             }
 
             res.writeHead(204);
