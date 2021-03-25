@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing mocha --reporter dot './test/**/*.test.js'",
     "lint": "eslint '**/*.js'",
     "posttest": "yarn lint"
   },
