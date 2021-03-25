@@ -11,6 +11,7 @@ const GeolocationSerice = require('./lib/services/geolocation');
 const MemberRepository = require('./lib/repositories/member');
 const EventRepository = require('./lib/repositories/event');
 const RouterController = require('./lib/controllers/router');
+const MemberController = require('./lib/controllers/member');
 
 module.exports = function MembersApi({
     tokenConfig: {
@@ -111,6 +112,13 @@ module.exports = function MembersApi({
         getText,
         getHTML,
         getSubject
+    });
+
+    const memberController = new MemberController({
+        memberRepository,
+        stripeAPIService,
+        stripePlansService,
+        tokenService
     });
 
     const routerController = new RouterController({
@@ -282,7 +290,7 @@ module.exports = function MembersApi({
         ),
         updateSubscription: Router({mergeParams: true}).use(
             body.json(),
-            (req, res) => routerController.updateSubscription(req, res)
+            (req, res) => memberController.updateSubscription(req, res)
         ),
         handleStripeWebhook: Router()
     };
