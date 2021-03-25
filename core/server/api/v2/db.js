@@ -17,7 +17,7 @@ module.exports = {
         validation: {
             options: {
                 include: {
-                    values: exporter.EXCLUDED_TABLES
+                    values: exporter.BACKUP_TABLES
                 }
             }
         },
@@ -36,7 +36,7 @@ module.exports = {
         validation: {
             options: {
                 include: {
-                    values: exporter.EXCLUDED_TABLES
+                    values: exporter.BACKUP_TABLES
                 }
             }
         },
@@ -63,7 +63,7 @@ module.exports = {
         validation: {
             options: {
                 include: {
-                    values: exporter.EXCLUDED_TABLES
+                    values: exporter.BACKUP_TABLES
                 }
             }
         },

@@ -8,7 +8,9 @@ const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const models = require('../../models');
-const EXCLUDED_TABLES = [
+
+// NOTE: these tables can be optionally included to have full db-like export
+const BACKUP_TABLES = [
     'sessions',
     'mobiledoc_revisions',
     'email_batches',
@@ -20,7 +22,41 @@ const EXCLUDED_TABLES = [
     'members_paid_subscription_events',
     'members_subscribe_events'
 ];
-const EXCLUDED_SETTING_KEYS = [
+
+// NOTE: exposing only tables which are going to be included in a "default" export file
+const TABLES_ALLOWLIST = [
+    'actions',
+    'api_keys',
+    'brute',
+    'emails',
+    'integrations',
+    'invites',
+    'labels',
+    'members',
+    'members_labels',
+    'members_stripe_customers',
+    'members_stripe_customers_subscriptions',
+    'migrations',
+    'migrations_lock',
+    'permissions',
+    'permissions_roles',
+    'permissions_users',
+    'posts',
+    'posts_authors',
+    'posts_meta',
+    'posts_tags',
+    'roles',
+    'roles_users',
+    'settings',
+    'snippets',
+    'tags',
+    'tokens',
+    'users',
+    'webhooks'
+];
+
+// NOTE: these are settings keys which should never end up in the export file
+const SETTING_KEYS_BLOCKLIST = [
     'stripe_connect_publishable_key',
     'stripe_connect_secret_key',
     'stripe_connect_account_id',
@@ -58,7 +94,7 @@ const exportFileName = async function exportFileName(options) {
 };
 
 const exportTable = function exportTable(tableName, options) {
-    if (EXCLUDED_TABLES.indexOf(tableName) < 0 ||
+    if (TABLES_ALLOWLIST.includes(tableName) ||
         (options.include && _.isArray(options.include) && options.include.indexOf(tableName) !== -1)) {
         const query = (options.transacting || db.knex)(tableName);
 
@@ -68,7 +104,7 @@ const exportTable = function exportTable(tableName, options) {
 
 const getSettingsTableData = function getSettingsTableData(settingsData) {
     return settingsData && settingsData.filter((setting) => {
-        return !EXCLUDED_SETTING_KEYS.includes(setting.key);
+        return !SETTING_KEYS_BLOCKLIST.includes(setting.key);
     });
 };
 
@@ -112,5 +148,5 @@ const doExport = async function doExport(options) {
 module.exports = {
     doExport: doExport,
     fileName: exportFileName,
-    EXCLUDED_TABLES: EXCLUDED_TABLES
+    BACKUP_TABLES: BACKUP_TABLES
 };
