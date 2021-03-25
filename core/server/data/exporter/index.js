@@ -57,15 +57,6 @@ const exportFileName = async function exportFileName(options) {
     }
 };
 
-const getVersionAndTables = function getVersionAndTables(options) {
-    const props = {
-        version: ghostVersion.full,
-        tables: commands.getTables(options.transacting)
-    };
-
-    return Promise.props(props);
-};
-
 const exportTable = function exportTable(tableName, options) {
     if (EXCLUDED_TABLES.indexOf(tableName) < 0 ||
         (options.include && _.isArray(options.include) && options.include.indexOf(tableName) !== -1)) {
@@ -84,14 +75,8 @@ const getSettingsTableData = function getSettingsTableData(settingsData) {
 const doExport = async function doExport(options) {
     options = options || {include: []};
 
-    let tables;
-    let version;
-
     try {
-        const result = await getVersionAndTables(options);
-
-        tables = result.tables;
-        version = result.version;
+        const tables = await commands.getTables(options.transacting);
 
         const tableData = await Promise.mapSeries(tables, function (tableName) {
             return exportTable(tableName, options);
@@ -100,14 +85,14 @@ const doExport = async function doExport(options) {
         const exportData = {
             meta: {
                 exported_on: new Date().getTime(),
-                version: version
+                version: ghostVersion.full
             },
             data: {
                 // Filled below
             }
         };
 
-        _.each(tables, function (name, i) {
+        tables.forEach((name, i) => {
             if (name === 'settings') {
                 exportData.data[name] = getSettingsTableData(tableData[i]);
             } else {
