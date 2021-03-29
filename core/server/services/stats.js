@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 const Promise = require('bluebird');
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
-
+//sonarcloud
 class Stats {
     /**
      * @param {Object} config
