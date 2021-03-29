@@ -365,27 +365,6 @@ module.exports = {
         }
     },
 
-    stats: {
-        options: [
-            'days'
-        ],
-        permissions: {
-            method: 'browse'
-        },
-        validation: {
-            options: {
-                days: {
-                    values: ['30', '90', '365', 'all-time']
-                }
-            }
-        },
-        async query(frame) {
-            const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);
-
-            return await membersService.stats.fetch(days);
-        }
-    },
-
     memberStats: {
         permissions: {
             method: 'browse'

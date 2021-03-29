@@ -376,9 +376,9 @@ describe('Members API', function () {
         importedMember2.subscriptions.length.should.equal(0);
     });
 
-    async function fetchStats() {
+    it('Can fetch member counts stats', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery('members/stats/'))
+            .get(localUtils.API.getApiQuery('members/stats/count/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -386,85 +386,14 @@ describe('Members API', function () {
 
         should.not.exist(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
-
         should.exist(jsonResponse);
         should.exist(jsonResponse.total);
-        should.exist(jsonResponse.total_in_range);
-        should.exist(jsonResponse.total_on_date);
-        should.exist(jsonResponse.new_today);
-
-        // 5 from fixtures, 2 from above posts, 2 from above import
-        jsonResponse.total.should.equal(9);
-
-        return jsonResponse;
-    }
-
-    function parseTotalOnDate(jsonResponse) {
-        // replicate default look back date of 30 days
-        const days = 30;
-        // grab the timezone as mocked above
-        const siteTimezone = settingsCache.get('timezone');
-
-        // rebuild a valid response object such that works on any date-time...
-        // get the start date
-        let currentRangeDate = moment.tz(siteTimezone).subtract(days - 1, 'days');
-        // get the end date but ignore today because we want to set that value ourselves
-        let endDate = moment.tz(siteTimezone).subtract(1, 'hour');
-
-        const output = {};
-        let dateStr;
-
-        // set user count to be 1 for all dates before today to match date as outlined
-        // for the user in valid-members-import.csv who was imported with a start date of '91
-        while (currentRangeDate.isBefore(endDate)) {
-            dateStr = currentRangeDate.format('YYYY-MM-DD');
-            output[dateStr] = 1;
-
-            currentRangeDate = currentRangeDate.add(1, 'day');
-        }
-
-        // format the date for the end date (right now)
-        dateStr = currentRangeDate.format('YYYY-MM-DD');
-
-        // set the end date to match the number of members added from fixtures posts and imports
-        // 5 from fixtures, 2 from above posts, 2 from above import
-        output[dateStr] = 9;
-
-        // deep equality check that the objects match...
-        jsonResponse.total_on_date.should.eql(output);
-    }
-
-    it('Can fetch stats', function () {
-        return fetchStats();
-    });
-
-    it('Can render stats in GMT -X timezones', async function () {
-        // stub the method
-        const stub = sinon.stub(settingsCache, 'get');
-
-        // this was just a GMT -X Timezone picked at random for the test below...
-        stub
-            .withArgs('timezone')
-            .returns('America/Caracas');
-
-        const jsonResponse = await fetchStats();
-        parseTotalOnDate(jsonResponse);
-        // restore the stub so we can use it in other tests
-        stub.restore();
-    });
-
-    it('Can render stats in GMT +X timezones', async function () {
-        // stub the method
-        const stub = sinon.stub(settingsCache, 'get');
-
-        // the tester that wrote this lives in Adelaide so shoutout to this (random) timezone!
-        stub
-            .withArgs('timezone')
-            .returns('Australia/Adelaide');
-
-        const jsonResponse = await fetchStats();
-        parseTotalOnDate(jsonResponse);
-        // restore the stub so we can use it in other tests
-        stub.restore();
+        should.exist(jsonResponse.resource);
+        should.exist(jsonResponse.data);
+        const data = jsonResponse.data;
+        // 2 from above posts, 2 from above import
+        data[0].free.should.equal(4);
+        data[0].paid.should.equal(0);
+        data[0].comped.should.equal(0);
     });
 });
