@@ -95,7 +95,6 @@ module.exports = function apiRoutes() {
     router.get('/members/stats/mrr', mw.authAdminApi, http(apiCanary.members.mrrStats));
     router.get('/members/stats/subscribers', mw.authAdminApi, http(apiCanary.members.subscriberStats));
     router.get('/members/stats/gross_volume', mw.authAdminApi, http(apiCanary.members.grossVolumeStats));
-    router.get('/members/stats', mw.authAdminApi, http(apiCanary.members.stats));
 
     router.get('/members/events', mw.authAdminApi, http(apiCanary.members.activityFeed));
 
