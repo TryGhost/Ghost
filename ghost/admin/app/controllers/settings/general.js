@@ -32,10 +32,6 @@ export default Controller.extend({
     _scratchFacebook: null,
     _scratchTwitter: null,
 
-    init() {
-        this._super(...arguments);
-    },
-
     privateRSSUrl: computed('config.blogUrl', 'settings.publicHash', function () {
         let blogUrl = this.get('config.blogUrl');
         let publicHash = this.get('settings.publicHash');

@@ -13,10 +13,6 @@ export default ModalComponent.extend({
     confirm() {},
     label: computed.and('model', 'model.label'),
 
-    init() {
-        this._super(...arguments);
-    },
-
     willDestroyElement() {
         this._super(...arguments);
         this.label.errors.clear();
