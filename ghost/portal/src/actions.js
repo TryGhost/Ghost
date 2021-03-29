@@ -162,9 +162,9 @@ async function updateSubscription({data, state, api}) {
 
 async function cancelSubscription({data, state, api}) {
     try {
-        const {subscriptionId, cancelAtPeriodEnd, cancellationReason} = data;
+        const {subscriptionId, cancellationReason} = data;
         await api.member.updateSubscription({
-            subscriptionId, cancelAtPeriodEnd, cancellationReason
+            subscriptionId, smartCancel: true, cancellationReason
         });
         const member = await api.member.sessionData();
         const action = 'cancelSubscription:success';
@@ -178,6 +178,30 @@ async function cancelSubscription({data, state, api}) {
             action: 'cancelSubscription:failed',
             popupNotification: createPopupNotification({
                 type: 'cancelSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to cancel subscription, please try again'
+            })
+        };
+    }
+}
+
+async function continueSubscription({data, state, api}) {
+    try {
+        const {subscriptionId} = data;
+        await api.member.updateSubscription({
+            subscriptionId, cancelAtPeriodEnd: false
+        });
+        const member = await api.member.sessionData();
+        const action = 'continueSubscription:success';
+        return {
+            action,
+            page: 'accountHome',
+            member: member
+        };
+    } catch (e) {
+        return {
+            action: 'continueSubscription:failed',
+            popupNotification: createPopupNotification({
+                type: 'continueSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: 'Failed to cancel subscription, please try again'
             })
         };
@@ -364,6 +388,7 @@ const Actions = {
     signup,
     updateSubscription,
     cancelSubscription,
+    continueSubscription,
     updateNewsletter,
     updateProfile,
     refreshMemberData,
