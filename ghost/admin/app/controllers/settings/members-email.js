@@ -30,10 +30,6 @@ export default Controller.extend({
 
     yamlAccept: null,
 
-    init() {
-        this._super(...arguments);
-    },
-
     fromAddress: computed(function () {
         return this.parseEmailAddress(this.settings.get('membersFromAddress'));
     }),

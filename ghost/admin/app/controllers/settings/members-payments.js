@@ -27,10 +27,6 @@ export default Controller.extend({
 
     yamlAccept: null,
 
-    init() {
-        this._super(...arguments);
-    },
-
     blogDomain: computed('config.blogDomain', function () {
         let blogDomain = this.config.blogDomain || '';
         const domainExp = blogDomain.replace('https://', '').replace('http://', '').match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
