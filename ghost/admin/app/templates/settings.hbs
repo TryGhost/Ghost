@@ -8,14 +8,14 @@
     <section class="view-container">
         <div class="gh-setting-header gh-first-header">Website</div>
         <div class="gh-settings-main-grid">
-            <LinkTo class="gh-setting-group" @route="settings.general" data-test-nav="settings">
+            <LinkTo class="gh-setting-group" @route="settings.general" data-test-nav="general">
                 <span class="color-1">{{svg-jar "settings"}}</span>
                 <div>
                     <h4>General</h4>
                     <p>Basic publication details and site metadata</p>
                 </div>
             </LinkTo>
-            <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="design">
+            <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="branding">
                 <span class="color-3">{{svg-jar "paint-palette"}}</span>
                 <div>
                     <h4>Branding</h4>
@@ -29,7 +29,7 @@
                     <p>Install and update themes</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="theme">
+            <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="navigation">
                 <span class="color-4">{{svg-jar "compass-2"}}</span>
                 <div>
                     <h4>Navigation</h4>
@@ -48,14 +48,14 @@
                 </div>
             </button>
             {{#if this.session.user.isOwner}}
-            <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="design">
+            <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="members-email">
                 <span class="color-4">{{svg-jar "email-stroke"}}</span>
                 <div>
                     <h4>Email newsletter</h4>
                     <p>Customise emails and set email addresses</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="design">
+            <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="members-payments">
                 <span class="color-1">{{svg-jar "piggy-bank"}}</span>
                 <div>
                     <h4>Payments</h4>
@@ -83,7 +83,7 @@
             </LinkTo>
         </div>
     </section>
-</section> 
+</section>
 
 {{#if this.showPortalSettings}}
     <GhFullscreenModal @modal="portal-settings"
