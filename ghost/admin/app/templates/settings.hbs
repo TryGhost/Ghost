@@ -40,6 +40,15 @@
 
         <div class="gh-setting-header">Members</div>
         <div class="gh-settings-main-grid">
+            {{#if (enable-developer-experiments)}}
+                <LinkTo class="gh-setting-group" @route="settings.members-access" data-test-nav="members-access">
+                    <span class="color-3">{{svg-jar "portal-logo-stroke"}}</span>
+                    <div>
+                        <h4>Access</h4>
+                        <p>Configure members usage and default access levels</p>
+                    </div>
+                </LinkTo>
+            {{/if}}
             <button type="button" class="gh-setting-group portal" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
                 <span class="color-3">{{svg-jar "portal-logo-stroke"}}</span>
                 <div>
