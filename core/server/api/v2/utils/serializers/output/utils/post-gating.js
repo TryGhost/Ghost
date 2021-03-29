@@ -1,12 +1,21 @@
 const membersService = require('../../../../../../services/members');
-const labs = require('../../../../../../services/labs');
+const htmlToPlaintext = require('../../../../../../../shared/html-to-plaintext');
 
 const forPost = (attrs, frame) => {
-    if (labs.isSet('members')) {
-        const memberHasAccess = membersService.contentGating.checkPostAccess(attrs, frame.original.context.member);
+    const memberHasAccess = membersService.contentGating.checkPostAccess(attrs, frame.original.context.member);
 
-        if (!memberHasAccess) {
-            ['plaintext', 'html'].forEach((field) => {
+    if (!memberHasAccess) {
+        const paywallIndex = (attrs.html || '').indexOf('<!--members-only-->');
+
+        if (paywallIndex !== -1) {
+            attrs.html = attrs.html.slice(0, paywallIndex);
+            attrs.plaintext = htmlToPlaintext(attrs.html);
+
+            if (!attrs.custom_excerpt && attrs.excerpt) {
+                attrs.excerpt = attrs.plaintext.substring(0, 500);
+            }
+        } else {
+            ['plaintext', 'html', 'excerpt'].forEach((field) => {
                 if (attrs[field] !== undefined) {
                     attrs[field] = '';
                 }

@@ -899,16 +899,16 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta property="og:description" content="site description" \/>/);
                 rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
                 rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.not.match(/<meta property="og:image"/);
+                rendered.string.should.match(/<meta property="og:image"/);
                 rendered.string.should.match(/<meta property="article:tag" content="tag1" \/>/);
                 rendered.string.should.match(/<meta property="article:tag" content="tag2" \/>/);
                 rendered.string.should.match(/<meta property="article:tag" content="tag3" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary" \/>/);
+                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
                 rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
                 rendered.string.should.match(/<meta name="twitter:description" content="site description" \/>/);
                 rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.not.match(/<meta name="twitter:image"/);
+                rendered.string.should.match(/<meta name="twitter:image"/);
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
@@ -1548,6 +1548,138 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.not.match(/<link rel="amphtml"/);
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('accent_color', function () {
+        it('includes style tag when set', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;}</style>');
+                done();
+            }).catch(done);
+        });
+
+        it('does not include style tag when not set', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: null
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.containEql('--ghost-accent-color');
+                done();
+            }).catch(done);
+        });
+
+        it('attaches style tag to existing script/style tag', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/[^\s]<style>:root/);
+                done();
+            }).catch(done);
+        });
+
+        it('includes style tag on templates with no context', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/amp/',
+                    context: null,
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;}</style>');
+                done();
+            }).catch(done);
+        });
+
+        it('does not include style tag in AMP context', function (done) {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456'
+                }
+            };
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post', 'amp'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.not.containEql('--ghost-accent-color');
                 done();
             }).catch(done);
         });

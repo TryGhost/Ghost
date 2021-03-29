@@ -202,7 +202,7 @@ class PostsImporter extends BaseImporter {
             // CASE 1: you are importing old editor posts
             // CASE 2: you are importing Koenig Beta posts
             // CASE 3: you are importing Koenig 2.0 posts
-            if (model.mobiledoc || (model.mobiledoc && model.html && model.html.match(/^<div class="kg-card-markdown">/))) {
+            if (model.mobiledoc) {
                 let mobiledoc;
 
                 try {
@@ -216,7 +216,18 @@ class PostsImporter extends BaseImporter {
                     mobiledoc = mobiledocLib.blankDocument;
                 }
 
+                // ghostVersion was introduced in 4.0. Any earlier content won't have it set
+                // so we should set it to "3.0" to match rendering output
+                if (!mobiledoc.ghostVersion) {
+                    mobiledoc.ghostVersion = '3.0';
+                }
+
                 mobiledoc.cards.forEach((card) => {
+                    // Ghost 1.0 markdown card = 'card-markdown', Ghost 2.0 markdown card = 'markdown'
+                    if (card[0] === 'card-markdown') {
+                        card[0] = 'markdown';
+                    }
+
                     // Koenig Beta = imageStyle, Ghost 2.0 Koenig = cardWidth
                     if (card[0] === 'image' && card[1].imageStyle) {
                         card[1].cardWidth = card[1].imageStyle;

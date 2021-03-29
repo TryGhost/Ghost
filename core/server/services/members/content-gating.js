@@ -23,12 +23,7 @@ function checkPostAccess(post, member) {
         return PERMIT_ACCESS;
     }
 
-    const activeSubscriptions = member.stripe && member.stripe.subscriptions && member.stripe.subscriptions.filter((subscription) => {
-        return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
-    });
-    const memberHasPlan = activeSubscriptions && activeSubscriptions.length;
-
-    if (post.visibility === 'paid' && memberHasPlan) {
+    if (post.visibility === 'paid' && (member.status === 'paid' || member.status === 'comped' || member.comped)) {
         return PERMIT_ACCESS;
     }
 

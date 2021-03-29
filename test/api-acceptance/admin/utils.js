@@ -28,11 +28,12 @@ const expectedProperties = {
 
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobildoc
         .without('html', 'plaintext')
         .without('locale')
         .without('page')
-        // v2 API doesn't return new type field
+        // API should not return type field
         .without('type')
         // deprecated
         .without('author_id', 'author')
@@ -44,11 +45,11 @@ const expectedProperties = {
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')
         )
-        .concat('send_email_when_published')
     ,
 
     page: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobildoc
         .without('html', 'plaintext')
         .without('locale')

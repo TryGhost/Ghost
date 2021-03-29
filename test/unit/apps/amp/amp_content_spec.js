@@ -130,7 +130,7 @@ describe('{{amp_content}} helper', function () {
                 .reply(200, GIF1x1);
 
             const testData = {
-                html: '<img src="/content/images/2019/06/test.jpg" alt="The Ghost Logo" />',
+                html: '<img src="https://ghost.org/blog/content/images/2019/06/test.jpg" alt="The Ghost Logo" />',
                 updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                 id: 1
             };
@@ -189,7 +189,7 @@ describe('{{amp_content}} helper', function () {
 
         it('removes inline style', function (done) {
             const testData = {
-                html: '<amp-img src="/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%"; !important' +
+                html: '<amp-img src="https://ghost.org/blog/content/images/2016/08/aileen_small.jpg" style="border-radius: 50%"; !important' +
                           'border="0" align="center" font="Arial" width="50" height="50" layout="responsive"></amp-img>' +
                           '<p align="right" style="color: red; !important" bgcolor="white">Hello</p>' +
                           '<table style="width:100%"><tr bgcolor="tomato" colspan="2"><th font="Arial">Name:</th> ' +
@@ -260,7 +260,7 @@ describe('{{amp_content}} helper', function () {
 
         it('can handle not existing img src by returning not Amperized HTML', function (done) {
             const testData = {
-                html: '<img src="/content/images/does-not-exist.jpg" alt="The Ghost Logo" />',
+                html: '<img src="https://ghost.org/blog/content/images/does-not-exist.jpg" alt="The Ghost Logo" />',
                 updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                 id: 1
             };

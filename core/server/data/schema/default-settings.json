@@ -65,7 +65,7 @@
             "type": "string"
         },
         "description": {
-            "defaultValue": "The professional publishing platform",
+            "defaultValue": "Thoughts, stories and ideas",
             "validations": {
                 "isLength": {
                     "max": 200
@@ -75,11 +75,11 @@
             "type": "string"
         },
         "logo": {
-            "defaultValue": "https://static.ghost.org/v1.0.0/images/ghost-logo.svg",
+            "defaultValue": "",
             "type": "string"
         },
         "cover_image": {
-            "defaultValue": "https://static.ghost.org/v3.0.0/images/publication-cover.png",
+            "defaultValue": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
             "type": "string"
         },
         "icon": {
@@ -87,8 +87,11 @@
             "type": "string"
         },
         "accent_color": {
-            "defaultValue": "",
+            "defaultValue": "#FF1A75",
             "flags": "PUBLIC",
+            "validations": {
+                "isEmpty": false
+            },
             "type": "string"
         },
         "lang": {
@@ -119,15 +122,15 @@
             "type": "string"
         },
         "twitter": {
-            "defaultValue": "ghost",
+            "defaultValue": "@ghost",
             "type": "string"
         },
         "navigation": {
-            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"},{\"label\":\"Tag\", \"url\":\"/tag/getting-started/\"}, {\"label\":\"Author\", \"url\":\"/author/ghost/\"},{\"label\":\"Help\", \"url\":\"https://ghost.org/docs/\"}]",
+            "defaultValue": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"},{\"label\":\"Collection\",\"url\":\"/tag/getting-started/\"},{\"label\":\"Author\",\"url\":\"/author/ghost/\"},{\"label\":\"Portal\",\"url\":\"/portal/\"}]",
             "type": "array"
         },
         "secondary_navigation": {
-            "defaultValue": "[]",
+            "defaultValue": "[{\"label\":\"Data & privacy\",\"url\":\"/privacy/\"},{\"label\":\"Contact\",\"url\":\"/contact/\"},{\"label\":\"Contribute →\",\"url\":\"/contribute/\"}]",
             "type": "array"
         },
         "meta_title": {
@@ -394,22 +397,24 @@
             "type": "string"
         }
     },
-    "labs": {
-        "labs": {
-            "defaultValue": "{}",
-            "type": "object"
-        }
-    },
     "slack": {
-        "slack": {
-            "defaultValue": "[{\"url\":\"\", \"username\":\"Ghost\"}]",
-            "type": "array"
+        "slack_url": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "slack_username": {
+            "defaultValue": "Ghost",
+            "type": "string"
         }
     },
     "unsplash": {
         "unsplash": {
-            "defaultValue": "{\"isActive\": true}",
-            "type": "object"
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "views": {

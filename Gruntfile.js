@@ -5,9 +5,6 @@
 // **Usage instructions:** can be found in the [Custom Tasks](#custom%20tasks) section or by running `grunt --help`.
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
-
-require('./core/server/overrides');
-
 const config = require('./core/shared/config');
 const urlService = require('./core/frontend/services/url');
 const _ = require('lodash');
@@ -136,6 +133,7 @@ const configureGrunt = function (grunt) {
                 reporter: grunt.option('reporter') || 'spec',
                 timeout: '60000',
                 require: ['core/server/overrides'],
+                flags: ['--trace-warnings'],
                 exit: true
             },
 
@@ -214,10 +212,10 @@ const configureGrunt = function (grunt) {
             lint: {
                 command: 'yarn lint'
             },
-            master: {
+            main: {
                 command: function () {
                     const upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
-                    grunt.log.writeln('Pulling down the latest master from ' + upstream);
+                    grunt.log.writeln('Pulling down the latest main from ' + upstream);
                     return `
                         git submodule sync && \
                         git submodule update
@@ -227,22 +225,22 @@ const configureGrunt = function (grunt) {
                             exit 1
                         fi
 
-                        git checkout master
+                        git checkout main
 
                         if git config remote.${upstream}.url > /dev/null; then
-                            git pull ${upstream} master
+                            git pull ${upstream} main
                         else
-                            git pull origin master
+                            git pull origin main
                         fi
 
                         yarn && \
                         git submodule foreach "
-                            git checkout master
+                            git checkout main
 
                             if git config remote.${upstream}.url > /dev/null; then
-                                git pull ${upstream} master
+                                git pull ${upstream} main
                             else
-                                git pull origin master
+                                git pull origin main
                             fi
                         "
                     `;
@@ -571,16 +569,18 @@ const configureGrunt = function (grunt) {
         }
     });
 
-    // ### grunt master
-    // This command helps you to bring your working directory back to current master.
-    // It will also update your dependencies to master and shows you if your database is healthy.
+    // ### grunt main
+    // This command helps you to bring your working directory back to current main.
+    // It will also update your dependencies to main and shows you if your database is healthy.
     // It won't build the client!
     //
-    // `grunt master` [`upstream` is the default upstream to pull from]
-    // `grunt master --upstream=parent`
-    grunt.registerTask('master', 'Update your current working folder to latest master.',
-        ['shell:master', 'subgrunt:init']
+    // `grunt main` [`upstream` is the default upstream to pull from]
+    // `grunt main --upstream=parent`
+    grunt.registerTask('main', 'Update your current working folder to latest main.',
+        ['shell:main', 'subgrunt:init']
     );
+
+    grunt.registerTask('master', 'Backwards compatible alias for `grunt main`.', 'main');
 
     // ### Release
     // Run `grunt release` to create a Ghost release zip file.

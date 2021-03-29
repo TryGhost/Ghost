@@ -12,6 +12,11 @@ const errorHandler = (error, workerMeta) => {
     logging.error(error);
     sentry.captureException(error);
 };
-const jobManager = new JobManager({logging, errorHandler});
+
+const workerMessageHandler = ({name, message}) => {
+    logging.info(`Worker for job ${name} sent a message: ${message}`);
+};
+
+const jobManager = new JobManager({logging, errorHandler, workerMessageHandler});
 
 module.exports = jobManager;

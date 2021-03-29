@@ -1,15 +1,20 @@
 const urlUtils = require('../../../../../../../shared/url-utils');
 
 const handleImageUrl = (imageUrl) => {
-    const blogDomain = urlUtils.getSiteUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    const imagePathRe = new RegExp(`^${blogDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
+    try {
+        const imageURL = new URL(imageUrl, urlUtils.getSiteUrl());
+        const siteURL = new URL(urlUtils.getSiteUrl());
+        const subdir = siteURL.pathname.replace(/\/$/, '');
+        const imagePathRe = new RegExp(`${subdir}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
 
-    if (imagePathRe.test(imageUrlAbsolute)) {
-        return urlUtils.absoluteToRelative(imageUrl);
+        if (imagePathRe.test(imageURL.pathname)) {
+            return urlUtils.relativeToAbsolute(imageUrl);
+        }
+
+        return imageUrl;
+    } catch (e) {
+        return imageUrl;
     }
-
-    return imageUrl;
 };
 
 const forPost = (attrs, options) => {
@@ -53,8 +58,8 @@ const forTag = (attrs) => {
 };
 
 const forSetting = (attrs) => {
-    if (attrs.value) {
-        attrs.value = handleImageUrl(attrs.value);
+    if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image'].includes(attrs.key)) {
+        attrs.value = urlUtils.relativeToAbsolute(attrs.value);
     }
 
     return attrs;

@@ -3,6 +3,60 @@ const url = require('./utils/url');
 const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
 const settingsCache = require('../../../../../services/settings/cache');
 
+const DEPRECATED_SETTINGS = [
+    'bulk_email_settings',
+    'slack',
+    'labs'
+];
+
+const deprecatedSupportedSettingsOneToManyMap = {
+    slack: [{
+        from: '[0].url',
+        to: {
+            key: 'slack_url',
+            group: 'slack',
+            type: 'string'
+        }
+    }, {
+        from: '[0].username',
+        to: {
+            key: 'slack_username',
+            group: 'slack',
+            type: 'string'
+        }
+    }]
+};
+
+const getMappedDeprecatedSettings = (settings) => {
+    const mappedSettings = [];
+
+    for (const key in deprecatedSupportedSettingsOneToManyMap) {
+        const deprecatedSetting = settings.find(setting => setting.key === key);
+
+        if (deprecatedSetting) {
+            let deprecatedSettingValue;
+
+            try {
+                deprecatedSettingValue = JSON.parse(deprecatedSetting.value);
+            } catch (err) {
+                // ignore the value if it's invalid
+            }
+
+            if (deprecatedSettingValue) {
+                deprecatedSupportedSettingsOneToManyMap[key].forEach(({from, to}) => {
+                    const value = _.get(deprecatedSettingValue, from);
+                    mappedSettings.push({
+                        key: to.key,
+                        value: value
+                    });
+                });
+            }
+        }
+    }
+
+    return mappedSettings;
+};
+
 module.exports = {
     browse(apiConfig, frame) {
         if (frame.options.type) {
@@ -32,6 +86,10 @@ module.exports = {
         if (frame.options.key === 'default_locale') {
             frame.options.key = 'lang';
         }
+
+        if (frame.options.key === 'locale') {
+            frame.options.key = 'lang';
+        }
     },
 
     edit(apiConfig, frame) {
@@ -48,8 +106,14 @@ module.exports = {
             return !settingFlagsArr.includes('RO');
         });
 
-        frame.data.settings = frame.data.settings.filter((setting) => {
-            return setting.key !== 'bulk_email_settings';
+        const mappedDeprecatedSettings = getMappedDeprecatedSettings(frame.data.settings);
+        mappedDeprecatedSettings.forEach((setting) => {
+            // NOTE: give priority for non-deprecated setting values if they exist
+            const nonDeprecatedExists = frame.data.settings.find(s => s.key === setting.key);
+
+            if (!nonDeprecatedExists) {
+                frame.data.settings.push(setting);
+            }
         });
 
         frame.data.settings.forEach((setting) => {
@@ -91,9 +155,21 @@ module.exports = {
                 setting.key = 'lang';
             }
 
-            if (['cover_image', 'icon', 'logo', 'portal_button_icon'].includes(setting.key)) {
-                setting = url.forSetting(setting);
+            if (setting.key === 'locale') {
+                setting.key = 'lang';
             }
+
+            setting = url.forSetting(setting);
+        });
+
+        // Ignore all deprecated settings
+        frame.data.settings = frame.data.settings.filter((setting) => {
+            // NOTE: ignore old unsplash object notation
+            if (setting.key === 'unsplash' && _.isObject(setting.value)) {
+                return true;
+            }
+
+            return DEPRECATED_SETTINGS.includes(setting.key) === false;
         });
     }
 };

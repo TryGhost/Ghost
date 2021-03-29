@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const Analytics = require('analytics-node');
 const config = require('../shared/config');
+const logging = require('../shared/logging');
+const sentry = require('../shared/sentry');
 const {events} = require('./lib/common');
 
 module.exports.init = function () {
@@ -19,7 +21,10 @@ module.exports.init = function () {
         },
         {
             event: 'theme.uploaded',
-            name: 'Theme Uploaded'
+            name: 'Theme Uploaded',
+            // {keyOnSuppliedEventData: keyOnTrackedEventData}
+            // - used to extract specific properties from event data and give them meaningful names
+            data: {name: 'name'}
         },
         {
             event: 'integration.added',
@@ -28,8 +33,16 @@ module.exports.init = function () {
     ];
 
     _.each(toTrack, function (track) {
-        events.on(track.event, function () {
-            analytics.track(_.extend(trackDefaults, {event: prefix + track.name}));
+        events.on(track.event, function (eventData = {}) {
+            // extract desired properties from eventData and rename keys if necessary
+            const data = _.mapValues(track.data || {}, v => eventData[v]);
+
+            try {
+                analytics.track(_.extend(trackDefaults, data, {event: prefix + track.name}));
+            } catch (err) {
+                logging.error(err);
+                sentry.captureException(err);
+            }
         });
     });
 };

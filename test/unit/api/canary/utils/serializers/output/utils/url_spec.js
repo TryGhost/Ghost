@@ -9,9 +9,6 @@ describe('Unit: canary/utils/serializers/output/utils/url', function () {
     beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
         sinon.stub(urlUtils, 'urlFor').returns('urlFor');
-        sinon.stub(urlUtils, 'relativeToAbsolute').returns('relativeToAbsolute');
-        sinon.stub(urlUtils, 'htmlRelativeToAbsolute').returns({html: sinon.stub()});
-        sinon.stub(urlUtils, 'mobiledocRelativeToAbsolute').returns({});
     });
 
     afterEach(function () {
@@ -46,19 +43,6 @@ describe('Unit: canary/utils/serializers/output/utils/url', function () {
             urlUtil.forPost(post.id, post, {options: {}});
 
             post.hasOwnProperty('url').should.be.true();
-
-            // feature_image, og_image, twitter_image, canonical_url
-            urlUtils.relativeToAbsolute.callCount.should.eql(4);
-
-            // mobiledoc
-            urlUtils.mobiledocRelativeToAbsolute.callCount.should.eql(1);
-
-            // html, codeinjection_head, codeinjection_foot
-            urlUtils.htmlRelativeToAbsolute.callCount.should.eql(3);
-            urlUtils.htmlRelativeToAbsolute.getCall(0).args.should.eql([
-                'html',
-                'getUrlByResourceId'
-            ]);
 
             urlService.getUrlByResourceId.callCount.should.eql(1);
             urlService.getUrlByResourceId.getCall(0).args.should.eql(['id1', {absolute: true}]);

@@ -13,6 +13,7 @@ const expectedProperties = {
 
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return html
         .without('mobiledoc', 'plaintext')
         // v2 doesn't return author_id OR author
@@ -36,7 +37,6 @@ const expectedProperties = {
             ..._(schema.posts_meta).keys().without('post_id', 'id')
         )
         .concat('reading_time')
-        .concat('send_email_when_published')
     ,
     author: _(schema.users)
         .keys()

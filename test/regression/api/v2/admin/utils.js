@@ -18,8 +18,11 @@ const expectedProperties = {
     invites: ['invites', 'meta'],
     themes: ['themes'],
 
+    site: ['title', 'url', 'version'],
+
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobiledoc
         .without('html', 'plaintext')
         .without('visibility')

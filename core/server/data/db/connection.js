@@ -1,7 +1,5 @@
 const knex = require('knex');
 const config = require('../../../shared/config');
-const logging = require('../../../shared/logging');
-const errors = require('@tryghost/errors');
 let knexInstance;
 
 // @TODO:
@@ -12,19 +10,37 @@ function configure(dbConfig) {
     const client = dbConfig.client;
 
     if (client === 'sqlite3') {
+        // Backwards compatibility with old knex behaviour
         dbConfig.useNullAsDefault = Object.prototype.hasOwnProperty.call(dbConfig, 'useNullAsDefault') ? dbConfig.useNullAsDefault : true;
+
+        // Enables foreign key checks and delete on cascade
+        dbConfig.pool = {
+            afterCreate(conn, cb) {
+                conn.run('PRAGMA foreign_keys = ON', cb);
+            }
+        };
+
+        // Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
+        // https://github.com/mapbox/node-sqlite3/issues/1386
+        process.env.BTHREADS_BACKEND = 'child_process';
     }
 
     if (client === 'mysql') {
         dbConfig.connection.timezone = 'UTC';
         dbConfig.connection.charset = 'utf8mb4';
 
-        dbConfig.connection.loggingHook = function loggingHook(err) {
-            logging.error(new errors.InternalServerError({
-                code: 'MYSQL_LOGGING_HOOK',
-                err: err
-            }));
-        };
+        // NOTE: disabled so that worker processes can use the db without
+        // requiring logging and causing file desriptor leaks.
+        // See https://github.com/TryGhost/Ghost/issues/12496
+        //
+        // const logging = require('../../../shared/logging');
+        // const errors = require('@tryghost/errors');
+        // dbConfig.connection.loggingHook = function loggingHook(err) {
+        //     logging.error(new errors.InternalServerError({
+        //         code: 'MYSQL_LOGGING_HOOK',
+        //         err: err
+        //     }));
+        // };
     }
 
     return dbConfig;

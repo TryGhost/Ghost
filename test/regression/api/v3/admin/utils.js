@@ -19,8 +19,11 @@ const expectedProperties = {
     themes: ['themes'],
     members: ['members', 'meta'],
 
+    site: ['title', 'description', 'logo', 'accent_color', 'url', 'version'],
+
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobiledoc
         .without('html', 'plaintext')
         .without('locale')
@@ -61,6 +64,7 @@ const expectedProperties = {
         .concat('avatar_image')
         .concat('comped')
         .concat('labels')
+        .without('status')
     ,
     member_signin_url: ['member_id', 'url'],
     role: _(schema.roles)

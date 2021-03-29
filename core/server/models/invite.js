@@ -5,6 +5,7 @@ const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
 const security = require('@tryghost/security');
 const settingsCache = require('../services/settings/cache');
+const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 
 let Invite;
@@ -43,7 +44,7 @@ Invite = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.add.call(this, data, options);
     },
 
-    permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    async permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
         const isAdd = (action === 'add');
 
         if (!isAdd) {
@@ -59,7 +60,7 @@ Invite = ghostBookshelf.Model.extend({
         // CASE: make sure user is allowed to add a user with this role
         return ghostBookshelf.model('Role')
             .findOne({id: unsafeAttrs.role_id})
-            .then((roleToInvite) => {
+            .then(async (roleToInvite) => {
                 if (!roleToInvite) {
                     return Promise.reject(new errors.NotFoundError({
                         message: i18n.t('errors.api.invites.roleNotFound')
@@ -70,6 +71,12 @@ Invite = ghostBookshelf.Model.extend({
                     return Promise.reject(new errors.NoPermissionError({
                         message: i18n.t('errors.api.invites.notAllowedToInviteOwner')
                     }));
+                }
+
+                if (isAdd && limitService.isLimited('staff') && roleToInvite.get('name') !== 'Contributor') {
+                    // CASE: if your site is limited to a certain number of staff users
+                    // Inviting a new user requires we check we won't go over the limit
+                    await limitService.errorIfWouldGoOverLimit('staff');
                 }
 
                 let allowed = [];

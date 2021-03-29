@@ -62,8 +62,6 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
 const membersService = {
     contentGating: require('./content-gating'),
 
-    checkHostLimit: require('./limit'),
-
     config: membersConfig,
 
     get api() {
@@ -72,6 +70,9 @@ const membersService = {
 
             membersApi.bus.on('error', function (err) {
                 logging.error(err);
+                if (err.fatal) {
+                    process.exit(1);
+                }
             });
         }
         return membersApi;

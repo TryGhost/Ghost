@@ -130,7 +130,7 @@
     }
 
     a {
-        color: #1292EE;
+        color: var(--ghost-accent-color, #1292EE);
         text-decoration-skip-ink: auto;
     }
 
@@ -278,7 +278,7 @@
         top: 0;
         bottom: 0;
         width: 0.3rem;
-        background: #000;
+        background: var(--ghost-accent-color, #1292EE);
     }
 
     .post-content :not(.kg-card):not([id]) + .kg-card {
@@ -309,7 +309,7 @@
         font-weight: 400;
         font-size: 0.9em;
         line-height: 1em;
-        color: #dc0050;
+        color: #15171a;
         background: #f0f6f9;
         border-radius: 0.25em;
     }
@@ -565,6 +565,8 @@
             font-size: 1.7rem;
         }
     }
+
+    {{amp_style}}
     </style>
 
     {{!-- AMP Boilerplate --}}

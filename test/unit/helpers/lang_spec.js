@@ -6,10 +6,12 @@ const proxy = require('../../../core/frontend/services/proxy');
 describe('{{lang}} helper', function () {
     beforeEach(function () {
         settingsCache.set('lang', {value: 'en'});
+        proxy.themeI18n._loadLocale();
     });
 
     afterEach(function () {
         settingsCache.shutdown();
+        proxy.themeI18n._loadLocale();
     });
 
     it('returns correct language tag', function () {

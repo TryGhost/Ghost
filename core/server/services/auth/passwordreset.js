@@ -138,11 +138,13 @@ async function sendResetNotification(data, mailAPI) {
     const adminUrl = urlUtils.urlFor('admin', true);
     const resetToken = security.url.encodeBase64(data.resetToken);
     const resetUrl = urlUtils.urlJoin(adminUrl, 'reset', resetToken, '/');
+    const emailData = {
+        resetUrl: resetUrl,
+        recipientEmail: data.email
+    };
 
     const content = await mail.utils.generateContent({
-        data: {
-            resetUrl
-        },
+        data: emailData,
         template: 'reset-password'
     });
 

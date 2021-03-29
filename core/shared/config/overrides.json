@@ -61,10 +61,14 @@
     },
     "api": {
         "versions": {
-            "all": ["v2", "v3", "canary"],
+            "all": ["v2", "v3", "v4", "canary"],
             "canary": {
                 "admin": "canary/admin",
                 "content": "canary/content"
+            },
+            "v4": {
+                "admin": "v4/admin",
+                "content": "v4/content"
             },
             "v3": {
                 "admin": "v3/admin",

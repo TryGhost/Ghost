@@ -19,6 +19,7 @@ const defaultSettingsKeys = [
     'facebook',
     'twitter',
     'lang',
+    'locale',
     'timezone',
     'codeinjection_head',
     'codeinjection_foot',
@@ -79,9 +80,12 @@ describe('Settings Content API', function () {
             });
         });
 
-        // settings.should.have.properties(publicProperties);
-        // Object.keys(settings).length.should.equal(22);
+        settings.should.have.properties(publicProperties);
+
+        // The length below should only change when public settings have been removed or added
+        Object.keys(settings).length.should.equal(25);
         Object.keys(settings).should.deepEqual(defaultSettingsKeys);
+
         // Verify that we are returning the defaults for each value
         _.forEach(settings, (value, settingsKey) => {
             // `url` does not come from the settings cache
@@ -90,7 +94,7 @@ describe('Settings Content API', function () {
                 return;
             }
 
-            let defaultKey = _.findKey(publicSettings, v => v === settingsKey);
+            let defaultKey = publicSettings[settingsKey];
             let defaultValue = _.find(flattenedPublicSettings, setting => setting.key === defaultKey).defaultValue;
 
             // Convert empty strings to null

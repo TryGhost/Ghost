@@ -52,7 +52,7 @@ function createSettingsInstance(config) {
             return updateEmailTemplate({url, email, siteTitle});
         },
         getSigninURL(token, type) {
-            const signinURL = new URL(getApiUrl({version: 'v3', type: 'admin'}));
+            const signinURL = new URL(getApiUrl({version: 'v4', type: 'admin'}));
             signinURL.pathname = path.join(signinURL.pathname, '/settings/members/email/');
             signinURL.searchParams.set('token', token);
             signinURL.searchParams.set('action', type);

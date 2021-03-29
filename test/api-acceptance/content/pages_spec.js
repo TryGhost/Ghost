@@ -34,9 +34,9 @@ describe('Pages Content API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.pages);
         should.exist(jsonResponse.meta);
-        jsonResponse.pages.should.have.length(1);
+        jsonResponse.pages.should.have.length(5);
 
-        res.body.pages[0].slug.should.eql(testUtils.DataGenerator.Content.posts[5].slug);
+        res.body.pages[0].slug.should.eql('about');
 
         const urlParts = url.parse(res.body.pages[0].url);
         should.exist(urlParts.protocol);

@@ -53,7 +53,7 @@ describe('UNIT: settings cache', function () {
             timezone: {value: 'PST'}
         });
 
-        let values = _.zipObject(_.values(publicSettings), _.fill(Array(_.size(publicSettings)), null));
+        let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
         values.title = 'hello world';
         values.timezone = 'PST';
 

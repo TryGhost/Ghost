@@ -1,5 +1,3 @@
-const config = require('../shared/config');
-
 /**
  * If we enable bluebird debug logs we see a huge memory usage.
  * You can reproduce by removing this line and import a big database export into Ghost.
@@ -7,24 +5,7 @@ const config = require('../shared/config');
  */
 process.env.BLUEBIRD_DEBUG = 0;
 
-/**
- * Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
- * https://github.com/mapbox/node-sqlite3/issues/1386
- */
-const isSQLite = config.get('database:client') === 'sqlite3';
-if (isSQLite) {
-    process.env.BTHREADS_BACKEND = 'child_process';
-}
-
 const moment = require('moment-timezone');
-
-/**
- * oembed-parser uses promise-wtf to extend the global Promise with .finally
- *   - require it before global Bluebird Promise override so that promise-wtf
- *     doesn't error due to Bluebird's Promise already having a .finally
- *   - https://github.com/ndaidong/promise-wtf/issues/25
- */
-const {extract, hasProvider} = require('oembed-parser'); // eslint-disable-line
 
 /**
  * force UTC

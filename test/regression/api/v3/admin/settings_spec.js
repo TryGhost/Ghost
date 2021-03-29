@@ -62,8 +62,9 @@ const defaultSettingsKeyTypes = [
     {key: 'email_track_opens', type: 'bulk_email'},
     {key: 'amp', type: 'blog'},
     {key: 'amp_gtag_id', type: 'blog'},
-    {key: 'labs', type: 'blog'},
     {key: 'slack', type: 'blog'},
+    {key: 'slack_url', type: 'blog'},
+    {key: 'slack_username', type: 'blog'},
     {key: 'unsplash', type: 'blog'},
     {key: 'shared_views', type: 'blog'},
     {key: 'active_timezone', type: 'blog'},
@@ -108,12 +109,17 @@ describe('Settings API (v3)', function () {
 
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
+
                     should.equal(settings.length, defaultSettingsKeyTypes.length);
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
                             return setting.key === defaultSetting.key && setting.type === defaultSetting.type;
                         }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
                     }
+
+                    const unsplash = settings.find(s => s.key === 'unsplash');
+                    should.exist(unsplash);
+                    unsplash.value.should.equal(JSON.stringify({isActive: true}));
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
@@ -189,7 +195,7 @@ describe('Settings API (v3)', function () {
                     settings[0].key.should.equal('active_theme');
                     settings[0].value.should.equal('casper');
                     settings[0].type.should.equal('theme');
-
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'group', 'type', 'flags', 'created_at', 'updated_at']);
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
         });
@@ -240,6 +246,48 @@ describe('Settings API (v3)', function () {
                 });
         });
 
+        it('Can read slack_url introduced in v4', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/slack_url/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+                    jsonResponse.settings[0].key.should.eql('slack_url');
+                    done();
+                });
+        });
+
+        it('Can\'t read labs dropped in v4', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/labs/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
+                });
+        });
+
         it('Can read deprecated default_locale', function (done) {
             request.get(localUtils.API.getApiQuery('settings/default_locale/'))
                 .set('Origin', config.get('url'))
@@ -265,7 +313,7 @@ describe('Settings API (v3)', function () {
                 });
         });
 
-        it('can edit deprecated default_locale setting', function () {
+        it('Can edit deprecated default_locale setting', function () {
             return request.get(localUtils.API.getApiQuery('settings/default_locale/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
@@ -378,7 +426,59 @@ describe('Settings API (v3)', function () {
                 });
         });
 
-        it('can\'t read non existent setting', function (done) {
+        it('Can read slack renamed&reformatted in v4', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/slack/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(1);
+
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    jsonResponse.settings[0].key.should.eql('slack');
+                    done();
+                });
+        });
+
+        it('Can\'t edit labs dropped in v4', function (done) {
+            const settingToChange = {
+                settings: [{key: 'labs', value: JSON.stringify({members: false})}]
+            };
+
+            request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const jsonResponse = res.body;
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    jsonResponse.settings.length.should.eql(0);
+
+                    done();
+                });
+        });
+
+        it('Can\'t read non existent setting', function (done) {
             request.get(localUtils.API.getApiQuery('settings/testsetting/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
@@ -408,44 +508,7 @@ describe('Settings API (v3)', function () {
                 });
         });
 
-        it('can toggle member setting', function () {
-            return request.get(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    const jsonResponse = res.body;
-
-                    const settingToChange = {
-                        settings: [
-                            {
-                                key: 'labs',
-                                value: '{"subscribers":false,"members":false}'
-                            }
-                        ]
-                    };
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(settingToChange)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .then(function ({body, headers}) {
-                            const putBody = body;
-                            headers['x-cache-invalidate'].should.eql('/*');
-                            should.exist(putBody);
-
-                            putBody.settings[0].key.should.eql('labs');
-                            putBody.settings[0].value.should.eql(JSON.stringify({subscribers: false, members: false}));
-                        });
-                });
-        });
-
-        it('can\'t edit permalinks', function (done) {
+        it('Can\'t edit permalinks', function (done) {
             const settingToChange = {
                 settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
             };
@@ -465,7 +528,7 @@ describe('Settings API (v3)', function () {
                 });
         });
 
-        it('can\'t edit non existent setting', function () {
+        it('Can\'t edit non existent setting', function () {
             return request.get(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
@@ -478,18 +541,15 @@ describe('Settings API (v3)', function () {
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'testvalue', value: newValue}];
 
-                    return jsonResponse;
-                })
-                .then((jsonResponse) => {
                     return request.put(localUtils.API.getApiQuery('settings/'))
                         .set('Origin', config.get('url'))
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
-                        .then(function (res) {
-                            jsonResponse = res.body;
-                            should.not.exist(res.headers['x-cache-invalidate']);
+                        .then(function ({body, headers}) {
+                            jsonResponse = body;
+                            should.not.exist(headers['x-cache-invalidate']);
                             should.exist(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
@@ -543,6 +603,85 @@ describe('Settings API (v3)', function () {
                         });
                 });
         });
+
+        it('Can edit multiple setting along with a deprecated one from v4', async function () {
+            const settingToChange = {
+                settings: [
+                    {
+                        key: 'slack',
+                        value: JSON.stringify([{
+                            url: 'https://newurl.tld/slack',
+                            username: 'New Slack Username'
+                        }])
+                    }, {
+                        key: 'unsplash',
+                        value: JSON.stringify({
+                            isActive: true
+                        })
+                    }, {
+                        key: 'title',
+                        value: 'New Value'
+                    }
+                ]
+            };
+
+            const {body, headers} = await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const putBody = body;
+            headers['x-cache-invalidate'].should.eql('/*');
+            should.exist(putBody);
+
+            putBody.settings.length.should.equal(3);
+
+            putBody.settings[0].key.should.eql('unsplash');
+            should.equal(putBody.settings[0].value, JSON.stringify({
+                isActive: true
+            }));
+
+            putBody.settings[1].key.should.eql('title');
+            should.equal(putBody.settings[1].value, 'New Value');
+
+            putBody.settings[2].key.should.eql('slack');
+            should.equal(putBody.settings[2].value, JSON.stringify([{
+                url: 'https://newurl.tld/slack',
+                username: 'New Slack Username'
+            }]));
+
+            localUtils.API.checkResponse(putBody, 'settings');
+        });
+
+        it('Can edit a setting introduced in v4', async function () {
+            const settingToChange = {
+                settings: [
+                    {
+                        key: 'slack_username',
+                        value: 'can edit me'
+                    }
+                ]
+            };
+
+            const {body, headers} = await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const putBody = body;
+            headers['x-cache-invalidate'].should.eql('/*');
+            should.exist(putBody);
+
+            putBody.settings.length.should.equal(1);
+
+            localUtils.API.checkResponse(putBody, 'settings');
+            putBody.settings[0].key.should.eql('slack_username');
+            putBody.settings[0].value.should.eql('can edit me');
+        });
     });
 
     describe('As Admin', function () {
@@ -564,31 +703,6 @@ describe('Settings API (v3)', function () {
 
                     // by default we login with the owner
                     return localUtils.doAuth(request);
-                });
-        });
-
-        it('cannot toggle member setting', function (done) {
-            const settingToChange = {
-                settings: [
-                    {
-                        key: 'labs',
-                        value: '{"subscribers":false,"members":true}'
-                    }
-                ]
-            };
-
-            request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
                 });
         });
     });
@@ -626,7 +740,7 @@ describe('Settings API (v3)', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .then(function (res) {
                     let jsonResponse = res.body;
-                    const newValue = 'new value';
+
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];

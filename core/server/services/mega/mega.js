@@ -9,6 +9,7 @@ const {events, i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../settings/cache');
 const membersService = require('../members');
+const limitService = require('../limits');
 const bulkEmailService = require('../bulk-email');
 const jobsService = require('../jobs');
 const db = require('../../data/db');
@@ -37,6 +38,12 @@ const getReplyToAddress = () => {
     return (replyAddressOption === 'support') ? supportAddress : fromAddress;
 };
 
+/**
+ *
+ * @param {Object} postModel - post model instance
+ * @param {Object} options
+ * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
+ */
 const getEmailData = async (postModel, options) => {
     const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, options);
 
@@ -49,8 +56,14 @@ const getEmailData = async (postModel, options) => {
     };
 };
 
-const sendTestEmail = async (postModel, toEmails) => {
-    const emailData = await getEmailData(postModel);
+/**
+ *
+ * @param {Object} postModel - post model instance
+ * @param {[string]} toEmails - member email addresses to send email to
+ * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
+ */
+const sendTestEmail = async (postModel, toEmails, apiVersion) => {
+    const emailData = await getEmailData(postModel, {apiVersion});
     emailData.subject = `[Test] ${emailData.subject}`;
 
     // fetch any matching members so that replacements use expected values
@@ -88,22 +101,25 @@ const sendTestEmail = async (postModel, toEmails) => {
  * record per post
  *
  * @param {object} postModel Post Model Object
+ * @param {object} options
+ * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  */
 
 const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-    const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true', limit: 1});
+    const filterOptions = Object.assign({}, knexOptions, {limit: 1});
 
     const emailRecipientFilter = postModel.get('email_recipient_filter');
 
     switch (emailRecipientFilter) {
     case 'paid':
-        filterOptions.paid = true;
+        filterOptions.filter = 'subscribed:true+status:-free';
         break;
     case 'free':
-        filterOptions.paid = false;
+        filterOptions.filter = 'subscribed:true+status:free';
         break;
     case 'all':
+        filterOptions.filter = 'subscribed:true';
         break;
     case 'none':
         throw new Error('Cannot sent email to "none" email_recipient_filter');
@@ -127,7 +143,7 @@ const addEmail = async (postModel, options) => {
     if (!existing) {
         // get email contents and perform replacements using no member data so
         // we have a decent snapshot of email content for later display
-        const emailData = await getEmailData(postModel);
+        const emailData = await getEmailData(postModel, options);
 
         return models.Email.add({
             post_id: postId,
@@ -238,7 +254,9 @@ async function sendEmailJob({emailModel, options}) {
     try {
         // Check host limit for allowed member count and throw error if over limit
         // - do this even if it's a retry so that there's no way around the limit
-        await membersService.checkHostLimit();
+        if (limitService.isLimited('members')) {
+            await limitService.errorIfIsOverLimit('members');
+        }
 
         // Create email batch and recipient rows unless this is a retry and they already exist
         const existingBatchCount = await emailModel.related('emailBatches').count('id');
@@ -288,18 +306,19 @@ async function getEmailMemberRows({emailModel, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
     // TODO: this will clobber a user-assigned filter if/when we allow emails to be sent to filtered member lists
-    const filterOptions = Object.assign({}, knexOptions, {filter: 'subscribed:true'});
+    const filterOptions = Object.assign({}, knexOptions);
 
     const recipientFilter = emailModel.get('recipient_filter');
 
     switch (recipientFilter) {
     case 'paid':
-        filterOptions.paid = true;
+        filterOptions.filter = 'subscribed:true+status:-free';
         break;
     case 'free':
-        filterOptions.paid = false;
+        filterOptions.filter = 'subscribed:true+status:free';
         break;
     case 'all':
+        filterOptions.filter = 'subscribed:true';
         break;
     default:
         throw new Error(`Unknown recipient_filter ${recipientFilter}`);
@@ -392,3 +411,7 @@ module.exports = {
     sendTestEmail,
     handleUnsubscribeRequest
 };
+
+/**
+ * @typedef {'v2' | 'v3' | 'v4' | 'canary' } ValidAPIVersion
+ */

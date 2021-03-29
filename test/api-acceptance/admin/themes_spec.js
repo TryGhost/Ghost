@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const supertest = require('supertest');
+const nock = require('nock');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
@@ -36,7 +37,7 @@ describe('Themes API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(5);
+        jsonResponse.themes.length.should.eql(6);
 
         localUtils.API.checkResponse(jsonResponse.themes[0], 'theme');
         jsonResponse.themes[0].name.should.eql('broken-theme');
@@ -54,14 +55,19 @@ describe('Themes API', function () {
         jsonResponse.themes[2].active.should.be.false();
 
         localUtils.API.checkResponse(jsonResponse.themes[3], 'theme');
-        jsonResponse.themes[3].name.should.eql('test-theme');
+        jsonResponse.themes[3].name.should.eql('price-data-test-theme');
         jsonResponse.themes[3].package.should.be.an.Object().with.properties('name', 'version');
         jsonResponse.themes[3].active.should.be.false();
 
         localUtils.API.checkResponse(jsonResponse.themes[4], 'theme');
-        jsonResponse.themes[4].name.should.eql('test-theme-channels');
-        jsonResponse.themes[4].package.should.be.false();
+        jsonResponse.themes[4].name.should.eql('test-theme');
+        jsonResponse.themes[4].package.should.be.an.Object().with.properties('name', 'version');
         jsonResponse.themes[4].active.should.be.false();
+
+        localUtils.API.checkResponse(jsonResponse.themes[5], 'theme');
+        jsonResponse.themes[5].name.should.eql('test-theme-channels');
+        jsonResponse.themes[5].package.should.be.false();
+        jsonResponse.themes[5].active.should.be.false();
     });
 
     it('Can download a theme', async function () {
@@ -121,7 +127,7 @@ describe('Themes API', function () {
 
         should.exist(jsonResponse3.themes);
         localUtils.API.checkResponse(jsonResponse3, 'themes');
-        jsonResponse3.themes.length.should.eql(6);
+        jsonResponse3.themes.length.should.eql(7);
 
         // Casper should be present and still active
         const casperTheme = _.find(jsonResponse3.themes, {name: 'casper'});
@@ -140,6 +146,7 @@ describe('Themes API', function () {
             'broken-theme',
             'casper',
             'casper-1.4',
+            'price-data-test-theme',
             'test-theme',
             'test-theme-channels',
             'valid'
@@ -159,11 +166,11 @@ describe('Themes API', function () {
         // ensure tmp theme folder contains one theme again now
         const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
         tmpFolderContents.forEach((theme, index) => {
-            if (theme.match(/^\./)) {
+            if (theme.match(/^\./) || theme === 'README.md') {
                 tmpFolderContents.splice(index, 1);
             }
         });
-        tmpFolderContents.should.be.an.Array().with.lengthOf(9);
+        tmpFolderContents.should.be.an.Array().with.lengthOf(10);
 
         tmpFolderContents.should.eql([
             'broken-theme',
@@ -171,6 +178,7 @@ describe('Themes API', function () {
             'casper-1.4',
             'casper.zip',
             'invalid.zip',
+            'price-data-test-theme',
             'test-theme',
             'test-theme-channels',
             'valid.zip',
@@ -187,7 +195,7 @@ describe('Themes API', function () {
 
         should.exist(jsonResponse2.themes);
         localUtils.API.checkResponse(jsonResponse2, 'themes');
-        jsonResponse2.themes.length.should.eql(5);
+        jsonResponse2.themes.length.should.eql(6);
 
         // Casper should be present and still active
         const casperTheme = _.find(jsonResponse2.themes, {name: 'casper'});
@@ -229,7 +237,7 @@ describe('Themes API', function () {
 
         should.exist(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
-        jsonResponse.themes.length.should.eql(5);
+        jsonResponse.themes.length.should.eql(6);
 
         const casperTheme = _.find(jsonResponse.themes, {name: 'casper'});
         should.exist(casperTheme);
@@ -262,5 +270,41 @@ describe('Themes API', function () {
         localUtils.API.checkResponse(testTheme2, 'theme', ['warnings', 'templates']);
         testTheme2.active.should.be.true();
         testTheme2.warnings.should.be.an.Array();
+    });
+
+    it('Can download and install a theme from GitHub', async function () {
+        const githubZipball = nock('https://api.github.com')
+            .get('/repos/tryghost/test/zipball')
+            .reply(302, null, {Location: 'https://codeload.github.com/TryGhost/Test/legacy.zip/main'});
+
+        const githubDownload = nock('https://codeload.github.com')
+            .get('/TryGhost/Test/legacy.zip/main')
+            .replyWithFile(200, path.join(__dirname, '/../../utils/fixtures/themes/warnings.zip'), {
+                'Content-Type': 'application/zip',
+                'Content-Disposition': 'attachment; filename=TryGhost-Test-3.1.2-38-gfc8cf0b.zip'
+            });
+
+        const res = await ownerRequest
+            .post(localUtils.API.getApiQuery('themes/install/?source=github&ref=TryGhost/Test'))
+            .set('Origin', config.get('url'));
+
+        githubZipball.isDone().should.be.true();
+        githubDownload.isDone().should.be.true();
+
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse.themes);
+        localUtils.API.checkResponse(jsonResponse, 'themes');
+        jsonResponse.themes.length.should.eql(1);
+        localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
+        jsonResponse.themes[0].name.should.eql('test');
+        jsonResponse.themes[0].active.should.be.false();
+        jsonResponse.themes[0].warnings.should.be.an.Array();
+
+        // Delete the theme to clean up after the test
+        await ownerRequest
+            .del(localUtils.API.getApiQuery('themes/test'))
+            .set('Origin', config.get('url'))
+            .expect(204);
     });
 });

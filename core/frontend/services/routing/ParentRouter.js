@@ -142,6 +142,7 @@ class ParentRouter extends EventEmitter {
     mountRoute(path, controller) {
         debug(this.name + ': mountRoute for', path, controller.name);
         registry.setRoute(this.name, path);
+        this._router.post(path, controller);
         this._router.get(path, controller);
     }
 

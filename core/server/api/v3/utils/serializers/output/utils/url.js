@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const urlService = require('../../../../../../../frontend/services/url');
 const urlUtils = require('../../../../../../../shared/url-utils');
 const localUtils = require('../../../index');
@@ -30,29 +29,6 @@ const forPost = (id, attrs, frame) => {
         }
     }
 
-    if (attrs.mobiledoc) {
-        attrs.mobiledoc = urlUtils.mobiledocRelativeToAbsolute(
-            attrs.mobiledoc,
-            attrs.url
-        );
-    }
-
-    ['html', 'codeinjection_head', 'codeinjection_foot'].forEach((attr) => {
-        if (attrs[attr]) {
-            attrs[attr] = urlUtils.htmlRelativeToAbsolute(
-                attrs[attr],
-                attrs.url
-            );
-        }
-    });
-
-    ['feature_image', 'canonical_url', 'posts_meta.og_image', 'posts_meta.twitter_image'].forEach((path) => {
-        const value = _.get(attrs, path);
-        if (value) {
-            _.set(attrs, path, urlUtils.relativeToAbsolute(value));
-        }
-    });
-
     if (frame.options.columns && !frame.options.columns.includes('url')) {
         delete attrs.url;
     }
@@ -65,14 +41,6 @@ const forUser = (id, attrs, options) => {
         attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
     }
 
-    if (attrs.profile_image) {
-        attrs.profile_image = urlUtils.urlFor('image', {image: attrs.profile_image}, true);
-    }
-
-    if (attrs.cover_image) {
-        attrs.cover_image = urlUtils.urlFor('image', {image: attrs.cover_image}, true);
-    }
-
     return attrs;
 };
 
@@ -81,36 +49,10 @@ const forTag = (id, attrs, options) => {
         attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
     }
 
-    if (attrs.feature_image) {
-        attrs.feature_image = urlUtils.urlFor('image', {image: attrs.feature_image}, true);
-    }
-
     return attrs;
 };
 
 const forSettings = (attrs) => {
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10106
-    // @NOTE: Admin & Content API return a different format, need to mappers
-    if (_.isArray(attrs)) {
-        attrs.forEach((obj) => {
-            if (['cover_image', 'logo', 'icon', 'portal_button_icon'].includes(obj.key) && obj.value) {
-                obj.value = urlUtils.urlFor('image', {image: obj.value}, true);
-            }
-        });
-    } else {
-        if (attrs.cover_image) {
-            attrs.cover_image = urlUtils.urlFor('image', {image: attrs.cover_image}, true);
-        }
-
-        if (attrs.logo) {
-            attrs.logo = urlUtils.urlFor('image', {image: attrs.logo}, true);
-        }
-
-        if (attrs.icon) {
-            attrs.icon = urlUtils.urlFor('image', {image: attrs.icon}, true);
-        }
-    }
-
     return attrs;
 };
 

@@ -34,7 +34,7 @@ describe('Settings API', function () {
 
         localUtils.API.checkResponse(jsonResponse, 'settings');
 
-        JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
+        JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).should.eql(true);
         JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
         should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
         should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_head'}));
@@ -93,7 +93,14 @@ describe('Settings API', function () {
                 },
                 {
                     key: 'slack',
-                    value: JSON.stringify({username: 'username'})
+                    value: JSON.stringify([{
+                        url: 'https://overrides.tld',
+                        username: 'Overrides Username'
+                    }])
+                },
+                {
+                    key: 'slack_username',
+                    value: 'New Slack Username'
                 },
                 {
                     key: 'is_private',
@@ -132,16 +139,20 @@ describe('Settings API', function () {
                     value: 'twitter description'
                 },
                 {
-                    key: 'labs',
-                    value: '{"subscribers":false,"members":true}'
-                },
-                {
                     key: 'lang',
                     value: 'ua'
                 },
                 {
+                    key: 'labs',
+                    value: JSON.stringify({members: true})
+                },
+                {
                     key: 'timezone',
                     value: 'Pacific/Auckland'
+                },
+                {
+                    key: 'unsplash',
+                    value: false
                 }
             ]
         };
@@ -160,6 +171,9 @@ describe('Settings API', function () {
         headers['x-cache-invalidate'].should.eql('/*');
         should.exist(putBody);
 
+        // NOTE: -1 for ignored labs setting
+        putBody.settings.length.should.equal(settingToChange.settings.length - 1);
+
         putBody.settings[0].key.should.eql('title');
         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
 
@@ -169,8 +183,8 @@ describe('Settings API', function () {
         putBody.settings[2].key.should.eql('navigation');
         should.equal(putBody.settings[2].value, JSON.stringify({label: 'label1'}));
 
-        putBody.settings[3].key.should.eql('slack');
-        should.equal(putBody.settings[3].value, JSON.stringify({username: 'username'}));
+        putBody.settings[3].key.should.eql('slack_username');
+        should.equal(putBody.settings[3].value, 'New Slack Username');
 
         putBody.settings[4].key.should.eql('is_private');
         should.equal(putBody.settings[4].value, false);
@@ -185,7 +199,7 @@ describe('Settings API', function () {
         should.equal(putBody.settings[6].value, 'SEO description');
 
         putBody.settings[7].key.should.eql('og_image');
-        should.equal(putBody.settings[7].value, '/content/images/2019/07/facebook.png');
+        should.equal(putBody.settings[7].value, `${config.get('url')}/content/images/2019/07/facebook.png`);
 
         putBody.settings[8].key.should.eql('og_title');
         should.equal(putBody.settings[8].value, 'facebook title');
@@ -194,7 +208,7 @@ describe('Settings API', function () {
         should.equal(putBody.settings[9].value, 'facebook description');
 
         putBody.settings[10].key.should.eql('twitter_image');
-        should.equal(putBody.settings[10].value, '/content/images/2019/07/twitter.png');
+        should.equal(putBody.settings[10].value, `${config.get('url')}/content/images/2019/07/twitter.png`);
 
         putBody.settings[11].key.should.eql('twitter_title');
         should.equal(putBody.settings[11].value, 'twitter title');
@@ -202,14 +216,20 @@ describe('Settings API', function () {
         putBody.settings[12].key.should.eql('twitter_description');
         should.equal(putBody.settings[12].value, 'twitter description');
 
-        putBody.settings[13].key.should.eql('labs');
-        should.equal(putBody.settings[13].value, '{"subscribers":false,"members":true}');
+        putBody.settings[13].key.should.eql('lang');
+        should.equal(putBody.settings[13].value, 'ua');
 
-        putBody.settings[14].key.should.eql('lang');
-        should.equal(putBody.settings[14].value, 'ua');
+        putBody.settings[14].key.should.eql('timezone');
+        should.equal(putBody.settings[14].value, 'Pacific/Auckland');
 
-        putBody.settings[15].key.should.eql('timezone');
-        should.equal(putBody.settings[15].value, 'Pacific/Auckland');
+        putBody.settings[15].key.should.eql('unsplash');
+        should.equal(putBody.settings[15].value, false);
+
+        putBody.settings[16].key.should.eql('slack');
+        should.equal(putBody.settings[16].value, JSON.stringify([{
+            url: 'https://overrides.tld',
+            username: 'New Slack Username'
+        }]));
 
         localUtils.API.checkResponse(putBody, 'settings');
     });

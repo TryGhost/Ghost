@@ -119,11 +119,11 @@ module.exports = ({result, siteUrl, membersUrl, emailRecipient}) => `
                 <td class="wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;">
                   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
                       <tr>
-                          <td align="center" style="padding-top: 20px; padding-bottom: 12px;"><img src="https://static.ghost.org/v3.0.0/images/ghost-squircle.png" width="60" height="60" style="width: 60px; height: 60px;" /></td>
+                          <td align="center" style="padding-top: 20px; padding-bottom: 12px;"><img src="https://static.ghost.org/v4.0.0/images/ghost-orb-4.png" width="60" height="60" style="width: 60px; height: 60px;" /></td>
                       </tr>
                       <tr>
                           <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;">
-                            <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 30px; margin-top: 50px; font-weight: 600; color: #15212A;">${iff(result.imported > 0, `Your member import is complete`, `Your member import was unsuccessful`)}</p>
+                            <p class="title" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 0px; margin-top: 50px; font-weight: 600; color: #15212A;">${iff(result.imported > 0, `Your member import is complete`, `Your member import was unsuccessful`)}</p>
                           </td>
                       </tr>
                     ${iff(result.imported === 0 && result.errors.length === 0, `

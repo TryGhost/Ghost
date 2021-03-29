@@ -7,6 +7,15 @@ module.exports = {
         };
     },
 
+    browse(page, apiConfig, frame) {
+        const data = {
+            emails: page.data.map(model => mapper.mapEmail(model, frame)),
+            meta: page.meta
+        };
+
+        frame.response = data;
+    },
+
     get retry() {
         return this.read;
     }

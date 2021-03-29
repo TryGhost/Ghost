@@ -1,9 +1,21 @@
 const should = require('should');
+const hbs = require('../../../core/frontend/services/themes/engine');
+const configUtils = require('../../utils/configUtils');
+const path = require('path');
 
+const runHelper = data => helpers.navigation.call({}, data);
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
 describe('{{content}} helper', function () {
+    before(function (done) {
+        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+
+        hbs.cachePartials(function () {
+            done();
+        });
+    });
+
     it('renders empty string when null', function () {
         const html = null;
         const rendered = helpers.content.call({html: html});
@@ -63,5 +75,67 @@ describe('{{content}} helper', function () {
 
         should.exist(rendered);
         rendered.string.should.equal('<p>Hello <strong>Wo</strong></p>');
+    });
+});
+
+describe('{{content}} helper with no access', function () {
+    let optionsData;
+    before(function (done) {
+        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+
+        hbs.cachePartials(function () {
+            done();
+        });
+    });
+
+    beforeEach(function () {
+        optionsData = {
+            data: {
+                site: {
+                    accent_color: '#abcdef'
+                }
+            }
+        };
+    });
+
+    it('can render default template', function () {
+        const html = '';
+        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        rendered.string.should.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('gh-post-upgrade-cta-content');
+        rendered.string.should.containEql('"background-color: #abcdef"');
+
+        should.exist(rendered);
+    });
+
+    it('outputs free content if available via paywall card', function () {
+        // html will be included when there is free content available
+        const html = 'Free content';
+        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        rendered.string.should.containEql('Free content');
+        rendered.string.should.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('gh-post-upgrade-cta-content');
+        rendered.string.should.containEql('"background-color: #abcdef"');
+    });
+});
+
+describe('{{content}} helper with custom template', function () {
+    let optionsData;
+    before(function (done) {
+        hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
+
+        hbs.cachePartials(function () {
+            done();
+        });
+    });
+
+    it('can render custom template', function () {
+        const html = 'Hello World';
+        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        rendered.string.should.not.containEql('gh-post-upgrade-cta');
+        rendered.string.should.containEql('custom-post-upgrade-cta');
+        rendered.string.should.containEql('custom-post-upgrade-cta-content');
+
+        should.exist(rendered);
     });
 });

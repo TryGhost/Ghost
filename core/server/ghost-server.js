@@ -9,22 +9,18 @@ const _ = require('lodash');
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const errors = require('@tryghost/errors');
-const {events, i18n} = require('./lib/common');
+const {i18n} = require('./lib/common');
 const logging = require('../shared/logging');
+const notify = require('./notify');
 const moment = require('moment');
-const bootstrapSocket = require('@tryghost/bootstrap-socket');
 const stoppable = require('stoppable');
 
 /**
  * ## GhostServer
  */
 class GhostServer {
-    /**
-     * @constructor
-     * @param {Object} rootApp - parent express instance
-     */
-    constructor(rootApp) {
-        this.rootApp = rootApp;
+    constructor() {
+        this.rootApp = null;
         this.httpServer = null;
 
         // Expose config module for use externally.
@@ -39,15 +35,15 @@ class GhostServer {
      *
      * ### Start
      * Starts the ghost server listening on the configured port.
-     * Alternatively you can pass in your own express instance and let Ghost
-     * start listening for you.
-     * @param  {Object} externalApp - Optional express app instance.
+     * Requires an express app to be passed in
+     *
+     * @param  {Object} rootApp - Required express app instance.
      * @return {Promise} Resolves once Ghost has started
      */
-    start(externalApp) {
+    start(rootApp) {
         debug('Starting...');
         const self = this;
-        const rootApp = externalApp ? externalApp : self.rootApp;
+        self.rootApp = rootApp;
         let socketConfig;
 
         const socketValues = {
@@ -56,7 +52,7 @@ class GhostServer {
         };
 
         return new Promise(function (resolve, reject) {
-            if (Object.prototype.hasOwnProperty.call(config.get('server'), 'socket')) {
+            if (_.has(config.get('server'), 'socket')) {
                 socketConfig = config.get('server').socket;
 
                 if (_.isString(socketConfig)) {
@@ -86,7 +82,7 @@ class GhostServer {
             self.httpServer.on('error', function (error) {
                 let ghostError;
 
-                if (error.errno === 'EADDRINUSE') {
+                if (error.code === 'EADDRINUSE') {
                     ghostError = new errors.GhostError({
                         message: i18n.t('errors.httpServer.addressInUse.error'),
                         context: i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
@@ -100,7 +96,11 @@ class GhostServer {
                     });
                 }
 
-                reject(ghostError);
+                debug('Notifying server started (error)');
+                return notify.notifyServerStarted()
+                    .finally(() => {
+                        reject(ghostError);
+                    });
             });
 
             self.httpServer.on('listening', function () {
@@ -109,41 +109,11 @@ class GhostServer {
 
                 // Debug logs output in testmode only
                 if (config.get('server:testmode')) {
-                    // This is horrible and very temporary
-                    const jobService = require('./services/jobs');
-
-                    // Output how many connections are open every 5 seconds
-                    const connectionInterval = setInterval(() => self.httpServer.getConnections(
-                        (err, connections) => logging.warn(`${connections} connections currently open`)
-                    ), 5000);
-
-                    // Output a notice when the server closes
-                    self.httpServer.on('close', function () {
-                        clearInterval(connectionInterval);
-                        logging.warn('Server has fully closed');
-                    });
-
-                    // Output job queue length every 5 seconds
-                    setInterval(() => {
-                        logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`);
-
-                        const runningScheduledjobs = Object.keys(jobService.bree.workers);
-                        if (Object.keys(jobService.bree.workers).length) {
-                            logging.warn(`${Object.keys(jobService.bree.workers).length} jobs running: ${runningScheduledjobs}`);
-                        }
-
-                        const scheduledJobs = Object.keys(jobService.bree.intervals);
-                        if (Object.keys(jobService.bree.intervals).length) {
-                            logging.warn(`${Object.keys(jobService.bree.intervals).length} scheduled jobs: ${scheduledJobs}`);
-                        }
-
-                        if (runningScheduledjobs.length === 0 && scheduledJobs.length === 0) {
-                            logging.warn('No scheduled or running jobs');
-                        }
-                    }, 5000);
+                    self._startTestMode();
                 }
 
-                return GhostServer.announceServerReadiness()
+                debug('Notifying server ready (success)');
+                return notify.notifyServerStarted()
                     .finally(() => {
                         resolve(self);
                     });
@@ -163,14 +133,18 @@ class GhostServer {
      * Stops the server, handles cleanup and exits the process = a full shutdown
      * Called on SIGINT or SIGTERM
      */
-    async shutdown() {
+    async shutdown(code = 0) {
         try {
             logging.warn(i18n.t('notices.httpServer.ghostIsShuttingDown'));
             await this.stop();
-            process.exit(0);
+            setTimeout(() => {
+                process.exit(code);
+            }, 100);
         } catch (error) {
             logging.error(error);
-            process.exit(-1);
+            setTimeout(() => {
+                process.exit(1);
+            }, 100);
         }
     }
 
@@ -182,19 +156,16 @@ class GhostServer {
      * @returns {Promise} Resolves once Ghost has stopped
      */
     async stop() {
-        // If we never fully started, there's nothing to stop
-        if (this.httpServer === null) {
-            return;
-        }
-
         try {
-            // We stop the server first so that no new long running requests or processes can be started
-            await this._stopServer();
+            // If we never fully started, there's nothing to stop
+            if (this.httpServer && this.httpServer.listening) {
+                // We stop the server first so that no new long running requests or processes can be started
+                await this._stopServer();
+            }
             // Do all of the cleanup tasks
             await this._cleanup();
         } finally {
             // Wrap up
-            events.emit('server.stop');
             this.httpServer = null;
             this._logStopMessages();
         }
@@ -208,6 +179,9 @@ class GhostServer {
         logging.info(i18n.t('notices.httpServer.cantTouchThis'));
     }
 
+    /**
+     * Add a task that should be called on shutdown
+     */
     registerCleanupTask(task) {
         this.cleanupTasks.push(task);
     }
@@ -224,7 +198,14 @@ class GhostServer {
      */
     async _stopServer() {
         return new Promise((resolve, reject) => {
-            this.httpServer.stop((err, status) => (err ? reject(err) : resolve(status)));
+            this.httpServer
+                .stop((error, status) => {
+                    if (error) {
+                        return reject(error);
+                    }
+
+                    return resolve(status);
+                });
         });
     }
 
@@ -234,15 +215,46 @@ class GhostServer {
             .all(this.cleanupTasks.map(task => task()));
     }
 
-    _onShutdownComplete() {
-        // Wrap up
-        events.emit('server.stop');
-        this.httpServer = null;
-        this._logStopMessages();
+    /**
+     * Internal Method for TestMode.
+     */
+    _startTestMode() {
+        // This is horrible and very temporary
+        const jobService = require('./services/jobs');
+
+        // Output how many connections are open every 5 seconds
+        const connectionInterval = setInterval(() => this.httpServer.getConnections(
+            (err, connections) => logging.warn(`${connections} connections currently open`)
+        ), 5000);
+
+        // Output a notice when the server closes
+        this.httpServer.on('close', function () {
+            clearInterval(connectionInterval);
+            logging.warn('Server has fully closed');
+        });
+
+        // Output job queue length every 5 seconds
+        setInterval(() => {
+            logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`);
+
+            const runningScheduledjobs = Object.keys(jobService.bree.workers);
+            if (Object.keys(jobService.bree.workers).length) {
+                logging.warn(`${Object.keys(jobService.bree.workers).length} jobs running: ${runningScheduledjobs}`);
+            }
+
+            const scheduledJobs = Object.keys(jobService.bree.intervals);
+            if (Object.keys(jobService.bree.intervals).length) {
+                logging.warn(`${Object.keys(jobService.bree.intervals).length} scheduled jobs: ${scheduledJobs}`);
+            }
+
+            if (runningScheduledjobs.length === 0 && scheduledJobs.length === 0) {
+                logging.warn('No scheduled or running jobs');
+            }
+        }, 5000);
     }
 
     /**
-     * ### Log Start Messages
+     * Log Start Messages
      */
     _logStartMessages() {
         logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
@@ -261,8 +273,7 @@ class GhostServer {
     }
 
     /**
-     * ### Log Stop Messages
-     * Private / internal API
+     * Log Stop Messages
      */
     _logStopMessages() {
         logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
@@ -281,57 +292,3 @@ class GhostServer {
 }
 
 module.exports = GhostServer;
-
-/**
- * We call announce server readiness when the server is ready
- * When the server is started, but not ready, it is only able to serve 503s
- *
- * If the server isn't able to reach readiness, announceServerReadiness is called with an error
- * A status message, any error, and debug info are all passed to managing processes via IPC and the bootstrap socket
- */
-let announceServerReadinessCalled = false;
-
-const debugInfo = {
-    versions: process.versions,
-    platform: process.platform,
-    arch: process.arch,
-    release: process.release
-};
-
-module.exports.announceServerReadiness = function (error = null) {
-    // If we already announced readiness, we should not do it again
-    if (announceServerReadinessCalled) {
-        return Promise.resolve();
-    }
-
-    // Mark this function as called
-    announceServerReadinessCalled = true;
-
-    // Build our message
-    // - if there's no error then the server is ready
-    let message = {
-        started: true,
-        debug: debugInfo
-    };
-
-    // - if there's an error then the server is not ready, include the errors
-    if (error) {
-        message.started = false;
-        message.error = error;
-    } else {
-        events.emit('server.start');
-    }
-
-    // CASE: IPC communication to the CLI for local process manager
-    if (process.send) {
-        process.send(message);
-    }
-
-    // CASE: use bootstrap socket to communicate with CLI for systemd
-    let socketAddress = config.get('bootstrap-socket');
-    if (socketAddress) {
-        return bootstrapSocket.connectAndSend(socketAddress, logging, message);
-    }
-
-    return Promise.resolve();
-};

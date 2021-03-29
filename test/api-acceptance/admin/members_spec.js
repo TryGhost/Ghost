@@ -36,8 +36,8 @@ describe('Members API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
-        jsonResponse.members.should.have.length(4);
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+        jsonResponse.members.should.have.length(5);
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
 
         testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
         jsonResponse.members[0].created_at.should.be.an.instanceof(String);
@@ -45,7 +45,7 @@ describe('Members API', function () {
         jsonResponse.meta.pagination.should.have.property('page', 1);
         jsonResponse.meta.pagination.should.have.property('limit', 15);
         jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 4);
+        jsonResponse.meta.pagination.should.have.property('total', 5);
         jsonResponse.meta.pagination.should.have.property('next', null);
         jsonResponse.meta.pagination.should.have.property('prev', null);
     });
@@ -64,7 +64,7 @@ describe('Members API', function () {
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(1);
         localUtils.API.checkResponse(jsonResponse, 'members');
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
 
@@ -83,13 +83,13 @@ describe('Members API', function () {
         jsonResponse.members.should.have.length(1);
         jsonResponse.members[0].email.should.equal('member1@test.com');
         localUtils.API.checkResponse(jsonResponse, 'members');
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
 
-    it('Can browse with paid', async function () {
+    it('Can filter by paid status', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery('members/?paid=true'))
+            .get(localUtils.API.getApiQuery('members/?filter=status:paid'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -103,7 +103,7 @@ describe('Members API', function () {
         jsonResponse.members[0].email.should.equal('paid@test.com');
         jsonResponse.members[1].email.should.equal('trialing@test.com');
         localUtils.API.checkResponse(jsonResponse, 'members');
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
 
@@ -120,7 +120,7 @@ describe('Members API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
     });
 
     it('Can read and include email_recipients', async function () {
@@ -136,7 +136,7 @@ describe('Members API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['stripe', 'email_recipients']);
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['subscriptions', 'email_recipients']);
         jsonResponse.members[0].email_recipients.length.should.equal(1);
         localUtils.API.checkResponse(jsonResponse.members[0].email_recipients[0], 'email_recipient', ['email']);
         localUtils.API.checkResponse(jsonResponse.members[0].email_recipients[0].email, 'email');
@@ -235,7 +235,7 @@ describe('Members API', function () {
         should.exist(jsonResponse2);
         should.exist(jsonResponse2.members);
         jsonResponse2.members.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse2.members[0], 'member', 'stripe');
+        localUtils.API.checkResponse(jsonResponse2.members[0], 'member', 'subscriptions');
         jsonResponse2.members[0].name.should.equal(memberChanged.name);
         jsonResponse2.members[0].email.should.equal(memberChanged.email);
         jsonResponse2.members[0].email.should.not.equal(memberToChange.email);
@@ -360,8 +360,8 @@ describe('Members API', function () {
         importedMember1.labels.length.should.equal(1);
         testUtils.API.isISO8601(importedMember1.created_at).should.be.true();
         importedMember1.comped.should.equal(false);
-        importedMember1.stripe.should.not.be.undefined();
-        importedMember1.stripe.subscriptions.length.should.equal(0);
+        importedMember1.subscriptions.should.not.be.undefined();
+        importedMember1.subscriptions.length.should.equal(0);
 
         const importedMember2 = jsonResponse2.members.find(m => m.email === 'test@example.com');
         should.exist(importedMember2);
@@ -372,8 +372,8 @@ describe('Members API', function () {
         testUtils.API.isISO8601(importedMember2.created_at).should.be.true();
         importedMember2.created_at.should.equal('1991-10-02T20:30:31.000Z');
         importedMember2.comped.should.equal(false);
-        importedMember2.stripe.should.not.be.undefined();
-        importedMember2.stripe.subscriptions.length.should.equal(0);
+        importedMember2.subscriptions.should.not.be.undefined();
+        importedMember2.subscriptions.length.should.equal(0);
     });
 
     async function fetchStats() {
@@ -393,8 +393,8 @@ describe('Members API', function () {
         should.exist(jsonResponse.total_on_date);
         should.exist(jsonResponse.new_today);
 
-        // 4 from fixtures, 2 from above posts, 2 from above import
-        jsonResponse.total.should.equal(8);
+        // 5 from fixtures, 2 from above posts, 2 from above import
+        jsonResponse.total.should.equal(9);
 
         return jsonResponse;
     }
@@ -427,8 +427,8 @@ describe('Members API', function () {
         dateStr = currentRangeDate.format('YYYY-MM-DD');
 
         // set the end date to match the number of members added from fixtures posts and imports
-        // 4 from fixtures, 2 from above posts, 2 from above import
-        output[dateStr] = 8;
+        // 5 from fixtures, 2 from above posts, 2 from above import
+        output[dateStr] = 9;
 
         // deep equality check that the objects match...
         jsonResponse.total_on_date.should.eql(output);

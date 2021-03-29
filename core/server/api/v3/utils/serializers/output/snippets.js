@@ -65,6 +65,7 @@ function serializeSnippet(snippet, options) {
     return {
         id: json.id,
         name: json.name,
+        // @ts-ignore
         mobiledoc: json.mobiledoc,
         created_at: json.created_at,
         updated_at: json.updated_at,

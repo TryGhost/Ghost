@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
 const labs = require('../../../server/services/labs');
 const activeTheme = require('./active');
+const preview = require('./preview');
 
 // ### Ensure Active Theme
 // Ensure there's a properly set & mounted active theme before attempting to serve a site request
@@ -47,14 +48,6 @@ function ensureActiveTheme(req, res, next) {
  * members settings as publicly readable
  */
 function haxGetMembersPriceData() {
-    const CURRENCY_SYMBOLS = {
-        USD: '$',
-        AUD: '$',
-        CAD: '$',
-        GBP: '£',
-        EUR: '€',
-        INR: '₹'
-    };
     const defaultPriceData = {
         monthly: 0,
         yearly: 0
@@ -67,14 +60,21 @@ function haxGetMembersPriceData() {
             const numberAmount = 0 + plan.amount;
             const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
             return Object.assign(prices, {
-                [plan.name.toLowerCase()]: dollarAmount
+                [plan.name.toLowerCase()]: {
+                    valueOf() {
+                        return dollarAmount;
+                    },
+                    amount: numberAmount,
+                    currency: plan.currency,
+                    nickname: plan.name,
+                    interval: plan.interval
+                }
             });
         }, {});
 
         priceData.currency = stripePlans[0].currency;
-        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency.toUpperCase()];
 
-        if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
+        if (Number.isInteger(priceData.monthly.valueOf()) && Number.isInteger(priceData.yearly.valueOf())) {
             return priceData;
         }
 
@@ -84,11 +84,20 @@ function haxGetMembersPriceData() {
     }
 }
 
+function getSiteData(req) {
+    let siteData = settingsCache.getPublic();
+
+    // @TODO: it would be nicer if this was proper middleware somehow...
+    siteData = preview.handle(req, siteData);
+
+    return siteData;
+}
+
 function updateGlobalTemplateOptions(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
     // @TODO: decouple theme layer from settings cache using the Content API
-    const siteData = settingsCache.getPublic();
+    const siteData = getSiteData(req);
     const labsData = labs.getAll();
 
     const themeData = {
@@ -98,16 +107,18 @@ function updateGlobalTemplateOptions(req, res, next) {
     const priceData = haxGetMembersPriceData();
 
     // @TODO: only do this if something changed?
-    // @TODO: remove blog if we drop v2 (Ghost 4.0)
-    hbs.updateTemplateOptions({
-        data: {
-            blog: siteData,
-            site: siteData,
-            labs: labsData,
-            config: themeData,
-            price: priceData
-        }
-    });
+    // @TODO: remove blog in a major where we are happy to break more themes
+    {
+        hbs.updateTemplateOptions({
+            data: {
+                blog: siteData,
+                site: siteData,
+                labs: labsData,
+                config: themeData,
+                price: priceData
+            }
+        });
+    }
 
     next();
 }
@@ -132,10 +143,12 @@ function updateLocalTemplateOptions(req, res, next) {
         name: req.member.name,
         firstname: req.member.name && req.member.name.split(' ')[0],
         avatar_image: req.member.avatar_image,
-        subscriptions: req.member.stripe.subscriptions,
-        paid: req.member.stripe.subscriptions.filter((subscription) => {
-            return ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.status);
-        }).length !== 0
+        subscriptions: req.member.subscriptions && req.member.subscriptions.map((sub) => {
+            return Object.assign({}, sub, {
+                default_payment_card_last4: sub.default_payment_card_last4 || '****'
+            });
+        }),
+        paid: req.member.status !== 'free'
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {

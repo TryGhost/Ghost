@@ -3,6 +3,8 @@
  * They contain minimum filters for public accessibility of resources.
  */
 
+// @TODO: keep this similar to ./v4.js until the v5 release
+
 module.exports = [
     {
         type: 'posts',

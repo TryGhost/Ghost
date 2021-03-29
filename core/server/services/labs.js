@@ -1,21 +1,13 @@
-const settingsCache = require('./settings/cache');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const SafeString = require('../../frontend/services/themes/engine').SafeString;
 const errors = require('@tryghost/errors');
 const {i18n} = require('../lib/common');
 const logging = require('../../shared/logging');
-const deprecatedFeatures = ['subscribers', 'publicAPI'];
 
-module.exports.getAll = () => {
-    let labs = _.cloneDeep(settingsCache.get('labs')) || {};
-    // Remove old labs flags that should always be false now
-    deprecatedFeatures.forEach((feature) => {
-        delete labs[feature];
-    });
-
-    return labs;
-};
+module.exports.getAll = () => ({
+    members: true
+});
 
 module.exports.isSet = function isSet(flag) {
     const labsConfig = module.exports.getAll();

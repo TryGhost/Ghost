@@ -1,6 +1,7 @@
 const ghostBookshelf = require('./base');
 const {i18n} = require('../lib/common');
 const errors = require('@tryghost/errors');
+const urlUtils = require('../../shared/url-utils');
 
 let Tag;
 let Tags;
@@ -13,6 +14,60 @@ Tag = ghostBookshelf.Model.extend({
         return {
             visibility: 'public'
         };
+    },
+
+    format() {
+        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
+
+        const urlTransformMap = {
+            feature_image: 'toTransformReady',
+            og_image: 'toTransformReady',
+            twitter_image: 'toTransformReady',
+            codeinjection_head: 'htmlToTransformReady',
+            codeinjection_foot: 'htmlToTransformReady',
+            canonical_url: {
+                method: 'toTransformReady',
+                options: {
+                    ignoreProtocol: false
+                }
+            }
+        };
+
+        Object.entries(urlTransformMap).forEach(([attr, transform]) => {
+            let method = transform;
+            let transformOptions = {};
+
+            if (typeof transform === 'object') {
+                method = transform.method;
+                transformOptions = transform.options || {};
+            }
+
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils[method](attrs[attr], transformOptions);
+            }
+        });
+
+        return attrs;
+    },
+
+    parse() {
+        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+
+        // transform URLs from __GHOST_URL__ to absolute
+        [
+            'feature_image',
+            'og_image',
+            'twitter_image',
+            'codeinjection_head',
+            'codeinjection_foot',
+            'canonical_url'
+        ].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+            }
+        });
+
+        return attrs;
     },
 
     emitChange: function emitChange(event, options) {

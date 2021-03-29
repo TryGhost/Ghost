@@ -9,7 +9,6 @@ module.exports = {
     read: {
         permissions: false,
         query() {
-            const billingUrl = config.get('host_settings:billing:enabled') ? config.get('host_settings:billing:url') : '';
             const response = {
                 version: ghostVersion.full,
                 environment: config.get('env'),
@@ -21,11 +20,9 @@ module.exports = {
                 enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
                 stripeDirect: config.get('stripeDirect'),
                 mailgunIsConfigured: config.get('bulkEmail') && config.get('bulkEmail').mailgun,
-                emailAnalytics: config.get('emailAnalytics')
+                emailAnalytics: config.get('emailAnalytics'),
+                hostSettings: config.get('hostSettings')
             };
-            if (billingUrl) {
-                response.billingUrl = billingUrl;
-            }
             return response;
         }
     }

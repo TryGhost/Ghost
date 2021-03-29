@@ -8,15 +8,14 @@ const ghost = testUtils.startGhost;
 
 describe('Webhooks API (v3)', function () {
     let request;
+    const API_VERSION = 'v3';
 
-    before(function () {
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'api_keys', 'webhooks');
-            });
+    before(async function () {
+        await ghost();
+
+        request = supertest.agent(config.get('url'));
+
+        await localUtils.doAuth(request, 'integrations', 'api_keys', 'webhooks');
     });
 
     it('Can create a webhook using integration', function () {
@@ -26,7 +25,7 @@ describe('Webhooks API (v3)', function () {
             integration_id: 'ignore_me',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v3'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -61,7 +60,7 @@ describe('Webhooks API (v3)', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -78,7 +77,7 @@ describe('Webhooks API (v3)', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: 'v2'
+            api_version: API_VERSION
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
@@ -91,7 +90,7 @@ describe('Webhooks API (v3)', function () {
 
     it('Fails validation when required fields are not present', function () {
         let webhookData = {
-            api_version: 'v2',
+            api_version: API_VERSION,
             integration_id: 'dummy'
         };
 

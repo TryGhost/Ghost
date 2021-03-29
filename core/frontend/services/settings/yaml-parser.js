@@ -11,7 +11,7 @@ const errors = require('@tryghost/errors');
  */
 module.exports = function parseYaml(file, fileName) {
     try {
-        const parsed = yaml.safeLoad(file);
+        const parsed = yaml.load(file);
 
         debug('YAML settings file parsed:', fileName);
 

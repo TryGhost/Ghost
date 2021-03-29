@@ -8,6 +8,7 @@ const membersService = require('../../services/members');
 
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
+const _ = require('lodash');
 
 const allowedIncludes = ['email_recipients'];
 
@@ -34,8 +35,7 @@ module.exports = {
             'order',
             'debug',
             'page',
-            'search',
-            'paid'
+            'search'
         ],
         permissions: true,
         validation: {},
@@ -185,7 +185,7 @@ module.exports = {
         permissions: true,
         async query(frame) {
             try {
-                frame.options.withRelated = ['stripeSubscriptions'];
+                frame.options.withRelated = ['stripeSubscriptions', 'labels'];
                 const member = await membersService.api.members.update(frame.data.members[0], frame.options);
 
                 const hasCompedSubscription = !!member.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
@@ -304,8 +304,7 @@ module.exports = {
         options: [
             'limit',
             'filter',
-            'search',
-            'paid'
+            'search'
         ],
         headers: {
             disposition: {
@@ -384,6 +383,112 @@ module.exports = {
             const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);
 
             return await membersService.stats.fetch(days);
+        }
+    },
+
+    memberStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const memberStats = await membersService.api.events.getStatuses();
+            let totalMembers = _.last(memberStats) ? (_.last(memberStats).paid + _.last(memberStats).free + _.last(memberStats).comped) : 0;
+
+            return {
+                resource: 'members',
+                total: totalMembers,
+                data: memberStats.map((d) => {
+                    const {paid, free, comped} = d;
+                    return {
+                        date: moment(d.date).format('YYYY-MM-DD'),
+                        paid, free, comped
+                    };
+                })
+            };
+        }
+    },
+
+    mrrStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const mrrData = await membersService.api.events.getMRR();
+            const mrrStats = Object.keys(mrrData).map((curr) => {
+                return {
+                    currency: curr,
+                    data: mrrData[curr].map((d) => {
+                        return Object.assign({}, {
+                            date: moment(d.date).format('YYYY-MM-DD'),
+                            value: d.mrr
+                        });
+                    })
+                };
+            });
+            return {
+                resource: 'mrr',
+                data: mrrStats
+            };
+        }
+    },
+    subscriberStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const statsData = await membersService.api.events.getSubscriptions();
+            const totalSubscriptions = (_.last(statsData) && _.last(statsData).subscribed) || 0;
+            statsData.forEach((d) => {
+                d.date = moment(d.date).format('YYYY-MM-DD');
+            });
+            return {
+                resource: 'subscribers',
+                total: totalSubscriptions,
+                data: statsData.map((d) => {
+                    return Object.assign({}, {
+                        date: moment(d.date).format('YYYY-MM-DD'),
+                        value: d.subscribed
+                    });
+                })
+            };
+        }
+    },
+    grossVolumeStats: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const volumeData = await membersService.api.events.getVolume();
+            const volumeStats = Object.keys(volumeData).map((curr) => {
+                return {
+                    currency: curr,
+                    data: volumeData[curr].map((d) => {
+                        return Object.assign({}, {
+                            date: moment(d.date).format('YYYY-MM-DD'),
+                            value: d.volume
+                        });
+                    })
+                };
+            });
+            return {
+                resource: 'gross-volume',
+                data: volumeStats
+            };
+        }
+    },
+
+    activityFeed: {
+        options: [
+            'limit'
+        ],
+        permissions: {
+            method: 'browse'
+        },
+        async query(frame) {
+            const events = await membersService.api.events.getEventTimeline(frame.options);
+            return {
+                events
+            };
         }
     }
 };

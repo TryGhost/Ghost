@@ -31,7 +31,7 @@ module.exports = {
                         });
                     }
 
-                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true}).then((emailContent) => {
+                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true, apiVersion: 'canary'}).then((emailContent) => {
                         const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
 
                         replacements.forEach((replacement) => {
@@ -69,7 +69,7 @@ module.exports = {
                 });
             }
             const {emails = []} = frame.data;
-            const response = await mega.mega.sendTestEmail(model, emails);
+            const response = await mega.mega.sendTestEmail(model, emails, 'canary');
             if (response && response[0] && response[0].error) {
                 throw new errors.EmailError({
                     statusCode: response[0].error.statusCode,

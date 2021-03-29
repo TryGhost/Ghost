@@ -1,3 +1,4 @@
+const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 
 const Integration = ghostBookshelf.Model.extend({
@@ -19,44 +20,6 @@ const Integration = ghostBookshelf.Model.extend({
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'integration' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
-    },
-
-    add(data, options) {
-        const addIntegration = () => {
-            return ghostBookshelf.Model.add.call(this, data, options)
-                .then(({id}) => {
-                    return this.findOne({id}, options);
-                });
-        };
-
-        if (!options.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                options.transacting = transacting;
-
-                return addIntegration();
-            });
-        }
-
-        return addIntegration();
-    },
-
-    edit(data, options) {
-        const editIntegration = () => {
-            return ghostBookshelf.Model.edit.call(this, data, options)
-                .then(({id}) => {
-                    return this.findOne({id}, options);
-                });
-        };
-
-        if (!options.transacting) {
-            return ghostBookshelf.transaction((transacting) => {
-                options.transacting = transacting;
-
-                return editIntegration();
-            });
-        }
-
-        return editIntegration();
     },
 
     onSaving(integration, attrs, options) {
@@ -98,6 +61,17 @@ const Integration = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+    async permissible(integrationModel, action) {
+        const isAdd = (action === 'add');
+
+        if (isAdd && limitService.isLimited('customIntegrations')) {
+            // CASE: if your site is limited to a certain number of custom integrations
+            // Inviting a new custom integration requires we check we won't go over the limit
+            await limitService.errorIfWouldGoOverLimit('customIntegrations');
+        }
+        return true;
     }
 });
 

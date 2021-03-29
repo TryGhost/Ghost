@@ -19,8 +19,11 @@ const expectedProperties = {
     themes: ['themes'],
     members: ['members', 'meta'],
 
+    site: ['title', 'description', 'logo', 'icon', 'accent_color', 'url', 'version'],
+
     post: _(schema.posts)
         .keys()
+        .filter(key => key.indexOf('@@') === -1)
         // by default we only return mobiledoc
         .without('html', 'plaintext')
         .without('locale')
@@ -36,7 +39,6 @@ const expectedProperties = {
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')
         )
-        .concat('send_email_when_published')
     ,
     user: _(schema.users)
         .keys()

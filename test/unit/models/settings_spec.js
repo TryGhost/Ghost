@@ -181,6 +181,30 @@ describe('Unit: models/settings', function () {
         });
     });
 
+    describe('format', function () {
+        it('transforms urls when persisting to db', function () {
+            const setting = models.Settings.forge();
+
+            let returns = setting.format({key: 'cover_image', value: 'http://127.0.0.1:2369/cover_image.png', type: 'string'});
+            should.equal(returns.value, '__GHOST_URL__/cover_image.png');
+
+            returns = setting.format({key: 'logo', value: 'http://127.0.0.1:2369/logo.png', type: 'string'});
+            should.equal(returns.value, '__GHOST_URL__/logo.png');
+
+            returns = setting.format({key: 'icon', value: 'http://127.0.0.1:2369/icon.png', type: 'string'});
+            should.equal(returns.value, '__GHOST_URL__/icon.png');
+
+            returns = setting.format({key: 'portal_button_icon', value: 'http://127.0.0.1:2369/portal_button_icon.png', type: 'string'});
+            should.equal(returns.value, '__GHOST_URL__/portal_button_icon.png');
+
+            returns = setting.format({key: 'og_image', value: 'http://127.0.0.1:2369/og_image.png', type: 'string'});
+            should.equal(returns.value, '__GHOST_URL__/og_image.png');
+
+            returns = setting.format({key: 'twitter_image', value: 'http://127.0.0.1:2369/twitter_image.png', type: 'string'});
+            should.equal(returns.value, '__GHOST_URL__/twitter_image.png');
+        });
+    });
+
     describe('parse', function () {
         it('ensure correct parsing when fetching from db', function () {
             const setting = models.Settings.forge();
@@ -205,6 +229,24 @@ describe('Unit: models/settings', function () {
 
             returns = setting.parse({key: 'something', value: 'null'});
             should.equal(returns.value, 'null');
+
+            returns = setting.parse({key: 'cover_image', value: '__GHOST_URL__/cover_image.png', type: 'string'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/cover_image.png');
+
+            returns = setting.parse({key: 'logo', value: '__GHOST_URL__/logo.png', type: 'string'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/logo.png');
+
+            returns = setting.parse({key: 'icon', value: '__GHOST_URL__/icon.png', type: 'string'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/icon.png');
+
+            returns = setting.parse({key: 'portal_button_icon', value: '__GHOST_URL__/portal_button_icon.png', type: 'string'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/portal_button_icon.png');
+
+            returns = setting.parse({key: 'og_image', value: '__GHOST_URL__/og_image.png', type: 'string'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/og_image.png');
+
+            returns = setting.parse({key: 'twitter_image', value: '__GHOST_URL__/twitter_image.png', type: 'string'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/twitter_image.png');
         });
     });
 
