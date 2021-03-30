@@ -199,7 +199,7 @@
                                         @focus-out={{action "setMetaTitle" this.metaTitleScratch}}
                                         @stopEnterKeyDownPropagation={{true}}
                                         data-test-field="meta-title" />
-                                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.metaTitleScratch 70}}</p>
+                                    <p>Recommended: <b>60</b> characters. You’ve used {{gh-count-down-characters this.metaTitleScratch 60}}</p>
                                     <GhErrorMessage @errors={{this.post.errors}} @property="meta-title" />
                                 </GhFormGroup>
 
@@ -241,7 +241,7 @@
                                                 <div class="gh-seo-search-bar">{{svg-jar "google-search"}}</div>
                                             </div>
                                             <div class="gh-seo-preview-link">{{this.config.blogDomain}} › {{#if this.ghostPaths.subdir}}{{this.ghostPaths.subdir}} › {{/if}}{{@post.slug}}</div>
-                                            <div class="gh-seo-preview-title">{{this.seoTitle}}</div>
+                                            <div class="gh-seo-preview-title">{{truncate this.seoTitle 60}}</div>
                                             <div class="gh-seo-preview-desc">{{this.seoDescription}}</div>
                                         </div>
                                     </div>

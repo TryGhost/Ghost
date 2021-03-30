@@ -234,6 +234,10 @@
     line-height: 1.35em;
 }
 
+.settings-menu-content .gh-seo-preview-title {
+    white-space: inherit;
+}
+
 .settings-menu-content .CodeMirror {
     height: 170px;
     min-height: 170px;
