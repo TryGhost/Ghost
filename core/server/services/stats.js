@@ -3,7 +3,6 @@ const moment = require('moment-timezone');
 const Promise = require('bluebird');
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
-//sonarcloud
 class Stats {
     /**
      * @param {Object} config
@@ -39,10 +38,11 @@ class Stats {
      */
     async fetch() {
         const totalMembers = await this.getTotalMembers();
+        const totalPosts = await this.getTotalMembers();
 
-        // perform final calculations in parallel
         const results = await Promise.props({
-            total: totalMembers,
+            totalMembers: totalMembers,
+            totalPosts: totalPosts
 
         });
 
