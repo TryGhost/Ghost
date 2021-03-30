@@ -50,26 +50,20 @@ export default class ModalPostPreviewSocialComponent extends Component {
     }
 
     get serpURL() {
-        const blogUrl = this.config.get('blogUrl');
-        const seoSlug = this.args.post.slug || '';
-        const canonicalUrl = this.args.post.canonicalUrl || '';
+        const urlParts = [];
 
-        if (canonicalUrl) {
-            if (canonicalUrl.match(/^\//)) {
-                return `${blogUrl}${canonicalUrl}`;
-            } else {
-                return canonicalUrl;
-            }
+        if (this.args.post.canonicalUrl) {
+            const canonicalUrl = new URL(this.args.post.canonicalUrl);
+            urlParts.push(canonicalUrl.host);
+            urlParts.push(...canonicalUrl.pathname.split('/').reject(p => !p));
         } else {
-            const seoURL = `${blogUrl}/${seoSlug}`;
-
-            // only append a slash to the URL if the slug exists
-            if (seoSlug) {
-                return `${seoURL}/`;
-            }
-
-            return seoURL;
+            const blogUrl = new URL(this.config.get('blogUrl'));
+            urlParts.push(blogUrl.host);
+            urlParts.push(...blogUrl.pathname.split('/').reject(p => !p));
+            urlParts.push(this.args.post.slug);
         }
+
+        return urlParts.join(' > ');
     }
 
     get serpDescription() {

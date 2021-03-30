@@ -217,7 +217,7 @@
             {{svg-jar "google"}}
             <div class="gh-seo-preview">
                 <div class="gh-seo-search-bar mb12">{{svg-jar "google-search"}}</div>
-                <div class="gh-seo-preview-link">{{this.config.blogDomain}} › {{#if this.ghostPaths.subdir}}{{this.ghostPaths.subdir}} › {{/if}}{{@post.slug}}</div>
+                <div class="gh-seo-preview-link">{{this.serpURL}}</div>
                 {{#if this.editingMetaTitle}}
                     <input
                         type="text"
