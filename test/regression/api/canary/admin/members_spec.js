@@ -1,4 +1,5 @@
 const path = require('path');
+const querystring = require('querystring');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -6,6 +7,7 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/server/services/labs');
+const mailService = require('../../../../../core/server/services/mail');
 
 const ghost = testUtils.startGhost;
 
@@ -28,6 +30,58 @@ describe('Members API', function () {
             .then(function () {
                 return localUtils.doAuth(request, 'members');
             });
+    });
+
+    beforeEach(function () {
+        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    it('Can add and send a signup confirmation email', async function () {
+        const member = {
+            name: 'Send Me Confirmation',
+            email: 'member_getting_confirmation@test.com',
+            subscribed: true
+        };
+
+        const queryParams = {
+            send_email: true,
+            email_type: 'signup'
+        };
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/?${querystring.stringify(queryParams)}`))
+            .send({members: [member]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.members);
+        jsonResponse.members.should.have.length(1);
+
+        jsonResponse.members[0].name.should.equal(member.name);
+        jsonResponse.members[0].email.should.equal(member.email);
+        jsonResponse.members[0].subscribed.should.equal(member.subscribed);
+        testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
+
+        should.exist(res.headers.location);
+        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('members/')}${res.body.members[0].id}/`);
+
+        mailService.GhostMailer.prototype.send.called.should.be.true();
+        mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('member_getting_confirmation@test.com');
+
+        await request
+            .delete(localUtils.API.getApiQuery(`members/${jsonResponse.members[0].id}/`))
+            .set('Origin', config.get('url'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(204);
     });
 
     it('Can order by email_open_rate', async function () {
