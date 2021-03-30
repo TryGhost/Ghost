@@ -32,18 +32,9 @@ class Stats {
         const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts');
         return this._isSQLite ? result[0].total : result[0][0].total;
     }
-    async getTotalPosts2() {
-        const knex = require('knex')({
-            client: 'sqlite3',
-            connection: {
-              filename: '../../../content/data/ghost-dev.db',
-            },
-          });
-        const result = await knex.raw('SELECT COUNT(id) AS total FROM posts');
-        return this._isSQLite ? result[0].total : result[0][0].total;
-    }
+
     /**
-     * Fetches member's signup statistics
+     * Fetches all stats
      *
      */
     async fetch() {
@@ -57,6 +48,7 @@ class Stats {
 
         return results;
     }
+    // testing the content that the data fetched from the db contains
     async testPosts() {
         const result = await this._db.knex.raw('SELECT title FROM posts');
         return result
