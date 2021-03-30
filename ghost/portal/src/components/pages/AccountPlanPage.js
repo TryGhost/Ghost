@@ -385,9 +385,8 @@ export default class AccountPlanPage extends React.Component {
         const subscription = getSubscriptionFromId({subscriptionId, member});
         const subscriptionPlan = getPlanFromSubscription({subscription});
         if (!cancelAtPeriodEnd) {
-            this.context.onAction('cancelSubscription', {
-                subscriptionId,
-                cancelAtPeriodEnd
+            this.context.onAction('continueSubscription', {
+                subscriptionId
             });
         } else {
             this.setState({

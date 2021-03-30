@@ -318,9 +318,8 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
             <CancelNotice />
             <ActionButton
                 onClick={(e) => {
-                    onAction('cancelSubscription', {
-                        subscriptionId: subscription.id,
-                        cancelAtPeriodEnd: !subscription.cancel_at_period_end
+                    onAction('continueSubscription', {
+                        subscriptionId: subscription.id
                     });
                 }}
                 isRunning={isRunning}
