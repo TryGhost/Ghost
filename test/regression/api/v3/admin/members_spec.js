@@ -589,7 +589,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Fails to import memmber with invalid values', function () {
+    it('Fails to import member with invalid values', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['new-global-label'])
