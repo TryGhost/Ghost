@@ -1,4 +1,8 @@
 # Limit Service
+This module is intended to hold **all of the logic** for testing if site:
+- would be over a given limit if they took an action (i.e. added one more thing, switched to a different limit)
+- if they are over a limit already
+- consistent error messages explaining why the limit has been reached 
 
 ## Install
 
