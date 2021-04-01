@@ -22,7 +22,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/mocha": "8.2.1",
+    "@types/mocha": "8.2.2",
     "@types/sinon": "9.0.10",
     "mocha": "8.3.2",
     "should": "13.2.3",
