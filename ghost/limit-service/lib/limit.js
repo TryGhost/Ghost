@@ -81,12 +81,20 @@ class MaxLimit extends Limit {
         return await this.currentCountQueryFn(this.db);
     }
 
-    async errorIfWouldGoOverLimit() {
+    /**
+     * Throws a HostLimitError if the configured or passed max limit is ecceded by currentCountQuery
+     *
+     * @param {Object} options
+     * @param {Number} [options.max] - overrides configured default max value to perform checks against
+     */
+    async errorIfWouldGoOverLimit({max} = {}) {
         let currentCount = await this.currentCountQuery(this.db);
-        if ((currentCount + 1) > this.max) {
+
+        if ((currentCount + 1) > (max || this.max)) {
             throw this.generateError(currentCount);
         }
     }
+
     async errorIfIsOverLimit() {
         let currentCount = await this.currentCountQuery(this.db);
         if (currentCount > this.max) {
