@@ -31,6 +31,10 @@ class MaxLimit extends Limit {
     constructor({name, config, helpLink, db}) {
         super({name, error: config.error || '', helpLink, db});
 
+        if (config.max === undefined) {
+            throw new errors.IncorrectUsageError('Attempted to setup a max limit without a limit');
+        }
+
         if (!config.currentCountQuery) {
             throw new errors.IncorrectUsageError('Attempted to setup a max limit without a current count query');
         }

@@ -6,6 +6,19 @@ const {MaxLimit} = require('../lib/limit');
 
 describe('Limit Service', function () {
     describe('Max Limit', function () {
+        it('throws if initialized without a max limit', function () {
+            const config = {};
+
+            try {
+                const limit = new MaxLimit({name: 'no limits!', config});
+                should.fail(limit, 'Should have errored');
+            } catch (err) {
+                should.exist(err);
+                should.exist(err.errorType);
+                should.equal(err.errorType, 'IncorrectUsageError');
+            }
+        });
+
         it('throws if initialized without a current count query', function () {
             const config = {};
 
