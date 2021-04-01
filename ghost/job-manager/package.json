@@ -30,7 +30,7 @@
     "@breejs/later": "4.0.2",
     "bree": "6.2.0",
     "cron-validate": "1.4.3",
-    "fastq": "1.10.1",
+    "fastq": "1.11.0",
     "p-wait-for": "3.2.0"
   }
 }
