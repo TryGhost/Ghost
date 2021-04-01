@@ -1,6 +1,7 @@
 {
   "extends": [
-    "@tryghost:quietJS"
+    "@tryghost:quietJS",
+    "@tryghost:disableTryGhostAutomerge"
   ],
   "ignoreDeps": [
     "ember-drag-drop",
