@@ -69,6 +69,35 @@ describe('Limit Service', function () {
 
                 await limit.errorIfIsOverLimit();
             });
+
+            it('ignores default configured max limit when it is passed explicitly', async function () {
+                const config = {
+                    max: 10,
+                    currentCountQuery: () => 10
+                };
+
+                const limit = new MaxLimit({name: 'maxy', config});
+
+                // should pass as the limit is exactly on the limit 10 >= 10
+                await limit.errorIfIsOverLimit({max: 10});
+
+                try {
+                    // should fail because limit is overridden to 10 < 9
+                    await limit.errorIfIsOverLimit({max: 9});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'HostLimitError');
+
+                    should.exist(err.errorDetails);
+                    should.equal(err.errorDetails.name, 'maxy');
+
+                    should.exist(err.message);
+                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                }
+            });
         });
 
         describe('Would go over limit', function () {
