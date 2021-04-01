@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@types/express": "4.17.4",
-    "@types/mocha": "8.2.1",
+    "@types/mocha": "8.2.2",
     "express": "4.17.1",
     "mocha": "8.3.2",
     "should": "13.2.3",
