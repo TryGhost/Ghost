@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "ghost-ignition": "4.6.1",
-    "lodash": "4.17.20"
+    "lodash": "4.17.21"
   }
 }
