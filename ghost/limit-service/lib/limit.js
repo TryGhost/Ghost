@@ -28,6 +28,16 @@ class Limit {
 }
 
 class MaxLimit extends Limit {
+    /**
+     *
+     * @param {Object} options
+     * @param {String} options.name - name of the limit
+     * @param {Object} options.config - limit configuration
+     * @param {Number} options.config.max - maximum limit the limit would check against
+     * @param {Function} options.config.currentCountQuery - query checking the state that would be compared against the limit
+     * @param {String} options.helpLink - URL to the resource explaining how the limit works
+     * @param {Object} options.db - instance of knex db connection that currentCountQuery can use to run state check through
+     */
     constructor({name, config, helpLink, db}) {
         super({name, error: config.error || '', helpLink, db});
 
