@@ -22,7 +22,7 @@
     "@sinonjs/fake-timers": "6.0.1",
     "date-fns": "2.17.0",
     "delay": "5.0.0",
-    "mocha": "8.3.0",
+    "mocha": "8.3.2",
     "should": "13.2.3",
     "sinon": "9.2.4"
   },
