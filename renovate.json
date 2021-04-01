@@ -1,6 +1,7 @@
 {
   "extends": [
     "@tryghost:quietJS",
+    "@tryghost:disableTryGhostAutomerge",
     "@tryghost:groupTestLint",
     "@tryghost:groupCSS",
     "@tryghost:groupBuildTools"
