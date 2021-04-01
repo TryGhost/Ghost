@@ -34,6 +34,43 @@ describe('Limit Service', function () {
             });
         });
 
+        describe('Is over limit', function () {
+            it('throws if is over the limit', async function () {
+                const config = {
+                    max: 3,
+                    currentCountQuery: () => 42
+                };
+                const limit = new MaxLimit({name: 'maxy', config});
+
+                try {
+                    await limit.errorIfIsOverLimit();
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'HostLimitError');
+
+                    should.exist(err.errorDetails);
+                    should.equal(err.errorDetails.name, 'maxy');
+
+                    should.exist(err.message);
+                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                }
+            });
+
+            it('passes if does not go over the limit', async function () {
+                const config = {
+                    max: 1,
+                    currentCountQuery: () => 1
+                };
+
+                const limit = new MaxLimit({name: 'maxy', config});
+
+                await limit.errorIfIsOverLimit();
+            });
+        });
+
         describe('Would go over limit', function () {
             it('throws if would go over the limit', async function () {
                 const config = {
