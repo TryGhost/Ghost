@@ -34,6 +34,22 @@ class Stats {
     }
 
     /**
+     * Fetches count of all authors
+     */
+    async getTotalAuthors() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM authors');
+        return this._isSQLite ? result[0].total : result[0][0].total;
+    }
+
+    /**
+     * Fetches count of all tags
+     */
+     async getTotalTags() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM tags');
+        return this._isSQLite ? result[0].total : result[0][0].total;
+    }
+
+    /**
      * Fetches all stats
      *
      */
@@ -55,6 +71,14 @@ class Stats {
     }
     async testMembers() {
         const result = await this._db.knex.raw('SELECT name FROM members');
+        return result
+    }
+    async testAuthors() {
+        const result = await this._db.knex.raw('SELECT name FROM authors');
+        return result
+    }
+    async testTags() {
+        const result = await this._db.knex.raw('SELECT name FROM tags');
         return result
     }
 
