@@ -38,7 +38,8 @@
             "sappi_red",
             "hijiki51",
             "Takeno_hito"
-        ]
+        ],
+        "invalidateToken": []
     },
     "imageOptimization": {
         "resize": false
