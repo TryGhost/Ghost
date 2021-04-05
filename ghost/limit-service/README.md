@@ -17,6 +17,7 @@ or
 Below is a sample code to wire up limit service and perform few common limit checks:
 
 ```js
+const errors = require('@tryghost/errors');
 const LimitService = require('@tryghost/limit-service');
 
 // create a LimitService instance
@@ -61,7 +62,7 @@ const db = knex({
 });
 
 // finish initializing the limits service
-limitService.loadLimits({limits, db, helpLink});
+limitService.loadLimits({limits, db, helpLink, errors});
 
 // perform limit checks
 
