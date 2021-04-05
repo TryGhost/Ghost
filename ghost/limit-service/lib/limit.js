@@ -111,6 +111,15 @@ class MaxLimit extends Limit {
 }
 
 class FlagLimit extends Limit {
+    /**
+     *
+     * @param {Object} options
+     * @param {String} options.name - name of the limit
+     * @param {Object} options.config - limit configuration
+     * @param {Number} options.config.disabled - disabled/enabled flag for the limit
+     * @param {String} options.helpLink - URL to the resource explaining how the limit works
+     * @param {Object} options.db - instance of knex db connection that currentCountQuery can use to run state check through
+     */
     constructor({name, config, helpLink, db}) {
         super({name, error: config.error || '', helpLink, db});
 
