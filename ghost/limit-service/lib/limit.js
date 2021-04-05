@@ -1,15 +1,14 @@
-const errors = require('@tryghost/errors');
-
 // run in context allows us to change the templateSettings without causing havoc
 const _ = require('lodash').runInContext();
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
 class Limit {
-    constructor({name, error, helpLink, db}) {
+    constructor({name, error, helpLink, db, errors}) {
         this.name = name;
         this.error = error;
         this.helpLink = helpLink;
         this.db = db;
+        this.errors = errors;
     }
 
     generateError() {
@@ -37,9 +36,10 @@ class MaxLimit extends Limit {
      * @param {Function} options.config.currentCountQuery - query checking the state that would be compared against the limit
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
      * @param {Object} options.db - instance of knex db connection that currentCountQuery can use to run state check through
+     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
      */
-    constructor({name, config, helpLink, db}) {
-        super({name, error: config.error || '', helpLink, db});
+    constructor({name, config, helpLink, db, errors}) {
+        super({name, error: config.error || '', helpLink, db, errors});
 
         if (config.max === undefined) {
             throw new errors.IncorrectUsageError('Attempted to setup a max limit without a limit');
@@ -74,7 +74,7 @@ class MaxLimit extends Limit {
         errorObj.errorDetails.limit = this.max;
         errorObj.errorDetails.total = count;
 
-        return new errors.HostLimitError(errorObj);
+        return new this.errors.HostLimitError(errorObj);
     }
 
     async currentCountQuery() {
@@ -119,9 +119,10 @@ class FlagLimit extends Limit {
      * @param {Number} options.config.disabled - disabled/enabled flag for the limit
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
      * @param {Object} options.db - instance of knex db connection that currentCountQuery can use to run state check through
+     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
      */
-    constructor({name, config, helpLink, db}) {
-        super({name, error: config.error || '', helpLink, db});
+    constructor({name, config, helpLink, db, errors}) {
+        super({name, error: config.error || '', helpLink, db, errors});
 
         this.disabled = config.disabled;
         this.fallbackMessage = `Your plan does not support ${_.lowerCase(this.name)}. Please upgrade to enable ${_.lowerCase(this.name)}.`;
@@ -136,7 +137,7 @@ class FlagLimit extends Limit {
             errorObj.message = this.fallbackMessage;
         }
 
-        return new errors.HostLimitError(errorObj);
+        return new this.errors.HostLimitError(errorObj);
     }
 
     /**

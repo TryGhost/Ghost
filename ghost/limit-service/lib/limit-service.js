@@ -1,4 +1,3 @@
-const errors = require('@tryghost/errors');
 const {MaxLimit, FlagLimit} = require('./limit');
 const config = require('./config');
 const _ = require('lodash');
@@ -15,8 +14,15 @@ class LimitService {
      * @param {Object} options.limits - hash containing limit configurations keyed by limit name and containing
      * @param {String} options.helpLink - URL pointing to help resources for when limit is reached
      * @param {Object} options.db - knex db connection instance or other data source for the limit checks
+     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
      */
-    loadLimits({limits, helpLink, db}) {
+    loadLimits({limits, helpLink, db, errors}) {
+        if (!errors) {
+            throw new Error(`Config Missing: 'errors' is required. `);
+        }
+
+        this.errors = errors;
+
         Object.keys(limits).forEach((name) => {
             name = _.camelCase(name);
 
@@ -25,9 +31,9 @@ class LimitService {
                 let limitConfig = _.merge({}, limits[name], config[name]);
 
                 if (_.has(limitConfig, 'max')) {
-                    this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db});
+                    this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db, errors});
                 } else {
-                    this.limits[name] = new FlagLimit({name: name, config: limitConfig, helpLink});
+                    this.limits[name] = new FlagLimit({name: name, config: limitConfig, helpLink, errors});
                 }
             }
         });
@@ -46,7 +52,7 @@ class LimitService {
             await this.limits[limitName].errorIfIsOverLimit();
             return false;
         } catch (error) {
-            if (error instanceof errors.HostLimitError) {
+            if (error instanceof this.errors.HostLimitError) {
                 return true;
             }
         }
@@ -61,7 +67,7 @@ class LimitService {
             await this.limits[limitName].errorIfWouldGoOverLimit();
             return false;
         } catch (error) {
-            if (error instanceof errors.HostLimitError) {
+            if (error instanceof this.errors.HostLimitError) {
                 return true;
             }
         }

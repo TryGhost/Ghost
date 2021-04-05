@@ -2,6 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
+const errors = require('./fixtures/errors');
 const {MaxLimit} = require('../lib/limit');
 
 describe('Limit Service', function () {
@@ -11,7 +12,7 @@ describe('Limit Service', function () {
                 const config = {};
 
                 try {
-                    const limit = new MaxLimit({name: 'no limits!', config});
+                    const limit = new MaxLimit({name: 'no limits!', config, errors});
                     should.fail(limit, 'Should have errored');
                 } catch (err) {
                     should.exist(err);
@@ -24,7 +25,7 @@ describe('Limit Service', function () {
                 const config = {};
 
                 try {
-                    const limit = new MaxLimit({name: 'no accountability!', config});
+                    const limit = new MaxLimit({name: 'no accountability!', config, errors});
                     should.fail(limit, 'Should have errored');
                 } catch (err) {
                     should.exist(err);
@@ -40,7 +41,7 @@ describe('Limit Service', function () {
                     max: 3,
                     currentCountQuery: () => 42
                 };
-                const limit = new MaxLimit({name: 'maxy', config});
+                const limit = new MaxLimit({name: 'maxy', config, errors});
 
                 try {
                     await limit.errorIfIsOverLimit();
@@ -65,7 +66,7 @@ describe('Limit Service', function () {
                     currentCountQuery: () => 1
                 };
 
-                const limit = new MaxLimit({name: 'maxy', config});
+                const limit = new MaxLimit({name: 'maxy', config, errors});
 
                 await limit.errorIfIsOverLimit();
             });
@@ -76,7 +77,7 @@ describe('Limit Service', function () {
                     currentCountQuery: () => 10
                 };
 
-                const limit = new MaxLimit({name: 'maxy', config});
+                const limit = new MaxLimit({name: 'maxy', config, errors});
 
                 // should pass as the limit is exactly on the limit 10 >= 10
                 await limit.errorIfIsOverLimit({max: 10});
@@ -106,7 +107,7 @@ describe('Limit Service', function () {
                     max: 1,
                     currentCountQuery: () => 1
                 };
-                const limit = new MaxLimit({name: 'maxy', config});
+                const limit = new MaxLimit({name: 'maxy', config, errors});
 
                 try {
                     await limit.errorIfWouldGoOverLimit();
@@ -131,7 +132,7 @@ describe('Limit Service', function () {
                     currentCountQuery: () => 1
                 };
 
-                const limit = new MaxLimit({name: 'maxy', config});
+                const limit = new MaxLimit({name: 'maxy', config, errors});
 
                 await limit.errorIfWouldGoOverLimit();
             });
@@ -142,7 +143,7 @@ describe('Limit Service', function () {
                     currentCountQuery: () => 10
                 };
 
-                const limit = new MaxLimit({name: 'maxy', config});
+                const limit = new MaxLimit({name: 'maxy', config, errors});
 
                 // should pass as the limit is overridden to 10 + 1 = 11
                 await limit.errorIfWouldGoOverLimit({max: 11});
