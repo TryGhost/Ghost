@@ -246,7 +246,7 @@ function handleDataAttributes({siteUrl}) {
                     },
                     body: JSON.stringify({
                         identity: identity,
-                        cancel_at_period_end: true
+                        smart_cancel: true
                     })
                 });
             }).then(function (res) {
