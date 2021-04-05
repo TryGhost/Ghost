@@ -48,7 +48,7 @@ describe('Limit Service', function () {
                 should.fail(limitService, 'Should have errored');
             } catch (err) {
                 should.exist(err);
-                err.message.should.equal(`Config Missing: 'errors' is required`);
+                err.message.should.eql(`Config Missing: 'errors' is required.`);
             }
         });
 
