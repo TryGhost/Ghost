@@ -300,14 +300,16 @@ module.exports = class MemberRepository {
             if (status === 'incomplete_expired') {
                 return 0;
             }
-            const modifier = status === 'canceled' ? -1 : 1;
+            if (status === 'canceled') {
+                return 0;
+            }
 
             if (interval === 'year') {
-                return modifier * Math.floor(amount / 12);
+                return Math.floor(amount / 12);
             }
 
             if (interval === 'month') {
-                return modifier * amount;
+                return amount;
             }
         }
         if (model) {
