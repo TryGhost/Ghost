@@ -144,7 +144,7 @@ export default class MembersController extends Controller {
         this.fetchMembersTask.perform();
         this.fetchLabelsTask.perform();
         this.membersStats.invalidate();
-        this.membersStats.fetch();
+        this.membersStats.fetchCounts();
     }
 
     @action
@@ -358,7 +358,7 @@ export default class MembersController extends Controller {
 
     reload() {
         this.membersStats.invalidate();
-        this.membersStats.fetch();
+        this.membersStats.fetchCounts();
         this.fetchMembersTask.perform();
     }
 }
