@@ -28,7 +28,7 @@ class LimitService {
 
             if (config[name]) {
                 /** @type LimitConfig */
-                let limitConfig = _.merge({}, limits[name], config[name]);
+                let limitConfig = Object.assign({}, config[name], limits[name]);
 
                 if (_.has(limitConfig, 'max')) {
                     this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db, errors});
@@ -97,4 +97,5 @@ module.exports = LimitService;
  * @prop {Number} [max] - max limit
  * @prop {Boolean} [disabled] - flag disabling/enabling limit
  * @prop {String} error - custom error to be displayed when the limit is reached
+ * @prop {Function} [currentCountQuery] - function returning count for the "max" type of limit
  */
