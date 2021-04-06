@@ -94,6 +94,24 @@ if (limitService.isLimited('members')) {
 }
 ```
 
+In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" type of limit. An example usecase would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:
+```
+const limitService = new LimitService();
+
+let limits = {
+    staff: {
+        max: 2,
+        currentCountQuery: async () => (await fetch('/api/staff')).json().length
+    }
+};
+
+limitService.loadLimits({limits, errors});
+
+if (await limitService.checkIsOverLimit('staff')) {
+    // do something as "staff" limit has been reached
+};
+```
+
 ## Develop
 
 This is a mono repository, managed with [lerna](https://lernajs.io/).
