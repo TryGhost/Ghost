@@ -4,7 +4,7 @@ import {Response} from 'ember-cli-mirage';
 import {paginatedResponse} from '../utils';
 
 export function mockMembersStats(server) {
-    server.get('/members/stats/', function (db, {queryParams}) {
+    server.get('/members/stats/count', function (db, {queryParams}) {
         let {days} = queryParams;
 
         let firstSubscriberDays = faker.random.number({min: 30, max: 600});
@@ -19,7 +19,6 @@ export function mockMembersStats(server) {
         if (firstSubscriberDays > days) {
             total += faker.random.number({max: 1000});
         }
-        let rangeTotal = 0;
 
         // simulate sql GROUP BY where days with 0 subscribers are missing
         let dateCounts = {};
@@ -29,7 +28,6 @@ export function mockMembersStats(server) {
             let count = faker.random.number({min: 0, max: 30});
 
             if (count !== 0) {
-                rangeTotal += count;
                 dateCounts[date] = count;
             }
 
@@ -48,9 +46,15 @@ export function mockMembersStats(server) {
 
         return {
             total,
-            total_in_range: rangeTotal,
-            total_on_date: totalOnDate,
-            new_today: dateCounts[moment().format('YYYY-MM-DD')]
+            resource: 'members',
+            data: Object.keys(totalOnDate).map((key, idx, arr) => {
+                return {
+                    date: key,
+                    free: arr[key],
+                    paid: 0,
+                    comped: 0
+                };
+            })
         };
     });
 }
