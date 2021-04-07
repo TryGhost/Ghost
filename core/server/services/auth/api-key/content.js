@@ -2,7 +2,7 @@ const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../../lib/common');
 
-const authenticateContentApiKey = function authenticateContentApiKey(req, res, next) {
+const authenticateContentApiKey = async function authenticateContentApiKey(req, res, next) {
     // allow fallthrough to other auth methods or final ensureAuthenticated check
     if (!req.query || !req.query.key) {
         return next();
@@ -17,7 +17,9 @@ const authenticateContentApiKey = function authenticateContentApiKey(req, res, n
 
     let key = req.query.key;
 
-    models.ApiKey.findOne({secret: key}).then((apiKey) => {
+    try {
+        const apiKey = await models.ApiKey.findOne({secret: key});
+
         if (!apiKey) {
             return next(new errors.UnauthorizedError({
                 message: i18n.t('errors.middleware.auth.unknownContentApiKey'),
@@ -34,10 +36,11 @@ const authenticateContentApiKey = function authenticateContentApiKey(req, res, n
 
         // authenticated OK, store the api key on the request for later checks and logging
         req.api_key = apiKey;
+
         next();
-    }).catch((err) => {
+    } catch (err) {
         next(new errors.InternalServerError({err}));
-    });
+    }
 };
 
 module.exports = {
