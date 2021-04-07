@@ -1,4 +1,4 @@
-<GhFullscreenModal @modal="upload-theme"
+<GhFullscreenModal @modal={{if this.isAllowed "upload-theme" "upgrade-host-limit-custom-theme"}}
     @model={{hash
         themes=this.themes
         activate=(route-action 'activateTheme')
