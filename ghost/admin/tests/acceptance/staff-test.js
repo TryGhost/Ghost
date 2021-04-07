@@ -182,42 +182,24 @@ describe('Acceptance: Staff', function () {
             ).to.equal(0);
 
             // click the invite people button
-            await click('.view-actions .gh-btn-primary');
-
-            let roleOptions = findAll('.fullscreen-modal select[name="role"] option');
-
-            function checkOwnerExists() {
-                for (let i in roleOptions) {
-                    if (roleOptions[i].tagName === 'option' && roleOptions[i].text === 'Owner') {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            function checkSelectedIsAuthor() {
-                for (let i in roleOptions) {
-                    if (roleOptions[i].selected) {
-                        return roleOptions[i].text === 'Author';
-                    }
-                }
-                return false;
-            }
+            await click('[data-test-button="invite-staff-user"]');
 
             // modal is displayed
             expect(
-                find('.fullscreen-modal h1').textContent.trim(),
+                find('[data-test-modal="invite-staff-user"]'),
                 'correct modal is displayed'
-            ).to.equal('Invite a new user');
+            ).to.exist;
 
             // number of roles is correct
             expect(
-                findAll('.fullscreen-modal select[name="role"] option').length,
+                findAll('[data-test-option]').length,
                 'number of selectable roles'
-            ).to.equal(3);
+            ).to.equal(4);
 
-            expect(checkOwnerExists(), 'owner role isn\'t available').to.be.false;
-            expect(checkSelectedIsAuthor(), 'author role is selected initially').to.be.true;
+            expect(
+                find('[data-test-option="Contributor"]'),
+                'contributor role is selected initially'
+            ).to.have.class('active');
 
             // submit valid invite form
             await fillIn('.fullscreen-modal input[name="email"]', 'invite1@example.com');
@@ -243,7 +225,7 @@ describe('Acceptance: Staff', function () {
             expect(
                 find('[data-test-invite-id="2"] [data-test-role-name]').textContent.trim(),
                 'displayed role of first invite'
-            ).to.equal('Author');
+            ).to.equal('Contributor');
 
             expect(
                 find('[data-test-invite-id="2"] [data-test-invite-description]').textContent,
@@ -259,7 +241,7 @@ describe('Acceptance: Staff', function () {
             // submit new invite with different role
             await click('.view-actions .gh-btn-primary');
             await fillIn('.fullscreen-modal input[name="email"]', 'invite2@example.com');
-            await fillIn('.fullscreen-modal select[name="role"]', '2');
+            await click('[data-test-option="Editor"]');
             await click('[data-test-button="send-user-invite"]');
 
             // number of invites increases

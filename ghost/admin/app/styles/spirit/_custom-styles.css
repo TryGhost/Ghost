@@ -209,13 +209,14 @@ button, .btn-base {
 }
 
 .tooltip-left:before {
-    bottom: 2px;
-    left: calc(100% + 6px);
-    transform: translate(-4px, 0);
+    right: calc(1rem + 100%);
+    bottom: 50%;
+    left: auto;
+    transform: translateY(50%);
 }
 
 .tooltip-left:hover:before {
-    transform: translate(0, 0);
+    transform: translateY(50%);
 }
 
 .tooltip-bottom:before {
