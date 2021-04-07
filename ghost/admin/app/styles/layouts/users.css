@@ -163,35 +163,81 @@
     text-align: left;
 }
 
-.invite-new-user .form-group:nth-of-type(1) {
-    float: left;
-    width: 60%;
-    padding-right: 10px;
-}
-
-@media (max-width: 500px) {
-    .invite-new-user .form-group:nth-of-type(1) {
-        float: none;
-        width: 100%;
-    }
-}
-
-.invite-new-user .form-group:nth-of-type(2) {
-    float: left;
-    width: 40%;
-}
-
-@media (max-width: 500px) {
-    .invite-new-user .form-group:nth-of-type(2) {
-        float: none;
-        margin-top: 10px;
-        margin-left: 0;
-        width: 100%;
-    }
-}
-
 .invite-new-user .form-group input {
     width: 100%;
+}
+
+.invite-new-user .gh-roles-container {
+    display: flex;
+    flex-direction: column;
+    margin: 2rem 0 0;
+}
+
+.invite-new-user p {
+    margin: 4px 0 20px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.invite-new-user .gh-radio {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--list-color-divider);
+}
+
+.invite-new-user .gh-radio:first-child {
+    padding-top: 20px;
+    border-top: 1px solid var(--list-color-divider);
+}
+
+.invite-new-user .gh-radio:last-child {
+    margin: 0;
+}
+
+.invite-new-user .gh-radio svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--midgrey);
+    margin-left: 2px;
+}
+
+.invite-new-user .gh-radio-content {
+    margin-right: 2.4rem;
+}
+
+.invite-new-user .gh-radio-label {
+    padding-bottom: 4px;
+    line-height: 1.1em;
+    font-weight: 600;
+}
+
+.invite-new-user .gh-radio-desc {
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.invite-new-user .popover {
+    width: 97%;
+    border: 1px solid var(--whitegrey-d1);
+    color: var(--darkgrey);
+    box-shadow: var(--shadow-3);
+}
+
+.invite-new-user .popover-arrow {
+    display: none;
+}
+
+.invite-new-user .popover table {
+    margin: .6em 0;
+}
+
+.invite-new-user .popover td.left {
+    padding-right: 16px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .invite-new-user .gh-btn-black {
