@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
 const db = require('../data/db');
 const LimitService = require('@tryghost/limit-service');
@@ -16,7 +17,7 @@ const initFn = () => {
         helpLink = 'https://ghost.org/help/';
     }
 
-    limitService.loadLimits({limits: config.get('hostSettings:limits'), db, helpLink});
+    limitService.loadLimits({limits: config.get('hostSettings:limits'), db, helpLink, errors});
 };
 
 module.exports = limitService;
