@@ -45,4 +45,4 @@ type ServiceDefinition = {
     version: string;
 };
 import moleculer = require("moleculer");
-type Service = any;
+type Service = object;
