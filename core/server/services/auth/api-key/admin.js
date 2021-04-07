@@ -78,7 +78,7 @@ const authenticateWithUrl = (req, res, next) => {
  * - the "Audience" claim should match the requested API path
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
-const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
+const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
     const decoded = jwt.decode(token, {complete: true});
 
     if (!decoded || !decoded.header) {
@@ -97,7 +97,9 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
         }));
     }
 
-    models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
+    try {
+        const apiKey = await models.ApiKey.findOne({id: apiKeyId});
+
         if (!apiKey) {
             return next(new errors.UnauthorizedError({
                 message: i18n.t('errors.middleware.auth.unknownAdminApiKey'),
@@ -145,21 +147,23 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
 
         if (apiKey.get('user_id')) {
             // fetch the user and store it on the request for later checks and logging
-            return models.User.findOne(
+            const user = await models.User.findOne(
                 {id: apiKey.get('user_id'), status: 'active'},
                 {require: true}
-            ).then((user) => {
-                req.user = user;
-                next();
-            });
+            );
+
+            req.user = user;
+
+            next();
         }
 
         // store the api key on the request for later checks and logging
         req.api_key = apiKey;
+
         next();
-    }).catch((err) => {
+    } catch (err) {
         next(new errors.InternalServerError({err}));
-    });
+    }
 };
 
 module.exports = {
