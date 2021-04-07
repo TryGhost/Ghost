@@ -95,7 +95,7 @@ if (limitService.isLimited('members')) {
 ```
 
 In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" type of limit. An example usecase would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:
-```
+```js
 const limitService = new LimitService();
 
 let limits = {
@@ -110,6 +110,17 @@ limitService.loadLimits({limits, errors});
 if (await limitService.checkIsOverLimit('staff')) {
     // do something as "staff" limit has been reached
 };
+```
+
+### Custom error messages
+Errors returned by the limit service can be customized. When configuring the limit service through `loadLimits` method `limits` objects can specify an `error` property that is a template string. Additionally, "MaxLimit" limit type supports following variables- {{count}} and {{max}}.
+
+An example configuration for "MaxLimit" limit using an error template can look like following:
+```json
+"staff": {
+    "max": 5,
+    "error": "Your plan supports up to {{max}} staff users and you currently have {{count}}. Please upgrade to add more."
+}
 ```
 
 ## Develop
