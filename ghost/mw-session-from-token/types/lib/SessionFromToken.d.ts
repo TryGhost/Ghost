@@ -34,10 +34,10 @@ declare function SessionFromToken<Token, Lookup>({ getTokenFromRequest, getLooku
 declare namespace SessionFromToken {
     export { User, Req, Res, Next, RequestHandler };
 }
-type Req = import("express").Request<import("express-serve-static-core").ParamsDictionary>;
+type Req = import('express').Request;
 type User = {
     id: string;
 };
-type Res = import("express").Response<any>;
-type RequestHandler = import("express").RequestHandler<import("express-serve-static-core").ParamsDictionary>;
-type Next = import("express").NextFunction;
+type Res = import('express').Response;
+type RequestHandler = import('express').RequestHandler;
+type Next = import('express').NextFunction;
