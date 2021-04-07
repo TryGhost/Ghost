@@ -16,8 +16,8 @@ export type Session = {
     user_agent: string;
     ip: string;
 };
-export type Req = import("express").Request<import("express-serve-static-core").ParamsDictionary>;
-export type Res = import("express").Response<any>;
+export type Req = import('express').Request;
+export type Res = import('express').Response;
 export type SessionService = {
     getUserForSession: (req: Req, res: Res) => Promise<User | null>;
     destroyCurrentSession: (req: Req, res: Res) => Promise<void>;
