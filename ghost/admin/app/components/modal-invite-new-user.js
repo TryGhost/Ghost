@@ -1,6 +1,7 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {action} from '@ember/object';
 import {A as emberA} from '@ember/array';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -15,7 +16,6 @@ export default ModalComponent.extend(ValidationEngine, {
 
     role: null,
     roles: null,
-    authorRole: null,
 
     validationType: 'inviteUser',
 
@@ -33,15 +33,16 @@ export default ModalComponent.extend(ValidationEngine, {
     },
 
     actions: {
-        setRole(role) {
-            this.set('role', role);
-            this.errors.remove('role');
-        },
-
         confirm() {
             this.sendInvitation.perform();
         }
     },
+
+    setRole: action(function (roleName) {
+        const role = this.roles.findBy('name', roleName);
+        this.set('role', role);
+        this.errors.remove('role');
+    }),
 
     validate() {
         let email = this.email;
@@ -80,13 +81,12 @@ export default ModalComponent.extend(ValidationEngine, {
 
     fetchRoles: task(function * () {
         let roles = yield this.store.query('role', {permissions: 'assign'});
-        let authorRole = roles.findBy('name', 'Author');
+        let defaultRole = roles.findBy('name', 'Contributor');
 
         this.set('roles', roles);
-        this.set('authorRole', authorRole);
 
         if (!this.role) {
-            this.set('role', authorRole);
+            this.set('role', defaultRole);
         }
     }),
 
