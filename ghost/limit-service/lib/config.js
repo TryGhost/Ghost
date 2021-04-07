@@ -23,7 +23,11 @@ module.exports = {
     },
     customIntegrations: {
         currentCountQuery: async (db) => {
-            let result = await db.knex('integrations').count('id', {as: 'count'}).whereNotIn('type', ['internal', 'builtin']).first();
+            let result = await db.knex('integrations')
+                .count('id', {as: 'count'})
+                .whereNotIn('type', ['internal', 'builtin'])
+                .first();
+
             return result.count;
         }
     },
