@@ -35,6 +35,24 @@ describe('Limit Service', function () {
             error.errorDetails.limit.should.eql(35000000);
             error.errorDetails.total.should.eql(35000001);
         });
+
+        it('Supports {{max}} and {{count}} variables', function () {
+            let limit = new MaxLimit({
+                name: 'test',
+                config: {
+                    max: 5,
+                    currentCountQuery: () => {},
+                    error: 'Your plan supports up to {{max}} staff users. You are currently at {{count}} staff users.Please upgrade to add more.'
+                },
+                errors
+            });
+
+            let error = limit.generateError(7);
+
+            error.message.should.eql('Your plan supports up to 5 staff users. You are currently at 7 staff users.Please upgrade to add more.');
+            error.errorDetails.limit.should.eql(5);
+            error.errorDetails.total.should.eql(7);
+        });
     });
 
     describe('Loader', function () {
