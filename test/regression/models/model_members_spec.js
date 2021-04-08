@@ -220,6 +220,42 @@ describe('Member Model', function run() {
         });
     });
 
+    describe('products', function () {
+        it('Products can be created & added to members by the product array', async function () {
+            const context = testUtils.context.admin;
+            const product = await Product.add({
+                name: 'Product-Add-Test'
+            });
+            const member = await Member.add({
+                email: 'testing-products@test.member',
+                products: [{
+                    id: product.id
+                }, {
+                    name: 'Product-Create-Test'
+                }]
+            }, {
+                ...context,
+                withRelated: ['products']
+            });
+
+            const createdProduct = await Product.findOne({
+                name: 'Product-Create-Test'
+            }, context);
+
+            should.exist(createdProduct, 'Product should have been created');
+
+            const products = member.related('products').toJSON();
+
+            should.exist(
+                products.find(model => model.name === 'Product-Create-Test')
+            );
+
+            should.exist(
+                products.find(model => model.name === 'Product-Add-Test')
+            );
+        });
+    });
+
     describe('Filtering on products', function () {
         it('Should allow filtering on products', async function () {
             const context = testUtils.context.admin;
@@ -251,12 +287,12 @@ describe('Member Model', function run() {
 
             should.exist(memberProduct, 'Product should have been attached to member');
 
-            const vipProductMembers = await Member.findPage({filter: 'products:vip'})
+            const vipProductMembers = await Member.findPage({filter: 'products:vip'});
             const foundMemberInVIP = vipProductMembers.data.find(model => model.id === member.id);
 
             should.exist(foundMemberInVIP, 'Member should have been included in products filter');
 
-            const podcastProductMembers = await Member.findPage({filter: 'products:podcast'})
+            const podcastProductMembers = await Member.findPage({filter: 'products:podcast'});
             const foundMemberInPodcast = podcastProductMembers.data.find(model => model.id === member.id);
 
             should.not.exist(foundMemberInPodcast, 'Member should not have been included in products filter');
