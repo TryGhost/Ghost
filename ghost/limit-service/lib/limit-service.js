@@ -1,4 +1,4 @@
-const {MaxLimit, FlagLimit} = require('./limit');
+const {MaxLimit, FlagLimit, AllowlistLimit} = require('./limit');
 const config = require('./config');
 const _ = require('lodash');
 
@@ -30,7 +30,9 @@ class LimitService {
                 /** @type LimitConfig */
                 let limitConfig = Object.assign({}, config[name], limits[name]);
 
-                if (_.has(limitConfig, 'max')) {
+                if (_.has(limitConfig, 'allowlist')) {
+                    this.limits[name] = new AllowlistLimit({name, config: limitConfig, helpLink, errors});
+                } else if (_.has(limitConfig, 'max')) {
                     this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db, errors});
                 } else {
                     this.limits[name] = new FlagLimit({name: name, config: limitConfig, helpLink, errors});
@@ -58,13 +60,13 @@ class LimitService {
         }
     }
 
-    async checkWouldGoOverLimit(limitName) {
+    async checkWouldGoOverLimit(limitName, metadata = {}) {
         if (!this.isLimited(limitName)) {
             return;
         }
 
         try {
-            await this.limits[limitName].errorIfWouldGoOverLimit();
+            await this.limits[limitName].errorIfWouldGoOverLimit(metadata);
             return false;
         } catch (error) {
             if (error instanceof this.errors.HostLimitError) {
@@ -73,20 +75,20 @@ class LimitService {
         }
     }
 
-    async errorIfIsOverLimit(limitName) {
+    async errorIfIsOverLimit(limitName, metadata = {}) {
         if (!this.isLimited(limitName)) {
             return;
         }
 
-        await this.limits[limitName].errorIfIsOverLimit();
+        await this.limits[limitName].errorIfIsOverLimit(metadata);
     }
 
-    async errorIfWouldGoOverLimit(limitName) {
+    async errorIfWouldGoOverLimit(limitName, metadata = {}) {
         if (!this.isLimited(limitName)) {
             return;
         }
 
-        await this.limits[limitName].errorIfWouldGoOverLimit();
+        await this.limits[limitName].errorIfWouldGoOverLimit(metadata);
     }
 }
 

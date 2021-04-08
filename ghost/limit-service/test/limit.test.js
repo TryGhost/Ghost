@@ -3,7 +3,7 @@
 require('./utils');
 
 const errors = require('./fixtures/errors');
-const {MaxLimit} = require('../lib/limit');
+const {MaxLimit, AllowlistLimit} = require('../lib/limit');
 
 describe('Limit Service', function () {
     describe('Max Limit', function () {
@@ -165,6 +165,38 @@ describe('Limit Service', function () {
                     should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
                 }
             });
+        });
+    });
+
+    describe('Allowlist limit', function () {
+        it('rejects when the allowlist config isn\'t specified', async function () {
+            try {
+                new AllowlistLimit({name: 'test', config: {}, errors});
+                throw new Error('Should have failed earlier...');
+            } catch (error) {
+                error.errorType.should.equal('IncorrectUsageError');
+            }
+        });
+
+        it('accept correct values', async function () {
+            const limit = new AllowlistLimit({name: 'test', config: {
+                allowlist: ['test', 'ok']
+            }, errors});
+
+            await limit.errorIfIsOverLimit({value: 'test'});
+        });
+
+        it('rejects unkown values', async function () {
+            const limit = new AllowlistLimit({name: 'test', config: {
+                allowlist: ['test', 'ok']
+            }, errors});
+
+            try {
+                await limit.errorIfIsOverLimit({value: 'unkown value'});
+                throw new Error('Should have failed earlier...');
+            } catch (error) {
+                error.errorType.should.equal('HostLimitError');
+            }
         });
     });
 });
