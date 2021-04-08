@@ -74,7 +74,9 @@ export default class LimitsService extends Service {
             users: this.store.findAll('user', {reload: true}),
             invites: this.store.findAll('invite', {reload: true})
         }).then((data) => {
-            return data.users.length + data.invites.length;
+            const activeUsers = data.users.filter(u => u.status !== 'inactive');
+
+            return activeUsers.length + data.invites.length;
         });
     }
 
