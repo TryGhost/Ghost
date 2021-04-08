@@ -1,4 +1,6 @@
 import Controller from '@ember/controller';
+import config from 'ghost-admin/config/environment';
+import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {A} from '@ember/array';
@@ -55,6 +57,10 @@ export default class MembersController extends Controller {
     constructor() {
         super(...arguments);
         this._availableLabels = this.store.peekAll('label');
+
+        if (this.isTesting === undefined) {
+            this.isTesting = config.environment === 'test';
+        }
     }
 
     // Computed properties -----------------------------------------------------
@@ -327,10 +333,35 @@ export default class MembersController extends Controller {
     *deleteMembersTask() {
         const query = new URLSearchParams(this.getApiQueryObject());
 
-        let url = `${this.ghostPaths.url.api('members')}?${query}`;
+        // Trigger download before deleting. Uses the CSV export endpoint but
+        // needs to fetch the file and trigger a download directly rather than
+        // via an iframe. The iframe approach can't tell us when a download has
+        // started/finished meaning we could end up deleting the data before exporting it
+        const exportUrl = ghostPaths().url.api('members/upload');
+        const exportParams = new URLSearchParams(this.getApiQueryObject());
+        exportParams.set('limit', 'all');
+
+        yield fetch(exportUrl, {method: 'GET'})
+            .then(res => res.blob())
+            .then((blob) => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `members.${moment().format('YYYY-MM-DD')}.csv`;
+                document.body.appendChild(a);
+                if (!this.isTesting) {
+                    a.click();
+                }
+                a.remove();
+                URL.revokeObjectURL(blobUrl);
+            });
+
+        // backup downloaded, continue with deletion
+
+        const deleteUrl = `${this.ghostPaths.url.api('members')}?${query}`;
 
         // response contains details of which members failed to be deleted
-        let response = yield this.ajax.del(url);
+        const response = yield this.ajax.del(deleteUrl);
 
         // reset and reload
         this.store.unloadAll('member');
