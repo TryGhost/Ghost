@@ -1,4 +1,4 @@
-<li class="gh-list-row gh-members-list-item {{if @member.is_loading "loading"}}" ...attributes>
+<li class="gh-list-row gh-members-list-item {{if @member.is_loading "loading"}}" data-test-member={{@member.id}} ...attributes>
     {{#if @member.is_loading}}
         <div class="gh-list-data gh-members-list-basic gh-list-loadingcell">
             <div class="gh-list-loading-title"></div>

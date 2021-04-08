@@ -1,5 +1,5 @@
 <header class="modal-header" data-test-modal="delete-members">
-    <h1>Are you sure you want to delete these members?</h1>
+    <h1>Delete selected members?</h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
@@ -8,7 +8,7 @@
         <p>
             You're about to delete
             <strong data-test-text="delete-count">{{gh-pluralize this.model.memberCount "member"}}</strong>.
-            This is permanent! We warned you, k?
+            This is permanent! All Ghost data will be deleted, this will have no effect on subscriptions in Stripe.
         </p>
     </div>
 {{else}}
@@ -26,21 +26,18 @@
             <div class="flex items-center">
                 {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
                 <p class="ma0 pa0">
-                    <span class="fw6" data-test-text="deleted-count">{{gh-pluralize this.response.deleted.count "member"}}</span>
+                    <span class="fw6" data-test-text="deleted-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
                     deleted
                 </p>
             </div>
-            {{#if this.response.invalid.count}}
+            {{#if this.response.stats.unsuccessful}}
                 <div class="flex items-start mt2" data-test-bulk-delete-errors>
                     {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
                     <div>
                         <p class="ma0 pa0">
-                            <span class="fw5" data-test-text="invalid-count">{{gh-pluralize this.response.invalid.count "member"}}</span>
-                            skipped
+                            <span class="fw5" data-test-text="invalid-count">{{gh-pluralize this.response.stats.unsuccessful "member"}}</span>
+                            failed to delete
                         </p>
-                        {{#each this.response.invalid.errors as |error|}}
-                            <p class="gh-members-import-errordetail">{{error.message}} <span class="fw6">{{error.count}}</span></p>
-                        {{/each}}
                     </div>
                 </div>
             {{/if}}
@@ -55,7 +52,7 @@
         </button>
 
         <GhTaskButton
-            @buttonText="Delete"
+            @buttonText="Delete members"
             @successText="Deleted"
             @task={{this.deleteMembersTask}}
             @class="gh-btn gh-btn-red gh-btn-icon"

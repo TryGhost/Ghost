@@ -1,7 +1,8 @@
 import faker from 'faker';
 import moment from 'moment';
 import {Response} from 'ember-cli-mirage';
-import {paginatedResponse} from '../utils';
+import {extractFilterParam, paginateModelCollection} from '../utils';
+import {isEmpty} from '@ember/utils';
 
 export function mockMembersStats(server) {
     server.get('/members/stats/count', function (db, {queryParams}) {
@@ -66,25 +67,64 @@ export default function mockMembers(server) {
         return members.create(Object.assign({}, attrs, {id: 99}));
     });
 
-    server.get('/members/', paginatedResponse('members'));
+    server.get('/members/', function ({members}, {queryParams}) {
+        let {filter, page, limit} = queryParams;
+
+        page = +page || 1;
+        limit = +limit || 15;
+
+        let labelFilter = extractFilterParam('label', filter);
+
+        let collection = members.all().filter((member) => {
+            let matchesLabel = true;
+
+            if (!isEmpty(labelFilter)) {
+                matchesLabel = false;
+
+                labelFilter.forEach((slug) => {
+                    if (member.labels.models.find(l => l.slug === slug)) {
+                        matchesLabel = true;
+                    }
+                });
+            }
+
+            return matchesLabel;
+        });
+
+        return paginateModelCollection('members', collection, page, limit);
+    });
 
     server.del('/members/', function ({members}, {queryParams}) {
-        if (queryParams.all !== 'true') {
+        if (!queryParams.filter && !queryParams.search && queryParams.all !== 'true') {
             return new Response(422, {}, {errors: [{
                 type: 'IncorrectUsageError',
                 message: 'DELETE /members/ must be used with a filter, search, or all=true query parameter'
             }]});
         }
 
-        let count = members.all().length;
-        members.all().destroy();
+        let membersToDelete = members.all();
+
+        if (queryParams.filter) {
+            let labelFilter = extractFilterParam('label', queryParams.filter);
+
+            membersToDelete = membersToDelete.filter((member) => {
+                let matches = false;
+                labelFilter.forEach((slug) => {
+                    if (member.labels.models.find(l => l.slug === slug)) {
+                        matches = true;
+                    }
+                });
+                return matches;
+            });
+        }
+
+        let count = membersToDelete.length;
+        membersToDelete.destroy();
 
         return {
             meta: {
                 stats: {
-                    deleted: {
-                        count
-                    }
+                    successful: count
                 }
             }
         };
