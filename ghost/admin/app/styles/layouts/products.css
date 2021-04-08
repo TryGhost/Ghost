@@ -1,4 +1,11 @@
 /* Product list */
+.gh-product-list .gh-list-row.header .gh-list-header {
+    margin: 0;
+    padding: 0;
+    height: 0;
+    line-height: 0;
+}
+
 .gh-product-list-chevron {
     padding-right: 0;
 }
@@ -24,7 +31,6 @@
 
 .gh-product-details-form {
     display: flex;
-    flex-grow: 1;
     align-items: flex-start;
     padding-top: 20px !important;
 }
@@ -65,10 +71,22 @@
 .gh-product-stat-container {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    border: 1px solid var(--whitegrey);
-    padding: 24px;
-    border-radius: 3px;
+}
+
+.gh-product-stat-details .data {
+    white-space: nowrap;
+    font-size: 3.1rem;
+    line-height: 1em;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin: 0 0 2px;
+    padding: 0;
+}
+
+.gh-product-stat-details .info {
+    color: var(--midgrey);
+    margin: 0 0 10px;
+    padding: 0;
 }
 
 .gh-product-chart {
@@ -79,5 +97,48 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 12px 0;
+    margin: 0 0 12px;
+}
+
+/* Price list */
+.gh-price-list {
+    margin-bottom: 24px;
+}
+
+.gh-price-list a span {
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.gh-price-list-actionlist {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    opacity: 0;
+}
+
+.gh-price-list .gh-list-row:hover .gh-price-list-actionlist {
+    opacity: 1;
+}
+
+.gh-price-list-actionlist a,
+.gh-price-list-actionlist button {
+    line-height: 0;
+}
+
+.gh-price-list-title,
+.gh-price-list-price {
+    width: 35%;
+}
+
+.product-actions-menu {
+    top: calc(100% + 6px);
+    right: 10px;
+    left: auto;
+}
+
+.product-actions-menu.fade-out {
+    animation-duration: 0.01s;
+    pointer-events: none;
 }
