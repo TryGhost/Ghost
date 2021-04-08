@@ -1,8 +1,6 @@
 //stats helper
-const moment = require('moment-timezone');
 const Promise = require('bluebird');
 
-const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 class Stats {
     /**
      * @param {Object} config
