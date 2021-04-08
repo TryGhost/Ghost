@@ -126,6 +126,19 @@ describe('Limit Service', function () {
             limitService.isLimited('custom_themes').should.be.true();
             limitService.isLimited('customThemes').should.be.true();
         });
+
+        it('answers correctly when no limits are provided', function () {
+            const limitService = new LimitService();
+
+            let limits = {};
+
+            limitService.loadLimits({limits, errors});
+
+            limitService.isLimited('staff').should.be.false();
+            limitService.isLimited('members').should.be.false();
+            limitService.isLimited('custom_themes').should.be.false();
+            limitService.isLimited('customThemes').should.be.false();
+        });
     });
 
     describe('Custom limit count query configuration', function () {
