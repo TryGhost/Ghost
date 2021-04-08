@@ -35,7 +35,14 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     products() {
-        return this.belongsToMany('Product', 'members_products', 'member_id', 'product_id');
+        return this.belongsToMany('Product', 'members_products', 'member_id', 'product_id')
+            .withPivot('sort_order')
+            .query('orderBy', 'sort_order', 'ASC')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('products.*');
+            });
     },
 
     labels: function labels() {
