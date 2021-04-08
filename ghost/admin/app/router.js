@@ -52,6 +52,11 @@ Router.map(function () {
     this.route('settings.members-email', {path: '/settings/members-email'});
     this.route('settings.members-payments', {path: '/settings/members-payments'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
+
+    this.route('settings.products', {path: '/settings/products'});
+    this.route('settings.product', {path: '/settings/product'});
+    this.route('settings.price', {path: '/settings/price'});
+
     this.route('settings.theme', {path: '/settings/theme'}, function () {
         this.route('uploadtheme');
         this.route('install');
