@@ -5,6 +5,6 @@ export default class UploadThemeController extends Controller {
     @service config;
 
     get isAllowed() {
-        return !this.config.get('hostSettings')?.limits?.customThemes;
+        return (!this.config.get('hostSettings')?.limits?.customThemes) || this.config.get('hostSettings').limits.customThemes.disabled;
     }
 }
