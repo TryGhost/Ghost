@@ -90,6 +90,7 @@ module.exports = function apiRoutes() {
     // ## Members
     router.get('/members', mw.authAdminApi, http(apiCanary.members.browse));
     router.post('/members', mw.authAdminApi, http(apiCanary.members.add));
+    router.del('/members', mw.authAdminApi, http(apiCanary.members.bulkDestroy));
 
     router.get('/members/stats/count', mw.authAdminApi, http(apiCanary.members.memberStats));
     router.get('/members/stats/mrr', mw.authAdminApi, http(apiCanary.members.mrrStats));

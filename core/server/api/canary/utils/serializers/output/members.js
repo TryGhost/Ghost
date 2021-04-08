@@ -10,6 +10,7 @@ module.exports = {
     edit: createSerializer('edit', singleMember),
     add: createSerializer('add', singleMember),
     editSubscription: createSerializer('editSubscription', singleMember),
+    bulkDestroy: createSerializer('bulkDestroy', passthrough),
 
     exportCSV: createSerializer('exportCSV', exportCSV),
 
