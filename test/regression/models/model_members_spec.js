@@ -1,6 +1,7 @@
 const should = require('should');
 const BaseModel = require('../../../core/server/models/base');
 const {Label} = require('../../../core/server/models/label');
+const {Product} = require('../../../core/server/models/product');
 const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
 const {StripeCustomerSubscription} = require('../../../core/server/models/stripe-customer-subscription');
@@ -216,6 +217,49 @@ describe('Member Model', function run() {
                 queryResult.models[0].get('name').should.equal('Mr Egg');
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('Filtering on products', function () {
+        it('Should allow filtering on products', async function () {
+            const context = testUtils.context.admin;
+
+            await Member.add({
+                email: 'filter-test@test.member',
+                products: [{
+                    name: 'VIP',
+                    slug: 'vip'
+                }]
+            }, context);
+
+            const member = await Member.findOne({
+                email: 'filter-test@test.member'
+            }, context);
+
+            should.exist(member, 'Member should have been created');
+
+            const product = await Product.findOne({
+                slug: 'vip'
+            }, context);
+
+            should.exist(product, 'Product should have been created');
+
+            const memberProduct = await BaseModel.knex('members_products').where({
+                product_id: product.get('id'),
+                member_id: member.get('id')
+            }).select().first();
+
+            should.exist(memberProduct, 'Product should have been attached to member');
+
+            const vipProductMembers = await Member.findPage({filter: 'products:vip'})
+            const foundMemberInVIP = vipProductMembers.data.find(model => model.id === member.id);
+
+            should.exist(foundMemberInVIP, 'Member should have been included in products filter');
+
+            const podcastProductMembers = await Member.findPage({filter: 'products:podcast'})
+            const foundMemberInPodcast = podcastProductMembers.data.find(model => model.id === member.id);
+
+            should.not.exist(foundMemberInPodcast, 'Member should not have been included in products filter');
         });
     });
 });
