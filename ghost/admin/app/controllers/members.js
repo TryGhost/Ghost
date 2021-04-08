@@ -143,6 +143,30 @@ export default class MembersController extends Controller {
         return !!(this.label || this.paidParam || this.searchParam);
     }
 
+    getApiQueryObject({extraFilters = []} = {}) {
+        let {label, paidParam, searchParam} = this;
+
+        let filters = [];
+
+        filters.concat(extraFilters);
+
+        if (label) {
+            filters.push(`label:'${label}'`);
+        }
+
+        if (paidParam !== null) {
+            if (paidParam === 'true') {
+                filters.push('status:-free');
+            } else {
+                filters.push('status:free');
+            }
+        }
+
+        let searchQuery = searchParam ? {search: searchParam} : {};
+
+        return Object.assign({}, {filter: filters.join('+')}, searchQuery);
+    }
+
     // Actions -----------------------------------------------------------------
 
     @action
@@ -166,25 +190,9 @@ export default class MembersController extends Controller {
     @action
     exportData() {
         let exportUrl = ghostPaths().url.api('members/upload');
-        let downloadParams = new URLSearchParams();
+        let downloadParams = new URLSearchParams(this.getApiQueryObject());
         downloadParams.set('limit', 'all');
-        let filters = [];
-        if (this.paidParam !== null) {
-            if (this.paidParam === 'true') {
-                filters.push('status:-free');
-            } else {
-                filters.push('status:free');
-            }
-        }
-        if (this.label !== null) {
-            filters.push(`label:${this.label}`);
-        }
-        if (this.searchText !== '') {
-            downloadParams.set('search', this.searchText);
-        }
-        if (filters.length) {
-            downloadParams.set('filter', filters.join('+'));
-        }
+
         let iframe = document.getElementById('iframeDownload');
 
         if (!iframe) {
@@ -292,26 +300,15 @@ export default class MembersController extends Controller {
         this._startDate = startDate;
 
         this.members = yield this.ellaSparse.array((range = {}, query = {}) => {
-            let filters = [];
-            if (label) {
-                filters.push(`label:'${label}'`);
-            }
-            if (paidParam !== null) {
-                if (paidParam === 'true') {
-                    filters.push('status:-free');
-                } else {
-                    filters.push('status:free');
-                }
-            }
-            filters.push(`created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`);
-            const searchQuery = searchParam ? {search: searchParam} : {};
+            const searchQuery = this.getApiQueryObject({
+                extraFilters: [`created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`]
+            });
             const order = orderParam ? `${orderParam} desc` : `created_at desc`;
 
             query = Object.assign({
                 order,
                 limit: range.length,
-                page: range.page,
-                filter: filters.join('+')
+                page: range.page
             }, searchQuery, query);
 
             return this.store.query('member', query).then((result) => {
@@ -327,23 +324,8 @@ export default class MembersController extends Controller {
 
     @task({drop: true})
     *deleteMembersTask() {
-        let {label, paidParam, searchParam} = this;
+        const query = new URLSearchParams(this.getApiQueryObject());
 
-        let filters = [];
-        if (label) {
-            filters.push(`label:'${label}'`);
-        }
-        if (paidParam !== null) {
-            if (paidParam === 'true') {
-                filters.push('status:-free');
-            } else {
-                filters.push('status:free');
-            }
-        }
-        let searchQuery = searchParam ? {search: searchParam} : {};
-        let allQuery = !label && !paidParam && !searchParam ? {all: true} : {};
-
-        let query = new URLSearchParams(Object.assign({}, {filter: filters.join('+')}, searchQuery, allQuery));
         let url = `${this.ghostPaths.url.api('members')}?${query}`;
 
         // response contains details of which members failed to be deleted
