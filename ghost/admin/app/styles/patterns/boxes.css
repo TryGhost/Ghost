@@ -53,13 +53,14 @@
 }
 
 .gh-content-box {
+    line-height: 1.4em;
     border: none;
     background: var(--main-color-content-greybg);
     border-radius: 3px;
 }
 
-.gh-content-box.pa { padding: 24px; }
-.gh-content-box.pt { padding-top: 24px; }
-.gh-content-box.pr { padding-right: 24px; }
-.gh-content-box.pb { padding-bottom: 24px; }
-.gh-content-box.pl { padding-left: 24px; }
+.gh-content-box.pa { padding: 16px; }
+.gh-content-box.pt { padding-top: 16px; }
+.gh-content-box.pr { padding-right: 16px; }
+.gh-content-box.pb { padding-bottom: 16px; }
+.gh-content-box.pl { padding-left: 16px; }
