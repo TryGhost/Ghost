@@ -17,7 +17,7 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['labels', 'stripeCustomers', 'email_recipients'],
+    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients'],
 
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
@@ -28,9 +28,21 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     relationshipBelongsTo: {
+        products: 'products',
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
         email_recipients: 'email_recipients'
+    },
+
+    products() {
+        return this.belongsToMany('Product', 'members_products', 'member_id', 'product_id')
+            .withPivot('sort_order')
+            .query('orderBy', 'sort_order', 'ASC')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('products.*');
+            });
     },
 
     labels: function labels() {
