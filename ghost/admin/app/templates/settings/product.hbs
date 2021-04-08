@@ -1,0 +1,125 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            <LinkTo @route="settings.products">Products</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Product name
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @buttonText="Save product"
+                @task={{this.saveTask}}
+                @successText="Saved"
+                @runningText="Saving"
+                @class="gh-btn gh-btn-primary gh-btn-icon"
+                data-test-button="save-settings"
+            />
+        </section>
+    </GhCanvasHeader>
+
+    <form>
+    <div class="gh-product-details">
+        <section class="gh-product-config">
+            <div class="gh-main-section-content grey gh-product-details-form">
+                <GhFormGroup @property="name" @class="gh-product-icon-container">
+                    <label for="member-name">Icon</label>
+                    <div class="gh-product-icon whitegrey">Icon</div>
+                </GhFormGroup>
+                <div class="gh-product-details-fields">
+                    <GhFormGroup @property="name" @classNames="max-width">
+                        <label for="member-name">Product name</label>
+                        <GhTextInput data-test-input="member-name" />
+                        <GhErrorMessage @property="name" />
+                    </GhFormGroup>
+
+                    <GhFormGroup @property="name" @classNames="max-width gh-product-description-container">
+                        <label for="member-name">Description</label>
+                        <GhTextInput data-test-input="member-name" />
+                        <GhErrorMessage @property="name" />
+                    </GhFormGroup>
+                </div>
+            </div>
+        </section>
+        <section class="gh-product-stats">
+            <div class="gh-product-stat-container">
+                <h4 class="gh-dashboard-header">Members</h4>
+                <div class="gh-product-chart">CHART</div>
+                <div class="gh-product-stat-details">
+                    <span class="data">330</span>
+                    <span class="info">members have access to this product</span>
+                </div>
+                <LinkTo @route="members">See members &rarr;</LinkTo>
+            </div>
+        </section>
+    </div>
+    </form>
+
+    <div class="gh-main-section">
+        <div class="gh-main-section-block p0">
+            <ol class="gh-price-list gh-list">
+                <li class="gh-list-row header">
+                    <div class="gh-list-header gh-list-cellwidth-70">Prices</div>
+                    <div class="gh-list-header gh-list-cellwidth-10"></div>
+                </li>
+                <li class="gh-list-row">
+                    <LinkTo @route="settings.product" class="gh-list-data gh-list-cellwidth-70 gh-price-list-title">
+                        <h3 class="gh-price-list-name">
+                            Monthly
+                        </h3>
+                        <p class="ma0 pa0 f8 midgrey gh-price-list-description">
+                            $5 USD / month &bull; Full access
+                        </p>
+                    </LinkTo>
+
+                    <LinkTo @route="settings.product" class="gh-list-data gh-list-cellwidth-30">
+                        <div class="gh-price-list-actions">
+                            
+                        </div>
+                    </LinkTo>
+                </li>
+                <li class="gh-list-row">
+                    <LinkTo @route="settings.product" class="gh-list-data gh-list-cellwidth-70 gh-price-list-title">
+                        <h3 class="gh-price-list-name">
+                            Yearly
+                        </h3>
+                        <p class="ma0 pa0 f8 midgrey gh-price-list-description">
+                            $50 USD / month &bull; 37% discount
+                        </p>
+                    </LinkTo>
+
+                    <LinkTo @route="settings.product" class="gh-list-data gh-list-cellwidth-30">
+                        <div class="gh-price-list-actions">
+                            
+                        </div>
+                    </LinkTo>
+                </li>
+                <li class="gh-list-row">
+                    <LinkTo @route="settings.product" class="gh-list-data gh-list-cellwidth-70 gh-price-list-title">
+                        <h3 class="gh-price-list-name">
+                            Complimentary
+                        </h3>
+                        <p class="ma0 pa0 f8 midgrey gh-price-list-description">
+                            $0 USD / year &bull; Free of charge subscription
+                        </p>
+                    </LinkTo>
+
+                    <LinkTo @route="settings.product" class="gh-list-data gh-list-cellwidth-30">
+                        <div class="gh-price-list-actions">
+                            
+                        </div>
+                    </LinkTo>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    {{#if this.showLeaveSettingsModal}}
+        <GhFullscreenModal
+            @modal="leave-settings"
+            @confirm={{this.confirmLeave}}
+            @close={{this.cancelLeave}}
+            @modifier="action wide"
+        />
+    {{/if}}
+</section>
