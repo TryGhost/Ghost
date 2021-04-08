@@ -10,6 +10,9 @@
             <strong data-test-text="delete-count">{{gh-pluralize this.model.memberCount "member"}}</strong>.
             This is permanent! All Ghost data will be deleted, this will have no effect on subscriptions in Stripe.
         </p>
+        <p>
+            A backup of your selection will be automatically downloaded to your device before deletion.
+        </p>
     </div>
 {{else}}
     <div class="gh-content-box pa" data-test-state="delete-complete">
@@ -52,7 +55,7 @@
         </button>
 
         <GhTaskButton
-            @buttonText="Delete members"
+            @buttonText="Download backup & delete members"
             @successText="Deleted"
             @task={{this.deleteMembersTask}}
             @class="gh-btn gh-btn-red gh-btn-icon"
