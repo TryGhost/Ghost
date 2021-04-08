@@ -28,6 +28,7 @@ const models = [
     'api-key',
     'mobiledoc-revision',
     'member',
+    'product',
     'member-subscribe-event',
     'member-paid-subscription-event',
     'member-login-event',
