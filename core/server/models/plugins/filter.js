@@ -61,24 +61,19 @@ const EXPANSIONS = {
         key: 'tags',
         replacement: 'tags.slug'
     }],
-    members: [
-        {
-            key: 'label',
-            replacement: 'labels.slug'
-        },
-        {
-            key: 'labels',
-            replacement: 'labels.slug'
-        },
-        {
-            key: 'product',
-            replacement: 'products.slug'
-        },
-        {
-            key: 'products',
-            replacement: 'products.slug'
-        }
-    ]
+    members: [{
+        key: 'label',
+        replacement: 'labels.slug'
+    }, {
+        key: 'labels',
+        replacement: 'labels.slug'
+    }, {
+        key: 'product',
+        replacement: 'products.slug'
+    }, {
+        key: 'products',
+        replacement: 'products.slug'
+    }]
 };
 
 const filter = function filter(Bookshelf) {
