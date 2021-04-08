@@ -7,7 +7,6 @@ const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const labs = require('../../../core/server/services/labs');
 const Papa = require('papaparse');
-const settingsCache = require('../../../core/server/services/settings/cache');
 const moment = require('moment-timezone');
 
 describe('Members API', function () {
@@ -395,5 +394,83 @@ describe('Members API', function () {
         data[0].free.should.equal(4);
         data[0].paid.should.equal(0);
         data[0].comped.should.equal(0);
+    });
+
+    it('Can import CSV and bulk destroy via auto-added label', function () {
+        // HACK: mock dates otherwise we'll often get unexpected members appearing
+        // from previous tests with the same import label due to auto-generated
+        // import labels only including minutes
+        sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:21:00.000Z'));
+
+        // import our dummy data for deletion
+        return request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-for-bulk-delete.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+                should.exist(jsonResponse.meta.import_label);
+
+                jsonResponse.meta.stats.imported.should.equal(8);
+
+                return jsonResponse.meta.import_label;
+            })
+            .then((importLabel) => {
+                // check that the import worked by checking browse response with filter
+                return request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        const jsonResponse = res.body;
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.members);
+                        jsonResponse.members.should.have.length(8);
+                    })
+                    .then(() => importLabel);
+            })
+            .then((importLabel) => {
+                // perform the bulk delete
+                return request
+                    .del(localUtils.API.getApiQuery(`members/?filter=label:'${importLabel.slug}'`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        const jsonResponse = res.body;
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.meta);
+                        should.exist(jsonResponse.meta.stats);
+                        should.exist(jsonResponse.meta.stats.successful);
+                        should.equal(jsonResponse.meta.stats.successful, 8);
+                    })
+                    .then(() => importLabel);
+            })
+            .then((importLabel) => {
+                // check that the bulk delete worked by checking browse response with filter
+                return request.get(localUtils.API.getApiQuery(`members/?filter=label:${importLabel.slug}`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        const jsonResponse = res.body;
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.members);
+                        jsonResponse.members.should.have.length(0);
+                    });
+            });
     });
 });

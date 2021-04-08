@@ -300,6 +300,63 @@ module.exports = {
         }
     },
 
+    bulkDestroy: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'all',
+            'filter',
+            'search'
+        ],
+        permissions: {
+            method: 'destroy'
+        },
+        async query(frame) {
+            const {all, filter, search} = frame.options;
+
+            if (!filter && !search && (!all || all !== true)) {
+                throw new errors.IncorrectUsageError({
+                    message: 'DELETE /members/ must be used with a filter or ?all=true'
+                });
+            }
+
+            const knexOptions = _.pick(frame.options, ['transacting']);
+            const filterOptions = Object.assign({}, knexOptions);
+
+            if (all !== true) {
+                if (filter) {
+                    filterOptions.filter = filter;
+                }
+
+                if (search) {
+                    filterOptions.search = search;
+                }
+            }
+
+            // fetch ids of all matching members
+            const memberRows = await models.Member
+                .getFilteredCollectionQuery(filterOptions)
+                .select('members.id')
+                .distinct();
+
+            const memberIds = memberRows.map(row => row.id);
+
+            const bulkDestroyResult = await models.Member.bulkDestroy(memberIds);
+
+            // shaped to match the importer response
+            return {
+                meta: {
+                    stats: {
+                        successful: bulkDestroyResult.successful,
+                        unsuccessful: bulkDestroyResult.unsuccessful
+                    },
+                    unsuccessfulIds: bulkDestroyResult.unsuccessfulIds,
+                    errors: bulkDestroyResult.errors
+                }
+            };
+        }
+    },
+
     exportCSV: {
         options: [
             'limit',
