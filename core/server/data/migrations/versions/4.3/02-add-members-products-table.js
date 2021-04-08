@@ -1,4 +1,4 @@
-const addTable = require('../../utils').addTable;
+const {addTable} = require('../../utils');
 
 module.exports = addTable('members_products', {
     id: {type: 'string', maxlength: 24, nullable: false, primary: true},

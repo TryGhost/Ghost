@@ -34,6 +34,7 @@ module.exports = createTransactionalMigration(
             };
         });
 
+        // SQLite max variables is 999, we have 3 per insert (id, member_id, product_id) so most inserts in a query is 999/3 = 333
         const chunkSize = 333;
         const memberProductRelationsChunks = chunk(memberProductRelations, chunkSize);
 
