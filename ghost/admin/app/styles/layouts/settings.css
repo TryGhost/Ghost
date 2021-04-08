@@ -76,19 +76,19 @@
     color: #fff;
 }
 
-.gh-settings-main-grid .gh-setting-group span.color-1 {
+.gh-settings-main-grid .gh-setting-group span.yellow {
     background: var(--yellow);
 }
 
-.gh-settings-main-grid .gh-setting-group span.color-2 {
+.gh-settings-main-grid .gh-setting-group span.green {
     background: var(--green);
 }
 
-.gh-settings-main-grid .gh-setting-group span.color-3 {
+.gh-settings-main-grid .gh-setting-group span.blue {
     background: var(--blue);
 }
 
-.gh-settings-main-grid .gh-setting-group span.color-4 {
+.gh-settings-main-grid .gh-setting-group span.pink {
     background: var(--pink);
 }
 

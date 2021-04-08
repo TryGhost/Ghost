@@ -9,28 +9,28 @@
         <div class="gh-setting-header gh-first-header">Website</div>
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.general" data-test-nav="general">
-                <span class="color-1">{{svg-jar "settings"}}</span>
+                <span class="yellow">{{svg-jar "settings"}}</span>
                 <div>
                     <h4>General</h4>
                     <p>Basic publication details and site metadata</p>
                 </div>
             </LinkTo>
             <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="branding">
-                <span class="color-3">{{svg-jar "paint-palette"}}</span>
+                <span class="blue">{{svg-jar "paint-palette"}}</span>
                 <div>
                     <h4>Branding</h4>
                     <p>Upload site logo and set accent color</p>
                 </div>
             </button>
             <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
-                <span class="color-2">{{svg-jar "view-site"}}</span>
+                <span class="green">{{svg-jar "view-site"}}</span>
                 <div>
                     <h4>Theme</h4>
                     <p>Install and update themes</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="navigation">
-                <span class="color-4">{{svg-jar "compass-2"}}</span>
+                <span class="pink">{{svg-jar "compass-2"}}</span>
                 <div>
                     <h4>Navigation</h4>
                     <p>Set up primary and secondary menus</p>
@@ -42,14 +42,14 @@
         <div class="gh-settings-main-grid">
             {{#if (enable-developer-experiments)}}
                 <LinkTo class="gh-setting-group" @route="settings.members-access" data-test-nav="members-access">
-                    <span class="color-3">{{svg-jar "eye"}}</span>
+                    <span class="blue">{{svg-jar "eye"}}</span>
                     <div>
                         <h4>Access</h4>
                         <p>Configure members usage and default access levels</p>
                     </div>
                 </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.products" data-test-nav="members-access">
-                <span class="color-4">{{svg-jar "module"}}</span>
+                <span class="green">{{svg-jar "module"}}</span>
                 <div>
                     <h4>Products</h4>
                     <p>Set up subscription products and prices</p>
@@ -57,7 +57,7 @@
             </LinkTo>
             {{/if}}
             <button type="button" class="gh-setting-group portal" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
-                <span class="color-2">{{svg-jar "portal-logo-stroke"}}</span>
+                <span class="pink">{{svg-jar "portal-logo-stroke"}}</span>
                 <div>
                     <h4>Portal</h4>
                     <p>Customize members modal signup flow</p>
@@ -65,14 +65,14 @@
             </button>
             {{#if this.session.user.isOwner}}
             <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="members-email">
-                <span class="color-1">{{svg-jar "email-stroke"}}</span>
+                <span class="yellow">{{svg-jar "email-stroke"}}</span>
                 <div>
                     <h4>Email newsletter</h4>
                     <p>Customise emails and set email addresses</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="members-payments">
-                <span class="color-3">{{svg-jar "piggy-bank"}}</span>
+                <span class="blue">{{svg-jar "piggy-bank"}}</span>
                 <div>
                     <h4>Payments</h4>
                     <p>Connect to Stripe and set up prices</p>
@@ -84,14 +84,14 @@
         <div class="gh-setting-header">Advanced</div>
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.code-injection" data-test-nav="code-injection">
-                <span class="color-2">{{svg-jar "brackets"}}</span>
+                <span class="green">{{svg-jar "brackets"}}</span>
                 <div>
                     <h4>Code injection</h4>
                     <p>Add code to your publication</p>
                 </div>
             </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
-                <span class="color-3">{{svg-jar "labs"}}</span>
+                <span class="pink">{{svg-jar "labs"}}</span>
                 <div>
                     <h4>Labs</h4>
                     <p>Testing ground for new features</p>
