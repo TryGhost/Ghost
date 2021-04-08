@@ -53,6 +53,8 @@ describe('Exporter', function () {
                 'posts_meta',
                 'posts_tags',
                 'products',
+                'stripe_products',
+                'stripe_prices',
                 'roles',
                 'roles_users',
                 'sessions',
