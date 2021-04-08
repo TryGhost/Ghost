@@ -174,16 +174,29 @@
                     </div>
                 </div>
             </div>
+
+
+            <p class="gh-content-box pa bg-whitegrey" hidden={{if this.limitErrorMessage false true}}>
+                {{html-safe this.limitErrorMessage}}
+            </p>
         </div>
     </fieldset>
 </div>
 
 <div class="modal-footer">
-    <GhTaskButton @buttonText="Send invitation now &rarr;"
-        @successText="Sent"
-        @task={{this.sendInvitation}}
-        @class="gh-btn gh-btn-black gh-btn-icon"
-        @disabled={{this.fetchRoles.isRunning}}
-        @disableMouseDown="true"
-        data-test-button="send-user-invite" />
+    {{#if this.limitErrorMessage}}
+        <GhTaskButton @buttonText="Upgrade my plan &rarr;"
+            @task={{this.transitionToBilling}}
+            @class="gh-btn gh-btn-green gh-btn-icon"
+            @disableMouseDown="true"
+            data-test-button="upgrade-my-plan" />
+    {{else}}
+        <GhTaskButton @buttonText="Send invitation now &rarr;"
+            @successText="Sent"
+            @task={{this.sendInvitation}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+            @disabled={{this.fetchRoles.isRunning}}
+            @disableMouseDown="true"
+            data-test-button="send-user-invite" />
+    {{/if}}
 </div>

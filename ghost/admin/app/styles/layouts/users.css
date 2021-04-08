@@ -240,7 +240,8 @@
     white-space: nowrap;
 }
 
-.invite-new-user .gh-btn-black {
+.invite-new-user .gh-btn-black,
+.invite-new-user .gh-btn-green {
     margin: 0;
     width: 100%;
 }

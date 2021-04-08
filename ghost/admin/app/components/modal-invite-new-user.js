@@ -9,13 +9,17 @@ import {task} from 'ember-concurrency';
 const {Promise} = RSVP;
 
 export default ModalComponent.extend(ValidationEngine, {
+    router: service(),
     notifications: service(),
     store: service(),
+    limit: service(),
 
     classNames: 'modal-content invite-new-user',
 
     role: null,
     roles: null,
+
+    limitErrorMessage: null,
 
     validationType: 'inviteUser',
 
@@ -42,7 +46,27 @@ export default ModalComponent.extend(ValidationEngine, {
         const role = this.roles.findBy('name', roleName);
         this.set('role', role);
         this.errors.remove('role');
+        this.validateRole();
     }),
+
+    async validateRole() {
+        if (this.get('role.name') !== 'Contributor'
+            && this.limit.limiter && this.limit.limiter.isLimited('staff')) {
+            try {
+                await this.limit.limiter.errorIfWouldGoOverLimit('staff');
+
+                this.set('limitErrorMessage', null);
+            } catch (error) {
+                if (error.errorType === 'HostLimitError') {
+                    this.set('limitErrorMessage', error.message);
+                } else {
+                    this.notifications.showAPIError(error, {key: 'staff.limit'});
+                }
+            }
+        } else {
+            this.set('limitErrorMessage', null);
+        }
+    },
 
     validate() {
         let email = this.email;
@@ -123,5 +147,11 @@ export default ModalComponent.extend(ValidationEngine, {
                 this.send('closeModal');
             }
         }
-    }).drop()
+    }).drop(),
+
+    transitionToBilling: task(function () {
+        this.router.transitionTo('pro');
+
+        this.send('closeModal');
+    })
 });
