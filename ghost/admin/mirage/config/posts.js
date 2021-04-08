@@ -1,40 +1,8 @@
 import moment from 'moment';
 import {Response} from 'ember-cli-mirage';
 import {dasherize} from '@ember/string';
-import {isArray} from '@ember/array';
+import {extractFilterParam, paginateModelCollection} from '../utils';
 import {isBlank, isEmpty} from '@ember/utils';
-import {paginateModelCollection} from '../utils';
-
-function normalizeBooleanParams(arr) {
-    if (!isArray(arr)) {
-        return arr;
-    }
-
-    return arr.map((i) => {
-        if (i === 'true') {
-            return true;
-        } else if (i === 'false') {
-            return false;
-        } else {
-            return i;
-        }
-    });
-}
-
-// TODO: use GQL to parse filter string?
-function extractFilterParam(param, filter) {
-    let filterRegex = new RegExp(`${param}:(.*?)(?:\\+|$)`);
-    let match;
-
-    let [, result] = filter.match(filterRegex) || [];
-    if (result.startsWith('[')) {
-        match = result.replace(/^\[|\]$/g, '').split(',');
-    } else if (result) {
-        match = [result];
-    }
-
-    return normalizeBooleanParams(match);
-}
 
 // NOTE: mirage requires Model objects when saving relationships, however the
 // `attrs` on POST/PUT requests will contain POJOs for authors and tags so we

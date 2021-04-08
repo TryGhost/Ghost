@@ -28,16 +28,22 @@
 
             <div class="view-actions-top-row">
                 <span class="dropdown">
-                    <GhDropdownButton @dropdownName="members-actions-menu"
-                        @classNames="gh-btn gh-btn-icon only-has-icon gh-actions-cog" @title="Members Actions"
-                        @data-test-user-actions="true">
+                    <GhDropdownButton
+                        @dropdownName="members-actions-menu"
+                        @classNames="gh-btn gh-btn-icon only-has-icon gh-actions-cog"
+                        @title="Members Actions"
+                        data-test-button="members-actions"
+                    >
                         <span>
                             {{svg-jar "settings"}}
                             <span class="hidden">Actions</span>
                         </span>
                     </GhDropdownButton>
-                    <GhDropdown @name="members-actions-menu" @tagName="ul"
-                        @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right">
+                    <GhDropdown
+                        @name="members-actions-menu"
+                        @tagName="ul"
+                        @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
+                    >
                         <li>
                             <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
                                 <span>Import members</span>
@@ -58,6 +64,13 @@
                                 </button>
                             {{/if}}
                         </li>
+                        {{#if (and this.members.length this.isFiltered)}}
+                            <li>
+                                <button class="mr2" {{on "click" this.toggleDeleteMembersModal}} data-test-button="delete-selected">
+                                    <span class="red">Delete selected members ({{this.members.length}})</span>
+                                </button>
+                            </li>
+                        {{/if}}
                     </GhDropdown>
                 </span>
                 <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>

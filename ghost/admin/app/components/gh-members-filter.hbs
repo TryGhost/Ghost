@@ -2,8 +2,10 @@
     <span class="{{if @selectedLabel.slug "gh-contentfilter-selected"}}">
     <GhDropdownButton
         @dropdownName="members-label-menu"
-        @classNames="gh-contentfilter-menu-trigger" @title="Member Labels"
-        @data-test-user-actions="true">
+        @classNames="gh-contentfilter-menu-trigger"
+        @title="Member Labels"
+        data-test-button="labels-filter"
+    >
             <span class="gh-btn-filter-maxwidth" title="{{@selectedLabel.name}}">
                 <span>{{@selectedLabel.name}}</span>
                 {{svg-jar "arrow-down-small"}}
@@ -19,7 +21,7 @@
             {{#each @availableLabels as |label|}}
                 <li class="{{if (eq @selectedLabel.name label.name) "selected"}}">
                     <a>
-                        <span class="dropdown-label" title="{{label.name}}" {{on "click" (fn @onLabelChange label)}}>{{label.name}} </span>
+                        <span class="dropdown-label" title="{{label.name}}" {{on "click" (fn @onLabelChange label)}} data-test-label-filter={{label.name}}>{{label.name}} </span>
                         {{#if label.slug}}
                             <span class="dropdown-action-icon" {{on "click" (fn @onLabelEdit label.slug)}}> {{svg-jar "pen"}} </span>
                         {{/if}}

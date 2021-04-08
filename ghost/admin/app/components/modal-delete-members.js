@@ -20,7 +20,7 @@ export default ModalComponent.extend({
             this.set('response', yield this.confirm());
             this.set('confirmed', true);
         } catch (e) {
-            if (e.payload.errors) {
+            if (e.payload?.errors) {
                 this.set('confirmed', true);
                 this.set('error', e.payload.errors[0].message);
             }

@@ -4,6 +4,7 @@ import moment from 'moment';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
+import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
@@ -27,6 +28,7 @@ export default class MembersController extends Controller {
     @service feature;
     @service ghostPaths;
     @service membersStats;
+    @service router;
     @service store;
 
     queryParams = [
@@ -135,6 +137,10 @@ export default class MembersController extends Controller {
 
     get selectedPaidParam() {
         return this.paidParams.findBy('value', this.paidParam) || {value: '!unknown'};
+    }
+
+    get isFiltered() {
+        return !!(this.label || this.paidParam || this.searchParam);
     }
 
     // Actions -----------------------------------------------------------------
@@ -345,9 +351,11 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.reload();
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.membersStats.invalidate();
+        this.membersStats.fetchCounts();
 
-        return response.meta.stats;
+        return response.meta;
     }
 
     // Internal ----------------------------------------------------------------
@@ -356,9 +364,9 @@ export default class MembersController extends Controller {
         this.searchText = '';
     }
 
-    reload() {
+    reload(params) {
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
-        this.fetchMembersTask.perform();
+        this.fetchMembersTask.perform(params);
     }
 }
