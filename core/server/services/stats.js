@@ -38,22 +38,18 @@ class Stats {
         const totalMembers = await this.getTotalMembers();
         const totalPosts = await this.getTotalMembers();
 
-        const results = await Promise.props({
+        return await Promise.props({
             totalMembers: totalMembers,
             totalPosts: totalPosts
 
         });
-
-        return results;
     }
     // testing the content that the data fetched from the db contains
     async testPosts() {
-        const result = await this._db.knex.raw('SELECT title FROM posts');
-        return result
+        return await this._db.knex.raw('SELECT title FROM posts');
     }
     async testMembers() {
-        const result = await this._db.knex.raw('SELECT name FROM members');
-        return result
+        return await this._db.knex.raw('SELECT name FROM members');
     }
 
 }
