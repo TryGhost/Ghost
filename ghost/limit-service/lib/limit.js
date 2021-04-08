@@ -157,7 +157,51 @@ class FlagLimit extends Limit {
     }
 }
 
+class AllowlistLimit extends Limit {
+    constructor({name, config, helpLink, errors}) {
+        super({name, error: config.error || '', helpLink, errors});
+
+        if (!config.allowlist || !config.allowlist.length) {
+            throw new this.errors.IncorrectUsageError('Attempted to setup an allowlist limit without an allowlist');
+        }
+
+        this.allowlist = config.allowlist;
+        this.fallbackMessage = `This action would exceed the ${_.lowerCase(this.name)} limit on your current plan.`;
+    }
+
+    generateError() {
+        let errorObj = super.generateError();
+
+        if (this.error) {
+            errorObj.message = this.error;
+        } else {
+            errorObj.message = this.fallbackMessage;
+        }
+
+        return new this.errors.HostLimitError(errorObj);
+    }
+
+    async errorIfWouldGoOverLimit(metadata) {
+        if (!metadata.value) {
+            throw new this.errors.IncorrectUsageError('Attempted to check an allowlist limit without a value');
+        }
+        if (!this.allowlist.includes(metadata.value)) {
+            throw this.generateError();
+        }
+    }
+
+    async errorIfIsOverLimit(metadata) {
+        if (!metadata.value) {
+            throw new this.errors.IncorrectUsageError('Attempted to check an allowlist limit without a value');
+        }
+        if (!this.allowlist.includes(metadata.value)) {
+            throw this.generateError();
+        }
+    }
+}
+
 module.exports = {
     MaxLimit,
-    FlagLimit
+    FlagLimit,
+    AllowlistLimit
 };
