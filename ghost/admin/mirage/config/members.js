@@ -146,5 +146,13 @@ export default function mockMembers(server) {
 
     server.del('/members/:id/');
 
+    server.get('/members/upload/', function () {
+        return new Response(200, {
+            'Content-Disposition': 'attachment',
+            filename: `members.${moment().format('YYYY-MM-DD')}.csv`,
+            'Content-Type': 'text/csv'
+        }, '');
+    });
+
     mockMembersStats(server);
 }
