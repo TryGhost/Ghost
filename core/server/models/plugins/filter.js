@@ -25,6 +25,13 @@ const RELATIONS = {
         joinFrom: 'member_id',
         joinTo: 'label_id'
     },
+    products: {
+        tableName: 'products',
+        type: 'manyToMany',
+        joinTable: 'members_products',
+        joinFrom: 'member_id',
+        joinTo: 'product_id'
+    },
     posts_meta: {
         tableName: 'posts_meta',
         type: 'oneToOne',
@@ -54,13 +61,24 @@ const EXPANSIONS = {
         key: 'tags',
         replacement: 'tags.slug'
     }],
-    members: [{
-        key: 'label',
-        replacement: 'labels.slug'
-    }, {
-        key: 'labels',
-        replacement: 'labels.slug'
-    }]
+    members: [
+        {
+            key: 'label',
+            replacement: 'labels.slug'
+        },
+        {
+            key: 'labels',
+            replacement: 'labels.slug'
+        },
+        {
+            key: 'product',
+            replacement: 'products.slug'
+        },
+        {
+            key: 'products',
+            replacement: 'products.slug'
+        }
+    ]
 };
 
 const filter = function filter(Bookshelf) {

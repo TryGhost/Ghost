@@ -17,7 +17,7 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['labels', 'stripeCustomers', 'email_recipients'],
+    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients'],
 
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
@@ -28,9 +28,14 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     relationshipBelongsTo: {
+        products: 'products',
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
         email_recipients: 'email_recipients'
+    },
+
+    products() {
+        return this.belongsToMany('Product', 'members_products', 'member_id', 'product_id');
     },
 
     labels: function labels() {
