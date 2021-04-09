@@ -139,6 +139,28 @@ describe('Limit Service', function () {
             limitService.isLimited('custom_themes').should.be.false();
             limitService.isLimited('customThemes').should.be.false();
         });
+
+        it('populates new limits if called multiple times', function () {
+            const limitService = new LimitService();
+
+            const staffLimit = {staff: {max: 2}};
+
+            limitService.loadLimits({limits: staffLimit, errors});
+
+            limitService.limits.should.be.an.Object().with.properties(['staff']);
+            limitService.limits.staff.should.be.an.instanceOf(MaxLimit);
+            limitService.isLimited('staff').should.be.true();
+            limitService.isLimited('members').should.be.false();
+
+            const membersLimit = {members: {max: 3}};
+
+            limitService.loadLimits({limits: membersLimit, errors});
+
+            limitService.limits.should.be.an.Object().with.properties(['members']);
+            limitService.limits.members.should.be.an.instanceOf(MaxLimit);
+            limitService.isLimited('staff').should.be.false();
+            limitService.isLimited('members').should.be.true();
+        });
     });
 
     describe('Custom limit count query configuration', function () {
