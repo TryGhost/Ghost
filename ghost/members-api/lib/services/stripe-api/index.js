@@ -1,19 +1,19 @@
 const debug = require('ghost-ignition').debug('services/stripe');
-const Stripe = require('stripe');
+const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
 const EXPECTED_API_EFFICIENCY = 0.95;
 
 /** @type {(data: string) => string} */
 const hash = data => require('crypto').createHash('sha256').update(data).digest('hex');
 
-const STRIPE_API_VERSION = '2019-09-09';
+const STRIPE_API_VERSION = '2020-08-27';
 
 /**
- * @typedef {import('stripe').IDataOptions} IDataOptions
- * @typedef {import('stripe').customers.ICustomer} ICustomer
- * @typedef {import('stripe').products.IProduct} IProduct
- * @typedef {import('stripe').plans.IPlan} IPlan
- * @typedef {import('stripe').webhookEndpoints.IWebhookEndpoint} IWebhookEndpoint
+ * @typedef {import('stripe').Stripe.Customer} ICustomer
+ * @typedef {import('stripe').Stripe.Product} IProduct
+ * @typedef {import('stripe').Stripe.Plan} IPlan
+ * @typedef {import('stripe').Stripe.Price} IPrice
+ * @typedef {import('stripe').Stripe.WebhookEndpoint} IWebhookEndpoint
  */
 
 /**
@@ -62,7 +62,9 @@ module.exports = class StripeAPIService {
     }
 
     configure(config) {
-        this._stripe = new Stripe(config.secretKey);
+        this._stripe = new Stripe(config.secretKey, {
+            apiVersion: STRIPE_API_VERSION
+        });
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
@@ -161,7 +163,7 @@ module.exports = class StripeAPIService {
 
     /**
      * @param {string} id
-     * @param {IDataOptions} options
+     * @param {import('stripe').Stripe.CustomerRetrieveParams} options
      *
      * @returns {Promise<ICustomer>}
      */
@@ -206,7 +208,7 @@ module.exports = class StripeAPIService {
     }
 
     /**
-     * @param {IDataOptions} options
+     * @param {import('stripe').Stripe.CustomerCreateParams} options
      *
      * @returns {Promise<ICustomer>}
      */
@@ -246,7 +248,7 @@ module.exports = class StripeAPIService {
      * createWebhook.
      *
      * @param {string} url
-     * @param {import('stripe').events.EventType[]} events
+     * @param {import('stripe').Stripe.WebhookEndpointUpdateParams.EnabledEvent[]} events
      *
      * @returns {Promise<IWebhookEndpoint>}
      */
@@ -288,7 +290,7 @@ module.exports = class StripeAPIService {
     /**
      * @param {string} id
      * @param {string} url
-     * @param {import('stripe').events.EventType[]} events
+     * @param {import('stripe').Stripe.WebhookEndpointUpdateParams.EnabledEvent[]} events
      *
      * @returns {Promise<IWebhookEndpoint>}
      */
@@ -318,7 +320,7 @@ module.exports = class StripeAPIService {
      * @param {string} signature
      * @param {string} secret
      *
-     * @returns {import('stripe').events.IEvent}
+     * @returns {import('stripe').Stripe.Event}
      */
     parseWebhook(body, signature, secret) {
         debug(`parseWebhook(${body}, ${signature}, ${secret})`);
@@ -337,7 +339,7 @@ module.exports = class StripeAPIService {
      * @param {ICustomer} customer
      * @param {object} options
      *
-     * @returns {Promise<import('stripe').checkouts.sessions.ICheckoutSession>}
+     * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
      */
     async createCheckoutSession(plan, customer, options) {
         const metadata = options.metadata || undefined;
@@ -366,7 +368,7 @@ module.exports = class StripeAPIService {
      * @param {ICustomer} customer
      * @param {object} options
      *
-     * @returns {Promise<import('stripe').checkouts.sessions.ICheckoutSession>}
+     * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
      */
     async createCheckoutSetupSession(customer, options) {
         await this._rateLimitBucket.throttle();
@@ -394,9 +396,9 @@ module.exports = class StripeAPIService {
      * getSubscription.
      *
      * @param {string} id
-     * @param {IDataOptions} options
+     * @param {import('stripe').Stripe.SubscriptionRetrieveParams} options
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async getSubscription(id, options = {}) {
         debug(`getSubscription(${id}, ${JSON.stringify(options)})`);
@@ -416,7 +418,7 @@ module.exports = class StripeAPIService {
      *
      * @param {string} id
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async cancelSubscription(id) {
         debug(`cancelSubscription(${id})`);
@@ -435,7 +437,7 @@ module.exports = class StripeAPIService {
      * @param {string} id - The ID of the Subscription to modify
      * @param {string} [reason=''] - The user defined cancellation reason
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async cancelSubscriptionAtPeriodEnd(id, reason = '') {
         await this._rateLimitBucket.throttle();
@@ -451,7 +453,7 @@ module.exports = class StripeAPIService {
     /**
      * @param {string} id - The ID of the Subscription to modify
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async continueSubscriptionAtPeriodEnd(id) {
         await this._rateLimitBucket.throttle();
@@ -468,7 +470,7 @@ module.exports = class StripeAPIService {
      * @param {string} id - The ID of the Subscription to modify
      * @param {string} plan - The ID of the new Plan
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async changeSubscriptionPlan(id, plan) {
         await this._rateLimitBucket.throttle();
@@ -486,7 +488,7 @@ module.exports = class StripeAPIService {
      * @param {string} customer - The ID of the Customer to create the subscription for
      * @param {string} plan - The ID of the new Plan
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async createSubscription(customer, plan) {
         await this._rateLimitBucket.throttle();
@@ -499,9 +501,9 @@ module.exports = class StripeAPIService {
 
     /**
      * @param {string} id
-     * @param {IDataOptions} options
+     * @param {import('stripe').Stripe.SetupIntentRetrieveParams} options
      *
-     * @returns {Promise<import('stripe').setupIntents.ISetupIntent>}
+     * @returns {Promise<import('stripe').Stripe.SetupIntent>}
      */
     async getSetupIntent(id, options = {}) {
         await this._rateLimitBucket.throttle();
@@ -523,7 +525,7 @@ module.exports = class StripeAPIService {
     /**
      * @param {string} id
      *
-     * @returns {Promise<import('stripe').paymentMethods.ICardPaymentMethod|null>}
+     * @returns {Promise<import('stripe').Stripe.PaymentMethod|null>}
      */
     async getCardPaymentMethod(id) {
         await this._rateLimitBucket.throttle();
@@ -531,7 +533,7 @@ module.exports = class StripeAPIService {
         if (paymentMethod.type !== 'card') {
             return null;
         }
-        /** @type {import('stripe').paymentMethods.ICardPaymentMethod} */
+
         return paymentMethod;
     }
 
@@ -539,7 +541,7 @@ module.exports = class StripeAPIService {
      * @param {string} subscription
      * @param {string} paymentMethod
      *
-     * @returns {Promise<import('stripe').subscriptions.ISubscription>}
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
     async updateSubscriptionDefaultPaymentMethod(subscription, paymentMethod) {
         await this._rateLimitBucket.throttle();
