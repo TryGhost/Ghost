@@ -55,7 +55,6 @@ Router.map(function () {
 
     this.route('settings.products', {path: '/settings/products'});
     this.route('settings.product', {path: '/settings/product'});
-    this.route('settings.price', {path: '/settings/price'});
 
     this.route('settings.theme', {path: '/settings/theme'}, function () {
         this.route('uploadtheme');
