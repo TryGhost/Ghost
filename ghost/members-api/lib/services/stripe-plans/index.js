@@ -12,14 +12,14 @@ module.exports = class StripeService {
     }) {
         this._stripeAPIService = stripeAPIService;
         this._configured = false;
-        /** @type {import('stripe').products.IProduct} */
+        /** @type {import('stripe').Stripe.Product} */
         this._product = null;
-        /** @type {import('stripe').plans.IPlan[]} */
+        /** @type {import('stripe').Stripe.Plan[]} */
         this._plans = null;
     }
 
     /**
-     * @returns {import('stripe').products.IProduct}
+     * @returns {import('stripe').Stripe.Product}
      */
     getProduct() {
         if (!this._configured) {
@@ -29,7 +29,7 @@ module.exports = class StripeService {
     }
 
     /**
-     * @returns {import('stripe').plans.IPlan[]}
+     * @returns {import('stripe').Stripe.Plan[]}
      */
     getPlans() {
         if (!this._configured) {
@@ -40,7 +40,7 @@ module.exports = class StripeService {
 
     /**
      * @param {string} nickname
-     * @returns {import('stripe').plans.IPlan}
+     * @returns {import('stripe').Stripe.Plan}
      */
     getPlan(nickname) {
         if (!this._configured) {
@@ -53,7 +53,7 @@ module.exports = class StripeService {
 
     /**
      * @param {Currency} currency
-     * @returns {import('stripe').plans.IPlan}
+     * @returns {import('stripe').Stripe.Plan}
      */
     getComplimentaryPlan(currency) {
         if (!this._configured) {
