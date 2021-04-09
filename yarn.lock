@@ -559,10 +559,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.13"
 
-"@tryghost/limit-service@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.4.0.tgz#a681eb866171a6966162db87ae0d18ccb1fbb965"
-  integrity sha512-DVWYiKgvXzWqi+L2jJPhTQLogiRZUJw+bX9XMmLg202rnNAn8A9eYIAmWu5TbY4Gp0+6gz6IZFdIIocGDtA8Aw==
+"@tryghost/limit-service@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.4.1.tgz#c827e8a334854766f073520ae5dab12e132e0945"
+  integrity sha512-MYcW+s4+OfA9C/tI7e0ZKhxUk02tVhkcrBc/7p+BgiJnS+LdcgrV21xRqH/UhERotgOLcFRTHPt6bkqW1Lnhwg==
   dependencies:
     lodash "^4.17.21"
 
