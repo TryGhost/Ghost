@@ -56,24 +56,20 @@ class Stats {
         const totalMemberPosts = await this.getTotalMemberPosts();
         const totalPaidMemberPosts = await this.getTotalPaidMemberPosts();
 
-        const results = await Promise.props({
+        return Promise.props({
             totalMembers: totalMembers,
             totalPosts: totalPosts,
             totalMemberPosts: totalMemberPosts,
             totalPaidMemberPosts: totalPaidMemberPosts
 
         });
-
-        return results;
     }
     // testing the content that the data fetched from the db contains
     async testPosts() {
-        const result = await this._db.knex.raw('SELECT title FROM posts');
-        return result
+        return this._db.knex.raw('SELECT title FROM posts');
     }
     async testMembers() {
-        const result = await this._db.knex.raw('SELECT name FROM members');
-        return result
+        return this._db.knex.raw('SELECT name FROM members');
     }
     async testMemberPosts() {
         const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = members AND status = published');
