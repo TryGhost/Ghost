@@ -1,5 +1,7 @@
 const _ = require('lodash');
+const limitService = require('../../services/limits');
 const {events} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const trigger = require('./trigger');
 
 const WEBHOOKS = [
@@ -39,7 +41,18 @@ const WEBHOOKS = [
     'page.tag.detached'
 ];
 
-const listen = () => {
+const listen = async () => {
+    if (limitService.isLimited('customIntegrations')) {
+        // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
+        //       a concept of measuring if the limit has been surpassed
+        const overLimit = await limitService.checkWouldGoOverLimit('customIntegrations');
+
+        if (overLimit) {
+            logging.info(`Skipped subscribing webhooks to events. The "customIntegrations" plan limit is enabled."`);
+            return;
+        }
+    }
+
     _.each(WEBHOOKS, (event) => {
         events.on(event, (model, options) => {
             // CASE: avoid triggering webhooks when importing
