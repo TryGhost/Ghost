@@ -72,12 +72,10 @@ class Stats {
         return this._db.knex.raw('SELECT name FROM members');
     }
     async testMemberPosts() {
-        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = members AND status = published');
-        return result;
+        return this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = members AND status = published');
     }
     async testPaidMemberPosts() {
-        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = paid AND status = published');
-        return result;
+        return this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = paid AND status = published');
     }
 }
 
