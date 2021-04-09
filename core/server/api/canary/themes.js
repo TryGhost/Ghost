@@ -35,8 +35,13 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             let themeName = frame.options.name;
+
+            if (limitService.isLimited('customThemes')) {
+                await limitService.errorIfWouldGoOverLimit('customThemes', {value: themeName});
+            }
+
             const newSettings = [{
                 key: 'active_theme',
                 value: themeName
@@ -76,8 +81,9 @@ module.exports = {
             if (frame.options.source === 'github') {
                 const [org, repo] = frame.options.ref.toLowerCase().split('/');
 
+                //TODO: move the organization check to config
                 if (limitService.isLimited('customThemes') && org.toLowerCase() !== 'tryghost') {
-                    await limitService.errorIfWouldGoOverLimit('customThemes');
+                    await limitService.errorIfWouldGoOverLimit('customThemes', {value: repo.toLowerCase()});
                 }
 
                 // omit /:ref so we fetch the default branch
@@ -140,7 +146,8 @@ module.exports = {
         },
         async query(frame) {
             if (limitService.isLimited('customThemes')) {
-                await limitService.errorIfWouldGoOverLimit('customThemes');
+                // Sending a bad string to make sure it fails (empty string isn't valid)
+                await limitService.errorIfWouldGoOverLimit('customThemes', {value: '.'});
             }
 
             // @NOTE: consistent filename uploads
