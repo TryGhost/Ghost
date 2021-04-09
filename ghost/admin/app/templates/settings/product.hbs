@@ -169,12 +169,18 @@
                     </LinkTo>
                 </li>
             </ol>
-            
-            <LinkTo @route="settings.product" class="gh-btn gh-btn-green">
+
+            <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showPriceModal" this)}}>
                 <span>New price</span>
-            </LinkTo>
+            </button>
         </div>
     </div>
+
+    {{#if this.showPriceModal}}
+        <GhFullscreenModal @modal="product-price"
+            @close={{this.closePriceModal}}
+            @modifier="action wide body-scrolling product-price" />
+    {{/if}}
 
     {{#if this.showLeaveSettingsModal}}
         <GhFullscreenModal

@@ -1,0 +1,106 @@
+<header class="modal-header" data-test-modal="webhook-form">
+    <h1 data-test-text="title">New price</h1>
+</header>
+<button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}
+</button>
+
+<form>
+<div class="modal-body">
+    <div class="gh-main-section-block">
+        <h4 class="gh-main-section-header small bn">Pricing</h4>
+        <div class="gh-main-section-content grey gh-product-priceform-block">
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="name">
+                <label for="name" class="fw6">Name</label>
+                <GhTextInput
+                    @value=''
+                    @name="name"
+                    @id="name"
+                    @class="gh-input" />
+                <GhErrorMessage @errors={{this.price.errors}} @property="name" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="description">
+                <label for="description" class="fw6">Description</label>
+                <GhTextInput
+                    @value=''
+                    @name="description"
+                    @id="description"
+                    @class="gh-input" />
+                <GhErrorMessage @errors={{this.price.errors}} @property="description" />
+            </GhFormGroup>
+            <div class="gh-product-priceform-period">
+                <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="billing-period">
+                    <label for="billing-period" class="fw6">Billing period</label>
+                    <GhProductsPriceBillingperiod @triggerId="period-input" />
+                </GhFormGroup>
+                <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="price">
+                    <label for="price" class="fw6">Price</label>
+                    <div class="flex items-center justify-center gh-input-group gh-labs-price-label">
+                        <GhTextInput
+                            @value=''
+                            @type="number"
+                            {{!-- @input={{action (mut this._scratchStripeMonthlyAmount) value="target.value"}} --}}
+                            {{!-- @focus-out={{action "validateStripePlans"}} --}}
+                        />
+                        <span class="gh-input-append"><span class="ttu">USD</span>/month</span>
+                    </div>
+                    <GhErrorMessage @errors={{this.price.errors}} @property="price" />
+                </GhFormGroup>
+            </div>
+        </div>
+
+        <h4 class="gh-main-section-header small bn">Advanced</h4>
+        <div class="gh-main-section-content grey gh-product-priceform-block">
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="trial-period">
+                <label for="trial-period" class="fw6">Trial period</label>
+                <div class="flex items-center justify-center gh-input-group gh-labs-price-label">
+                    <GhTextInput
+                        @value=''
+                        @name="trial-period"
+                        @id="trial-period"
+                        @class="gh-input" />
+                    <span class="gh-input-append">days</span>
+                </div>
+                <GhErrorMessage @errors={{this.price.errors}} @property="trial-period" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="welcome-page">
+                <label for="welcome-page" class="fw6">Welcome page</label>
+                <GhTextInput
+                    @value=''
+                    @name="welcome-page"
+                    @id="welcome-page"
+                    @class="gh-input" />
+                <p>Redirect to this URL after signing up with this price</p>
+                <GhErrorMessage @errors={{this.price.errors}} @property="welcome-page" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="stripe-url">
+                <label for="stripe-url" class="fw6">Stripe Checkout URL</label>
+                <GhTextInput
+                    @value='https://example.com/checkout'
+                    @name="stripe-url"
+                    @id="stripe-url"
+                    @disabled={{true}}
+                    @class="gh-input" />
+                <GhErrorMessage @errors={{this.price.errors}} @property="stripe-url" />
+            </GhFormGroup>
+        </div>
+    </div>
+</div>
+</form>
+
+<div class="modal-footer">
+    <button
+        class="gh-btn"
+        {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{action (optional this.noop) on="mouseDown"}}
+        data-test-button="cancel-webhook"
+    >
+        <span>Cancel</span>
+    </button>
+    <GhTaskButton @buttonText="Save price"
+        @successText={{this.successText}}
+        {{!-- @task={{this.saveWebhook}} --}}
+        @class="gh-btn gh-btn-black gh-btn-icon"
+        data-test-button="save-webhook" />
+</div>

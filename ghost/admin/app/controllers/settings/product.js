@@ -8,6 +8,7 @@ export default class ProductController extends Controller {
     @service settings;
 
     @tracked showLeaveSettingsModal = false;
+    @tracked showPriceModal = false;
 
     leaveRoute(transition) {
         if (this.settings.get('hasDirtyAttributes')) {
@@ -28,6 +29,11 @@ export default class ProductController extends Controller {
     cancelLeave() {
         this.showLeaveSettingsModal = false;
         this.leaveSettingsTransition = null;
+    }
+
+    @action
+    closePriceModal() {
+        this.showPriceModal = false;
     }
 
     @task({drop: true})
