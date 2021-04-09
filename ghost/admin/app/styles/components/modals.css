@@ -74,6 +74,30 @@
     margin: 6vw 0;
 }
 
+.fullscreen-modal-body-scrolling .modal-body {
+    max-height: calc(100vh - 12vw - 12vmin - 24px - 34px - 64px);   /* top and bottom margins + extra padding at the bottom + modal header & footer */
+    overflow-y: scroll;
+    margin: 0 -32px;
+    padding: 0 32px;
+}
+
+.fullscreen-modal-body-scrolling .modal-footer {
+    position: relative;
+    margin: 20px -32px 0;
+    padding: 0 32px;
+}
+
+.fullscreen-modal-body-scrolling .modal-footer:before {
+    position: absolute;
+    content: "";
+    top: -20px;
+    left: -32px;
+    right: -32px;
+    height: 6px;
+    background: hsla(0,0%,100%,0);
+    box-shadow: 0 -0.3px 1px rgb(0 0 0 / 3%), 0 -4px 7px rgb(0 0 0 / 6%);
+}
+
 
 /* The modal
 /* ---------------------------------------------------------- */

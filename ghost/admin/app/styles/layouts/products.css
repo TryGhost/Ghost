@@ -142,3 +142,14 @@
     animation-duration: 0.01s;
     pointer-events: none;
 }
+
+/* Price details */
+.gh-product-priceform-block {
+    margin-bottom: 32px;
+}
+
+.gh-product-priceform-period {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+}
