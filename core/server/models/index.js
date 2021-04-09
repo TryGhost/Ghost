@@ -29,6 +29,8 @@ const models = [
     'mobiledoc-revision',
     'member',
     'product',
+    'stripe-product',
+    'stripe-price',
     'member-subscribe-event',
     'member-paid-subscription-event',
     'member-login-event',
