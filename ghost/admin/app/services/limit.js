@@ -33,28 +33,30 @@ export default class LimitsService extends Service {
 
         let limits = this.config.get('hostSettings.limits');
 
-        if (limits && !this.limiter) {
-            this.limiter = new LimitService();
+        this.limiter = new LimitService();
 
-            let helpLink;
-
-            if (this.config.get('hostSettings.billing.enabled')
-                && this.config.get('hostSettings.billing.enabled') === true
-                && this.config.get('hostSettings.billing.url')) {
-                helpLink = this.config.get('hostSettings.billing.url');
-            } else {
-                helpLink = 'https://ghost.org/help/';
-            }
-
-            return this.limiter.loadLimits({
-                limits: this.decorateWithCountQueries(limits),
-                helpLink,
-                errors: {
-                    HostLimitError,
-                    IncorrectUsageError
-                }
-            });
+        if (!limits) {
+            return;
         }
+
+        let helpLink;
+
+        if (this.config.get('hostSettings.billing.enabled')
+            && this.config.get('hostSettings.billing.enabled') === true
+            && this.config.get('hostSettings.billing.url')) {
+            helpLink = this.config.get('hostSettings.billing.url');
+        } else {
+            helpLink = 'https://ghost.org/help/';
+        }
+
+        return this.limiter.loadLimits({
+            limits: this.decorateWithCountQueries(limits),
+            helpLink,
+            errors: {
+                HostLimitError,
+                IncorrectUsageError
+            }
+        });
     }
 
     decorateWithCountQueries(limits) {
