@@ -13,7 +13,7 @@ class Stats {
         this._settingsCache = settingsCache;
         this._isSQLite = isSQLite;
     }
-    
+
     /**
      * Fetches count of all members
      */
@@ -21,12 +21,28 @@ class Stats {
         const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM members');
         return this._isSQLite ? result[0].total : result[0][0].total;
     }
-    
+
     /**
      * Fetches count of all posts
      */
     async getTotalPosts() {
         const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts');
+        return this._isSQLite ? result[0].total : result[0][0].total;
+    }
+
+    /**
+     * Fetches count of all member posts
+     */
+    async getTotalMemberPosts() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = members AND status = published');
+        return this._isSQLite ? result[0].total : result[0][0].total;
+    }
+
+    /**
+     * Fetches count of all paid member posts
+     */
+    async getTotalPaidMemberPosts() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = paid AND status = published');
         return this._isSQLite ? result[0].total : result[0][0].total;
     }
 
@@ -37,10 +53,14 @@ class Stats {
     async fetch() {
         const totalMembers = await this.getTotalMembers();
         const totalPosts = await this.getTotalMembers();
+        const totalMemberPosts = await this.getTotalMemberPosts();
+        const totalPaidMemberPosts = await this.getTotalPaidMemberPosts();
 
         const results = await Promise.props({
             totalMembers: totalMembers,
-            totalPosts: totalPosts
+            totalPosts: totalPosts,
+            totalMemberPosts: totalMemberPosts,
+            totalPaidMemberPosts: totalPaidMemberPosts
 
         });
 
@@ -55,7 +75,14 @@ class Stats {
         const result = await this._db.knex.raw('SELECT name FROM members');
         return result
     }
-
+    async testMemberPosts() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = members AND status = published');
+        return result;
+    }
+    async testPaidMemberPosts() {
+        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = paid AND status = published');
+        return result;
+    }
 }
 
 module.exports = Stats;

@@ -7,14 +7,11 @@ const settingsCache = require('../../../core/server/services/settings/cache');
 const db = require('../../../core/server/data/db');
 const config = require('../../../core/shared/config');
 
-
 describe('Stats Service', function () {
     afterEach(function () {
         sinon.restore();
     });
-
     it('total posts', async function () {
-
         const stats = new Stats ({
             db: db,
             settingsCache: settingsCache,
@@ -23,7 +20,6 @@ describe('Stats Service', function () {
         const result = await stats.getTotalPosts()
         console.log(result)
     });
-
     it('total members', async function () {
         const stats = new Stats ({
             db: db,
@@ -51,5 +47,40 @@ describe('Stats Service', function () {
         const result = await stats.testMembers()
         console.log(result)
     });
-
+    it('total member posts', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.getTotalMemberPosts();
+        console.log(result);
+    });
+    it('total paid member posts', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.getTotalPaidMemberPosts();
+        console.log(result);
+    });
+    it('what are member posts?', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.testMemberPosts();
+        console.log(result);
+    });
+    it('what are paid member posts?', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.testPaidMemberPosts();
+        console.log(result);
+    });
 });
