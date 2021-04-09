@@ -150,7 +150,8 @@ class FlagLimit extends Limit {
     }
 
     /**
-     * Flag limits are on/off so we can't be over the limit
+     * Flag limits are on/off. They don't necessarily mean the limit wasn't possible to reach
+     * NOTE: this method should not be relied on as it's impossible to check the limit was surpassed!
      */
     async errorIfIsOverLimit() {
         return;
