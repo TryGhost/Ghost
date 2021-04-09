@@ -11,17 +11,20 @@ class LimitService {
      * Initializes the limits based on configuration
      *
      * @param {Object} options
-     * @param {Object} options.limits - hash containing limit configurations keyed by limit name and containing
+     * @param {Object} [options.limits] - hash containing limit configurations keyed by limit name and containing
      * @param {String} options.helpLink - URL pointing to help resources for when limit is reached
      * @param {Object} options.db - knex db connection instance or other data source for the limit checks
      * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
      */
-    loadLimits({limits, helpLink, db, errors}) {
+    loadLimits({limits = {}, helpLink, db, errors}) {
         if (!errors) {
             throw new Error(`Config Missing: 'errors' is required.`);
         }
 
         this.errors = errors;
+
+        // CASE: reset internal limits state in case load is called multiple times
+        this.limits = {};
 
         Object.keys(limits).forEach((name) => {
             name = _.camelCase(name);
