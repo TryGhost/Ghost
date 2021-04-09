@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
+const limitService = require('../../../services/limits');
 const {i18n} = require('../../../lib/common');
 const _ = require('lodash');
 
@@ -98,7 +99,7 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
     }
 
     try {
-        const apiKey = await models.ApiKey.findOne({id: apiKeyId});
+        const apiKey = await models.ApiKey.findOne({id: apiKeyId}, {withRelated: ['integration']});
 
         if (!apiKey) {
             return next(new errors.UnauthorizedError({
@@ -112,6 +113,14 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
                 message: i18n.t('errors.middleware.auth.invalidApiKeyType'),
                 code: 'INVALID_API_KEY_TYPE'
             }));
+        }
+
+        // CASE: blocking all non-internal: "custom" and "builtin" integration requests when the limit is reached
+        if (limitService.isLimited('customIntegrations')
+            && (apiKey.relations.integration && !['internal'].includes(apiKey.relations.integration.get('type')))) {
+            // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
+            //       a concept of measuring if the limit has been surpassed
+            await limitService.errorIfWouldGoOverLimit('customIntegrations');
         }
 
         // Decoding from hex and transforming into bytes is here to
@@ -162,7 +171,11 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
 
         next();
     } catch (err) {
-        next(new errors.InternalServerError({err}));
+        if (err instanceof errors.HostLimitError) {
+            next(err);
+        } else {
+            next(new errors.InternalServerError({err}));
+        }
     }
 };
 
