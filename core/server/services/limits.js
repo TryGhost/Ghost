@@ -7,10 +7,6 @@ let limitService = new LimitService();
 const initFn = () => {
     let helpLink;
 
-    if (!config.get('hostSettings') || !config.get('hostSettings:limits')) {
-        return;
-    }
-
     if (config.get('hostSettings:billing:enabled') && config.get('hostSettings:billing:enabled') === true && config.get('hostSettings:billing:url')) {
         helpLink = config.get('hostSettings:billing:url');
     } else {
