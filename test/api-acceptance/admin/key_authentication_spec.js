@@ -3,6 +3,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
+const configUtils = require('../../utils/configUtils');
 
 describe('Admin API key authentication', function () {
     let request;
@@ -67,5 +68,33 @@ describe('Admin API key authentication', function () {
             .expect(200);
 
         localUtils.API.checkResponse(res.body.users[0], 'user');
+    });
+
+    describe('Host Settings: custom integration limits', function () {
+        afterEach(function () {
+            configUtils.set('hostSettings:limits', undefined);
+        });
+
+        it('Blocks the request when host limit is in place for custom integrations', async function () {
+            configUtils.set('hostSettings:limits', {
+                customIntegrations: {
+                    disabled: true,
+                    error: 'Custom limit error message'
+                }
+            });
+
+            // NOTE: need to do a full reboot to reinitialize hostSettings
+            await testUtils.startGhost();
+            await testUtils.initFixtures('api_keys');
+
+            const response = await request.get(localUtils.API.getApiQuery('posts/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
+
+            response.body.errors[0].type.should.equal('HostLimitError');
+            response.body.errors[0].message.should.equal('Custom limit error message');
+        });
     });
 });

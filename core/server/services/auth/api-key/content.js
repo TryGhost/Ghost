@@ -1,5 +1,6 @@
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
+const limitService = require('../../../services/limits');
 const {i18n} = require('../../../lib/common');
 
 const authenticateContentApiKey = async function authenticateContentApiKey(req, res, next) {
@@ -18,7 +19,7 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
     let key = req.query.key;
 
     try {
-        const apiKey = await models.ApiKey.findOne({secret: key});
+        const apiKey = await models.ApiKey.findOne({secret: key}, {withRelated: ['integration']});
 
         if (!apiKey) {
             return next(new errors.UnauthorizedError({
@@ -34,12 +35,24 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
             }));
         }
 
+        // CASE: blocking all non-internal: "custom" and "builtin" integration requests when the limit is reached
+        if (limitService.isLimited('customIntegrations')
+            && (apiKey.relations.integration && !['internal'].includes(apiKey.relations.integration.get('type')))) {
+            // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
+            //       a concept of measuring if the limit has been surpassed
+            await limitService.errorIfWouldGoOverLimit('customIntegrations');
+        }
+
         // authenticated OK, store the api key on the request for later checks and logging
         req.api_key = apiKey;
 
         next();
     } catch (err) {
-        next(new errors.InternalServerError({err}));
+        if (err instanceof errors.HostLimitError) {
+            next(err);
+        } else {
+            next(new errors.InternalServerError({err}));
+        }
     }
 };
 
