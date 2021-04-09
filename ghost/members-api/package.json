@@ -17,7 +17,6 @@
     "gateway"
   ],
   "devDependencies": {
-    "@types/stripe": "7.13.24",
     "jsdom": "15.2.1",
     "mocha": "6.2.3",
     "nock": "12.0.3",
@@ -37,7 +36,7 @@
     "leaky-bucket": "2.2.0",
     "lodash": "^4.17.11",
     "node-jose": "^1.1.3",
-    "stripe": "^7.4.0"
+    "stripe": "^8.142.0"
   },
   "publishConfig": {
     "access": "public"

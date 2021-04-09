@@ -50,7 +50,7 @@ module.exports = class StripeWebhookService {
             throw error;
         }
 
-        /** @type {import('stripe').events.EventType[]} */
+        /** @type {import('stripe').Stripe.WebhookEndpointCreateParams.EnabledEvent[]} */
         const events = [
             'checkout.session.completed',
             'customer.subscription.deleted',
@@ -109,14 +109,14 @@ module.exports = class StripeWebhookService {
     /**
      * @param {string} body
      * @param {string} signature
-     * @returns {import('stripe').events.IEvent}
+     * @returns {import('stripe').Stripe.Event}
      */
     parseWebhook(body, signature) {
         return this._stripeAPIService.parseWebhook(body, signature, this._webhookSecret);
     }
 
     /**
-     * @param {import('stripe').events.IEvent} event
+     * @param {import('stripe').Stripe.Event} event
      *
      * @returns {Promise<void>}
      */
@@ -142,7 +142,7 @@ module.exports = class StripeWebhookService {
     }
 
     /**
-     * @param {import('stripe').invoices.IInvoice} invoice
+     * @param {import('stripe').Stripe.Invoice} invoice
      *
      * @returns {Promise<void>}
      */
