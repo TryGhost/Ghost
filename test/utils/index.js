@@ -24,6 +24,7 @@ const frontendSettingsService = require('../../core/frontend/services/settings')
 const settingsCache = require('../../core/server/services/settings/cache');
 const web = require('../../core/server/web');
 const themes = require('../../core/frontend/services/themes');
+const limits = require('../../core/server/services/limits');
 
 // Other Test Utilities
 const APIUtils = require('./api');
@@ -205,6 +206,9 @@ const restartModeGhostStart = async () => {
 
     // Trigger themes to load again
     themes.loadInactiveThemes();
+
+    // Reload limits service
+    limits.init();
 };
 
 const bootGhost = async () => {
