@@ -25,7 +25,15 @@
       "packageNames": ["ember-mocha", "ember-exam", "testem"]
     },
     {
-      "extends": "@tryghost:pkgCSS",
+      "groupName": "disable css",
+      "packagePatterns": [
+        "^postcss",
+        "^css"
+      ],
+      "packageNames": [
+        "autoprefixer",
+        "ember-cli-postcss"
+      ],
       "enabled": false
     }
   ]
