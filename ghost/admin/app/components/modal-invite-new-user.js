@@ -17,16 +17,8 @@ export default ModalComponent.extend(ValidationEngine, {
     classNames: 'modal-content invite-new-user',
 
     role: null,
-    roles: null,
-
-    limitErrorMessage: null,
 
     validationType: 'inviteUser',
-
-    didInsertElement() {
-        this._super(...arguments);
-        this.fetchRoles.perform();
-    },
 
     willDestroyElement() {
         this._super(...arguments);
@@ -42,31 +34,10 @@ export default ModalComponent.extend(ValidationEngine, {
         }
     },
 
-    setRole: action(function (roleName) {
-        const role = this.roles.findBy('name', roleName);
+    setRole: action(function (role) {
         this.set('role', role);
         this.errors.remove('role');
-        this.validateRole();
     }),
-
-    async validateRole() {
-        if (this.get('role.name') !== 'Contributor'
-            && this.limit.limiter && this.limit.limiter.isLimited('staff')) {
-            try {
-                await this.limit.limiter.errorIfWouldGoOverLimit('staff');
-
-                this.set('limitErrorMessage', null);
-            } catch (error) {
-                if (error.errorType === 'HostLimitError') {
-                    this.set('limitErrorMessage', error.message);
-                } else {
-                    this.notifications.showAPIError(error, {key: 'staff.limit'});
-                }
-            }
-        } else {
-            this.set('limitErrorMessage', null);
-        }
-    },
 
     validate() {
         let email = this.email;
@@ -102,17 +73,6 @@ export default ModalComponent.extend(ValidationEngine, {
             reject();
         }));
     },
-
-    fetchRoles: task(function * () {
-        let roles = yield this.store.query('role', {permissions: 'assign'});
-        let defaultRole = roles.findBy('name', 'Contributor');
-
-        this.set('roles', roles);
-
-        if (!this.role) {
-            this.set('role', defaultRole);
-        }
-    }),
 
     sendInvitation: task(function* () {
         let email = this.email;
