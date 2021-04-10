@@ -1,6 +1,7 @@
 {
   "extends": [
     "@tryghost:quietJS",
+    "@tryghost:groupCSS",
     "@tryghost:disableTryGhostAutomerge"
   ],
   "ignoreDeps": [
@@ -24,7 +25,7 @@
       "packageNames": ["ember-mocha", "ember-exam", "testem"]
     },
     {
-      "extends": "@tryghost:groupCSS",
+      "extends": "@tryghost:pkgCSS",
       "enabled": false
     }
   ]
