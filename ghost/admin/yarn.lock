@@ -6656,13 +6656,6 @@ ember-infinity@2.1.2:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-invoke-action@^1.5.0:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/ember-invoke-action/-/ember-invoke-action-1.5.1.tgz#b6cad51ee729fc227cdbdba83b2b5486f0fa5834"
-  integrity sha512-co6Yg9r5qtK4LvZTZHk+u02YLPbnM2c5ZkXvundxEj3V7qdZg7RULfjU09LmohD+rxW5ADZlwgBi/32XIEWTlw==
-  dependencies:
-    ember-cli-babel "^6.6.0"
-
 ember-keyboard@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-6.0.2.tgz#efe260be34621a403a4d4688b038d65b371f6892"
@@ -6774,14 +6767,13 @@ ember-moment@8.0.1:
     ember-getowner-polyfill "^2.2.0"
     ember-macro-helpers "^4.2.2"
 
-ember-one-way-select@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ember-one-way-select/-/ember-one-way-select-4.0.0.tgz#4da2a8b8abb3360feaa69099ea31989ad3068e89"
-  integrity sha512-KmdSJqaTuKA+yn+qmlIVKJ+6qXpJeyOt8UBGRFjIdXoa7PPlYSiZ4eRe4uTcy3CUqXHDCPC+8/9AnZe061SBMw==
+ember-one-way-select@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/ember-one-way-select/-/ember-one-way-select-4.0.1.tgz#f16c614b5b23fa4677686ed762a3839e5ee3adf2"
+  integrity sha512-B1Li794T1lmg7/d+PSQMnfPTCnDA+FBYD+UOpdIZ9oqMrX0NtQLeERzNVqOR7MbsDAvMkvQFV3YSIVQOuKJjhg==
   dependencies:
-    ember-cli-babel "^6.6.0"
-    ember-cli-htmlbars "^2.0.1"
-    ember-invoke-action "^1.5.0"
+    ember-cli-babel "^7.22.1"
+    ember-cli-htmlbars "^5.3.1"
 
 ember-power-calendar-moment@0.1.7:
   version "0.1.7"
