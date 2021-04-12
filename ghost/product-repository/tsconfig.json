@@ -1,0 +1,10 @@
+{
+  "include": ["index.js", "lib/**/*", "test/**/*"],
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "types"
+  }
+}
