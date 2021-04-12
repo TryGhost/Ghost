@@ -28,7 +28,7 @@ export default class GhRoleSelectionComponent extends Component {
 
         this.roles = roles;
 
-        if (!this.args.role && defaultRole) {
+        if (!this.args.selected && defaultRole) {
             this.args.setRole(defaultRole);
         }
     }
