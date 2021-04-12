@@ -34,7 +34,7 @@ class Stats {
      * Fetches count of all authors
      */
     async getTotalAuthors() {
-        const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM authors');
+        const result = await this._db.knex.raw('SELECT COUNT(DISTINCT author_id) AS total FROM posts');
         return this._isSQLite ? result[0].total : result[0][0].total;
     }
     /** 
@@ -91,13 +91,11 @@ class Stats {
     async testPaidMemberPosts() {
         return this._db.knex.raw('SELECT COUNT(id) AS total FROM posts WHERE visibility = paid AND status = published');
     }
-    async testAuthors() {
-        const result = await this._db.knex.raw('SELECT name FROM authors');
-        return result
+    async testAuthors() { 
+        return this._db.knex.raw('SELECT COUNT(DISTINCT author_id) AS total FROM posts');
     }
     async testTags() {
-        const result = await this._db.knex.raw('SELECT name FROM tags');
-        return result
+        return this._db.knex.raw('SELECT COUNT(id) AS total FROM tags');
     }
 
 }
