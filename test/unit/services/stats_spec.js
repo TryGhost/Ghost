@@ -83,4 +83,40 @@ describe('Stats Service', function () {
         const result = await stats.testPaidMemberPosts();
         console.log(result);
     });
+    it('total authors', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.getTotalAuthors();
+        console.log(result)
+    });
+    it('total tags', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.getTotalTags();
+        console.log(result)
+    });
+    it('total authors', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.testAuthors();
+        console.log(result)
+    });
+    it('total authors', async function () {
+        const stats = new Stats ({
+            db: db,
+            settingsCache: settingsCache,
+            isSQLite: config.get('database:client') === 'sqlite3'
+        })
+        const result = await stats.testTags();
+        console.log(result)
+    });
 });
