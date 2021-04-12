@@ -1791,10 +1791,10 @@
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/members-csv@0.4.2":
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.4.2.tgz#af6189ea30a18b7ebe1f67c442d459ea8ef7aff9"
-  integrity sha512-r7cuO1dBMeOycEr5331qYickaSHgut9IkzbPeVOwWK3Labt75se9i4/6us4KkmfwMQisR2mV3ZBVvz0ps5h76g==
+"@tryghost/members-csv@0.4.5":
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.4.5.tgz#a389221b64ddaebc1bc33ddaa92e40ca20018893"
+  integrity sha512-Q2FKbMphYYN3dIM8nGWGYrI6cyCqV2vpR6ECvZOq77ZW4jrZEIkftk2YfuoCufPfkWTjFc7Ct6dodDRGn2vcXg==
   dependencies:
     papaparse "5.3.0"
 
