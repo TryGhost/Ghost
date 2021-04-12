@@ -29,7 +29,7 @@
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "1.0.2",
     "@glimmer/component": "1.0.4",
-    "@html-next/vertical-collection": "1.0.0",
+    "@html-next/vertical-collection": "2.0.0",
     "@tryghost/helpers": "1.1.41",
     "@tryghost/kg-clean-basic-html": "1.0.16",
     "@tryghost/kg-parser-plugins": "1.1.6",
