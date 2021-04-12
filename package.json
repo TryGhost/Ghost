@@ -105,7 +105,7 @@
     "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
     "juice": "7.0.0",
-    "keypair": "1.0.2",
+    "keypair": "1.0.3",
     "knex": "0.21.19",
     "knex-migrator": "4.0.2",
     "lodash": "4.17.21",
