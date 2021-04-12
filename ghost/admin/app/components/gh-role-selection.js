@@ -18,7 +18,7 @@ export default class GhRoleSelectionComponent extends Component {
     async setRole(roleName) {
         const role = this.roles.findBy('name', roleName);
         this.args.setRole(role);
-        return this.validateRole();
+        return this.validateRole(role);
     }
 
     @task
