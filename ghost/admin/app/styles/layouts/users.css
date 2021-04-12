@@ -152,18 +152,18 @@
     max-width: 600px;
 }
 
-.invite-new-user .form-group {
+.gh-roles-container .form-group {
     margin-bottom: 0;
     padding: 0;
 }
 
-.invite-new-user .form-group label {
+.gh-roles-container .form-group label {
     position: static;
     display: block;
     text-align: left;
 }
 
-.invite-new-user .form-group input {
+.gh-roles-container .form-group input {
     width: 100%;
 }
 
@@ -181,67 +181,67 @@
     font-weight: 400;
 }
 
-.invite-new-user .gh-radio {
+.gh-roles-container .gh-radio {
     padding-bottom: 20px;
     border-bottom: 1px solid var(--list-color-divider);
 }
 
-.invite-new-user .gh-radio:first-child {
+.gh-roles-container .gh-radio:first-child {
     padding-top: 20px;
     border-top: 1px solid var(--list-color-divider);
 }
 
-.invite-new-user .gh-radio:last-child {
+.gh-roles-container .gh-radio:last-child {
     margin: 0;
 }
 
-.invite-new-user .gh-radio svg {
+.gh-roles-container .gh-radio svg {
     width: 16px;
     height: 16px;
     fill: var(--midgrey);
     margin-left: 2px;
 }
 
-.invite-new-user .gh-radio-content {
+.gh-roles-container .gh-radio-content {
     margin-right: 2.4rem;
 }
 
-.invite-new-user .gh-radio-label {
+.gh-roles-container .gh-radio-label {
     padding-bottom: 4px;
     line-height: 1.1em;
     font-weight: 600;
 }
 
-.invite-new-user .gh-radio-desc {
+.gh-roles-container .gh-radio-desc {
     color: var(--midgrey);
     font-size: 1.3rem;
     line-height: 1.2em;
     font-weight: 400;
 }
 
-.invite-new-user .popover {
+.gh-roles-container .popover {
     width: 97%;
     border: 1px solid var(--whitegrey-d1);
     color: var(--darkgrey);
     box-shadow: var(--shadow-3);
 }
 
-.invite-new-user .popover-arrow {
+.gh-roles-container .popover-arrow {
     display: none;
 }
 
-.invite-new-user .popover table {
+.gh-roles-container .popover table {
     margin: .6em 0;
 }
 
-.invite-new-user .popover td.left {
+.gh-roles-container .popover td.left {
     padding-right: 16px;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.invite-new-user .gh-btn-black,
-.invite-new-user .gh-btn-green {
+.gh-roles-container .gh-btn-black,
+.gh-roles-container .gh-btn-green {
     margin: 0;
     width: 100%;
 }
