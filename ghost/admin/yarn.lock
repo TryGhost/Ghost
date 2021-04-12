@@ -1805,20 +1805,20 @@
     "@glimmer/interfaces" "^0.42.2"
     "@glimmer/util" "^0.42.2"
 
-"@html-next/vertical-collection@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-1.0.0.tgz#2845bce90a72bb212ec307b184c98e4d78d023fc"
-  integrity sha512-qmSbIXiiQVNBkSJZK2or8TVhMn7aiUFHlbkHcKa1Cbn6BDQnqKkdoMaB+Ii1s0Dc8XmpMS1t/enCmAfszZ9+cw==
+"@html-next/vertical-collection@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-2.0.0.tgz#469f30966cf665afcc24a80b59cd0725134b7f79"
+  integrity sha512-+RMxBz8tSSFDDA8Q8NBC5Eak50PVHsB73GL7bkPyAuNtdm324nMVrzqJ6TYVg5mTFbc02W261/9jhfbawQbczA==
   dependencies:
     babel6-plugin-strip-class-callcheck "^6.0.0"
     broccoli-funnel "^2.0.2"
     broccoli-merge-trees "^3.0.1"
     broccoli-rollup "^4.1.1"
-    ember-cli-babel "^7.7.3"
-    ember-cli-htmlbars "^3.0.0"
+    ember-cli-babel "^7.12.0"
+    ember-cli-htmlbars "^3.0.1"
     ember-cli-version-checker "^3.1.3"
-    ember-compatibility-helpers "^1.2.0"
-    ember-raf-scheduler "0.1.0"
+    ember-compatibility-helpers "^1.2.1"
+    ember-raf-scheduler "0.2.0"
 
 "@miragejs/pretender-node-polyfill@^0.1.0":
   version "0.1.2"
@@ -6036,7 +6036,7 @@ ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0, em
   resolved "https://registry.yarnpkg.com/ember-cli-babel-plugin-helpers/-/ember-cli-babel-plugin-helpers-1.1.1.tgz#5016b80cdef37036c4282eef2d863e1d73576879"
   integrity sha512-sKvOiPNHr5F/60NLd7SFzMpYPte/nnGkq/tMIfXejfKHIhaiIkYFqX8Z9UFTKWLLn+V7NOaby6niNPZUdvKCRw==
 
-ember-cli-babel@7.26.3:
+ember-cli-babel@7.26.3, ember-cli-babel@^7.12.0:
   version "7.26.3"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.26.3.tgz#e93ce7ec458208894d10844cf76e41cc06fdbeb6"
   integrity sha512-ZCs0g99d3kYaHs1+HT33oMY7/K+nLCAAv7dCLxsMzg7cQf55O6Pq4ZKnWEr3IHVs33xbJFnEb9prt1up36QVnw==
@@ -7120,12 +7120,12 @@ ember-power-select@4.1.4:
     ember-text-measurer "^0.6.0"
     ember-truth-helpers "^2.1.0 || ^3.0.0"
 
-ember-raf-scheduler@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/ember-raf-scheduler/-/ember-raf-scheduler-0.1.0.tgz#a22a02d238c374499231c03ab9c5b9887c72a853"
-  integrity sha1-oioC0jjDdEmSMcA6ucW5iHxyqFM=
+ember-raf-scheduler@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/ember-raf-scheduler/-/ember-raf-scheduler-0.2.0.tgz#73250f6ca9760e4920c26d2eeb69738dc66dadc5"
+  integrity sha512-z34reOLFORfigukrba3d5I333rixfcPjjfKPOKeaPAHf3I5wXfenoAze0Ijc7r4l/lO/4ocLw9RJbtNL2/oNpw==
   dependencies:
-    ember-cli-babel "^6.6.0"
+    ember-cli-babel "^7.12.0"
 
 ember-resolver@8.0.2:
   version "8.0.2"
