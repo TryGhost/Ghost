@@ -5833,7 +5833,7 @@ ember-assign-helper@^0.2.0:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-assign-polyfill@^2.5.0, ember-assign-polyfill@^2.6.0:
+ember-assign-polyfill@^2.6.0:
   version "2.7.2"
   resolved "https://registry.yarnpkg.com/ember-assign-polyfill/-/ember-assign-polyfill-2.7.2.tgz#58f6f60235126cb23df248c846008fa9a3245fc1"
   integrity sha512-hDSaKIZyFS0WRQsWzxUgO6pJPFfmcpfdM7CbGoMgYGriYbvkKn+k8zTXSKpTFVGehhSmsLE9YPqisQ9QpPisfA==
@@ -7122,20 +7122,21 @@ ember-style-modifier@^0.6.0:
     ember-cli-babel "^7.21.0"
     ember-modifier "^2.1.0"
 
-ember-svg-jar@2.2.3:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.2.3.tgz#632f8d6a999ceb1c815a135fbc2bd681b856330b"
-  integrity sha512-17kBxi5IfsEnCsVuFTjVs+HEAa3sfdB4t4C+5GZUxWixEbK8hwoRDsuvsboOGhDemycVv21GAyexcTeinabsnQ==
+ember-svg-jar@2.3.3:
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.3.3.tgz#aede3f23e58bdcacc0e59a297c1ebad71a472e31"
+  integrity sha512-Obs8vEMKPfS2R48bKBAfNSLphFsDwUMRqi8TVKtlLE6okTXC8NebGg7pA/IutIGnakqJRAz4/dWAZyI74duDuQ==
   dependencies:
     broccoli-caching-writer "^3.0.3"
     broccoli-concat "^3.7.4"
     broccoli-funnel "^2.0.2"
     broccoli-merge-trees "^3.0.2"
     broccoli-persistent-filter "^2.3.1"
+    broccoli-plugin "^3.0.0"
     broccoli-string-replace "^0.1.2"
     broccoli-svg-optimizer "2.0.0"
     cheerio "^0.22.0"
-    ember-assign-polyfill "^2.5.0"
+    console-ui "^3.1.1"
     ember-cli-babel "^7.7.3"
     json-stable-stringify "^1.0.1"
     lodash "^4.17.15"
