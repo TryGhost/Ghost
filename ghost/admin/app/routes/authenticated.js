@@ -1,6 +1,10 @@
-import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import Route from '@ember/routing/route';
+import {inject as service} from '@ember/service';
 
-export default Route.extend(AuthenticatedRouteMixin, {
-    authenticationRoute: 'signin'
+export default Route.extend({
+    session: service(),
+
+    beforeModel(transition) {
+        this.session.requireAuthentication(transition, 'signin');
+    }
 });
