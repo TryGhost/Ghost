@@ -1,8 +1,7 @@
-import Route from '@ember/routing/route';
-import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
+import UnauthenticatedRoute from 'ghost-admin/routes/unauthenticated';
 import {inject as service} from '@ember/service';
 
-export default Route.extend(UnauthenticatedRouteMixin, {
+export default UnauthenticatedRoute.extend({
     notifications: service(),
     session: service(),
 
@@ -22,11 +21,5 @@ export default Route.extend(UnauthenticatedRouteMixin, {
     deactivate() {
         this._super(...arguments);
         this.controller.clearData();
-    },
-
-    buildRouteInfoMetadata() {
-        return {
-            bodyClasses: ['unauthenticated-route']
-        };
     }
 });

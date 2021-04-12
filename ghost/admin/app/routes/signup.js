@@ -3,15 +3,14 @@
 import DS from 'ember-data';
 import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
-import Route from '@ember/routing/route';
-import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
+import UnauthenticatedRoute from 'ghost-admin/routes/unauthenticated';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {inject as service} from '@ember/service';
 
 const {Promise} = RSVP;
 const {Errors} = DS;
 
-export default Route.extend(UnauthenticatedRouteMixin, {
+export default UnauthenticatedRoute.extend({
     ghostPaths: service(),
     notifications: service(),
     session: service(),
@@ -81,11 +80,5 @@ export default Route.extend(UnauthenticatedRouteMixin, {
 
         // clear the properties that hold the sensitive data from the controller
         this.controllerFor('signup').get('signupDetails').setProperties({email: '', password: '', token: ''});
-    },
-
-    buildRouteInfoMetadata() {
-        return {
-            bodyClasses: ['unauthenticated-route']
-        };
     }
 });

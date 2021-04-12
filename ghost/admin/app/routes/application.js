@@ -1,4 +1,3 @@
-import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import RSVP from 'rsvp';
 import Route from '@ember/routing/route';
@@ -15,7 +14,6 @@ import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 function K() {
@@ -27,13 +25,14 @@ let shortcuts = {};
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
-export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
+export default Route.extend(ShortcutsRoute, {
     ajax: service(),
     config: service(),
     feature: service(),
     ghostPaths: service(),
     notifications: service(),
     router: service(),
+    session: service(),
     settings: service(),
     ui: service(),
     whatsNew: service(),
@@ -57,8 +56,8 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         this._super(...arguments);
 
         if (this.get('session.isAuthenticated')) {
-            this.set('appLoadTransition', transition);
-            transition.send('loadServerNotifications');
+            this.session.appLoadTransition = transition;
+            this.session.loadServerNotifications();
 
             // return the feature/settings load promises so that we block until
             // they are loaded to enable synchronous access everywhere
@@ -87,35 +86,12 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         didTransition() {
-            this.set('appLoadTransition', null);
+            this.session.appLoadTransition = null;
             this.send('closeMenus');
-        },
-
-        signedIn() {
-            this.notifications.clearAll();
-            this.send('loadServerNotifications', true);
         },
 
         authorizationFailed() {
             windowProxy.replaceLocation(AuthConfiguration.rootURL);
-        },
-
-        loadServerNotifications(isDelayed) {
-            if (this.get('session.isAuthenticated')) {
-                this.get('session.user').then((user) => {
-                    if (!user.get('isAuthorOrContributor')) {
-                        this.store.findAll('notification', {reload: true}).then((serverNotifications) => {
-                            serverNotifications.forEach((notification) => {
-                                if (notification.get('top') || notification.get('custom')) {
-                                    this.notifications.handleNotification(notification, isDelayed);
-                                } else {
-                                    this.upgradeStatus.handleUpgradeNotification(notification);
-                                }
-                            });
-                        });
-                    }
-                });
-            }
         },
 
         // noop default for unhandled save (used from shortcuts)
@@ -182,30 +158,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
             // fallback to 500 error page
             return true;
-        }
-    },
-
-    sessionAuthenticated() {
-        if (this.get('session.skipAuthSuccessHandler')) {
-            return;
-        }
-
-        // standard ESA post-sign-in redirect
-        this._super(...arguments);
-
-        // trigger post-sign-in background behaviour
-        this.get('session.user').then((user) => {
-            this.send('signedIn', user);
-        });
-    },
-
-    sessionInvalidated() {
-        let transition = this.appLoadTransition;
-
-        if (transition) {
-            transition.send('authorizationFailed');
-        } else {
-            run.scheduleOnce('routerTransitions', this, 'send', 'authorizationFailed');
         }
     }
 });
