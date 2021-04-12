@@ -33,7 +33,7 @@
     "@tryghost/helpers": "1.1.41",
     "@tryghost/kg-clean-basic-html": "1.0.16",
     "@tryghost/kg-parser-plugins": "1.1.6",
-    "@tryghost/limit-service": "0.4.0",
+    "@tryghost/limit-service": "0.4.1",
     "@tryghost/members-csv": "0.4.5",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/string": "0.1.17",
