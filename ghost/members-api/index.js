@@ -12,6 +12,7 @@ const MemberRepository = require('./lib/repositories/member');
 const EventRepository = require('./lib/repositories/event');
 const RouterController = require('./lib/controllers/router');
 const MemberController = require('./lib/controllers/member');
+const StripeMigrations = require('./lib/migrations');
 
 module.exports = function MembersApi({
     tokenConfig: {
@@ -41,7 +42,10 @@ module.exports = function MembersApi({
         MemberPaidSubscriptionEvent,
         MemberPaymentEvent,
         MemberStatusEvent,
-        MemberEmailChangeEvent
+        MemberEmailChangeEvent,
+        StripeProduct,
+        StripePrice,
+        Product
     },
     logger
 }) {
@@ -58,6 +62,15 @@ module.exports = function MembersApi({
             appInfo: stripeConfig.appInfo,
             enablePromoCodes: stripeConfig.enablePromoCodes
         },
+        logger
+    });
+
+    const stripeMigrations = new StripeMigrations({
+        stripeAPIService,
+        StripeCustomerSubscription,
+        StripeProduct,
+        StripePrice,
+        Product,
         logger
     });
 
@@ -143,6 +156,7 @@ module.exports = function MembersApi({
             plans: stripeConfig.plans,
             mode: process.env.NODE_ENV || 'development'
         }),
+        stripeMigrations.populateProductsAndPrices(),
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,
             webhookHandlerUrl: stripeConfig.webhookHandlerUrl,
