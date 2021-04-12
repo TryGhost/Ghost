@@ -174,7 +174,10 @@ function createApiInstance(config) {
             MemberLoginEvent: models.MemberLoginEvent,
             MemberEmailChangeEvent: models.MemberEmailChangeEvent,
             MemberPaymentEvent: models.MemberPaymentEvent,
-            MemberStatusEvent: models.MemberStatusEvent
+            MemberStatusEvent: models.MemberStatusEvent,
+            StripeProduct: models.StripeProduct,
+            StripePrice: models.StripePrice,
+            Product: models.Product
         },
         logger: logging
     });
