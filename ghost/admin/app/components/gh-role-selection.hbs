@@ -1,6 +1,9 @@
 <div class="gh-roles-container" {{did-insert (perform this.fetchRolesTask)}}>
     {{#if this.fetchRolesTask.isRunning}}
-        <GhLoadingSpinner />
+        {{!-- width and height are needed to avoid layout shift after roles have loaded --}}
+        <div style="width: 486px; height: 268px">
+            <GhLoadingSpinner />
+        </div>
     {{else}}
     <div class="gh-radio {{if (eq @selected.name "Contributor") "active"}}" {{on "click" (fn this.setRole "Contributor")}} data-test-option="Contributor">
         <div class="gh-radio-button"></div>
