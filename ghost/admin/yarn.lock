@@ -1910,10 +1910,10 @@
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/members-csv@0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-0.4.5.tgz#a389221b64ddaebc1bc33ddaa92e40ca20018893"
-  integrity sha512-Q2FKbMphYYN3dIM8nGWGYrI6cyCqV2vpR6ECvZOq77ZW4jrZEIkftk2YfuoCufPfkWTjFc7Ct6dodDRGn2vcXg==
+"@tryghost/members-csv@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.0.0.tgz#fc062ed56d29f4b60803970bba0f6cef5eb7e244"
+  integrity sha512-/kUn9inC3nDNK9sBZ+eaWsJgX5+M28NGkw6QHLOBtbv7zgomjSjjNVSJUJEuw02/ZOKqyVwSU3E+i9m6M270zQ==
   dependencies:
     papaparse "5.3.0"
 
