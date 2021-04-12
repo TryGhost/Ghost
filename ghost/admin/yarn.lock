@@ -6655,7 +6655,7 @@ ember-infinity@2.1.2:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-keyboard@^6.0.2:
+ember-keyboard@6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-6.0.2.tgz#efe260be34621a403a4d4688b038d65b371f6892"
   integrity sha512-ZGAXYGfN4gxGFRcv3ix2X8HA8j/VluwhlENT9pfbFjAAGtvFz9wzNUJuaq3LS5Ksj+f2oXL5f++tSOrO7Ha1wA==
