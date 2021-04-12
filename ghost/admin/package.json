@@ -32,7 +32,7 @@
     "@html-next/vertical-collection": "1.0.0",
     "@tryghost/helpers": "1.1.41",
     "@tryghost/kg-clean-basic-html": "1.0.11",
-    "@tryghost/kg-parser-plugins": "1.1.0",
+    "@tryghost/kg-parser-plugins": "1.1.6",
     "@tryghost/limit-service": "0.4.0",
     "@tryghost/members-csv": "0.4.2",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
