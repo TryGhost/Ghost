@@ -190,18 +190,18 @@
                         {{#if this.rolesDropdownIsVisible}}
                             <div class="form-group">
                                 <label for="user-role">Role</label>
-                                <span class="gh-select" tabindex="0">
-                                    <OneWaySelect
-                                        @id="new-user-role"
-                                        @options={{this.roles}}
-                                        @optionValuePath="id"
-                                        @optionLabelPath="name"
-                                        @value={{this.user.role}}
-                                        @update={{action "changeRole"}}
-                                    />
-                                </span>
+                                <div class="gh-input pointer" {{on "click" (action "toggleRoleSelectionModal")}}>{{this.user.role.name}}</div>
                                 <p>What permissions should this user have?</p>
                             </div>
+
+                            {{#if this.showRoleSelectionModal}}
+                                <GhFullscreenModal
+                                    @modal="select-user-role"
+                                    @model={{readonly this.user.role}}
+                                    @confirm={{action "changeRole"}}
+                                    @close={{action "toggleRoleSelectionModal"}}
+                                />
+                            {{/if}}
                         {{/if}}
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="location">
