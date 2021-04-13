@@ -4,7 +4,9 @@ about: Report reproducible software issues so we can improve
 
 ---
 
-Welcome 👋&nbsp; Please keep in mind that GitHub is our office. We invite you to share any bug reports here 🐛&nbsp; For anything else please use https://forum.ghost.org 👫
+Welcome 👋   
+Please keep in mind that GitHub is our office. We invite you to share any bug reports here 🐛..  
+For anything else please use https://forum.ghost.org 👫
 
 ### Issue Summary
 
