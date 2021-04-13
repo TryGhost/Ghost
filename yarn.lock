@@ -408,10 +408,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/constants@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.6.tgz#e24927daf919bb3e426c2312db290c89a65f7fc3"
-  integrity sha512-6/H9At4IbMMVtT705a0Tuu9jnfaIvsPBtVIvqfgex9ddM7767Ckobc5fWWdTalTjak4ho504/AZflBnI+eJdJA==
+"@tryghost/constants@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.7.tgz#410fa77a569443f7919378d2e8c770f32f972584"
+  integrity sha512-5X2C6thZvjR7bGeGVJv7/hlkExDwoP+szhrfnJ7Yc+Dr0iKtGyrXufcwzC8c9gt0AC8/g8lv9A1RGSkUn160TQ==
 
 "@tryghost/elasticsearch-bunyan@0.1.1", "@tryghost/elasticsearch-bunyan@^0.1.1":
   version "0.1.1"
