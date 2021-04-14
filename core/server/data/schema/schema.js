@@ -454,7 +454,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
-        plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        price_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_prices.stripe_price_id'},
         status: {type: 'string', maxlength: 50, nullable: false},
         cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
         cancellation_reason: {type: 'string', maxlength: 500, nullable: true},
@@ -465,7 +465,8 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true},
-        /* Below fields eventually should be normalised e.g. stripe_plans table, link to here on plan_id */
+        /* Below fields are now redundant as we link prie_id to stripe_prices table */
+        plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         plan_nickname: {type: 'string', maxlength: 50, nullable: false},
         plan_interval: {type: 'string', maxlength: 50, nullable: false},
         plan_amount: {type: 'integer', nullable: false},
