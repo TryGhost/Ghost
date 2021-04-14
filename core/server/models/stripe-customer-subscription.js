@@ -6,6 +6,9 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
     customer() {
         return this.belongsTo('MemberStripeCustomer', 'customer_id', 'customer_id');
     },
+    stripePrice() {
+        return this.belongsTo('StripePrice', 'price_id', 'stripe_price_id');
+    },
 
     serialize(options) {
         const defaultSerializedObject = ghostBookshelf.Model.prototype.serialize.call(this, options);
