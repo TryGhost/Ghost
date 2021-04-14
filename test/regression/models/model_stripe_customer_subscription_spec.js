@@ -1,7 +1,10 @@
 const should = require('should');
 const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
+const {Product} = require('../../../core/server/models/product');
 const {StripeCustomerSubscription} = require('../../../core/server/models/stripe-customer-subscription');
+const {StripePrice} = require('../../../core/server/models/stripe-price');
+const {StripeProduct} = require('../../../core/server/models/stripe-product');
 
 const testUtils = require('../../utils');
 
@@ -21,10 +24,32 @@ describe('StripeCustomerSubscription Model', function run() {
                 customer_id: 'fake_customer_id'
             }, context);
 
+            const product = await Product.add({
+                name: 'Ghost Product',
+                slug: 'ghost-product'
+            }, context);
+
+            await StripeProduct.add({
+                product_id: product.get('id'),
+                stripe_product_id: 'fake_product_id'
+            }, context);
+
+            await StripePrice.add({
+                stripe_price_id: 'fake_plan_id',
+                stripe_product_id: 'fake_product_id',
+                amount: 5000,
+                interval: 'monthly',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'USD',
+                type: 'recurring'
+            }, context);
+
             await StripeCustomerSubscription.add({
                 customer_id: 'fake_customer_id',
                 subscription_id: 'fake_subscription_id',
                 plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
                 plan_amount: 1337,
                 plan_nickname: 'e-LEET',
                 plan_interval: 'year',

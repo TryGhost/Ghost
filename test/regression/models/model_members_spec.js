@@ -7,6 +7,8 @@ const {MemberStripeCustomer} = require('../../../core/server/models/member-strip
 const {StripeCustomerSubscription} = require('../../../core/server/models/stripe-customer-subscription');
 
 const testUtils = require('../../utils');
+const {StripeProduct} = require('../../../core/server/models/stripe-product');
+const {StripePrice} = require('../../../core/server/models/stripe-price');
 
 describe('Member Model', function run() {
     before(testUtils.teardownDb);
@@ -26,6 +28,27 @@ describe('Member Model', function run() {
 
             should.exist(member, 'Member should have been created');
 
+            const product = await Product.add({
+                name: 'Ghost Product',
+                slug: 'ghost-product'
+            }, context);
+
+            await StripeProduct.add({
+                product_id: product.get('id'),
+                stripe_product_id: 'fake_product_id'
+            }, context);
+
+            await StripePrice.add({
+                stripe_price_id: 'fake_plan_id',
+                stripe_product_id: 'fake_product_id',
+                amount: 5000,
+                interval: 'monthly',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'USD',
+                type: 'recurring'
+            }, context);
+
             await MemberStripeCustomer.add({
                 member_id: member.get('id'),
                 customer_id: 'fake_customer_id1'
@@ -40,6 +63,7 @@ describe('Member Model', function run() {
                 customer_id: 'fake_customer_id1',
                 subscription_id: 'fake_subscription_id1',
                 plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
                 plan_amount: 1337,
                 plan_nickname: 'e-LEET',
                 plan_interval: 'year',
@@ -54,6 +78,7 @@ describe('Member Model', function run() {
                 customer_id: 'fake_customer_id2',
                 subscription_id: 'fake_subscription_id2',
                 plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
                 plan_amount: 1337,
                 plan_nickname: 'e-LEET',
                 plan_interval: 'year',
@@ -161,10 +186,32 @@ describe('Member Model', function run() {
 
             should.exist(customer, 'Customer should have been created');
 
+            const product = await Product.add({
+                name: 'Ghost Product',
+                slug: 'ghost-product'
+            }, context);
+
+            await StripeProduct.add({
+                product_id: product.get('id'),
+                stripe_product_id: 'fake_product_id'
+            }, context);
+
+            await StripePrice.add({
+                stripe_price_id: 'fake_plan_id',
+                stripe_product_id: 'fake_product_id',
+                amount: 5000,
+                interval: 'monthly',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'USD',
+                type: 'recurring'
+            }, context);
+
             await StripeCustomerSubscription.add({
                 customer_id: 'fake_customer_id',
                 subscription_id: 'fake_subscription_id',
                 plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
                 plan_amount: 1337,
                 plan_nickname: 'e-LEET',
                 plan_interval: 'year',
