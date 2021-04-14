@@ -144,7 +144,7 @@
     "sqlite3": "4.2.0"
   },
   "devDependencies": {
-    "@lodder/grunt-postcss": "3.0.0",
+    "@lodder/grunt-postcss": "3.0.1",
     "coffeescript": "2.5.1",
     "cssnano": "4.1.11",
     "eslint": "7.24.0",
