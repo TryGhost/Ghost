@@ -5,12 +5,12 @@ module.exports = combineTransactionalMigrations(
         name: 'Browse Products',
         action: 'browse',
         object: 'product'
-    }, ['Administrator']),
+    }, ['Administrator', 'Editor', 'Author']),
     addPermissionWithRoles({
         name: 'Read Products',
         action: 'read',
         object: 'product'
-    }, ['Administrator']),
+    }, ['Administrator', 'Editor', 'Author']),
     addPermissionWithRoles({
         name: 'Edit Products',
         action: 'edit',

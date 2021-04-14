@@ -763,7 +763,8 @@
                     "theme": ["browse"],
                     "email_preview": "all",
                     "email": "all",
-                    "snippet": "all"
+                    "snippet": "all",
+                    "product": ["browse", "read"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -775,7 +776,8 @@
                     "theme": ["browse"],
                     "email_preview": "read",
                     "email": "read",
-                    "snippet": ["browse", "read"]
+                    "snippet": ["browse", "read"],
+                    "product": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
