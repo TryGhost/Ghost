@@ -5,6 +5,10 @@ const StripeProduct = ghostBookshelf.Model.extend({
 
     product() {
         return this.belongsTo('Product', 'product_id', 'id');
+    },
+
+    stripePrices() {
+        return this.hasMany('StripePrice', 'stripe_product_id', 'stripe_product_id');
     }
 
 }, {
