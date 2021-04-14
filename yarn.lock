@@ -81,12 +81,12 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@lodder/grunt-postcss@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-3.0.0.tgz#815d72e9d731e8ed70cc89b948452f4f1740d1a1"
-  integrity sha512-oM/ATfKcc89yFz+6GZXmWBUMDD09Q7P566kcwDqLbUGgnO2qlgPLEQXN2VagDLqZsOS8wsozpJWFjbsUQz9h3w==
+"@lodder/grunt-postcss@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-3.0.1.tgz#38724fa80de5605419049113b9564782a7bbf7c6"
+  integrity sha512-boAIrpGJQYxiZ/qI7BRhxNHzNsv6kPlqRpr4XhnTHNjf2RYAqDTL5CMRUcExv8crVduKkhOSSr+pnIQrI3pwYg==
   dependencies:
-    diff "^4.0.2"
+    diff "^5.0.0"
     maxmin "^3.0.0"
 
 "@metascraper/helpers@^5.11.9":
@@ -2790,7 +2790,7 @@ diff@4.0.2, diff@^4.0.2:
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
 
-diff@5.0.0:
+diff@5.0.0, diff@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-5.0.0.tgz#7ed6ad76d859d030787ec35855f5b1daf31d852b"
   integrity sha512-/VTCrvm5Z0JGty/BWHljh+BAiw3IK+2j87NGMu8Nwc/f48WoDAC395uomO9ZD117ZOBaHmkX1oyLvkVM/aIT3w==
