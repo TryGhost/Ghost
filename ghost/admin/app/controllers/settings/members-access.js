@@ -8,6 +8,7 @@ export default class MembersAccessController extends Controller {
     @service settings;
 
     @tracked showLeaveSettingsModal = false;
+    @tracked membersPostAccessOpen = false;
 
     leaveRoute(transition) {
         if (this.settings.get('hasDirtyAttributes')) {
@@ -28,6 +29,16 @@ export default class MembersAccessController extends Controller {
     cancelLeave() {
         this.showLeaveSettingsModal = false;
         this.leaveSettingsTransition = null;
+    }
+
+    @action
+    toggleMembersPostAccess() {
+        this.membersPostAccessOpen = !this.membersPostAccessOpen;
+    }
+
+    @action
+    setDefaultContentVisibility(value) {
+        this.settings.set('defaultContentVisibility', value);
     }
 
     @task({drop: true})

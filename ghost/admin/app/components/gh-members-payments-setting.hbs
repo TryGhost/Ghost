@@ -216,6 +216,7 @@
     </section>
 </div>
 
+{{#unless (enable-developer-experiments)}}
 <div class="gh-main-section">
     <h4 class="gh-main-section-header small bn">Access</h4>
     <section class="gh-expandable">
@@ -277,6 +278,7 @@
         </div>
     </section>
 </div>
+{{/unless}}
 
 {{#if this.showDisconnectStripeConnectModal}}
     <GhFullscreenModal @modal="disconnect-stripe"
