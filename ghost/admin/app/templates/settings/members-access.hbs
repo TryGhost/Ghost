@@ -22,14 +22,53 @@
             <div class="gh-expandable-block">
                 <div class="gh-expandable-header">
                     <div>
+                        <h4 class="gh-expandable-title">Subscription access</h4>
+                        <p class="gh-expandable-description">Who should be able to subscribe to your site?</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{on "click" this.toggleSubscriptionAccess}} data-test-toggle="subscription-access"><span>{{if this.subscriptionAccessOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.subscriptionAccessOpen}}
+                        <div class="flex flex-column w-50">
+                            <div
+                                class="gh-radio {{if this.settings.membersAllowFreeSignup "active"}}"
+                                {{on "click" (fn this.setSubscriptionAccess "anyone")}}
+                            >
+                                <div class="gh-radio-button"></div>
+                                <div class="gh-radio-content">
+                                    <div class="gh-radio-label">Anyone can sign up</div>
+                                    <small class="midgrey">All visitors will be able to subscribe and sign in</small>
+                                </div>
+                            </div>
+
+                            <div
+                                class="gh-radio {{if (not this.settings.membersAllowFreeSignup) "active"}}"
+                                {{on "click" (fn this.setSubscriptionAccess "invite")}}
+                            >
+                                <div class="gh-radio-button"></div>
+                                <div class="gh-radio-content">
+                                    <div class="gh-radio-label">Only people I invite</div>
+                                    <small class="midgrey">People can sign in from your site but won't be able to sign up</small>
+                                </div>
+                            </div>
+                        </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+        </section>
+
+        <section class="gh-expandable">
+            <div class="gh-expandable-block">
+                <h4 class="gh-expandable-header">
+                    <div>
                         <h4 class="gh-expandable-title">Default post access</h4>
                         <p class="gh-expandable-description">When a new post is created, who should have access to it?</p>
                     </div>
-                    <button type="button" class="gh-btn" {{on "click" this.toggleMembersPostAccess}} data-test-toggle="members-post-access"><span>{{if this.membersPostAccessOpen "Close" "Expand"}}</span></button>
-                </div>
+                    <button type="button" class="gh-btn" {{on "click" this.togglePostAccess}} data-test-toggle="post-access"><span>{{if this.postAccessOpen "Close" "Expand"}}</span></button>
+                </h4>
                 <div class="gh-expandable-content">
-                    {{#liquid-if this.membersPostAccessOpen}}
-                    <div class="flex flex-column w-50 flex">
+                    {{#liquid-if this.postAccessOpen}}
+                    <div class="flex flex-column w-50">
                         <div
                             class="gh-radio {{if (eq this.settings.defaultContentVisibility "public") "active"}}"
                             {{on "click" (fn this.setDefaultContentVisibility "public")}}
