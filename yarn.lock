@@ -660,15 +660,15 @@
   dependencies:
     bluebird "3.7.2"
 
-"@tryghost/security@0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.6.tgz#da4f4578b55db085c49c97dbdecf67f856b9fed1"
-  integrity sha512-MhswfsO+2utCD6R5qPeWbY9my7F01erxfmoejHIeK4Qc0Ijr4/fyOy8zGXu/EckgnST8+DG/npunTlF27yT6aw==
+"@tryghost/security@0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.7.tgz#425155ed797146ba784822e512d6c1d116e48721"
+  integrity sha512-EWPKv6huVUXAn5F1wfgH8Q0c1EyMF2cuU7XZKfbvJXY8aBZRnSlKp8CZEBVhBViKKsaQI6Fx4NlBdCZwQsQZOg==
   dependencies:
     "@tryghost/string" "0.1.14"
     bcryptjs "2.4.3"
     bluebird "3.7.2"
-    lodash "4.17.20"
+    lodash "4.17.21"
 
 "@tryghost/session-service@0.1.17":
   version "0.1.17"
