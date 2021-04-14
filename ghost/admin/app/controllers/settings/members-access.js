@@ -8,7 +8,8 @@ export default class MembersAccessController extends Controller {
     @service settings;
 
     @tracked showLeaveSettingsModal = false;
-    @tracked membersPostAccessOpen = false;
+    @tracked subscriptionAccessOpen = false;
+    @tracked postAccessOpen = false;
 
     leaveRoute(transition) {
         if (this.settings.get('hasDirtyAttributes')) {
@@ -32,13 +33,31 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    toggleMembersPostAccess() {
-        this.membersPostAccessOpen = !this.membersPostAccessOpen;
+    toggleSubscriptionAccess() {
+        this.subscriptionAccessOpen = !this.subscriptionAccessOpen;
+    }
+
+    @action
+    togglePostAccess() {
+        this.postAccessOpen = !this.postAccessOpen;
     }
 
     @action
     setDefaultContentVisibility(value) {
         this.settings.set('defaultContentVisibility', value);
+    }
+
+    @action
+    setSubscriptionAccess(value) {
+        switch (value) {
+        case 'anyone':
+            this.settings.set('membersAllowFreeSignup', true);
+            break;
+
+        case 'invite':
+            this.settings.set('membersAllowFreeSignup', false);
+            break;
+        }
     }
 
     @task({drop: true})
