@@ -69,7 +69,7 @@
     "@tryghost/string": "0.1.17",
     "@tryghost/url-utils": "1.1.2",
     "@tryghost/vhost-middleware": "1.0.14",
-    "@tryghost/zip": "1.1.10",
+    "@tryghost/zip": "1.1.11",
     "amperize": "0.6.1",
     "analytics-node": "4.0.1",
     "bluebird": "3.7.2",
