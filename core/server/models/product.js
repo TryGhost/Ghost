@@ -25,7 +25,22 @@ const Product = ghostBookshelf.Model.extend({
         }
     },
 
-    members: function members() {
+    stripeProducts() {
+        return this.hasMany('StripeProduct', 'product_id', 'id');
+    },
+
+    stripePrices() {
+        return this.belongsToMany(
+            'StripePrice',
+            'stripe_products',
+            'product_id',
+            'stripe_product_id',
+            'id',
+            'stripe_product_id'
+        );
+    },
+
+    members() {
         return this.belongsToMany('Member', 'members_products', 'product_id', 'member_id');
     }
 });
