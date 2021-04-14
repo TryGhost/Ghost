@@ -29,8 +29,8 @@ describe('Database Migration (special functions)', function () {
         });
 
         should.Assertion.add('havePermission', function (name, roles = null) {
-            const permission = this.obj.find((permission) => {
-                return permission.name === name;
+            const permission = this.obj.find((p) => {
+                return p.name === name;
             });
             should.exist(permission, `Could not find permission ${name}`);
 
