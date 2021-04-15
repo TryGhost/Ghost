@@ -670,12 +670,12 @@
     bluebird "3.7.2"
     lodash "4.17.21"
 
-"@tryghost/session-service@0.1.17":
-  version "0.1.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.17.tgz#261e1fb4312019fcbac4dca4eeb5702cac3595fd"
-  integrity sha512-7tPZUH2MuF9r/cwK38OOgq030TgbH6oN+Q2N5R4cxl0fpc/5TjTTZ9JFvGGEiFHM6VJ/lPj6q8KSDbfdJeJFHw==
+"@tryghost/session-service@0.1.19":
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.19.tgz#4040bec19e85daeb0546f660ae699460b76aa203"
+  integrity sha512-PwcscFPS9E+mcxdi2sS9xF90xYQAFYQQ4vFSOTCh2ZkQMXKG5Yimv8mgAjzFv7JDPtOvC+zu1546So2ULF7tcg==
   dependencies:
-    "@tryghost/errors" "^0.2.9"
+    "@tryghost/errors" "^0.2.10"
 
 "@tryghost/social-urls@0.1.22":
   version "0.1.22"
