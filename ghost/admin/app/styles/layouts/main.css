@@ -1155,13 +1155,12 @@
     grid-column-gap: 24px;
 }
 
-
-.gh-main-section-content.grey {
-    background: var(--main-color-content-greybg);
-}
-
 .gh-main-section-content.padding-top-s {
     padding-top: 16px;
+}
+
+.gh-main-section-content + .gh-main-section-header {
+    margin-top: 24px;
 }
 
 .gh-main-section-block.stretch-height {
