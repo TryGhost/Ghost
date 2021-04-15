@@ -39,10 +39,10 @@
         <section class="gh-product-config">
             <h4 class="gh-main-section-header small bn">Product details</h4>
             <div class="gh-main-section-content grey gh-product-details-form">
-                <GhFormGroup @property="name" @class="gh-product-icon-container">
+                {{!-- <GhFormGroup @property="name" @class="gh-product-icon-container">
                     <label for="member-name">ICON</label>
                     <div class="gh-product-icon whitegrey">Icon</div>
-                </GhFormGroup>
+                </GhFormGroup> --}}
                 <div class="gh-product-details-fields">
                     <GhFormGroup @property="name" @classNames="max-width">
                         <label for="member-name">Product name</label>
@@ -58,7 +58,7 @@
                 </div>
             </div>
         </section>
-        <section class="gh-product-stats">
+        {{!-- <section class="gh-product-stats">
             <h4 class="gh-main-section-header small bn">Members</h4>
             <div class="gh-product-stat-container">
                 <div class="gh-product-chart">CHART</div>
@@ -68,7 +68,7 @@
                 </div>
                 <LinkTo @route="members">See members &rarr;</LinkTo>
             </div>
-        </section>
+        </section> --}}
     </div>
     </form>
 
@@ -82,91 +82,78 @@
                     <div class="gh-list-header"></div>
                 </li>
                 <li class="gh-list-row">
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-title">
+                    <div class="gh-list-data gh-price-list-title">
                         <h3 class="gh-price-list-name">
                             Monthly
                         </h3>
                         <p class="ma0 pa0 f8 midgrey gh-price-list-description">
                             Full access
                         </p>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-price">
+                    <div class="gh-list-data gh-price-list-price">
                         <span>$5 USD / month</span>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-subscriptions">
+                    <div class="gh-list-data gh-price-list-subscriptions">
                         <span>91</span>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-actions">
+                    <div class="gh-list-data gh-price-list-actions">
                         <div class="gh-price-list-actionlist">
-                            <LinkTo @route="settings.product">
-                                {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
-                            </LinkTo>
-                            <button>
-                                {{svg-jar "trash" class="w6 fill-red pa1"}}
-                            </button>
+                            <LinkTo @route="settings.product">Edit</LinkTo>
+                            <button class="gh-btn gh-btn-link archive"><span>Archive</span></button>
                         </div>
-                    </LinkTo>
+                    </div>
                 </li>
                 <li class="gh-list-row">
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-title">
+                    <div class="gh-list-data gh-price-list-title">
                         <h3 class="gh-price-list-name">
                             Yearly
                         </h3>
                         <p class="ma0 pa0 f8 midgrey gh-price-list-description">
                             37% discount
                         </p>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-price">
+                    <div class="gh-list-data gh-price-list-price">
                         <span>$50 USD / year</span>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-subscriptions">
+                    <div class="gh-list-data gh-price-list-subscriptions">
                         <span>76</span>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-actions">
+                    <div class="gh-list-data gh-price-list-actions">
                         <div class="gh-price-list-actionlist">
-                            <LinkTo @route="settings.product">
-                                {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
-                            </LinkTo>
-                            <button>
-                                {{svg-jar "trash" class="w6 fill-red pa1"}}
-                            </button>
+                            <LinkTo @route="settings.product">Edit</LinkTo>
+                            <button class="gh-btn gh-btn-link archive"><span>Archive</span></button>
                         </div>
-                    </LinkTo>
+                    </div>
                 </li>
-                <li class="gh-list-row">
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-title">
+                <li class="gh-list-row gh-price-list-archived">
+                    <div class="gh-list-data gh-price-list-title">
                         <h3 class="gh-price-list-name">
-                            Complimentary
+                            Complimentary <span class="gh-badge archived">Archived</span>
                         </h3>
                         <p class="ma0 pa0 f8 midgrey gh-price-list-description">
                             Free of charge subscription
                         </p>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-price">
+                    <div class="gh-list-data gh-price-list-price">
                         <span>$0 USD</span>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-subscriptions">
+                    <div class="gh-list-data gh-price-list-subscriptions">
                         <span>18</span>
-                    </LinkTo>
+                    </div>
 
-                    <LinkTo @route="settings.product" class="gh-list-data gh-price-list-actions">
+                    <div class="gh-list-data gh-price-list-actions">
                         <div class="gh-price-list-actionlist">
-                            <LinkTo @route="settings.product">
-                                {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
-                            </LinkTo>
-                            <button>
-                                {{svg-jar "trash" class="w6 fill-red pa1"}}
-                            </button>
+                            <button class="gh-btn gh-btn-link"><span>Activate</span></button>
                         </div>
-                    </LinkTo>
+                    </div>
                 </li>
             </ol>
 
