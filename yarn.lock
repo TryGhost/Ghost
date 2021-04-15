@@ -5701,16 +5701,16 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.2.tgz#e00e99e81d7d1138d534627eb2627eaf9ef55ed8"
-  integrity sha512-ZbVi6PJDbZmaloWcT2C5EL8LchyqvoAeHSseisN6T9m3jAoYoqmm5mrOYoyY7ZWvstRczsy+HHcPWdLC050bfg==
+knex-migrator@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.3.tgz#fd766996d3e2fed2011b118a08d7e7dd31cab5e8"
+  integrity sha512-+MgLogHZb9OmPGezTHj1RcIRXeErXT3LmMK0wlmunRTbCmtEkiRIEKbaAD9JKkAR/evDzBN80awRNjrGsynRIw==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.1"
-    ghost-ignition "4.5.4"
+    ghost-ignition "4.6.1"
     knex "0.21.19"
     lodash "4.17.21"
     moment "2.24.0"
@@ -5718,7 +5718,7 @@ knex-migrator@4.0.2:
     resolve "1.20.0"
   optionalDependencies:
     mysql "2.18.1"
-    sqlite3 "4.2.0"
+    sqlite3 "5.0.2"
 
 knex@0.21.19:
   version "0.21.19"
@@ -6721,7 +6721,7 @@ mysql@2.18.1:
     safe-buffer "5.1.2"
     sqlstring "2.3.1"
 
-nan@^2.12.1, nan@^2.14.0:
+nan@^2.14.0:
   version "2.14.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
   integrity sha512-isWHgVjnFjh2x2yuJ/tj3JbwoHu3UC2dX5G/88Cm24yB6YopVgxvBObDY7n5xW6ExmFhJpSEQqFPvq9zaXc8Jw==
@@ -8893,14 +8893,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
-
-sqlite3@4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-4.2.0.tgz#49026d665e9fc4f922e56fb9711ba5b4c85c4901"
-  integrity sha512-roEOz41hxui2Q7uYnWsjMOTry6TcNUNmp8audCx18gF10P2NknwdpF+E+HKvz/F2NvPKGGBF4NGc+ZPQ+AABwg==
-  dependencies:
-    nan "^2.12.1"
-    node-pre-gyp "^0.11.0"
 
 sqlite3@5.0.2:
   version "5.0.2"
