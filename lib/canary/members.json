@@ -45,6 +45,9 @@
         "labels": {
           "$ref": "#/definitions/member-labels"
         },
+        "products": {
+          "$ref": "#/definitions/member-products"
+        },
         "email_count": {
           "strip": true
         },
@@ -69,6 +72,40 @@
         "updated_by": {
           "strip": true
         }
+      }
+    },
+    "member-products": {
+      "description": "Products of the member",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
       }
     },
     "member-labels": {

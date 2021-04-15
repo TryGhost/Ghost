@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "products.canary",
+  "title": "products",
+  "description": "Base products definitions",
+  "definitions": {
+    "product": {
+      "description": "A Ghost Product",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "slug": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        },
+        "stripe_prices": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "producs.canary#/definitions/stripe_price"
+          }
+        }
+      }
+    },
+    "stripe_price": {
+      "description": "A Stripe Price associated with a Product",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "stripe_product_id": {
+          "type": ["string", "null"],
+          "maxLength": 255
+        },
+        "stripe_price_id": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "nickname": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "currency": {
+          "type": "string",
+          "maxLength": 3
+        },
+        "amount": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        },
+        "type": {
+          "type": "string",
+          "enum": ["recurring", "one_time"]
+        },
+        "interval": {
+          "type": ["string", "null"],
+          "enum": ["year", "month", "week", "day"]
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        }
+      }
+    }
+  }
+}

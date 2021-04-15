@@ -42,6 +42,9 @@
           "id": {
             "strip": true
           },
+          "products": {
+            "$ref": "members.canary#/definitions/member-products"
+          },
           "labels": {
             "$ref": "members.canary#/definitions/member-labels"
           },

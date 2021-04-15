@@ -75,7 +75,7 @@ describe('Exposes a correct API', function () {
         describe('list', function () {
             it('Returns names of all available definitions for default version', function () {
                 const definitions = apiSchema.list();
-                definitions.length.should.eql(16);
+                definitions.length.should.eql(18);
                 definitions.includes('posts-add').should.equal(true);
             });
         });
