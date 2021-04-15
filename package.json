@@ -48,7 +48,7 @@
     "@tryghost/email-analytics-provider-mailgun": "1.0.0",
     "@tryghost/email-analytics-service": "1.0.0",
     "@tryghost/errors": "0.2.10",
-    "@tryghost/helpers": "1.1.41",
+    "@tryghost/helpers": "1.1.42",
     "@tryghost/image-transform": "1.0.3",
     "@tryghost/job-manager": "0.8.3",
     "@tryghost/kg-card-factory": "2.2.2",
