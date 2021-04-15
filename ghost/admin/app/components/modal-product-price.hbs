@@ -51,7 +51,7 @@
 
         <h4 class="gh-main-section-header small bn">Advanced</h4>
         <div class="gh-main-section-content grey gh-product-priceform-block">
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="trial-period">
+            {{!-- <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="trial-period">
                 <label for="trial-period" class="fw6">Trial period</label>
                 <div class="flex items-center justify-center gh-input-group gh-labs-price-label">
                     <GhTextInput
@@ -62,7 +62,7 @@
                     <span class="gh-input-append">days</span>
                 </div>
                 <GhErrorMessage @errors={{this.price.errors}} @property="trial-period" />
-            </GhFormGroup>
+            </GhFormGroup> --}}
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="welcome-page">
                 <label for="welcome-page" class="fw6">Welcome page</label>
                 <GhTextInput

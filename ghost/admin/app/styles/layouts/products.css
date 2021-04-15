@@ -24,9 +24,13 @@
 /* Product details */
 .gh-product-details {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     grid-gap: 32px;
     margin-bottom: 3vw;
+}
+
+.gh-product-details .max-width {
+    max-width: 620px;
 }
 
 .gh-product-details-form {
@@ -68,6 +72,7 @@
     justify-content: stretch;
 }
 
+/* Product stats */
 .gh-product-stat-container {
     display: flex;
     flex-direction: column;
@@ -125,11 +130,31 @@
 .gh-price-list-actionlist a,
 .gh-price-list-actionlist button {
     line-height: 0;
+    margin-left: 24px;
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-price-list-actionlist button.archive {
+    color: var(--red);
 }
 
 .gh-price-list-title,
 .gh-price-list-price {
     width: 35%;
+}
+
+.gh-price-list-name span.archived {
+    background: var(--midgrey);
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.gh-price-list-archived .gh-price-list-name,
+.gh-price-list-archived .gh-price-list-description,
+.gh-price-list-archived .gh-price-list-price span,
+.gh-price-list-archived .gh-price-list-subscriptions span {
+    opacity: 0.5;
 }
 
 .product-actions-menu {
