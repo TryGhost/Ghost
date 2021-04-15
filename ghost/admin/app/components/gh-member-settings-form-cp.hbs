@@ -1,0 +1,224 @@
+<div class="gh-member-settings" ...attributes>
+
+    <section class="gh-main-section no-heading gh-member-detail-overview">
+        <div class="gh-main-section-block">
+            <div class="gh-main-section-content">
+                <div class="flex items-center">
+                    {{#if (or this.member.name this.member.email)}}
+                        <GhMemberAvatar
+                            @member={{this.member}}
+                            @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
+                            @containerClass="w20 h20 mr4 gh-member-detail-avatar"
+                        />
+                    {{else}}
+                        <div class="flex items-center justify-center br-100 w18 h18 mr4 gh-new-member-avatar">
+                            <span class="gh-member-avatar-label f-subheadline fw4 lh-zero tracked-1">N</span>
+                        </div>
+                    {{/if}}
+                    <div>
+                        <h3>
+                            {{or this.member.name this.member.email}}
+                        </h3>
+                        <p>
+                            {{#if (and this.member.name this.member.email)}}
+                                <a href="mailto:{{this.member.email}}">{{this.member.email}}</a>
+                            {{/if}}
+                        </p>
+                        {{#unless this.member.isNew}}
+                        <p class="{{if this.member.name "nudge-bottom--2"}}">
+                            {{#if this.member.geolocation}}
+                                {{#if (and (eq this.member.geolocation.country_code "US") @member.geolocation.region)}}
+                                    {{this.member.geolocation.region}}, US
+                                {{else}}
+                                    {{or this.member.geolocation.country "Unknown location"}}
+                                {{/if}}
+                            {{else}}
+                                Unknown location
+                            {{/if}}
+                            – Created on {{moment-format @member.createdAtUTC "D MMM YYYY"}}
+                        </p>
+                        {{/unless}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gh-main-section columns-3">
+        <div class="gh-main-section-block span-2">
+            <div class="gh-main-section-content grey">
+                <div>
+                    <div class="gh-cp-member-email-name">
+                        <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width">
+                            <label for="member-name">Name</label>
+                            <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
+                                @focus-out={{action "setProperty" "name" this.scratchMember.name}} data-test-input="member-name" />
+                            <GhErrorMessage @errors={{member.errors}} @property="name" />
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width">
+                            <label for="member-email">Email</label>
+                            <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
+                                @autocapitalize="off" @autocorrect="off" @autocomplete="off"
+                                @focus-out={{action "setProperty" "email" this.scratchMember.email}} data-test-input="member-email"/>
+                            <GhErrorMessage @errors={{this.member.errors}} @property="email" />
+                        </GhFormGroup>
+                    </div>
+
+                    <GhFormGroup @classNames="gh-member-labels">
+                        <label for="label-input">Labels</label>
+                        <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" data-test-input="" />
+                    </GhFormGroup>
+                
+                    <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0 gh-member-note">
+                        <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
+                        <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
+                            @value={{this.scratchMember.note}} @focus-out={{action "setProperty" "note" this.scratchMember.note}} data-test-input="member-note" />
+                        <GhErrorMessage @errors={{this.member.errors}} @property="note" />
+                        <p> Maximum: <b>500</b> characters. You’ve used
+                            {{gh-count-down-characters this.scratchMember.note 500}}</p>
+                    </GhFormGroup>
+
+                    <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="gh-setting-title m">Subscribed to newsletter</h4>
+                                <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+                            </div>
+                            <div class="for-switch">
+                                <label class="switch" for="subscribed-checkbox">
+                                    <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
+                                        @name="subscribed" data-test-checkbox="member-subscribed" />
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </GhFormGroup>
+                </div>
+            </div>
+
+            {{#if this.canShowStripeInfo}}
+                {{#if this.subscriptions}}
+                    <h4 class="gh-main-section-header small bn">Stripe info</h4>
+                    <div class="gh-main-section-content grey">
+                        <section class="gh-member-stripe-info flex flex-column flex-row-ns items-start justify-between">
+                            <div class="flex items-start w-50">
+                                <div class="flex-auto">
+                                    <table class="gh-member-stripe-table">
+                                        <tr class="gh-member-stripe-row">
+                                            <td class="gh-member-stripe-label">Name</td>
+                                            <td class="gh-member-stripe-data">
+                                                {{#if customer.name}}
+                                                    {{customer.name}}
+                                                {{else}}
+                                                    <span class="midgrey-d1">No name</span>
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                        <tr class="gh-member-stripe-row">
+                                            <td class="gh-member-stripe-label">Email</td>
+                                            <td class="gh-member-stripe-data gh-member-stripe-email">
+                                                {{#if customer.email}}
+                                                    {{customer.email}}
+                                                {{else}}
+                                                    <span class="midgrey-d1">No email</span>
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="flex items-start w-50">
+                                <div class="flex-auto">
+                                    <table class="gh-member-stripe-table">
+                                        <tr class="gh-member-stripe-row">
+                                            <td class="gh-member-stripe-label">Card</td>
+                                            <td class="gh-member-stripe-data">
+                                                <span class="midgrey-d1">No card info</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                        <div>
+                            <a href="https://dashboard.stripe.com/customers/{{customer.id}}" target="_blank" rel="noopener">
+                                View on Stripe
+                            </a>
+                        </div>
+                    </div>
+                {{/if}}
+            {{/if}}
+
+            <h4 class="gh-main-section-header small bn">Products</h4>
+            <div class="gh-main-section-content">
+                <ol class="gh-price-list gh-list">
+                    <li class="gh-list-row header empty">
+                        <div class="gh-list-header"></div>
+                        <div class="gh-list-header"></div>
+                    </li>
+                    <li class="gh-list-row">
+                        <div class="gh-list-data gh-price-list-title">
+                            <h3 class="gh-price-list-name">
+                                Product 1
+                            </h3>
+                            <p class="ma0 pa0 f8 midgrey gh-price-list-description">
+                                Description
+                            </p>
+                        </div>
+
+                        <div class="gh-list-data gh-price-list-actions">
+                            <div class="gh-price-list-actionlist">
+                                <LinkTo @route="settings.product">Edit</LinkTo>
+                                <button class="gh-btn gh-btn-link archive"><span>Cancel subscription</span></button>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="gh-list-row gh-price-list-archived">
+                        <div class="gh-list-data gh-price-list-title">
+                            <h3 class="gh-price-list-name">
+                                Product 2 <span class="gh-badge archived">Cancelled</span>
+                            </h3>
+                            <p class="ma0 pa0 f8 midgrey gh-price-list-description">
+                                Cancelled product
+                            </p>
+                        </div>
+
+                        <div class="gh-list-data gh-price-list-actions">
+                            <div class="gh-price-list-actionlist">
+                                <button class="gh-btn gh-btn-link"><span>Activate</span></button>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+
+                {{!-- <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showPriceModal" this)}}>
+                    <span>New price</span>
+                </button> --}}
+            </div>
+        </div>
+        <div class="gh-main-section-block">
+            <div class="gh-main-section-content bordered">
+                <div class="gh-heading-xs">Emails received</div>
+                <div class="gh-data-summary gh-cp-data-summary">{{@member.emailCount}}</div>
+                <div class="gh-heading-xs">Emails opened</div>
+                <div class="gh-data-summary gh-cp-data-summary">{{@member.emailOpenedCount}}</div>
+                <div class="gh-heading-xs">Avg. open rate</div>
+                <div class="gh-data-summary gh-cp-data-summary">
+                    {{#if (is-empty @member.emailOpenRate)}}
+                        <span data-tooltip="Insufficient data available">–</span>
+                    {{else}}
+                        {{@member.emailOpenRate}}%
+                    {{/if}}
+                </div>
+            </div>
+
+            <h4 class="gh-main-section-header small bn">Member activity</h4>
+            <div class="gh-main-section-content bordered">
+                <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
+            </div>
+            
+        </div>
+    </section>
+
+</div>

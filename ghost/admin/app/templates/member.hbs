@@ -27,11 +27,19 @@
 
     <div>
         <form class="member-basic-info-form">
-            <GhMemberSettingsForm
-                @member={{this.member}}
-                @scratchMember={{this.scratchMember}}
-                @setProperty={{this.setProperty}}
-                @isLoading={{this.isLoading}} />
+            {{#if (enable-developer-experiments)}}
+                <GhMemberSettingsFormCp
+                    @member={{this.member}}
+                    @scratchMember={{this.scratchMember}}
+                    @setProperty={{this.setProperty}}
+                    @isLoading={{this.isLoading}} />
+            {{else}}
+                <GhMemberSettingsForm
+                    @member={{this.member}}
+                    @scratchMember={{this.scratchMember}}
+                    @setProperty={{this.setProperty}}
+                    @isLoading={{this.isLoading}} />
+            {{/if}}
         </form>
 
         {{#unless this.member.isNew}}

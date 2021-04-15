@@ -1534,3 +1534,15 @@ p.gh-members-import-errordetail:first-of-type {
         transform: scale(0.9);
     }
 }
+
+
+/* Custom product member details */
+.gh-cp-member-email-name {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 24px;
+}
+
+.gh-cp-data-summary:not(:last-of-type) {
+    margin-bottom: 24px;
+}
