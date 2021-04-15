@@ -141,7 +141,7 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "0.7.13",
-    "sqlite3": "4.2.0"
+    "sqlite3": "5.0.2"
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.0.1",
