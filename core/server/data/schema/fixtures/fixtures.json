@@ -354,6 +354,31 @@
                     "object_type": "member"
                 },
                 {
+                    "name": "Browse Products",
+                    "action_type": "browse",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Read Products",
+                    "action_type": "read",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Edit Products",
+                    "action_type": "edit",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Add Products",
+                    "action_type": "add",
+                    "object_type": "product"
+                },
+                {
+                    "name": "Delete Products",
+                    "action_type": "destroy",
+                    "object_type": "product"
+                },
+                {
                     "name": "Publish posts",
                     "action_type": "publish",
                     "object_type": "post"
@@ -693,6 +718,7 @@
                     "api_key": "all",
                     "action": "all",
                     "member": "all",
+                    "product": "all",
                     "label": "all",
                     "email_preview": "all",
                     "email": "all",
@@ -737,7 +763,8 @@
                     "theme": ["browse"],
                     "email_preview": "all",
                     "email": "all",
-                    "snippet": "all"
+                    "snippet": "all",
+                    "product": ["browse", "read"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -749,7 +776,8 @@
                     "theme": ["browse"],
                     "email_preview": "read",
                     "email": "read",
-                    "snippet": ["browse", "read"]
+                    "snippet": ["browse", "read"],
+                    "product": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
