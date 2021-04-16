@@ -18,16 +18,16 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "8.3.2",
-    "should": "13.2.3",
-    "sinon": "10.0.0"
+    "mocha": "^8.3.2",
+    "should": "^13.2.3",
+    "sinon": "^10.0.0"
   },
   "dependencies": {
-    "bluebird": "3.7.2",
-    "emoji-regex": "9.2.2",
-    "execa": "4.1.0",
-    "lodash": "4.17.21",
-    "request": "2.88.2",
-    "request-promise": "4.2.6"
+    "bluebird": "^3.7.2",
+    "emoji-regex": "^9.2.2",
+    "execa": "^4.1.0",
+    "lodash": "^4.17.21",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
   }
 }
