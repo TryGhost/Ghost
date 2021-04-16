@@ -5,6 +5,22 @@
 const models = require('../../models');
 const SettingsCache = require('./cache');
 
+// The string returned when a setting is set as write-only
+const obfuscatedSetting = '••••••••';
+
+// The function used to decide whether a setting is write-only
+function isSecretSetting(setting) {
+    return /secret/.test(setting.key);
+}
+
+// The function that obfuscates a write-only setting
+function hideValueIfSecret(setting) {
+    if (setting.value && isSecretSetting(setting)) {
+        return {...setting, value: obfuscatedSetting};
+    }
+    return setting;
+}
+
 module.exports = {
     async init() {
         const settingsCollection = await models.Settings.populateDefaults();
@@ -46,19 +62,7 @@ module.exports = {
         }
     },
 
-    // The string returned when a setting is set as write-only
-    obfuscatedSetting: '••••••••',
-
-    // The function used to decide whether a setting is write-only
-    isSecretSetting(setting) {
-        return /secret/.test(setting.key);
-    },
-
-    // The function that obfuscates a write-only setting
-    hideValueIfSecret(setting) {
-        if (setting.value && this.isSecretSetting(setting)) {
-            return {...setting, value: this.obfuscatedSetting};
-        }
-        return setting;
-    }
+    obfuscatedSetting,
+    isSecretSetting,
+    hideValueIfSecret
 };
