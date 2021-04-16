@@ -21,10 +21,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "^8.3.2",
-    "should": "^13.2.3",
-    "sinon": "^10.0.0",
-    "typescript": "^4.2.4"
+    "mocha": "8.3.2",
+    "should": "13.2.3",
+    "sinon": "10.0.0",
+    "typescript": "4.2.4"
   },
   "dependencies": {
     "moleculer": "^0.14.11"
