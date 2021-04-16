@@ -87,7 +87,7 @@
     "downsize": "0.0.8",
     "express": "4.17.1",
     "express-brute": "1.0.1",
-    "express-hbs": "2.3.4",
+    "express-hbs": "2.3.5",
     "express-jwt": "6.0.0",
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.1",
