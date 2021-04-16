@@ -25,14 +25,14 @@
                         <h4 class="gh-expandable-title">Subscription access</h4>
                         <p class="gh-expandable-description">Who should be able to subscribe to your site?</p>
                     </div>
-                    <button type="button" class="gh-btn" {{on "click" this.toggleSubscriptionAccess}} data-test-toggle="subscription-access"><span>{{if this.subscriptionAccessOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{on "click" this.toggleSignupAccess}} data-test-toggle="subscription-access"><span>{{if this.subscriptionAccessOpen "Close" "Expand"}}</span></button>
                 </div>
                 <div class="gh-expandable-content">
-                    {{#liquid-if this.subscriptionAccessOpen}}
+                    {{#liquid-if this.signupAccessOpen}}
                         <div class="flex flex-column w-50">
                             <div
                                 class="gh-radio {{if this.settings.membersAllowFreeSignup "active"}}"
-                                {{on "click" (fn this.setSubscriptionAccess "anyone")}}
+                                {{on "click" (fn this.setSignupAccess "all")}}
                             >
                                 <div class="gh-radio-button"></div>
                                 <div class="gh-radio-content">
@@ -43,7 +43,7 @@
 
                             <div
                                 class="gh-radio {{if (not this.settings.membersAllowFreeSignup) "active"}}"
-                                {{on "click" (fn this.setSubscriptionAccess "invite")}}
+                                {{on "click" (fn this.setSignupAccess "invite")}}
                             >
                                 <div class="gh-radio-button"></div>
                                 <div class="gh-radio-content">
