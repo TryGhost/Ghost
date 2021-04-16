@@ -19,12 +19,12 @@
     "access": "public"
   },
   "devDependencies": {
-    "@sinonjs/fake-timers": "^7.0.5",
-    "date-fns": "^2.21.1",
-    "delay": "^5.0.0",
-    "mocha": "^8.3.2",
-    "should": "^13.2.3",
-    "sinon": "^10.0.0"
+    "@sinonjs/fake-timers": "7.0.5",
+    "date-fns": "2.21.1",
+    "delay": "5.0.0",
+    "mocha": "8.3.2",
+    "should": "13.2.3",
+    "sinon": "10.0.0"
   },
   "dependencies": {
     "@breejs/later": "^4.0.2",

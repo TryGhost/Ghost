@@ -19,10 +19,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "folder-hash": "^4.0.1",
-    "mocha": "^8.3.2",
-    "should": "^13.2.3",
-    "sinon": "^10.0.0"
+    "folder-hash": "4.0.1",
+    "mocha": "8.3.2",
+    "should": "13.2.3",
+    "sinon": "10.0.0"
   },
   "dependencies": {
     "archiver": "^4.0.2",
