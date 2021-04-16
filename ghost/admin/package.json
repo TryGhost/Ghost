@@ -30,7 +30,7 @@
     "@ember/render-modifiers": "1.0.2",
     "@glimmer/component": "1.0.4",
     "@html-next/vertical-collection": "2.0.0",
-    "@tryghost/helpers": "1.1.42",
+    "@tryghost/helpers": "1.1.43",
     "@tryghost/kg-clean-basic-html": "1.0.17",
     "@tryghost/kg-parser-plugins": "1.1.7",
     "@tryghost/limit-service": "0.4.1",
