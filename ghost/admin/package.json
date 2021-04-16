@@ -36,7 +36,7 @@
     "@tryghost/limit-service": "0.4.1",
     "@tryghost/members-csv": "1.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
-    "@tryghost/string": "0.1.17",
+    "@tryghost/string": "0.1.18",
     "@tryghost/timezone-data": "0.2.40",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
