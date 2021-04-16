@@ -19,15 +19,15 @@
     "access": "public"
   },
   "devDependencies": {
-    "folder-hash": "4.0.1",
-    "mocha": "8.3.2",
-    "should": "13.2.3",
-    "sinon": "10.0.0"
+    "folder-hash": "^4.0.1",
+    "mocha": "^8.3.2",
+    "should": "^13.2.3",
+    "sinon": "^10.0.0"
   },
   "dependencies": {
-    "archiver": "4.0.2",
-    "bluebird": "3.7.2",
-    "extract-zip": "2.0.0",
-    "fs-extra": "9.1.0"
+    "archiver": "^4.0.2",
+    "bluebird": "^3.7.2",
+    "extract-zip": "^2.0.0",
+    "fs-extra": "^9.1.0"
   }
 }
