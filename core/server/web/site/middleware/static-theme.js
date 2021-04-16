@@ -1,7 +1,7 @@
 const path = require('path');
 const config = require('../../../../shared/config');
 const constants = require('@tryghost/constants');
-const themeUtils = require('../../../../frontend/services/themes');
+const themeService = require('../../../../frontend/services/themes');
 const express = require('../../../../shared/express');
 
 function isBlackListedFileType(file) {
@@ -19,13 +19,13 @@ function isWhiteListedFile(file) {
 }
 
 function forwardToExpressStatic(req, res, next) {
-    if (!themeUtils.getActive()) {
+    if (!themeService.getActive()) {
         return next();
     }
 
     const configMaxAge = config.get('caching:theme:maxAge');
 
-    express.static(themeUtils.getActive().path,
+    express.static(themeService.getActive().path,
         {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS}
     )(req, res, next);
 }
