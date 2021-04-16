@@ -15,9 +15,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "^7.2.0",
-    "should": "^13.2.3",
-    "sinon": "^9.2.4"
+    "mocha": "7.2.0",
+    "should": "13.2.3",
+    "sinon": "9.2.4"
   },
   "dependencies": {
     "@tryghost/kg-parser-plugins": "^1.1.7",
