@@ -26,12 +26,14 @@ module.exports = {
                 }));
             }
 
-            // CASE: omit core settings unless internal request
             if (!frame.options.context.internal) {
+                // CASE: omit core settings unless internal request
                 settings = _.filter(settings, (setting) => {
                     const isCore = setting.group === 'core';
                     return !isCore;
                 });
+                // CASE: omit secret settings unless internal request
+                settings = settings.map(settingsService.hideValueIfSecret);
             }
 
             return settings;
@@ -82,6 +84,8 @@ module.exports = {
                     message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
                 }));
             }
+
+            setting = settingsService.hideValueIfSecret(setting);
 
             return {
                 [frame.options.key]: setting
@@ -230,8 +234,8 @@ module.exports = {
         async query(frame) {
             const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
 
-            // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_*` settings.
             const settings = frame.data.settings.filter((setting) => {
+                // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_*` settings.
                 return ![
                     'stripe_connect_integration_token',
                     'stripe_connect_publishable_key',
@@ -239,7 +243,9 @@ module.exports = {
                     'stripe_connect_livemode',
                     'stripe_connect_account_id',
                     'stripe_connect_display_name'
-                ].includes(setting.key);
+                ].includes(setting.key)
+                // Remove obfuscated settings
+                && !(setting.value === settingsService.obfuscatedSetting && settingsService.isSecretSetting(setting));
             });
 
             const getSetting = setting => settingsCache.get(setting.key, {resolve: false});
