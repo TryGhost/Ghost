@@ -39,7 +39,7 @@ const debouncedReconfigureMembersAPI = _.debounce(reconfigureMembersAPI, 600);
 // Bind to events to automatically keep subscription info up-to-date from settings
 events.on('settings.edited', function updateSettingFromModel(settingModel) {
     if (![
-        'members_allow_free_signup',
+        'members_signup_access',
         'members_from_address',
         'members_support_address',
         'members_reply_address',

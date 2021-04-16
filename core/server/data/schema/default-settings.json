@@ -235,13 +235,13 @@
             "defaultValue": "public",
             "type": "string"
         },
-        "members_allow_free_signup": {
-            "defaultValue": "true",
+        "members_signup_access": {
+            "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["true", "false"]]
+                "isIn": [["all", "invite", "none"]]
             },
-            "type": "boolean"
+            "type": "string"
         },
         "members_from_address": {
             "defaultValue": "noreply",
