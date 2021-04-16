@@ -20,9 +20,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "^8.3.2",
-    "should": "^13.2.3",
-    "sinon": "^10.0.0"
+    "mocha": "8.3.2",
+    "should": "13.2.3",
+    "sinon": "10.0.0"
   },
   "dependencies": {
     "chalk": "^4.1.0",
