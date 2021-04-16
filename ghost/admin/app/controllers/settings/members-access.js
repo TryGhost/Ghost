@@ -8,7 +8,7 @@ export default class MembersAccessController extends Controller {
     @service settings;
 
     @tracked showLeaveSettingsModal = false;
-    @tracked subscriptionAccessOpen = false;
+    @tracked signupAccessOpen = false;
     @tracked postAccessOpen = false;
 
     leaveRoute(transition) {
@@ -33,8 +33,8 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    toggleSubscriptionAccess() {
-        this.subscriptionAccessOpen = !this.subscriptionAccessOpen;
+    toggleSignupAccess() {
+        this.signupAccessOpen = !this.signupAccessOpen;
     }
 
     @action
@@ -48,9 +48,9 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    setSubscriptionAccess(value) {
+    setSignupAccess(value) {
         switch (value) {
-        case 'anyone':
+        case 'all':
             this.settings.set('membersAllowFreeSignup', true);
             break;
 
