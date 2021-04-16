@@ -210,6 +210,66 @@ describe('Settings API (canary)', function () {
                 .expect(403);
         });
 
+        it('Can\'t read secret setting', function (done) {
+            const key = 'stripe_secret_key';
+            request
+                .get(localUtils.API.getApiQuery(`settings/${key}/`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    const json = res.body;
+                    should.exist(json);
+                    should.exist(json.settings);
+
+                    json.settings.length.should.eql(1);
+                    json.settings[0].key.should.eql('stripe_secret_key');
+                    should(json.settings[0].value).be.null();
+
+                    done();
+                });
+        });
+
+        it('Can\'t read secret setting', function (done) {
+            const key = 'stripe_secret_key';
+            request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    settings: [{
+                        key,
+                        value: 'sk_test_4eC39HqLyjWDarjtT1zdp7dc'
+                    }]
+                })
+                .then(() => {
+                    request
+                        .get(localUtils.API.getApiQuery(`settings/${key}/`))
+                        .set('Origin', config.get('url'))
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            const json = res.body;
+                            should.exist(json);
+                            should.exist(json.settings);
+
+                            json.settings.length.should.eql(1);
+                            json.settings[0].key.should.eql('stripe_secret_key');
+                            json.settings[0].value.should.eql('••••••••');
+
+                            done();
+                        });
+                });
+        });
+
         it('Can\'t read permalinks', function (done) {
             request.get(localUtils.API.getApiQuery('settings/permalinks/'))
                 .set('Origin', config.get('url'))
