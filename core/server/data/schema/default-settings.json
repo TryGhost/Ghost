@@ -467,5 +467,15 @@
             "defaultValue": "",
             "type": "string"
         }
+    },
+    "oauth": {
+        "oauth_client_id" : {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "oauth_client_secret" : {
+            "defaultValue": null,
+            "type": "string"
+        }
     }
 }

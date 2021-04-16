@@ -75,7 +75,9 @@ const defaultSettingsKeyTypes = [
     {key: 'newsletter_body_font_category', type: 'newsletter'},
     {key: 'newsletter_footer_content', type: 'newsletter'},
     {key: 'firstpromoter', type: 'firstpromoter'},
-    {key: 'firstpromoter_id', type: 'firstpromoter'}
+    {key: 'firstpromoter_id', type: 'firstpromoter'},
+    {key: 'oauth_client_id', type: 'oauth'},
+    {key: 'oauth_client_secret', type: 'oauth'}
 ];
 
 describe('Settings API (v3)', function () {

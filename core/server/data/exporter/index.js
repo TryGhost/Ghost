@@ -69,7 +69,9 @@ const SETTING_KEYS_BLOCKLIST = [
     'stripe_secret_key',
     'stripe_publishable_key',
     'members_stripe_webhook_id',
-    'members_stripe_webhook_secret'
+    'members_stripe_webhook_secret',
+    'oauth_client_id',
+    'oauth_client_secret'
 ];
 
 const modelOptions = {context: {internal: true}};
