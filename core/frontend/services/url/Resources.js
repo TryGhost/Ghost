@@ -52,7 +52,8 @@ class Resources {
             return this.resourceConfig;
         }
 
-        this.resourcesAPIVersion = require('../themes').getApiVersion();
+        const themeService = require('../themes');
+        this.resourcesAPIVersion = themeService.getApiVersion();
         this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }
 
