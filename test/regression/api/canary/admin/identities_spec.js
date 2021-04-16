@@ -16,11 +16,10 @@ const verifyJWKS = (endpoint, token) => {
             jwksUri: endpoint
         });
 
-        function getKey(header, callback){
-            client.getSigningKey(header.kid, (err, key) => {
-                let signingKey = key.publicKey || key.rsaPublicKey;
-                callback(null, signingKey);
-            });
+        async function getKey(header, callback) {
+            const key = await client.getSigningKey(header.kid);
+            let signingKey = key.publicKey || key.rsaPublicKey;
+            callback(null, signingKey);
         }
 
         jwt.verify(token, getKey, {}, (err, decoded) => {
