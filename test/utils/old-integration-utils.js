@@ -7,7 +7,7 @@ const routingService = require('../../core/frontend/services/routing');
 const settingsService = require('../../core/server/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
 const imageLib = require('../../core/server/lib/image');
-const themes = require('../../core/frontend/services/themes');
+const themeServices = require('../../core/frontend/services/themes');
 
 // Other Test Utilities
 const configUtils = require('./configUtils');
@@ -46,7 +46,7 @@ module.exports = {
 
         return settingsService.init()
             .then(() => {
-                return themes.init();
+                return themeServices.init();
             });
     },
 

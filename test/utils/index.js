@@ -23,7 +23,7 @@ const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
 const web = require('../../core/server/web');
-const themes = require('../../core/frontend/services/themes');
+const themeService = require('../../core/frontend/services/themes');
 const limits = require('../../core/server/services/limits');
 
 // Other Test Utilities
@@ -194,7 +194,7 @@ const restartModeGhostStart = async () => {
 
     // Reload the frontend
     await frontendSettingsService.init();
-    await themes.init();
+    await themeService.init();
 
     // Reload the URL service & wait for it to be ready again
     // @TODO: Prob B: why/how is this different to urlService.resetGenerators?
@@ -205,7 +205,7 @@ const restartModeGhostStart = async () => {
     web.shared.middlewares.customRedirects.reload();
 
     // Trigger themes to load again
-    themes.loadInactiveThemes();
+    themeService.loadInactiveThemes();
 
     // Reload limits service
     limits.init();
