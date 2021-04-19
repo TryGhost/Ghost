@@ -37,7 +37,7 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@breejs/later@4.0.2", "@breejs/later@^4.0.2":
+"@breejs/later@^4.0.2":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@breejs/later/-/later-4.0.2.tgz#38c85cc98b717c7a196f87238090adaea01f8c9e"
   integrity sha512-EN0SlbyYouBdtZis1htdsgGlwFePzkXPwdIeqaBaavxkJT1G2/bitc2LSixjv45z2njXslxlJI1mW2O/Gmrb+A==
@@ -123,13 +123,11 @@
     debug "^4.1.0"
     lodash "^4.17.10"
 
-"@nexes/mongo-utils@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-utils/-/mongo-utils-0.3.0.tgz#144c56851b3bb773839281b416964a7d2f4982c0"
-  integrity sha512-diYGCysU0f2+YCwGEjJTDJIM79rGjAdaP7+iFK+cXvnmnVdUOAF/lUCaHLtHkXOBCdan3v9jTGTBfgHPeBhJjA==
+"@nexes/mongo-utils@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-utils/-/mongo-utils-0.3.1.tgz#3a1b89ec4585478dbb41277dc1fdb2689deb3b9d"
+  integrity sha512-SpDr6i98GeGA2vajQtliAsUqvFbawmzC6wgaC9/+9P8R0/o+71WTzvyPNYHnXNDqy0dpxq2FX78DdN6FTSKjKA==
   dependencies:
-    bluebird "^3.5.3"
-    ghost-ignition "^2.9.6"
     lodash "^4.17.11"
 
 "@nexes/nql-lang@0.0.1":
@@ -137,13 +135,13 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha1-oTwCOHP5vBG55OKERJxs++zMgBE=
 
-"@nexes/nql@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.5.0.tgz#bff22dbd4e2aa697d5c33031675cb100b013a0a4"
-  integrity sha512-skn8cfr0OJFu6HdcLRgBL19bJ2S7pATrgR/RnZR3v4T4iHfAkZ8zzLDMGib+721eFaAURnpGfPittO+RyPAhiQ==
+"@nexes/nql@0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.5.1.tgz#59f0dd5bdd6572c9060fe8ba633e23e5c2a6bd9d"
+  integrity sha512-2qcxqHtor1+T222AcSvrIO8nYrD7NqaZBmydtR4jA+uuRz4fydgvheqJyihJ3TtD7jw4+4+BjOswICQPbzu6JQ==
   dependencies:
     "@nexes/mongo-knex" "0.4.0"
-    "@nexes/mongo-utils" "0.3.0"
+    "@nexes/mongo-utils" "0.3.1"
     "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
 
@@ -311,12 +309,12 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@0.2.11":
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.11.tgz#ccd0ce8fdc18f0e4cf8c840df09d438ca58a6471"
-  integrity sha512-+Hzkqdy3ni2nyx1U96CCRuCBIS99wwmflrw65D6CmuE603aFcJVMb2EBBJoeOmsDkFUqZz6xps4Y57gv3sGtdw==
+"@tryghost/adapter-manager@0.2.12":
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.12.tgz#641564a3c6809ead118498170d72eed4efa74bee"
+  integrity sha512-GnGKD236rTMOmQMx3C0GZsEpCzfh8CMbAUwLXumXo+QuGgwVJLqLRC5C/LG/rDaAZHBNMBXKgS7mGKQ6Z2MSLQ==
   dependencies:
-    "@tryghost/errors" "^0.2.10"
+    "@tryghost/errors" "^0.2.11"
 
 "@tryghost/admin-api-schema@2.0.2":
   version "2.0.2"
@@ -376,13 +374,13 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@0.2.10", "@tryghost/errors@^0.2.10":
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.10.tgz#70410c06326d6ce87ed915b6bb89c4b68101da4e"
-  integrity sha512-ZxhPPNrp5geBdGo1k/UUYajmSnt8+IDHQK2QbhAI15duFP5DYBUYwwiuPwbFPjTP1jEbSPzj++kv5LV6fAT58g==
+"@tryghost/errors@0.2.11", "@tryghost/errors@^0.2.11":
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.11.tgz#db42d49c6e703b46efa2097cfafcf3d401789c07"
+  integrity sha512-OKVaefe6YxNZkhsJzqvzBs4wFA4XCkqcguzJikK6qGaJ+w1hjqGLOab9d1AJ8bLCVFTzptv24jjT/CHY9g5Ojg==
   dependencies:
-    ghost-ignition "4.6.1"
-    lodash "4.17.21"
+    ghost-ignition "^4.6.1"
+    lodash "^4.17.21"
 
 "@tryghost/errors@0.2.8":
   version "0.2.8"
@@ -435,16 +433,16 @@
   optionalDependencies:
     sharp "0.25.4"
 
-"@tryghost/job-manager@0.8.3":
-  version "0.8.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.3.tgz#0e7752ddeb78cef63745be770467b48cceae6a31"
-  integrity sha512-5h8SMrSIY6ZvseGj0wR5zqys+1o5JhQc7HGob0urJ/oDIdbs+BrFhYHvR6he15lKvFFBvG+T1IO4oOEIFLR3iA==
+"@tryghost/job-manager@0.8.4":
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.4.tgz#ba58dea09dc7d77b4177449209a48ea390d774b0"
+  integrity sha512-0cftCLxVKVfAG9jE8gUTtyDkz3aUZX2DndNFcYwCXCjhBLOGaN15SkhfNszvJ64iaBFnTe6XFfSzazeUmok7VA==
   dependencies:
-    "@breejs/later" "4.0.2"
-    bree "6.2.0"
-    cron-validate "1.4.3"
-    fastq "1.11.0"
-    p-wait-for "3.2.0"
+    "@breejs/later" "^4.0.2"
+    bree "^6.2.0"
+    cron-validate "^1.4.3"
+    fastq "^1.11.0"
+    p-wait-for "^3.2.0"
 
 "@tryghost/kg-card-factory@2.2.2":
   version "2.2.2"
@@ -499,10 +497,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.17"
 
-"@tryghost/limit-service@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.4.1.tgz#c827e8a334854766f073520ae5dab12e132e0945"
-  integrity sha512-MYcW+s4+OfA9C/tI7e0ZKhxUk02tVhkcrBc/7p+BgiJnS+LdcgrV21xRqH/UhERotgOLcFRTHPt6bkqW1Lnhwg==
+"@tryghost/limit-service@0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.4.2.tgz#3f096d3f0b158ffb51411cb7f0f772fd216c5fce"
+  integrity sha512-bFT2nsLVJdfIKirHsLEoZk2ZDF9Gx0tSJomfoDRyc5iGnI7Vgy3FTemlAXjM50NfFH1VCFBZiH81QeoTxa7vbw==
   dependencies:
     lodash "^4.17.21"
 
@@ -572,10 +570,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-session-from-token@0.1.18":
-  version "0.1.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.18.tgz#cf79762374faffc61c2f164bdae22634e19dcd2a"
-  integrity sha512-Oar8MH5Qq3KSHXU2oxZznYF779b0BNc+krS5iNIqgx8izbdOzuJr+CGyo++Hb8pRNGf7ZMmEx1sX+aPAB2KYNg==
+"@tryghost/mw-session-from-token@0.1.19":
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.19.tgz#9d02734ed03a5538fbed1d848acfb6de5b2291f5"
+  integrity sha512-a0g/dHfKee5esK78qZdjT4AHBFw7bUc0AlHb93DR1NbACsSiIIFy6S4khkMNye6g+2iQ04u9vCPfOUCHwqXp0A==
 
 "@tryghost/pretty-cli@1.2.16":
   version "1.2.16"
@@ -585,29 +583,29 @@
     chalk "4.1.0"
     sywac "1.3.0"
 
-"@tryghost/promise@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.7.tgz#51718eb9b0a31b8c8e0135f529545c4d5f969628"
-  integrity sha512-37bn58RTfeiBPJKYBCLP7J+hFGr2MLu0BdfYRzbN6TiYGqX/D0v6v2t/EN9PR8mpQLc4VlAJCcRU9dZsPAgVQw==
+"@tryghost/promise@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.8.tgz#6bf665271fb4b55e27396bde478f0ee08adbec19"
+  integrity sha512-qRyI3tiB5X+y4xhBtKPzcr1CVjzu1+0JWe1RW+kwI6ODDMOr48D1aJZjjXbRDzvZ/UlpAIObyd0JShLkNGZH9Q==
   dependencies:
-    bluebird "3.7.2"
+    bluebird "^3.7.2"
 
-"@tryghost/security@0.2.7":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.7.tgz#425155ed797146ba784822e512d6c1d116e48721"
-  integrity sha512-EWPKv6huVUXAn5F1wfgH8Q0c1EyMF2cuU7XZKfbvJXY8aBZRnSlKp8CZEBVhBViKKsaQI6Fx4NlBdCZwQsQZOg==
+"@tryghost/security@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.8.tgz#9a979a1ddd839ac6b5804439a87de88af23c7bc7"
+  integrity sha512-NN31s4YhLhb6sX94kzk8DhEYf1ZggQBhXEq0sBxlmWE4x6gLskK6NNDnolgKv5u6TktD2oYeZjDcB2o8J2KMig==
   dependencies:
-    "@tryghost/string" "0.1.14"
-    bcryptjs "2.4.3"
-    bluebird "3.7.2"
-    lodash "4.17.21"
+    "@tryghost/string" "^0.1.17"
+    bcryptjs "^2.4.3"
+    bluebird "^3.7.2"
+    lodash "^4.17.21"
 
-"@tryghost/session-service@0.1.19":
-  version "0.1.19"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.19.tgz#4040bec19e85daeb0546f660ae699460b76aa203"
-  integrity sha512-PwcscFPS9E+mcxdi2sS9xF90xYQAFYQQ4vFSOTCh2ZkQMXKG5Yimv8mgAjzFv7JDPtOvC+zu1546So2ULF7tcg==
+"@tryghost/session-service@0.1.20":
+  version "0.1.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.20.tgz#00e58c541cb97ad47c281b30337cad3b39e7c5db"
+  integrity sha512-TXLti20A+6Zo066I83sUSWYEK8xuDerd00WntuIa+c89s2cI+/wXyyzWeIcWWHx3CwXhiXfbWPINGxvzrQuwaQ==
   dependencies:
-    "@tryghost/errors" "^0.2.10"
+    "@tryghost/errors" "^0.2.11"
 
 "@tryghost/social-urls@0.1.23":
   version "0.1.23"
@@ -618,14 +616,7 @@
     ghost-ignition "^4.6.2"
     lodash "^4.17.21"
 
-"@tryghost/string@0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.14.tgz#e799151eb5af62b47634403e0c10c48709b2a118"
-  integrity sha512-lzZgGdLEOy2YY8mAebSkP4Y9MgzH/Ef5ADDW8Z31dv8PJILfRG7vuXWwr/SKUmV6mzETyxKTnO9CIbLExaC8VQ==
-  dependencies:
-    unidecode "^0.1.8"
-
-"@tryghost/string@0.1.18":
+"@tryghost/string@0.1.18", "@tryghost/string@^0.1.17":
   version "0.1.18"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.18.tgz#2cc8f92ad80d055c872731dd5410383920e934cf"
   integrity sha512-fIHteQ2plScj08OQrlDVfRZMCoocrSOmXkMC+TFe7WEIl/QFw2HKDWJeWxr6CADve2RUDzLJzJh71KL6u61bTw==
@@ -670,6 +661,16 @@
     bluebird "3.7.2"
     extract-zip "2.0.0"
     fs-extra "9.1.0"
+
+"@tryghost/zip@1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.12.tgz#49e70168d062d81be4a73923e3585c43f35272b7"
+  integrity sha512-PAuQ0RtG/IlKa2fYKS8jktm5AL7Sf62NIwNRJb1QezMTTZIVdQJmIzHvo0C6sCLcxw67Q+4+GM6jdCP31PCiuw==
+  dependencies:
+    archiver "^4.0.2"
+    bluebird "^3.7.2"
+    extract-zip "2.0.0"
+    fs-extra "^9.1.0"
 
 "@trysound/sax@0.1.1":
   version "0.1.1"
@@ -1072,7 +1073,7 @@ archiver-utils@^2.1.0:
     normalize-path "^3.0.0"
     readable-stream "^2.0.0"
 
-archiver@4.0.2:
+archiver@4.0.2, archiver@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/archiver/-/archiver-4.0.2.tgz#43c72865eadb4ddaaa2fb74852527b6a450d927c"
   integrity sha512-B9IZjlGwaxF33UN4oPbfBkyA4V1SxNLeIhR1qY8sRXSsbdUkEHrrOvwlYFPx+8uQeCe9M+FG6KgO+imDmQ79CQ==
@@ -1307,7 +1308,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bcryptjs@2.4.3:
+bcryptjs@^2.4.3:
   version "2.4.3"
   resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.4.3.tgz#9ab5627b93e60621ff7cdac5da9733027df1d0cb"
   integrity sha1-mrVie5PmBiH/fNrF2pczAn3x0Ms=
@@ -1437,7 +1438,7 @@ braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
-bree@6.2.0:
+bree@^6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/bree/-/bree-6.2.0.tgz#c785596d4a682148bc2fb708802c3f7eb1ef5d9d"
   integrity sha512-8Ol69LQXeLUSgkRWiA1VXpK4+eYax6Qb6oL0Z2d3a57gJGuYRiJE0aqmprXOirlEdSyTKMDXys393u85XDlQfQ==
@@ -2315,19 +2316,19 @@ create-error@~0.3.1:
   resolved "https://registry.yarnpkg.com/create-error/-/create-error-0.3.1.tgz#69810245a629e654432bf04377360003a5351a23"
   integrity sha1-aYECRaYp5lRDK/BDdzYAA6U1GiM=
 
-cron-validate@1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.3.tgz#d4ad8fb5b559a7df73b81e79c95c21b87bb4c5f4"
-  integrity sha512-N+qKw019oQBEPIP5Qwi8Z5XelQ00ThN6Maahwv+9UGu2u/b/MPb35zngMQI0T8pBoNiBrIXGlhvsmspNSYae/w==
-  dependencies:
-    yup "0.32.9"
-
 cron-validate@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.1.tgz#d637f677a2f5fa37ed61d265a17af502b02b12d6"
   integrity sha512-83VZ6/I52ybU8lwvrAgjnwR70/1pl867pgE4LbzO+ha+rZOmNMRqMm8vVG9s7a2fpnBQR6/+F7oRiGVfnC+9Ug==
   dependencies:
     yup "0.30.0"
+
+cron-validate@^1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/cron-validate/-/cron-validate-1.4.3.tgz#d4ad8fb5b559a7df73b81e79c95c21b87bb4c5f4"
+  integrity sha512-N+qKw019oQBEPIP5Qwi8Z5XelQ00ThN6Maahwv+9UGu2u/b/MPb35zngMQI0T8pBoNiBrIXGlhvsmspNSYae/w==
+  dependencies:
+    yup "0.32.9"
 
 cross-spawn@^5.0.1:
   version "5.1.0"
@@ -2533,7 +2534,7 @@ dayjs@^1.8.29:
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.8.30.tgz#d3b314d3ccdc179015d915fd3c6e14422c026378"
   integrity sha512-5s5IGuP5bVvIbOWkEDcfmXsUj24fZW1NMHVVSdSFF/kW8d+alZcI9SpBKC+baEyBe+z3fUp17y75ulstv5swUw==
 
-debug@2, debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.9:
+debug@2, debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
   integrity sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==
@@ -3612,7 +3613,7 @@ fast-safe-stringify@^2.0.7:
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
-fastq@1.11.0:
+fastq@^1.11.0:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.11.0.tgz#bb9fb955a07130a918eb63c1f5161cc32a5d0858"
   integrity sha512-7Eczs8gIPDrVzT+EksYBcupqMyxSHXXrHOLRRxU2/DicV8789MRBRR8+Hc2uWzUupOs4YS4JzBmBxjjCVBxD/g==
@@ -3895,7 +3896,7 @@ fs-extra@9.0.1:
     jsonfile "^6.0.1"
     universalify "^1.0.0"
 
-fs-extra@9.1.0:
+fs-extra@9.1.0, fs-extra@^9.1.0:
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.1.0.tgz#5954460c764a8da2094ba3554bf839e6b9a7c86d"
   integrity sha512-hcg3ZmepS30/7BSFqRvoo3DOMQu7IjqxO5nCDt+zM9XWjb33Wg7ziNT+Qvqbuc3+gWpzO02JubVyk2G4Zvo1OQ==
@@ -4182,7 +4183,7 @@ ghost-ignition@4.6.1:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.6.2, ghost-ignition@^4.6.2:
+ghost-ignition@4.6.2, ghost-ignition@^4.6.1, ghost-ignition@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.2.tgz#c88166eb93bfcc94408c84783c62838111154b71"
   integrity sha512-ls78Gr5pbwjzMySo7eYmAW4aOAjbNHxM54GKucFrTeOoGZHgGlOaXJMhCwLD68UW9ZD35yXsU9KhzSnNpUhemg==
@@ -4202,24 +4203,6 @@ ghost-ignition@4.6.2, ghost-ignition@^4.6.2:
     nconf "0.11.2"
     prettyjson "1.2.1"
     uuid "8.3.2"
-
-ghost-ignition@^2.9.6:
-  version "2.9.6"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.6.tgz#cc8358f0a356bae490e5abeca3c3bda8383352fe"
-  integrity sha512-4C/z6PZOxp8xjqcHR+QqYBjt0T7IRdfUwHcN86gKNXMhybaWwsH7JDyfnxLfgDfQDunx7wTHmFiSo3UT//f7MQ==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "^1.3.1"
-    caller "1.0.1"
-    debug "^2.6.9"
-    find-root "1.1.0"
-    fs-extra "^3.0.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "^0.10.0"
-    prettyjson "^1.1.3"
-    uuid "^3.0.0"
 
 ghost-storage-base@0.0.4:
   version "0.0.4"
@@ -7271,7 +7254,7 @@ p-wait-for@3.1.0:
   dependencies:
     p-timeout "^3.0.0"
 
-p-wait-for@3.2.0:
+p-wait-for@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/p-wait-for/-/p-wait-for-3.2.0.tgz#640429bcabf3b0dd9f492c31539c5718cb6a3f1f"
   integrity sha512-wpgERjNkLrBiFmkMEjuZJEWKKDrNfHCKA1OhyN1wg1FrLkULbviEy6py1AyJUgZ72YWFbZ38FIpnqvVqAlDUwA==
