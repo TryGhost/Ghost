@@ -35,6 +35,10 @@ module.exports = {
         return require('./members');
     },
 
+    get products() {
+        return require('./products');
+    },
+
     get webhooks() {
         return require('./webhooks');
     }
