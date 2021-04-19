@@ -44,19 +44,17 @@ export default class MembersAccessController extends Controller {
 
     @action
     setDefaultContentVisibility(value) {
-        this.settings.set('defaultContentVisibility', value);
+        if (this.settings.get('membersSignupAccess') !== 'none') {
+            this.settings.set('defaultContentVisibility', value);
+        }
     }
 
     @action
     setSignupAccess(value) {
-        switch (value) {
-        case 'all':
-            this.settings.set('membersAllowFreeSignup', true);
-            break;
-
-        case 'invite':
-            this.settings.set('membersAllowFreeSignup', false);
-            break;
+        this.settings.set('membersSignupAccess', value);
+        if (value === 'none') {
+            this.settings.set('defaultContentVisibility', 'public');
+            this.postAccessOpen = true;
         }
     }
 
