@@ -414,6 +414,9 @@
                     "help": "Remove duplicate Stripe customer IDs from the CSV and re-run the import."
                 }
             },
+            "products": {
+                "productNotFound": "Product not found."
+            },
             "tags": {
                 "tagNotFound": "Tag not found."
             },

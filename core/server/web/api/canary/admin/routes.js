@@ -87,6 +87,12 @@ module.exports = function apiRoutes() {
     router.put('/tags/:id', mw.authAdminApi, http(apiCanary.tags.edit));
     router.del('/tags/:id', mw.authAdminApi, http(apiCanary.tags.destroy));
 
+    // Products
+    router.get('/products', mw.authAdminApi, http(apiCanary.products.browse));
+    router.post('/products', mw.authAdminApi, http(apiCanary.products.add));
+    router.get('/products/:id', mw.authAdminApi, http(apiCanary.products.read));
+    router.put('/products/:id', mw.authAdminApi, http(apiCanary.products.edit));
+
     // ## Members
     router.get('/members', mw.authAdminApi, http(apiCanary.members.browse));
     router.post('/members', mw.authAdminApi, http(apiCanary.members.add));
