@@ -35,7 +35,7 @@ const defaultSettingsKeyTypes = [
     {key: 'password', type: 'private'},
     {key: 'public_hash', type: 'private'},
     {key: 'default_content_visibility', type: 'members'},
-    {key: 'members_allow_free_signup', type: 'members'},
+    {key: 'members_signup_access', type: 'members'},
     {key: 'members_from_address', type: 'members'},
     {key: 'members_support_address', type: 'members'},
     {key: 'members_reply_address', type: 'members'},

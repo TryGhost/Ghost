@@ -3888,9 +3888,9 @@
           {
             "id": "605ac142a2d5a6aa9e101fe4",
             "group": "members",
-            "key": "members_allow_free_signup",
-            "value": "true",
-            "type": "boolean",
+            "key": "members_signup_access",
+            "value": "all",
+            "type": "string",
             "flags": null,
             "created_at": "2021-03-24T17:34:10.000Z",
             "updated_at": "2021-03-24T17:34:10.000Z"
