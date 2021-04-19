@@ -1,0 +1,55 @@
+{{!-- <header class="modal-header" data-test-modal="webhook-form">
+    <h1 data-test-text="title">Add product</h1>
+</header> --}}
+<button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}
+</button>
+
+<form>
+<div class="modal-body">
+
+    <div class="gh-main-section-block">
+        <div class="gh-main-section-content gh-member-product-memberdetails">
+            <GhMemberAvatar
+                @member={{this.member}}
+                @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
+                @containerClass="w20 h20 mr4 gh-member-detail-avatar"
+            />
+            <h3>{{or this.member.name this.member.email}}</h3>
+            {{#if (and this.member.name this.member.email)}}
+                <p>
+                    {{this.member.email}}
+                </p>
+            {{/if}}
+        </div>
+
+        <div class="gh-main-section-content grey gh-member-product-form-block">
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="product">
+                <label for="product" class="fw6">Product</label>
+                <GhMemberProductProducts @triggerId="product-input" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="price">
+                <label for="price" class="fw6">Price</label>
+                <GhMemberProductPrices @triggerId="price-input" />
+            </GhFormGroup>
+        </div>
+    </div>
+</div>
+</form>
+
+<div class="modal-footer">
+    <button
+        class="gh-btn"
+        {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{action (optional this.noop) on="mouseDown"}}
+        data-test-button="cancel-webhook"
+    >
+        <span>Cancel</span>
+    </button>
+    <GhTaskButton @buttonText="Add product to member"
+        @successText={{this.successText}}
+        {{!-- @task={{this.saveWebhook}} --}}
+        @class="gh-btn gh-btn-black gh-btn-icon"
+        data-test-button="save-webhook" />
+</div>

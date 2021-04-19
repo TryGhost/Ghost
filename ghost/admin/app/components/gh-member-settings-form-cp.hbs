@@ -222,17 +222,12 @@
                     </li>
                     <tr class="gh-list-row gh-memberproduct-add-product">
                         <td colspan="2" class="gh-list-data">
-                            <LinkTo @route="members" data-test-link="add-webhook">
-                                {{svg-jar "add"}}
-                                <span>Add product</span>
-                            </LinkTo>
+                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon" {{action (toggle "showMemberProductModal" this)}}>
+                                <span>{{svg-jar "add"}} Add product</span>
+                            </button>
                         </td>
                     </tr>
                 </ol>
-
-                {{!-- <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showPriceModal" this)}}>
-                    <span>New price</span>
-                </button> --}}
             </div>
         </div>
         <div class="gh-main-section-block">
@@ -260,3 +255,10 @@
     </section>
 
 </div>
+
+{{#if this.showMemberProductModal}}
+    <GhFullscreenModal @modal="member-product"
+        @model={{this.member}}
+        @close={{this.closeMemberProductModal}}
+        @modifier="action wide member-product" />
+{{/if}}
