@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const hbs = require('./engine');
+const hbs = require('../theme-engine/engine');
 const urlUtils = require('../../../shared/url-utils');
 const config = require('../../../shared/config');
 const {i18n} = require('../proxy');

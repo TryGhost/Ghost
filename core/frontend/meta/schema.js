@@ -1,5 +1,5 @@
 const config = require('../../shared/config');
-const escapeExpression = require('../services/themes/engine').escapeExpression;
+const escapeExpression = require('../services/theme-engine/engine').escapeExpression;
 const socialUrls = require('@tryghost/social-urls');
 const _ = require('lodash');
 

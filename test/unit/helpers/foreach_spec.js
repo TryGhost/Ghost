@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const helpers = require('../../../core/frontend/helpers');
-const handlebars = require('../../../core/frontend/services/themes/engine').handlebars;
+const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 describe('{{#foreach}} helper', function () {
     let options;

@@ -17,7 +17,7 @@ const _ = require('lodash');
 const themeConfig = require('./config');
 const themeEngines = require('./engines');
 const config = require('../../../shared/config');
-const engine = require('./engine');
+const engine = require('../theme-engine/engine');
 
 // Current instance of ActiveTheme
 let currentActiveTheme;

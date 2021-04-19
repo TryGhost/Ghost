@@ -1,5 +1,5 @@
 const should = require('should');
-const hbs = require('../../../core/frontend/services/themes/engine');
+const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../utils/configUtils');
 const path = require('path');
 

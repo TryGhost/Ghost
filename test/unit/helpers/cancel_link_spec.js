@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const hbs = require('../../../core/frontend/services/themes/engine');
+const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const helpers = require('../../../core/frontend/helpers');
 const labs = require('../../../core/server/services/labs');
 const configUtils = require('../../utils/configUtils');
