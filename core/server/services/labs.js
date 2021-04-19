@@ -4,9 +4,10 @@ const SafeString = require('../../frontend/services/themes/engine').SafeString;
 const errors = require('@tryghost/errors');
 const {i18n} = require('../lib/common');
 const logging = require('../../shared/logging');
+const settingsCache = require('../services/settings/cache');
 
 module.exports.getAll = () => ({
-    members: true
+    members: settingsCache.get('members_signup_access') !== 'none'
 });
 
 module.exports.isSet = function isSet(flag) {
