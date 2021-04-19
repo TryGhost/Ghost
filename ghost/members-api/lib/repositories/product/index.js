@@ -2,6 +2,17 @@
  * @typedef {object} ProductModel
  */
 
+/**
+ * @typedef {object} StripePriceInput
+ * @param {string} nickname
+ * @param {string} currency
+ * @param {number} amount
+ * @param {'recurring'|'one-time'} type
+ * @param {string | null} interval
+ * @param {string?} stripe_product_id
+ * @param {string?} stripe_price_id
+ */
+
 class ProductRepository {
     /**
      * @param {object} deps
@@ -77,6 +88,7 @@ class ProductRepository {
      *
      * @param {object} data
      * @param {string} data.name
+     * @param {StripePriceInput[]} data.stripe_prices
      *
      * @param {object} options
      *
@@ -99,7 +111,32 @@ class ProductRepository {
                 stripe_product_id: stripeProduct.id
             }, options);
 
-            await product.related('stripeProducts').fetch(options);
+            if (data.stripe_prices) {
+                for (const newPrice of data.stripe_prices) {
+                    const price = await this._stripeAPIService.createPrice({
+                        product: stripeProduct.id,
+                        active: true,
+                        nickname: newPrice.nickname,
+                        currency: newPrice.currency,
+                        amount: newPrice.amount,
+                        type: newPrice.type,
+                        interval: newPrice.interval
+                    });
+
+                    await this._StripePrice.add({
+                        stripe_price_id: price.id,
+                        stripe_product_id: stripeProduct.id,
+                        active: true,
+                        nickname: newPrice.nickname,
+                        currency: newPrice.currency,
+                        amount: newPrice.amount,
+                        type: newPrice.type,
+                        interval: newPrice.interval
+                    }, options);
+                }
+            }
+
+            await product.related('stripePrices').fetch(options);
         }
 
         return product;
@@ -112,13 +149,7 @@ class ProductRepository {
      * @param {string} data.id
      * @param {string} data.name
      *
-     * @param {object} data.stripe_price
-     * @param {string} data.stripe_price.nickname
-     * @param {string} data.stripe_price.currency
-     * @param {number} data.stripe_price.amount
-     * @param {'recurring'|'one-time'} data.stripe_price.type
-     * @param {string | null} data.stripe_price.interval
-     * @param {string?} data.stripe_price.stripe_product_id
+     * @param {StripePriceInput[]=} data.stripe_prices
      *
      * @param {object} options
      *
@@ -131,10 +162,10 @@ class ProductRepository {
 
         const product = await this._Product.edit(productData, {
             ...options,
-            id: data.id
+            id: data.id || options.id
         });
 
-        if (this._stripeAPIService.configured && data.stripe_price) {
+        if (this._stripeAPIService.configured && data.stripe_prices) {
             await product.related('stripeProducts').fetch(options);
 
             if (!product.related('stripeProducts').first()) {
@@ -151,24 +182,35 @@ class ProductRepository {
             }
 
             const defaultStripeProduct = product.related('stripeProducts').first();
-            const productId = data.stripe_price.stripe_product_id;
-            const stripeProduct = productId ?
-                await this._StripeProduct.findOne({stripe_product_id: productId}, options) : defaultStripeProduct;
 
-            const price = await this._stripeAPIService.createPrice({
-                product: defaultStripeProduct.stripe_product_id,
-                active: true,
-                nickname: data.stripe_price.nickname,
-                currency: data.stripe_price.currency,
-                amount: data.stripe_price.amount,
-                type: data.stripe_price.type,
-                interval: data.stripe_price.interval
-            });
+            const newPrices = data.stripe_prices.filter(price => !price.stripe_price_id);
 
-            await this._StripePrice.add({
-                stripe_price_id: price.id,
-                stripe_product_id: stripeProduct.stripe_product_id
-            }, options);
+            for (const newPrice of newPrices) {
+                const productId = newPrice.stripe_product_id;
+                const stripeProduct = productId ?
+                    await this._StripeProduct.findOne({stripe_product_id: productId}, options) : defaultStripeProduct;
+
+                const price = await this._stripeAPIService.createPrice({
+                    product: stripeProduct.get('stripe_product_id'),
+                    active: true,
+                    nickname: newPrice.nickname,
+                    currency: newPrice.currency,
+                    amount: newPrice.amount,
+                    type: newPrice.type,
+                    interval: newPrice.interval
+                });
+
+                await this._StripePrice.add({
+                    stripe_price_id: price.id,
+                    stripe_product_id: stripeProduct.get('stripe_product_id'),
+                    active: price.active,
+                    nickname: price.nickname,
+                    currency: price.currency,
+                    amount: price.unit_amount,
+                    type: price.type,
+                    interval: price.recurring && price.recurring.interval || null
+                }, options);
+            }
 
             await product.related('stripePrices').fetch(options);
         }
