@@ -142,7 +142,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        if (this._stripeAPIService && member._changed.email) {
+        if (this._stripeAPIService.configured && member._changed.email) {
             await member.related('stripeCustomers').fetch();
             const customers = member.related('stripeCustomers');
             for (const customer of customers.models) {
@@ -168,7 +168,7 @@ module.exports = class MemberRepository {
             return;
         }
 
-        if (this._stripeAPIService && options.cancelStripeSubscriptions) {
+        if (this._stripeAPIService.configured && options.cancelStripeSubscriptions) {
             await member.related('stripeSubscriptions').fetch();
             const subscriptions = member.related('stripeSubscriptions');
             for (const subscription of subscriptions.models) {
