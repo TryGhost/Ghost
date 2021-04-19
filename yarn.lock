@@ -115,35 +115,35 @@
     url-regex "~5.0.0"
     video-extensions "~1.1.0"
 
-"@nexes/mongo-knex@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.4.0.tgz#bdaef8d8cefeb9935ab7e3a1f5d0bbcfb764722e"
-  integrity sha512-RyfcK1+WJQ0SM7r0D5fMhKwjggxyrDb8hMaQ1vqfcMe/SE2J/qoSra9+fAdwN8zYRdz6Lovd6fqCaRQ5zFv5ZA==
+"@nexes/mongo-knex@^0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.4.1.tgz#3eb07e9ac176f525704e56e4cc7522dd26ea7552"
+  integrity sha512-WjkizmhtJRLXQ4LFDMpyYhBjd1UgRX5iSznD1XvPeB5/HsRDptBD3nBMld+oWw7lgVz4UUjpT23wFClSKfLF9A==
   dependencies:
-    debug "^4.1.0"
-    lodash "^4.17.10"
+    debug "^4.3.1"
+    lodash "^4.17.21"
 
-"@nexes/mongo-utils@0.3.1":
+"@nexes/mongo-utils@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@nexes/mongo-utils/-/mongo-utils-0.3.1.tgz#3a1b89ec4585478dbb41277dc1fdb2689deb3b9d"
   integrity sha512-SpDr6i98GeGA2vajQtliAsUqvFbawmzC6wgaC9/+9P8R0/o+71WTzvyPNYHnXNDqy0dpxq2FX78DdN6FTSKjKA==
   dependencies:
     lodash "^4.17.11"
 
-"@nexes/nql-lang@0.0.1":
+"@nexes/nql-lang@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha1-oTwCOHP5vBG55OKERJxs++zMgBE=
 
-"@nexes/nql@0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.5.1.tgz#59f0dd5bdd6572c9060fe8ba633e23e5c2a6bd9d"
-  integrity sha512-2qcxqHtor1+T222AcSvrIO8nYrD7NqaZBmydtR4jA+uuRz4fydgvheqJyihJ3TtD7jw4+4+BjOswICQPbzu6JQ==
+"@nexes/nql@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.5.2.tgz#64d847d563720d9c3a0f9683dde930fee518e064"
+  integrity sha512-qGLwtpYkKoHI++b+zgsEHuISDUv7LC1PI/0bWd6X9bOz2zGj1nJUDFJHjwdOuLmV5q6BR60VDBKw51Mvzqkl2g==
   dependencies:
-    "@nexes/mongo-knex" "0.4.0"
-    "@nexes/mongo-utils" "0.3.1"
-    "@nexes/nql-lang" "0.0.1"
-    mingo "2.2.2"
+    "@nexes/mongo-knex" "^0.4.1"
+    "@nexes/mongo-utils" "^0.3.1"
+    "@nexes/nql-lang" "^0.0.1"
+    mingo "^2.2.2"
 
 "@panva/asn1.js@^1.0.0":
   version "1.0.0"
@@ -6436,10 +6436,10 @@ mimic-response@^3.1.0:
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-3.1.0.tgz#2d1d59af9c1b129815accc2c46a022a5ce1fa3c9"
   integrity sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==
 
-mingo@2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/mingo/-/mingo-2.2.2.tgz#be69d486ae6e0ac54b979dc5f4412db21851f693"
-  integrity sha1-vmnUhq5uCsVLl53F9EEtshhR9pM=
+mingo@^2.2.2:
+  version "2.5.3"
+  resolved "https://registry.yarnpkg.com/mingo/-/mingo-2.5.3.tgz#bed3db76ca9b2cc29ae1f1ff83e3a8797dc47758"
+  integrity sha512-Wb98QEQ/DaT+xPQFAX08mzM/Zz2eW1UIpKH132gXglakl2SKYBCQFzeiFygS/Hgzc9j9MDDjgouB9W7BMaLyaQ==
 
 "minimatch@2 || 3", minimatch@3.0.4, minimatch@^3.0.4, minimatch@~3.0.2, minimatch@~3.0.4:
   version "3.0.4"
