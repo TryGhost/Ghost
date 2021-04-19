@@ -3,7 +3,7 @@ const _ = require('lodash');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
 
 // Stuff we are testing
-const helpers = require('../../../../../core/frontend/services/themes/handlebars/helpers');
+const helpers = require('../../../../../core/frontend/services/theme-engine/handlebars/helpers');
 
 describe('Helpers', function () {
     const hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup', 'block', 'contentFor'];
