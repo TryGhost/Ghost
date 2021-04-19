@@ -10,6 +10,7 @@ const TokenService = require('./lib/services/token');
 const GeolocationSerice = require('./lib/services/geolocation');
 const MemberRepository = require('./lib/repositories/member');
 const EventRepository = require('./lib/repositories/event');
+const ProductRepository = require('./lib/repositories/product');
 const RouterController = require('./lib/controllers/router');
 const MemberController = require('./lib/controllers/member');
 const StripeMigrations = require('./lib/migrations');
@@ -75,6 +76,13 @@ module.exports = function MembersApi({
     });
 
     const stripePlansService = new StripePlansService({
+        stripeAPIService
+    });
+
+    const productRepository = new ProductRepository({
+        Product,
+        StripeProduct,
+        StripePrice,
         stripeAPIService
     });
 
@@ -367,6 +375,7 @@ module.exports = function MembersApi({
         getMagicLink,
         hasActiveStripeSubscriptions,
         members: users,
-        events: eventRepository
+        events: eventRepository,
+        productRepository
     };
 };
