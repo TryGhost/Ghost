@@ -1,9 +1,9 @@
 const should = require('should');
-const hbs = require('../../../core/frontend/services/themes/engine');
+const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../utils/configUtils');
 const path = require('path');
 const helpers = require('../../../core/frontend/helpers');
-const handlebars = require('../../../core/frontend/services/themes/engine').handlebars;
+const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 const runHelper = data => helpers.navigation.call({}, data);
 const runHelperThunk = data => () => runHelper(data);

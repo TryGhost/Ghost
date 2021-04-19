@@ -1,6 +1,6 @@
 const should = require('should');
 const helpers = require('../../../core/frontend/helpers');
-const handlebars = require('../../../core/frontend/services/themes/engine').handlebars;
+const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 let defaultGlobals;
 

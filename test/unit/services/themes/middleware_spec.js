@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const hbs = require('../../../../core/frontend/services/themes/engine');
+const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const themes = require('../../../../core/frontend/services/themes');
 // is only exposed via themes.getActive()
 const activeTheme = require('../../../../core/frontend/services/themes/active');
