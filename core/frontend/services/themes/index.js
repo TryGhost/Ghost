@@ -102,7 +102,6 @@ module.exports = {
     },
     storage: require('./storage'),
     middleware: require('./middleware'),
-    loadCoreHelpers: require('./handlebars/helpers').loadCoreHelpers,
     /**
      * Load all inactive themes
      */
