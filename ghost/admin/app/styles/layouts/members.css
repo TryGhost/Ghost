@@ -1546,3 +1546,119 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-data-summary:not(:last-of-type) {
     margin-bottom: 24px;
 }
+
+.gh-cp-table {
+    margin: -8px 0 0;
+}
+
+.gh-cp-table .gh-member-stripe-label {
+    width: 150px;
+    color: var(--middarkgrey);
+}
+
+.gh-cp-table-link {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 1.3rem;
+}
+
+/* Member's product list */
+.gh-memberproduct-name span.archived {
+    background: var(--midgrey);
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.gh-memberproduct-actionlist {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    opacity: 0;
+}
+
+.gh-memberproduct-list .gh-list-row:hover .gh-memberproduct-actionlist {
+    opacity: 1;
+}
+
+.gh-memberproduct-actionlist a,
+.gh-memberproduct-actionlist button {
+    line-height: 0;
+    margin-left: 24px;
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+.gh-memberproduct-actionlist button.archive {
+    color: var(--red);
+}
+
+.gh-cp-memberproduct-showmore {
+    line-height: 1;
+    margin-top: 5px;
+}
+
+.gh-cp-memberproduct-showmore label {
+    font-size: 1.3rem;
+    color: var(--middarkgrey);
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.gh-cp-memberproduct-pricelabel {
+    font-weight: 600;
+}
+
+.gh-cp-memberproduct-showmore label svg {
+    width: 9px;
+    height: 9px;
+    margin-right: 2px;
+}
+
+.gh-cp-memberproduct-showmore label svg path {
+    fill: var(--midgrey);
+}
+
+.gh-cp-memberproduct-showmore .details {
+    display: none;
+    flex-direction: column;
+    font-size: 1.3rem;
+    line-height: 1.7em;
+    color: var(--middarkgrey);
+    margin: 4px 0 0 15px;
+}
+
+.gh-cp-memberproduct-showmore input[type=checkbox] {
+    display: none;
+}
+
+.gh-cp-memberproduct-showmore input[type=checkbox]:checked ~ .details {
+    display: flex;
+}
+
+.gh-cp-memberproduct-showmore input[type=checkbox]:checked ~ label svg {
+    transform: rotate(90deg);
+}
+
+.gh-memberproduct-archived .gh-memberproduct-name {
+    opacity: 0.5;
+}
+
+.gh-memberproduct-add-product .gh-list-data {
+    padding: 12px 0;
+}
+
+.gh-memberproduct-add-product .gh-list-data a {
+    display: flex;
+    align-items: center;
+}
+
+.gh-memberproduct-add-product .gh-list-data a svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+.gh-memberproduct-add-product .gh-list-data a svg path {
+    fill: var(--green);
+}
