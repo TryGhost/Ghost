@@ -1,7 +1,7 @@
 // This file defines everything that helpers "require"
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we did in apps
-const hbs = require('./themes/engine');
+const hbs = require('./theme-engine/engine');
 const errors = require('@tryghost/errors');
 
 const {i18n} = require('../../server/lib/common');

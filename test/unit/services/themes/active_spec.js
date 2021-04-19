@@ -5,7 +5,7 @@ const config = require('../../../../core/shared/config');
 // is only exposed via themes.getActive()
 const activeTheme = require('../../../../core/frontend/services/themes/active');
 
-const engine = require('../../../../core/frontend/services/themes/engine');
+const engine = require('../../../../core/frontend/services/theme-engine/engine');
 
 describe('Themes', function () {
     afterEach(function () {
