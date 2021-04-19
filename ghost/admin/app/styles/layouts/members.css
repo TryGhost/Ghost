@@ -1648,17 +1648,27 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 12px 0;
 }
 
-.gh-memberproduct-add-product .gh-list-data a {
-    display: flex;
-    align-items: center;
-}
-
-.gh-memberproduct-add-product .gh-list-data a svg {
-    width: 16px;
-    height: 16px;
-    margin-right: 4px;
-}
-
-.gh-memberproduct-add-product .gh-list-data a svg path {
+.gh-memberproduct-add-product .gh-btn svg path {
     fill: var(--green);
+}
+
+.gh-member-product-memberdetails {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 12px 0 24px;
+}
+
+.gh-member-product-memberdetails .gh-member-gravatar {
+    margin: 0;
+}
+
+.gh-member-product-memberdetails h3 {
+    margin: 12px 0 0;
+    font-size: 1.9rem;
+    line-height: 1;
+}
+
+.gh-member-product-memberdetails p {
+    margin: 0;
 }

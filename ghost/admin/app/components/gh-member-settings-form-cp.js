@@ -103,5 +103,9 @@ export default Component.extend({
 
         this.store.pushPayload('member', response);
         return response;
-    }).drop()
+    }).drop(),
+
+    closeMemberProductModal: action(function () {
+        this.set('showMemberProductModal', false);
+    })
 });
