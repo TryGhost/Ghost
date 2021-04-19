@@ -164,6 +164,13 @@ class SettingsImporter extends BaseImporter {
                 data.value = '#15171A';
             }
 
+            // members_allow_free_signup was renamed to members_signup_access in 4.3
+            if (data.key === 'members_allow_free_signup') {
+                data.key = 'members_signup_access';
+                data.value = data.value ? 'all' : 'invite';
+                data.type = 'string';
+            }
+
             return data;
         });
 

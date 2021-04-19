@@ -142,5 +142,24 @@ describe('SettingsImporter', function () {
             importer.dataToImport[0].key.should.equal('slack_username');
             importer.dataToImport[0].value.should.equal('Test Name');
         });
+
+        it('Renames the members_allow_free_signup setting', function () {
+            const fakeSettings = [{
+                key: 'members_allow_free_signup',
+                type: 'boolean',
+                value: false
+            }];
+
+            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
+
+            importer.beforeImport();
+
+            importer.problems.length.should.equal(0);
+
+            importer.dataToImport.length.should.equal(1);
+            importer.dataToImport[0].key.should.equal('members_signup_access');
+            importer.dataToImport[0].value.should.equal('invite');
+            importer.dataToImport[0].type.should.equal('string');
+        });
     });
 });
