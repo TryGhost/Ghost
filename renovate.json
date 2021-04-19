@@ -13,7 +13,6 @@
       "moment",
       "moment-timezone",
       "nodemailer",
-      "tmp",
       "validator",
       "simple-dom"
     ],
