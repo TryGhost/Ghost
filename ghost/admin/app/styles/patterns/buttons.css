@@ -331,6 +331,10 @@ svg.gh-btn-icon-right {
     color: color-mod(var(--yellow) l(-10%));
 }
 
+.gh-btn-text.green span {
+    color: var(--green);
+}
+
 .gh-btn-textfield-group span {
     height: 36px;
     line-height: 36px;
