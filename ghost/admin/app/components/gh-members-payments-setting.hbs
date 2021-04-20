@@ -289,19 +289,3 @@
         @close={{action "closeDisconnectStripeModal"}}
         @modifier="action wide" />
 {{/if}}
-
-{{#if this.showPortalSettings}}
-    <GhFullscreenModal @modal="portal-settings"
-        @model={{hash
-            openStripeSettings=(action "openStripeSettings")
-        }}
-        @close={{action "closePortalSettings"}}
-        @modifier="full-overlay portal-settings" />
-{{/if}}
-
-{{#if this.showLeaveSettingsModal}}
-    <GhFullscreenModal @modal="leave-settings"
-        @confirm={{action "leavePortalSettings"}}
-        @close={{action "closeLeaveSettingsModal"}}
-        @modifier="action wide" />
-{{/if}}

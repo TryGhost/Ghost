@@ -19,7 +19,6 @@ export default Component.extend({
     stripePlanInvalidAmount: false,
     _scratchStripeYearlyAmount: null,
     _scratchStripeMonthlyAmount: null,
-    showLeaveSettingsModal: false,
 
     // passed in actions
     setStripeConnectIntegrationTokenSetting() {},
@@ -37,8 +36,6 @@ export default Component.extend({
     stripeConnectAccountId: reads('settings.stripeConnectAccountId'),
     stripeConnectAccountName: reads('settings.stripeConnectDisplayName'),
     stripeConnectLivemode: reads('settings.stripeConnectLivemode'),
-
-    portalSettingsBorderColor: reads('settings.accentColor'),
 
     selectedCurrency: computed('stripePlans.monthly.currency', function () {
         return this.get('currencies').findBy('value', this.get('stripePlans.monthly.currency')) || this.get('topCurrencies').findBy('value', this.get('stripePlans.monthly.currency'));
@@ -106,15 +103,6 @@ export default Component.extend({
     },
 
     actions: {
-        closePortalSettings() {
-            const changedAttributes = this.settings.changedAttributes();
-            if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-                this.set('showLeaveSettingsModal', true);
-            } else {
-                this.set('showPortalSettings', false);
-            }
-        },
-
         setDefaultContentVisibility(value) {
             this.setDefaultContentVisibility(value);
         },
@@ -182,16 +170,6 @@ export default Component.extend({
 
         disconnectStripeConnectIntegration() {
             this.disconnectStripeConnectIntegration.perform();
-        },
-
-        closeLeaveSettingsModal() {
-            this.set('showLeaveSettingsModal', false);
-        },
-
-        leavePortalSettings() {
-            this.settings.rollbackAttributes();
-            this.set('showPortalSettings', false);
-            this.set('showLeaveSettingsModal', false);
         },
 
         openStripeSettings() {
