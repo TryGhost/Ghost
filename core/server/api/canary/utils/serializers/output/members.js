@@ -94,7 +94,7 @@ function serializeMember(member, options) {
     }
     const subscriptions = json.subscriptions || [];
 
-    return {
+    const serialized = {
         id: json.id,
         uuid: json.uuid,
         email: json.email,
@@ -114,6 +114,12 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status
     };
+
+    if (json.products) {
+        serialized.products = json.products;
+    }
+
+    return serialized;
 }
 
 /**
@@ -154,6 +160,7 @@ function createSerializer(debugString, serialize) {
  * @prop {string} updated_at
  * @prop {string[]} labels
  * @prop {SerializedMemberStripeSubscription[]} subscriptions
+ * @prop {SerializedMemberProduct[]=} products
  * @prop {string} avatar_image
  * @prop {boolean} comped
  * @prop {number} email_count
@@ -161,6 +168,13 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
  * @prop {'free'|'paid'} status
+ */
+
+/**
+ * @typedef {Object} SerializedMemberProduct
+ * @prop {string} id
+ * @prop {string} name
+ * @prop {string} slug
  */
 
 /**
