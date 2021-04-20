@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 const express = require('../../../../../core/shared/express');
-const themeUtils = require('../../../../../core/frontend/services/themes');
+const themeService = require('../../../../../core/frontend/services/themes');
 const staticTheme = require('../../../../../core/server/web/site/middleware/static-theme');
 
 describe('staticTheme', function () {
@@ -15,7 +15,7 @@ describe('staticTheme', function () {
         req = {};
         res = {};
 
-        activeThemeStub = sinon.stub(themeUtils, 'getActive').returns({
+        activeThemeStub = sinon.stub(themeService, 'getActive').returns({
             path: 'my/fake/path'
         });
 

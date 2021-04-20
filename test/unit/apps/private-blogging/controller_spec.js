@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
-const themes = require('../../../../core/frontend/services/themes');
+const themeService = require('../../../../core/frontend/services/themes');
 const privateController = require('../../../../core/frontend/apps/private-blogging/lib/router');
 
 describe('Private Controller', function () {
@@ -24,7 +24,7 @@ describe('Private Controller', function () {
         hasTemplateStub = sinon.stub().returns(false);
         hasTemplateStub.withArgs('index').returns(true);
 
-        sinon.stub(themes, 'getActive').returns({
+        sinon.stub(themeService, 'getActive').returns({
             hasTemplate: hasTemplateStub
         });
 

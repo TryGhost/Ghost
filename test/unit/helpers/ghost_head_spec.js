@@ -7,7 +7,7 @@ const moment = require('moment');
 const testUtils = require('../../utils');
 const testUrlUtils = require('../../utils/urlUtils');
 const configUtils = require('../../utils/configUtils');
-const themes = require('../../../core/frontend/services/themes');
+const themeService = require('../../../core/frontend/services/themes');
 const models = require('../../../core/server/models');
 const imageLib = require('../../../core/server/lib/image');
 const routing = require('../../../core/frontend/services/routing');
@@ -287,7 +287,7 @@ describe('{{ghost_head}} helper', function () {
         // @TODO: this is a LOT of mocking :/
         sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
         sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
-        sinon.stub(themes, 'getActive').returns({
+        sinon.stub(themeService, 'getActive').returns({
             engine: () => 'v2'
         });
 

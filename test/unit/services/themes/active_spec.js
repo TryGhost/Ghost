@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const config = require('../../../../core/shared/config');
 
-// is only exposed via themes.getActive()
+// is only exposed via themeService.getActive()
 const activeTheme = require('../../../../core/frontend/services/themes/active');
 
 const engine = require('../../../../core/frontend/services/theme-engine/engine');
