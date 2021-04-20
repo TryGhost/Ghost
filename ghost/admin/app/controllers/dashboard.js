@@ -42,6 +42,10 @@ export default class DashboardController extends Controller {
         });
     }
 
+    get showMembersData() {
+        return this.settings.get('membersSignupAccess') !== 'none';
+    }
+
     initialise() {
         this.loadEvents();
         this.loadTopMembers();
