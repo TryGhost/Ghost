@@ -344,6 +344,14 @@ DataGenerator.Content = {
         }
     ],
 
+    products: [
+        {
+            id: ObjectId.generate(),
+            name: 'Ghost Product',
+            slug: 'ghost-product'
+        }
+    ],
+
     labels: [
         {
             id: ObjectId.generate(),
@@ -386,6 +394,7 @@ DataGenerator.Content = {
             customer_id: 'cus_HR3tBmNhx4QsZY',
             subscription_id: 'sub_HR3tLNgGAHsa7b',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
             status: 'active',
             cancel_at_period_end: false,
             current_period_end: '2020-07-09 19:01:20',
@@ -401,6 +410,7 @@ DataGenerator.Content = {
             customer_id: 'cus_HR3tBmNhx4QsZZ',
             subscription_id: 'sub_HR3tLNgGAHsa7c',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
             status: 'trialing',
             cancel_at_period_end: true,
             current_period_end: '2025-07-09 19:01:20',
@@ -416,6 +426,7 @@ DataGenerator.Content = {
             customer_id: 'cus_HR3tBmNhx4QsZ0',
             subscription_id: 'sub_HR3tLNgGAHsa7d',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0',
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0',
             status: 'active',
             cancel_at_period_end: true,
             current_period_end: '2025-07-09 19:01:20',
@@ -427,7 +438,48 @@ DataGenerator.Content = {
             plan_currency: 'usd'
         }
     ],
-
+    stripe_prices: [
+        {
+            id: ObjectId.generate(),
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: 1,
+            nickname: 'Monthly',
+            currency: 'USD',
+            amount: 500,
+            type: 'recurring',
+            interval: 'month'
+        },
+        {
+            id: ObjectId.generate(),
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: 1,
+            nickname: 'Yearly',
+            currency: 'USD',
+            amount: 1500,
+            type: 'recurring',
+            interval: 'year'
+        },
+        {
+            id: ObjectId.generate(),
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: 1,
+            nickname: 'Yearly',
+            currency: 'USD',
+            amount: 2400,
+            type: 'recurring',
+            interval: 'year'
+        }
+    ],
+    stripe_products: [
+        {
+            id: ObjectId.generate(),
+            product_id: '',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d'
+        }
+    ],
     webhooks: [
         {
             id: ObjectId.generate(),
@@ -790,6 +842,14 @@ DataGenerator.forKnex = (function () {
         };
     }
 
+    function createStripeProduct(product_id, stripe_product_id) {
+        return {
+            id: ObjectId.generate(),
+            product_id,
+            stripe_product_id
+        };
+    }
+
     function createSetting(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -1120,10 +1180,27 @@ DataGenerator.forKnex = (function () {
         )
     ];
 
+    const products = [
+        createBasic(DataGenerator.Content.products[0])
+    ];
+
     const members_stripe_customers = [
         createBasic(DataGenerator.Content.members_stripe_customers[0]),
         createBasic(DataGenerator.Content.members_stripe_customers[1]),
         createBasic(DataGenerator.Content.members_stripe_customers[2])
+    ];
+
+    const stripe_products = [
+        createStripeProduct(
+            DataGenerator.Content.products[0].id,
+            DataGenerator.Content.stripe_products[0].stripe_product_id
+        )
+    ];
+
+    const stripe_prices = [
+        createBasic(DataGenerator.Content.stripe_prices[0]),
+        createBasic(DataGenerator.Content.stripe_prices[1]),
+        createBasic(DataGenerator.Content.stripe_prices[2])
     ];
 
     const stripe_customer_subscriptions = [
@@ -1178,9 +1255,12 @@ DataGenerator.forKnex = (function () {
         email_recipients,
         labels,
         members,
+        products,
         members_labels,
         members_stripe_customers,
         stripe_customer_subscriptions,
+        stripe_prices,
+        stripe_products,
         snippets
     };
 }());

@@ -478,6 +478,18 @@ const fixtures = {
                 return models.MemberStripeCustomer.add(customer, context.internal);
             });
         }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.products), function (product) {
+                return models.Product.add(product, context.internal);
+            });
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_products), function (stripeProduct) {
+                return models.StripeProduct.add(stripeProduct, context.internal);
+            });
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_prices), function (stripePrice) {
+                return models.StripePrice.add(stripePrice, context.internal);
+            });
+        }).then(function () {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions), function (subscription) {
                 return models.StripeCustomerSubscription.add(subscription, context.internal);
             });
