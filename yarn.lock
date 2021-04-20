@@ -489,44 +489,34 @@
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/magic-link@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.0.tgz#b4a09c50ae773278e6a54ea55ff9a62dc8d0950a"
-  integrity sha512-jlm6OTzFkR6dPD58U4Npp26jvtZ9XTVJ2LVfIMI3xiomGae4v2zIy1RH447nJQNRIN+piiRmq+cV4FPN9aXHjw==
+"@tryghost/magic-link@1.0.2", "@tryghost/magic-link@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@tryghost/magic-link/-/magic-link-1.0.2.tgz#6a73d9ba5d710178db53e7d8b177356a50c6649f"
+  integrity sha512-37ArYqWIJptLBjPimPZlgw4Tf8+q5YSyU4AN7QI2WTrUbFClo6g2gnGa7KCiJYbUUOkIjlCDz1m1iU1WiRriIA==
   dependencies:
     bluebird "^3.5.5"
-    ghost-ignition "4.5.4"
+    ghost-ignition "4.6.2"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.1.tgz#63d84d8954794d5b355ab7e5f825d6876afbd1ad"
-  integrity sha512-QAGb13busE30mHK9GdcJkS5c6KWrULE0FZ94hDoLPKX4uLBy2xQEM/8gvn4Uycc5XNbPNfrRs3LpT2WacWHdUg==
-  dependencies:
-    bluebird "^3.5.5"
-    ghost-ignition "4.6.1"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/members-api@1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.1.1.tgz#5622a4d3c01a26eb46c0640b4a9a4b5e3da2f807"
-  integrity sha512-uDvWAWw/Ghc2Em9U+XOC4aCi+cW4ZFnm1hgVr1EJJdkkrJuX+q7isQoatElbqLSHtH1BRZWL5wiB5HTeDJmEgQ==
+"@tryghost/members-api@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-1.3.0.tgz#8792328144b8855fb44298bbd198e8f7ff21a454"
+  integrity sha512-vXGwYivpLjxbZoPES1UL0awvh+ag87kt5F7aFx++qUKKaxxoIA9OFdKgDnuFfYi5S1jv++nA2C9HZ6pzTkcJzg==
   dependencies:
     "@tryghost/errors" "^0.2.9"
-    "@tryghost/magic-link" "^1.0.1"
+    "@tryghost/magic-link" "^1.0.2"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "4.6.1"
+    ghost-ignition "4.6.2"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     leaky-bucket "2.2.0"
     lodash "^4.17.11"
     node-jose "^1.1.3"
-    stripe "^7.4.0"
+    stripe "^8.142.0"
 
 "@tryghost/members-csv@1.0.0":
   version "1.0.0"
@@ -535,15 +525,15 @@
   dependencies:
     papaparse "5.3.0"
 
-"@tryghost/members-ssr@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.0.tgz#1141d6deabd870ebd9df6c5d32ba504aba5d9af2"
-  integrity sha512-xtzLpUSQ22D47wIlpsTC3R0nexy5fHCUwqxBYtRKKdwBJJyqCFiZMu1u117sSfInZlpkQ60ohn+pHygMTdhOUQ==
+"@tryghost/members-ssr@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@tryghost/members-ssr/-/members-ssr-1.0.2.tgz#0ce96b1fd389dad236456f181b39bfa9853da428"
+  integrity sha512-2BFx8sMdyQEE3H2KXZMmLwZe/nqpWq3ehNG5fhJr8DHpQ7DF2FxeduQhYIZIFFOQiOrE+reXpRPDdzpHh4uloQ==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
     cookies "^0.8.0"
-    ghost-ignition "4.5.4"
+    ghost-ignition "4.6.2"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
@@ -752,6 +742,11 @@
   version "14.0.26"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.0.26.tgz#22a3b8a46510da8944b67bfc27df02c34a35331c"
   integrity sha512-W+fpe5s91FBGE0pEa0lnqGLL4USgpLgs4nokw16SrBBco/gQxuua7KnArSEOd5iaMqbbSHV10vUDkJYJJqpXKA==
+
+"@types/node@>=8.1.0":
+  version "14.14.41"
+  resolved "https://registry.npmjs.org/@types/node/-/node-14.14.41.tgz#d0b939d94c1d7bd53d04824af45f1139b8c45615"
+  integrity sha512-dueRKfaJL4RTtSa7bWeTK1M+VH+Gns73oCgzvYfHZywRCoPSd8EkXBL0mZ9unPTveBn+D9phZBaxuzpwjWkW0g==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -4101,27 +4096,6 @@ ghost-ignition@4.4.4, ghost-ignition@^4.2.4:
     gelf-stream "1.1.1"
     json-stringify-safe "5.0.1"
     lodash "4.17.20"
-    moment "2.27.0"
-    nconf "0.10.0"
-    prettyjson "1.2.1"
-    uuid "8.3.2"
-
-ghost-ignition@4.5.4:
-  version "4.5.4"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.5.4.tgz#09e90721b6df04af048f89f696a7af92e0ab4dfe"
-  integrity sha512-Ab9r4zFNqqWmcYoF3sFAY7IJCi5LUTz1KrwfpOEL4BVZEBF2HfzZ8Px2JVxDpmSRMmyHKmN1h/xjXfj+IT2hxA==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.7"
-    "@tryghost/elasticsearch-bunyan" "0.1.1"
-    bunyan "1.8.15"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.3.1"
-    find-root "1.1.0"
-    fs-extra "9.1.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.21"
     moment "2.27.0"
     nconf "0.10.0"
     prettyjson "1.2.1"
@@ -9009,11 +8983,12 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-stripe@^7.4.0:
-  version "7.15.0"
-  resolved "https://registry.yarnpkg.com/stripe/-/stripe-7.15.0.tgz#03593caec169b698997c091b07d21da701eeee18"
-  integrity sha512-TmouNGv1rIU7cgw7iFKjdQueJSwYKdPRPBuO7eNjrRliZUnsf2bpJqYe+n6ByarUJr38KmhLheVUxDyRawByPQ==
+stripe@^8.142.0:
+  version "8.144.0"
+  resolved "https://registry.npmjs.org/stripe/-/stripe-8.144.0.tgz#5827510cbbb5bc6a89b64d7ce03578eba844e1b7"
+  integrity sha512-oqrs163kA1CxLMmzcL7m79Ax+gGxNYpPIKjdpD8Ckc/NOQppkWOfiIJwyiCEWTfHgIJ6/FkPH12jGzkMwPqnSg==
   dependencies:
+    "@types/node" ">=8.1.0"
     qs "^6.6.0"
 
 stylehacks@^5.0.0:
