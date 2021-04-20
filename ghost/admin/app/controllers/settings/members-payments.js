@@ -1,37 +1,11 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
-import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    ajax: service(),
-    config: service(),
-    feature: service(),
-    ghostPaths: service(),
-    notifications: service(),
     session: service(),
     settings: service(),
-
-    importErrors: null,
-    importSuccessful: false,
-    showDeleteAllModal: false,
-    submitting: false,
-    uploadButtonText: 'Import',
-
-    importMimeType: null,
-    jsonExtension: null,
-    jsonMimeType: null,
-    yamlExtension: null,
-    yamlMimeType: null,
-
-    yamlAccept: null,
-
-    blogDomain: computed('config.blogDomain', function () {
-        let blogDomain = this.config.blogDomain || '';
-        const domainExp = blogDomain.replace('https://', '').replace('http://', '').match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        return (domainExp && domainExp[1]) || '';
-    }),
 
     actions: {
         setDefaultContentVisibility(value) {
