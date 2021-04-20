@@ -10,7 +10,7 @@ const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
 const _ = require('lodash');
 
-const allowedIncludes = ['email_recipients'];
+const allowedIncludes = ['email_recipients', 'products'];
 
 module.exports = {
     docName: 'members',
