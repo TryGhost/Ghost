@@ -4,7 +4,6 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    session: service(),
     settings: service(),
 
     actions: {

@@ -17,16 +17,11 @@
     </GhCanvasHeader>
 
     <section class="view-container settings-debug">
-
-        {{#if this.session.user.isOwner}}
         <div class="gh-setting-liquid-section">
             <GhMembersPaymentsSetting
                 @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
                 @setStripeConnectIntegrationTokenSetting={{action "setStripeConnectIntegrationTokenSetting"}}
             />
         </div>
-
-        {{/if}}
-
     </section>
 </section>
