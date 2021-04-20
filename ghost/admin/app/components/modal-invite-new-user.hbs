@@ -33,6 +33,8 @@
         <GhRoleSelection
             @selected={{this.role}}
             @setRole={{this.setRole}}
+            @onValidationSuccess={{action "roleValidationSucceeded"}}
+            @onValidationFailure={{action "roleValidationFailed"}}
         />
     </fieldset>
 </div>

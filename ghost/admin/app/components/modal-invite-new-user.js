@@ -12,11 +12,11 @@ export default ModalComponent.extend(ValidationEngine, {
     router: service(),
     notifications: service(),
     store: service(),
-    limit: service(),
 
     classNames: 'modal-content invite-new-user',
 
     role: null,
+    limitErrorMessage: null,
 
     validationType: 'inviteUser',
 
@@ -31,6 +31,14 @@ export default ModalComponent.extend(ValidationEngine, {
     actions: {
         confirm() {
             this.sendInvitation.perform();
+        },
+
+        roleValidationFailed(reason) {
+            this.set('limitErrorMessage', reason);
+        },
+
+        roleValidationSucceeded() {
+            this.set('limitErrorMessage', null);
         }
     },
 
