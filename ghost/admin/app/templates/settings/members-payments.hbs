@@ -19,8 +19,8 @@
     <section class="view-container settings-debug">
         <div class="gh-setting-liquid-section">
             <GhMembersPaymentsSetting
-                @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
-                @setStripeConnectIntegrationTokenSetting={{action "setStripeConnectIntegrationTokenSetting"}}
+                @setDefaultContentVisibility={{this.setDefaultContentVisibility}}
+                @setStripeConnectIntegrationTokenSetting={{this.setStripeConnectIntegrationTokenSetting}}
             />
         </div>
     </section>

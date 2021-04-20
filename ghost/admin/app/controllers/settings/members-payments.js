@@ -1,30 +1,30 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default Controller.extend({
-    settings: service(),
+export default class MembersPaymentsController extends Controller {
+    @service settings;
 
-    actions: {
-        setDefaultContentVisibility(value) {
-            this.set('settings.defaultContentVisibility', value);
-        },
+    @action
+    setDefaultContentVisibility(value) {
+        this.settings.set('defaultContentVisibility', value);
+    }
 
-        setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
-            this.set('settings.stripeConnectIntegrationToken', stripeConnectIntegrationToken);
-        }
-    },
+    @action
+    setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
+        this.settings.set('stripeConnectIntegrationToken', stripeConnectIntegrationToken);
+    }
 
-    saveSettings: task(function* () {
-        const response = yield this.settings.save();
-        // Reset from address value on save
-        return response;
-    }).drop(),
+    @task({drop: true})
+    *saveSettings() {
+        return yield this.settings.save();
+    }
 
     reset() {
         // stripeConnectIntegrationToken is not a persisted value so we don't want
         // to keep it around across transitions
         this.settings.set('stripeConnectIntegrationToken', undefined);
     }
-});
+}
