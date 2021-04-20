@@ -41,10 +41,6 @@ module.exports = class MemberRepository {
         return ['active', 'trialing', 'unpaid', 'past_due'].includes(status);
     }
 
-    isComplimentarySubscription(subscription) {
-        return subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
-    }
-
     async get(data, options) {
         if (data.customer_id) {
             const customer = await this._StripeCustomer.findOne({
@@ -381,11 +377,7 @@ module.exports = class MemberRepository {
         let status = 'free';
         let memberProducts = [];
         if (this.isActiveSubscriptionStatus(subscription.status)) {
-            if (this.isComplimentarySubscription(subscription)) {
-                status = 'comped';
-            } else {
-                status = 'paid';
-            }
+            status = 'paid';
             try {
                 if (ghostProduct) {
                     memberProducts.push(ghostProduct.toJSON());
@@ -410,12 +402,7 @@ module.exports = class MemberRepository {
                         this._logging.error(`Failed to attach products to member - ${data.id}`);
                         this._logging.error(e);
                     }
-                    const isComplimentary = subscription.get('plan_nickname') && subscription.get('plan_nickname').toLowerCase() === 'complimentary';
-                    if (status === 'comped' || isComplimentary) {
-                        status = 'comped';
-                    } else {
-                        status = 'paid';
-                    }
+                    status = 'paid';
                 }
             }
         }
