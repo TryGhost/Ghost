@@ -35,10 +35,11 @@
 .fullscreen-modal {
     position: relative;
     z-index: 100;
+    max-width: 550px;
+    overflow-y: auto;
     margin: auto;
     margin-top: 30px;
     margin-bottom: 30px;
-    max-width: 550px;
     pointer-events: none;
 }
 
@@ -72,6 +73,12 @@
 
 .fullscreen-modal-action {
     margin: 6vw 0;
+}
+
+@media (max-height: 960px) {
+    .fullscreen-modal-action {
+        margin: 40px auto;
+    }
 }
 
 .fullscreen-modal-body-scrolling .modal-body {
