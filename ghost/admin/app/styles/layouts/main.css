@@ -1208,10 +1208,11 @@
 }
 
 .gh-expandable-header .gh-expandable-description {
-    font-size: 1.3rem;
-    color: var(--midgrey);
     margin: 0;
     padding: 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    font-weight: 400;
 }
 
 .gh-expandable-content {

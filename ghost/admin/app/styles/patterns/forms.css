@@ -331,7 +331,7 @@ textarea {
 
 .gh-radio {
     display: flex;
-    margin: 0 0 20px;
+    margin: 0 0 24px;
 }
 
 .gh-radio-button {
@@ -354,14 +354,15 @@ textarea {
 .gh-radio-label {
     font-size: 1.4rem;
     line-height: 1.2em;
-    font-weight: 400;
+    font-weight: 600;
 }
 
 .gh-radio-desc {
+    margin: 4px 0 0;
+    color: var(--midgrey);
     font-size: 1.3rem;
-    line-height: 1.4em;
-    font-weight: 300;
-    color: color-mod(var(--midgrey) l(+10%));
+    line-height: 1.2em;
+    font-weight: 400;
 }
 
 .gh-radio-label:hover,
