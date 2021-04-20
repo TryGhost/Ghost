@@ -489,17 +489,7 @@
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/magic-link@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.0.tgz#b4a09c50ae773278e6a54ea55ff9a62dc8d0950a"
-  integrity sha512-jlm6OTzFkR6dPD58U4Npp26jvtZ9XTVJ2LVfIMI3xiomGae4v2zIy1RH447nJQNRIN+piiRmq+cV4FPN9aXHjw==
-  dependencies:
-    bluebird "^3.5.5"
-    ghost-ignition "4.5.4"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/magic-link@^1.0.1":
+"@tryghost/magic-link@1.0.1", "@tryghost/magic-link@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.1.tgz#63d84d8954794d5b355ab7e5f825d6876afbd1ad"
   integrity sha512-QAGb13busE30mHK9GdcJkS5c6KWrULE0FZ94hDoLPKX4uLBy2xQEM/8gvn4Uycc5XNbPNfrRs3LpT2WacWHdUg==
