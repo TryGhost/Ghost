@@ -44,6 +44,7 @@ export const MARKETPLACE_THEMES = [{
 export default Controller.extend({
     config: service(),
     ghostPaths: service(),
+    limit: service(),
     notifications: service(),
     session: service(),
     settings: service(),
@@ -53,6 +54,7 @@ export default Controller.extend({
     newSecondaryNavItem: null,
     themes: null,
     themeToDelete: null,
+    displayUpgradeModal: false,
 
     init() {
         this._super(...arguments);
@@ -68,7 +70,12 @@ export default Controller.extend({
     }),
 
     actions: {
-        activateTheme(theme) {
+        async activateTheme(theme) {
+            const isOverLimit = await this.limit.checkWouldGoOverLimit('customThemes', {value: theme.name});
+            if (isOverLimit) {
+                this.set('displayUpgradeModal', true);
+                return;
+            }
             return theme.activate().then((activatedTheme) => {
                 if (!isEmpty(activatedTheme.get('warnings'))) {
                     this.set('themeWarnings', activatedTheme.get('warnings'));
@@ -136,6 +143,10 @@ export default Controller.extend({
             this.set('themeFatalErrors', null);
             this.set('showThemeWarningsModal', false);
             this.set('showThemeErrorsModal', false);
+        },
+
+        hideUpgradeModal() {
+            this.set('displayUpgradeModal', false);
         },
 
         reset() {}

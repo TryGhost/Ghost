@@ -101,3 +101,9 @@
 </section>
 
 {{outlet}}
+
+{{#if this.displayUpgradeModal}}
+    <GhFullscreenModal @modal="upgrade-host-limit-custom-theme"
+        @close={{action "hideUpgradeModal"}}
+        @modifier="action wide" />
+{{/if}}
