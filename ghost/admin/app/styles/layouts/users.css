@@ -206,19 +206,6 @@
     margin-right: 2.4rem;
 }
 
-.gh-roles-container .gh-radio-label {
-    padding-bottom: 4px;
-    line-height: 1.1em;
-    font-weight: 600;
-}
-
-.gh-roles-container .gh-radio-desc {
-    color: var(--midgrey);
-    font-size: 1.3rem;
-    line-height: 1.2em;
-    font-weight: 400;
-}
-
 .gh-roles-container .popover {
     width: 97%;
     border: 1px solid var(--whitegrey-d1);
