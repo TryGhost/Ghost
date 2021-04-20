@@ -100,7 +100,11 @@ describe('Migration Fixture Utils', function () {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve());
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
-            fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
+            const postFixtures = fixtures.models.find((modelFixture) => {
+                return modelFixture.name === 'Post';
+            });
+
+            fixtureUtils.addFixturesForModel(postFixtures).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 11);
@@ -117,7 +121,11 @@ describe('Migration Fixture Utils', function () {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({}));
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
-            fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
+            const postFixtures = fixtures.models.find((modelFixture) => {
+                return modelFixture.name === 'Post';
+            });
+
+            fixtureUtils.addFixturesForModel(postFixtures).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 11);
