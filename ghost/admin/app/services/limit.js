@@ -59,6 +59,10 @@ export default class LimitsService extends Service {
         });
     }
 
+    async checkWouldGoOverLimit(limitName, metadata = {}) {
+        return this.limiter.checkWouldGoOverLimit(limitName, metadata);
+    }
+
     decorateWithCountQueries(limits) {
         if (limits.staff) {
             limits.staff.currentCountQuery = bind(this, this.getStaffUsersCount);
