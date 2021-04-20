@@ -1,6 +1,15 @@
 {
     "models": [
         {
+            "name": "Product",
+            "entries": [
+                {
+                    "name":             "Default Product",
+                    "slug":             "default-product"
+                }
+            ]
+        },
+        {
             "name": "Tag",
             "entries": [
                 {
