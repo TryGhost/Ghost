@@ -48,6 +48,14 @@ We are following [gitmoji](https://gitmoji.carloscuesta.me/).
 
 Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
 
+**Bumping @tryghost dependecies**
+
+When bumping `@tryghost/*` dependencies, the first line should follow the above format and say what has changed, not say what has been bumped.
+
+There is no need to include what modules have changed in the commit message, as this is _very_ clear from the contents of the commit. The commit should focus on surfacing the underlying changes from the dependencies - what actually changed as a result of this dependency bump?
+
+[Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
+
 
 
 ### Submitting Pull Requests
