@@ -34,15 +34,23 @@ export default class GhRoleSelectionComponent extends Component {
     }
 
     async validateRole(role) {
+        if (role.name === 'Contributor') {
+            this.args.onValidationSuccess?.();
+        }
+
         if (role.name !== 'Contributor'
-            && this.limit.limiter && this.limit.limiter.isLimited('staff')) {
+            && this.limit.limiter
+            && this.limit.limiter.isLimited('staff')
+        ) {
             try {
                 await this.limit.limiter.errorIfWouldGoOverLimit('staff');
 
                 this.limitErrorMessage = null;
+                this.args.onValidationSuccess?.();
             } catch (error) {
                 if (error.errorType === 'HostLimitError') {
                     this.limitErrorMessage = error.message;
+                    this.args.onValidationFailure?.(this.limitErrorMessage);
                 } else {
                     this.notifications.showAPIError(error, {key: 'staff.limit'});
                 }
