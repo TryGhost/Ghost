@@ -2,10 +2,13 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
+import {tracked} from '@glimmer/tracking';
 
 export default class MembersPaymentsController extends Controller {
     @service settings;
+
+    @tracked showLeaveSettingsModal = false;
 
     @action
     setDefaultContentVisibility(value) {
@@ -20,6 +23,27 @@ export default class MembersPaymentsController extends Controller {
     @task({drop: true})
     *saveSettings() {
         return yield this.settings.save();
+    }
+
+    leaveRoute(transition) {
+        if (this.settings.get('hasDirtyAttributes')) {
+            transition.abort();
+            this.leaveSettingsTransition = transition;
+            this.showLeaveSettingsModal = true;
+        }
+    }
+
+    @action
+    async confirmLeave() {
+        this.settings.rollbackAttributes();
+        this.showLeaveSettingsModal = false;
+        this.leaveSettingsTransition.retry();
+    }
+
+    @action
+    cancelLeave() {
+        this.showLeaveSettingsModal = false;
+        this.leaveSettingsTransition = null;
     }
 
     reset() {

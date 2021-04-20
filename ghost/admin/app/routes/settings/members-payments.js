@@ -1,12 +1,13 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend({
-    session: service(),
-    settings: service(),
+export default class MembersPaymentsRoute extends AuthenticatedRoute {
+    @service session;
+    @service settings;
 
     beforeModel() {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
+
         return this.session.get('user').then((user) => {
             if (!user.isOwner && user.isAdmin) {
                 return this.transitionTo('settings');
@@ -14,21 +15,27 @@ export default AuthenticatedRoute.extend({
                 return this.transitionTo('home');
             }
         });
-    },
+    }
 
     model() {
         return this.settings.reload();
-    },
+    }
+
+    actions = {
+        willTransition(transition) {
+            return this.controller.leaveRoute(transition);
+        }
+    }
 
     resetController(controller, isExiting) {
         if (isExiting) {
             controller.reset();
         }
-    },
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Settings - Members'
         };
     }
-});
+}
