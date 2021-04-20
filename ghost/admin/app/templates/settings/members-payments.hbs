@@ -24,4 +24,13 @@
             />
         </div>
     </section>
+
+    {{#if this.showLeaveSettingsModal}}
+        <GhFullscreenModal
+            @modal="leave-settings"
+            @confirm={{this.confirmLeave}}
+            @close={{this.cancelLeave}}
+            @modifier="action wide"
+        />
+    {{/if}}
 </section>
