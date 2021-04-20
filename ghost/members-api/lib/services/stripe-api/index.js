@@ -436,6 +436,20 @@ module.exports = class StripeAPIService {
     }
 
     /**
+     * getPrice
+     *
+     * @param {string} id
+     * @param {object} options
+     *
+     * @returns {Promise<import('stripe').Stripe.Price>}
+     */
+    async getPrice(id, options = {}) {
+        debug(`getPrice(${id}, ${JSON.stringify(options)})`);
+
+        return await this._stripe.prices.retrieve(id, options);
+    }
+
+    /**
      * getPlan
      *
      * @param {string} id
