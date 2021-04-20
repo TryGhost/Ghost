@@ -12,47 +12,29 @@ export default class DashboardController extends Controller {
     @service settings;
     @service whatsNew;
 
-    @tracked
-    eventsData = null;
-    @tracked
-    eventsError = null;
-    @tracked
-    eventsLoading = false;
+    @tracked eventsData = null;
+    @tracked eventsError = null;
+    @tracked eventsLoading = false;
 
-    @tracked
-    mrrStatsData = null;
-    @tracked
-    mrrStatsError = null;
-    @tracked
-    mrrStatsLoading = false;
+    @tracked mrrStatsData = null;
+    @tracked mrrStatsError = null;
+    @tracked mrrStatsLoading = false;
 
-    @tracked
-    memberCountStatsData = null;
-    @tracked
-    memberCountStatsError = null;
-    @tracked
-    memberCountStatsLoading = false;
+    @tracked memberCountStatsData = null;
+    @tracked memberCountStatsError = null;
+    @tracked memberCountStatsLoading = false;
 
-    @tracked
-    topMembersData = null;
-    @tracked
-    topMembersError = null;
-    @tracked
-    topMembersLoading = false;
+    @tracked topMembersData = null;
+    @tracked topMembersError = null;
+    @tracked topMembersLoading = false;
 
-    @tracked
-    newsletterOpenRatesData = null;
-    @tracked
-    newsletterOpenRatesError = null;
-    @tracked
-    newsletterOpenRatesLoading = false;
+    @tracked newsletterOpenRatesData = null;
+    @tracked newsletterOpenRatesError = null;
+    @tracked newsletterOpenRatesLoading = false;
 
-    @tracked
-    whatsNewEntries = null;
-    @tracked
-    whatsNewEntriesLoading = null;
-    @tracked
-    whatsNewEntriesError = null;
+    @tracked whatsNewEntries = null;
+    @tracked whatsNewEntriesLoading = null;
+    @tracked whatsNewEntriesError = null;
 
     get topMembersDataHasOpenRates() {
         return this.topMembersData && this.topMembersData.find((member) => {
