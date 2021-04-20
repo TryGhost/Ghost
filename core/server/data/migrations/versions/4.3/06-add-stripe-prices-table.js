@@ -3,7 +3,7 @@ const {addTable} = require('../../utils');
 module.exports = addTable('stripe_prices', {
     id: {type: 'string', maxlength: 24, nullable: false, primary: true},
     stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
-    stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_products.stripe_product_id'},
+    stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_products.stripe_product_id', cascadeDelete: true},
     active: {type: 'boolean', nullable: false},
     nickname: {type: 'string', maxlength: 50, nullable: true},
     currency: {type: 'string', maxLength: 3, nullable: false},
