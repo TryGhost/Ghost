@@ -21,7 +21,6 @@
         {{#if this.session.user.isOwner}}
         <div class="gh-setting-liquid-section">
             <GhMembersPaymentsSetting
-                @settings={{this.settings}}
                 @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
                 @setStripeConnectIntegrationTokenSetting={{action "setStripeConnectIntegrationTokenSetting"}}
             />
