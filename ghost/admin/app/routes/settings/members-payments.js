@@ -2,20 +2,12 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
+    session: service(),
     settings: service(),
-    notifications: service(),
-    queryParams: {
-        fromAddressUpdate: {
-            replace: true
-        },
-        supportAddressUpdate: {
-            replace: true
-        }
-    },
 
     beforeModel() {
         this._super(...arguments);
-        return this.get('session.user').then((user) => {
+        return this.session.get('user').then((user) => {
             if (!user.isOwner && user.isAdmin) {
                 return this.transitionTo('settings');
             } else if (!user.isOwner) {
@@ -26,20 +18,6 @@ export default AuthenticatedRoute.extend({
 
     model() {
         return this.settings.reload();
-    },
-
-    setupController(controller) {
-        if (controller.fromAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Newsletter email address has been updated`.htmlSafe(),
-                {type: 'success', key: 'members.settings.from-address.updated'}
-            );
-        } else if (controller.supportAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Support email address has been updated`.htmlSafe(),
-                {type: 'success', key: 'members.settings.support-address.updated'}
-            );
-        }
     },
 
     resetController(controller, isExiting) {
