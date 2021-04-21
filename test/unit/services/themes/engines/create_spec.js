@@ -14,6 +14,7 @@ const themeEngines = require('../../../../../core/frontend/services/themes/engin
  * 3. Add the a protective test for when next verstion (v6?) is planned it has to be changed again
  */
 describe('Themes: engines', function () {
+    // NOTE: This is deliberately hard-coded so that when the default version is upgraded this test fails and needs reading!
     const DEFAULT_ENGINE_VERSION = 'v4';
 
     afterEach(function () {

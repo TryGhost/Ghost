@@ -10,7 +10,6 @@ const validate = require('./validate');
 const i18n = require('./i18n');
 const list = require('./list');
 const settingsCache = require('../../../server/services/settings/cache');
-const engineDefaults = require('./engines/defaults');
 
 module.exports = {
     // Init themes module
@@ -79,7 +78,9 @@ module.exports = {
         if (this.getActive()) {
             return this.getActive().engine('ghost-api');
         } else {
-            return engineDefaults['ghost-api'];
+            // @TODO: refactor so we don't have to require config here?
+            const config = require('../../../shared/config');
+            return config.get('api:versions:default');
         }
     },
     activate: function (themeName) {
