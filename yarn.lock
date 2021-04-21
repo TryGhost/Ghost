@@ -4096,27 +4096,6 @@ ghost-ignition@4.4.4, ghost-ignition@^4.2.4:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.6.1:
-  version "4.6.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.1.tgz#c6ddfecdd119f4c3479960423c5c2e0733f0708d"
-  integrity sha512-y/taY4SBFJtBTTTXnyXSUsQXlyHpJQqTgtqtT8Rx293hyKNeE18q0JSCn7aJAl3sIZPsYwWpkpdrKh+zOSjvFA==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.7"
-    "@tryghost/elasticsearch-bunyan" "0.1.1"
-    bunyan "1.8.15"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.3.1"
-    find-root "1.1.0"
-    fs-extra "9.1.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.21"
-    moment "2.27.0"
-    nconf "0.10.0"
-    prettyjson "1.2.1"
-    uuid "8.3.2"
-
 ghost-ignition@4.6.2, ghost-ignition@^4.6.1, ghost-ignition@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.2.tgz#c88166eb93bfcc94408c84783c62838111154b71"
@@ -5578,16 +5557,16 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@4.0.3:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.3.tgz#fd766996d3e2fed2011b118a08d7e7dd31cab5e8"
-  integrity sha512-+MgLogHZb9OmPGezTHj1RcIRXeErXT3LmMK0wlmunRTbCmtEkiRIEKbaAD9JKkAR/evDzBN80awRNjrGsynRIw==
+knex-migrator@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.4.tgz#0522e6922585839639bd26d7a9e671331000acd5"
+  integrity sha512-8MmK2HyiVA/IR9KG/1iOwUHXylNXmHQgLbc4L64hqD2c7EH0CggjqzHhFe+PirGCpyUbXE9bBoZky64u7XpTUQ==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.1"
-    ghost-ignition "4.6.1"
+    ghost-ignition "4.6.2"
     knex "0.21.19"
     lodash "4.17.21"
     moment "2.24.0"
