@@ -111,34 +111,6 @@ describe('Themes middleware', function () {
         });
     });
 
-    it('calls updateTemplateOptions with correct data', function (done) {
-        const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
-
-        executeMiddleware(middleware, req, res, function next(err) {
-            should.not.exist(err);
-
-            hbs.updateTemplateOptions.calledOnce.should.be.true();
-            const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
-            const data = templateOptions.data;
-
-            data.should.be.an.Object().with.properties('site', 'labs', 'config');
-
-            // Check Theme Config
-            data.config.should.be.an.Object()
-                .with.properties(themeDataExpectedProps)
-                .and.size(themeDataExpectedProps.length);
-            // posts per page should be set according to the stub
-            data.config.posts_per_page.should.eql(2);
-
-            // Check labs config
-            should.deepEqual(data.labs, fakeLabsData);
-
-            should.equal(data.site, fakeSiteData);
-
-            done();
-        });
-    });
-
     it('Sets res.locals.secure to the value of req.secure', function (done) {
         req.secure = Math.random() < 0.5;
 
@@ -148,6 +120,53 @@ describe('Themes middleware', function () {
             should.equal(res.locals.secure, req.secure);
 
             done();
+        });
+    });
+
+    describe('updateTemplateOptions', function () {
+        it('is called with correct data', function (done) {
+            const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                should.not.exist(err);
+
+                hbs.updateTemplateOptions.calledOnce.should.be.true();
+                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                const data = templateOptions.data;
+
+                data.should.be.an.Object().with.properties('site', 'labs', 'config');
+
+                // Check Theme Config
+                data.config.should.be.an.Object()
+                    .with.properties(themeDataExpectedProps)
+                    .and.size(themeDataExpectedProps.length);
+                // posts per page should be set according to the stub
+                data.config.posts_per_page.should.eql(2);
+
+                // Check labs config
+                should.deepEqual(data.labs, fakeLabsData);
+
+                should.equal(data.site, fakeSiteData);
+                should.exist(data.site.signup_url);
+                data.site.signup_url.should.equal('#/portal');
+
+                done();
+            });
+        });
+
+        it('switches @site.signup_url to RSS when signup is disabled', function (done) {
+            settingsCache.get
+                .withArgs('members_signup_access').returns('none');
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                const data = templateOptions.data;
+
+                should.exist(data.site.signup_url);
+                data.site.signup_url.should.equal('https://feedly.com/i/subscription/feed/http%3A%2F%2F127.0.0.1%3A2369%2Frss%2F');
+
+                done();
+            });
         });
     });
 
