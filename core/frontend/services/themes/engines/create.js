@@ -1,8 +1,5 @@
-const _ = require('lodash');
 const semver = require('semver');
 const config = require('../../../../shared/config');
-const DEFAULTS = require('./defaults');
-const allowedKeys = ['ghost-api'];
 
 /**
  * Valid definitions for "ghost-api":
@@ -21,7 +18,7 @@ const allowedKeys = ['ghost-api'];
  * @returns {*}
  */
 module.exports = (packageJson) => {
-    let themeEngines = _.cloneDeep(DEFAULTS);
+    let themeEngines = {'ghost-api': config.get('api:versions:default')};
 
     if (packageJson && Object.prototype.hasOwnProperty.call(packageJson, 'engines')) {
         // CASE: validate
@@ -39,13 +36,9 @@ module.exports = (packageJson) => {
             const apiVersionMajor = apiVersion === 'canary' ? 'canary' : semver.major(semver.coerce(apiVersion).version);
 
             if (availableApiVersions[apiVersionMajor]) {
-                packageJson.engines['ghost-api'] = availableApiVersions[apiVersionMajor];
-            } else {
-                packageJson.engines['ghost-api'] = DEFAULTS['ghost-api'];
+                themeEngines['ghost-api'] = availableApiVersions[apiVersionMajor];
             }
         }
-
-        themeEngines = _.assign(themeEngines, _.pick(packageJson.engines, allowedKeys));
     }
 
     return themeEngines;
