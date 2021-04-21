@@ -47,7 +47,7 @@ describe('User API', function () {
 
         describe('Read', function () {
             it('can\'t retrieve non existent user by id', function (done) {
-                request.get(localUtils.API.getApiQuery('users/' + ObjectId.generate() + '/'))
+                request.get(localUtils.API.getApiQuery('users/' + ObjectId().toHexString() + '/'))
                     .set('Origin', config.get('url'))
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
@@ -133,7 +133,7 @@ describe('User API', function () {
 
         describe('Destroy', function () {
             it('[failure] Destroy unknown user id', function (done) {
-                request.delete(localUtils.API.getApiQuery('users/' + ObjectId.generate()))
+                request.delete(localUtils.API.getApiQuery('users/' + ObjectId().toHexString()))
                     .set('Origin', config.get('url'))
                     .expect(404)
                     .end(function (err) {

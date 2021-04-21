@@ -55,7 +55,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
 
         await knex('settings')
             .insert({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 key: 'slack_url',
                 group: 'slack',
                 type: 'string',
@@ -73,7 +73,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
 
         await knex('settings')
             .insert({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 key: 'slack_username',
                 group: 'slack',
                 type: 'string',

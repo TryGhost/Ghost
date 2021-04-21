@@ -11,7 +11,7 @@ const data = {};
 // Password = Sl1m3rson
 data.users = [
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Leslie Jones',
         slug: 'leslie',
         email: 'ljones@nothere.com',
@@ -19,7 +19,7 @@ data.users = [
         website: 'http://twitter.com/ljonestestuser'
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Pat Smith',
         slug: 'pat-smith',
         email: 'pat-smith@nothere.com',
@@ -27,7 +27,7 @@ data.users = [
         website: 'http://github.com/patsmithtestuser'
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Cameron Howe',
         slug: 'camhowe',
         email: 'camhowe@c-e-is-real.com',
@@ -37,13 +37,13 @@ data.users = [
 
 data.tags = [
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Getting Started',
         slug: 'getting-started',
         created_by: data.users[0].id
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'photo',
         slug: 'photo',
         feature_image: 'some/image/path.jpg',
@@ -51,7 +51,7 @@ data.tags = [
         created_by: data.users[1].id
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Video',
         slug: 'video',
         feature_image: 'some/image/path.jpg',
@@ -59,7 +59,7 @@ data.tags = [
         created_by: data.users[0].id
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: '#Audio',
         slug: 'hash-audio',
         feature_image: 'some/image/path.jpg',
@@ -68,13 +68,13 @@ data.tags = [
         created_by: data.users[0].id
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'No Posts',
         slug: 'no-posts',
         created_by: data.users[1].id
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Special',
         slug: 'special',
         created_by: data.users[1].id
@@ -83,7 +83,7 @@ data.tags = [
 
 data.posts = [
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'First Post',
         slug: 'first-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -92,7 +92,7 @@ data.posts = [
         tags: [data.tags[0].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Second Post',
         slug: 'second-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -101,7 +101,7 @@ data.posts = [
         tags: [data.tags[1].id, data.tags[2].id, data.tags[3].id, data.tags[5].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Third Post',
         slug: 'third-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -110,7 +110,7 @@ data.posts = [
         tags: [data.tags[1].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Fourth Post',
         slug: 'fourth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -119,7 +119,7 @@ data.posts = [
         tags: [data.tags[2].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Fifth Post',
         slug: 'fifth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -128,7 +128,7 @@ data.posts = [
         tags: [data.tags[5].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Sixth Post',
         slug: 'sixth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -138,7 +138,7 @@ data.posts = [
         tags: [data.tags[0].id, data.tags[3].id, data.tags[5].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Seventh Post',
         slug: 'seventh-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -148,7 +148,7 @@ data.posts = [
         tags: [data.tags[0].id, data.tags[2].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Eighth Post',
         slug: 'eighth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -157,7 +157,7 @@ data.posts = [
         tags: [data.tags[0].id, data.tags[2].id, data.tags[3].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Ninth Post',
         slug: 'ninth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -166,7 +166,7 @@ data.posts = [
         tags: [data.tags[1].id, data.tags[3].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Tenth Post',
         slug: 'tenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -175,7 +175,7 @@ data.posts = [
         tags: [data.tags[2].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Eleventh Post',
         slug: 'eleventh-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -185,7 +185,7 @@ data.posts = [
         tags: [data.tags[1].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Twelfth Post',
         slug: 'twelfth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -194,7 +194,7 @@ data.posts = [
         tags: [data.tags[3].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Thirteenth Post',
         slug: 'thirteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -203,7 +203,7 @@ data.posts = [
         tags: []
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Fourteenth Post',
         slug: 'fourteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -212,7 +212,7 @@ data.posts = [
         tags: [data.tags[3].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Fifteenth Post',
         slug: 'fifteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World! I am a featured page'),
@@ -222,7 +222,7 @@ data.posts = [
         tags: []
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Sixteenth Post',
         slug: 'sixteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -231,7 +231,7 @@ data.posts = [
         tags: []
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Seventeenth Post',
         slug: 'seventeenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -240,7 +240,7 @@ data.posts = [
         tags: []
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Eighteenth Post',
         slug: 'eighteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -249,7 +249,7 @@ data.posts = [
         tags: []
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Nineteenth Post',
         slug: 'nineteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -259,7 +259,7 @@ data.posts = [
         tags: [data.tags[0].id, data.tags[1].id, data.tags[2].id, data.tags[3].id]
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'Twentieth Post',
         slug: 'twentieth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
@@ -268,7 +268,7 @@ data.posts = [
         tags: []
     },
     {
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         title: 'About Page',
         slug: 'about',
         mobiledoc: markdownToMobiledoc('About Me!'),
@@ -326,7 +326,7 @@ function createPosts(knex, DataGenerator) {
 
         _.each(post.tags, function (tagId) {
             postsTags.push({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 post_id: post.id,
                 tag_id: tagId
             });
@@ -338,7 +338,7 @@ function createPosts(knex, DataGenerator) {
 
     _.each(data.posts, function (post) {
         postsAuthors.push({
-            id: ObjectId.generate(),
+            id: ObjectId().toHexString(),
             post_id: post.id,
             author_id: post.author_id
         });

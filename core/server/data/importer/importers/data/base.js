@@ -87,7 +87,7 @@ class Base {
 
     generateIdentifier() {
         _.each(this.dataToImport, (obj) => {
-            const newId = ObjectId.generate();
+            const newId = ObjectId().toHexString();
 
             if (obj.id) {
                 this.originalIdMap[newId] = obj.id;

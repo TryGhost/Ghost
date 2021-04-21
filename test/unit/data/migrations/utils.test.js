@@ -220,7 +220,7 @@ async function setupDb() {
 
     const date = knex.raw('CURRENT_TIMESTAMP');
     await knex('roles').insert({
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Role Name',
         description: 'Role description',
         created_at: date,
@@ -230,7 +230,7 @@ async function setupDb() {
     });
 
     await knex('roles').insert({
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Other Role Name',
         description: 'Other Role description',
         created_at: date,
@@ -240,7 +240,7 @@ async function setupDb() {
     });
 
     await knex('permissions').insert({
-        id: ObjectId.generate(),
+        id: ObjectId().toHexString(),
         name: 'Permission Name',
         action_type: 'action',
         object_type: 'object',

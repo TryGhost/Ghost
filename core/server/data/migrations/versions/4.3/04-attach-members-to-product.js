@@ -28,7 +28,7 @@ module.exports = createTransactionalMigration(
         logging.info(`Attaching product ${product.name} to ${membersWithProduct.length} members`);
         const memberProductRelations = membersWithProduct.map((member) => {
             return {
-                id: ObjectID.generate(),
+                id: ObjectID().toHexString(),
                 member_id: member.id,
                 product_id: product.id
             };
