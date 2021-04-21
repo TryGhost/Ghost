@@ -46,7 +46,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
     get isFreeChecked() {
         const allowedPlans = this.settings.get('portalPlans') || [];
-        return (this.settings.get('membersAllowFreeSignup') && allowedPlans.includes('free'));
+        return (this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
     }
 
     get isMonthlyChecked() {
