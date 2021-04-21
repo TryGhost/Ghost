@@ -40,14 +40,14 @@
 
         <div class="gh-setting-header">Members</div>
         <div class="gh-settings-main-grid">
+            <LinkTo class="gh-setting-group" @route="settings.members-access" data-test-nav="members-access">
+                <span class="blue">{{svg-jar "eye"}}</span>
+                <div>
+                    <h4>Access</h4>
+                    <p>Configure members usage and default access levels</p>
+                </div>
+            </LinkTo>
             {{#if (enable-developer-experiments)}}
-                <LinkTo class="gh-setting-group" @route="settings.members-access" data-test-nav="members-access">
-                    <span class="blue">{{svg-jar "eye"}}</span>
-                    <div>
-                        <h4>Access</h4>
-                        <p>Configure members usage and default access levels</p>
-                    </div>
-                </LinkTo>
             <LinkTo class="gh-setting-group" @route="settings.products" data-test-nav="members-access">
                 <span class="green">{{svg-jar "module"}}</span>
                 <div>

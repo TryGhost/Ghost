@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {alias, reads} from '@ember/object/computed';
 import {computed} from '@ember/object';
+import {equal, reads} from '@ember/object/computed';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -49,7 +49,7 @@ export default ModalComponent.extend({
 
     confirm() {},
 
-    allowSelfSignup: alias('settings.membersAllowFreeSignup'),
+    allowSelfSignup: equal('settings.membersSignupAccess', 'all'),
 
     isStripeConfigured: reads('membersUtils.isStripeEnabled'),
 
