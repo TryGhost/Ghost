@@ -258,7 +258,7 @@ function getMemberData({members, labels, importSetLabels, createdBy}) {
         }
 
         const memberToInsert = {
-            id: ObjectId.generate(),
+            id: ObjectId().toHexString(),
             uuid: uuid.v4(), // member model default
             email: member.email,
             name: member.name,
@@ -276,7 +276,7 @@ function getMemberData({members, labels, importSetLabels, createdBy}) {
 
         const memberLabelAssociationsToInsert = allLabels.map((label, index) => {
             return {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 member_id: memberToInsert.id,
                 label_id: labelIdLookup[label],
                 sort_order: index
@@ -328,7 +328,7 @@ async function createStripeCustomers(stripeCustomersToCreate) {
             });
 
             result.customersToInsert.push({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 member_id: customerToCreate.member_id,
                 customer_id: customer.id,
                 email: customer.email,
@@ -343,7 +343,7 @@ async function createStripeCustomers(stripeCustomersToCreate) {
 
             const payment = subscription.default_payment_method;
             result.subscriptionsToInsert.push({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 customer_id: customer.id,
                 subscription_id: subscription.id,
                 plan_id: subscription.plan.id,
@@ -399,7 +399,7 @@ async function fetchStripeCustomers(stripeCustomersToInsert) {
             });
 
             result.customersToInsert.push({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 member_id: customer.member_id,
                 customer_id: customer.customer_id,
                 email: fetchedCustomer.email,
@@ -413,7 +413,7 @@ async function fetchStripeCustomers(stripeCustomersToInsert) {
             fetchedCustomer.subscriptions.data.forEach((subscription) => {
                 const payment = subscription.default_payment_method;
                 result.subscriptionsToInsert.push({
-                    id: ObjectId.generate(),
+                    id: ObjectId().toHexString(),
                     customer_id: customer.customer_id,
                     subscription_id: subscription.id,
                     plan_id: subscription.plan.id,
