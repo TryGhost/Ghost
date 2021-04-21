@@ -134,6 +134,9 @@ async function initExpressApps() {
 async function initServices({config}) {
     debug('Begin: initServices');
 
+    const defaultApiVersion = config.get('api:versions:default');
+    debug(`Default API Version: ${defaultApiVersion}`);
+
     debug('Begin: Dynamic Routing');
     // Dynamic routing is generated from the routes.yaml file, which is part of the settings service
     // When Ghost's DB and core are loaded, we can access this file and call routing.bootstrap.start
@@ -170,9 +173,7 @@ async function initServices({config}) {
         appService.init(),
         limits.init(),
         scheduling.init({
-            // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
-            //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
-            apiUrl: urlUtils.urlFor('api', {version: 'v4', versionType: 'admin'}, true)
+            apiUrl: urlUtils.urlFor('api', {version: defaultApiVersion, versionType: 'admin'}, true)
         })
     ]);
     debug('End: Services');
