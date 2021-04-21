@@ -66,7 +66,7 @@
                         checked={{this.isFreeChecked}}
                         id="free-plan"
                         name="free-plan"
-                        disabled={{not this.settings.membersAllowFreeSignup}}
+                        disabled={{not (eq this.settings.membersSignupAccess "all")}}
                         class="gh-input post-settings-featured"
                         {{on "click" this.toggleFreePlan}}
                         data-test-checkbox="featured"
