@@ -33,7 +33,7 @@ module.exports = function setupOAuthApp() {
                 clientID: clientId,
                 clientSecret: secret,
                 callbackURL: callbackUrl.href
-            }, async function (accessToken, refreshToken, profile, cb) {
+            }, async function (accessToken, refreshToken, profile) {
                 if (req.user) {
                     const emails = profile.emails.filter(email => email.verified === true).map(email => email.value);
 
