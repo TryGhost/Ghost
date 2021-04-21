@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const themeEngines = require('../../../../../core/frontend/services/themes/engines');
+const themeEngines = require('../../../../../core/frontend/services/theme-engine/engines');
 
 /**
  * @NOTE
