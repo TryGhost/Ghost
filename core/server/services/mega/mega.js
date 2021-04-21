@@ -358,7 +358,7 @@ async function createEmailBatches({emailModel, options}) {
             }
 
             recipientData.push({
-                id: ObjectID.generate(),
+                id: ObjectID().toHexString(),
                 email_id: emailModel.id,
                 member_id: memberRow.id,
                 batch_id: batchModel.id,

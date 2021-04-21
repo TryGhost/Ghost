@@ -84,7 +84,7 @@ function addPermission(config) {
             const date = connection.raw('CURRENT_TIMESTAMP');
 
             await connection('permissions').insert({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 name: config.name,
                 action_type: config.action,
                 object_type: config.object,
@@ -160,7 +160,7 @@ function addPermissionToRole(config) {
 
             logging.warn(`Adding permission(${config.permission}) to role(${config.role})`);
             await connection('permissions_roles').insert({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 permission_id: permission.id,
                 role_id: role.id
             });

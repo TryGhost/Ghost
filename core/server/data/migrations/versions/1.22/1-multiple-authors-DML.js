@@ -46,7 +46,7 @@ module.exports.up = function handleMultipleAuthors(options) {
                                 }
 
                                 return options.transacting('posts_authors').insert({
-                                    id: ObjectId.generate(),
+                                    id: ObjectId().toHexString(),
                                     post_id: editedPost.id,
                                     author_id: editedPost.get('author_id'),
                                     sort_order: 0

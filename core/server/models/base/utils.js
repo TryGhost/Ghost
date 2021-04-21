@@ -36,7 +36,7 @@ const attach = function attach(Model, effectedModelId, relation, modelsToAttach,
             }
 
             fetchedModel.related(relation).on('creating', function (collection, data) {
-                data.id = ObjectId.generate();
+                data.id = ObjectId().toHexString();
             });
 
             return Promise.resolve(modelsToAttach)

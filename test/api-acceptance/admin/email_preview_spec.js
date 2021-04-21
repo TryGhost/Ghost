@@ -17,7 +17,7 @@ describe('Email Preview API', function () {
 
     describe('Read', function () {
         it('can\'t retrieve for non existent post', async function () {
-            const res = await request.get(localUtils.API.getApiQuery(`posts/${ObjectId.generate()}/`))
+            const res = await request.get(localUtils.API.getApiQuery(`posts/${ObjectId().toHexString()}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -59,7 +59,7 @@ describe('Email Preview API', function () {
 
         it('can read post email preview with email card and replacements', async function () {
             const post = testUtils.DataGenerator.forKnex.createPost({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 title: 'Post with email-only card',
                 slug: 'email-only-card',
                 mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["email",{"html":"<p>Hey {first_name \\"there\\"} {unknown}</p><p><strong>Welcome to your first Ghost email!</strong></p>"}],["email",{"html":"<p>Another email card with a similar replacement, {first_name, \\"see?\\"}</p>"}]],"markups":[],"sections":[[10,0],[1,"p",[[0,[],0,"This is the actual post content..."]]],[10,1],[1,"p",[]]]}',
@@ -96,7 +96,7 @@ describe('Email Preview API', function () {
 
         it('has custom content transformations for email compatibility', async function () {
             const post = testUtils.DataGenerator.forKnex.createPost({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 title: 'Post with email-only card',
                 slug: 'email-only-card',
                 mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[["a",["href","https://ghost.org"]]],"sections":[[1,"p",[[0,[],0,"Testing "],[0,[0],1,"links"],[0,[],0," in email excerpt and apostrophes \'"]]]]}',

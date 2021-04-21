@@ -33,7 +33,7 @@ module.exports = createIrreversibleMigration(
         }
 
         const now = knex.raw('CURRENT_TIMESTAMP');
-        const id = ObjectID.generate();
+        const id = ObjectID().toHexString();
 
         const integration = {
             id: id,
@@ -52,7 +52,7 @@ module.exports = createIrreversibleMigration(
             .insert(integration);
 
         const contentKey = {
-            id: ObjectID.generate(),
+            id: ObjectID().toHexString(),
             type: 'content',
             secret: createSecret('content'),
             role_id: null,
@@ -65,7 +65,7 @@ module.exports = createIrreversibleMigration(
         await knex('api_keys').insert(contentKey);
 
         const adminKey = {
-            id: ObjectID.generate(),
+            id: ObjectID().toHexString(),
             type: 'admin',
             secret: createSecret('admin'),
             role_id: role.id,

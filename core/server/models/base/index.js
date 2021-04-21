@@ -93,7 +93,7 @@ ghostBookshelf.plugin('bookshelf-relations', {
                 });
             },
             beforeRelationCreation: function onCreatingRelation(model, data) {
-                data.id = ObjectId.generate();
+                data.id = ObjectId().toHexString();
             }
         }
     }
@@ -677,7 +677,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * no auto increment
      */
     setId: function setId() {
-        this.set('id', ObjectId.generate());
+        this.set('id', ObjectId().toHexString());
     },
 
     wasChanged() {

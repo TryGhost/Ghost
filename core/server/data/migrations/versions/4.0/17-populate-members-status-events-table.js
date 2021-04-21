@@ -18,7 +18,7 @@ module.exports = createTransactionalMigration(
         const membersStatusEvents = allMembers.map((event) => {
             return {
                 ...event,
-                id: ObjectID.generate(),
+                id: ObjectID().toHexString(),
                 from_status: null
             };
         });

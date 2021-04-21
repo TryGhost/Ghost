@@ -207,8 +207,8 @@ describe('Posts API', function () {
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId.generate(),
-            updated_by: ObjectId.generate()
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))

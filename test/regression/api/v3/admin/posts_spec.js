@@ -255,7 +255,7 @@ describe('Posts API (v3)', function () {
 
     describe('Read', function () {
         it('can\'t retrieve non existent post', function (done) {
-            request.get(localUtils.API.getApiQuery(`posts/${ObjectId.generate()}/`))
+            request.get(localUtils.API.getApiQuery(`posts/${ObjectId().toHexString()}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -394,8 +394,8 @@ describe('Posts API (v3)', function () {
 
         it('update dates & x_by', function () {
             const post = {
-                created_by: ObjectId.generate(),
-                updated_by: ObjectId.generate(),
+                created_by: ObjectId().toHexString(),
+                updated_by: ObjectId().toHexString(),
                 created_at: moment().add(2, 'days').format(),
                 updated_at: moment().add(2, 'days').format()
             };
@@ -609,7 +609,7 @@ describe('Posts API (v3)', function () {
     describe('Destroy', function () {
         it('non existent post', function () {
             return request
-                .del(localUtils.API.getApiQuery('posts/' + ObjectId.generate() + '/'))
+                .del(localUtils.API.getApiQuery('posts/' + ObjectId().toHexString() + '/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)

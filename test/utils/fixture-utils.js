@@ -305,7 +305,7 @@ const fixtures = {
         let extraUsers = _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
         extraUsers = _.map(extraUsers, function (user) {
             return DataGenerator.forKnex.createUser(_.extend({}, user, {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 email: 'a' + user.email,
                 slug: 'a' + user.slug
             }));
@@ -391,7 +391,7 @@ const fixtures = {
         }
 
         permsToInsert = _.map(permsToInsert, function (perms) {
-            perms.id = ObjectId.generate();
+            perms.id = ObjectId().toHexString();
 
             actions.push({type: perms.action_type, permissionId: perms.id});
             return DataGenerator.forKnex.createBasic(perms);

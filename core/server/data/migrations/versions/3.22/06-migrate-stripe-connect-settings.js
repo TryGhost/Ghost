@@ -103,7 +103,7 @@ module.exports = {
         logging.info(`Inserting stripe_connect_integration setting`);
         await knex('settings')
             .insert({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 key: 'stripe_connect_integration',
                 value: JSON.stringify(stripeConnectIntegration),
                 group: 'members',

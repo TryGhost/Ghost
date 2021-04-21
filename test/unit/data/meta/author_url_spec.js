@@ -16,7 +16,7 @@ describe('getAuthorUrl', function () {
     it('should return author url if context contains primary author', function () {
         const post = {
             primary_author: {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 slug: 'test-author'
             }
         };
@@ -33,7 +33,7 @@ describe('getAuthorUrl', function () {
     it('should return absolute author url if context contains primary author', function () {
         const post = {
             primary_author: {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 slug: 'test-author'
             }
         };
@@ -50,7 +50,7 @@ describe('getAuthorUrl', function () {
     it('should return author url for AMP if context contains primary author', function () {
         const post = {
             primary_author: {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 slug: 'test-author'
             }
         };
@@ -66,7 +66,7 @@ describe('getAuthorUrl', function () {
 
     it('should return author url if data contains author', function () {
         const author = {
-            id: ObjectId.generate(),
+            id: ObjectId().toHexString(),
             slug: 'test-author'
         };
 
