@@ -33,7 +33,7 @@ module.exports = {
         logging.info(`Restoring bulk_email_settings setting from mailgun settings`);
         await knex('settings')
             .insert({
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 key: 'bulk_email_settings',
                 value: JSON.stringify(bulkEmailSettings),
                 group: 'email',

@@ -134,7 +134,7 @@ class SettingsImporter extends BaseImporter {
                             : deprecatedSetting.value;
 
                         this.dataToImport.push({
-                            id: ObjectId.generate(),
+                            id: ObjectId().toHexString(),
                             key: to.key,
                             value: value,
                             group: to.group,

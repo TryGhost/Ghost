@@ -747,15 +747,15 @@ describe('Integration: Importer', function () {
             // NOTE: not including slug, description etc. fields as the only required field
             // to handle the import of tags is 'name'
             exportData.data.tags[0] = {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 name: 'first tag'
             };
             exportData.data.tags[1] = {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 name: 'second tag'
             };
             exportData.data.tags[2] = {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 name: 'third tag'
             };
 
@@ -961,7 +961,7 @@ describe('Integration: Importer', function () {
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
-                comment_id: ObjectId.generate()
+                comment_id: ObjectId().toHexString()
             });
 
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({slug: 'post2'});
@@ -1015,7 +1015,7 @@ describe('Integration: Importer', function () {
                 testUtils.DataGenerator.forKnex.createPostsAuthors('unknown', exportData.data.users[0].id, 1),
 
                 testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, exportData.data.users[3].id, 0),
-                testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, ObjectId.generate(), 1),
+                testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, ObjectId().toHexString(), 1),
                 testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, exportData.data.users[4].id, 2),
                 testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, exportData.data.users[4].id, 2),
 

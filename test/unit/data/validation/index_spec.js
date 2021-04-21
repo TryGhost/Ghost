@@ -126,7 +126,7 @@ describe('Validation', function () {
 
         describe('models.edit', function () {
             it('uuid is invalid', function () {
-                const postModel = models.Post.forge({id: ObjectId.generate(), uuid: '1234'});
+                const postModel = models.Post.forge({id: ObjectId().toHexString(), uuid: '1234'});
 
                 postModel.changed = {uuid: postModel.get('uuid')};
 
@@ -145,7 +145,7 @@ describe('Validation', function () {
             });
 
             it('date is null', function () {
-                const postModel = models.Post.forge({id: ObjectId.generate(), created_at: null});
+                const postModel = models.Post.forge({id: ObjectId().toHexString(), created_at: null});
 
                 postModel.changed = {created_at: postModel.get('updated_at')};
 

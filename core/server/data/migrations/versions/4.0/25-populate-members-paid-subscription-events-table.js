@@ -40,7 +40,7 @@ module.exports = createTransactionalMigration(
 
             if (subscription.status === 'trialing') {
                 const subscriptionCreatedEvent = {
-                    id: ObjectID.generate(),
+                    id: ObjectID().toHexString(),
                     member_id: subscription.member_id,
                     from_plan: null,
                     to_plan: subscription.plan_id,
@@ -52,7 +52,7 @@ module.exports = createTransactionalMigration(
                 events.push(subscriptionCreatedEvent);
             } else {
                 const subscriptionCreatedEvent = {
-                    id: ObjectID.generate(),
+                    id: ObjectID().toHexString(),
                     member_id: subscription.member_id,
                     from_plan: null,
                     to_plan: subscription.plan_id,
@@ -69,7 +69,7 @@ module.exports = createTransactionalMigration(
 
             if (subscription.status === 'canceled') {
                 const subscriptionCancelledEvent = {
-                    id: ObjectID.generate(),
+                    id: ObjectID().toHexString(),
                     member_id: subscription.member_id,
                     from_plan: subscription.plan_id,
                     to_plan: null,

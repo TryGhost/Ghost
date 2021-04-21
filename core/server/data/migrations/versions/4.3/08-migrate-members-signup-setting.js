@@ -35,7 +35,7 @@ module.exports = createTransactionalMigration(
             const currentTimestamp = connection.raw('CURRENT_TIMESTAMP');
 
             const newSettingData = {
-                id: ObjectId.generate(),
+                id: ObjectId().toHexString(),
                 group: 'members',
                 key: 'members_signup_access',
                 value: migrateValue,
@@ -89,7 +89,7 @@ module.exports = createTransactionalMigration(
 
             await connection('settings')
                 .insert({
-                    id: ObjectId.generate(),
+                    id: ObjectId().toHexString(),
                     key: 'members_allow_free_signup',
                     group: 'members',
                     type: 'boolean',
