@@ -20,7 +20,7 @@ module.exports = createTransactionalMigration(
         const membersSubscribedEvents = allMembers.map((event) => {
             return {
                 ...event,
-                id: ObjectID.generate(),
+                id: ObjectID().toHexString(),
                 subscribed: true,
                 source: 'member'
             };
@@ -29,7 +29,7 @@ module.exports = createTransactionalMigration(
         const membersUnsubscribedEvents = unsubscribedMembers.map((event) => {
             return {
                 ...event,
-                id: ObjectID.generate(),
+                id: ObjectID().toHexString(),
                 subscribed: false,
                 source: null
             };

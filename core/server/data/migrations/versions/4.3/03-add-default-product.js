@@ -26,7 +26,7 @@ module.exports = createTransactionalMigration(
         logging.info(`Adding product "${name}"`);
         await knex('products')
             .insert({
-                id: ObjectID.generate(),
+                id: ObjectID().toHexString(),
                 name: name,
                 slug: slugify(name),
                 created_at: knex.raw(`CURRENT_TIMESTAMP`)

@@ -34,7 +34,7 @@ module.exports.up = (options) => {
                             [prop]: subscriber[prop]
                         });
                     }, {});
-                    member.id = ObjectId.generate();
+                    member.id = ObjectId().toHexString();
 
                     return member;
                 });

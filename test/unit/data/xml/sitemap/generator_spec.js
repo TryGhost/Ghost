@@ -194,7 +194,7 @@ describe('Generators', function () {
             it('add', function () {
                 generator.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
                 generator.addUrl('http://my-ghost-blog.com/magic/', {id: 'identifier2', staticRoute: false});
-                generator.addUrl('http://my-ghost-blog.com/subscribe/', {id: ObjectId.generate(), page: 1});
+                generator.addUrl('http://my-ghost-blog.com/subscribe/', {id: ObjectId().toHexString(), page: 1});
 
                 generator.getXml();
 

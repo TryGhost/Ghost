@@ -40,7 +40,7 @@ module.exports.up = (options) => {
                         });
                     }, {});
                     postsMetaEntry.post_id = post.get('id');
-                    postsMetaEntry.id = ObjectId.generate();
+                    postsMetaEntry.id = ObjectId().toHexString();
                     return postsMetaEntry;
                 });
 

@@ -80,7 +80,7 @@ class Notifications {
             dismissible: true,
             location: 'bottom',
             status: 'alert',
-            id: ObjectId.generate()
+            id: ObjectId().toHexString()
         };
 
         const overrides = {
