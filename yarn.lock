@@ -1552,10 +1552,10 @@ brute-knex@4.0.1:
     express-brute "^1.0.1"
     knex "^0.20"
 
-bson-objectid@1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-1.3.1.tgz#11e4ce4c3419161fd388113781bb62c1dfbce34b"
-  integrity sha512-eQBNQXsisEAXlwiSy8zRNZdW2xDBJaEVkTPbodYR9hGxxtE548Qq7ilYOd8WAQ86xF7NRUdiWSQ1pa/TkKiE2A==
+bson-objectid@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.1.tgz#226a9ffecd3a8d52f565d71012dd5b176560fef1"
+  integrity sha512-b4D1/G4uP9Yks4rv+nDVsZ4ybT1W5nQYw4lfpfaRP2Q18azlR6Oe2BAuirG1lzrwQFtHnJ0nrK5kWKKZVEMUng==
 
 bthreads@0.5.1, bthreads@^0.5.1:
   version "0.5.1"
