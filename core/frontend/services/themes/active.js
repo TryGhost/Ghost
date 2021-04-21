@@ -14,7 +14,7 @@
 const join = require('path').join;
 
 const _ = require('lodash');
-const themeConfig = require('./config');
+const themeConfig = require('../theme-engine/config');
 const themeEngines = require('./engines');
 const config = require('../../../shared/config');
 const engine = require('../theme-engine/engine');

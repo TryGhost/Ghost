@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const themeConfig = require('../../../../core/frontend/services/themes/config');
+const themeConfig = require('../../../../core/frontend/services/theme-engine/config');
 
 describe('Themes', function () {
     afterEach(function () {
