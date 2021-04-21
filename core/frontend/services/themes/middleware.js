@@ -90,6 +90,14 @@ function getSiteData(req) {
     // @TODO: it would be nicer if this was proper middleware somehow...
     siteData = preview.handle(req, siteData);
 
+    // theme-only computed property added to @site
+    if (settingsCache.get('members_signup_access') === 'none') {
+        const escapedUrl = encodeURIComponent(urlUtils.urlFor({relativeUrl: '/rss/'}, true));
+        siteData.signup_url = `https://feedly.com/i/subscription/feed/${escapedUrl}`;
+    } else {
+        siteData.signup_url = '#/portal';
+    }
+
     return siteData;
 }
 
@@ -152,10 +160,10 @@ function updateLocalTemplateOptions(req, res, next) {
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
-        // @TODO: remove blog if we drop v2 (Ghost 4.0)
         data: {
             member: member,
             site: siteData,
+            // @deprecated: a gscan warning for @blog was added before 3.0 which replaced it with @site
             blog: siteData
         }
     }));
