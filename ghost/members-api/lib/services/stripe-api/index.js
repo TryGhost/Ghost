@@ -214,6 +214,11 @@ module.exports = class StripeAPIService {
         debug(`getCustomer(${id}, ${JSON.stringify(options)})`);
         try {
             await this._rateLimitBucket.throttle();
+            if (options.expand) {
+                options.expand.push('subscriptions');
+            } else {
+                options.expand = ['subscriptions'];
+            }
             const customer = await this._stripe.customers.retrieve(id, options);
             debug(`getCustomer(${id}, ${JSON.stringify(options)}) -> Success`);
             return customer;
