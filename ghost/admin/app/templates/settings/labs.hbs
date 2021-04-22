@@ -179,6 +179,64 @@
                     </div>
                     </GhUploader>
                 </div>
+
+                {{#if (enable-developer-experiments)}}
+                    <section class="gh-expandable">
+                        <div class="gh-expandable-block">
+                            <div class="gh-expandable-header">
+                                <div>
+                                    <h4 class="gh-expandable-title">Enable Google OAuth authentication</h4>
+                                    <p class="gh-expandable-description">
+                                        Allow your staff users to sign in to Ghost with Google Single Sign-On
+                                    </p>
+                                </div>
+                                <div class="for-switch">
+                                    <label class="switch" for="settings-oauth">
+                                        <input
+                                            type="checkbox"
+                                            checked={{this.isOAuthEnabled}}
+                                            id="settings-oauth"
+                                            onclick={{action "toggleIsOAuthEnabled" value="target.checked"}}
+                                            data-test-private-checkbox
+                                        >
+                                        <span class="input-toggle-component"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="gh-expandable-content">
+                                {{#if this.isOAuthEnabled}}
+                                    <div class="gh-setting-content-extended pt4 pb4">
+                                        <span>
+                                            To get started, you first have to set up Ghost to allow login and registration with Google OAuth2. Read our
+                                            {{!-- TODO: create an help desk article and update the url here --}}
+                                            <a href="#" target="_blank" rel="noopener">setup guide here</a>
+                                        </span>
+                                        <div><a href="https://console.developers.google.com/" target="_blank">Configure Ghost in Google</a></div>
+                                        <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
+                                            <label for="aouth-client-id">Google OAuth client id</label>
+                                            <GhTextInput
+                                                id="oauth-client-id"
+                                                @value={{readonly this.settings.oauthClientId}}
+                                                @name="oauth-client-id"
+                                                @focus-out={{action "saveOAuthSettings"}}
+                                                @input={{action (mut this.settings.oauthClientId) value="target.value"}}
+                                            />
+
+                                            <label for="oauth-client-secret">Google OAuth client secret</label>
+                                            <GhTextInput
+                                                id="oauth-client-secret"
+                                                @value={{readonly this.settings.oauthClientSecret}}
+                                                @name="oauth-client-secret"
+                                                @focus-out={{action "saveOAuthSettings"}}
+                                                @input={{action (mut this.settings.oauthClientSecret) value="target.value"}}
+                                            />
+                                        </GhFormGroup>
+                                    </div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </section>
+                {{/if}}
             </div>
         </div>
     </section>
