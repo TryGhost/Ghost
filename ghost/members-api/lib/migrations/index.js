@@ -59,10 +59,18 @@ module.exports = class StripeMigrations {
 
                 let stripePlans = [];
                 for (const plan of uniquePlans) {
-                    const stripePlan = await this._StripeAPIService.getPlan(plan, {
-                        expand: ['product']
-                    });
-                    stripePlans.push(stripePlan);
+                    try {
+                        const stripePlan = await this._StripeAPIService.getPlan(plan, {
+                            expand: ['product']
+                        });
+                        stripePlans.push(stripePlan);
+                    } catch (err) {
+                        if (err && err.statusCode === 404) {
+                            this._logging.warn(`Plan ${plan} not found on Stripe - ignoring`);
+                        } else {
+                            throw err;
+                        }
+                    }
                 }
                 this._logging.info(`Adding ${stripePlans.length} plans from Stripe`);
                 for (const stripePlan of stripePlans) {
