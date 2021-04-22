@@ -8,6 +8,7 @@ import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
+import {computed, set} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -56,6 +57,8 @@ export default Controller.extend({
 
     yamlAccept: null,
 
+    isOAuthConfigurationOpen: false,
+
     init() {
         this._super(...arguments);
         this.importMimeType = IMPORT_MIME_TYPES;
@@ -68,6 +71,10 @@ export default Controller.extend({
         // so explicitly allow the `yaml` extension.
         this.yamlAccept = [...this.yamlMimeType, ...Array.from(this.yamlExtension, extension => '.' + extension)];
     },
+
+    isOAuthEnabled: computed('settings.{oauthClientId,oauthClientSecret}', 'isOAuthConfigurationOpen', function () {
+        return (this.settings.get('oauthClientId') && this.settings.get('oauthClientSecret')) || this.isOAuthConfigurationOpen;
+    }),
 
     actions: {
         onUpload(file) {
@@ -145,8 +152,23 @@ export default Controller.extend({
             iframe.attr('src', downloadURL);
         },
 
+        async saveOAuthSettings() {
+            await this.settings.save();
+        },
+
         toggleDeleteAllModal() {
             this.toggleProperty('showDeleteAllModal');
+        },
+
+        async toggleIsOAuthEnabled() {
+            if (this.isOAuthEnabled) {
+                this.settings.set('oauthClientId', '');
+                this.settings.set('oauthClientSecret', '');
+                set(this, 'isOAuthConfigurationOpen', false);
+                await this.settings.save();
+            } else {
+                set(this, 'isOAuthConfigurationOpen', true);
+            }
         },
 
         /**
