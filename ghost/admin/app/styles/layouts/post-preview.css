@@ -10,7 +10,7 @@
     min-height: 72px;
     overflow: hidden;
     margin: 0;
-    padding: 18px 32px;
+    padding: 18px 32px 16px;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     background: var(--white);
@@ -39,8 +39,9 @@
     width: 64px;
 }
 
-.gh-post-preview-btn-group button span {
-    height: 40px;
+.gh-post-preview-btn-group .gh-btn-group span {
+    height: 36px;
+    line-height: 34px;
     border-radius: 3px;
 }
 

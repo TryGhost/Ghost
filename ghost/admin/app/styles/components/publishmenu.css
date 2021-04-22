@@ -12,7 +12,7 @@
 
 .gh-publishmenu-trigger svg path {
     stroke: var(--darkgrey);
-    stroke-width: 4px;
+    stroke-width: 2px;
 }
 
 .gh-publishmenu-trigger:focus {
