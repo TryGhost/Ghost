@@ -9,6 +9,25 @@ export default class ProductController extends Controller {
 
     @tracked showLeaveSettingsModal = false;
     @tracked showPriceModal = false;
+    @tracked priceModel = null;
+
+    get product() {
+        return this.model;
+    }
+
+    get stripePrices() {
+        const stripePrices = this.model.stripePrices || [];
+        return stripePrices.map((d) => {
+            return {
+                ...d,
+                amount: d.amount / 100
+            };
+        });
+    }
+
+    get noOfPrices() {
+        return (this.product.stripePrices || []).length;
+    }
 
     leaveRoute(transition) {
         if (this.settings.get('hasDirtyAttributes')) {
@@ -16,6 +35,18 @@ export default class ProductController extends Controller {
             this.leaveSettingsTransition = transition;
             this.showLeaveSettingsModal = true;
         }
+    }
+
+    @action
+    async openEditPrice(price) {
+        this.priceModel = price;
+        this.showPriceModal = true;
+    }
+
+    @action
+    async openNewPrice() {
+        this.priceModel = null;
+        this.showPriceModal = true;
     }
 
     @action
