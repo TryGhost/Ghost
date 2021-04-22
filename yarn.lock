@@ -567,10 +567,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-1.3.0.tgz#8792328144b8855fb44298bbd198e8f7ff21a454"
-  integrity sha512-vXGwYivpLjxbZoPES1UL0awvh+ag87kt5F7aFx++qUKKaxxoIA9OFdKgDnuFfYi5S1jv++nA2C9HZ6pzTkcJzg==
+"@tryghost/members-api@1.3.1":
+  version "1.3.1"
+  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-1.3.1.tgz#5afba6a797b33f226561b5d3f772693b24e2dfc0"
+  integrity sha512-PRVYaEcajtARoVNjvngBSb+2q1R875E1anqzXAmJ7M+kPsAh3ZdsNhFJnTb7wwMFdzuwhjMrNEl7/5iCOXRJUQ==
   dependencies:
     "@tryghost/errors" "^0.2.9"
     "@tryghost/magic-link" "^1.0.2"
