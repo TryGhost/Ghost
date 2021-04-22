@@ -216,9 +216,7 @@ module.exports = class MemberRepository {
         if (!this._stripeAPIService.configured) {
             throw new Error('Cannot link Stripe Customer with no Stripe Connection');
         }
-        const customer = await this._stripeAPIService.getCustomer(data.customer_id, {
-            expand: ['subscriptions']
-        });
+        const customer = await this._stripeAPIService.getCustomer(data.customer_id);
 
         if (!customer) {
             return;
