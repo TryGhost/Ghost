@@ -550,6 +550,48 @@ module.exports = class MemberRepository {
         }
     }
 
+    async createSubscription(data, options) {
+        if (!this._stripeAPIService.configured) {
+            throw new Error('Cannot create Stripe Subscription with no Stripe Connection');
+        }
+        const member = await this._Member.findOne({
+            id: data.id
+        }, options);
+
+        let stripeCustomer;
+
+        await member.related('stripeCustomers').fetch(options);
+
+        for (const customer of member.related('stripeCustomers').models) {
+            try {
+                const fetchedCustomer = await this._stripeAPIService.getCustomer(customer.get('customer_id'));
+                stripeCustomer = fetchedCustomer;
+            } catch (err) {
+                console.log('Ignoring error for fetching customer for checkout');
+            }
+        }
+
+        if (!stripeCustomer) {
+            stripeCustomer = await this._stripeAPIService.createCustomer({
+                email: member.get('email')
+            });
+
+            await this._StripeCustomer.add({
+                customer_id: stripeCustomer.id,
+                member_id: data.id,
+                email: stripeCustomer.email,
+                name: stripeCustomer.name
+            }, options);
+        }
+
+        const subscription = await this._stripeAPIService.createSubscription(stripeCustomer.id, data.subscription.stripe_price_id);
+
+        await this.linkSubscription({
+            id: member.id,
+            subscription
+        }, options);
+    }
+
     async setComplimentarySubscription(data, options) {
         if (!this._stripeAPIService.configured) {
             throw new Error('Cannot update Stripe Subscription with no Stripe Connection');

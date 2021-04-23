@@ -562,15 +562,15 @@ module.exports = class StripeAPIService {
 
     /**
      * @param {string} customer - The ID of the Customer to create the subscription for
-     * @param {string} plan - The ID of the new Plan
+     * @param {string} price - The ID of the new Price
      *
      * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
-    async createSubscription(customer, plan) {
+    async createSubscription(customer, price) {
         await this._rateLimitBucket.throttle();
         const subscription = await this._stripe.subscriptions.create({
             customer,
-            items: [{plan}]
+            items: [{price}]
         });
         return subscription;
     }
