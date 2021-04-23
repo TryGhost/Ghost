@@ -2,7 +2,7 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('frontend:services:settings:validate');
 const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
-const themeService = require('../themes');
+const bridge = require('../../../shared/bridge');
 const _private = {};
 let RESOURCE_CONFIG;
 
@@ -421,7 +421,7 @@ module.exports = function validate(object) {
         object.taxonomies = {};
     }
 
-    const apiVersion = themeService.getApiVersion();
+    const apiVersion = bridge.getFrontendApiVersion();
 
     debug('api version', apiVersion);
 
