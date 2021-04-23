@@ -3,7 +3,7 @@ const {i18n, events} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../../../server/services/settings/cache');
 const config = require('../../../shared/config');
-const active = require('./active');
+const active = require('../theme-engine/active');
 const jp = require('jsonpath');
 
 const isNil = require('lodash/isNil');

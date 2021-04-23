@@ -6,7 +6,7 @@ const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
 const labs = require('../../../server/services/labs');
-const activeTheme = require('./active');
+const activeTheme = require('../theme-engine/active');
 const preview = require('./preview');
 
 // ### Ensure Active Theme

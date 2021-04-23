@@ -2,9 +2,8 @@ const should = require('should');
 const sinon = require('sinon');
 const config = require('../../../../core/shared/config');
 
-// is only exposed via themeService.getActive()
-const activeTheme = require('../../../../core/frontend/services/themes/active');
-
+// is only exposed via themeEngine.getActive()
+const activeTheme = require('../../../../core/frontend/services/theme-engine/active');
 const engine = require('../../../../core/frontend/services/theme-engine/engine');
 
 describe('Themes', function () {

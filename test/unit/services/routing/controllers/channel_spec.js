@@ -3,7 +3,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const security = require('@tryghost/security');
-const themeService = require('../../../../../core/frontend/services/themes');
+const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
@@ -44,7 +44,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             return secureStub;
         });
 
-        sinon.stub(themeService, 'getActive').returns({
+        sinon.stub(themeEngine, 'getActive').returns({
             updateTemplateOptions: sinon.stub(),
             config: function (key) {
                 key.should.eql('posts_per_page');
@@ -83,7 +83,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeService.getActive.calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
@@ -105,7 +105,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeService.getActive.calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
@@ -128,8 +128,8 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeService.getActive.calledOnce.should.be.true();
-            themeService.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
+            themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
@@ -153,7 +153,7 @@ describe('Unit - services/routing/controllers/channel', function () {
         controllers.channel(req, res, function (err) {
             (err instanceof errors.NotFoundError).should.be.true();
 
-            themeService.getActive.calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             renderStub.calledOnce.should.be.false();
@@ -176,7 +176,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeService.getActive.calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.true();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
@@ -198,7 +198,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeService.getActive.calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
@@ -221,7 +221,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, failTest(done)).then(function () {
-            themeService.getActive.calledOnce.should.be.true();
+            themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const themesService = require('../../../../core/frontend/services/themes');
+const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const validate = require('../../../../core/frontend/services/settings/validate');
 
 should.equal(true, true);
@@ -10,7 +10,7 @@ describe('UNIT: services/settings/validate', function () {
     let apiVersion;
 
     before(function () {
-        sinon.stub(themesService, 'getActive').returns({
+        sinon.stub(themeEngine, 'getActive').returns({
             engine: () => {
                 return apiVersion;
             }
