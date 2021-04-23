@@ -1,13 +1,13 @@
 const _ = require('lodash');
-const hbs = require('../theme-engine/engine');
+const hbs = require('./engine');
 const urlUtils = require('../../../shared/url-utils');
 const config = require('../../../shared/config');
 const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
 const labs = require('../../../server/services/labs');
-const activeTheme = require('../theme-engine/active');
-const preview = require('../theme-engine/preview');
+const activeTheme = require('./active');
+const preview = require('./preview');
 
 // ### Ensure Active Theme
 // Ensure there's a properly set & mounted active theme before attempting to serve a site request

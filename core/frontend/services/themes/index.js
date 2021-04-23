@@ -91,7 +91,6 @@ module.exports = {
             });
     },
     storage: require('./storage'),
-    middleware: require('./middleware'),
     /**
      * Load all inactive themes
      */
