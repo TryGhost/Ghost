@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
 const labs = require('../../../server/services/labs');
 const activeTheme = require('../theme-engine/active');
-const preview = require('./preview');
+const preview = require('../theme-engine/preview');
 
 // ### Ensure Active Theme
 // Ensure there's a properly set & mounted active theme before attempting to serve a site request
