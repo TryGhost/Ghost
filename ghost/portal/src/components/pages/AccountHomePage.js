@@ -99,13 +99,6 @@ export const AccountHomePageStyles = `
         margin-right: 12px;
         border-radius: 2px;
     }
-
-    .gh-portal-right-arrow svg {
-        width: 17px;
-        height: 17px;
-        margin-top: 1px;
-        margin-right: -6px;
-    }
 `;
 
 const UserAvatar = ({avatar, brandColor}) => {
