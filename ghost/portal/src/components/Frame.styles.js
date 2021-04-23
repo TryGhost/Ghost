@@ -414,6 +414,19 @@ const FrameStyles = `
         justify-content: space-between;
     }
 
+    .gh-portal-list-header {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--grey3);
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+        line-height: 1.7em;
+    }
+
+    .gh-portal-list + .gh-portal-list-header {
+        margin-top: 28px;
+    }
+
     .gh-portal-list {
         background: var(--white);
         padding: 20px;
@@ -452,7 +465,7 @@ const FrameStyles = `
     .gh-portal-list-detail p {
         font-size: 1.3rem;
         letter-spacing: 0.3px;
-        line-height: 1.15em;
+        line-height: 1.25em;
         padding: 0;
         margin: 2px 0 0;
         color: var(--grey6);
