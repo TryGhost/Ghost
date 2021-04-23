@@ -121,6 +121,7 @@ module.exports = function apiRoutes() {
     router.put('/members/:id', mw.authAdminApi, http(apiCanary.members.edit));
     router.del('/members/:id', mw.authAdminApi, http(apiCanary.members.destroy));
 
+    router.post('/members/:id/subscriptions/', mw.authAdminApi, http(apiCanary.members.createSubscription));
     router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(apiCanary.members.editSubscription));
 
     router.get('/members/:id/signin_urls', mw.authAdminApi, http(apiCanary.memberSigninUrls.read));

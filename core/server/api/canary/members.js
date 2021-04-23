@@ -267,6 +267,50 @@ module.exports = {
         }
     },
 
+    createSubscription: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'id'
+        ],
+        data: [
+            'stripe_price_id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            },
+            data: {
+                stripe_price_id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            await membersService.api.members.createSubscription({
+                id: frame.options.id,
+                subscription: {
+                    stripe_price_id: frame.data.stripe_price_id
+                }
+            });
+            let model = await membersService.api.members.get({id: frame.options.id}, {
+                withRelated: ['labels', 'products', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']
+            });
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.members.memberNotFound')
+                });
+            }
+
+            return model;
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {},
