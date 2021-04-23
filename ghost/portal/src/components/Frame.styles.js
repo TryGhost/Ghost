@@ -11,7 +11,7 @@ import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
-import {PlanSectionStyles} from './common/PlansSection';
+import {PlanSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {LinkPageStyles} from './pages/LinkPage';
@@ -229,7 +229,7 @@ const FrameStyles = `
 
     .gh-portal-popup-wrapper {
         position: relative;
-        padding: 15vmin 0 0;
+        padding: 10vmin 0 0;
         height: 100%;
     }
 
@@ -421,6 +421,7 @@ const FrameStyles = `
         text-transform: uppercase;
         letter-spacing: 0.2px;
         line-height: 1.7em;
+        margin-bottom: 4px;
     }
 
     .gh-portal-list + .gh-portal-list-header {
@@ -469,6 +470,18 @@ const FrameStyles = `
         padding: 0;
         margin: 2px 0 0;
         color: var(--grey6);
+    }
+
+    .gh-portal-right-arrow {
+        line-height: 1;
+        color: var(--grey8);
+    }
+
+    .gh-portal-right-arrow svg {
+        width: 17px;
+        height: 17px;
+        margin-top: 1px;
+        margin-right: -6px;
     }
 
     .gh-portal-expire-warning {
@@ -680,76 +693,55 @@ const MobileStyles = `
     }
 
     .gh-portal-plan-section {
-        flex-direction: row;
+        grid-template-columns: 32px auto auto;
+        grid-template-rows: auto auto;
+        justify-items: start;
         min-height: 60px;
         border-right: none;
         border-bottom: 1px solid var(--grey10);
+    }
+
+    .gh-portal-plan-checkbox {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+        margin: 0 12px;
+    }
+
+    .gh-portal-plan-pricelabel {
+        grid-column: 3 / 4;
+        grid-row: 1 / 3;
+        justify-self: end;
+        margin: 0 4px 0 12px;
+    }
+
+    .gh-portal-plan-name {
+        text-transform: none;
+        font-size: 1.4rem;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+
+    .gh-portal-plan-featurewrapper {
+        margin: 0;
+        padding: 0;
+        border: none;
+        align-items: flex-start;
+    }
+
+    .gh-portal-plan-feature {
+        text-align: left;
     }
 
     .gh-portal-plan-section:last-of-type {
         border-bottom: none;
     }
 
-    .gh-portal-plan-checkbox {
-        order: 1;
-        margin-left: 12px;
+    .gh-portal-plan-section:first-of-type::before {
+        border-radius: 5px 5px 0 0;
     }
 
-    .gh-portal-plan-name {
-        position: absolute;
-        left: 40px;
-        top: 12px;
-        padding: 0;
-        margin: 0;
-        text-transform: none;
-        font-size: 1.4rem;
-        letter-spacing: 0.2px;
-    }
-
-    .gh-portal-plan-featurewrapper {
-        position: absolute;
-        left: 40px;
-        top: 32px;
-        padding: 0;
-        margin: 0;
-        width: unset;
-        text-align: left;
-        border-top: none;
-        font-weight: 400;
-        letter-spacing: 0.2px;
-    }
-    
-    .gh-portal-plan-pricelabel {
-        right: 20px;
-        top: 12px;
-        position: absolute;
-    }
-
-    .gh-portal-plan-section:first-of-type.checked::before {
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        border-bottom-left-radius: 0;
-    }
-
-    .gh-portal-plan-section:last-of-type.checked::before {
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-        border-top-right-radius: 0;
-    }
-
-    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-name,
-    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-featurewrapper,
-    .gh-portal-content.signup.singleplan .gh-portal-plan-name,
-    .gh-portal-content.signup.singleplan .gh-portal-plan-featurewrapper {
-        left: 12px;
-    }
-
-    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-featurewrapper {
-        flex-direction: row;
-    }
-
-    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-featurewrapper .gh-portal-plan-current {
-        margin: 0 0 0 12px;
+    .gh-portal-plan-section:last-of-type::before {
+        border-radius: 0 0 5px 5px;
     }
 
     .gh-portal-input {

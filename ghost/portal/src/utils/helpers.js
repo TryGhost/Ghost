@@ -137,6 +137,15 @@ export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
             currency_symbol: getCurrencySymbol(plans.currency),
             name: 'Yearly',
             discount
+        },
+
+        // TODO: mock!
+        {
+            type: 'custom',
+            price: plans.yearly,
+            currency_symbol: getCurrencySymbol(plans.currency),
+            name: 'Custom',
+            discount
         }
     ];
 
