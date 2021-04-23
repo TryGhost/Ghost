@@ -7,7 +7,6 @@ import {getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember} from '../
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {useContext} from 'react';
-import {ReactComponent as RightArrowIcon} from '../../images/icons/arrow-right.svg';
 
 const React = require('react');
 
@@ -92,6 +91,10 @@ export const AccountHomePageStyles = `
         height: 32px;
         margin-right: -3px;
         opacity: 0.6;
+    }
+
+    .gh-portal-products:hover {
+        cursor: pointer;
     }
 
     .gh-portal-product-icon {
@@ -215,25 +218,6 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
     return null;
 };
 
-const ProductList = ({member, site, openUpdatePlan, onEditBilling}) => {
-    return (
-        <>
-            <h4 className="gh-portal-list-header">Products</h4>
-            <div className="gh-portal-list gh-portal-products">
-                <section>
-                    <img className="gh-portal-product-icon" src="https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png" alt="Product name" />
-                    <div className="gh-portal-list-detail">
-                        <h3>Product name</h3>
-                        <p className="gh-portal-product-price"><strong>Monthly</strong> – $4/month</p>
-                        <p className="gh-portal-product-renewal">Renews on May 9 2038</p>
-                    </div>
-                    <span className="gh-portal-right-arrow"><RightArrowIcon /></span>
-                </section>
-            </div>
-        </>
-    );
-};
-
 const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
     const {name, email, subscribed} = member;
 
@@ -249,7 +233,7 @@ const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, 
                     <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openEditProfile(e)}>Edit</button>
                 </section>
 
-                {/* <PaidAccountActions site={site} member={member} onEditBilling={onEditBilling} openUpdatePlan={openUpdatePlan} /> */}
+                <PaidAccountActions site={site} member={member} onEditBilling={onEditBilling} openUpdatePlan={openUpdatePlan} />
 
                 <section>
                     <div className='gh-portal-list-detail'>
@@ -263,8 +247,7 @@ const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, 
                     </div>
                 </section>
             </div>
-            
-            <ProductList></ProductList>
+            {/* <ProductList openUpdatePlan={openUpdatePlan}></ProductList> */}
         </div>
     );
 };

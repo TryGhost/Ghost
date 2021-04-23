@@ -11,7 +11,7 @@ import {AccountHomePageStyles} from './pages/AccountHomePage';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
-import {PlanSectionStyles} from './common/ProductsSection';
+import {PlanSectionStyles} from './common/PlansSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {LinkPageStyles} from './pages/LinkPage';
