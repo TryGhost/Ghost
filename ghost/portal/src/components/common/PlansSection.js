@@ -10,11 +10,11 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-section {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
         flex: 1;
+        position: relative;
+        display: grid;
+        align-items: center;
+        justify-items: center;
         font-size: 1.4rem;
         line-height: 1.35em;
         border-right: 1px solid var(--grey10);
@@ -214,7 +214,7 @@ export const PlanSectionStyles = `
 
     .gh-portal-plans-container.hide-checkbox .gh-portal-plan-section {
         padding-top: 12px;
-        padding-bottom: 20px;
+        padding-bottom: 12px;
     }
 
     .gh-portal-plan-current {
@@ -224,6 +224,75 @@ export const PlanSectionStyles = `
         line-height: 1.25em;
         color: var(--brandcolor);
         margin: 4px 0 -2px;
+    }
+
+    .gh-portal-plans-container.vertical {
+        flex-direction: column;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-section {
+        grid-template-columns: 32px auto auto;
+        grid-template-rows: auto auto;
+        justify-items: start;
+        min-height: 60px;
+        border-right: none;
+        border-bottom: 1px solid var(--grey10);
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-checkbox {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+        margin: 0 12px;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-pricelabel {
+        grid-column: 3 / 4;
+        grid-row: 1 / 3;
+        justify-self: end;
+        margin: 0 4px 0 12px;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-name {
+        text-transform: none;
+        font-size: 1.4rem;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-featurewrapper {
+        margin: 0;
+        padding: 0;
+        border: none;
+        align-items: flex-start;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-feature {
+        text-align: left;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-section:first-of-type::before {
+        border-radius: 5px 5px 0 0;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-section:last-of-type::before {
+        border-radius: 0 0 5px 5px;
+    }
+
+    .gh-portal-plans-container.vertical.hide-checkbox .gh-portal-plan-section {
+        grid-template-columns: auto auto;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-pricelabel {
+        grid-column: 3 / 4;
+        grid-row: 1 / 3;
+    }
+
+    .gh-portal-plans-container.vertical.hide-checkbox .gh-portal-plan-featurewrapper {
+        grid-column: 1 / 2;
     }
 `;
 
@@ -280,6 +349,12 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
             break;
 
+        // TODO: mock!
+        case 'Custom':
+            displayName = 'Custom';
+            planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
+            break;
+
         default:
             break;
         }
@@ -319,7 +394,7 @@ function PlansSection({plans, showLabel = true, type, selectedPlan, onPlanSelect
     return (
         <section>
             <PlanLabel showLabel={showLabel} />
-            <div className={'gh-portal-plans-container' + (changePlan ? ' hide-checkbox' : '') + (cookiesDisabled ? ' disabled' : '')}>
+            <div className={'gh-portal-plans-container' + (changePlan ? ' hide-checkbox' : '') + (cookiesDisabled ? ' disabled' : '') + (plans.length > 3 || changePlan ? ' vertical' : '')}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
         </section>
