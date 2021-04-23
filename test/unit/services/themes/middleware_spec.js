@@ -2,8 +2,8 @@ const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const themeService = require('../../../../core/frontend/services/themes');
-// is only exposed via themeService.getActive()
-const activeTheme = require('../../../../core/frontend/services/themes/active');
+// is only exposed via themeEngine.getActive()
+const activeTheme = require('../../../../core/frontend/services/theme-engine/active');
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const middleware = themeService.middleware;
 

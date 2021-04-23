@@ -1,3 +1,4 @@
 module.exports = {
-    loadCoreHelpers: require('./handlebars/helpers').loadCoreHelpers
+    loadCoreHelpers: require('./handlebars/helpers').loadCoreHelpers,
+    getActive: require('./active').get
 };

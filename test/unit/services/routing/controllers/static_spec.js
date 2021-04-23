@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const api = require('../../../../../core/server/api');
-const themeService = require('../../../../../core/frontend/services/themes');
+const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 
@@ -47,7 +47,7 @@ describe('Unit - services/routing/controllers/static', function () {
             return handleErrorStub;
         });
 
-        sinon.stub(themeService, 'getActive').returns({
+        sinon.stub(themeEngine, 'getActive').returns({
             config: function (key) {
                 if (key === 'posts_per_page') {
                     return postsPerPage;

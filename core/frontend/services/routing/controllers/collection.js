@@ -4,7 +4,7 @@ const {i18n} = require('../../proxy');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const urlService = require('../../url');
-const themeService = require('../../themes');
+const themeEngine = require('../../theme-engine');
 const helpers = require('../helpers');
 
 /**
@@ -26,7 +26,7 @@ module.exports = function collectionController(req, res, next) {
         // CASE 1: routes.yaml `limit` is stronger than theme definition
         // CASE 2: use `posts_per_page` config from theme as `limit` value
         if (res.routerOptions.limit) {
-            themeService.getActive().updateTemplateOptions({
+            themeEngine.getActive().updateTemplateOptions({
                 data: {
                     config: {
                         posts_per_page: res.routerOptions.limit
@@ -36,7 +36,7 @@ module.exports = function collectionController(req, res, next) {
 
             pathOptions.limit = res.routerOptions.limit;
         } else {
-            const postsPerPage = parseInt(themeService.getActive().config('posts_per_page'));
+            const postsPerPage = parseInt(themeEngine.getActive().config('posts_per_page'));
 
             if (!isNaN(postsPerPage) && postsPerPage > 0) {
                 pathOptions.limit = postsPerPage;
