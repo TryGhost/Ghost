@@ -2,7 +2,6 @@ import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
-import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
@@ -89,7 +88,7 @@ export const SignupPageStyles = `
 
     .gh-portal-content.signup,
     .gh-portal-content.signin {
-        max-height: calc(100vh - 12vw - 132px);
+        max-height: calc(100vh - 12vw - 140px);
         padding-bottom: 0;
     }
 
@@ -394,7 +393,7 @@ class SignupPage extends React.Component {
         const plansData = getSitePlans({site, pageQuery});
         return (
             <>
-                <ProductsSection
+                <PlansSection
                     plans={plansData}
                     selectedPlan={this.state.plan}
                     onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}
