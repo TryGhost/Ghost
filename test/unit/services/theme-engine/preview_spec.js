@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const preview = require('../../../../core/frontend/services/themes/preview');
+const preview = require('../../../../core/frontend/services/theme-engine/preview');
 
 describe('Theme Preview', function () {
     let req, previewString = '';
