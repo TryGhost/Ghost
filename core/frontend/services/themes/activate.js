@@ -1,7 +1,7 @@
 const {events, i18n} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
-const active = require('./active');
+const active = require('../theme-engine/active');
 
 function activate(loadedTheme, checkedTheme, error) {
     // no need to check the score, activation should be used in combination with validate.check

@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const templates = rewire('../../../../../core/frontend/services/routing/helpers/templates');
-const themeService = require('../../../../../core/frontend/services/themes');
+const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 
 describe('templates', function () {
     let getActiveThemeStub;
@@ -76,7 +76,7 @@ describe('templates', function () {
         beforeEach(function () {
             hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sinon.stub(themeService, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themeEngine, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -122,7 +122,7 @@ describe('templates', function () {
         beforeEach(function () {
             hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sinon.stub(themeService, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themeEngine, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -258,7 +258,7 @@ describe('templates', function () {
         beforeEach(function () {
             hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sinon.stub(themeService, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themeEngine, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -308,7 +308,7 @@ describe('templates', function () {
         beforeEach(function () {
             hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sinon.stub(themeService, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themeEngine, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });

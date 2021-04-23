@@ -2,7 +2,7 @@ const _ = require('lodash');
 const path = require('path');
 const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../adapters/storage');
-const activeTheme = require('../../../../frontend/services/themes/active');
+const activeTheme = require('../../../../frontend/services/theme-engine/active');
 const config = require('../../../../shared/config');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;

@@ -14,10 +14,10 @@
 const join = require('path').join;
 
 const _ = require('lodash');
-const themeConfig = require('../theme-engine/config');
-const themeEngines = require('../theme-engine/engines');
+const themeConfig = require('./config');
+const themeEngines = require('./engines');
 const config = require('../../../shared/config');
-const engine = require('../theme-engine/engine');
+const engine = require('./engine');
 
 // Current instance of ActiveTheme
 let currentActiveTheme;

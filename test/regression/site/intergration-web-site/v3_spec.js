@@ -8,7 +8,7 @@ const configUtils = require('../../../utils/configUtils');
 const urlUtils = require('../../../utils/urlUtils');
 const appService = require('../../../../core/frontend/services/apps');
 const frontendSettingsService = require('../../../../core/frontend/services/settings');
-const themeService = require('../../../../core/frontend/services/themes');
+const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const siteApp = require('../../../../core/server/web/parent/app');
 
 describe('Integration - Web - Site v3', function () {
@@ -28,8 +28,8 @@ describe('Integration - Web - Site v3', function () {
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
-                    sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                    sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                     app = siteApp({start: true});
                     return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -399,8 +399,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -516,8 +516,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -577,8 +577,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -679,8 +679,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -765,8 +765,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -923,8 +923,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -1040,8 +1040,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -1110,8 +1110,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -1169,8 +1169,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -1355,8 +1355,8 @@ describe('Integration - Web - Site v3', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
+                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
@@ -1606,8 +1606,8 @@ describe('Integration - Web - Site v3', function () {
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
-                    sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v3');
-                    sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v3');
+                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                     app = siteApp({start: true});
                     return testUtils.integrationTesting.urlServiceInitAndWait();
