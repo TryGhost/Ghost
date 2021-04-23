@@ -112,6 +112,16 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
+    oauth: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        provider: {type: 'string', maxlength: 50, nullable: false},
+        provider_id: {type: 'string', maxlength: 191, nullable: false},
+        access_token: {type: 'text', maxlength: 65535, nullable: true},
+        refresh_token: {type: 'text', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'}
+    },
     posts_authors: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id'},
