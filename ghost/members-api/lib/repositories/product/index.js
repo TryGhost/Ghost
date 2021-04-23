@@ -211,6 +211,13 @@ class ProductRepository {
                         type: existingPrice.type,
                         interval: existingPrice.interval
                     }, options);
+                } else {
+                    await this._StripePrice.edit({
+                        nickname: existingPrice.nickname
+                    }, {
+                        ...options,
+                        id: existingPrice.id || options.id
+                    });
                 }
             }
 
