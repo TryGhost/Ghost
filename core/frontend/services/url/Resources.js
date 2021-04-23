@@ -52,8 +52,8 @@ class Resources {
             return this.resourceConfig;
         }
 
-        const themeService = require('../themes');
-        this.resourcesAPIVersion = themeService.getApiVersion();
+        const bridge = require('../../../shared/bridge');
+        this.resourcesAPIVersion = bridge.getFrontendApiVersion();
         this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }
 

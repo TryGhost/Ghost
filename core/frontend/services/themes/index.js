@@ -4,7 +4,6 @@ const {i18n: commonI18n} = require('../proxy');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const themeLoader = require('./loader');
-const active = require('../theme-engine/active');
 const activate = require('./activate');
 const validate = require('./validate');
 const i18n = require('./i18n');
@@ -73,16 +72,6 @@ module.exports = {
             });
     },
     getJSON: require('./to-json'),
-    getActive: active.get,
-    getApiVersion: function getApiVersion() {
-        if (this.getActive()) {
-            return this.getActive().engine('ghost-api');
-        } else {
-            // @TODO: refactor so we don't have to require config here?
-            const config = require('../../../shared/config');
-            return config.get('api:versions:default');
-        }
-    },
     activate: function (themeName) {
         const loadedTheme = list.get(themeName);
 
