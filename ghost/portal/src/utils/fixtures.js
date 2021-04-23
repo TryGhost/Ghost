@@ -3,7 +3,7 @@ export const site = {
     description: 'Thoughts, stories and ideas.',
     logo: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
     icon: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
-    accent_color: '',
+    accent_color: '#45C32E',
     url: 'http://localhost:2368/',
     plans: {
         monthly: 5000,
