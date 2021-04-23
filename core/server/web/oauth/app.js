@@ -83,7 +83,9 @@ module.exports = function setupOAuthApp() {
                 return res.redirect('/ghost/');
             }), {
                 scope: ['profile', 'email'],
-                session: false
+                session: false,
+                prompt: 'consent',
+                accessType: 'offline'
             })(req, res, next);
         };
     }
