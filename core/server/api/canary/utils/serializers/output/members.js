@@ -197,11 +197,16 @@ function createSerializer(debugString, serialize) {
  * @prop {null|string} customer.name
  * @prop {string} customer.email
  *
- * @prop {Object} plan
- * @prop {string} plan.id
- * @prop {string} plan.nickname
- * @prop {number} plan.amount
- * @prop {string} plan.currency
+ * @prop {Object} price
+ * @prop {string} price.id
+ * @prop {string} price.nickname
+ * @prop {number} price.amount
+ * @prop {string} price.interval
+ * @prop {string} price.currency
+ *
+ * @prop {Object} price.product
+ * @prop {string} price.product.id
+ * @prop {string} price.product.product_id
  */
 
 /**
