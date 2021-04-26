@@ -3152,10 +3152,10 @@ eslint-plugin-ember@9.3.0:
     lodash.kebabcase "^4.1.1"
     snake-case "^3.0.3"
 
-eslint-plugin-ghost@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.0.0.tgz#14e67180188850abf978df772e02bb74b1832374"
-  integrity sha512-BlygF0CZr/38ena3qztpyCuo7z1KsbbjEz0FO3zjfg+V6Id5wcZsKTaOdFHFZwyDl4kBm5jujFAsWILh/DtNiQ==
+eslint-plugin-ghost@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.1.0.tgz#811402f32e6339be526368b1ce1b3b4be26a2e4d"
+  integrity sha512-zeAFtxthQ8GaC1LV4e+n6DMfLfl8AEAagYT63SQ1jYzYykK4Wmh0xEADMR0tZFl8eHzTornAyQWmWSwS7CUkXQ==
   dependencies:
     eslint-plugin-ember "9.3.0"
     eslint-plugin-mocha "8.0.0"
