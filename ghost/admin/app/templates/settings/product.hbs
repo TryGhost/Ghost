@@ -5,7 +5,11 @@
             <span>{{svg-jar "arrow-right"}}</span>
             <LinkTo @route="settings.products">Products</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
-            {{product.name}}
+            {{#if product.name}}
+                {{product.name}}
+            {{else}}
+                <span class="midlightgrey">New product</span>
+            {{/if}}
         </h2>
         <section class="view-actions">
             <span class="dropdown">
