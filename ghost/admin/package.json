@@ -107,7 +107,7 @@
     "ember-useragent": "0.10.0",
     "emberx-file-input": "1.2.1",
     "eslint": "7.25.0",
-    "eslint-plugin-ghost": "2.0.0",
+    "eslint-plugin-ghost": "2.1.0",
     "faker": "5.5.3",
     "fs-extra": "9.1.0",
     "glob": "7.1.6",
