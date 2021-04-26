@@ -1,7 +1,7 @@
 // @TODO: refactor constructor pattern so we don't have to require config here?
-const config = require('./config');
-const {events} = require('../server/lib/common');
-const themeEngine = require('../frontend/services/theme-engine');
+const config = require('./shared/config');
+const {events} = require('./server/lib/common');
+const themeEngine = require('./frontend/services/theme-engine');
 
 class Bridge {
     constructor() {

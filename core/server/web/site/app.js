@@ -6,7 +6,7 @@ const {URL} = require('url');
 const errors = require('@tryghost/errors');
 
 // App requires
-const bridge = require('../../../shared/bridge');
+const bridge = require('../../../bridge');
 const config = require('../../../shared/config');
 const constants = require('@tryghost/constants');
 const storage = require('../../adapters/storage');
