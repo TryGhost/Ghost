@@ -1,86 +1,104 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
-import {computed} from '@ember/object';
-import {gt} from '@ember/object/computed';
+import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
+import {tracked} from '@glimmer/tracking';
 
-export default Component.extend({
-    membersUtils: service(),
-    feature: service(),
-    config: service(),
-    mediaQueries: service(),
-    ghostPaths: service(),
-    ajax: service(),
-    store: service(),
+export default class extends Component {
+    @service
+    membersUtils
+    @service
+    ghostPaths
+    @service
+    ajax
+    @service
+    store
 
-    stripeDetailsType: 'subscription',
+    constructor(...args) {
+        super(...args);
+        this.member = this.args.member;
+        this.scratchMember = this.args.scratchMember;
+    }
 
-    // Allowed actions
-    setProperty: () => {},
+    @tracked
+    showMemberProductModal = false;
 
-    hasMultipleSubscriptions: gt('member.subscriptions', 1),
+    get canShowStripeInfo() {
+        return !this.member.get('isNew') && this.membersUtils.isStripeEnabled;
+    }
 
-    canShowStripeInfo: computed('member.isNew', 'membersUtils.isStripeEnabled', function () {
-        let stripeEnabled = this.membersUtils.isStripeEnabled;
+    get products() {
+        let products = this.member.get('products') || [];
+        let subscriptions = this.member.get('subscriptions') || [];
+        let subscriptionData = subscriptions.map((sub) => {
+            return {
+                ...sub,
+                startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
+                validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
+                price: {
+                    ...sub.price,
+                    currencySymbol: getSymbol(sub.price.currency),
+                    nonDecimalAmount: getNonDecimal(sub.price.amount)
+                }
+            };
+        });
 
-        if (this.member.get('isNew') || !stripeEnabled) {
-            return false;
-        } else {
-            return true;
-        }
-    }),
-
-    subscriptions: computed('member.subscriptions', function () {
-        let subscriptions = this.member.get('subscriptions');
-        if (subscriptions && subscriptions.length > 0) {
-            return subscriptions.map((subscription) => {
-                const statusLabel = subscription.status ? subscription.status.replace('_', ' ') : '';
-                return {
-                    id: subscription.id,
-                    customer: subscription.customer,
-                    name: subscription.name || '',
-                    email: subscription.email || '',
-                    status: subscription.status,
-                    statusLabel: statusLabel,
-                    startDate: subscription.start_date ? moment(subscription.start_date).format('D MMM YYYY') : '-',
-                    plan: subscription.plan,
-                    amount: parseInt(subscription.plan.amount) ? (subscription.plan.amount / 100) : 0,
-                    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-                    cancellationReason: subscription.cancellation_reason,
-                    validUntil: subscription.current_period_end ? moment(subscription.current_period_end).format('D MMM YYYY') : '-'
-                };
-            }).reverse();
-        }
-        return null;
-    }),
-
-    customer: computed('subscriptions.[]', function () {
-        let customer = this.subscriptions.firstObject?.customer;
-        if (customer) {
-            return Object.assign({}, this.subscriptions.firstObject?.customer, {
-                startDate: this.subscriptions.firstObject?.startDate
+        for (let product of products) {
+            let productSubscriptions = subscriptionData.filter((subscription) => {
+                if (subscription.status === 'canceled') {
+                    return false;
+                }
+                return subscription?.price?.product?.product_id === product.id;
             });
+            product.subscriptions = productSubscriptions;
+        }
+
+        return products;
+    }
+
+    get customer() {
+        let firstSubscription = this.member.get('subscriptions').firstObject;
+        let customer = firstSubscription?.customer;
+
+        if (customer) {
+            return {
+                ...customer,
+                startDate: firstSubscription?.startDate
+            };
         }
         return null;
-    }),
+    }
 
-    actions: {
-        setProperty(property, value) {
-            this.setProperty(property, value);
-        },
-        setLabels(labels) {
-            this.member.set('labels', labels);
-        }
-    },
+    @action
+    setProperty(property, value) {
+        this.args.setProperty(property, value);
+    }
 
-    changeStripeDetailsType: action(function (type) {
-        this.set('stripeDetailsType', type);
-    }),
+    @action
+    setLabels(labels) {
+        this.member.set('labels', labels);
+    }
 
-    cancelSubscription: task(function* (subscriptionId) {
-        let url = this.get('ghostPaths.url').api('members', this.member.get('id'), 'subscriptions', subscriptionId);
+    @action
+    closeMemberProductModal() {
+        this.showMemberProductModal = false;
+    }
+
+    @action
+    cancelSubscription(subscriptionId) {
+        this.cancelSubscriptionTask.perform(subscriptionId);
+    }
+
+    @action
+    continueSubscription(subscriptionId) {
+        this.continueSubscriptionTask.perform(subscriptionId);
+    }
+
+    @task({drop: true})
+    *cancelSubscriptionTask(subscriptionId) {
+        let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
 
         let response = yield this.ajax.put(url, {
             data: {
@@ -90,10 +108,11 @@ export default Component.extend({
 
         this.store.pushPayload('member', response);
         return response;
-    }).drop(),
+    }
 
-    continueSubscription: task(function* (subscriptionId) {
-        let url = this.get('ghostPaths.url').api('members', this.member.get('id'), 'subscriptions', subscriptionId);
+    @task({drop: true})
+    *continueSubscriptionTask(subscriptionId) {
+        let url = this.ghostPaths.url.api('members', this.member.get('id'), 'subscriptions', subscriptionId);
 
         let response = yield this.ajax.put(url, {
             data: {
@@ -103,9 +122,5 @@ export default Component.extend({
 
         this.store.pushPayload('member', response);
         return response;
-    }).drop(),
-
-    closeMemberProductModal: action(function () {
-        this.set('showMemberProductModal', false);
-    })
-});
+    }
+}

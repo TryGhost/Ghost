@@ -29,7 +29,7 @@ export default class MembersRoute extends AuthenticatedRoute {
         this._requiresBackgroundRefresh = false;
 
         if (params.member_id) {
-            return this.store.queryRecord('member', {id: params.member_id, include: 'email_recipients'});
+            return this.store.queryRecord('member', {id: params.member_id, include: 'email_recipients,products'});
         } else {
             return this.store.createRecord('member');
         }
