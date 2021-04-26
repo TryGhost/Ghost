@@ -201,8 +201,8 @@
     margin-bottom: 32px;
 }
 
-.gh-product-priceform-period {
+.gh-product-priceform-pricecurrency {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
     grid-gap: 20px;
 }
