@@ -1,9 +1,8 @@
 const errors = require('@tryghost/errors');
-const {i18n, events} = require('../../../server/lib/common');
+const {i18n} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../../../server/services/settings/cache');
 const config = require('../../../shared/config');
-const active = require('../theme-engine/active');
 const jp = require('jsonpath');
 
 const isNil = require('lodash/isNil');
@@ -95,22 +94,5 @@ class ThemeI18n extends i18n.I18n {
 }
 
 let themeI18n = new ThemeI18n();
-
-// /**
-//  * When active theme changes, we reload theme translations
-//  * We listen on the service event, because of the following known case:
-//  *  1. you override a theme, which is already active
-//  *  2. The data has not changed, no event is triggered.
-//  */
-events.on('services.themes.activated', function (activeTheme) {
-    themeI18n.init(activeTheme);
-});
-
-/**
- * When locale changes, we reload theme translations
- */
-events.on('settings.lang.edited', function () {
-    themeI18n.init(active.get().name);
-});
 
 module.exports = themeI18n;
