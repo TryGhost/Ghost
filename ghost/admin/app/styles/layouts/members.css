@@ -1707,3 +1707,12 @@ p.gh-members-import-errordetail:first-of-type {
     color: var(--midgrey);
     padding: 48px 0;
 }
+
+.gh-btn-add-memberproduct[disabled],
+.gh-btn-add-memberproduct[disabled]:hover {
+    background: var(--lightgrey-l1) !important;
+}
+
+.gh-btn-add-memberproduct[disabled] span {
+    color: var(--midgrey);
+}
