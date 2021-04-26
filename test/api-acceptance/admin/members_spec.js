@@ -234,7 +234,7 @@ describe('Members API', function () {
         should.exist(jsonResponse2);
         should.exist(jsonResponse2.members);
         jsonResponse2.members.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse2.members[0], 'member', 'subscriptions');
+        localUtils.API.checkResponse(jsonResponse2.members[0], 'member', ['subscriptions', 'products']);
         jsonResponse2.members[0].name.should.equal(memberChanged.name);
         jsonResponse2.members[0].email.should.equal(memberChanged.email);
         jsonResponse2.members[0].email.should.not.equal(memberToChange.email);
