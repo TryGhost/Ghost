@@ -81,6 +81,18 @@
                     <div class="gh-list-header">Subscriptions</div>
                     <div class="gh-list-header"></div>
                 </li>
+                {{#unless this.stripePrices}}
+                <tr class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
+                    <td colspan="4" class="gh-list-data">
+                        <div class="gh-price-list-noprices">
+                            <div class="mb2">There are no prices for this product.</div>
+                            <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
+                                <span>Add price</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {{/unless}}
                 {{#each this.stripePrices as |price|}}
                 <li class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
                     <div class="gh-list-data gh-price-list-title">
@@ -102,11 +114,11 @@
 
                     <div class="gh-list-data gh-price-list-actions">
                         <div class="gh-price-list-actionlist">
-                            <button class="gh-btn gh-btn-link archive" {{action "openEditPrice" price}}>
+                            <button class="gh-btn gh-btn-link" {{action "openEditPrice" price}}>
                                 <span>Edit</span>
                             </button>
                             {{#if price.active}}
-                                <button class="gh-btn gh-btn-link archive">
+                                <button class="gh-btn gh-btn-link archived">
                                     <span>Archive</span>
                                 </button>
                             {{else}}
@@ -118,28 +130,38 @@
                 {{/each}}
             </ol>
 
+            {{#if this.stripePrices}}
             <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
-                <span>New price</span>
+                <span>Add price</span>
             </button>
+            {{/if}}
         </div>
     </div>
 
     {{#if this.showPriceModal}}
+        {{!-- <GhFullscreenModal @modifier="action wide member-product">
+            <ModalProductPrice
+                    @model={{hash
+                        price=this.priceModel
+                    }}
+                    @confirm={{action "savePrice"}}
+                    @closeModal={{this.closePriceModal}} />
+        </GhFullscreenModal> --}}
         <GhFullscreenModal
             @modal="product-price"
             @model={{hash
                 price=this.priceModel
             }}
+            @confirm={{action "savePrice"}}
             @close={{this.closePriceModal}}
-            @modifier="action wide body-scrolling product-price" />
+            @modifier="action wide body-scrolling product-ssprice" />
     {{/if}}
 
-    {{#if this.showLeaveSettingsModal}}
+    {{#if this.showUnsavedChangesModal}}
         <GhFullscreenModal
             @modal="leave-settings"
-            @confirm={{this.confirmLeave}}
-            @close={{this.cancelLeave}}
-            @modifier="action wide"
-        />
+            @confirm={{this.leaveScreen}}
+            @close={{this.toggleUnsavedChangesModal}}
+            @modifier="action wide" />
     {{/if}}
 </section>

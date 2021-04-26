@@ -6,6 +6,10 @@
         @optionValuePath="period"
         @optionLabelPath="label"
         @optionTargetPath="period"
+        @includeBlank={{false}}
+        @promptIsSelectable={{false}}
+        @prompt="Select Interval"
+        @update={{action "updatePeriod"}}
     />
     {{svg-jar "arrow-down-small"}}
 </span>

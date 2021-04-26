@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const PERIODS = [
@@ -6,10 +7,15 @@ const PERIODS = [
     {label: 'Yearly', period: 'year'}
 ];
 
-export default class GhPostsListItemComponent extends Component {
+export default class GhProductsPriceBillingPeriodComponent extends Component {
     @service feature;
     @service session;
     @service settings;
+
+    constructor() {
+        super(...arguments);
+        this.availablePeriods = PERIODS;
+    }
 
     get value() {
         const {value} = this.args;
@@ -19,8 +25,11 @@ export default class GhPostsListItemComponent extends Component {
         const {disabled} = this.args;
         return disabled || false;
     }
-    constructor() {
-        super(...arguments);
-        this.availablePeriods = PERIODS;
+
+    @action
+    updatePeriod(newPeriod) {
+        if (this.args.updatePeriod) {
+            this.args.updatePeriod(this.args.value, newPeriod);
+        }
     }
 }
