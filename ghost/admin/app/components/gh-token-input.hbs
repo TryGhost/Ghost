@@ -16,7 +16,7 @@
     @disabled={{@disabled}}
     @dropdownClass={{@dropdownClass}}
     @extra={{@extra}}
-    @groupComponent={{@groupComponent}}
+    @groupComponent={{or @groupComponent "power-select/power-select-group"}}
     @horizontalPosition={{@horizontalPosition}}
     @initiallyOpened={{@initiallyOpened}}
     @loadingMessage={{@loadingMessage}}
@@ -59,6 +59,10 @@
     {{#if option.__isSuggestion__}}
         <GhTokenInput::SuggestedOption @option={{option}} />
     {{else}}
-        {{get option this.labelField}}
+        {{#if (has-block)}}
+            {{yield option}}
+        {{else}}
+            {{get option this.labelField}}
+        {{/if}}
     {{/if}}
 </GhTokenInput::SelectMultiple>
