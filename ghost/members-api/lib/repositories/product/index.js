@@ -216,7 +216,7 @@ class ProductRepository {
                         nickname: existingPrice.nickname
                     }, {
                         ...options,
-                        id: existingPrice.id || options.id
+                        id: stripePrice.id
                     });
                 }
             }
