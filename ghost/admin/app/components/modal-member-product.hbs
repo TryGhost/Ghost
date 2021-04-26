@@ -24,14 +24,35 @@
         </div>
 
         <div class="gh-main-section-content grey gh-member-product-form-block">
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="product">
+            <GhFormGroup>
                 <label for="product" class="fw6">Product</label>
-                <GhMemberProductProducts @triggerId="product-input" />
+                <span class="gh-select">
+                    <OneWaySelect
+                        @options={{this.products}}
+                        @optionValuePath="id"
+                        @optionLabelPath="name"
+                        @update={{this.setProduct}}
+                    />
+                    {{svg-jar "arrow-down-small"}}
+                </span>
             </GhFormGroup>
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="price">
+            <GhFormGroup>
                 <label for="price" class="fw6">Price</label>
-                <GhMemberProductPrices @triggerId="price-input" />
+                <span class="gh-select">
+                    <OneWaySelect
+                        @options={{this.prices}}
+                        @optionValuePath="id"
+                        @optionLabelPath="label"
+                        @update={{this.setPrice}}
+                    />
+                    {{svg-jar "arrow-down-small"}}
+                </span>
             </GhFormGroup>
+            {{#if this.cannotAddPrice}}
+            <span>
+                Use <a href="https://dashboard.stripe.com" target="_blank">Stripe Dashboard</a> to add product with non-zero prices.
+            </span>
+            {{/if}}
         </div>
     </div>
 </div>
@@ -41,7 +62,7 @@
     <button
         class="gh-btn"
         {{action "closeModal"}}
-        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{!-- disable mouseDown so it does not trigger focus-out validations --}}
         {{action (optional this.noop) on="mouseDown"}}
         data-test-button="cancel-webhook"
     >
@@ -49,7 +70,8 @@
     </button>
     <GhTaskButton @buttonText="Add product to member"
         @successText={{this.successText}}
-        {{!-- @task={{this.saveWebhook}} --}}
+        @task={{this.addPriceTask}}
+        @disabled={{this.cannotAddPrice}}
         @class="gh-btn gh-btn-black gh-btn-icon"
         data-test-button="save-webhook" />
 </div>

@@ -7,17 +7,22 @@
                     {{#if (or this.member.name this.member.email)}}
                         <GhMemberAvatar
                             @member={{this.member}}
-                            @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
+                            @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-subheadline fw4 lh-zero tracked-1'}}
                             @containerClass="w20 h20 mr4 gh-member-detail-avatar"
                         />
                     {{else}}
-                        <div class="flex items-center justify-center br-100 w18 h18 mr4 gh-new-member-avatar">
+                        <div class="flex items-center justify-center br-100 mr4 gh-new-member-avatar">
                             <span class="gh-member-avatar-label f-subheadline fw4 lh-zero tracked-1">N</span>
                         </div>
                     {{/if}}
                     <div>
                         <h3>
                             {{or this.member.name this.member.email}}
+                            {{#unless (or this.member.name this.member.email)}}
+                                {{#if this.member.isNew}}
+                                <span class="midgrey">New member</span>
+                                {{/if}}
+                            {{/unless}}
                         </h3>
                         <p>
                             {{#if (and this.member.name this.member.email)}}
@@ -98,7 +103,7 @@
             </div>
 
             {{#if this.canShowStripeInfo}}
-                {{#if this.subscriptions}}
+                {{#if this.customer}}
                     <h4 class="gh-main-section-header small bn">Stripe info</h4>
                     <div class="gh-main-section-content grey">
                         <section class="gh-member-stripe-info flex flex-column flex-row-ns items-start justify-between">
@@ -108,20 +113,10 @@
                                         <tr class="gh-member-stripe-row">
                                             <td class="gh-member-stripe-label">Name:</td>
                                             <td class="gh-member-stripe-data">
-                                                {{#if customer.name}}
-                                                    {{customer.name}}
+                                                {{#if this.customer.name}}
+                                                    {{this.customer.name}}
                                                 {{else}}
                                                     <span class="midgrey-l2">No name</span>
-                                                {{/if}}
-                                            </td>
-                                        </tr>
-                                        <tr class="gh-member-stripe-row">
-                                            <td class="gh-member-stripe-label">Email:</td>
-                                            <td class="gh-member-stripe-data gh-member-stripe-email">
-                                                {{#if customer.email}}
-                                                    {{customer.email}}
-                                                {{else}}
-                                                    <span class="midgrey-l2">No email</span>
                                                 {{/if}}
                                             </td>
                                         </tr>
@@ -132,9 +127,13 @@
                                 <div class="flex-auto">
                                     <table class="gh-member-stripe-table gh-cp-table">
                                         <tr class="gh-member-stripe-row">
-                                            <td class="gh-member-stripe-label">Card:</td>
-                                            <td class="gh-member-stripe-data">
-                                                **** **** **** 4242
+                                            <td class="gh-member-stripe-label">Email:</td>
+                                            <td class="gh-member-stripe-data gh-member-stripe-email">
+                                                {{#if this.customer.email}}
+                                                    {{this.customer.email}}
+                                                {{else}}
+                                                    <span class="midgrey-l2">No email</span>
+                                                {{/if}}
                                             </td>
                                         </tr>
                                     </table>
@@ -155,78 +154,75 @@
                 <ol class="gh-memberproduct-list gh-list">
                     <li class="gh-list-row header empty">
                         <div class="gh-list-header"></div>
-                        <div class="gh-list-header"></div>
                     </li>
+                    {{#unless this.products}}
                     <li class="gh-list-row">
-                        <div class="gh-list-data gh-cp-memberproduct-title">
-                            <h3 class="gh-memberproduct-name">
-                                Product 1 <span class="gh-badge active">Active</span>
-                            </h3>
-                            <div class="gh-memberproduct-description gh-cp-memberproduct-showmore">
-                                <input type="checkbox" id="show-more-1" role="button">
-                                <label for="show-more-1">
-                                    {{svg-jar "arrow-right"}} 
-                                    <span class="gh-cp-memberproduct-pricelabel">Monthly</span>
-                                    &ndash;
-                                    <span class="gh-cp-memberproduct-price">$4/month</span>
-                                    &ndash;
-                                    <span class="gh-cp-memberproduct-renewal">Renews 9 May 2021</span>
-                                </label>
-
-                                <div class="details">
-                                    <span>Created on 9 April 2021</span>
-                                    <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener">
-                                        View on Stripe
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="gh-list-data gh-memberproduct-actions">
-                            <div class="gh-memberproduct-actionlist">
-                                <LinkTo @route="members">Edit</LinkTo>
-                                <button class="gh-btn gh-btn-link archive"><span>Cancel subscription</span></button>
-                            </div>
+                        <div class="gh-list-data gh-cp-memberproduct-noproduct">
+                            <div class="mb2">This member doesn't have any products.</div>
+                            {{#unless this.member.isNew}}
+                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
+                                <span>{{svg-jar "add"}} Add product</span>
+                            </button>
+                            {{/unless}}
                         </div>
                     </li>
-                    <li class="gh-list-row gh-memberproduct-archived">
-                        <div class="gh-list-data gh-cp-memberproduct-title">
-                            <h3 class="gh-memberproduct-name">
-                                Product 2 <span class="gh-badge archived">Cancelled</span>
-                            </h3>
-                            <div class="gh-memberproduct-description gh-cp-memberproduct-showmore">
-                                <input type="checkbox" id="show-more-2" role="button">
-                                <label for="show-more-2">
-                                    {{svg-jar "arrow-right"}} 
-                                    <span class="gh-cp-memberproduct-pricelabel">Monthly</span>
-                                    &ndash;
-                                    <span class="gh-cp-memberproduct-price">$4/month</span>
-                                    &ndash;
-                                    <span class="gh-cp-memberproduct-renewal">Renews 9 May 2021</span>
-                                </label>
+                    {{/unless}}
+                    {{#each this.products as |product|}}
+                        <li class="gh-list-row">
+                            <div class="gh-list-data gh-cp-memberproduct-title">
+                                <h3 class="gh-memberproduct-name">
+                                    {{product.name}}
+                                </h3>
+                                {{#each product.subscriptions as |sub|}}
+                                    <div class="gh-memberproduct-description gh-cp-memberproduct-showmore">
+                                        <input type="checkbox" id="show-more-{{sub.id}}" role="button">
+                                        <label for="show-more-{{sub.id}}">
+                                            {{svg-jar "arrow-right"}}
+                                            <span class="gh-cp-memberproduct-pricelabel">{{sub.price.nickname}}</span>
+                                            &ndash;
+                                            <span class="gh-cp-memberproduct-price">{{sub.price.currencySymbol}}{{sub.price.nonDecimalAmount}}/{{sub.price.interval}}</span>
+                                            &ndash;
+                                            {{#if sub.cancel_at_period_end}}
+                                                <span class="gh-cp-memberproduct-renewal">Cancels {{sub.validUntil}}</span>
+                                                <span class="gh-badge archived">Cancelled</span>
+                                            {{else}}
+                                                <span class="gh-cp-memberproduct-renewal">Renews {{sub.validUntil}}</span>
+                                                <span class="gh-badge active">Active</span>
+                                            {{/if}}
+                                        </label>
 
-                                <div class="details">
-                                    <span>Created on 9 April 2021</span>
-                                    <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener">
-                                        View on Stripe
-                                    </a>
-                                </div>
+                                        <div class="details">
+                                            <span>Created on {{sub.startDate}}</span>
+                                            <div class="actions">
+                                                <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
+                                                    View on Stripe
+                                                </a>
+                                                <span class="ml1 mr1 dib">&ndash;</span>
+                                                {{#if sub.cancel_at_period_end}}
+                                                    <button class="gh-btn gh-btn-link gh-btn-text green" {{action "continueSubscription" sub.id}}>
+                                                        <span>Continue subscription</span>
+                                                    </button>
+                                                {{else}}
+                                                    <button class="gh-btn gh-btn-link gh-btn-text red" {{action "cancelSubscription" sub.id}}>
+                                                        <span>Cancel subscription</span>
+                                                    </button>
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{/each}}
                             </div>
-                        </div>
-
-                        <div class="gh-list-data gh-memberproduct-actions">
-                            <div class="gh-memberproduct-actionlist">
-                                <button class="gh-btn gh-btn-link"><span>Activate</span></button>
-                            </div>
-                        </div>
-                    </li>
+                        </li>
+                    {{/each}}
+                    {{#if this.products}}
                     <tr class="gh-list-row gh-memberproduct-add-product">
                         <td colspan="2" class="gh-list-data">
-                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon" {{action (toggle "showMemberProductModal" this)}}>
+                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
                                 <span>{{svg-jar "add"}} Add product</span>
                             </button>
                         </td>
                     </tr>
+                    {{/if}}
                 </ol>
             </div>
         </div>
@@ -250,15 +246,17 @@
             <div class="gh-main-section-content bordered">
                 <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
             </div>
-            
+
         </div>
     </section>
 
 </div>
 
 {{#if this.showMemberProductModal}}
-    <GhFullscreenModal @modal="member-product"
+<GhFullscreenModal @modifier="action wide member-product">
+    <ModalMemberProduct
         @model={{this.member}}
-        @close={{this.closeMemberProductModal}}
-        @modifier="action wide member-product" />
+        @confirm={{this.addProduct}}
+        @closeModal={{this.closeMemberProductModal}} />
+</GhFullscreenModal>
 {{/if}}
