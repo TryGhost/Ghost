@@ -559,10 +559,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.3.2":
-  version "1.3.2"
-  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-1.3.2.tgz#13d604308d7eac86ed12973a7164859d6b0b0f62"
-  integrity sha512-jFoFURag59rsMuyk9U5qmrk866DtIwQjEDXTmWXPvMWhnzlenL1JVUIRNtV8Ez9jH2tK6/Td2KkTZuCVd5Su0Q==
+"@tryghost/members-api@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.4.0.tgz#4e801156e2bf1fa1f2917ab73ec6a14afefad183"
+  integrity sha512-Wi0yKY1XHuYNR9CFsQD6Iro4gjHC++iZkQt5hYTCUrsTni7wK2B1dAtVcbq7/HdOoRJn2t4t7n1WmN3jsKbT9A==
   dependencies:
     "@tryghost/errors" "^0.2.9"
     "@tryghost/magic-link" "^1.0.2"
