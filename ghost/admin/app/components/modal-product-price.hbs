@@ -29,44 +29,44 @@
                     @class="gh-input" />
                 <GhErrorMessage @errors={{this.price.errors}} @property="description" />
             </GhFormGroup>
-            <GhFormGroup @class="for-select">
-                <label class="fw6 f8"for="currency">Plan currency</label>
-                <span class="gh-select mt1">
-                    {{one-way-select this.selectedCurrencyObj
-                        id="currency"
-                        name="currency"
-                        options=(readonly this.allCurrencies)
-                        optionValuePath="value"
-                        optionLabelPath="label"
-                        disabled=this.isExistingPrice
-                        update=(action "setCurrency")
-                    }}
-                    {{svg-jar "arrow-down-small"}}
-                </span>
-            </GhFormGroup>
-            <div class="gh-product-priceform-period">
-                <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="billing-period">
-                    <label for="billing-period" class="fw6">Billing period</label>
-                    <GhProductsPriceBillingperiod 
-                        @updatePeriod={{action "updatePeriod"}}
-                        @triggerId="period-input" 
-                        @value={{this.price.interval}} @disabled={{this.isExistingPrice}} 
-                    />
-                </GhFormGroup>
+            <div class="gh-product-priceform-pricecurrency">    
                 <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="price">
                     <label for="price" class="fw6">Price</label>
-                    <div class="flex items-center justify-center gh-input-group gh-labs-price-label">
+                    <div class="flex items-center justify-center gh-labs-price-label">
                         <GhTextInput
                             @value={{this.price.amount}}
                             @type="number"
                             @disabled={{this.isExistingPrice}}
                             @input={{action "setAmount" value="target.value"}}
                         />
-                        <span class="gh-input-append"><span class="ttu">{{capitalize (or this.currencyVal "usd")}} </span>/{{or this.periodVal "month"}}</span>
+                        {{!-- <span class="gh-input-append"><span class="ttu">{{capitalize (or this.currencyVal "usd")}} </span>/{{or this.periodVal "month"}}</span> --}}
                     </div>
                     <GhErrorMessage @errors={{this.price.errors}} @property="price" />
                 </GhFormGroup>
+                <GhFormGroup @class="for-select">
+                    <label class="fw6 f8"for="currency">Plan currency</label>
+                    <span class="gh-select mt1">
+                        {{one-way-select this.selectedCurrencyObj
+                            id="currency"
+                            name="currency"
+                            options=(readonly this.allCurrencies)
+                            optionValuePath="value"
+                            optionLabelPath="label"
+                            disabled=this.isExistingPrice
+                            update=(action "setCurrency")
+                        }}
+                        {{svg-jar "arrow-down-small"}}
+                    </span>
+                </GhFormGroup>
             </div>
+            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="billing-period">
+                <label for="billing-period" class="fw6">Billing period</label>
+                <GhProductsPriceBillingperiod 
+                    @updatePeriod={{action "updatePeriod"}}
+                    @triggerId="period-input" 
+                    @value={{this.price.interval}} @disabled={{this.isExistingPrice}} 
+                />
+            </GhFormGroup>
         </div>
 
         <h4 class="gh-main-section-header small bn">Advanced</h4>
