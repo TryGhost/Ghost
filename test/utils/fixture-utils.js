@@ -15,7 +15,6 @@ const emailAnalyticsService = require('../../core/server/services/email-analytic
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
-const themeService = require('../../core/frontend/services/themes');
 
 // Other Test Utilities
 const context = require('./fixtures/context');
@@ -594,9 +593,6 @@ const toDoList = {
     },
     invites: function insertInvites() {
         return fixtures.insertInvites();
-    },
-    themes: function loadThemes() {
-        return themeService.loadAll();
     },
     webhooks: function insertWebhooks() {
         return fixtures.insertWebhooks();
