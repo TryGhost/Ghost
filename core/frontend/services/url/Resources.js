@@ -52,7 +52,7 @@ class Resources {
             return this.resourceConfig;
         }
 
-        const bridge = require('../../../shared/bridge');
+        const bridge = require('../../../bridge');
         this.resourcesAPIVersion = bridge.getFrontendApiVersion();
         this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }

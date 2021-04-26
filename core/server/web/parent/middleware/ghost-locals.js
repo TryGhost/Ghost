@@ -1,5 +1,5 @@
 const ghostVersion = require('../../../lib/ghost-version');
-const bridge = require('../../../../shared/bridge');
+const bridge = require('../../../../bridge');
 
 // ### GhostLocals Middleware
 // Expose the standard locals that every request will need to have available

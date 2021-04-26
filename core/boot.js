@@ -143,7 +143,7 @@ async function initServices({config}) {
     // However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
     // Routing is currently tightly coupled between the frontend and backend
     const routing = require('./frontend/services/routing');
-    const bridge = require('./shared/bridge');
+    const bridge = require('./bridge');
     // We pass the frontend API version here, so that the frontend services are slightly less tightly-coupled
     routing.bootstrap.start(bridge.getFrontendApiVersion());
     const settings = require('./server/services/settings');
