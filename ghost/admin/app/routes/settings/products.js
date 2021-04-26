@@ -11,6 +11,6 @@ export default class ProductsRoute extends AuthenticatedRoute {
     }
 
     model() {
-        return this.store.findAll('product');
+        return this.store.findAll('product', {include: 'stripe_prices'});
     }
 }

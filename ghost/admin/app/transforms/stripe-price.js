@@ -4,7 +4,9 @@ import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 export default Transform.extend({
     deserialize(serialized = []) {
-        return emberA(serialized.map(StripePrice.create.bind(StripePrice)));
+        const stripePrices = serialized.map(itemDetails => StripePrice.create(itemDetails));
+
+        return emberA(stripePrices);
     },
 
     serialize(deserialized) {

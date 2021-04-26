@@ -121,6 +121,7 @@
     justify-content: flex-end;
     width: 100%;
     opacity: 0;
+    line-height: 1;
 }
 
 .gh-price-list .gh-list-row:hover .gh-price-list-actionlist {
@@ -129,13 +130,32 @@
 
 .gh-price-list-actionlist a,
 .gh-price-list-actionlist button {
+    margin-left: 15px;
+    padding: 0;
     line-height: 0;
-    margin-left: 24px;
-    color: var(--darkgrey);
-    font-weight: 500;
 }
 
-.gh-price-list-actionlist button.archive {
+.gh-price-list-actionlist a span,
+.gh-price-list-actionlist button span {
+    display: inline-block;
+    line-height: 1;
+    height: unset;
+    border-radius: 3px;
+    padding: 4px 6px;
+    color: var(--darkgrey);
+    font-weight: 500;
+    font-size: 1.2rem !important;
+    text-transform: uppercase;
+}
+
+.gh-price-list-actionlist a:hover span,
+.gh-price-list-actionlist button:hover span {
+    background: var(--whitegrey);
+}
+
+.gh-price-list-actionlist a.archived:hover span,
+.gh-price-list-actionlist button.archived:hover span {
+    background: color-mod(var(--red) a(10%));
     color: var(--red);
 }
 
@@ -155,6 +175,14 @@
 .gh-price-list-archived .gh-price-list-price span,
 .gh-price-list-archived .gh-price-list-subscriptions span {
     opacity: 0.5;
+}
+
+.gh-price-list-noprices {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 0;
+    color: var(--midgrey);
 }
 
 .product-actions-menu {

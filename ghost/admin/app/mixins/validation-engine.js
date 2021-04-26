@@ -10,6 +10,7 @@ import Mixin from '@ember/object/mixin';
 import Model from '@ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
 import PostValidator from 'ghost-admin/validators/post';
+import ProductValidator from 'ghost-admin/validators/product';
 import RSVP from 'rsvp';
 import ResetValidator from 'ghost-admin/validators/reset';
 import SettingValidator from 'ghost-admin/validators/setting';
@@ -54,7 +55,8 @@ export default Mixin.create({
         integration: IntegrationValidator,
         webhook: WebhookValidator,
         label: LabelValidator,
-        snippet: SnippetValidator
+        snippet: SnippetValidator,
+        product: ProductValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect
