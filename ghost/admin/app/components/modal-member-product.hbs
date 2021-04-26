@@ -47,12 +47,10 @@
                     />
                     {{svg-jar "arrow-down-small"}}
                 </span>
+                {{#if this.cannotAddPrice}}
+                <p>Please select a price with zero value. You can add non-zero prices on <a href="https://dashboard.stripe.com" target="_blank">Stripe Dashboard</a>.</p>
+                {{/if}}
             </GhFormGroup>
-            {{#if this.cannotAddPrice}}
-            <span>
-                Use <a href="https://dashboard.stripe.com" target="_blank">Stripe Dashboard</a> to add product with non-zero prices.
-            </span>
-            {{/if}}
         </div>
     </div>
 </div>
