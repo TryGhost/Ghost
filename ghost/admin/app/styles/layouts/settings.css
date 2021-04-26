@@ -231,9 +231,14 @@
     margin-bottom: 0;
 }
 
+.gh-setting-content-extended p {
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
 .gh-setting-content-extended label {
     display: block;
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: var(--darkgrey);
     margin-bottom: 4px;
@@ -248,6 +253,18 @@
 .gh-setting-content-extended .gh-image-uploader {
     margin: 0;
     border: 1px solid var(--whitegrey-d2);
+}
+
+.gh-setting-content-extended .gh-btn span {
+    height: 36px;
+    line-height: 36px;
+}
+
+.gh-setting-content-extended svg {
+    position: relative;
+    bottom: 1px;
+    width: 18px;
+    margin-right: 8px;
 }
 
 .gh-setting-liquid-section .liquid-container,
