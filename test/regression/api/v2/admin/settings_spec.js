@@ -73,7 +73,9 @@ const defaultSettingsKeyTypes = [
     {key: 'firstpromoter', type: 'firstpromoter'},
     {key: 'firstpromoter_id', type: 'firstpromoter'},
     {key: 'oauth_client_id', type: 'oauth'},
-    {key: 'oauth_client_secret', type: 'oauth'}
+    {key: 'oauth_client_secret', type: 'oauth'},
+    {key: 'editor_default_email_recipients', type: 'editor'},
+    {key: 'editor_default_email_recipients_filter', type: 'editor'}
 ];
 
 describe('Settings API (v2)', function () {
