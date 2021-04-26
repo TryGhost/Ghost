@@ -231,11 +231,6 @@
     margin-bottom: 0;
 }
 
-.gh-setting-content-extended p {
-    color: var(--midgrey);
-    font-size: 1.3rem;
-}
-
 .gh-setting-content-extended label {
     display: block;
     font-size: 1.3rem;
