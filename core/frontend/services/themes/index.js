@@ -4,7 +4,7 @@ const {i18n: commonI18n} = require('../proxy');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const themeLoader = require('./loader');
-const activate = require('./activate');
+const bridge = require('../../../bridge');
 const validate = require('./validate');
 const list = require('./list');
 const settingsCache = require('../../../server/services/settings/cache');
@@ -36,7 +36,7 @@ module.exports = {
 
                             logging.error(checkError);
 
-                            activate(theme, checkedTheme, checkError);
+                            bridge.activateTheme(theme, checkedTheme, checkError);
                         } else {
                             // CASE: inform that the theme has errors, but not fatal (theme still works)
                             if (checkedTheme.results.error.length) {
@@ -53,7 +53,7 @@ module.exports = {
 
                             debug('Activating theme (method A on boot)', activeThemeName);
 
-                            activate(theme, checkedTheme);
+                            bridge.activateTheme(theme, checkedTheme);
                         }
                     });
             })
@@ -82,7 +82,7 @@ module.exports = {
         return validate.checkSafe(loadedTheme)
             .then((checkedTheme) => {
                 debug('Activating theme (method B on API "activate")', themeName);
-                activate(loadedTheme, checkedTheme);
+                bridge.activateTheme(loadedTheme, checkedTheme);
 
                 return checkedTheme;
             });
