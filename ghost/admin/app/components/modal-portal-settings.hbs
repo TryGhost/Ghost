@@ -4,7 +4,7 @@
             <h2 class="gh-portal-settings-title">Portal settings</h2>
             <div class="gh-portal-form-wrapper">
                 <fieldset class="gh-portal-settings-form">
-                    <div class="gh-portal-setting-section" onclick={{action "switchToSignupPage"}}>
+                    <div class="gh-portal-setting-section {{if (not-eq this.settings.membersSignupAccess "all") "disabled-overlay"}}" onclick={{action "switchToSignupPage"}}>
                         <h3 class="gh-portal-setting-sectionheading">Signup options</h3>
                         <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first pb5 mb0">
                             <div class="flex justify-between items-center">
@@ -21,7 +21,8 @@
                                             checked={{this.settings.portalName}}
                                             id="signup-name-checkbox"
                                             name="signup-name-checkbox"
-                                            onclick={{action "togglePortalName" value="target.checked"}}
+                                            disabled={{not-eq this.settings.membersSignupAccess "all"}}
+                                            {{on "click" (action "togglePortalName" value="target.checked")}}
                                         >
                                         <span class="input-toggle-component"></span>
                                     </label>
@@ -43,9 +44,9 @@
                                         checked={{this.isFreeChecked}}
                                         id="free-plan"
                                         name="free-plan"
-                                        disabled={{not this.allowSelfSignup}}
+                                        disabled={{or (not this.isStripeConfigured) (not-eq this.settings.membersSignupAccess "all")}}
                                         class="gh-input post-settings-featured"
-                                        onclick={{action "toggleFreePlan" value="target.checked"}}
+                                        {{on "click" (action "toggleFreePlan" value="target.checked")}}
                                         data-test-checkbox="featured"
                                     >
                                     <span class="input-toggle-component"></span>
@@ -62,9 +63,9 @@
                                         id="monthly-plan"
                                         name="monthly-plan"
                                         checked={{this.isMonthlyChecked}}
-                                        disabled={{not this.isStripeConfigured}}
+                                        disabled={{or (not this.isStripeConfigured) (not-eq this.settings.membersSignupAccess "all")}}
                                         class="gh-input post-settings-featured"
-                                        onclick={{action "toggleMonthlyPlan" value="target.checked"}}
+                                        {{on "click" (action "toggleMonthlyPlan" value="target.checked")}}
                                         data-test-checkbox="featured"
                                     >
                                     <span class="input-toggle-component"></span>
@@ -81,9 +82,9 @@
                                         id="yearly-plan"
                                         name="yearly-plan"
                                         checked={{this.isYearlyChecked}}
-                                        disabled={{not this.isStripeConfigured}}
+                                        disabled={{or (not this.isStripeConfigured) (not-eq this.settings.membersSignupAccess "all")}}
                                         class="gh-input post-settings-featured"
-                                        onclick={{action "toggleYearlyPlan" value="target.checked"}}
+                                        {{on "click" (action "toggleYearlyPlan" value="target.checked")}}
                                         data-test-checkbox="featured"
                                     >
                                     <span class="input-toggle-component"></span>

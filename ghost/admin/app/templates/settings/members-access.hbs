@@ -25,7 +25,7 @@
                         <h4 class="gh-expandable-title">Subscription access</h4>
                         <p class="gh-expandable-description">Who should be able to subscribe to your site?</p>
                     </div>
-                    <button type="button" class="gh-btn" {{on "click" this.toggleSignupAccess}} data-test-toggle="subscription-access"><span>{{if this.subscriptionAccessOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{on "click" this.toggleSignupAccess}} data-test-toggle="subscription-access"><span>{{if this.signupAccessOpen "Close" "Expand"}}</span></button>
                 </div>
                 <div class="gh-expandable-content">
                     {{#liquid-if this.signupAccessOpen}}
