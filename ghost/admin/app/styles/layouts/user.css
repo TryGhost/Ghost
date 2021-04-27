@@ -149,3 +149,15 @@
     opacity: 0;
     transition: opacity 0.3s ease;
 }
+
+/* User roles modal
+/* ---------------------------------------------------------- */
+
+@media (max-height: 740px) {
+    .fullscreen-modal-change-role {
+        overflow-y: auto;
+    }
+    .fullscreen-modal-change-role .modal-content {
+        box-shadow: none !important;
+    }
+}

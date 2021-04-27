@@ -147,6 +147,15 @@
 /* User invitation modal
 /* ---------------------------------------------------------- */
 
+@media (max-height: 900px) {
+    .fullscreen-modal-invite-user {
+        overflow-y: auto;
+    }
+    .fullscreen-modal-invite-user .modal-content {
+        box-shadow: none !important;
+    }
+}
+
 .invite-new-user .modal-content {
     width: 100%;
     max-width: 600px;
