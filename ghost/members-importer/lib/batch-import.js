@@ -6,7 +6,7 @@ const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('importer:members');
 const membersService = require('../index');
 const models = require('../../../models');
-const {i18n} = require('../../../lib/common');
+const i18n = require('../../../lib/common/i18n');
 const logging = require('../../../../shared/logging');
 
 const handleUnrecognizedError = (error) => {
