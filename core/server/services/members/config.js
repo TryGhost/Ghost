@@ -215,7 +215,25 @@ class MembersConfigProvider {
     }
 
     getAllowSelfSignup() {
-        return this._settingsCache.get('members_signup_access') === 'all';
+        // 'invite' and 'none' members signup access disables all signup
+        if (this._settingsCache.get('members_signup_access') !== 'all') {
+            return false;
+        }
+
+        // if stripe is not connected then selected plans mean nothing.
+        // disabling signup would be done by switching to "invite only" mode
+        if (!this.isStripeConnected()) {
+            return true;
+        }
+
+        // self signup must be available for free plan signup to work
+        const hasFreePlan = this._settingsCache.get('portal_plans').includes('free');
+        if (hasFreePlan) {
+            return true;
+        }
+
+        // signup access is enabled but there's no free plan, don't allow self signup
+        return false;
     }
 
     getTokenConfig() {
