@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const {i18n} = require('../../../../../lib/common');
+const i18n = require('../../../../../lib/common/i18n');
 const {NotFoundError} = require('@tryghost/errors');
 
 module.exports = {

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const {i18n} = require('../../../../../lib/common');
+const i18n = require('../../../../../lib/common/i18n');
 const jsonSchema = require('../utils/json-schema');
 
 module.exports = {

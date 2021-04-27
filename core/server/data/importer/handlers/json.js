@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
-const {i18n} = require('../../../lib/common');
+const i18n = require('../../../lib/common/i18n');
 const errors = require('@tryghost/errors');
 let JSONHandler;
 

@@ -11,7 +11,8 @@
 const errors = require('@tryghost/errors');
 const config = require('./shared/config');
 const logging = require('./shared/logging');
-const {events, i18n} = require('./server/lib/common');
+const events = require('./server/lib/common/events');
+const i18n = require('./server/lib/common/i18n');
 const themeEngine = require('./frontend/services/theme-engine');
 
 class Bridge {

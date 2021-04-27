@@ -1,4 +1,4 @@
-const {events} = require('../../lib/common');
+const events = require('../../lib/common/events');
 const themeService = require('../../services/themes');
 const limitService = require('../../services/limits');
 const models = require('../../models');

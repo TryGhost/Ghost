@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const debug = require('ghost-ignition').debug('api:v3:utils:validators:input:users');
-const {i18n} = require('../../../../../lib/common');
+const i18n = require('../../../../../lib/common/i18n');
 const errors = require('@tryghost/errors');
 
 module.exports = {

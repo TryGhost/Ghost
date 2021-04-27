@@ -1,7 +1,7 @@
 const path = require('path');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const {i18n} = require('../../../server/lib/common');
+const i18n = require('../../../server/lib/common/i18n');
 const config = require('../../../shared/config');
 const Proxy = require('./proxy');
 

@@ -8,7 +8,7 @@ const themeLoader = require('./loader');
 const toJSON = require('./to-json');
 
 const settingsCache = require('../settings/cache');
-const {i18n} = require('../../../server/lib/common');
+const i18n = require('../../../server/lib/common/i18n');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:themes');

@@ -2,7 +2,7 @@ const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const {events} = require('../../../../core/server/lib/common');
+const events = require('../../../../core/server/lib/common/events');
 const publicSettings = require('../../../../core/server/services/settings/public');
 let cache = rewire('../../../../core/server/services/settings/cache');
 

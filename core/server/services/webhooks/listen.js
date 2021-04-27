@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
-const {events} = require('../../lib/common');
+const events = require('../../lib/common/events');
 const logging = require('../../../shared/logging');
 const trigger = require('./trigger');
 

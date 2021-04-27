@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:bootstrap');
 const _ = require('lodash');
-const {events} = require('../../../server/lib/common');
+const events = require('../../../server/lib/common/events');
 const settingsService = require('../settings');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');

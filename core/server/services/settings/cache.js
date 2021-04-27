@@ -3,7 +3,7 @@
 // circular dependency bugs.
 const debug = require('ghost-ignition').debug('settings:cache');
 const _ = require('lodash');
-const {events} = require('../../lib/common');
+const events = require('../../lib/common/events');
 const publicSettings = require('./public');
 
 // Local function, only ever used for initialising

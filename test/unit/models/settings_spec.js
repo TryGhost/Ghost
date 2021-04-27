@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const mockDb = require('mock-knex');
 const models = require('../../../core/server/models');
 const {knex} = require('../../../core/server/data/db');
-const {events} = require('../../../core/server/lib/common');
+const events = require('../../../core/server/lib/common/events');
 const defaultSettings = require('../../../core/server/data/schema/default-settings');
 const errors = require('@tryghost/errors');
 

@@ -1,4 +1,4 @@
-const {events} = require('../../../lib/common');
+const events = require('../../../lib/common/events');
 const INVALIDATE_ALL = '/*';
 
 module.exports = function emitEvents(req, res, next) {

@@ -1,5 +1,5 @@
 const ghostBookshelf = require('./base');
-const {i18n} = require('../lib/common');
+const i18n = require('../lib/common/i18n');
 const errors = require('@tryghost/errors');
 
 let Label;

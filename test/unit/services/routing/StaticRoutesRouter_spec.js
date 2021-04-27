@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const {events} = require('../../../../core/server/lib/common');
+const events = require('../../../../core/server/lib/common/events');
 const controllers = require('../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../core/frontend/services/routing/StaticRoutesRouter');
 const configUtils = require('../../../utils/configUtils');

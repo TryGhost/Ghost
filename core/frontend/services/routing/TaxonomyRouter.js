@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:taxonomy-router');
 const config = require('../../../shared/config');
-const {events} = require('../../../server/lib/common');
+const events = require('../../../server/lib/common/events');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
 const urlUtils = require('../../../shared/url-utils');

@@ -4,7 +4,7 @@ const debug = require('ghost-ignition').debug('services:url:resources');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../../server/models');
-const {events} = require('../../../server/lib/common');
+const events = require('../../../server/lib/common/events');
 
 /**
  * @description At the moment the resources class is directly responsible for data population

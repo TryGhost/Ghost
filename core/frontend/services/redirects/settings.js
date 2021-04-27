@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const validation = require('./validation');
 
 const config = require('../../../shared/config');
-const {i18n} = require('../../../server/lib/common');
+const i18n = require('../../../server/lib/common/i18n');
 const errors = require('@tryghost/errors');
 
 /**

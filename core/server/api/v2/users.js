@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const {i18n} = require('../../lib/common');
+const i18n = require('../../lib/common/i18n');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');

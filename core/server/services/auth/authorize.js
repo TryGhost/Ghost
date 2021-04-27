@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const {i18n} = require('../../lib/common');
+const i18n = require('../../lib/common/i18n');
 
 const authorize = {
     authorizeContentApi(req, res, next) {

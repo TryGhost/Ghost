@@ -5,7 +5,7 @@ const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const errors = require('@tryghost/errors');
-const {i18n} = require('../../../lib/common');
+const i18n = require('../../../lib/common/i18n');
 const logging = require('../../../../shared/logging');
 const redirectsService = require('../../../../frontend/services/redirects');
 
