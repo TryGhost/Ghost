@@ -7,7 +7,7 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const config = require('../../../../../core/shared/config');
-const {events} = require('../../../../../core/server/lib/common');
+const events = require('../../../../../core/server/lib/common/events');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 

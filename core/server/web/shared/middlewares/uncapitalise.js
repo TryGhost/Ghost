@@ -14,7 +14,7 @@
 
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../shared/url-utils');
-const {i18n} = require('../../../lib/common');
+const i18n = require('../../../lib/common/i18n');
 const localUtils = require('../utils');
 
 const uncapitalise = (req, res, next) => {

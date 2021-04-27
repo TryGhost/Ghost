@@ -1,4 +1,4 @@
-const {i18n} = require('../../../../server/lib/common');
+const i18n = require('../../../../server/lib/common/i18n');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../shared/url-utils');
 

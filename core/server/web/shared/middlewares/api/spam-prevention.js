@@ -3,7 +3,7 @@ const extend = require('lodash/extend');
 const pick = require('lodash/pick');
 const errors = require('@tryghost/errors');
 const config = require('../../../../../shared/config');
-const {i18n} = require('../../../../lib/common');
+const i18n = require('../../../../lib/common/i18n');
 const logging = require('../../../../../shared/logging');
 const spam = config.get('spam') || {};
 

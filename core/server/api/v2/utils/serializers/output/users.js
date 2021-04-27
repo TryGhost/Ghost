@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:users');
-const {i18n} = require('../../../../../lib/common');
+const i18n = require('../../../../../lib/common/i18n');
 const mapper = require('./utils/mapper');
 
 module.exports = {

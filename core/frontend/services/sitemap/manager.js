@@ -1,4 +1,4 @@
-const {events} = require('../../../server/lib/common');
+const events = require('../../../server/lib/common/events');
 const IndexMapGenerator = require('./index-generator');
 const PagesMapGenerator = require('./page-generator');
 const PostsMapGenerator = require('./post-generator');

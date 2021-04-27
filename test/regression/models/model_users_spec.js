@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 
 // Stuff we are testing
-const {events} = require('../../../core/server/lib/common');
+const events = require('../../../core/server/lib/common/events');
 
 const imageLib = require('../../../core/server/lib/image');
 const UserModel = require('../../../core/server/models/user').User;

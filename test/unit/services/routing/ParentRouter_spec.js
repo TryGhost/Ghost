@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
-const {events} = require('../../../../core/server/lib/common');
+const events = require('../../../../core/server/lib/common/events');
 const urlUtils = require('../../../../core/shared/url-utils');
 const ParentRouter = require('../../../../core/frontend/services/routing/ParentRouter');
 

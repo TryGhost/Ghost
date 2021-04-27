@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const {i18n} = require('../../../../lib/common');
+const i18n = require('../../../../lib/common/i18n');
 const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
 const apiMw = require('../../middleware');

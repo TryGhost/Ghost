@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('api:v2:utils:validators:input:updateSetup');
-const {i18n} = require('../../../../../lib/common');
+const i18n = require('../../../../../lib/common/i18n');
 const errors = require('@tryghost/errors');
 
 module.exports = {

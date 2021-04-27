@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 // Stuff we are testing
-const {events} = require('../../../../../core/server/lib/common');
+const events = require('../../../../../core/server/lib/common/events');
 
 const SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager');
 const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
