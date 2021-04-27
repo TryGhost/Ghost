@@ -7,7 +7,7 @@ const routingService = require('../../core/frontend/services/routing');
 const settingsService = require('../../core/server/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
 const imageLib = require('../../core/server/lib/image');
-const themeService = require('../../core/frontend/services/themes');
+const themeService = require('../../core/server/services/themes');
 
 // Other Test Utilities
 const configUtils = require('./configUtils');

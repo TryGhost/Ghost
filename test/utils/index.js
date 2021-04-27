@@ -21,7 +21,7 @@ const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
 const settingsCache = require('../../core/server/services/settings/cache');
 const web = require('../../core/server/web');
-const themeService = require('../../core/frontend/services/themes');
+const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
 
 // Other Test Utilities
