@@ -33,7 +33,7 @@ export default Controller.extend({
             this.set('showLeaveSettingsModal', false);
         },
 
-        leavePortalSettings() {
+        async leavePortalSettings() {
             this.settings.rollbackAttributes();
             this.set('showPortalSettings', false);
             this.set('showLeaveSettingsModal', false);
