@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('themes');
-const {i18n: commonI18n} = require('../proxy');
+const {i18n} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const themeLoader = require('./loader');
@@ -26,7 +26,7 @@ module.exports = {
                     .then(function validationSuccess(checkedTheme) {
                         if (!validate.canActivate(checkedTheme)) {
                             const checkError = new errors.ThemeValidationError({
-                                message: commonI18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
+                                message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
                                 errorDetails: Object.assign(
                                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                         errors: checkedTheme.results.error
@@ -42,7 +42,7 @@ module.exports = {
                             if (checkedTheme.results.error.length) {
                                 logging.warn(new errors.ThemeValidationError({
                                     errorType: 'ThemeWorksButHasErrors',
-                                    message: commonI18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
+                                    message: i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
                                     errorDetails: Object.assign(
                                         _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                             errors: checkedTheme.results.error
@@ -59,7 +59,7 @@ module.exports = {
             })
             .catch(errors.NotFoundError, function (err) {
                 // CASE: active theme is missing, we don't want to exit because the admin panel will still work
-                err.message = commonI18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
+                err.message = i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
                 logging.error(err);
             })
             .catch(function (err) {
@@ -74,7 +74,7 @@ module.exports = {
 
         if (!loadedTheme) {
             return Promise.reject(new errors.ValidationError({
-                message: commonI18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
+                message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
                 errorDetails: themeName
             }));
         }
