@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('api:canary:utils:permissions');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const permissions = require('../../../services/permissions');
-const {i18n} = require('../../../lib/common');
+const i18n = require('../../../lib/common/i18n');
 const errors = require('@tryghost/errors');
 
 /**

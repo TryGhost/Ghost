@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 const configUtils = require('../../utils/configUtils');
-const {events} = require('../../../core/server/lib/common');
+const events = require('../../../core/server/lib/common/events');
 
 const bootstrapSocket = require('@tryghost/bootstrap-socket');
 

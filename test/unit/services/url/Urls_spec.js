@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const {events} = require('../../../../core/server/lib/common');
+const events = require('../../../../core/server/lib/common/events');
 const Urls = require('../../../../core/frontend/services/url/Urls');
 
 describe('Unit: services/url/Urls', function () {

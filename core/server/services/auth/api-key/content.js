@@ -1,7 +1,7 @@
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const limitService = require('../../../services/limits');
-const {i18n} = require('../../../lib/common');
+const i18n = require('../../../lib/common/i18n');
 
 const authenticateContentApiKey = async function authenticateContentApiKey(req, res, next) {
     // allow fallthrough to other auth methods or final ensureAuthenticated check

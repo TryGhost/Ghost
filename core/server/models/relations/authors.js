@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const {i18n} = require('../../lib/common');
+const i18n = require('../../lib/common/i18n');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
 

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const ghostBookshelf = require('./base');
 const Promise = require('bluebird');
-const {i18n} = require('../lib/common');
+const i18n = require('../lib/common/i18n');
 const errors = require('@tryghost/errors');
 let Role;
 let Roles;

@@ -5,7 +5,7 @@ const storageUtils = require('../../adapters/storage/utils');
 const validator = require('../../data/validation').validator;
 const config = require('../../../shared/config');
 const logging = require('../../../shared/logging');
-const {i18n} = require('../common');
+const i18n = require('../common/i18n');
 const settingsCache = require('../../services/settings/cache');
 const ImageUtils = require('./image-utils');
 

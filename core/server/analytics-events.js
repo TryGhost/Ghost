@@ -3,7 +3,7 @@ const Analytics = require('analytics-node');
 const config = require('../shared/config');
 const logging = require('../shared/logging');
 const sentry = require('../shared/sentry');
-const {events} = require('./lib/common');
+const events = require('./lib/common/events');
 
 module.exports.init = function () {
     const analytics = new Analytics(config.get('segment:key'));

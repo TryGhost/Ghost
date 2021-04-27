@@ -1,4 +1,4 @@
-const {events} = require('../../lib/common');
+const events = require('../../lib/common/events');
 
 module.exports = {
     docName: 'slack',

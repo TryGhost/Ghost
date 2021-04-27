@@ -5,7 +5,7 @@ const rewire = require('rewire');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const xmlrpc = rewire('../../../core/server/services/xmlrpc');
-const {events} = require('../../../core/server/lib/common');
+const events = require('../../../core/server/lib/common/events');
 const logging = require('../../../core/shared/logging');
 
 describe('XMLRPC', function () {

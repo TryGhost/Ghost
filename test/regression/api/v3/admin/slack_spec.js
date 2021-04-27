@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
-const {events} = require('../../../../../core/server/lib/common');
+const events = require('../../../../../core/server/lib/common/events');
 const ghost = testUtils.startGhost;
 
 let request;
