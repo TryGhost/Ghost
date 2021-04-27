@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const themeList = require('./list');
-const active = require('../theme-engine/active');
+const bridge = require('../../../bridge');
 const packageJSON = require('../../../server/lib/fs/package-json');
 const settingsCache = require('../../../server/services/settings/cache');
 
@@ -40,8 +40,8 @@ module.exports = function toJSON(name, checkedTheme) {
     }
 
     // CASE: if you want a JSON response for a single theme, which is not active.
-    if (_.find(themeResult, {active: true}) && active.get()) {
-        _.find(themeResult, {active: true}).templates = active.get().customTemplates;
+    if (_.find(themeResult, {active: true}) && bridge.getActiveTheme()) {
+        _.find(themeResult, {active: true}).templates = bridge.getActiveTheme().customTemplates;
     }
 
     return {themes: themeResult};
