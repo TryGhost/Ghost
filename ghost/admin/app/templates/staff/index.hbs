@@ -12,7 +12,7 @@
     {{#if this.showInviteUserModal}}
         <GhFullscreenModal @modal="invite-new-user"
             @close={{action "toggleInviteUserModal"}}
-            @modifier="action wide" />
+            @modifier="action wide invite-user" />
     {{/if}}
 
     <section class="view-container gh-team">
