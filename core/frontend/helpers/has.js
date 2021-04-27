@@ -4,9 +4,9 @@
 //
 // Checks if a post has a particular property
 
-const {logging, i18n} = require('../services/proxy');
+const {logging, i18n, settingsCache} = require('../services/proxy');
 const _ = require('lodash');
-const validAttrs = ['tag', 'author', 'slug','visibility', 'id', 'number', 'index', 'any', 'all'];
+const validAttrs = ['tag', 'author', 'slug','visibility', 'id', 'number', 'index', 'any', 'all', 'members'];
 
 function handleCount(ctxAttr, data) {
     if (!data || !_.isFinite(data.length)) {
@@ -113,6 +113,20 @@ function evaluateList(type, expr, obj, data) {
     });
 }
 
+function evaluateMembersMatch(value) {
+    const membersSignupAccess = settingsCache.get('members_signup_access');
+
+    if (value === 'true') {
+        return ['all', 'invite'].includes(membersSignupAccess);
+    }
+
+    if (value === 'false') {
+        return membersSignupAccess === 'none';
+    }
+
+    return value === membersSignupAccess;
+}
+
 module.exports = function has(options) {
     options = options || {};
     options.hash = options.hash || {};
@@ -149,6 +163,9 @@ module.exports = function has(options) {
         },
         all: function () {
             return attrs.all && evaluateList('every', attrs.all, self, data) || false;
+        },
+        members: function () {
+            return attrs.members && evaluateMembersMatch(attrs.members) || false;
         }
     };
 
