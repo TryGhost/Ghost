@@ -5,7 +5,7 @@ import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
-import {getSitePlans, hasOnlyFreePlan} from '../../utils/helpers';
+import {getSitePlans, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -405,7 +405,7 @@ class SignupPage extends React.Component {
         const fields = this.getInputFields({state: this.state});
         const {site, pageQuery} = this.context;
         const availablePlans = getSitePlans({site, pageQuery});
-        if (availablePlans.length === 0) {
+        if (availablePlans.length === 0 || isInviteOnlySite({site})) {
             return (
                 <section>
                     <div className='gh-portal-section'>

@@ -11,6 +11,7 @@ export const site = {
         currency: 'USD'
     },
     allow_self_signup: true,
+    members_signup_access: 'all',
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
