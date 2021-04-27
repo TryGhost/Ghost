@@ -1,5 +1,5 @@
 const {events} = require('../../lib/common');
-const themeService = require('../../../frontend/services/themes');
+const themeService = require('../../services/themes');
 const limitService = require('../../services/limits');
 const models = require('../../models');
 

@@ -107,7 +107,7 @@ async function initFrontend() {
     debug('End: Frontend Settings');
 
     debug('Begin: Themes');
-    const themeService = require('./frontend/services/themes');
+    const themeService = require('./server/services/themes');
     await themeService.init();
     debug('End: Themes');
 
@@ -206,7 +206,7 @@ async function initBackgroundServices({config}) {
     }
 
     // Load all inactive themes
-    const themeService = require('./frontend/services/themes');
+    const themeService = require('./server/services/themes');
     themeService.loadInactiveThemes();
 
     debug('End: initBackgroundServices');

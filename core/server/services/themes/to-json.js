@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const themeList = require('./list');
 const bridge = require('../../../bridge');
-const packageJSON = require('../../../server/lib/fs/package-json');
-const settingsCache = require('../../../server/services/settings/cache');
+const packageJSON = require('../../lib/fs/package-json');
+const settingsCache = require('../settings/cache');
 
 /**
  *

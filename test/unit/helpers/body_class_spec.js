@@ -1,5 +1,5 @@
 const should = require('should');
-const themeList = require('../../../core/frontend/services/themes/list');
+const themeList = require('../../../core/server/services/themes/list');
 
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');

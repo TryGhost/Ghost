@@ -7,7 +7,7 @@ const ThemeStorage = require('./ThemeStorage');
 const themeLoader = require('./loader');
 const toJSON = require('./to-json');
 
-const settingsCache = require('../../../server/services/settings/cache');
+const settingsCache = require('../settings/cache');
 const {i18n} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
