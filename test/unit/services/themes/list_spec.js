@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const themeList = require('../../../../core/frontend/services/themes/list');
+const themeList = require('../../../../core/server/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {

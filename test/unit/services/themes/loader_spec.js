@@ -4,8 +4,8 @@ const fs = require('fs-extra');
 const tmp = require('tmp');
 const join = require('path').join;
 const config = require('../../../../core/shared/config');
-const loader = require('../../../../core/frontend/services/themes/loader');
-const themeList = require('../../../../core/frontend/services/themes/list');
+const loader = require('../../../../core/server/services/themes/loader');
+const themeList = require('../../../../core/server/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {
