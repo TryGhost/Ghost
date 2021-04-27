@@ -106,6 +106,10 @@ export function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+export function isInviteOnlySite({site = {}}) {
+    return site && site.members_signup_access === 'invite';
+}
+
 export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
     const {
         plans,
