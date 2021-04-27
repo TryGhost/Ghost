@@ -40,6 +40,8 @@ export default class MembersUtilsService extends Service {
         const portalBase = '/#/portal/preview';
         const settingsParam = new URLSearchParams();
         const signupButtonText = this.settings.get('portalButtonSignupText') || '';
+        const allowSelfSignup = this.settings.get('membersSignupAccess') === 'all' &&
+            (!this.isStripeEnabled || isFreeChecked);
 
         settingsParam.append('button', this.settings.get('portalButton'));
         settingsParam.append('name', this.settings.get('portalName'));
@@ -49,6 +51,7 @@ export default class MembersUtilsService extends Service {
         settingsParam.append('page', page);
         settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
         settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
+        settingsParam.append('allowSelfSignup', allowSelfSignup);
 
         if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
             settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
