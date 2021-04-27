@@ -49,8 +49,6 @@ export default ModalComponent.extend({
 
     confirm() {},
 
-    allowSelfSignup: equal('settings.membersSignupAccess', 'all'),
-
     isStripeConfigured: reads('membersUtils.isStripeEnabled'),
 
     buttonIcon: computed('settings.portalButtonIcon', function () {
@@ -85,9 +83,9 @@ export default ModalComponent.extend({
         return selectedButtonStyle.includes('text');
     }),
 
-    isFreeChecked: computed('settings.portalPlans.[]', 'allowSelfSignup', function () {
+    isFreeChecked: computed('settings.{portalPlans.[],membersSignupAccess}', function () {
         const allowedPlans = this.settings.get('portalPlans') || [];
-        return (this.allowSelfSignup && allowedPlans.includes('free'));
+        return (this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
     }),
 
     isMonthlyChecked: computed('settings.portalPlans.[]', 'isStripeConfigured', function () {
