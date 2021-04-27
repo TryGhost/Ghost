@@ -96,6 +96,7 @@ const getMemberSiteData = async function (req, res) {
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
         allow_self_signup: membersService.config.getAllowSelfSignup(),
+        members_signup_access: settingsCache.get('members_signup_access'),
         is_stripe_configured: isStripeConfigured,
         portal_button: settingsCache.get('portal_button'),
         portal_name: settingsCache.get('portal_name'),
