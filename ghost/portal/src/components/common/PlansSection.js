@@ -294,9 +294,13 @@ export const PlanSectionStyles = `
     .gh-portal-plans-container.vertical.hide-checkbox .gh-portal-plan-featurewrapper {
         grid-column: 1 / 2;
     }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-name.no-description {
+        grid-row: 1 / 3;
+    }
 `;
 
-function Checkbox({name, onPlanSelect, isChecked, disabled}) {
+function Checkbox({name, id, onPlanSelect, isChecked, disabled}) {
     if (isCookiesDisabled()) {
         disabled = true;
     }
@@ -304,11 +308,11 @@ function Checkbox({name, onPlanSelect, isChecked, disabled}) {
         <div className='gh-portal-plan-checkbox'>
             <input
                 name={name}
-                key={name}
+                key={id}
                 type="checkbox"
                 checked={isChecked}
                 aria-label={name}
-                onChange={e => onPlanSelect(e, name)}
+                onChange={e => onPlanSelect(e, id)}
                 disabled={disabled}
             />
             <span className='checkmark'></span>
@@ -331,8 +335,8 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const hasMonthlyPlan = plans.some(({name}) => {
         return name === 'Monthly';
     });
-    return plans.map(({name, currency_symbol: currencySymbol, price, discount}, i) => {
-        const isChecked = selectedPlan === name;
+    return plans.map(({name, currency_symbol: currencySymbol, price, discount, id}, i) => {
+        const isChecked = selectedPlan === (id || name);
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         const planDetails = {};
         let displayName = '';
@@ -348,26 +352,23 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             displayName = 'Annually';
             planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
             break;
-
-        // TODO: mock!
-        case 'Custom':
-            displayName = 'Custom';
+        default:
             planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
             break;
-
-        default:
-            break;
         }
+
+        const planNameClass = planDetails.feature ? 'gh-portal-plan-name' : 'gh-portal-plan-name no-description';
+
         return (
             <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
                 <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
-                <h4 className='gh-portal-plan-name'>{displayName || name}</h4>
+                <h4 className={planNameClass}>{displayName || name}</h4>
                 <PriceLabel name={name} currencySymbol={currencySymbol} price={price} />
                 <div className='gh-portal-plan-featurewrapper'>
                     <div className='gh-portal-plan-feature'>
                         {planDetails.feature}
                     </div>
-                    {(changePlan && selectedPlan === name ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
+                    {(changePlan && selectedPlan === id ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
                 </div>
             </div>
         );
