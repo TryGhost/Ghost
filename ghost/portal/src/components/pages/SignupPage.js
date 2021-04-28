@@ -163,7 +163,7 @@ class SignupPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, site} = this.context;
         if (member) {
             this.context.onAction('switchPage', {
                 page: 'accountHome'
@@ -171,7 +171,8 @@ class SignupPage extends React.Component {
         }
 
         // Handle the default plan if not set
-        const plans = this.getPlans();
+        // const plans = this.getPlans();
+        const plans = getSitePrices({site});
 
         const selectedPlan = this.state.plan;
         const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
@@ -184,7 +185,10 @@ class SignupPage extends React.Component {
 
     componentDidUpdate() {
         // Handle the default plan if not set
-        const plans = this.getPlans();
+        // const plans = this.getPlans();
+        const {site} = this.context;
+        const plans = getSitePrices({site});
+
         const selectedPlan = this.state.plan;
         const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
         if (defaultSelectedPlan !== selectedPlan) {
@@ -248,13 +252,12 @@ class SignupPage extends React.Component {
         if (!plans || plans.length === 0) {
             return 'free';
         }
-
         const hasSelectedPlan = plans.some((p) => {
-            return p.name === selectedPlan;
+            return p.id === selectedPlan;
         });
 
         if (!hasSelectedPlan) {
-            return plans[0].name || 'free';
+            return plans[0].id || 'free';
         }
 
         return selectedPlan;
@@ -397,7 +400,9 @@ class SignupPage extends React.Component {
                 <PlansSection
                     plans={plansData}
                     selectedPlan={this.state.plan}
-                    onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}
+                    onPlanSelect={(e, name) => {
+                        this.handleSelectPlan(e, name);
+                    }}
                 />
             </>
         );
