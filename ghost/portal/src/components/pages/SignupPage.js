@@ -469,18 +469,19 @@ class SignupPage extends React.Component {
     }
 
     render() {
+        const {site} = this.context;
         const plansData = this.getPlans();
         const fields = this.getInputFields({state: this.state});
         let sectionClass = '';
         let footerClass = '';
 
-        if (plansData.length <= 1) {
-            if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0) {
+        if (plansData.length <= 1 || isInviteOnlySite({site})) {
+            if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0 || isInviteOnlySite({site})) {
                 sectionClass = 'noplan';
                 if (fields.length === 1) {
                     sectionClass = 'single-field';
                 }
-                if (plansData.length === 0) {
+                if (plansData.length === 0 || isInviteOnlySite({site})) {
                     footerClass = 'invite-only';
                     sectionClass = 'invite-only';
                 }
