@@ -69,9 +69,25 @@ export function getPlanFromSubscription({subscription}) {
     return null;
 }
 
+export function getPriceFromSubscription({subscription}) {
+    if (subscription && subscription.price) {
+        return {
+            ...subscription.price,
+            price: subscription.plan.amount / 100,
+            name: subscription.plan.nickname
+        };
+    }
+    return null;
+}
+
 export function getMemberActivePlan({member}) {
     const subscription = getMemberSubscription({member});
     return getPlanFromSubscription({subscription});
+}
+
+export function getMemberActivePrice({member}) {
+    const subscription = getMemberSubscription({member});
+    return getPriceFromSubscription({subscription});
 }
 
 export function getSubscriptionFromId({member, subscriptionId}) {

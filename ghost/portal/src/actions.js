@@ -134,9 +134,9 @@ async function checkoutPlan({data, state, api}) {
 
 async function updateSubscription({data, state, api}) {
     try {
-        const {plan, subscriptionId, cancelAtPeriodEnd} = data;
+        const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
         await api.member.updateSubscription({
-            planName: plan, subscriptionId, cancelAtPeriodEnd
+            planName: plan, subscriptionId, cancelAtPeriodEnd, planId: planId
         });
         const member = await api.member.sessionData();
         const action = 'updateSubscription:success';
