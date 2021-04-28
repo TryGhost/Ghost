@@ -84,11 +84,20 @@
             {{/if}}
 
             {{#if this.showUnsuspendUserModal}}
-                <GhFullscreenModal @modal="unsuspend-user"
-                    @model={{this.user}}
-                    @confirm={{action "unsuspendUser"}}
-                    @close={{action "toggleUnsuspendUserModal"}}
-                    @modifier="action wide" />
+                {{#if this.limitErrorMessage}}
+                    <GhFullscreenModal @modal="upgrade-unsuspend-user-host-limit"
+                        @model={{hash
+                            message=limitErrorMessage
+                        }}
+                        @close={{action "toggleUnsuspendUserModal"}}
+                        @modifier="action wide" />
+                {{else}}
+                    <GhFullscreenModal @modal="unsuspend-user"
+                        @model={{this.user}}
+                        @confirm={{action "unsuspendUser"}}
+                        @close={{action "toggleUnsuspendUserModal"}}
+                        @modifier="action wide" />
+                {{/if}}
             {{/if}}
         </section>
     </GhCanvasHeader>

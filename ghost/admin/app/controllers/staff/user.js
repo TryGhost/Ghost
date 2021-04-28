@@ -16,11 +16,13 @@ export default Controller.extend({
     config: service(),
     dropdown: service(),
     ghostPaths: service(),
+    limit: service(),
     notifications: service(),
     session: service(),
     slugGenerator: service(),
 
     personalToken: null,
+    limitErrorMessage: null,
     personalTokenRegenerated: false,
     leaveSettingsTransition: null,
     dirtyAttributes: false,
@@ -117,7 +119,25 @@ export default Controller.extend({
 
         toggleUnsuspendUserModal() {
             if (this.deleteUserActionIsVisible) {
-                this.toggleProperty('showUnsuspendUserModal');
+                if (this.user.role.name !== 'Contributor'
+                    && this.limit.limiter
+                    && this.limit.limiter.isLimited('staff')
+                ) {
+                    this.limit.limiter.errorIfWouldGoOverLimit('staff')
+                        .then(() => {
+                            this.toggleProperty('showUnsuspendUserModal');
+                        })
+                        .catch((error) => {
+                            if (error.errorType === 'HostLimitError') {
+                                this.limitErrorMessage = error.message;
+                                this.toggleProperty('showUnsuspendUserModal');
+                            } else {
+                                this.notifications.showAPIError(error, {key: 'staff.limit'});
+                            }
+                        });
+                } else {
+                    this.toggleProperty('showUnsuspendUserModal');
+                }
             }
         },
 

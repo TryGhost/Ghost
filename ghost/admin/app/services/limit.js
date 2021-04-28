@@ -78,7 +78,8 @@ export default class LimitsService extends Service {
     async getStaffUsersCount() {
         return RSVP.hash({
             users: this.store.findAll('user', {reload: true}),
-            invites: this.store.findAll('invite', {reload: true})
+            invites: this.store.findAll('invite', {reload: true}),
+            roles: this.store.findAll('role', {reload: true}) // NOTE: roles have to be fetched as they are not always loaded with invites
         }).then((data) => {
             const staffUsers = data.users.filter(u => u.get('status') !== 'inactive' && u.role.get('name') !== 'Contributor');
             const staffInvites = data.invites.filter(i => i.role.get('name') !== 'Contributor');
