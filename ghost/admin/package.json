@@ -70,7 +70,7 @@
     "ember-cli-node-assets": "0.2.2",
     "ember-cli-postcss": "6.0.1",
     "ember-cli-shims": "1.2.0",
-    "ember-cli-string-helpers": "5.0.0",
+    "ember-cli-string-helpers": "6.0.1",
     "ember-cli-terser": "4.0.1",
     "ember-cli-test-loader": "3.0.0",
     "ember-composable-helpers": "4.4.1",
