@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getMemberActivePlan, getMemberSubscription, getPlanFromSubscription, getSitePlans, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getMemberActivePlan, getMemberActivePrice, getMemberSubscription, getPlanFromSubscription, getPriceFromSubscription, getSitePlans, getSitePrices, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -125,12 +125,12 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
     const label = 'Confirm';
     let planStartDate = getDateString(subscription.current_period_end);
-    const currentActivePlan = getMemberActivePlan({member});
-    if (currentActivePlan.type !== plan.type) {
+    const currentActivePlan = getMemberActivePrice({member});
+    if (currentActivePlan.id !== plan.id) {
         planStartDate = 'today';
     }
     const priceString = formatNumber(plan.price);
-    const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.type} – Starting ${planStartDate}`;
+    const planStartMessage = `${plan.currency}${priceString}/${plan.type} – Starting ${planStartDate}`;
     if (type === 'changePlan') {
         return (
             <>
@@ -301,11 +301,17 @@ export default class AccountPlanPage extends React.Component {
 
     getInitialState() {
         const {member, site} = this.context;
-        this.plans = getSitePlans({site, includeFree: false});
-        let activePlan = getMemberActivePlan({member});
+        // this.plans = getSitePlans({site, includeFree: false});
+        this.plans = getSitePrices({site, includeFree: false});
+        let activePlan = getMemberActivePrice({member});
         let selectedPlan = activePlan ? this.plans.find((d) => {
-            return (d.name === activePlan.name && d.price === activePlan.price && d.currency === activePlan.currency);
+            return (d.name === activePlan.name && d.price === activePlan.price && (d.currency || '').toLowerCase() === (activePlan.currency || '').toLowerCase());
         }) : null;
+        if (selectedPlan) {
+            this.plans = this.plans.filter((d) => {
+                return (d.currency || '').toLowerCase() === (selectedPlan.currency || '').toLowerCase();
+            });
+        }
         // Select first plan as default for free member
         if (!isPaidMember({member}) && this.plans.length > 0) {
             selectedPlan = this.plans[0];
@@ -344,7 +350,7 @@ export default class AccountPlanPage extends React.Component {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
-                onAction('updateSubscription', {plan: confirmationPlan.name, subscriptionId, cancelAtPeriodEnd: false});
+                onAction('updateSubscription', {plan: confirmationPlan.name, planId: confirmationPlan.id, subscriptionId, cancelAtPeriodEnd: false});
             }
         } else {
             onAction('checkoutPlan', {plan: selectedPlan});
@@ -367,8 +373,8 @@ export default class AccountPlanPage extends React.Component {
                 });
             }, 5);
         } else {
-            const confirmationPlan = this.plans.find(d => d.name === name);
-            const activePlan = this.getActivePlanName({member});
+            const confirmationPlan = this.plans.find(d => d.id === name);
+            const activePlan = this.getActivePriceId({member});
             const confirmationType = activePlan ? 'changePlan' : 'subscribe';
             if (name !== this.state.selectedPlan) {
                 this.setState({
@@ -383,7 +389,7 @@ export default class AccountPlanPage extends React.Component {
     onCancelContinueSubscription({subscriptionId, cancelAtPeriodEnd}) {
         const {member} = this.context;
         const subscription = getSubscriptionFromId({subscriptionId, member});
-        const subscriptionPlan = getPlanFromSubscription({subscription});
+        const subscriptionPlan = getPriceFromSubscription({subscription});
         if (!cancelAtPeriodEnd) {
             this.context.onAction('continueSubscription', {
                 subscriptionId
@@ -414,6 +420,14 @@ export default class AccountPlanPage extends React.Component {
         const activePlan = getMemberActivePlan({member});
         if (activePlan) {
             return activePlan.name;
+        }
+        return null;
+    }
+
+    getActivePriceId({member}) {
+        const activePrice = getMemberActivePrice({member});
+        if (activePrice) {
+            return activePrice.id;
         }
         return null;
     }
