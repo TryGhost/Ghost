@@ -241,6 +241,35 @@
     line-height: 37px !important;
 }
 
+.gh-flow-content .gh-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gh-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.gh-separator::before,
+.gh-separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--midgrey);
+}
+
+.gh-separator:not(:empty)::before {
+  margin-right: 6px;
+}
+
+.gh-separator:not(:empty)::after {
+  margin-left: 6px;
+}
+
 .gh-flow-content .gh-input:focus {
     box-shadow: none;
     border-color: color-mod(var(--midlightgrey) l(+10%));

@@ -24,6 +24,18 @@
                     <div class="gh-site-icon" style="{{this.siteIconStyle}}"></div>
                     <h1>Sign in to {{this.config.blogTitle}}.</h1>
                 </header>
+                {{#if this.config.oauth}}
+                    <a
+                        href="/ghost/oauth/google"
+                        class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon gh-center"
+                        style="background: {{this.accentColor}};">
+                        <span>Sign in with Google &rarr;</span>
+                    </a>
+
+                    <div class="gh-separator">
+                        or
+                    </div>
+                {{/if}}
                 <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
                     <label>Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
