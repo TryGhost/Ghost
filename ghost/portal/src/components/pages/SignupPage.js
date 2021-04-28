@@ -246,7 +246,7 @@ class SignupPage extends React.Component {
 
     getDefaultSelectedPlan(plans = [], selectedPlan) {
         if (!plans || plans.length === 0) {
-            return 'Free';
+            return 'free';
         }
 
         const hasSelectedPlan = plans.some((p) => {
@@ -254,7 +254,7 @@ class SignupPage extends React.Component {
         });
 
         if (!hasSelectedPlan) {
-            return plans[0].name || 'Free';
+            return plans[0].name || 'free';
         }
 
         return selectedPlan;

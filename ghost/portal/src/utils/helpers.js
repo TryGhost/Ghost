@@ -186,17 +186,17 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
     const stripePrices = prices.map((d) => {
         return {
             ...d,
-            type: 'custom',
             price: d.amount / 100,
             name: d.nickname,
             currency_symbol: getCurrencySymbol(d.currency)
         };
     }).filter((price) => {
-        return price.amount !== 0;
+        return price.amount !== 0 && price.type === 'recurring';
     });
 
     if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
         plansData.push({
+            id: 'free',
             type: 'free',
             price: 0,
             currency_symbol: '$',
