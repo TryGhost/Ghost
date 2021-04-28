@@ -5,7 +5,7 @@ import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import CalculateDiscount from '../../utils/discount';
-import {getSitePlans, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getSitePlans, getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -390,7 +390,8 @@ class SignupPage extends React.Component {
 
     renderPlans() {
         const {site, pageQuery} = this.context;
-        const plansData = getSitePlans({site, pageQuery});
+        // const plansData = getSitePlans({site, pageQuery});
+        const plansData = getSitePrices({site, pageQuery});
         return (
             <>
                 <PlansSection
