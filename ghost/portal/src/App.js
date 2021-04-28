@@ -16,7 +16,7 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.paid,
-    page: 'accountHome'
+    page: 'signup'
 };
 export default class App extends React.Component {
     constructor(props) {
