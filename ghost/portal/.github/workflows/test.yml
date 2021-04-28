@@ -16,7 +16,7 @@ jobs:
       CI: true
     name: Node ${{ matrix.node }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
