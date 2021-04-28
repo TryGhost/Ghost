@@ -144,6 +144,19 @@ export const member = {
                 amount: 1500,
                 currency: 'USD'
             },
+            price: {
+                id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                nickname: 'Yearly',
+                amount: 12000,
+                interval: 'year',
+                type: 'recurring',
+                currency: 'USD',
+                product: {
+                    id: 'prod_JNGGBrrogUXcoM',
+                    name: 'Main Product',
+                    product_id: '6086cd1b27c7d417b4a18eaf'
+                }
+            },
             status: 'active',
             start_date: '2019-05-01T11:42:40.000Z',
             default_payment_card_last4: '4242',
@@ -172,6 +185,19 @@ export const member = {
                 amount: 0,
                 interval: 'year',
                 currency: 'USD'
+            },
+            price: {
+                id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                nickname: 'Complimentary',
+                amount: 0,
+                interval: 'year',
+                type: 'recurring',
+                currency: 'USD',
+                product: {
+                    id: 'prod_JNGGBrrogUXcoM',
+                    name: 'Main Product',
+                    product_id: '6086cd1b27c7d417b4a18eaf'
+                }
             },
             status: 'active',
             start_date: '2020-09-03T11:12:37.000Z',
