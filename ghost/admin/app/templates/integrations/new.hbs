@@ -1,5 +1,14 @@
-<GhFullscreenModal @modal="new-integration"
-    @model={{this.integration}}
-    @confirm={{action "save"}}
-    @close={{action "cancel"}}
-    @modifier="action wide" />
+{{#if showUpgradeModal}}
+    <GhFullscreenModal @modal="upgrade-custom-integrations-host-limit"
+        @model={{hash
+            message=this.hostLimitError.message
+        }}
+        @close={{action "cancel"}}
+        @modifier="action wide" />
+{{else}}
+    <GhFullscreenModal @modal="new-integration"
+        @model={{this.integration}}
+        @confirm={{action "save"}}
+        @close={{action "cancel"}}
+        @modifier="action wide" />
+{{/if}}
