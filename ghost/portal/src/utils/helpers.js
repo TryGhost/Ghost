@@ -169,6 +169,50 @@ export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
     return plansData;
 }
 
+export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
+    const {
+        prices,
+        allow_self_signup: allowSelfSignup,
+        is_stripe_configured: isStripeConfigured,
+        portal_plans: portalPlans
+    } = site || {};
+
+    if (!prices) {
+        return [];
+    }
+
+    const plansData = [];
+
+    const stripePrices = prices.map((d) => {
+        return {
+            ...d,
+            type: 'custom',
+            price: d.amount / 100,
+            name: d.nickname,
+            currency_symbol: getCurrencySymbol(d.currency)
+        };
+    }).filter((price) => {
+        return price.amount !== 0;
+    });
+
+    if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
+        plansData.push({
+            type: 'free',
+            price: 0,
+            currency_symbol: '$',
+            name: 'Free'
+        });
+    }
+    const showOnlyFree = pageQuery === 'free' && hasPlan({site, plan: 'free'});
+
+    if (isStripeConfigured && !showOnlyFree) {
+        stripePrices.forEach((price) => {
+            plansData.push(price);
+        });
+    }
+    return plansData;
+}
+
 export const getMemberEmail = ({member}) => {
     if (!member) {
         return '';
