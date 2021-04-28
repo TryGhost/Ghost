@@ -360,8 +360,8 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
         const planNameClass = planDetails.feature ? 'gh-portal-plan-name' : 'gh-portal-plan-name no-description';
 
         return (
-            <div className={classes} key={name} onClick={e => onPlanSelect(e, name)}>
-                <Checkbox name={name} isChecked={isChecked} onPlanSelect={onPlanSelect} />
+            <div className={classes} key={id} onClick={e => onPlanSelect(e, id)}>
+                <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className={planNameClass}>{displayName || name}</h4>
                 <PriceLabel name={name} currencySymbol={currencySymbol} price={price} />
                 <div className='gh-portal-plan-featurewrapper'>
