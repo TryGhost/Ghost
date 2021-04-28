@@ -336,7 +336,7 @@ class SignupPage extends React.Component {
         const {action, site, brandColor, pageQuery} = this.context;
 
         const availablePlans = getSitePlans({site, pageQuery});
-        if (availablePlans.length === 0) {
+        if (availablePlans.length === 0 || isInviteOnlySite({site})) {
             return null;
         }
 
@@ -440,7 +440,7 @@ class SignupPage extends React.Component {
             return (
                 <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
             );
-        } else if (plansData.length === 0) {
+        } else if (plansData.length === 0 || isInviteOnlySite({site})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
