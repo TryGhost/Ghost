@@ -76,6 +76,10 @@ export const SignupPageStyles = `
         background-attachment: local,local,scroll,scroll;
     }
 
+    .gh-portal-content.signup.invite-only {
+        background: none;
+    }
+
     footer.gh-portal-signup-footer,
     footer.gh-portal-signin-footer {
         padding-top: 24px;
@@ -121,6 +125,10 @@ export const SignupPageStyles = `
 
     footer.gh-portal-signup-footer.invite-only {
         height: unset;
+    }
+
+    footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
+        margin-top: 0;
     }
 
     .gh-portal-invite-only-notification {
@@ -474,6 +482,7 @@ class SignupPage extends React.Component {
                 }
                 if (plansData.length === 0) {
                     footerClass = 'invite-only';
+                    sectionClass = 'invite-only';
                 }
             } else {
                 sectionClass = 'singleplan';
