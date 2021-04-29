@@ -6,13 +6,10 @@ const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
 const adminMiddleware = require('./middleware');
-const preview = require('./preview');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express('admin');
-
-    adminApp.use('/preview', preview);
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
