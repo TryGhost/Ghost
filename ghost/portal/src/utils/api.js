@@ -147,7 +147,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    plan: plan,
+                    priceId: plan,
                     identity: identity,
                     metadata: {
                         name,
@@ -237,8 +237,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     cancel_at_period_end: cancelAtPeriodEnd,
                     cancellation_reason: cancellationReason,
                     identity: identity,
-                    planName,
-                    planId
+                    priceId: planId
                 })
             });
         }
