@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getMemberActivePlan, getMemberActivePrice, getMemberSubscription, getPlanFromSubscription, getPriceFromSubscription, getSitePlans, getSitePrices, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getFilteredPrices, getMemberActivePlan, getMemberActivePrice, getMemberSubscription, getPlanFromSubscription, getPriceFromSubscription, getSitePlans, getSitePrices, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -130,7 +130,7 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
         planStartDate = 'today';
     }
     const priceString = formatNumber(plan.price);
-    const planStartMessage = `${plan.currency}${priceString}/${plan.type} – Starting ${planStartDate}`;
+    const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.interval} – Starting ${planStartDate}`;
     if (type === 'changePlan') {
         return (
             <>
@@ -301,24 +301,21 @@ export default class AccountPlanPage extends React.Component {
 
     getInitialState() {
         const {member, site} = this.context;
-        // this.plans = getSitePlans({site, includeFree: false});
-        this.plans = getSitePrices({site, includeFree: false});
-        let activePlan = getMemberActivePrice({member});
-        let selectedPlan = activePlan ? this.plans.find((d) => {
-            return (d.name === activePlan.name && d.price === activePlan.price && (d.currency || '').toLowerCase() === (activePlan.currency || '').toLowerCase());
+        this.prices = getSitePrices({site, includeFree: false});
+        let activePrice = getMemberActivePrice({member});
+        let selectedPrice = activePrice ? this.prices.find((d) => {
+            return (d.id === activePrice.id);
         }) : null;
-        if (selectedPlan) {
-            this.plans = this.plans.filter((d) => {
-                return (d.currency || '').toLowerCase() === (selectedPlan.currency || '').toLowerCase();
-            });
+        if (selectedPrice) {
+            this.prices = getFilteredPrices({prices: this.prices, currency: selectedPrice.currency});
         }
         // Select first plan as default for free member
-        if (!isPaidMember({member}) && this.plans.length > 0) {
-            selectedPlan = this.plans[0];
+        if (!isPaidMember({member}) && this.prices.length > 0) {
+            selectedPrice = this.prices[0];
         }
-        const selectedPlanName = selectedPlan ? selectedPlan.name : null;
+        const selectedPriceId = selectedPrice ? selectedPrice.id : null;
         return {
-            selectedPlan: selectedPlanName
+            selectedPlan: selectedPriceId
         };
     }
 
@@ -357,7 +354,7 @@ export default class AccountPlanPage extends React.Component {
         }
     }
 
-    onPlanSelect(e, name) {
+    onPlanSelect(e, priceId) {
         e.preventDefault();
 
         const {member} = this.context;
@@ -368,17 +365,17 @@ export default class AccountPlanPage extends React.Component {
             this.timeoutId = setTimeout(() => {
                 this.setState((state) => {
                     return {
-                        selectedPlan: name
+                        selectedPlan: priceId
                     };
                 });
             }, 5);
         } else {
-            const confirmationPlan = this.plans.find(d => d.id === name);
+            const confirmationPrice = this.prices.find(d => d.id === priceId);
             const activePlan = this.getActivePriceId({member});
             const confirmationType = activePlan ? 'changePlan' : 'subscribe';
-            if (name !== this.state.selectedPlan) {
+            if (priceId !== this.state.selectedPlan) {
                 this.setState({
-                    confirmationPlan,
+                    confirmationPlan: confirmationPrice,
                     confirmationType,
                     showConfirmation: true
                 });
@@ -416,14 +413,6 @@ export default class AccountPlanPage extends React.Component {
         });
     }
 
-    getActivePlanName({member}) {
-        const activePlan = getMemberActivePlan({member});
-        if (activePlan) {
-            return activePlan.name;
-        }
-        return null;
-    }
-
     getActivePriceId({member}) {
         const activePrice = getMemberActivePrice({member});
         if (activePrice) {
@@ -443,7 +432,7 @@ export default class AccountPlanPage extends React.Component {
 
     render() {
         const {member, brandColor, lastPage} = this.context;
-        const plans = this.plans;
+        const plans = this.prices;
         const {selectedPlan, showConfirmation, confirmationPlan, confirmationType} = this.state;
         return (
             <>

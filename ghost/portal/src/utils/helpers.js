@@ -69,12 +69,19 @@ export function getPlanFromSubscription({subscription}) {
     return null;
 }
 
+export function getFilteredPrices({prices, currency}) {
+    return prices.filter((d) => {
+        return (d.currency || '').toLowerCase() === (currency || '').toLowerCase();
+    });
+}
+
 export function getPriceFromSubscription({subscription}) {
     if (subscription && subscription.price) {
         return {
             ...subscription.price,
-            price: subscription.plan.amount / 100,
-            name: subscription.plan.nickname
+            price: subscription.price.amount / 100,
+            name: subscription.price.nickname,
+            currency_symbol: getCurrencySymbol(subscription.price.currency)
         };
     }
     return null;

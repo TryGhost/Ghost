@@ -141,8 +141,8 @@ const UserHeader = ({member, brandColor}) => {
 };
 
 const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
-    const PlanLabel = ({plan, isComplimentary}) => {
-        const {amount = 0, currency, interval} = plan;
+    const PlanLabel = ({plan, price, isComplimentary}) => {
+        const {amount = 0, currency, interval} = price;
         let label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
         if (isComplimentary) {
             label = `Complimentary (${label})`;
@@ -200,6 +200,7 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
         let isComplimentary = isComplimentaryMember({member});
         const {
             plan,
+            price,
             default_payment_card_last4: defaultCardLast4
         } = subscription;
         return (
@@ -207,7 +208,7 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
                 <section>
                     <div className='gh-portal-list-detail'>
                         <h3>Plan</h3>
-                        <PlanLabel plan={plan} isComplimentary={isComplimentary} />
+                        <PlanLabel plan={plan} price={price} isComplimentary={isComplimentary} />
                     </div>
                     <PlanUpdateButton isComplimentary={isComplimentary} />
                 </section>
