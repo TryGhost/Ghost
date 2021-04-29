@@ -253,13 +253,16 @@
     text-align: center;
     margin-top: 25px;
     margin-bottom: 25px;
+    font-size: 1.4rem;
+    font-weight: 400;
+    text-transform: uppercase;
 }
 
 .gh-separator::before,
 .gh-separator::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid var(--midgrey);
+  border-bottom: 1px solid var(--lightgrey);
 }
 
 .gh-separator:not(:empty)::before {
