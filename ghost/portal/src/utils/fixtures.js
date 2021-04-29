@@ -30,8 +30,8 @@ export const site = {
             nickname: 'Test Price One Time',
             currency: 'usd',
             amount: 1500,
-            type: 'one_time',
-            interval: null
+            type: 'recurring',
+            interval: 'month'
         },
         {
             id: '6086eb2a823dd7240afc8081',
@@ -145,12 +145,12 @@ export const member = {
                 currency: 'USD'
             },
             price: {
-                id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                id: 'price_1IkXLAFToJelIqAseQdK4WSU',
                 nickname: 'Yearly',
-                amount: 12000,
-                interval: 'year',
+                currency: 'usd',
+                amount: 1500,
                 type: 'recurring',
-                currency: 'USD',
+                interval: 'month',
                 product: {
                     id: 'prod_JNGGBrrogUXcoM',
                     name: 'Main Product',
