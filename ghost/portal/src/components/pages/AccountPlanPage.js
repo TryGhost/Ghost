@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getFilteredPrices, getMemberActivePlan, getMemberActivePrice, getMemberSubscription, getPlanFromSubscription, getPriceFromSubscription, getSitePlans, getSitePrices, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getSitePrices, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {

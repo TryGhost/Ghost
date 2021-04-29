@@ -217,6 +217,8 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
         };
     }).filter((price) => {
         return price.amount !== 0 && price.type === 'recurring';
+    }).filter((price) => {
+        return (portalPlans || []).includes(price.price_id);
     });
 
     if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
