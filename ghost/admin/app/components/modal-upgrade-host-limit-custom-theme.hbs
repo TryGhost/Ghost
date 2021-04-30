@@ -6,7 +6,11 @@
 
 <div class="modal-body">
     <p>
-        Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
+        {{#if this.model.limitErrorMessage}}
+            {{html-safe this.model.limitErrorMessage}}
+        {{else}}
+            Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
+        {{/if}}
     </p>
 </div>
 
