@@ -130,7 +130,8 @@ const AccountFooter = ({onClose, handleSignout, supportAddress = ''}) => {
     );
 };
 
-const UserHeader = ({member, brandColor}) => {
+const UserHeader = () => {
+    const {member, brandColor} = useContext(AppContext);
     const avatar = member.avatar_image;
     return (
         <header className='gh-portal-account-header'>
@@ -140,8 +141,25 @@ const UserHeader = ({member, brandColor}) => {
     );
 };
 
-const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
-    const PlanLabel = ({plan, price, isComplimentary}) => {
+const PaidAccountActions = () => {
+    const {member, site, onAction} = useContext(AppContext);
+    
+    const onEditBilling = () => {
+        const subscription = getMemberSubscription({member});
+        onAction('editBilling', {subscriptionId: subscription.id});
+    };
+
+    const openUpdatePlan = () => {
+        const {is_stripe_configured: isStripeConfigured} = site;
+        if (isStripeConfigured) {
+            onAction('switchPage', {
+                page: 'accountPlan',
+                lastPage: 'accountHome'
+            });
+        }
+    };
+
+    const PlanLabel = ({price, isComplimentary}) => {
         const {amount = 0, currency, interval} = price;
         let label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
         if (isComplimentary) {
@@ -219,8 +237,21 @@ const PaidAccountActions = ({member, site, openUpdatePlan, onEditBilling}) => {
     return null;
 };
 
-const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
+const AccountActions = () => {
+    const {member, onAction} = useContext(AppContext);
     const {name, email, subscribed} = member;
+
+    const openEditProfile = () => {
+        onAction('switchPage', {
+            page: 'accountProfile',
+            lastPage: 'accountHome'
+        });
+    };
+
+    const onToggleSubscription = (e, sub) => {
+        e.preventDefault();
+        this.context.onAction('updateNewsletter', {subscribed: !sub});
+    };
 
     let label = subscribed ? 'Subscribed' : 'Unsubscribed';
     return (
@@ -234,7 +265,7 @@ const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, 
                     <button className='gh-portal-btn gh-portal-btn-list' onClick={e => openEditProfile(e)}>Edit</button>
                 </section>
 
-                <PaidAccountActions site={site} member={member} onEditBilling={onEditBilling} openUpdatePlan={openUpdatePlan} />
+                <PaidAccountActions />
 
                 <section>
                     <div className='gh-portal-list-detail'>
@@ -253,25 +284,34 @@ const AccountActions = ({member, site, action, openEditProfile, openUpdatePlan, 
     );
 };
 
-const SubscribeButton = ({site, action, openSubscribe, brandColor}) => {
+const SubscribeButton = () => {
+    const {site, action, brandColor, onAction} = useContext(AppContext);
     const {is_stripe_configured: isStripeConfigured} = site;
 
     if (!isStripeConfigured || hasOnlyFreePlan({site})) {
         return null;
     }
     const isRunning = ['checkoutPlan:running'].includes(action);
+
+    const openPlanPage = () => {
+        onAction('switchPage', {
+            page: 'accountPlan',
+            lastPage: 'accountHome'
+        });
+    };
     return (
         <ActionButton
             isRunning={isRunning}
             label="View plans"
-            onClick={() => openSubscribe()}
+            onClick={() => openPlanPage()}
             brandColor={brandColor}
             style={{width: '100%'}}
         />
     );
 };
 
-const AccountWelcome = ({member, action, site, openSubscribe, brandColor}) => {
+const AccountWelcome = () => {
+    const {member, site} = useContext(AppContext);
     const {is_stripe_configured: isStripeConfigured} = site;
 
     if (!isStripeConfigured) {
@@ -294,12 +334,13 @@ const AccountWelcome = ({member, action, site, openSubscribe, brandColor}) => {
     return (
         <div className='gh-portal-section'>
             <p className='gh-portal-text-center gh-portal-free-ctatext'>You currently have a free membership, upgrade to a paid subscription for full access.</p>
-            <SubscribeButton action={action} site={site} openSubscribe={openSubscribe} brandColor={brandColor} />
+            <SubscribeButton />
         </div>
     );
 };
 
-const CancelContinueSubscription = ({member, onAction, action, brandColor, showOnlyContinue = false}) => {
+const ContinueSubscriptionButton = () => {
+    const {member, onAction, action, brandColor} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -309,7 +350,7 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
     }
 
     // To show only continue button and not cancellation
-    if (showOnlyContinue && !subscription.cancel_at_period_end) {
+    if (!subscription.cancel_at_period_end) {
         return null;
     }
     const label = subscription.cancel_at_period_end ? 'Continue subscription' : 'Cancel subscription';
@@ -349,28 +390,15 @@ const CancelContinueSubscription = ({member, onAction, action, brandColor, showO
     );
 };
 
-const AccountMain = ({member, site, onAction, action, openSubscribe, brandColor, openEditProfile, openUpdatePlan, onEditBilling, onToggleSubscription}) => {
+const AccountMain = () => {
     return (
         <div className='gh-portal-content gh-portal-account-main'>
             <CloseButton />
-            <UserHeader member={member} brandColor={brandColor} />
+            <UserHeader />
             <section className='gh-portal-account-data'>
-                <AccountWelcome action={action} member={member} site={site} openSubscribe={e => openSubscribe(e)} brandColor={brandColor} />
-                <CancelContinueSubscription
-                    member={member}
-                    onAction={onAction}
-                    action={action}
-                    brandColor={brandColor}
-                    showOnlyContinue={true} />
-                <AccountActions
-                    action={action}
-                    member={member}
-                    site={site}
-                    openEditProfile={e => openEditProfile(e)}
-                    onToggleSubscription={(e, subscribed) => onToggleSubscription(e, subscribed)}
-                    openUpdatePlan={(e, subscribed) => openUpdatePlan(e, subscribed)}
-                    onEditBilling={(e, subscribed) => onEditBilling(e, subscribed)}
-                />
+                <AccountWelcome />
+                <ContinueSubscriptionButton />
+                <AccountActions />
             </section>
         </div>
     );
@@ -388,46 +416,6 @@ export default class AccountHomePage extends React.Component {
         }
     }
 
-    openSubscribe(e) {
-        this.context.onAction('switchPage', {
-            page: 'accountPlan',
-            lastPage: 'accountHome'
-        });
-    }
-
-    openEditProfile() {
-        this.context.onAction('switchPage', {
-            page: 'accountProfile',
-            lastPage: 'accountHome'
-        });
-    }
-
-    checkoutPlan(plan) {
-        const {onAction} = this.context;
-        onAction('checkoutPlan', {plan: plan.name});
-    }
-
-    openUpdatePlan() {
-        const {is_stripe_configured: isStripeConfigured} = this.context.site;
-        if (isStripeConfigured) {
-            this.context.onAction('switchPage', {
-                page: 'accountPlan',
-                lastPage: 'accountHome'
-            });
-        }
-    }
-
-    onEditBilling({subscriptionId = ''} = {}) {
-        const {member} = this.context;
-        const subscription = getMemberSubscription({member});
-        this.context.onAction('editBilling', {subscriptionId: subscription.id});
-    }
-
-    onToggleSubscription(e, subscribed) {
-        e.preventDefault();
-        this.context.onAction('updateNewsletter', {subscribed: !subscribed});
-    }
-
     handleSignout(e) {
         e.preventDefault();
         this.context.onAction('signout');
@@ -441,15 +429,12 @@ export default class AccountHomePage extends React.Component {
         }
         return (
             <div className='gh-portal-account-wrapper'>
-                <AccountMain
-                    {...this.context}
-                    openSubscribe={e => this.openSubscribe(e)}
-                    openEditProfile={e => this.openEditProfile(e)}
-                    onToggleSubscription={(e, subscribed) => this.onToggleSubscription(e, subscribed)}
-                    openUpdatePlan={(e, subscribed) => this.openUpdatePlan(e, subscribed)}
-                    onEditBilling={(e, subscribed) => this.onEditBilling(e, subscribed)}
+                <AccountMain />
+                <AccountFooter 
+                    onClose={() => this.context.onAction('closePopup')}
+                    handleSignout={e => this.handleSignout(e)}
+                    supportAddress={supportAddress} 
                 />
-                <AccountFooter onClose={() => this.context.onAction('closePopup')} handleSignout={e => this.handleSignout(e)} supportAddress={supportAddress} />
             </div>
         );
     }
