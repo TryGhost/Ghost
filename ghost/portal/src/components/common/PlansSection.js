@@ -1,5 +1,5 @@
 import React from 'react';
-import {isCookiesDisabled, formatNumber} from '../../utils/helpers';
+import {isCookiesDisabled, formatNumber, hasOnlyFreePlan} from '../../utils/helpers';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
@@ -332,28 +332,17 @@ function PriceLabel({currencySymbol, price}) {
 }
 
 function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
-    const hasMonthlyPlan = plans.some(({name}) => {
-        return name === 'Monthly';
-    });
-    return plans.map(({name, currency_symbol: currencySymbol, price, discount, id}, i) => {
-        const isChecked = selectedPlan === (id || name);
+    return plans.map(({name, currency_symbol: currencySymbol, price, description, id}) => {
+        const isChecked = selectedPlan === id;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         const planDetails = {};
-        let displayName = '';
+        let displayName = name;
         switch (name) {
         case 'Free':
             planDetails.feature = 'Free preview';
             break;
-        case 'Monthly':
-        case 'Complimentary':
-            planDetails.feature = 'Full access';
-            break;
-        case 'Yearly':
-            displayName = 'Annually';
-            planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
-            break;
         default:
-            planDetails.feature = ((hasMonthlyPlan && discount > 0) ? (discount + '% discount') : 'Full access');
+            planDetails.feature = description || 'Full access';
             break;
         }
 
@@ -362,7 +351,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
         return (
             <div className={classes} key={id} onClick={e => onPlanSelect(e, id)}>
                 <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
-                <h4 className={planNameClass}>{displayName || name}</h4>
+                <h4 className={planNameClass}>{displayName}</h4>
                 <PriceLabel name={name} currencySymbol={currencySymbol} price={price} />
                 <div className='gh-portal-plan-featurewrapper'>
                     <div className='gh-portal-plan-feature'>
@@ -384,18 +373,34 @@ function PlanLabel({showLabel}) {
     );
 }
 
-function PlansSection({plans, showLabel = true, type, selectedPlan, onPlanSelect, changePlan = false, style}) {
-    if (!plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free')) {
+function getPlanClassNames({changePlan, cookiesDisabled, plans}) {
+    let className = 'gh-portal-plans-container';
+    if (changePlan) {
+        className += ' hide-checkbox';
+    }
+    if (cookiesDisabled) {
+        className += ' disabled';
+    }
+    if (changePlan || plans.length > 3) {
+        className += ' vertical';
+    }
+    return className;
+}
+
+function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, changePlan = false}) {
+    if (hasOnlyFreePlan({plans})) {
         return null;
     }
     const cookiesDisabled = isCookiesDisabled();
+    /**Don't allow plans selection if cookies are disabled */
     if (cookiesDisabled) {
-        onPlanSelect = (e, name) => {};
-    } 
+        onPlanSelect = () => {};
+    }
+    const className = getPlanClassNames({cookiesDisabled, changePlan, plans});
     return (
         <section>
             <PlanLabel showLabel={showLabel} />
-            <div className={'gh-portal-plans-container' + (changePlan ? ' hide-checkbox' : '') + (cookiesDisabled ? ' disabled' : '') + (plans.length > 3 || changePlan ? ' vertical' : '')}>
+            <div className={className}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
         </section>
