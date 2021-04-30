@@ -1,5 +1,3 @@
-import CalculateDiscount from './discount';
-
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)?))?\/?$/;
@@ -47,26 +45,14 @@ export function getMemberSubscription({member = {}}) {
 export function isComplimentaryMember({member = {}}) {
     const subscription = getMemberSubscription({member});
     if (subscription) {
-        const {plan} = subscription;
-        return (plan.nickname === 'Complimentary');
+        const {price} = subscription;
+        return (price.amount === 0);
     }
     return false;
 }
 
 export function isPaidMember({member = {}}) {
     return (member && member.paid);
-}
-
-export function getPlanFromSubscription({subscription}) {
-    if (subscription && subscription.plan) {
-        return {
-            type: subscription.plan.interval,
-            price: subscription.plan.amount / 100,
-            currency: subscription.plan.currency_symbol,
-            name: subscription.plan.nickname
-        };
-    }
-    return null;
 }
 
 export function getFilteredPrices({prices, currency}) {
@@ -87,11 +73,6 @@ export function getPriceFromSubscription({subscription}) {
     return null;
 }
 
-export function getMemberActivePlan({member}) {
-    const subscription = getMemberSubscription({member});
-    return getPlanFromSubscription({subscription});
-}
-
 export function getMemberActivePrice({member}) {
     const subscription = getMemberSubscription({member});
     return getPriceFromSubscription({subscription});
@@ -105,19 +86,19 @@ export function getSubscriptionFromId({member, subscriptionId}) {
     return null;
 }
 
-export function hasOnlyFreePlan({site = {}}) {
-    const plans = getSitePlans({site});
+export function hasOnlyFreePlan({plans, site = {}}) {
+    plans = plans || getSitePrices({site});
     return !plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free');
 }
 
-export function hasPlan({site = {}, plan}) {
-    const plans = getSitePlans({site});
+export function hasPrice({site = {}, plan}) {
+    const prices = getSitePrices({site});
     if (plan === 'free') {
-        return !plans || plans.length === 0 || plans.find(p => p.type === 'free');
+        return !prices || prices.length === 0 || prices.find(p => p.type === 'free');
     } else if (plan === 'monthly') {
-        return plans && plans.length > 0 && plans.find(p => p.type === 'month');
+        return prices && prices.length > 0 && prices.find(p => p.name === 'Monthly');
     } else if (plan === 'yearly') {
-        return plans && plans.length > 0 && plans.find(p => p.type === 'year');
+        return prices && prices.length > 0 && prices.find(p => p.name === 'Yearly');
     }
     return false;
 }
@@ -129,67 +110,9 @@ export function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function isInviteOnlySite({site = {}}) {
-    return site && site.members_signup_access === 'invite';
-}
-
-export function getSitePlans({site = {}, includeFree = true, pageQuery} = {}) {
-    const {
-        plans,
-        allow_self_signup: allowSelfSignup,
-        is_stripe_configured: isStripeConfigured,
-        portal_plans: portalPlans
-    } = site || {};
-
-    if (!plans) {
-        return [];
-    }
-
-    const plansData = [];
-    const discount = CalculateDiscount(plans.monthly, plans.yearly);
-    const stripePlans = [
-        {
-            type: 'month',
-            price: plans.monthly,
-            currency_symbol: getCurrencySymbol(plans.currency),
-            name: 'Monthly'
-        },
-        {
-            type: 'year',
-            price: plans.yearly,
-            currency_symbol: getCurrencySymbol(plans.currency),
-            name: 'Yearly',
-            discount
-        },
-
-        // TODO: mock!
-        {
-            type: 'custom',
-            price: plans.yearly,
-            currency_symbol: getCurrencySymbol(plans.currency),
-            name: 'Custom',
-            discount
-        }
-    ];
-
-    if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
-        plansData.push({
-            type: 'free',
-            price: 0,
-            currency_symbol: getCurrencySymbol(plans.currency),
-            name: 'Free'
-        });
-    }
-    const showOnlyFree = pageQuery === 'free' && hasPlan({site, plan: 'free'});
-
-    if (isStripeConfigured && !showOnlyFree) {
-        stripePlans.forEach((plan) => {
-            if (portalPlans.includes(plan.name.toLowerCase())) {
-                plansData.push(plan);
-            }
-        });
-    }
-    return plansData;
+export function isInviteOnlySite({site = {}, pageQuery}) {
+    const prices = getSitePrices({site, pageQuery});
+    return prices.length === 0 || (site && site.members_signup_access === 'invite');
 }
 
 export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
@@ -230,7 +153,7 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
             name: 'Free'
         });
     }
-    const showOnlyFree = pageQuery === 'free' && hasPlan({site, plan: 'free'});
+    const showOnlyFree = pageQuery === 'free' && hasPrice({site, plan: 'free'});
 
     if (isStripeConfigured && !showOnlyFree) {
         stripePrices.forEach((price) => {

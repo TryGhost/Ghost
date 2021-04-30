@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useContext, useState} from 'react';
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
@@ -45,7 +45,8 @@ function getConfirmationPageTitle({confirmationType}) {
     }
 }
 
-const Header = ({member, lastPage, brandColor, onBack, showConfirmation, confirmationType}) => {
+const Header = ({onBack, showConfirmation, confirmationType}) => {
+    const {member, brandColor, lastPage} = useContext(AppContext);
     let title = isPaidMember({member}) ? 'Change plan' : 'Choose a plan';
     if (showConfirmation) {
         title = getConfirmationPageTitle({confirmationType});
@@ -58,7 +59,7 @@ const Header = ({member, lastPage, brandColor, onBack, showConfirmation, confirm
     );
 };
 
-const CancelContinueSubscription = ({member, onCancelContinueSubscription, action, brandColor, showOnlyContinue = false}) => {
+const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
     if (!member.paid) {
         return null;
     }
@@ -67,41 +68,23 @@ const CancelContinueSubscription = ({member, onCancelContinueSubscription, actio
         return null;
     }
 
-    // To show only continue button and not cancellation
-    if (showOnlyContinue && !subscription.cancel_at_period_end) {
-        return null;
-    }
-
     // Hide the button if subscription is due cancellation
     if (subscription.cancel_at_period_end) {
         return null;
     }
-    const label = subscription.cancel_at_period_end ? 'Continue subscription' : 'Cancel subscription';
+    const label = 'Cancel subscription';
     const isRunning = ['cancelSubscription:running'].includes(action);
     const disabled = (isRunning) ? true : false;
     const isPrimary = !!subscription.cancel_at_period_end;
     const isDestructive = !subscription.cancelAtPeriodEnd;
 
-    const CancelNotice = () => {
-        if (!subscription.cancel_at_period_end) {
-            return null;
-        }
-        const currentPeriodEnd = subscription.current_period_end;
-        return (
-            <p className="gh-portal-expire-warning">
-                Your subscription will expire on {getDateString(currentPeriodEnd)}.
-            </p>
-        );
-    };
-
     return (
         <div className="gh-portal-expire-container">
-            <CancelNotice />
             <ActionButton
                 onClick={(e) => {
-                    onCancelContinueSubscription({
+                    onCancelSubscription({
                         subscriptionId: subscription.id,
-                        cancelAtPeriodEnd: !subscription.cancel_at_period_end
+                        cancelAtPeriodEnd: true
                     });
                 }}
                 isRunning={isRunning}
@@ -119,7 +102,8 @@ const CancelContinueSubscription = ({member, onCancelContinueSubscription, actio
 };
 
 // For confirmation flows
-const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConfirm}) => {
+const PlanConfirmationSection = ({plan, type, onConfirm}) => {
+    const {action, member, brandColor} = useContext(AppContext);
     const [reason, setReason] = useState('');
     const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
@@ -199,7 +183,8 @@ const PlanConfirmationSection = ({action, member, plan, type, brandColor, onConf
 };
 
 // For paid members
-const ChangePlanSection = ({plans, selectedPlan, member, action, brandColor, onPlanSelect, onCancelContinueSubscription}) => {
+const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscription}) => {
+    const {member, action, brandColor} = useContext(AppContext);
     return (
         <section>
             <div className='gh-portal-section gh-portal-accountplans-main'>
@@ -207,19 +192,20 @@ const ChangePlanSection = ({plans, selectedPlan, member, action, brandColor, onP
                     showLabel={false}
                     plans={plans}
                     selectedPlan={selectedPlan}
-                    onPlanSelect={(e, name) => onPlanSelect(e, name)}
+                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
                     changePlan={true}
                 />
             </div>
-            <CancelContinueSubscription {...{member, onCancelContinueSubscription, action, brandColor}} />
+            <CancelSubscriptionButton {...{member, onCancelSubscription, action, brandColor}} />
         </section>
     );
 };
 
 // For free members
 const UpgradePlanSection = ({
-    plans, selectedPlan, action, brandColor, onPlanSelect, onPlanCheckout
+    plans, selectedPlan, onPlanSelect, onPlanCheckout
 }) => {
+    const {action, brandColor} = useContext(AppContext);
     const isRunning = ['checkoutPlan:running'].includes(action);
     let singlePlanClass = '';
     if (plans.length === 1) {
@@ -232,7 +218,7 @@ const UpgradePlanSection = ({
                     showLabel={false}
                     plans={plans}
                     selectedPlan={selectedPlan}
-                    onPlanSelect={(e, name) => onPlanSelect(e, name)}
+                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
                 />
             </div>
             <ActionButton
@@ -248,15 +234,15 @@ const UpgradePlanSection = ({
 };
 
 const PlansContainer = ({
-    plans, selectedPlan, confirmationPlan, confirmationType,
-    member, onAction, action, brandColor,showConfirmation = false,
-    onPlanSelect, onPlanCheckout, onConfirm, onCancelContinueSubscription
+    plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
+    onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription
 }) => {
+    const {member} = useContext(AppContext);
     // Plan upgrade flow for free member
     if (!isPaidMember({member})) {
         return (
             <UpgradePlanSection
-                {...{plans, selectedPlan, member, onAction, action, brandColor, onPlanSelect, onPlanCheckout}}
+                {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
             />
         );
     }
@@ -265,8 +251,8 @@ const PlansContainer = ({
     if (!showConfirmation) {
         return (
             <ChangePlanSection
-                {...{plans, selectedPlan, member, action, brandColor,
-                    onCancelContinueSubscription, onPlanSelect}}
+                {...{plans, selectedPlan,
+                    onCancelSubscription, onPlanSelect}}
             />
         );
     }
@@ -274,7 +260,7 @@ const PlansContainer = ({
     // Plan confirmation flow for cancel/update flows
     return (
         <PlanConfirmationSection
-            {...{action, member, plan: confirmationPlan, type: confirmationType, onConfirm, brandColor}}
+            {...{plan: confirmationPlan, type: confirmationType, onConfirm}}
         />
     );
 };
@@ -340,7 +326,7 @@ export default class AccountPlanPage extends React.Component {
         });
     }
 
-    onPlanCheckout(e, name) {
+    onPlanCheckout(e, priceId) {
         const {onAction, member} = this.context;
         const {confirmationPlan, selectedPlan} = this.state;
         if (isPaidMember({member})) {
@@ -383,21 +369,15 @@ export default class AccountPlanPage extends React.Component {
         }
     }
 
-    onCancelContinueSubscription({subscriptionId, cancelAtPeriodEnd}) {
+    onCancelSubscription({subscriptionId, cancelAtPeriodEnd}) {
         const {member} = this.context;
         const subscription = getSubscriptionFromId({subscriptionId, member});
         const subscriptionPlan = getPriceFromSubscription({subscription});
-        if (!cancelAtPeriodEnd) {
-            this.context.onAction('continueSubscription', {
-                subscriptionId
-            });
-        } else {
-            this.setState({
-                showConfirmation: true,
-                confirmationPlan: subscriptionPlan,
-                confirmationType: 'cancel'
-            });
-        }
+        this.setState({
+            showConfirmation: true,
+            confirmationPlan: subscriptionPlan,
+            confirmationType: 'cancel'
+        });
     }
 
     onCancelSubscriptionConfirmation(reason) {
@@ -431,7 +411,6 @@ export default class AccountPlanPage extends React.Component {
     }
 
     render() {
-        const {member, brandColor, lastPage} = this.context;
         const plans = this.prices;
         const {selectedPlan, showConfirmation, confirmationPlan, confirmationType} = this.state;
         return (
@@ -439,16 +418,14 @@ export default class AccountPlanPage extends React.Component {
                 <div className='gh-portal-content'>
                     <CloseButton />
                     <Header
-                        lastPage={lastPage}
-                        member={member} brandColor={brandColor} onBack={e => this.onBack(e)}
+                        onBack={e => this.onBack(e)}
                         confirmationType={confirmationType}
                         showConfirmation={showConfirmation}
                     />
                     <PlansContainer
-                        {...this.context}
                         {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType}}
                         onConfirm={(...args) => this.onConfirm(...args)}
-                        onCancelContinueSubscription = {data => this.onCancelContinueSubscription(data)}
+                        onCancelSubscription = {data => this.onCancelSubscription(data)}
                         onPlanSelect = {(e, name) => this.onPlanSelect(e, name)}
                         onPlanCheckout = {(e, name) => this.onPlanCheckout(e, name)}
                     />

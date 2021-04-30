@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {capitalize, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getSiteDomain, hasPlan, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getSiteDomain, hasPrice, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -40,18 +40,21 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
+        /** Ignores API init when in test mode */
         if (!this.props.testState) {
             this.initSetup();
         }
     }
 
     componentDidUpdate(prevProps, prevState) {
+        /**Handle custom trigger class change on popup open state change */
         if (prevState.showPopup !== this.state.showPopup) {
             this.handleCustomTriggerClassUpdate();
         }
     }
 
     componentWillUnmount() {
+        /**Clear timeouts and event listeners on unmount */
         clearTimeout(this.timeoutId);
         this.customTriggerButtons && this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.removeEventListener('click', this.clickHandler);
@@ -67,13 +70,12 @@ export default class App extends React.Component {
             const pagePath = (target && target.dataset.portal);
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
 
-            if (this.state.initStatus === 'success' && !this.state.member && ['monthly', 'yearly'].includes(pageQuery) && hasPlan({site: this.state.site, plan: pageQuery})) {
-                removePortalLinkFromUrl();
-                this.onAction('signup', {plan: capitalize(pageQuery)});
-            }
+            if (this.state.initStatus === 'success') {
+                this.handleSignupQuery({site: this.state.site, pageQuery});
+            } 
 
             if (page) {
-                this.onAction('openPopup', {page, pageQuery});
+                this.dispatchAction('openPopup', {page, pageQuery});
             }
         };
         const customTriggerSelector = '[data-portal]';
@@ -115,11 +117,7 @@ export default class App extends React.Component {
                 action: 'init:success',
                 initStatus: 'success'
             };
-
-            if (!member && ['monthly', 'yearly'].includes(pageQuery) && hasPlan({site, plan: pageQuery})) {
-                removePortalLinkFromUrl();
-                this.onAction('signup', {plan: capitalize(pageQuery)});
-            }
+            this.handleSignupQuery({site, pageQuery});
 
             this.setState(state);
 
@@ -139,7 +137,7 @@ export default class App extends React.Component {
         }
     }
 
-    /** Fetch data from all available sources */
+    /** Fetch state data from all available sources */
     async fetchData() {
         const {site: apiSiteData, member} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
@@ -179,7 +177,7 @@ export default class App extends React.Component {
         return {};
     }
 
-    /** Fetch state from Query String */
+    /** Fetch state from Preview mode Query String */
     fetchQueryStrData(qs = '') {
         const qsParams = new URLSearchParams(qs);
         const data = {
@@ -237,6 +235,7 @@ export default class App extends React.Component {
         return data;
     }
 
+    /**Fetch state data for billing notification */
     fetchNotificationData() {
         const {type, status, duration, autoHide, closeable} = NotificationParser({billingOnly: true}) || {};
         if (['stripe:billing-update'].includes(type)) {
@@ -301,11 +300,13 @@ export default class App extends React.Component {
             const {siteUrl} = this.props;
             this.GhostApi = setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
-            this.setupFirstPromoter({site, member});
+
             const colorOverride = this.getColorOverride();
             if (colorOverride) {
                 site.accent_color = colorOverride;
             }
+            
+            this.setupFirstPromoter({site, member});
             return {site, member};
         } catch (e) {
             if (hasMode(['dev', 'test'])) {
@@ -315,6 +316,7 @@ export default class App extends React.Component {
         }
     }
 
+    /** Setup Firstpromoter script */
     setupFirstPromoter({site, member}) {
         const firstPromoterId = getFirstpromoterId({site});
         const siteDomain = getSiteDomain({site});
@@ -351,8 +353,8 @@ export default class App extends React.Component {
         }
     }
 
-    /** Handle actions from across App and update state */
-    async onAction(action, data) {
+    /** Handle actions from across App and update App state */
+    async dispatchAction(action, data) {
         clearTimeout(this.timeoutId);
         this.setState({
             action: `${action}:running`
@@ -384,7 +386,7 @@ export default class App extends React.Component {
         }
     }
 
-    /**Handle state update for preview url changes */
+    /**Handle state update for preview url and Portal Link changes */
     updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
         const {site: linkSite, ...restLinkData} = this.fetchLinkData();
@@ -403,33 +405,19 @@ export default class App extends React.Component {
             ...restLinkData,
             ...restPreviewData
         };
-
-        if (!this.state.member && ['monthly', 'yearly'].includes(updatedState.pageQuery) && hasPlan({site: updatedState.site, plan: updatedState.pageQuery})) {
-            removePortalLinkFromUrl();
-            this.onAction('signup', {plan: capitalize(updatedState.pageQuery)});
-        }
-
+        this.handleSignupQuery({site: updatedState.site, pageQuery: updatedState.pageQuery});
         this.setState(updatedState);
     }
 
-    /**Fetch Stripe param from site url after redirect from Stripe page*/
-    getStripeUrlParam() {
-        const url = new URL(window.location.href);
-        return (url.searchParams.get('stripe') || url.searchParams.get('portal-stripe'));
-    }
-
-    /**Get Portal page from Link/Data-attribute path*/
-    getPageFromPath(path) {
-        if (path === 'signup') {
-            return 'signup';
-        } else if (path === 'signin') {
-            return 'signin';
-        } else if (path === 'account') {
-            return 'accountHome';
-        } else if (path === 'account/plans') {
-            return 'accountPlan';
-        } else if (path === 'account/profile') {
-            return 'accountProfile';
+    /** Handle direct signup link for a price */
+    handleSignupQuery({site, pageQuery}) {
+        const queryPrice = hasPrice({site: site, plan: pageQuery});
+        if (!this.state.member 
+            && ['monthly', 'yearly'].includes(pageQuery)
+            && queryPrice
+        ) {
+            removePortalLinkFromUrl();
+            this.dispatchAction('signup', {plan: queryPrice.id});
         }
     }
 
@@ -474,7 +462,7 @@ export default class App extends React.Component {
         return {};
     }
 
-    /**Get Accent color from site data, fallback to default*/
+    /**Get Accent color from site data*/
     getAccentColor() {
         const {accent_color: accentColor} = this.state.site || {};
         return accentColor;
@@ -514,7 +502,7 @@ export default class App extends React.Component {
         return member;
     }
 
-    /**Get final App level context from data/state*/
+    /**Get final App level context from App state*/
     getContextFromState() {
         const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification} = this.state;
         const contextPage = this.getContextPage({page, member});
@@ -529,7 +517,7 @@ export default class App extends React.Component {
             lastPage,
             showPopup,
             popupNotification,
-            onAction: (_action, data) => this.onAction(_action, data)
+            onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
 

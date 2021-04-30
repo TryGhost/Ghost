@@ -4,8 +4,7 @@ import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import CalculateDiscount from '../../utils/discount';
-import {getSitePlans, getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -158,12 +157,12 @@ class SignupPage extends React.Component {
         this.state = {
             name: '',
             email: '',
-            plan: 'Free'
+            plan: 'free'
         };
     }
 
     componentDidMount() {
-        const {member, site} = this.context;
+        const {member} = this.context;
         if (member) {
             this.context.onAction('switchPage', {
                 page: 'accountHome'
@@ -171,29 +170,21 @@ class SignupPage extends React.Component {
         }
 
         // Handle the default plan if not set
-        // const plans = this.getPlans();
-        const plans = getSitePrices({site});
-
-        const selectedPlan = this.state.plan;
-        const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
-        if (defaultSelectedPlan !== selectedPlan) {
-            this.setState({
-                plan: defaultSelectedPlan
-            });
-        }
+        this.handleSelectedPlan();
     }
 
     componentDidUpdate() {
-        // Handle the default plan if not set
-        // const plans = this.getPlans();
-        const {site} = this.context;
-        const plans = getSitePrices({site});
+        this.handleSelectedPlan();
+    }
 
-        const selectedPlan = this.state.plan;
-        const defaultSelectedPlan = this.getDefaultSelectedPlan(plans, this.state.plan);
-        if (defaultSelectedPlan !== selectedPlan) {
+    handleSelectedPlan() {
+        const {site, pageQuery} = this.context;
+        const prices = getSitePrices({site, pageQuery});
+
+        const selectedPriceId = this.getSelectedPriceId(prices, this.state.plan);
+        if (selectedPriceId !== this.state.plan) {
             this.setState({
-                plan: defaultSelectedPlan
+                plan: selectedPriceId
             });
         }
     }
@@ -229,13 +220,13 @@ class SignupPage extends React.Component {
         });
     }
 
-    handleSelectPlan(e, name) {
+    handleSelectPlan(e, priceId) {
         e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
         this.timeoutId = setTimeout(() => {
             this.setState((prevState) => {
                 return {
-                    plan: name
+                    plan: priceId
                 };
             });
         }, 5);
@@ -248,69 +239,19 @@ class SignupPage extends React.Component {
         }
     }
 
-    getDefaultSelectedPlan(plans = [], selectedPlan) {
-        if (!plans || plans.length === 0) {
+    getSelectedPriceId(prices = [], selectedPriceId) {
+        if (!prices || prices.length === 0) {
             return 'free';
         }
-        const hasSelectedPlan = plans.some((p) => {
-            return p.id === selectedPlan;
+        const hasSelectedPlan = prices.some((p) => {
+            return p.id === selectedPriceId;
         });
 
         if (!hasSelectedPlan) {
-            return plans[0].id || 'free';
+            return prices[0].id || 'free';
         }
 
-        return selectedPlan;
-    }
-
-    getPlans() {
-        const {
-            plans,
-            allow_self_signup: allowSelfSignup,
-            is_stripe_configured: isStripeConfigured,
-            portal_plans: portalPlans
-        } = this.context.site;
-        const {pageQuery} = this.context;
-        const plansData = [];
-        const discount = CalculateDiscount(plans.monthly, plans.yearly);
-        const stripePlans = [
-            {
-                type: 'month',
-                price: plans.monthly,
-                currency_symbol: plans.currency_symbol,
-                name: 'Monthly'
-            },
-            {
-                type: 'year',
-                price: plans.yearly,
-                currency_symbol: plans.currency_symbol,
-                name: 'Yearly',
-                discount
-            },
-
-            // TODO: mock!
-            {
-                type: 'custom',
-                price: plans.yearly,
-                currency_symbol: plans.currency_symbol,
-                name: 'Custom',
-                discount
-            }
-        ];
-
-        if (allowSelfSignup && (portalPlans === undefined || portalPlans.includes('free'))) {
-            plansData.push({type: 'free', price: 0, currency_symbol: plans.currency_symbol, name: 'Free'});
-        }
-
-        if (isStripeConfigured && pageQuery !== 'free') {
-            stripePlans.forEach((plan) => {
-                if (portalPlans === undefined || portalPlans.includes(plan.name.toLowerCase())) {
-                    plansData.push(plan);
-                }
-            });
-        }
-
-        return plansData;
+        return selectedPriceId;
     }
 
     getInputFields({state, fieldNames}) {
@@ -355,8 +296,7 @@ class SignupPage extends React.Component {
     renderSubmitButton() {
         const {action, site, brandColor, pageQuery} = this.context;
 
-        const availablePlans = getSitePlans({site, pageQuery});
-        if (availablePlans.length === 0 || isInviteOnlySite({site})) {
+        if (isInviteOnlySite({site, pageQuery})) {
             return null;
         }
 
@@ -393,15 +333,14 @@ class SignupPage extends React.Component {
 
     renderPlans() {
         const {site, pageQuery} = this.context;
-        // const plansData = getSitePlans({site, pageQuery});
-        const plansData = getSitePrices({site, pageQuery});
+        const prices = getSitePrices({site, pageQuery});
         return (
             <>
                 <PlansSection
-                    plans={plansData}
+                    plans={prices}
                     selectedPlan={this.state.plan}
-                    onPlanSelect={(e, name) => {
-                        this.handleSelectPlan(e, name);
+                    onPlanSelect={(e, id) => {
+                        this.handleSelectPlan(e, id);
                     }}
                 />
             </>
@@ -427,8 +366,8 @@ class SignupPage extends React.Component {
     renderForm() {
         const fields = this.getInputFields({state: this.state});
         const {site, pageQuery} = this.context;
-        const availablePlans = getSitePlans({site, pageQuery});
-        if (availablePlans.length === 0 || isInviteOnlySite({site})) {
+
+        if (isInviteOnlySite({site, pageQuery})) {
             return (
                 <section>
                     <div className='gh-portal-section'>
@@ -452,8 +391,8 @@ class SignupPage extends React.Component {
     }
 
     renderSiteLogo() {
-        const plansData = this.getPlans();
-        const {site} = this.context;
+        const {site, pageQuery} = this.context;
+
         const siteLogo = site.icon;
 
         const logoStyle = {};
@@ -463,7 +402,7 @@ class SignupPage extends React.Component {
             return (
                 <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
             );
-        } else if (plansData.length === 0 || isInviteOnlySite({site})) {
+        } else if (isInviteOnlySite({site, pageQuery})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
@@ -483,20 +422,20 @@ class SignupPage extends React.Component {
         );
     }
 
-    render() {
-        const {site} = this.context;
-        const plansData = this.getPlans();
+    getClassNames() {
+        const {site, pageQuery} = this.context;
+        const plansData = getSitePrices({site, pageQuery});
         const fields = this.getInputFields({state: this.state});
         let sectionClass = '';
         let footerClass = '';
 
         if (plansData.length <= 1 || isInviteOnlySite({site})) {
-            if ((plansData.length === 1 && plansData[0].type === 'free') || plansData.length === 0 || isInviteOnlySite({site})) {
+            if ((plansData.length === 1 && plansData[0].type === 'free') || isInviteOnlySite({site, pageQuery})) {
                 sectionClass = 'noplan';
                 if (fields.length === 1) {
                     sectionClass = 'single-field';
                 }
-                if (plansData.length === 0 || isInviteOnlySite({site})) {
+                if (isInviteOnlySite({site})) {
                     footerClass = 'invite-only';
                     sectionClass = 'invite-only';
                 }
@@ -504,6 +443,11 @@ class SignupPage extends React.Component {
                 sectionClass = 'singleplan';
             }
         }
+        return {sectionClass, footerClass};
+    }
+
+    render() {
+        let {sectionClass, footerClass} = this.getClassNames();
 
         return (
             <>
