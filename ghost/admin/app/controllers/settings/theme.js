@@ -55,6 +55,7 @@ export default Controller.extend({
     themes: null,
     themeToDelete: null,
     displayUpgradeModal: false,
+    limitErrorMessage: null,
 
     init() {
         this._super(...arguments);
@@ -73,6 +74,17 @@ export default Controller.extend({
         async activateTheme(theme) {
             const isOverLimit = await this.limit.checkWouldGoOverLimit('customThemes', {value: theme.name});
             if (isOverLimit) {
+                try {
+                    await this.limit.limiter.errorIfWouldGoOverLimit('customThemes', {value: theme.name});
+                    this.limitErrorMessage = null;
+                } catch (error) {
+                    if (error.errorType !== 'HostLimitError') {
+                        throw error;
+                    }
+
+                    this.limitErrorMessage = error.message;
+                }
+
                 this.set('displayUpgradeModal', true);
                 return;
             }

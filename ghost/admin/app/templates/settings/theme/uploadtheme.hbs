@@ -1,7 +1,16 @@
-<GhFullscreenModal @modal={{if this.isAllowed "upload-theme" "upgrade-host-limit-custom-theme"}}
-    @model={{hash
-        themes=this.themes
-        activate=(route-action 'activateTheme')
-    }}
-    @close={{route-action "cancel"}}
-    @modifier="action wide" />
+{{#if this.isAllowed}}
+    <GhFullscreenModal @modal="upload-theme"
+        @model={{hash
+            themes=this.themes
+            activate=(route-action 'activateTheme')
+        }}
+        @close={{route-action "cancel"}}
+        @modifier="action wide" />
+{{else}}
+    <GhFullscreenModal @modal="upgrade-host-limit-custom-theme"
+        @model={{hash
+            limitErrorMessage=limitErrorMessage
+        }}
+        @close={{route-action "cancel"}}
+        @modifier="action wide" />
+{{/if}}

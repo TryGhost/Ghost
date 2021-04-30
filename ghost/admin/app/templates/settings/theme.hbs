@@ -104,6 +104,9 @@
 
 {{#if this.displayUpgradeModal}}
     <GhFullscreenModal @modal="upgrade-host-limit-custom-theme"
+        @model={{hash
+            limitErrorMessage=limitErrorMessage
+        }}
         @close={{action "hideUpgradeModal"}}
         @modifier="action wide" />
 {{/if}}
