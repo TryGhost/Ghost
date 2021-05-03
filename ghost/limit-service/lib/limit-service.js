@@ -29,6 +29,7 @@ class LimitService {
         Object.keys(limits).forEach((name) => {
             name = _.camelCase(name);
 
+            // NOTE: config module acts as an allowlist of supported config names, where each key is a name of supported config
             if (config[name]) {
                 /** @type LimitConfig */
                 let limitConfig = Object.assign({}, config[name], limits[name]);
