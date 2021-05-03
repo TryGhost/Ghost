@@ -86,7 +86,11 @@ describe('Limit Service', function () {
         it('can load multiple limits', function () {
             const limitService = new LimitService();
 
-            let limits = {staff: {max: 2}, members: {max: 100}};
+            let limits = {
+                staff: {max: 2},
+                members: {max: 100},
+                emails: {disabled: true}
+            };
 
             limitService.loadLimits({limits, errors});
 
@@ -95,6 +99,7 @@ describe('Limit Service', function () {
             limitService.limits.members.should.be.an.instanceOf(MaxLimit);
             limitService.isLimited('staff').should.be.true();
             limitService.isLimited('members').should.be.true();
+            limitService.isLimited('emails').should.be.true();
         });
 
         it('can load camel cased limits', function () {
@@ -138,6 +143,7 @@ describe('Limit Service', function () {
             limitService.isLimited('members').should.be.false();
             limitService.isLimited('custom_themes').should.be.false();
             limitService.isLimited('customThemes').should.be.false();
+            limitService.isLimited('emails').should.be.false();
         });
 
         it('populates new limits if called multiple times', function () {
