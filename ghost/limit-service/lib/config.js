@@ -9,6 +9,7 @@ module.exports = {
             return result.count;
         }
     },
+    emails: {},
     staff: {
         currentCountQuery: async (db) => {
             let result = await db.knex('users')
