@@ -903,3 +903,8 @@ input:focus,
 .user-image {
     border-color: var(--dark-main-bg-color);
 }
+
+.gh-whats-new-badge-account {
+    top: 0;
+    right: -2px;
+}
