@@ -274,26 +274,14 @@ const FrameStyles = `
     }
     
     .gh-portal-powered a {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 9px 6px 6px;
         border: none;
-        font-size: 12px;
-        line-height: 12px;
-        letter-spacing: -.3px;
-        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
-        font-weight: 600;
-        text-decoration: none;
-        color: #383838;
-        background: #fff;
-        border-radius: 5px;
-        box-shadow: 0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(0,0,0,.08);
-        cursor: pointer;
-        outline: none;
-        background: var(--white);
-        z-index: 9998;
-        animation: powered-fade-in 0.25s ease-in-out;
-        transform-origin: top right;
+        display: block;
+        line-height: 0;
+        border-radius: 4px;
+    }
+
+    .gh-portal-powered img {
+        box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
 
     @keyframes powered-fade-in {

@@ -156,7 +156,7 @@ class PopupContent extends React.Component {
                     <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
                         window.open('https://ghost.org', '_blank');
                     }}>
-                        <PoweredIcon /> <span>Publish with Ghost</span>
+                        <img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" alt="Publish with Ghost" />
                     </a>
                 </div>
             </div>
