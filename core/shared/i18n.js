@@ -9,7 +9,7 @@ const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
 const errors = require('@tryghost/errors');
-const logging = require('../../../shared/logging');
+const logging = require('./logging');
 
 class I18n {
     constructor(locale) {
@@ -73,7 +73,7 @@ class I18n {
         // Reading translation file for messages from core .json files and keeping its content in memory
         // The English file is always loaded, until back-end translations are enabled in future versions.
         try {
-            this._strings = this._readStringsFile(__dirname, '..', '..', 'translations', `${this.defaultLocale()}.json`);
+            this._strings = this._readStringsFile(__dirname, 'translations', `${this.defaultLocale()}.json`);
         } catch (err) {
             this._strings = null;
             throw err;

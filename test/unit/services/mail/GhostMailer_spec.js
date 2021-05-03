@@ -5,7 +5,7 @@ const mail = require('../../../../core/server/services/mail');
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const configUtils = require('../../../utils/configUtils');
 const urlUtils = require('../../../../core/shared/url-utils');
-const i18n = require('../../../../core/server/lib/common/i18n');
+const i18n = require('../../../../core/shared/i18n');
 let mailer;
 
 // Mock SMTP config

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const i18n = require('../../../server/lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 
 /**
