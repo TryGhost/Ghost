@@ -1,5 +1,3 @@
-const {getMonthStart} = require('./date-utils');
-
 // NOTE: to support a new config in the limit service add an empty key-object pair in the export below.
 // Each type of limit has it's own structure:
 // 1. FlagLimit and AllowlistLimit types are empty objects paired with a key, e.g.: `customThemes: {}`
