@@ -3,9 +3,46 @@
 require('./utils');
 
 const errors = require('./fixtures/errors');
-const {MaxLimit, AllowlistLimit} = require('../lib/limit');
+const {MaxLimit, AllowlistLimit, FlagLimit} = require('../lib/limit');
 
 describe('Limit Service', function () {
+    describe('Flag Limit', function () {
+        it('do nothing if is over limit', async function () {
+            // NOTE: the behavior of flag limit in "is over limit" usecase is flawed and should not be relied on
+            //       possible solution could be throwing an error to prevent clients from using it?
+            const config = {
+                disabled: true
+            };
+            const limit = new FlagLimit({name: 'flaggy', config, errors});
+
+            const result = await limit.errorIfIsOverLimit();
+            should(result).be.undefined();
+        });
+
+        it('throws if would go over limit', async function () {
+            const config = {
+                disabled: true
+            };
+            const limit = new FlagLimit({name: 'flaggy', config, errors});
+
+            try {
+                await limit.errorIfWouldGoOverLimit();
+                should.fail(limit, 'Should have errored');
+            } catch (err) {
+                should.exist(err);
+
+                should.exist(err.errorType);
+                should.equal(err.errorType, 'HostLimitError');
+
+                should.exist(err.errorDetails);
+                should.equal(err.errorDetails.name, 'flaggy');
+
+                should.exist(err.message);
+                should.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
+            }
+        });
+    });
+
     describe('Max Limit', function () {
         describe('Constructor', function () {
             it('throws if initialized without a max limit', function () {
