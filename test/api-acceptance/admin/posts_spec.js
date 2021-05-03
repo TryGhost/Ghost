@@ -9,6 +9,7 @@ const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const localUtils = require('./utils');
+const configUtils = require('../../utils/configUtils');
 
 describe('Posts API', function () {
     let request;
@@ -361,5 +362,46 @@ describe('Posts API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404);
+    });
+
+    describe('Host Settings: emails limits', function () {
+        afterEach(function () {
+            configUtils.set('hostSettings:limits', undefined);
+        });
+
+        it('Request fails when emails limit is in place', async function () {
+            configUtils.set('hostSettings:limits', {
+                emails: {
+                    disabled: true,
+                    error: 'No email shalt be sent'
+                }
+            });
+
+            // NOTE: need to do a full reboot to reinitialize hostSettings
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            await localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
+
+            const draftPostResponse = await request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200);
+
+            const draftPost = draftPostResponse.body.posts[0];
+
+            const response = await request
+                .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?email_recipient_filter=all&send_email_when_published=true`))
+                .set('Origin', config.get('url'))
+                .send({posts: [{
+                    status: 'published',
+                    updated_at: draftPost.updated_at
+                }]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
+
+            response.body.errors[0].type.should.equal('HostLimitError');
+            response.body.errors[0].context.should.equal('No email shalt be sent');
+        });
     });
 });

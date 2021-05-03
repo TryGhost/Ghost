@@ -106,6 +106,10 @@ const sendTestEmail = async (postModel, toEmails, apiVersion) => {
  */
 
 const addEmail = async (postModel, options) => {
+    if (limitService.isLimited('emails')) {
+        await limitService.errorIfWouldGoOverLimit('emails');
+    }
+
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions, {limit: 1});
 
@@ -256,6 +260,11 @@ async function sendEmailJob({emailModel, options}) {
         // - do this even if it's a retry so that there's no way around the limit
         if (limitService.isLimited('members')) {
             await limitService.errorIfIsOverLimit('members');
+        }
+
+        // Check host limit for disabled emails or going over emails limit
+        if (limitService.isLimited('emails')) {
+            await limitService.errorIfWouldGoOverLimit('emails');
         }
 
         // Create email batch and recipient rows unless this is a retry and they already exist
