@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const models = require('../../models');
 const security = require('@tryghost/security');
 

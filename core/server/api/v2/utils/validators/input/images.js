@@ -1,6 +1,6 @@
 const jsonSchema = require('../utils/json-schema');
 const config = require('../../../../../../shared/config');
-const i18n = require('../../../../../lib/common/i18n');
+const i18n = require('../../../../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const {imageSize, blogIcon} = require('../../../../../lib/image');
 

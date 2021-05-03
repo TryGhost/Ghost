@@ -1,4 +1,4 @@
-const i18n = require('../../../../../lib/common/i18n');
+const i18n = require('../../../../../../shared/i18n');
 const mapper = require('./utils/mapper');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:authentication');
 

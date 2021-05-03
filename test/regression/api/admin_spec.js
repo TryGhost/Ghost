@@ -10,7 +10,7 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const ghost = testUtils.startGhost;
-const i18n = require('../../../core/server/lib/common/i18n');
+const i18n = require('../../../core/shared/i18n');
 const config = require('../../../core/shared/config');
 let request;
 

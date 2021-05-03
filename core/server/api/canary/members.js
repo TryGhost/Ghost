@@ -7,7 +7,7 @@ const models = require('../../models');
 const membersService = require('../../services/members');
 
 const settingsCache = require('../../services/settings/cache');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const _ = require('lodash');
 
 const allowedIncludes = ['email_recipients', 'products'];

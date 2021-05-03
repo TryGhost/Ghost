@@ -1,5 +1,5 @@
 const settingsCache = require('../settings/cache');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const ghostVersion = require('../../lib/ghost-version');
 const Notifications = require('./notifications');
 

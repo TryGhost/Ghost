@@ -8,7 +8,7 @@ const limitService = require('../../services/limits');
 const models = require('../../models');
 const request = require('../../lib/request');
 const errors = require('@tryghost/errors/lib/errors');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 
 module.exports = {
     docName: 'themes',

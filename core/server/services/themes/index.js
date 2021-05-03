@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('themes');
-const i18n = require('../../../server/lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const themeLoader = require('./loader');

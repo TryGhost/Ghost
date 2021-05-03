@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const i18n = require('../../../../../lib/common/i18n');
+const i18n = require('../../../../../../shared/i18n');
 const errors = require('@tryghost/errors');
 
 module.exports = {

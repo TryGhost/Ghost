@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 
 module.exports = {
     user: function (id) {

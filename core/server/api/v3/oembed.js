@@ -1,6 +1,6 @@
 const config = require('../../../shared/config');
 const externalRequest = require('../../lib/request-external');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const OEmbed = require('../../services/oembed');
 const oembed = new OEmbed({config, externalRequest, i18n});
 

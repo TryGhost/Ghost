@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const i18n = require('../../../server/lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const logging = require('../../../shared/logging');
 const settingsCache = require('../../../server/services/settings/cache');
 const config = require('../../../shared/config');

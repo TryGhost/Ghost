@@ -4,7 +4,7 @@ const multer = require('multer');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
-const i18n = require('../../../lib/common/i18n');
+const i18n = require('../../../../shared/i18n');
 const logging = require('../../../../shared/logging');
 
 const upload = {

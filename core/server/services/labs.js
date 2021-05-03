@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const SafeString = require('../../frontend/services/theme-engine/engine').SafeString;
 const errors = require('@tryghost/errors');
-const i18n = require('../lib/common/i18n');
+const i18n = require('../../shared/i18n');
 const logging = require('../../shared/logging');
 const settingsCache = require('../services/settings/cache');
 
