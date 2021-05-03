@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:routing:controllers:channel');
-const i18n = require('../../../../server/lib/common/i18n');
+const i18n = require('../../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const themeEngine = require('../../theme-engine');

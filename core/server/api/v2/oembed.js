@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const config = require('../../../shared/config');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const externalRequest = require('../../lib/request-external');
 
 const findUrlWithProvider = (url) => {

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const parseContext = require('./parse-context');
 const _private = {};
 

@@ -3,7 +3,7 @@ const moment = require('moment');
 const config = require('../../../shared/config');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const api = require('./index');
 

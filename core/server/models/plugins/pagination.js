@@ -3,7 +3,7 @@
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
 const _ = require('lodash');
 
-const i18n = require('../../lib/common/i18n');
+const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 let defaults;
 let paginationUtils;
