@@ -5,7 +5,6 @@ import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import {isCookiesDisabled} from '../utils/helpers';
-import {ReactComponent as PoweredIcon} from '../images/powered-icon.svg';
 
 const React = require('react');
 
