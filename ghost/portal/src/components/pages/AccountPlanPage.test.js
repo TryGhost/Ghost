@@ -36,6 +36,6 @@ describe('Account Plan Page', () => {
         expect(continueBtn).toBeEnabled();
 
         fireEvent.click(continueBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: 'Monthly'});
+        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: '6086d2c776909b1a2382369a'});
     });
 });
