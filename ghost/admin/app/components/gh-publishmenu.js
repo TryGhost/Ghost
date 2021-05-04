@@ -16,6 +16,7 @@ export default Component.extend({
     config: service(),
     session: service(),
     store: service(),
+    limit: service(),
 
     backgroundTask: null,
     classNames: 'gh-publishmenu',
@@ -26,6 +27,8 @@ export default Component.extend({
     saveTask: null,
     sendEmailWhenPublished: 'none',
     typedDateError: null,
+    isSendingEmailLimited: false,
+    sendingEmailLimitError: '',
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,
@@ -156,6 +159,8 @@ export default Component.extend({
                 this.set('sendEmailWhenPublished', 'paid');
             }
         }
+
+        this.checkIsSendingEmailLimited();
         this.countPaidMembers();
     },
 
@@ -217,6 +222,15 @@ export default Component.extend({
         }
     }),
 
+    checkIsSendingEmailLimited: action(function () {
+        if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
+            this.checkIsSendingEmailLimitedTask.perform();
+        } else {
+            this.set('isSendingEmailLimited', false);
+            this.set('sendingEmailLimitError', null);
+        }
+    }),
+
     countPaidMembersTask: task(function* () {
         const result = yield this.store.query('member', {filter: 'subscribed:true+status:-free', limit: 1, page: 1});
         const paidMemberCount = result.meta.pagination.total;
@@ -226,7 +240,9 @@ export default Component.extend({
 
         if (this.postStatus === 'draft' && this.canSendEmail && this.hasEmailPermission) {
             // Set default newsletter recipients
-            if (this.post.visibility === 'public' || this.post.visibility === 'members') {
+            if (this.isSendingEmailLimited) {
+                this.set('sendEmailWhenPublished', 'none');
+            } else if (this.post.visibility === 'public' || this.post.visibility === 'members') {
                 if (paidMemberCount > 0 && freeMemberCount > 0) {
                     this.set('sendEmailWhenPublished', 'all');
                 } else if (!paidMemberCount && freeMemberCount > 0) {
@@ -240,6 +256,19 @@ export default Component.extend({
                 const type = paidMemberCount > 0 ? 'paid' : 'none';
                 this.set('sendEmailWhenPublished', type);
             }
+        }
+    }),
+
+    checkIsSendingEmailLimitedTask: task(function* () {
+        try {
+            yield this.limit.limiter.errorIfWouldGoOverLimit('emails');
+
+            this.set('isSendingEmailLimited', false);
+            this.set('sendingEmailLimitError', null);
+        } catch (error) {
+            this.set('isSendingEmailLimited', true);
+            this.set('sendingEmailLimitError', error.message);
+            this.set('sendEmailWhenPublished', 'none');
         }
     }),
 
