@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const events = require('../lib/common/events');
-const i18n = require('../lib/common/i18n');
+const i18n = require('../../shared/i18n');
 const logging = require('../../shared/logging');
 const request = require('../lib/request');
 const {blogIcon} = require('../lib/image');

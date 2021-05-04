@@ -58,7 +58,7 @@ async function initCore({ghostServer}) {
 
     // Initialize Ghost core internationalization - this is basically used to colocate all of our error message strings
     debug('Begin: i18n');
-    const i18n = require('./server/lib/common/i18n');
+    const i18n = require('./shared/i18n');
     i18n.init();
     debug('End: i18n');
 

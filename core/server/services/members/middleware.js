@@ -77,6 +77,19 @@ const updateMemberData = async function (req, res) {
     }
 };
 
+const getDefaultProductPrices = async function () {
+    const page = await membersService.api.productRepository.list({
+        limit: 1
+    });
+    const [product] = page.data;
+    if (product) {
+        const model = await membersService.api.productRepository.get({id: product.get('id')}, {withRelated: ['stripePrices']});
+        const productData = model.toJSON();
+        return productData.stripePrices || [];
+    }
+    return [];
+};
+
 const getMemberSiteData = async function (req, res) {
     const isStripeConfigured = membersService.config.isStripeConnected();
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -86,6 +99,7 @@ const getMemberSiteData = async function (req, res) {
     if (!supportAddress.includes('@')) {
         supportAddress = `${supportAddress}@${blogDomain}`;
     }
+    const defaultPrices = await getDefaultProductPrices();
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
@@ -95,6 +109,7 @@ const getMemberSiteData = async function (req, res) {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
+        prices: defaultPrices,
         allow_self_signup: membersService.config.getAllowSelfSignup(),
         members_signup_access: settingsCache.get('members_signup_access'),
         is_stripe_configured: isStripeConfigured,

@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
-const i18n = require('../../../lib/common/i18n');
+const i18n = require('../../../../shared/i18n');
 const urlService = require('../../../../frontend/services/url');
 
 module.exports = function maintenance(req, res, next) {

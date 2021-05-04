@@ -3,7 +3,7 @@ const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const limitService = require('../../../services/limits');
-const i18n = require('../../../lib/common/i18n');
+const i18n = require('../../../../shared/i18n');
 const _ = require('lodash');
 
 let JWT_OPTIONS_DEFAULTS = {
