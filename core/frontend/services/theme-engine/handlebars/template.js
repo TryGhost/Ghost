@@ -2,7 +2,7 @@
 const templates = {};
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const hbs = require('../../theme-engine/engine');
+const hbs = require('../engine');
 const i18n = require('../../../../shared/i18n');
 
 // Execute a template helper
