@@ -3,13 +3,6 @@ const crypto = require('crypto');
 const createKeypair = require('keypair');
 const path = require('path');
 
-const COMPLIMENTARY_PLAN = {
-    name: 'Complimentary',
-    currency: 'usd',
-    interval: 'year',
-    amount: '0'
-};
-
 class MembersConfigProvider {
     /**
      * @param {object} options
@@ -190,7 +183,7 @@ class MembersConfigProvider {
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
-            plans: [COMPLIMENTARY_PLAN].concat(this._settingsCache.get('stripe_plans') || []),
+            plans: this._settingsCache.get('stripe_plans') || [],
             appInfo: {
                 name: 'Ghost',
                 partner_id: 'pp_partner_DKmRVtTs4j9pwZ',
