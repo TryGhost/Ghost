@@ -13,7 +13,7 @@ import {
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {tagName} from '@ember-decorators/component';
-import {task} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
 
 const {Handlebars} = Ember;
 
@@ -130,14 +130,42 @@ class GhTokenInput extends Component {
 
     // tasks -------------------------------------------------------------------
 
-    @task(function* () {
+    @task
+    *optionsWithoutSelectedTask() {
         let options = yield this.options;
         let selected = yield this.selected;
-        return options.filter(o => !selected.includes(o));
-    })
-    optionsWithoutSelectedTask;
 
-    @task(function* (term, select) {
+        let optionsWithoutSelected = [];
+
+        function filterSelectedOptions(opts, result) {
+            opts.forEach((o) => {
+                if (o.options) {
+                    const withoutSelected = [];
+                    filterSelectedOptions(o.options, withoutSelected);
+
+                    if (withoutSelected.length > 0) {
+                        result.push({
+                            groupName: o.groupName,
+                            options: withoutSelected
+                        });
+                    }
+
+                    return;
+                }
+
+                if (!selected.includes(o)) {
+                    result.push(o);
+                }
+            });
+        }
+
+        filterSelectedOptions(options, optionsWithoutSelected);
+
+        return optionsWithoutSelected;
+    }
+
+    @task
+    *searchAndSuggestTask(term, select) {
         let newOptions = (yield this.optionsWithoutSelected).toArray();
 
         if (term.length === 0) {
@@ -160,8 +188,7 @@ class GhTokenInput extends Component {
         this._addCreateOption(term, newOptions);
 
         return newOptions;
-    })
-    searchAndSuggestTask;
+    }
 
     // internal ----------------------------------------------------------------
 
