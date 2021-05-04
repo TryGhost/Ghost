@@ -72,7 +72,7 @@ export default class App extends React.Component {
 
             if (this.state.initStatus === 'success') {
                 this.handleSignupQuery({site: this.state.site, pageQuery});
-            } 
+            }
 
             if (page) {
                 this.dispatchAction('openPopup', {page, pageQuery});
@@ -188,6 +188,7 @@ export default class App extends React.Component {
 
         const allowedPlans = [];
         let portalPrices;
+        let monthlyPrice, yearlyPrice, currency;
         // Handle the query params key/value pairs
         for (let pair of qsParams.entries()) {
             const key = pair[0];
@@ -216,12 +217,15 @@ export default class App extends React.Component {
                 data.site.portal_button_style = value;
             } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {
                 data.site.plans.monthly = Number(value);
+                monthlyPrice = Number(value);
             } else if (key === 'yearlyPrice' && !isNaN(Number(value))) {
                 data.site.plans.yearly = Number(value);
+                yearlyPrice = Number(value);
             } else if (key === 'currency' && value) {
                 const currencyValue = value.toUpperCase();
                 data.site.plans.currency = currencyValue;
                 data.site.plans.currency_symbol = getCurrencySymbol(currencyValue);
+                currency = currencyValue;
             } else if (key === 'disableBackground' && JSON.parse(value)) {
                 data.site.disableBackground = JSON.parse(value);
             } else if (key === 'allowSelfSignup' && JSON.parse(value)) {
@@ -231,6 +235,31 @@ export default class App extends React.Component {
         data.site.portal_plans = allowedPlans;
         if (portalPrices) {
             data.site.portal_plans = portalPrices;
+        } else if (monthlyPrice && yearlyPrice && currency) {
+            data.site.prices = [
+                {
+                    id: 'monthly',
+                    stripe_price_id: 'dummy_stripe_monthly',
+                    stripe_product_id: 'dummy_stripe_product',
+                    active: 1,
+                    nickname: 'Monthly',
+                    currency: currency,
+                    amount: monthlyPrice,
+                    type: 'recurring',
+                    interval: 'month'
+                },
+                {
+                    id: 'yearly',
+                    stripe_price_id: 'dummy_stripe_yearly',
+                    stripe_product_id: 'dummy_stripe_product',
+                    active: 1,
+                    nickname: 'Yearly',
+                    currency: currency,
+                    amount: yearlyPrice,
+                    type: 'recurring',
+                    interval: 'year'
+                }
+            ];
         }
         return data;
     }
@@ -305,7 +334,7 @@ export default class App extends React.Component {
             if (colorOverride) {
                 site.accent_color = colorOverride;
             }
-            
+
             this.setupFirstPromoter({site, member});
             return {site, member};
         } catch (e) {
@@ -412,7 +441,7 @@ export default class App extends React.Component {
     /** Handle direct signup link for a price */
     handleSignupQuery({site, pageQuery}) {
         const queryPrice = hasPrice({site: site, plan: pageQuery});
-        if (!this.state.member 
+        if (!this.state.member
             && ['monthly', 'yearly'].includes(pageQuery)
             && queryPrice
         ) {
