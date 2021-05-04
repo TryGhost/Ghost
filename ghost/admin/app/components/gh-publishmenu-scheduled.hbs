@@ -34,6 +34,8 @@
                 <div class="gh-publishmenu-email">
                     {{#if this.backgroundLoader.isRunning}}
                         <div class="gh-loading-spinner" style="zoom: 50%"></div>
+                    {{else if this.isSendingEmailLimited}}
+                        <p>{{html-safe this.sendingEmailLimitError}}</p>
                     {{else}}
                         <div class="gh-publishmenu-email-label">
                         <label class="gh-publishmenu-radio-label mb3 pe-none">Send by email to</label>
@@ -42,8 +44,8 @@
                                     <p>Free members</p>
                                     <div class="for-switch small">
                                         <label class="switch" for="send-email-to-free">
-                                            <input 
-                                                id="send-email-to-free" 
+                                            <input
+                                                id="send-email-to-free"
                                                 type="checkbox"
                                                 checked={{this.sendEmailToFreeMembersWhenPublished}}
                                                 disabled={{this.disableEmailOption}}
@@ -58,8 +60,8 @@
                                     <p>Paid members</p>
                                     <div class="for-switch small">
                                         <label class="switch" for="send-email-to-paid">
-                                            <input 
-                                                id="send-email-to-paid" 
+                                            <input
+                                                id="send-email-to-paid"
                                                 type="checkbox"
                                                 checked={{this.sendEmailToPaidMembersWhenPublished}}
                                                 disabled={{this.disableEmailOption}}

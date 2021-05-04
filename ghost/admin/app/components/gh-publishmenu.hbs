@@ -20,7 +20,9 @@
                 @paidMemberCount={{this.paidMemberCount}}
                 @freeMemberCount={{this.freeMemberCount}}
                 @setSaveType={{action "setSaveType"}}
-                @setTypedDateError={{action (mut this.typedDateError)}} />
+                @setTypedDateError={{action (mut this.typedDateError)}}
+                @isSendingEmailLimited={{this.isSendingEmailLimited}}
+                @sendingEmailLimitError={{this.sendingEmailLimitError}} />
 
         {{else}}
             <GhPublishmenuDraft
@@ -33,7 +35,9 @@
                 @memberCount={{this.memberCount}}
                 @paidMemberCount={{this.paidMemberCount}}
                 @freeMemberCount={{this.freeMemberCount}}
-                @sendEmailWhenPublished={{this.sendEmailWhenPublished}} />
+                @sendEmailWhenPublished={{this.sendEmailWhenPublished}}
+                @isSendingEmailLimited={{this.isSendingEmailLimited}}
+                @sendingEmailLimitError={{this.sendingEmailLimitError}} />
         {{/if}}
 
         {{!--
