@@ -46,7 +46,8 @@ module.exports = function MembersApi({
         MemberEmailChangeEvent,
         StripeProduct,
         StripePrice,
-        Product
+        Product,
+        Settings
     },
     logger
 }) {
@@ -72,6 +73,7 @@ module.exports = function MembersApi({
         StripeProduct,
         StripePrice,
         Product,
+        Settings,
         logger
     });
 
@@ -106,8 +108,7 @@ module.exports = function MembersApi({
         MemberPaidSubscriptionEvent,
         MemberPaymentEvent,
         MemberStatusEvent,
-        MemberLoginEvent,
-        MemberEmailChangeEvent
+        MemberLoginEvent
     });
 
     const stripeWebhookService = new StripeWebhookService({
@@ -138,17 +139,17 @@ module.exports = function MembersApi({
 
     const memberController = new MemberController({
         memberRepository,
+        StripePrice,
         stripeAPIService,
-        stripePlansService,
         tokenService
     });
 
     const routerController = new RouterController({
         memberRepository,
+        StripePrice,
         allowSelfSignup,
         magicLinkService,
         stripeAPIService,
-        stripePlansService,
         tokenService,
         sendEmailWithMagicLink,
         config: {

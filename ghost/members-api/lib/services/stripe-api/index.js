@@ -383,13 +383,13 @@ module.exports = class StripeAPIService {
     }
 
     /**
-     * @param {IPlan} plan
+     * @param {string} priceId
      * @param {ICustomer} customer
      * @param {object} options
      *
      * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
      */
-    async createCheckoutSession(plan, customer, options) {
+    async createCheckoutSession(priceId, customer, options) {
         const metadata = options.metadata || undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
         await this._rateLimitBucket.throttle();
@@ -404,7 +404,7 @@ module.exports = class StripeAPIService {
             subscription_data: {
                 trial_from_plan: true,
                 items: [{
-                    plan: plan.id
+                    plan: priceId
                 }]
             }
         });
@@ -543,15 +543,19 @@ module.exports = class StripeAPIService {
     }
 
     /**
-     * @param {string} id - The ID of the Subscription to modify
-     * @param {string} plan - The ID of the new Plan
+     * @param {string} subscriptionId - The ID of the Subscription to modify
+     * @param {string} id - The ID of the SubscriptionItem
+     * @param {string} price - The ID of the new Price
      *
      * @returns {Promise<import('stripe').Stripe.Subscription>}
      */
-    async changeSubscriptionPlan(id, plan) {
+    async updateSubscriptionItemPrice(subscriptionId, id, price) {
         await this._rateLimitBucket.throttle();
-        const subscription = await this._stripe.subscriptions.update(id, {
-            plan,
+        const subscription = await this._stripe.subscriptions.update(subscriptionId, {
+            items: [{
+                id,
+                price
+            }],
             cancel_at_period_end: false,
             metadata: {
                 cancellation_reason: null

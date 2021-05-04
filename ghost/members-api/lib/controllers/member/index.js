@@ -5,17 +5,20 @@ const errors = require('ghost-ignition').errors;
  *
  * @param {object} deps
  * @param {any} deps.memberRepository
- * @param {any} deps.stripePlansService
+ * @param {any} deps.StripePrice
+ * @param {any} deps.stripeApiService
  * @param {any} deps.tokenService
  */
 module.exports = class MemberController {
     constructor({
         memberRepository,
-        stripePlansService,
+        StripePrice,
+        stripeAPIService,
         tokenService
     }) {
         this._memberRepository = memberRepository;
-        this._stripePlansService = stripePlansService;
+        this._StripePrice = StripePrice;
+        this._stripeApiService = stripeAPIService;
         this._tokenService = tokenService;
     }
 
@@ -26,12 +29,11 @@ module.exports = class MemberController {
             const cancelAtPeriodEnd = req.body.cancel_at_period_end;
             const smartCancel = req.body.smart_cancel;
             const cancellationReason = req.body.cancellation_reason;
-            const planName = req.body.planName;
-
-            if (cancelAtPeriodEnd === undefined && planName === undefined && smartCancel === undefined) {
+            const ghostPriceId = req.body.priceId;
+            if (cancelAtPeriodEnd === undefined && ghostPriceId === undefined && smartCancel === undefined) {
                 throw new errors.BadRequestError({
                     message: 'Updating subscription failed!',
-                    help: 'Request should contain "cancel_at_period_end" or "planName" or "smart_cancel" field.'
+                    help: 'Request should contain "cancel_at_period_end" or "priceId" or "smart_cancel" field.'
                 });
             }
 
@@ -70,18 +72,22 @@ module.exports = class MemberController {
                 });
             }
 
-            if (planName !== undefined) {
-                const plan = this._stripePlansService.getPlan(planName);
-                if (!plan) {
-                    throw new errors.BadRequestError({
-                        message: 'Updating subscription failed! Could not find plan'
-                    });
+            if (ghostPriceId !== undefined) {
+                const price = await this._StripePrice.findOne({
+                    id: ghostPriceId
+                });
+
+                if (!price) {
+                    res.writeHead(404);
+                    return res.end('Not Found.');
                 }
+
+                const priceId = price.get('stripe_price_id');
                 await this._memberRepository.updateSubscription({
                     email,
                     subscription: {
                         subscription_id: subscriptionId,
-                        plan: plan.id
+                        price: priceId
                     }
                 });
             } else if (cancelAtPeriodEnd !== undefined) {

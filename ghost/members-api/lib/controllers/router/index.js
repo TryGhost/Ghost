@@ -7,29 +7,29 @@ const errors = require('ghost-ignition').errors;
  *
  * @param {object} deps
  * @param {any} deps.memberRepository
+ * @param {any} deps.StripePrice
  * @param {boolean} deps.allowSelfSignup
  * @param {any} deps.magicLinkService
  * @param {any} deps.stripeAPIService
- * @param {any} deps.stripePlanService
  * @param {any} deps.tokenService
  * @param {any} deps.config
  */
 module.exports = class RouterController {
     constructor({
         memberRepository,
+        StripePrice,
         allowSelfSignup,
         magicLinkService,
         stripeAPIService,
-        stripePlansService,
         tokenService,
         sendEmailWithMagicLink,
         config
     }) {
         this._memberRepository = memberRepository;
+        this._StripePrice = StripePrice;
         this._allowSelfSignup = allowSelfSignup;
         this._magicLinkService = magicLinkService;
         this._stripeAPIService = stripeAPIService;
-        this._stripePlansService = stripePlansService;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this._config = config;
@@ -111,21 +111,24 @@ module.exports = class RouterController {
     }
 
     async createCheckoutSession(req, res) {
-        const planName = req.body.plan;
+        const ghostPriceId = req.body.priceId;
         const identity = req.body.identity;
 
-        if (!planName) {
+        if (!ghostPriceId) {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
 
-        // NOTE: never allow "Complimentary" plan to be subscribed to from the client
-        if (planName.toLowerCase() === 'complimentary') {
-            res.writeHead(400);
-            return res.end('Bad Request.');
+        const price = await this._StripePrice.findOne({
+            id: ghostPriceId
+        });
+
+        if (!price) {
+            res.writeHead(404);
+            return res.end('Not Found.');
         }
 
-        const plan = this._stripePlansService.getPlan(planName);
+        const priceId = price.get('stripe_price_id');
 
         let email;
         try {
@@ -144,7 +147,7 @@ module.exports = class RouterController {
 
         if (!member) {
             const customer = null;
-            const session = await this._stripeAPIService.createCheckoutSession(plan, customer, {
+            const session = await this._stripeAPIService.createCheckoutSession(priceId, customer, {
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 customerEmail: req.body.customerEmail,
@@ -190,7 +193,7 @@ module.exports = class RouterController {
         }
 
         try {
-            const session = await this._stripeAPIService.createCheckoutSession(plan, stripeCustomer, {
+            const session = await this._stripeAPIService.createCheckoutSession(priceId, stripeCustomer, {
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 metadata: req.body.metadata

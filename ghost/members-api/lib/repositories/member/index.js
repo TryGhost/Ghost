@@ -511,21 +511,28 @@ module.exports = class MemberRepository {
 
         const member = await this._Member.findOne(findQuery);
 
-        const subscription = await member.related('stripeSubscriptions').query({
+        const subscriptionModel = await member.related('stripeSubscriptions').query({
             where: {
                 subscription_id: data.subscription.subscription_id
             }
         }).fetchOne(options);
 
-        if (!subscription) {
+        if (!subscriptionModel) {
             throw new Error('Subscription not found');
         }
 
         let updatedSubscription;
-        if (data.subscription.plan) {
-            updatedSubscription = await this._stripeAPIService.changeSubscriptionPlan(
-                data.subscription.subscription_id,
-                data.subscription.plan
+        if (data.subscription.price) {
+            const subscription = await this._stripeAPIService.getSubscription(
+                data.subscription.subscription_id
+            );
+
+            const subscriptionItem = subscription.items.data[0];
+
+            updatedSubscription = await this._stripeAPIService.updateSubscriptionItemPrice(
+                subscription.id,
+                subscriptionItem.id,
+                data.subscription.price
             );
         }
 
