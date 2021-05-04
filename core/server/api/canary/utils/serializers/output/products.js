@@ -38,7 +38,7 @@ function singleProduct(model, _apiConfig, frame) {
 }
 
 /**
- * @param {import('bookshelf').Model} member
+ * @param {import('bookshelf').Model} product
  * @param {object} options
  *
  * @returns {SerializedProduct}
@@ -49,6 +49,7 @@ function serializeProduct(product, options) {
     return {
         id: json.id,
         name: json.name,
+        description: json.description,
         slug: json.slug,
         created_at: json.created_at,
         updated_at: json.updated_at,
@@ -77,6 +78,10 @@ function createSerializer(debugString, serialize) {
  * @prop {string} id
  * @prop {string} name
  * @prop {string} slug
+ * @prop {string} description
+ * @prop {Date} created_at
+ * @prop {Date} updated_at
+ * @prop {any} stripe_prices
  */
 
 /**
