@@ -11,32 +11,41 @@
     </GhCanvasHeader>
 
     <section class="view-container">
-        <section class="content-list">
-            <ol class="gh-product-list gh-list">
-                <li class="gh-list-row header">
-                    <div class="gh-list-header gh-list-cellwidth-70"></div>
-                    <div class="gh-list-header gh-list-cellwidth-30"></div>
-                </li>
-                {{#each this.products as |product|}}
-                <li class="gh-list-row">
-                    <LinkTo @route="settings.product" @model={{product}} class="gh-list-data gh-list-cellwidth-70 gh-product-list-title">
-                        <h3 class="gh-product-list-name">
-                            {{product.name}}
-                        </h3>
-                        <p class="ma0 pa0 f8 midgrey gh-product-list-description">
-                            Product description
-                        </p>
-                    </LinkTo>
+        <div class="gh-product-list">
+            <div class="gh-product-card">
+                <span class="gh-product-list-icon">{{svg-jar "members"}}</span>
+                <h3 class="gh-product-card-name">
+                    Free membership
+                </h3>
+                <p class="gh-product-card-description">
+                    Product description
+                </p>
+                <LinkTo @route="settings.products" class="gh-btn" {{action (toggle "showFreeMembershipModal" this)}}>
+                    <span>Customize</span>
+                </LinkTo>
+            </div>
 
-                    <LinkTo @route="settings.product" @model={{product}} class="gh-list-data gh-list-cellwidth-30 gh-product-list-chevron">
-                        <div class="gh-product-chevron">
-                            {{!-- <span>330 members</span> --}}
-                            <span>{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
-                        </div>
-                    </LinkTo>
-                </li>
-                {{/each}}
-            </ol>
-        </section>
+            {{#each this.products as |product|}}
+            <div class="gh-product-card">
+                <span class="gh-product-list-icon"><div class="gh-product-list-siteicon" style={{this.iconStyle}}></div></span>
+                <h3 class="gh-product-card-name">
+                    {{product.name}}
+                </h3>
+                <p class="gh-product-card-description">
+                    Product description
+                </p>
+                <LinkTo @route="settings.product" @model={{product}} class="gh-btn">
+                    <span>Customize</span>
+                </LinkTo>
+            </div>
+            {{/each}}
+        </div>
     </section>
 </section>
+
+{{#if this.showFreeMembershipModal}}
+    <GhFullscreenModal
+    @modal="free-membership-settings"
+    @close={{this.closeFreeMembershipModal}}
+    @modifier="action wide product-ssprice" />
+{{/if}}
