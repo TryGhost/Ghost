@@ -15,6 +15,7 @@ describe('Themes', function () {
         describe('Mount', function () {
             let engineStub;
             let configStub;
+            let fakeSettings;
             let fakeBlogApp;
             let fakeLoadedTheme;
             let fakeCheckedTheme;
@@ -22,6 +23,10 @@ describe('Themes', function () {
             beforeEach(function () {
                 engineStub = sinon.stub(engine, 'configure');
                 configStub = sinon.stub(config, 'set');
+
+                fakeSettings = {
+                    locale: 'en'
+                };
 
                 fakeBlogApp = {
                     cache: ['stuff'],
@@ -45,7 +50,7 @@ describe('Themes', function () {
                 // setup partials
                 fakeCheckedTheme.partials = ['loop', 'navigation'];
 
-                const theme = activeTheme.set(fakeLoadedTheme, fakeCheckedTheme);
+                const theme = activeTheme.set(fakeSettings, fakeLoadedTheme, fakeCheckedTheme);
 
                 // Check the theme is not yet mounted
                 activeTheme.get().mounted.should.be.false();
@@ -76,7 +81,7 @@ describe('Themes', function () {
                 // setup partials
                 fakeCheckedTheme.partials = [];
 
-                const theme = activeTheme.set(fakeLoadedTheme, fakeCheckedTheme);
+                const theme = activeTheme.set(fakeSettings, fakeLoadedTheme, fakeCheckedTheme);
 
                 // Check the theme is not yet mounted
                 activeTheme.get().mounted.should.be.false();

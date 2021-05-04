@@ -3,7 +3,7 @@
 //
 // Formats a date using moment-timezone.js. Formats published_at by default but will also take a date as a parameter
 
-const {SafeString, themeI18n} = require('../services/proxy');
+const {SafeString} = require('../services/proxy');
 const moment = require('moment-timezone');
 const _ = require('lodash');
 
@@ -26,6 +26,8 @@ module.exports = function (...attrs) {
     date = date === null ? undefined : date;
 
     const timezone = options.data.site.timezone;
+    const locale = options.data.site.locale;
+
     const {
         format = 'll',
         timeago
@@ -44,7 +46,7 @@ module.exports = function (...attrs) {
     // i18n: Making dates, including month names, translatable to any language.
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
-    dateMoment.locale(themeI18n.locale());
+    dateMoment.locale(locale);
 
     if (timeago) {
         date = dateMoment.tz(timezone).from(timeNow);
