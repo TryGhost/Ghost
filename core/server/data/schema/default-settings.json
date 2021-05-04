@@ -304,6 +304,14 @@
         "stripe_connect_account_id": {
             "defaultValue": null,
             "type": "string"
+        },
+        "members_free_price_name": {
+            "defaultValue": "Free",
+            "type": "string"
+        },
+        "members_free_price_description": {
+            "defaultValue": "",
+            "type": "string"
         }
     },
     "portal": {

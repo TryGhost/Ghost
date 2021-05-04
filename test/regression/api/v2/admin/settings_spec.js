@@ -38,6 +38,8 @@ const defaultSettingsKeyTypes = [
     {key: 'members_reply_address', type: 'members'},
     {key: 'members_paid_signup_redirect', type: 'members'},
     {key: 'members_free_signup_redirect', type: 'members'},
+    {key: 'members_free_price_name', type: 'members'},
+    {key: 'members_free_price_description', type: 'members'},
     {key: 'stripe_product_name', type: 'members'},
     {key: 'stripe_plans', type: 'members'},
     {key: 'stripe_secret_key', type: 'members'},
