@@ -36,6 +36,7 @@ export default ModalComponent.extend({
     config: service(),
     membersUtils: service(),
     settings: service(),
+    store: service(),
 
     page: 'signup',
     iconExtensions: null,
@@ -46,10 +47,23 @@ export default ModalComponent.extend({
     showLeaveSettingsModal: false,
     freeSignupRedirect: undefined,
     paidSignupRedirect: undefined,
+    prices: null,
 
     confirm() {},
 
     isStripeConfigured: reads('membersUtils.isStripeEnabled'),
+
+    filteredPrices: computed('prices', 'settings.portalPlans.[]', function () {
+        const portalPlans = this.get('settings.portalPlans');
+        return this.prices.filter((d) => {
+            return d.amount !== 0 && d.type === 'recurring';
+        }).map((price) => {
+            return {
+                ...price,
+                checked: !!portalPlans.find(d => d === price.id)
+            };
+        });
+    }),
 
     buttonIcon: computed('settings.portalButtonIcon', function () {
         const defaultIconKeys = this.defaultButtonIcons.map(buttonIcon => buttonIcon.value);
@@ -68,8 +82,9 @@ export default ModalComponent.extend({
         return `data-portal`;
     }),
 
-    portalPreviewUrl: computed('buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked', 'settings.{portalName,portalButton,portalButtonSignupText,portalButtonStyle,accentColor}', function () {
+    portalPreviewUrl: computed('buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked', 'settings.{portalName,portalButton,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[]}', function () {
         const options = this.getProperties(['buttonIcon', 'page', 'isFreeChecked', 'isMonthlyChecked', 'isYearlyChecked']);
+        options.portalPlans = this.get('settings.portalPlans');
         return this.membersUtils.getPortalPreviewUrl(options);
     }),
 
@@ -119,7 +134,7 @@ export default ModalComponent.extend({
         if (portalButtonIcon && !defaultIconKeys.includes(portalButtonIcon)) {
             this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
-
+        this.getAvailablePrices.perform();
         this.siteUrl = this.config.get('blogUrl');
     },
 
@@ -140,6 +155,9 @@ export default ModalComponent.extend({
         },
         toggleYearlyPlan(isChecked) {
             this.updateAllowedPlan('yearly', isChecked);
+        },
+        togglePlan(priceId, event) {
+            this.updateAllowedPlan(priceId, event.target.checked);
         },
         togglePortalButton(showButton) {
             this.settings.set('portalButton', showButton);
@@ -297,5 +315,12 @@ export default ModalComponent.extend({
         }
         yield this.settings.save();
         this.closeModal();
+    }).drop(),
+
+    getAvailablePrices: task(function* () {
+        const products = yield this.store.query('product', {include: 'stripe_prices'});
+        const product = products.firstObject;
+        const prices = product.get('stripePrices');
+        this.set('prices', prices);
     }).drop()
 });

@@ -53,44 +53,29 @@
                                     <p>Free</p>
                                 </label>
                             </div>
-                            <div class="form-group mb0 for-checkbox">
-                                <label
-                                    class="checkbox"
-                                    for="monthly-plan"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="monthly-plan"
-                                        name="monthly-plan"
-                                        checked={{this.isMonthlyChecked}}
-                                        disabled={{or (not this.isStripeConfigured) (not-eq this.settings.membersSignupAccess "all")}}
-                                        class="gh-input post-settings-featured"
-                                        {{on "click" (action "toggleMonthlyPlan" value="target.checked")}}
-                                        data-test-checkbox="featured"
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                    <p>Monthly</p>
-                                </label>
-                            </div>
-                            <div class="form-group mb0 for-checkbox">
-                                <label
-                                    class="checkbox"
-                                    for="yearly-plan"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        id="yearly-plan"
-                                        name="yearly-plan"
-                                        checked={{this.isYearlyChecked}}
-                                        disabled={{or (not this.isStripeConfigured) (not-eq this.settings.membersSignupAccess "all")}}
-                                        class="gh-input post-settings-featured"
-                                        {{on "click" (action "toggleYearlyPlan" value="target.checked")}}
-                                        data-test-checkbox="featured"
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                    <p>Yearly</p>
-                                </label>
-                            </div>
+                            {{#if this.prices}}
+                                {{#each this.filteredPrices as |price|}}
+                                    <div class="form-group mb0 for-checkbox">
+                                        <label class="checkbox" for="{{price.id}}">
+                                            <input
+                                                type="checkbox"
+                                                checked={{price.checked}}
+                                                id={{price.id}}
+                                                name={{price.id}}
+                                                disabled={{or
+                                                    (not this.isStripeConfigured)
+                                                    (not-eq this.settings.membersSignupAccess "all")
+                                                }}
+                                                class="gh-input post-settings-featured"
+                                                data-test-checkbox="featured"
+                                                {{on "click" (action "togglePlan" price.id)}}
+                                            />
+                                            <span class="input-toggle-component"></span>
+                                            <p>{{price.nickname}}</p>
+                                        </label>
+                                    </div>
+                                {{/each}}
+                            {{/if}}
                         </div>
                         {{else}}
                         <div class="gh-portal-setting-no-stripe">
