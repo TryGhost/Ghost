@@ -28,6 +28,7 @@ export default class MembersUtilsService extends Service {
             isYearlyChecked = true,
             monthlyPrice,
             yearlyPrice,
+            portalPlans,
             currency
         } = args;
 
@@ -52,6 +53,10 @@ export default class MembersUtilsService extends Service {
         settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
         settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
         settingsParam.append('allowSelfSignup', allowSelfSignup);
+
+        if (portalPlans) {
+            settingsParam.append('portalPrices', encodeURIComponent(portalPlans));
+        }
 
         if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
             settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
