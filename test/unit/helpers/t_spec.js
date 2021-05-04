@@ -12,12 +12,10 @@ describe('{{t}} helper', function () {
 
     afterEach(function () {
         configUtils.restore();
-        settingsCache.shutdown();
     });
 
     it('theme translation is DE', function () {
-        settingsCache.set('lang', {value: 'de'});
-        themeI18n.init('casper');
+        themeI18n.init({activeTheme: 'casper', locale: 'de'});
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
@@ -27,8 +25,7 @@ describe('{{t}} helper', function () {
     });
 
     it('theme translation is EN', function () {
-        settingsCache.set('lang', {value: 'en'});
-        themeI18n.init('casper');
+        themeI18n.init({activeTheme: 'casper', locale: 'en'});
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
@@ -38,8 +35,7 @@ describe('{{t}} helper', function () {
     });
 
     it('[fallback] no theme translation file found for FR', function () {
-        settingsCache.set('lang', {value: 'fr'});
-        themeI18n.init('casper');
+        themeI18n.init({activeTheme: 'casper', locale: 'fr'});
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
@@ -49,8 +45,7 @@ describe('{{t}} helper', function () {
     });
 
     it('[fallback] no theme files at all, use key as translation', function () {
-        settingsCache.set('lang', {value: 'de'});
-        themeI18n.init('casper-1.4');
+        themeI18n.init({activeTheme: 'casper-1.4', locale: 'de'});
 
         let rendered = helpers.t.call({}, 'Top left Button', {
             hash: {}
