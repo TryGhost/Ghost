@@ -9,11 +9,11 @@ const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
 const errors = require('@tryghost/errors');
-const logging = require('./logging');
+const logging = require('../logging');
 
 class I18n {
-    constructor(locale) {
-        this._locale = locale || this.defaultLocale();
+    constructor(options = {}) {
+        this._locale = options.locale || this.defaultLocale();
         this._strings = null;
     }
 
@@ -212,5 +212,4 @@ class I18n {
     }
 }
 
-module.exports = new I18n();
-module.exports.I18n = I18n;
+module.exports = I18n;
