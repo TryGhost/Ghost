@@ -94,7 +94,7 @@ const configureGrunt = function (grunt) {
                     'core/server/**/*.js',
                     'core/shared/**/*.js',
                     'core/frontend/**/*.js',
-                    'core/index.js',
+                    'core/*.js',
                     'index.js',
                     'config.*.json',
                     '!config.testing.json'
