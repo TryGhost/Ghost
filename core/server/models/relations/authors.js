@@ -108,7 +108,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             const ops = [];
 
             /**
-             * @deprecated: `author`, is unused in Ghost 3.0, should be removed before Ghost 4.0
+             * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0 - `author`, is unused in Ghost 3.0
              */
             model.unset('author');
 
@@ -191,7 +191,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
             /**
              * CASE: `author` was requested, `posts.authors` must exist
-             * @deprecated: `author`, will be removed in Ghost 3.0
+             * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
              */
             if (this._originalOptions.withRelated && this._originalOptions.withRelated && this._originalOptions.withRelated.indexOf('author') !== -1) {
                 if (!authors.models.length) {

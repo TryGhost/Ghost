@@ -18,7 +18,7 @@ const buildApiOptions = function buildApiOptions(options, post) {
 
     const apiOptions = {
         /**
-         * @deprecated: `author`, will be removed in Ghost 3.0
+         * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
          */
         include: 'author,authors,tags',
         order: 'published_at ' + order,
