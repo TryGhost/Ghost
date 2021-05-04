@@ -39,7 +39,7 @@ describe('SignupPage', () => {
         const {nameInput, emailInput, submitButton, mockOnActionFn} = setup();
         const nameVal = 'J Smith';
         const emailVal = 'jsmith@example.com';
-        const planVal = 'Free';
+        const planVal = 'free';
 
         fireEvent.change(nameInput, {target: {value: nameVal}});
         fireEvent.change(emailInput, {target: {value: emailVal}});

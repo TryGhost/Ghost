@@ -133,7 +133,6 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
         return {
             ...d,
             price_id: d.id,
-            id: d.stripe_price_id,
             price: d.amount / 100,
             name: d.nickname,
             currency_symbol: getCurrencySymbol(d.currency)
