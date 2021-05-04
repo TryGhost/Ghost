@@ -150,81 +150,74 @@
             {{/if}}
 
             <h4 class="gh-main-section-header small bn">Products</h4>
-            <div class="gh-main-section-content">
-                <ol class="gh-memberproduct-list gh-list">
-                    <li class="gh-list-row header empty">
-                        <div class="gh-list-header"></div>
-                    </li>
-                    {{#unless this.products}}
-                    <li class="gh-list-row">
-                        <div class="gh-list-data gh-cp-memberproduct-noproduct">
-                            <div class="mb2">This member doesn't have any products.</div>
-                            {{#unless this.member.isNew}}
-                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                                <span>{{svg-jar "add"}} Add product</span>
-                            </button>
-                            {{/unless}}
-                        </div>
-                    </li>
-                    {{/unless}}
-                    {{#each this.products as |product|}}
-                        <li class="gh-list-row">
-                            <div class="gh-list-data gh-cp-memberproduct-title">
-                                <h3 class="gh-memberproduct-name">
-                                    {{product.name}}
-                                </h3>
-                                {{#each product.subscriptions as |sub|}}
-                                    <div class="gh-memberproduct-description gh-cp-memberproduct-showmore">
-                                        <input type="checkbox" id="show-more-{{sub.id}}" role="button">
-                                        <label for="show-more-{{sub.id}}">
-                                            {{svg-jar "arrow-right"}}
-                                            <span class="gh-cp-memberproduct-pricelabel">{{sub.price.nickname}}</span>
-                                            &ndash;
-                                            <span class="gh-cp-memberproduct-price">{{sub.price.currencySymbol}}{{sub.price.nonDecimalAmount}}/{{sub.price.interval}}</span>
-                                            &ndash;
-                                            {{#if sub.cancel_at_period_end}}
-                                                <span class="gh-cp-memberproduct-renewal">Cancels {{sub.validUntil}}</span>
-                                                <span class="gh-badge archived">Cancelled</span>
-                                            {{else}}
-                                                <span class="gh-cp-memberproduct-renewal">Renews {{sub.validUntil}}</span>
-                                                <span class="gh-badge active">Active</span>
-                                            {{/if}}
-                                        </label>
 
-                                        <div class="details">
-                                            <span>Created on {{sub.startDate}}</span>
-                                            <div class="actions">
-                                                <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
-                                                    View on Stripe
-                                                </a>
-                                                <span class="ml1 mr1 dib">&ndash;</span>
-                                                {{#if sub.cancel_at_period_end}}
-                                                    <button class="gh-btn gh-btn-link gh-btn-text green" {{action "continueSubscription" sub.id}}>
-                                                        <span>Continue subscription</span>
-                                                    </button>
-                                                {{else}}
-                                                    <button class="gh-btn gh-btn-link gh-btn-text red" {{action "cancelSubscription" sub.id}}>
-                                                        <span>Cancel subscription</span>
-                                                    </button>
-                                                {{/if}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                {{/each}}
-                            </div>
-                        </li>
-                    {{/each}}
-                    {{#if this.products}}
-                    <tr class="gh-list-row gh-memberproduct-add-product">
-                        <td colspan="2" class="gh-list-data">
-                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                                <span>{{svg-jar "add"}} Add product</span>
-                            </button>
-                        </td>
-                    </tr>
-                    {{/if}}
-                </ol>
+            {{#unless this.products}}
+            <div class="gh-main-section-content bordered">
+                <div class="gh-cp-memberproduct-noproduct">
+                    <div class="mb2">This member doesn't have any products.</div>
+                    {{#unless this.member.isNew}}
+                    <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
+                        <span>{{svg-jar "add"}} Add product</span>
+                    </button>
+                    {{/unless}}
+                </div>
             </div>
+            {{/unless}}
+
+            {{#each this.products as |product|}}
+                <div class="gh-main-section-content bordered">
+                    <div class="gh-cp-memberproduct">
+                        <h3 class="gh-memberproduct-name">
+                            {{product.name}}
+                        </h3>
+                        {{#each product.subscriptions as |sub|}}
+                        <div class="gh-memberproduct-subscription">
+                            <div>
+                                <span class="gh-cp-memberproduct-pricelabel">{{sub.price.nickname}}</span>
+                                &ndash;
+                                <span class="gh-cp-memberproduct-price">{{sub.price.currencySymbol}}{{sub.price.nonDecimalAmount}}/{{sub.price.interval}}</span>
+                                &ndash;
+                                {{#if sub.cancel_at_period_end}}
+                                    <span class="gh-cp-memberproduct-renewal">Cancels {{sub.validUntil}}</span>
+                                    <span class="gh-badge archived">Cancelled</span>
+                                {{else}}
+                                    <span class="gh-cp-memberproduct-renewal">Renews {{sub.validUntil}}</span>
+                                    <span class="gh-badge active">Active</span>
+                                {{/if}}
+                            </div>
+                            <div>Created on {{sub.startDate}}</div>
+
+                            <span class="action-menu">
+                                <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon only-has-icon" @title="User Actions">
+                                    <span>
+                                        {{svg-jar "dotdotdot"}}
+                                        <span class="hidden">Subscription menu</span>
+                                    </span>
+                                </GhDropdownButton>
+                                <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
+                                    <li>
+                                        <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
+                                            View on Stripe
+                                        </a>
+                                    </li>
+                                    <li>
+                                    {{#if sub.cancel_at_period_end}}
+                                        <button class="gh-btn gh-btn-link gh-btn-text green" {{action "continueSubscription" sub.id}}>
+                                            <span>Continue subscription</span>
+                                        </button>
+                                    {{else}}
+                                        <button class="gh-btn gh-btn-link gh-btn-text red" {{action "cancelSubscription" sub.id}}>
+                                            <span>Cancel subscription</span>
+                                        </button>
+                                    {{/if}}
+                                    </li>
+                                </GhDropdown>
+                            </span>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            {{/each}}
         </div>
         <div class="gh-main-section-block">
             <div class="gh-main-section-content bordered">

@@ -1566,7 +1566,8 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Member's product list */
 .gh-memberproduct-name {
-    margin-bottom: 6px !important;
+    font-size: 1.5rem;
+    margin-bottom: 4px !important;
 }
 
 .gh-memberproduct-actionlist {
@@ -1715,4 +1716,22 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-btn-add-memberproduct[disabled] span {
     color: var(--midgrey);
+}
+
+.gh-memberproduct-subscription {
+    position: relative;
+}
+
+.gh-memberproduct-subscription .action-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.gh-memberproduct-subscription .action-menu .gh-btn span {
+    height: 28px;
+}
+
+.gh-memberproduct-subscription .action-menu .gh-btn svg {
+    margin: 0;
 }
