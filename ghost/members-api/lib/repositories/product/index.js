@@ -88,6 +88,7 @@ class ProductRepository {
      *
      * @param {object} data
      * @param {string} data.name
+     * @param {string} data.description
      * @param {StripePriceInput[]} data.stripe_prices
      * @param {string} data.product_id
      * @param {string} data.stripe_product_id
@@ -98,7 +99,8 @@ class ProductRepository {
      **/
     async create(data, options) {
         const productData = {
-            name: data.name
+            name: data.name,
+            description: data.description
         };
 
         const product = await this._Product.add(productData, options);
@@ -150,6 +152,7 @@ class ProductRepository {
      * @param {object} data
      * @param {string} data.id
      * @param {string} data.name
+     * @param {string} data.description
      *
      * @param {StripePriceInput[]=} data.stripe_prices
      *
@@ -159,7 +162,8 @@ class ProductRepository {
      **/
     async update(data, options) {
         const productData = {
-            name: data.name
+            name: data.name,
+            description: data.description
         };
 
         const product = await this._Product.edit(productData, {
@@ -206,6 +210,7 @@ class ProductRepository {
                         stripe_product_id: stripeProduct.get('stripe_product_id'),
                         active: existingPrice.active,
                         nickname: existingPrice.nickname,
+                        description: existingPrice.description,
                         currency: existingPrice.currency,
                         amount: existingPrice.amount,
                         type: existingPrice.type,
@@ -213,7 +218,8 @@ class ProductRepository {
                     }, options);
                 } else {
                     await this._StripePrice.edit({
-                        nickname: existingPrice.nickname
+                        nickname: existingPrice.nickname,
+                        description: existingPrice.description
                     }, {
                         ...options,
                         id: stripePrice.id
@@ -241,6 +247,7 @@ class ProductRepository {
                     stripe_product_id: stripeProduct.get('stripe_product_id'),
                     active: price.active,
                     nickname: price.nickname,
+                    description: newPrice.description,
                     currency: price.currency,
                     amount: price.unit_amount,
                     type: price.type,
