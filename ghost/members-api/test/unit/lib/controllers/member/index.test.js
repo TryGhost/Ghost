@@ -7,8 +7,14 @@ describe('MemberController', function () {
             const tokenService = {
                 decodeToken: sinon.fake.resolves({sub: 'fake@email.com'})
             };
-            const stripePlansService = {
-                getPlan: sinon.fake.returns({id: 'plan_id'})
+            const StripePrice = {
+                findOne: sinon.fake.returns({
+                    id: 'plan_id',
+                    stripe_price_id: 'stripe_price_id',
+                    get: () => {
+                        return 'stripe_price_id';
+                    }
+                })
             };
 
             const memberRepository = {
@@ -16,21 +22,21 @@ describe('MemberController', function () {
                     email: 'fake@email.com',
                     subscription: {
                         subscription_id: 'subscription_id',
-                        plan: 'plan_id'
+                        price: 'stripe_price_id'
                     }
                 })
             };
 
             const controller = new MemberController({
                 memberRepository,
-                stripePlansService,
+                StripePrice,
                 tokenService
             });
 
             const req = {
                 body: {
                     identity: 'token',
-                    planName: 'plan_name'
+                    priceId: 'plan_name'
                 },
                 params: {
                     id: 'subscription_id'
