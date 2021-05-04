@@ -1,15 +1,15 @@
 const errors = require('@tryghost/errors');
-const i18n = require('../../../shared/i18n');
-const logging = require('../../../shared/logging');
-const settingsCache = require('../../../server/services/settings/cache');
-const config = require('../../../shared/config');
+const i18n = require('../../../../shared/i18n');
+const logging = require('../../../../shared/logging');
+const settingsCache = require('../../../../server/services/settings/cache');
+const config = require('../../../../shared/config');
 const jp = require('jsonpath');
 
 const isNil = require('lodash/isNil');
 
 class ThemeI18n extends i18n.I18n {
-    constructor(locale) {
-        super(locale);
+    constructor(options = {}) {
+        super(options);
     }
 
     /**
@@ -93,6 +93,4 @@ class ThemeI18n extends i18n.I18n {
     }
 }
 
-let themeI18n = new ThemeI18n();
-
-module.exports = themeI18n;
+module.exports = ThemeI18n;
