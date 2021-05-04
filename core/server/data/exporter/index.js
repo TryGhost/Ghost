@@ -43,7 +43,8 @@ const BACKUP_TABLES = [
     'members_email_change_events',
     'members_status_events',
     'members_paid_subscription_events',
-    'members_subscribe_events'
+    'members_subscribe_events',
+    'oauth'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
