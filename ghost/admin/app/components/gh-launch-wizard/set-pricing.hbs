@@ -6,6 +6,7 @@
                     <div class="gh-setting-title" for="currency">Plan currency</div>
                     <span class="gh-select mt2">
                         <OneWaySelect
+                            @disabled={{this.disabled}}
                             @value={{this.selectedCurrency}}
                             id="currency"
                             name="currency"
@@ -20,38 +21,42 @@
             </div>
             <div class="w-100 flex flex-column flex-row-ns">
                 <div class="w-100 w-50-ns mr3-ns">
-                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
+                    <GhFormGroup>
                     <div class="gh-setting-title">Monthly price</div>
 
                     <div class="flex items-center justify-center mt2 gh-input-group gh-labs-price-label">
                         <GhTextInput
-                            @value={{readonly this.stripePlans.monthly.amount}}
+                            @disabled={{this.disabled}}
+                            @value={{readonly this.stripeMonthlyAmount}}
                             @type="number"
                             @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
                             {{on "blur" this.validateStripePlans}}
                         />
-                        <span class="gh-input-append"><span class="ttu">{{this.stripePlans.monthly.currency}}</span>/month</span>
+                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
                     </div>
                     </GhFormGroup>
                 </div>
                 <div class="w-100 w-50-ns ml2-ns">
-                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="stripePlans">
+                    <GhFormGroup>
                     <div class="gh-setting-title">Yearly price</div>
                     <div class="flex items-center justify-center mt2 gh-input-group gh-labs-price-label">
                         <GhTextInput
-                            @value={{readonly this.stripePlans.yearly.amount}}
+                            @disabled={{this.disabled}}
+                            @value={{readonly this.stripeYearlyAmount}}
                             @type="number"
                             @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
                             {{on "blur" this.validateStripePlans}}
                         />
-                        <span class="gh-input-append"><span class="ttu">{{this.stripePlans.yearly.currency}}</span>/year</span>
+                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
                     </div>
                     </GhFormGroup>
                 </div>
             </div>
         </div>
         <div class="w-100 w-50-l flex flex-column flex-row-ns">
-            <GhErrorMessage @errors={{this.settings.errors}} @property="stripePlans" class="w-100 red"/>
+            {{#if this.stripePlanError}}
+                <p class="response w-100 red"> {{this.stripePlanError}} </p>
+            {{/if}}
         </div>
 
         <div class="gh-stack-item gh-setting flex-column">
@@ -66,7 +71,7 @@
                         checked={{this.isFreeChecked}}
                         id="free-plan"
                         name="free-plan"
-                        disabled={{not (eq this.settings.membersSignupAccess "all")}}
+                        disabled={{this.isFreeDisabled}}
                         class="gh-input post-settings-featured"
                         {{on "click" this.toggleFreePlan}}
                         data-test-checkbox="featured"
@@ -85,7 +90,7 @@
                         id="monthly-plan"
                         name="monthly-plan"
                         checked={{this.isMonthlyChecked}}
-                        disabled={{not this.membersUtils.isStripeEnabled}}
+                        disabled={{this.isPaidPriceDisabled}}
                         class="gh-input post-settings-featured"
                         {{on "click" this.toggleMonthlyPlan}}
                         data-test-checkbox="featured"
@@ -104,7 +109,7 @@
                         id="yearly-plan"
                         name="yearly-plan"
                         checked={{this.isYearlyChecked}}
-                        disabled={{not this.membersUtils.isStripeEnabled}}
+                        disabled={{this.isPaidPriceDisabled}}
                         class="gh-input post-settings-featured"
                         {{on "click" this.toggleYearlyPlan}}
                         data-test-checkbox="featured"

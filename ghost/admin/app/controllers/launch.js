@@ -13,6 +13,7 @@ export default class LaunchController extends Controller {
     @tracked previewGuid = (new Date()).valueOf();
     @tracked previewSrc = '';
     @tracked step = 'customise-design';
+    @tracked data = null;
 
     steps = {
         'customise-design': {
@@ -44,6 +45,16 @@ export default class LaunchController extends Controller {
 
     get currentStep() {
         return this.steps[this.step];
+    }
+
+    @action
+    storeData(data) {
+        this.data = data;
+    }
+
+    @action
+    getData() {
+        return this.data;
     }
 
     @action
