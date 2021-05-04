@@ -3,13 +3,14 @@ const i18n = require('../../../../shared/i18n');
 const logging = require('../../../../shared/logging');
 const settingsCache = require('../../../../server/services/settings/cache');
 const config = require('../../../../shared/config');
-const jp = require('jsonpath');
 
 const isNil = require('lodash/isNil');
 
 class ThemeI18n extends i18n.I18n {
     constructor(options = {}) {
         super(options);
+        // We don't care what gets passed in, themes use fulltext mode
+        this._stringMode = 'fulltext';
     }
 
     /**
@@ -74,22 +75,6 @@ class ThemeI18n extends i18n.I18n {
     _loadLocale() {
         this._locale = settingsCache.get('lang');
         return this._locale;
-    }
-
-    /**
-     * Do the lookup with JSON path
-     *
-     * @param {String} msgPath
-     */
-    _getCandidateString(msgPath) {
-        // Both jsonpath's dot-notation and bracket-notation start with '$'
-        // E.g.: $.store.book.title or $['store']['book']['title']
-        // The {{t}} translation helper passes the default English text
-        // The full Unicode jsonpath with '$' is built here
-        // jp.stringify and jp.value are jsonpath methods
-        // Info: https://www.npmjs.com/package/jsonpath
-        let path = jp.stringify(['$', msgPath]);
-        return jp.value(this._strings, path) || msgPath;
     }
 }
 
