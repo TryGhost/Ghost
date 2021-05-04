@@ -14,15 +14,16 @@ const logging = require('./shared/logging');
 const events = require('./server/lib/common/events');
 const i18n = require('./shared/i18n');
 const themeEngine = require('./frontend/services/theme-engine');
+const settingsCache = require('./server/services/settings/cache');
 
 class Bridge {
     constructor() {
         /**
          * When locale changes, we reload theme translations
-         * @deprecated: the term "lang" was deprecated in favour of "locale" publicly 4.0
+         * @deprecated: the term "lang" was deprecated in favour of "locale" publicly in 4.0
          */
-        events.on('settings.lang.edited', () => {
-            this.getActiveTheme().initI18n();
+        events.on('settings.lang.edited', (model) => {
+            this.getActiveTheme().initI18n({locale: model.get('value')});
         });
     }
 
@@ -31,6 +32,9 @@ class Bridge {
     }
 
     activateTheme(loadedTheme, checkedTheme, error) {
+        let settings = {
+            locale: settingsCache.get('lang')
+        };
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
         try {
@@ -40,7 +44,7 @@ class Bridge {
                 previousGhostAPI = this.getActiveTheme().engine('ghost-api');
             }
 
-            themeEngine.setActive(loadedTheme, checkedTheme, error);
+            themeEngine.setActive(settings, loadedTheme, checkedTheme, error);
             const currentGhostAPI = this.getActiveTheme().engine('ghost-api');
 
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {

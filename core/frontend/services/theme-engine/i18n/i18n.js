@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const i18n = require('../../../../shared/i18n');
 const logging = require('../../../../shared/logging');
-const settingsCache = require('../../../../server/services/settings/cache');
 const config = require('../../../../shared/config');
 
 const isNil = require('lodash/isNil');
@@ -19,18 +18,18 @@ class ThemeI18n extends i18n.I18n {
      *
      * @param {String} activeTheme - name of the currently loaded theme
      */
-    init(activeTheme) {
+    init({activeTheme, locale}) {
         // This function is called during theme initialization, and when switching language or theme.
-        const currentLocale = this._loadLocale();
+        this._locale = locale || this._locale;
 
         // Reading file for current locale and active theme and keeping its content in memory
         if (activeTheme) {
             // Reading translation file for theme .hbs templates.
             // Compatibility with both old themes and i18n-capable themes.
             // Preventing missing files.
-            this._strings = this._tryGetLocale(activeTheme, currentLocale);
+            this._strings = this._tryGetLocale(activeTheme, this._locale);
 
-            if (!this._strings && currentLocale !== this.defaultLocale()) {
+            if (!this._strings && this._locale !== this.defaultLocale()) {
                 logging.warn(`Falling back to locales/${this.defaultLocale()}.json.`);
                 this._strings = this._tryGetLocale(activeTheme, this.defaultLocale());
             }
@@ -67,14 +66,6 @@ class ThemeI18n extends i18n.I18n {
                 throw err;
             }
         }
-    }
-
-    /**
-     * Load the current locale out of the settings cache
-     */
-    _loadLocale() {
-        this._locale = settingsCache.get('lang');
-        return this._locale;
     }
 }
 

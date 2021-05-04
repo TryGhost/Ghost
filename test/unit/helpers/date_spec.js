@@ -4,17 +4,9 @@ const should = require('should');
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
-const proxy = require('../../../core/frontend/services/proxy');
-const settingsCache = require('../../../core/server/services/settings/cache');
-
 const moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
-    afterEach(function () {
-        settingsCache.reset();
-        proxy.themeI18n._loadLocale();
-    });
-
     it('creates properly formatted date strings', function () {
         const testDates = [
             '2013-12-31T11:28:58.593+02:00',
@@ -74,36 +66,35 @@ describe('{{date}} helper', function () {
         const timezone = 'Europe/Dublin';
         const format = 'll';
 
-        const context = {
-            hash: {},
-            data: {
-                site: {
-                    timezone
-                }
-            }
-        };
-
-        locales.forEach(function (l) {
-            settingsCache.set('lang', {value: l});
-            proxy.themeI18n._loadLocale();
+        locales.forEach(function (locale) {
             let rendered;
+
+            const context = {
+                hash: {},
+                data: {
+                    site: {
+                        timezone,
+                        locale
+                    }
+                }
+            };
 
             testDates.forEach(function (d) {
                 rendered = helpers.date.call({published_at: d}, context);
 
                 should.exist(rendered);
-                String(rendered).should.equal(moment(d).tz(timezone).locale(l).format(format));
+                String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
 
                 rendered = helpers.date.call({}, d, context);
 
                 should.exist(rendered);
-                String(rendered).should.equal(moment(d).tz(timezone).locale(l).format(format));
+                String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
             });
 
             // No date falls back to now
             rendered = helpers.date.call({}, context);
             should.exist(rendered);
-            String(rendered).should.equal(moment().tz(timezone).locale(l).format(format));
+            String(rendered).should.equal(moment().tz(timezone).locale(locale).format(format));
         });
     });
 
