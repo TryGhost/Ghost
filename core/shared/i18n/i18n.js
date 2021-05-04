@@ -14,6 +14,7 @@ const logging = require('../logging');
 class I18n {
     constructor(options = {}) {
         this._locale = options.locale || this.defaultLocale();
+        this._stringMode = options.stringMode || 'dot';
         this._strings = null;
     }
 
@@ -69,17 +70,23 @@ class I18n {
      *  - Load proper language file into memory
      */
     init() {
-        // This function is called during Ghost's initialization.
+        this._strings = this._loadStrings();
+
+        this._initializeIntl();
+    }
+
+    _loadStrings() {
+        let strings;
         // Reading translation file for messages from core .json files and keeping its content in memory
         // The English file is always loaded, until back-end translations are enabled in future versions.
         try {
-            this._strings = this._readStringsFile(__dirname, 'translations', `${this.defaultLocale()}.json`);
+            strings = this._readStringsFile(__dirname, 'translations', `${this.defaultLocale()}.json`);
         } catch (err) {
-            this._strings = null;
+            strings = null;
             throw err;
         }
 
-        this._initializeIntl();
+        return strings;
     }
 
     /**
@@ -92,17 +99,29 @@ class I18n {
     }
 
     /**
-     * Do the lookup with JSON path
+     * Do the lookup within the JSON file using jsonpath
      *
      * @param {String} msgPath
      */
     _getCandidateString(msgPath) {
-        // Backend messages use dot-notation, and the '$.' prefix is added here
-        // While bracket-notation allows any Unicode characters in keys for themes,
-        // dot-notation allows only word characters in keys for backend messages
-        // (that is \w or [A-Za-z0-9_] in RegExp)
+        // Our default string mode is "dot" for dot-notation, e.g. $.something.like.this used in the backend
+        // Both jsonpath's dot-notation and bracket-notation start with '$' E.g.: $.store.book.title or $['store']['book']['title']
+        // While bracket-notation allows any Unicode characters in keys (i.e. for themes / fulltext mode) E.g. $['Read more']
+        // dot-notation allows only word characters in keys for backend messages (that is \w or [A-Za-z0-9_] in RegExp)
         let jsonPath = `$.${msgPath}`;
-        return jp.value(this._strings, jsonPath);
+        let fallback = null;
+
+        if (this._stringMode === 'fulltext') {
+            jsonPath = jp.stringify(['$', msgPath]);
+            // In fulltext mode we can use the passed string as a fallback
+            fallback = msgPath;
+        }
+
+        try {
+            return jp.value(this._strings, jsonPath) || fallback;
+        } catch (error) {
+            throw new errors.IncorrectUsageError({message: `i18n.t() called with an invalid path: ${msgPath}`});
+        }
     }
 
     /**
