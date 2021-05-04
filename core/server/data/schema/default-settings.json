@@ -282,7 +282,7 @@
             "type": "string"
         },
         "stripe_plans": {
-            "defaultValue": "[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":500},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":5000}]",
+            "defaultValue": "[]",
             "type": "array"
         },
         "stripe_connect_publishable_key": {
@@ -324,7 +324,7 @@
             "type": "boolean"
         },
         "portal_plans": {
-            "defaultValue": "[\"free\", \"monthly\", \"yearly\"]",
+            "defaultValue": "[\"free\"]",
             "type": "array"
         },
         "portal_button_style": {
