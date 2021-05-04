@@ -9,12 +9,6 @@ EventRegistry = function () {
 
 util.inherits(EventRegistry, events.EventEmitter);
 
-EventRegistry.prototype.onMany = function (arr, onEvent) {
-    arr.forEach((eventName) => {
-        this.on(eventName, onEvent);
-    });
-};
-
 EventRegistryInstance = new EventRegistry();
 EventRegistryInstance.setMaxListeners(100);
 
