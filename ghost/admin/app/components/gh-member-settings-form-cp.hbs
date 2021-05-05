@@ -99,23 +99,6 @@
                             </div>
                         </div>
                     </GhFormGroup>
-
-                    {{#if (and this.canShowStripeInfo this.customer)}}
-                    <div class="gh-member-stripe-info">
-                        <h4 class="gh-setting-title m">Stripe customer</h4>
-                        <p class="gh-setting-desc">
-                            {{#if this.customer.email}}
-                                {{this.customer.email}}
-                            {{else}}
-                                <span class="midgrey-l2">No email</span>
-                            {{/if}}
-                            &ndash;
-                            <a href="https://dashboard.stripe.com/customers/{{customer.id}}" target="_blank" rel="noopener">
-                                View on Stripe
-                            </a>
-                        </p>
-                    </div>
-                    {{/if}}
                 </div>
             </div>
 
@@ -166,8 +149,14 @@
                                 </GhDropdownButton>
                                 <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
                                     <li>
+                                        <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener">
+                                            View Stripe customer
+                                        </a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
                                         <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
-                                            View on Stripe
+                                            View Stripe subscription
                                         </a>
                                     </li>
                                     <li>
