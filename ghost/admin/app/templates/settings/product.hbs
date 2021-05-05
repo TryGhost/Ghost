@@ -54,10 +54,10 @@
                         <GhErrorMessage @property="name" />
                     </GhFormGroup>
 
-                    <GhFormGroup @property="name" @classNames="max-width gh-product-description-container">
-                        <label for="member-name">Description</label>
-                        <GhTextInput data-test-input="member-name" />
-                        <GhErrorMessage @property="name" />
+                    <GhFormGroup @property="description" @classNames="max-width gh-product-description-container">
+                        <label for="product-description">Description</label>
+                        <GhTextInput data-test-input="product-description" @value={{product.description}} />
+                        <GhErrorMessage @property="description" />
                     </GhFormGroup>
                 </div>
             </div>
@@ -86,16 +86,18 @@
                     <div class="gh-list-header"></div>
                 </li>
                 {{#unless this.stripePrices}}
-                <tr class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
-                    <td colspan="4" class="gh-list-data">
-                        <div class="gh-price-list-noprices">
-                            <div class="mb2">There are no prices for this product.</div>
-                            <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
-                                <span>Add price</span>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                    <tr class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
+                        <td colspan="4" class="gh-list-data">
+                            <div class="gh-price-list-noprices">
+                                <div class="mb2">There are no prices for this product.</div>
+                                {{#unless this.product.isNew}}
+                                    <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
+                                        <span>Add price</span>
+                                    </button>
+                                {{/unless}}
+                            </div>
+                        </td>
+                    </tr>
                 {{/unless}}
                 {{#each this.stripePrices as |price|}}
                 <li class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
@@ -104,7 +106,7 @@
                             {{price.nickname}}
                         </h3>
                         <p class="ma0 pa0 f8 midgrey gh-price-list-description">
-                            Price description
+                            {{price.description}}
                         </p>
                     </div>
 
@@ -135,9 +137,11 @@
             </ol>
 
             {{#if this.stripePrices}}
-            <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
-                <span>Add price</span>
-            </button>
+                {{#unless this.product.isNew}}
+                    <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
+                        <span>Add price</span>
+                    </button>
+                {{/unless}}
             {{/if}}
         </div>
     </div>
