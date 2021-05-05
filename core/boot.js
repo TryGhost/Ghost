@@ -55,13 +55,6 @@ async function initDatabase({config, logging}) {
  */
 async function initCore({ghostServer}) {
     debug('Begin: initCore');
-
-    // Initialize Ghost core internationalization - this is basically used to colocate all of our error message strings
-    debug('Begin: i18n');
-    const i18n = require('./shared/i18n');
-    i18n.init();
-    debug('End: i18n');
-
     // Models are the heart of Ghost - this is a syncronous operation
     debug('Begin: models');
     const models = require('./server/models');
@@ -263,6 +256,12 @@ async function bootGhost() {
         debug('Begin: Load sentry');
         require('./shared/sentry');
         debug('End: Load sentry');
+
+        // I18n is basically used to colocate all of our error message strings & required to log server start messages
+        debug('Begin: i18n');
+        const i18n = require('./shared/i18n');
+        i18n.init();
+        debug('End: i18n');
 
         debug('Begin: Load urlUtils');
         const urlUtils = require('./shared/url-utils');

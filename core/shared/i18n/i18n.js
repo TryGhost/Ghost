@@ -143,7 +143,7 @@ class I18n {
 
         // If not in memory, load translations for core
         if (isNil(this._strings)) {
-            this.init();
+            throw new errors.IncorrectUsageError({message: 'i18n was used before it was initialised'});
         }
 
         candidateString = this._getCandidateString(msgPath);
