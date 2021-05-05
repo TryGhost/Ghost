@@ -2,7 +2,7 @@ const _ = require('lodash');
 const hbs = require('./engine');
 const urlUtils = require('../../../shared/url-utils');
 const config = require('../../../shared/config');
-const {i18n} = require('../proxy');
+const {i18n, api} = require('../proxy');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../server/services/settings/cache');
 const labs = require('../../../server/services/labs');
@@ -47,40 +47,64 @@ function ensureActiveTheme(req, res, next) {
  * This should be definitely refactored and we need to consider _some_
  * members settings as publicly readable
  */
-function haxGetMembersPriceData() {
-    const defaultPriceData = {
-        monthly: 0,
-        yearly: 0
+async function haxGetMembersPriceData() {
+    const defaultPrice = {
+        amount: 0,
+        currency: null,
+        interval: null,
+        nickname: null
     };
 
+    function makePriceObject(price) {
+        const numberAmount = 0 + price.amount;
+        const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
+        return {
+            valueOf() {
+                return dollarAmount;
+            },
+            amount: numberAmount,
+            currency: price.currency,
+            nickname: price.name,
+            interval: price.interval
+        };
+    }
+
     try {
-        const stripePlans = settingsCache.get('stripe_plans');
+        const {products} = await api.canary.products.browse({
+            include: 'stripe_prices'
+        });
 
-        const priceData = stripePlans.reduce((prices, plan) => {
-            const numberAmount = 0 + plan.amount;
-            const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
-            return Object.assign(prices, {
-                [plan.name.toLowerCase()]: {
-                    valueOf() {
-                        return dollarAmount;
-                    },
-                    amount: numberAmount,
-                    currency: plan.currency,
-                    nickname: plan.name,
-                    interval: plan.interval
-                }
-            });
-        }, {});
+        const defaultProduct = products[0];
 
-        priceData.currency = stripePlans[0].currency;
+        const nonZeroPrices = defaultProduct.stripe_prices.filter((price) => {
+            return price.amount !== 0;
+        });
 
-        if (Number.isInteger(priceData.monthly.valueOf()) && Number.isInteger(priceData.yearly.valueOf())) {
-            return priceData;
-        }
+        const monthlyPrice = nonZeroPrices.find((price) => {
+            return price.nickname === 'Monthly';
+        }) || nonZeroPrices.find((price) => {
+            return price.interval === 'month';
+        });
 
-        return defaultPriceData;
+        const yearlyPrice = nonZeroPrices.find((price) => {
+            return price.nickname === 'Yearly';
+        }) || nonZeroPrices.find((price) => {
+            return price.interval === 'year';
+        });
+
+        const priceData = {
+            monthly: makePriceObject(monthlyPrice || defaultPrice),
+            yearly: makePriceObject(yearlyPrice || defaultPrice),
+            currency: nonZeroPrices[0].currency
+        };
+
+        return priceData;
     } catch (err) {
-        return defaultPriceData;
+        return {
+            monthly: makePriceObject(defaultPrice),
+            yearly: makePriceObject(defaultPrice),
+            currency: null
+        };
     }
 }
 
@@ -101,7 +125,7 @@ function getSiteData(req) {
     return siteData;
 }
 
-function updateGlobalTemplateOptions(req, res, next) {
+async function updateGlobalTemplateOptions(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
     // @TODO: decouple theme layer from settings cache using the Content API
@@ -112,7 +136,7 @@ function updateGlobalTemplateOptions(req, res, next) {
         posts_per_page: activeTheme.get().config('posts_per_page'),
         image_sizes: activeTheme.get().config('image_sizes')
     };
-    const priceData = haxGetMembersPriceData();
+    const priceData = await haxGetMembersPriceData();
 
     // @TODO: only do this if something changed?
     // @TODO: remove blog in a major where we are happy to break more themes
