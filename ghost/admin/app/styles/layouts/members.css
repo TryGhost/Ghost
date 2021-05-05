@@ -1568,36 +1568,24 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Member's product list */
 .gh-memberproduct-name {
+    display: flex;
+    justify-content: space-between;
     font-size: 1.5rem;
     margin-bottom: 4px !important;
 }
 
-.gh-memberproduct-actionlist {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
-    opacity: 0;
+.gh-cp-memberproduct.multiple-subs .gh-memberproduct-name {
+    margin-bottom: 8px !important;
+}
+
+.gh-memberproduct-subcount {
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--midgrey);
 }
 
 .gh-memberproduct-list .gh-list-row:hover {
     background: none !important;
-}
-
-.gh-memberproduct-list .gh-list-row:hover .gh-memberproduct-actionlist {
-    opacity: 1;
-}
-
-.gh-memberproduct-actionlist a,
-.gh-memberproduct-actionlist button {
-    line-height: 0;
-    margin-left: 24px;
-    color: var(--darkgrey);
-    font-weight: 500;
-}
-
-.gh-memberproduct-actionlist button.archive {
-    color: var(--red);
 }
 
 .gh-cp-memberproduct-pricelabel {
@@ -1610,7 +1598,7 @@ p.gh-members-import-errordetail:first-of-type {
     font-size: 1.2rem;
 }
 
-.gh-memberproduct-subscription:not(:first-of-type) {
+.gh-cp-memberproduct.multiple-subs .gh-memberproduct-subscription {
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--whitegrey);
@@ -1681,8 +1669,8 @@ p.gh-members-import-errordetail:first-of-type {
     right: 0;
 }
 
-.gh-memberproduct-subscription:not(:first-of-type) .action-menu {
-    top: 18px;
+.gh-cp-memberproduct.multiple-subs .gh-memberproduct-subscription .action-menu {
+    top: 20px;
 }
 
 .gh-memberproduct-subscription .action-menu > .gh-btn span {
@@ -1691,10 +1679,4 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-memberproduct-subscription .action-menu > .gh-btn svg {
     margin: 0;
-}
-
-.gh-memberproduct-subcount {
-    font-size: 1.4rem;
-    font-weight: 400;
-    color: var(--midgrey);
 }
