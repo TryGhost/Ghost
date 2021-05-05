@@ -143,7 +143,7 @@ class I18n {
 
         // If not in memory, load translations for core
         if (isNil(this._strings)) {
-            throw new errors.IncorrectUsageError({message: 'i18n was used before it was initialised'});
+            throw new errors.IncorrectUsageError({message: `i18n was used before it was initialised with key ${msgPath}`});
         }
 
         candidateString = this._getCandidateString(msgPath);

@@ -9,9 +9,6 @@ const i18n = require('../../../shared/i18n');
 const settingsCache = require('../settings/cache');
 const urlUtils = require('../../../shared/url-utils');
 
-const helpMessage = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/config/#mail'});
-const defaultErrorMessage = i18n.t('errors.mail.failedSendingEmail.error');
-
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
@@ -47,6 +44,9 @@ function createMessage(message) {
 }
 
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
+    const helpMessage = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/config/#mail'});
+    const defaultErrorMessage = i18n.t('errors.mail.failedSendingEmail.error');
+
     const fullErrorMessage = defaultErrorMessage + message;
     let statusCode = (err && err.name === 'RecipientError') ? 400 : 500;
     return new errors.EmailError({
