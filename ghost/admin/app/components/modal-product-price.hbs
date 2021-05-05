@@ -23,13 +23,14 @@
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="description">
                 <label for="description" class="fw6">Description</label>
                 <GhTextInput
-                    @value=''
+                    @value={{readonly this.price.description}}
+                    @input={{action (mut this.price.description) value="target.value"}}
                     @name="description"
                     @id="description"
                     @class="gh-input" />
                 <GhErrorMessage @errors={{this.price.errors}} @property="description" />
             </GhFormGroup>
-            <div class="gh-product-priceform-pricecurrency">    
+            <div class="gh-product-priceform-pricecurrency">
                 <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="price">
                     <label for="price" class="fw6">Price</label>
                     <div class="flex items-center justify-center gh-labs-price-label">
@@ -61,10 +62,10 @@
             </div>
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="billing-period">
                 <label for="billing-period" class="fw6">Billing period</label>
-                <GhProductsPriceBillingperiod 
+                <GhProductsPriceBillingperiod
                     @updatePeriod={{action "updatePeriod"}}
-                    @triggerId="period-input" 
-                    @value={{this.price.interval}} @disabled={{this.isExistingPrice}} 
+                    @triggerId="period-input"
+                    @value={{this.price.interval}} @disabled={{this.isExistingPrice}}
                 />
             </GhFormGroup>
         </div>
