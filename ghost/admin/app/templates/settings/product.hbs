@@ -12,22 +12,6 @@
             {{/if}}
         </h2>
         <section class="view-actions">
-            <span class="dropdown">
-                <GhDropdownButton @dropdownName="product-actions-menu" @classNames="gh-btn gh-btn-white gh-btn-icon only-has-icon user-actions-cog" @title="User Actions">
-                    <span>
-                        {{svg-jar "settings"}}
-                        <span class="hidden">Product actions</span>
-                    </span>
-                </GhDropdownButton>
-                <GhDropdown @name="product-actions-menu" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
-                    <li>
-                        <button class="delete">
-                            Delete product
-                        </button>
-                    </li>
-                </GhDropdown>
-            </span>
-
             <GhTaskButton @buttonText="Save product"
                 @task={{this.saveTask}}
                 @successText="Saved"
@@ -62,17 +46,6 @@
                 </div>
             </div>
         </section>
-        {{!-- <section class="gh-product-stats">
-            <h4 class="gh-main-section-header small bn">Members</h4>
-            <div class="gh-product-stat-container">
-                <div class="gh-product-chart">CHART</div>
-                <div class="gh-product-stat-details">
-                    <h3 class="data">330</h3>
-                    <p class="info">members have access to this product</p>
-                </div>
-                <LinkTo @route="members">See members &rarr;</LinkTo>
-            </div>
-        </section> --}}
     </div>
     </form>
 
