@@ -36,7 +36,7 @@
     "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
-    "node": "^10.13.0 || ^12.10.0 || ^14.15.0",
+    "node": "^12.10.0 || ^14.15.0",
     "cli": "^1.16.0"
   },
   "dependencies": {
