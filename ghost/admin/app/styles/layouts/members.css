@@ -732,17 +732,19 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed {
-    margin: -12px 0;
+    margin: -12px 0 -8px;
 }
 
 .gh-member-feed-row {
     display: flex;
+    align-items: flex-start;
     padding: 0;
 }
 
 .gh-member-feed-activity {
     display: flex;
     align-items: center;
+    padding: 12px 0;
 }
 
 .gh-member-feed-activity svg {
@@ -753,6 +755,7 @@ textarea.gh-member-details-textarea {
 .gh-member-feed-title {
     display: table-cell;
     padding: 10px 0;
+    line-height: 1.4em;
     vertical-align: middle;
     color: var(--darkgrey);
     text-align: left;
@@ -776,9 +779,8 @@ textarea.gh-member-details-textarea {
     color: var(--darkgrey);
 }
 
-.gh-member-btn-expandfeed span {
-    height: 25px;
-    line-height: 25px;
+.gh-member-btn-expandfeed {
+    margin: 8px 0; 
 }
 
 
