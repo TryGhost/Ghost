@@ -36,7 +36,7 @@ describe('Themes middleware', function () {
     let fakeLabsData;
 
     beforeEach(function () {
-        req = {app: {}, header: () => { }};
+        req = {app: {}, header: () => {}};
         res = {locals: {}};
 
         fakeActiveTheme = {

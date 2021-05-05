@@ -48,34 +48,12 @@ function ensureActiveTheme(req, res, next) {
  * members settings as publicly readable
  */
 async function haxGetMembersPriceData() {
-    const {products} = await api.canary.products.browse({
-        include: 'stripe_prices'
-    });
-
-    const defaultProduct = products[0];
-
-    const nonZeroPrices = defaultProduct.stripe_prices.filter((price) => {
-        return price.amount !== 0;
-    });
-
     const defaultPrice = {
         amount: 0,
         currency: null,
         interval: null,
         nickname: null
     };
-
-    const monthlyPrice = nonZeroPrices.find((price) => {
-        return price.nickname === 'Monthly';
-    }) || nonZeroPrices.find((price) => {
-        return price.interval === 'month';
-    });
-
-    const yearlyPrice = nonZeroPrices.find((price) => {
-        return price.nickname === 'Yearly';
-    }) || nonZeroPrices.find((price) => {
-        return price.interval === 'year';
-    });
 
     function makePriceObject(price) {
         const numberAmount = 0 + price.amount;
@@ -91,13 +69,43 @@ async function haxGetMembersPriceData() {
         };
     }
 
-    const priceData = {
-        monthly: makePriceObject(monthlyPrice || defaultPrice),
-        yearly: makePriceObject(yearlyPrice || defaultPrice),
-        currency: nonZeroPrices[0].currency
-    };
+    try {
+        const {products} = await api.canary.products.browse({
+            include: 'stripe_prices'
+        });
 
-    return priceData;
+        const defaultProduct = products[0];
+
+        const nonZeroPrices = defaultProduct.stripe_prices.filter((price) => {
+            return price.amount !== 0;
+        });
+
+        const monthlyPrice = nonZeroPrices.find((price) => {
+            return price.nickname === 'Monthly';
+        }) || nonZeroPrices.find((price) => {
+            return price.interval === 'month';
+        });
+
+        const yearlyPrice = nonZeroPrices.find((price) => {
+            return price.nickname === 'Yearly';
+        }) || nonZeroPrices.find((price) => {
+            return price.interval === 'year';
+        });
+
+        const priceData = {
+            monthly: makePriceObject(monthlyPrice || defaultPrice),
+            yearly: makePriceObject(yearlyPrice || defaultPrice),
+            currency: nonZeroPrices[0].currency
+        };
+
+        return priceData;
+    } catch (err) {
+        return {
+            monthly: makePriceObject(defaultPrice),
+            yearly: makePriceObject(defaultPrice),
+            currency: null
+        };
+    }
 }
 
 function getSiteData(req) {
