@@ -9,7 +9,27 @@ describe('I18n Class Behaviour', function () {
         i18n.locale().should.eql('en');
     });
 
-    describe('dot notation (default behaviour)', function () {
+    it('can have a different locale set', function () {
+        const i18n = new I18n({locale: 'fr'});
+        i18n.locale().should.eql('fr');
+    });
+
+    describe('file loading behaviour', function () {
+        it('will fallback to en file correctly without changing locale', function () {
+            const i18n = new I18n({locale: 'fr'});
+
+            let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
+
+            i18n.locale().should.eql('fr');
+            i18n.init();
+
+            i18n.locale().should.eql('fr');
+            fileSpy.calledTwice.should.be.true();
+            fileSpy.secondCall.args[0].should.eql('en');
+        });
+    });
+
+    describe('translation key dot notation (default behaviour)', function () {
         const fakeStrings = {
             test: {string: {path: 'I am correct'}}
         };
@@ -29,18 +49,18 @@ describe('I18n Class Behaviour', function () {
             i18n.t('test.string.path').should.eql('I am correct');
         });
 
-        it('uses fallback correctly', function () {
+        it('uses key fallback correctly', function () {
             i18n.t('unknown.string').should.eql('An error occurred');
         });
 
         it('errors for invalid strings', function () {
             should(function () {
                 i18n.t('unknown string');
-            }).throw('i18n.t() called with an invalid path: unknown string');
+            }).throw('i18n.t() called with an invalid key: unknown string');
         });
     });
 
-    describe('fulltext notation (theme behaviour)', function () {
+    describe('translation key fulltext notation (theme behaviour)', function () {
         const fakeStrings = {'Full text': 'I am correct'};
         let i18n;
 
@@ -58,7 +78,7 @@ describe('I18n Class Behaviour', function () {
             i18n.t('Full text').should.eql('I am correct');
         });
 
-        it('uses fallback correctly', function () {
+        it('uses key fallback correctly', function () {
             i18n.t('unknown string').should.eql('unknown string');
         });
     });

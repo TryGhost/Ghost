@@ -12,6 +12,11 @@ const errors = require('@tryghost/errors');
 const logging = require('../logging');
 
 class I18n {
+    /**
+     * @param {objec} [options]
+     * @param {string} [locale] - a locale string
+     * @param {{dot|fulltext}} [stringMode] - which mode our translation keys use
+     */
     constructor(options = {}) {
         this._locale = options.locale || this.defaultLocale();
         this._stringMode = options.stringMode || 'dot';
@@ -75,18 +80,34 @@ class I18n {
         this._initializeIntl();
     }
 
-    _loadStrings() {
-        let strings;
-        // Reading translation file for messages from core .json files and keeping its content in memory
-        // The English file is always loaded, until back-end translations are enabled in future versions.
-        try {
-            strings = this._readStringsFile(__dirname, 'translations', `${this.defaultLocale()}.json`);
-        } catch (err) {
-            strings = null;
-            throw err;
-        }
+    /**
+     * Attempt to load strings from a file
+     *
+     * @param {sting} [locale]
+     * @returns {object} strings
+     */
+    _loadStrings(locale) {
+        locale = locale || this.locale();
 
-        return strings;
+        try {
+            return this._readTranslationsFile(locale);
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                this._handleMissingFileError(locale, err);
+
+                if (locale !== this.defaultLocale()) {
+                    this._handleFallbackToDefault();
+                    return this._loadStrings(this.defaultLocale());
+                }
+            } else if (err instanceof SyntaxError) {
+                this._handleInvalidFileError(locale, err);
+            } else {
+                throw err;
+            }
+
+            // At this point we've done all we can and strings must be an object
+            return {};
+        }
     }
 
     /**
@@ -119,8 +140,8 @@ class I18n {
 
         try {
             return jp.value(this._strings, jsonPath) || fallback;
-        } catch (error) {
-            throw new errors.IncorrectUsageError({message: `i18n.t() called with an invalid path: ${msgPath}`});
+        } catch (err) {
+            this._handleInvalidKeyError(msgPath, err);
         }
     }
 
@@ -137,13 +158,13 @@ class I18n {
 
         // no path? no string
         if (msgPath.length === 0 || !isString(msgPath)) {
-            logging.warn('i18n.t() - received an empty path.');
+            this._handleEmptyKeyError();
             return '';
         }
 
         // If not in memory, load translations for core
         if (isNil(this._strings)) {
-            throw new errors.IncorrectUsageError({message: `i18n was used before it was initialised with key ${msgPath}`});
+            this._handleUninitialisedError(msgPath);
         }
 
         candidateString = this._getCandidateString(msgPath);
@@ -152,9 +173,7 @@ class I18n {
 
         if (isObject(matchingString) || isEqual(matchingString, {})) {
             if (options.log) {
-                logging.error(new errors.IncorrectUsageError({
-                    message: `i18n error: path "${msgPath}" was not found`
-                }));
+                this._handleMissingKeyError(msgPath);
             }
 
             matchingString = this._fallbackError();
@@ -163,14 +182,24 @@ class I18n {
         return matchingString;
     }
 
+    _translationFileDirs() {
+        return [__dirname, 'translations'];
+    }
+
+    // If we are passed a locale, use that, else use this.locale
+    _translationFileName(locale) {
+        return `${locale || this.locale()}.json`;
+    }
+
     /**
-     * Resolve filepath, read file, and attempt a parse
+     * Read the translations file
      * Error handling to be done by consumer
      *
-     * @param  {...String} pathParts
+     * @param  {string} locale
      */
-    _readStringsFile(...pathParts) {
-        const content = fs.readFileSync(path.join(...pathParts));
+    _readTranslationsFile(locale) {
+        const filePath = path.join(...this._translationFileDirs(), this._translationFileName(locale));
+        const content = fs.readFileSync(filePath);
         return JSON.parse(content);
     }
 
@@ -186,7 +215,7 @@ class I18n {
         try {
             msg = msg.format(bindings);
         } catch (err) {
-            logging.error(err.message);
+            this._handleFormatError(err);
 
             // fallback
             msg = new MessageFormat(this._fallbackError(), currentLocale);
@@ -221,6 +250,45 @@ class I18n {
             // No `Intl`, so use and load the polyfill.
             global.Intl = require('intl');
         }
+    }
+
+    _handleUninitialisedError(key) {
+        throw new errors.IncorrectUsageError({message: `i18n was used before it was initialised with key ${key}`});
+    }
+
+    _handleFormatError(err) {
+        logging.error(err.message);
+    }
+
+    _handleFallbackToDefault() {
+        logging.warn(`i18n is falling back to ${this.defaultLocale()}.json.`);
+    }
+
+    _handleMissingFileError(locale) {
+        logging.warn(`i18n was unable to find ${locale}.json.`);
+    }
+    _handleInvalidFileError(locale, err) {
+        logging.error(new errors.IncorrectUsageError({
+            err,
+            message: `i18n was unable to parse ${locale}.json. Please check that it is valid JSON.`
+        }));
+    }
+
+    _handleEmptyKeyError() {
+        logging.warn('i18n.t() was called without a key');
+    }
+
+    _handleMissingKeyError(key) {
+        logging.error(new errors.IncorrectUsageError({
+            message: `i18n.t() was called with a key that could not be found: ${key}`
+        }));
+    }
+
+    _handleInvalidKeyError(key, err) {
+        throw new errors.IncorrectUsageError({
+            err,
+            message: `i18n.t() called with an invalid key: ${key}`
+        });
     }
 
     /**

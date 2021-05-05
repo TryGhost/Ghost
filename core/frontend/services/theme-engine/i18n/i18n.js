@@ -3,9 +3,11 @@ const i18n = require('../../../../shared/i18n');
 const logging = require('../../../../shared/logging');
 const config = require('../../../../shared/config');
 
-const isNil = require('lodash/isNil');
-
 class ThemeI18n extends i18n.I18n {
+    /**
+     * @param {objec} [options]
+     * @param {string} [locale] - a locale string
+     */
     constructor(options = {}) {
         super(options);
         // We don't care what gets passed in, themes use fulltext mode
@@ -16,56 +18,52 @@ class ThemeI18n extends i18n.I18n {
      * Setup i18n support for themes:
      *  - Load correct language file into memory
      *
-     * @param {String} activeTheme - name of the currently loaded theme
+     * @param {object} options
+     * @param {String} options.activeTheme - name of the currently loaded theme
+     * @param {String} options.locale - name of the currently loaded locale
+     *
      */
     init({activeTheme, locale}) {
         // This function is called during theme initialization, and when switching language or theme.
         this._locale = locale || this._locale;
+        this._activetheme = activeTheme || 'casper';
 
-        // Reading file for current locale and active theme and keeping its content in memory
-        if (activeTheme) {
-            // Reading translation file for theme .hbs templates.
-            // Compatibility with both old themes and i18n-capable themes.
-            // Preventing missing files.
-            this._strings = this._tryGetLocale(activeTheme, this._locale);
-
-            if (!this._strings && this._locale !== this.defaultLocale()) {
-                logging.warn(`Falling back to locales/${this.defaultLocale()}.json.`);
-                this._strings = this._tryGetLocale(activeTheme, this.defaultLocale());
-            }
-        }
-
-        if (isNil(this._strings)) {
-            // even if empty, themeStrings must be an object for jp.value
-            this._strings = {};
-        }
-
-        this._initializeIntl();
+        super.init();
     }
 
-    /**
-     *  Attempt to load a local file and parse the contents
-     *
-     * @param {String} activeTheme
-     * @param {String} locale
-     */
-    _tryGetLocale(activeTheme, locale) {
-        try {
-            return this._readStringsFile(config.getContentPath('themes'), activeTheme, 'locales', `${locale}.json`);
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                if (locale !== this.defaultLocale()) {
-                    logging.warn(`Theme's file locales/${locale}.json not found.`);
-                }
-            } else if (err instanceof SyntaxError) {
-                logging.error(new errors.IncorrectUsageError({
-                    err,
-                    message: `Unable to parse locales/${locale}.json. Please check that it is valid JSON.`
-                }));
-            } else {
-                throw err;
-            }
+    _translationFileDirs() {
+        return [config.getContentPath('themes'), this._activetheme, 'locales'];
+    }
+
+    _handleFallbackToDefault() {
+        logging.warn(`Theme translations falling back to locales/${this.defaultLocale()}.json.`);
+    }
+
+    _handleMissingFileError(locale) {
+        if (locale !== this.defaultLocale()) {
+            logging.warn(`Theme translations file locales/${locale}.json not found.`);
         }
+    }
+    _handleInvalidFileError(locale, err) {
+        logging.error(new errors.IncorrectUsageError({
+            err,
+            message: `Theme translations unable to parse locales/${locale}.json. Please check that it is valid JSON.`
+        }));
+    }
+
+    _handleEmptyKeyError() {
+        logging.warn('Theme translations {{t}} helper called without a translation key.');
+    }
+
+    _handleMissingKeyError() {
+        // This case cannot be reached in themes as we use the key as the fallback
+    }
+
+    _handleInvalidKeyError(key, err) {
+        throw new errors.IncorrectUsageError({
+            err,
+            message: `Theme translations {{t}} helper called with an invalid translation key: ${key}`
+        });
     }
 }
 
