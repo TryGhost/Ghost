@@ -477,11 +477,13 @@ const fixtures = {
                 return models.MemberStripeCustomer.add(customer, context.internal);
             });
         }).then(function () {
-            return Promise.each(_.cloneDeep(DataGenerator.forKnex.products), function (product) {
-                return models.Product.add(product, context.internal);
-            });
+            let productsToInsert = fixtureUtils.findModelFixtures('Product').entries;
+            return Promise.map(productsToInsert, product => models.Product.add(product, context.internal));
         }).then(function () {
+            return models.Product.findOne({}, context.internal);
+        }).then(function (product) {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_products), function (stripeProduct) {
+                stripeProduct.product_id = product.id;
                 return models.StripeProduct.add(stripeProduct, context.internal);
             });
         }).then(function () {
