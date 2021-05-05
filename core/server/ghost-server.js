@@ -7,7 +7,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const _ = require('lodash');
 const config = require('../shared/config');
-const urlUtils = require('./../shared/url-utils');
 const errors = require('@tryghost/errors');
 const i18n = require('../shared/i18n');
 const logging = require('../shared/logging');
@@ -19,7 +18,8 @@ const stoppable = require('stoppable');
  * ## GhostServer
  */
 class GhostServer {
-    constructor() {
+    constructor({url}) {
+        this.url = url;
         this.rootApp = null;
         this.httpServer = null;
 
@@ -260,13 +260,13 @@ class GhostServer {
         logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
 
         if (config.get('env') === 'production') {
-            logging.info(i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlUtils.urlFor('home', true)}));
+            logging.info(i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: this.url}));
         } else {
             logging.info(i18n.t('notices.httpServer.listeningOn', {
                 host: config.get('server').socket || config.get('server').host,
                 port: config.get('server').port
             }));
-            logging.info(i18n.t('notices.httpServer.urlConfiguredAs', {url: urlUtils.urlFor('home', true)}));
+            logging.info(i18n.t('notices.httpServer.urlConfiguredAs', {url: this.url}));
         }
 
         logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));

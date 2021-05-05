@@ -264,11 +264,15 @@ async function bootGhost() {
         require('./shared/sentry');
         debug('End: Load sentry');
 
+        debug('Begin: Load urlUtils');
+        const urlUtils = require('./shared/url-utils');
+        debug('End: Load urlUtils');
+
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
         const GhostServer = require('./server/ghost-server');
-        ghostServer = new GhostServer();
+        ghostServer = new GhostServer({url: urlUtils.urlFor('home', true)});
         await ghostServer.start(rootApp);
         bootLogger.log('server started');
         debug('End: load server + minimal app');
@@ -289,7 +293,6 @@ async function bootGhost() {
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
         debug('Begin: mountGhost');
-        const urlUtils = require('./shared/url-utils');
         rootApp.disable('maintenance');
         rootApp.use(urlUtils.getSubdir(), ghostApp);
         debug('End: mountGhost');
