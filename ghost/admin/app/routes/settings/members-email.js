@@ -3,22 +3,27 @@ import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
-    settings: service(),
     notifications: service(),
-    queryParams: {
-        fromAddressUpdate: {
-            replace: true
-        },
-        supportAddressUpdate: {
-            replace: true
-        }
-    },
+    settings: service(),
 
-    beforeModel() {
+    beforeModel(transition) {
         this._super(...arguments);
         return this.get('session.user')
             .then(this.transitionAuthor())
-            .then(this.transitionEditor());
+            .then(this.transitionEditor())
+            .then(() => {
+                if (transition.to.queryParams?.fromAddressUpdate === 'success') {
+                    this.notifications.showAlert(
+                        `Newsletter email address has been updated`.htmlSafe(),
+                        {type: 'success', key: 'members.settings.from-address.updated'}
+                    );
+                } else if (transition.to.queryParams?.supportAddressUpdate === 'success') {
+                    this.notifications.showAlert(
+                        `Support email address has been updated`.htmlSafe(),
+                        {type: 'success', key: 'members.settings.support-address.updated'}
+                    );
+                }
+            });
     },
 
     model() {
@@ -26,22 +31,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     setupController(controller) {
-        if (controller.fromAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Newsletter email address has been updated`.htmlSafe(),
-                {type: 'success', key: 'members.settings.from-address.updated'}
-            );
-        } else if (controller.supportAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Support email address has been updated`.htmlSafe(),
-                {type: 'success', key: 'members.settings.support-address.updated'}
-            );
-        }
+        controller.resetEmailAddresses();
     },
 
-    resetController(controller, isExiting) {
-        if (isExiting) {
-            controller.reset();
+    actions: {
+        willTransition(transition) {
+            return this.controller.leaveRoute(transition);
         }
     },
 
