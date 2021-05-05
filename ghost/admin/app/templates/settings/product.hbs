@@ -120,14 +120,6 @@
     </div>
 
     {{#if this.showPriceModal}}
-        {{!-- <GhFullscreenModal @modifier="action wide member-product">
-            <ModalProductPrice
-                    @model={{hash
-                        price=this.priceModel
-                    }}
-                    @confirm={{action "savePrice"}}
-                    @closeModal={{this.closePriceModal}} />
-        </GhFullscreenModal> --}}
         <GhFullscreenModal
             @modal="product-price"
             @model={{hash
@@ -135,7 +127,7 @@
             }}
             @confirm={{action "savePrice"}}
             @close={{this.closePriceModal}}
-            @modifier="action wide body-scrolling product-ssprice" />
+            @modifier="action wide product-ssprice" />
     {{/if}}
 
     {{#if this.showUnsavedChangesModal}}

@@ -8,7 +8,6 @@
 <form>
 <div class="modal-body">
     <div class="gh-main-section-block">
-        <h4 class="gh-main-section-header small bn">Pricing</h4>
         <div class="gh-main-section-content grey gh-product-priceform-block">
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="name">
                 <label for="name" class="fw6">Name</label>
@@ -40,7 +39,6 @@
                             @disabled={{this.isExistingPrice}}
                             @input={{action "setAmount" value="target.value"}}
                         />
-                        {{!-- <span class="gh-input-append"><span class="ttu">{{capitalize (or this.currencyVal "usd")}} </span>/{{or this.periodVal "month"}}</span> --}}
                     </div>
                     <GhErrorMessage @errors={{this.price.errors}} @property="price" />
                 </GhFormGroup>
@@ -67,30 +65,6 @@
                     @triggerId="period-input"
                     @value={{this.price.interval}} @disabled={{this.isExistingPrice}}
                 />
-            </GhFormGroup>
-        </div>
-
-        <h4 class="gh-main-section-header small bn">Advanced</h4>
-        <div class="gh-main-section-content grey gh-product-priceform-block">
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="welcome-page">
-                <label for="welcome-page" class="fw6">Welcome page</label>
-                <GhTextInput
-                    @value=''
-                    @name="welcome-page"
-                    @id="welcome-page"
-                    @class="gh-input" />
-                <p>Redirect to this URL after signing up with this price</p>
-                <GhErrorMessage @errors={{this.price.errors}} @property="welcome-page" />
-            </GhFormGroup>
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="stripe-url">
-                <label for="stripe-url" class="fw6">Stripe Checkout URL</label>
-                <GhTextInput
-                    @value='https://example.com/checkout'
-                    @name="stripe-url"
-                    @id="stripe-url"
-                    @disabled={{true}}
-                    @class="gh-input" />
-                <GhErrorMessage @errors={{this.price.errors}} @property="stripe-url" />
             </GhFormGroup>
         </div>
     </div>
