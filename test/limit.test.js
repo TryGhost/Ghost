@@ -223,13 +223,13 @@ describe('Limit Service', function () {
             await limit.errorIfIsOverLimit({value: 'test'});
         });
 
-        it('rejects unkown values', async function () {
+        it('rejects unknown values', async function () {
             const limit = new AllowlistLimit({name: 'test', config: {
                 allowlist: ['test', 'ok']
             }, errors});
 
             try {
-                await limit.errorIfIsOverLimit({value: 'unkown value'});
+                await limit.errorIfIsOverLimit({value: 'unknown value'});
                 throw new Error('Should have failed earlier...');
             } catch (error) {
                 error.errorType.should.equal('HostLimitError');
