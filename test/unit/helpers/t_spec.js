@@ -1,6 +1,5 @@
 const should = require('should');
 const path = require('path');
-const settingsCache = require('../../../core/server/services/settings/cache');
 const helpers = require('../../../core/frontend/helpers');
 const themeI18n = require('../../../core/frontend/services/theme-engine/i18n');
 const configUtils = require('../../utils/configUtils');
