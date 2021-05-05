@@ -147,17 +147,17 @@ jobs:
           ghost install local -d $DIR
           ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      - name: Update from latest v1
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v1 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+      #- name: Update from latest v1
+          #run: |
+          #DIR=$(mktemp -d)
+          #ghost install v1 --local -d $DIR
+          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      - name: Update from latest v2
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v2 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+      #- name: Update from latest v2
+          #run: |
+          #DIR=$(mktemp -d)
+          #ghost install v2 --local -d $DIR
+          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - name: Update from latest v3
         run: |
