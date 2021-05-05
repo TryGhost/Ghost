@@ -119,11 +119,11 @@
 
             {{#each this.products as |product|}}
                 <div class="gh-main-section-content bordered">
-                    <div class="gh-cp-memberproduct">
+                    <div class="gh-cp-memberproduct {{if (not (eq product.subscriptions.length 1)) "multiple-subs" ""}}">
                         <h3 class="gh-memberproduct-name">
                             {{product.name}} 
-                            {{#unless (eq product.subscriptions.length 1    )}}
-                            <span class="gh-memberproduct-subcount">({{product.subscriptions.length}} subscriptions)</span>
+                            {{#unless (eq product.subscriptions.length 1)}}
+                            <span class="gh-memberproduct-subcount">{{product.subscriptions.length}} subscriptions</span>
                             {{/unless}}
                         </h3>
                         {{#each product.subscriptions as |sub|}}
