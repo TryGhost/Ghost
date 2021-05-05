@@ -5,6 +5,7 @@ export default Model.extend(ValidationEngine, {
     validationType: 'product',
 
     name: attr('string'),
+    description: attr('string'),
     slug: attr('string'),
     stripePrices: attr('stripe-price')
 });
