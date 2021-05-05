@@ -35,7 +35,7 @@
                 {{#if this.backgroundLoader.isRunning}}
                     <div class="gh-loading-spinner" style="zoom: 50%"></div>
                 {{else if this.isSendingEmailLimited}}
-                    <p>{{html-safe this.sendingEmailLimitError}}</p>
+                    <p class="gh-box gh-box-alert">{{html-safe this.sendingEmailLimitError}}</p>
                 {{else}}
                     <div class="gh-publishmenu-email-label {{if this.disableEmailOption "pe-none"}}">
                         <label class="gh-publishmenu-radio-label mb3 {{if this.disableEmailOption "midgrey"}}">Send by email to</label>
