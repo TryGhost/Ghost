@@ -1610,6 +1610,12 @@ p.gh-members-import-errordetail:first-of-type {
     font-size: 1.2rem;
 }
 
+.gh-memberproduct-subscription:not(:first-of-type) {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--whitegrey);
+}
+
 .gh-memberproduct-archived .gh-memberproduct-name {
     opacity: 0.5;
 }
@@ -1667,8 +1673,12 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-memberproduct-subscription .action-menu {
     position: absolute;
-    top: 0;
+    top: -4px;
     right: 0;
+}
+
+.gh-memberproduct-subscription:not(:first-of-type) .action-menu {
+    top: 18px;
 }
 
 .gh-memberproduct-subscription .action-menu > .gh-btn span {
