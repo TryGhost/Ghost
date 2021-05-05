@@ -24,10 +24,19 @@
                 @settings={{this.settings}}
                 @fromAddress={{this.fromAddress}}
                 @supportAddress={{this.supportAddress}}
-                @setEmailAddress={{action "setEmailAddress"}}
+                @setEmailAddress={{this.setEmailAddress}}
             />
         </div>
         {{/if}}
 
     </section>
+
+    {{#if this.showLeaveSettingsModal}}
+        <GhFullscreenModal
+            @modal="leave-settings"
+            @confirm={{this.confirmLeave}}
+            @close={{this.cancelLeave}}
+            @modifier="action wide"
+        />
+    {{/if}}
 </section>
