@@ -121,7 +121,10 @@
                 <div class="gh-main-section-content bordered">
                     <div class="gh-cp-memberproduct">
                         <h3 class="gh-memberproduct-name">
-                            {{product.name}}
+                            {{product.name}} 
+                            {{#unless (eq product.subscriptions.length 1    )}}
+                            <span class="gh-memberproduct-subcount">({{product.subscriptions.length}} subscriptions)</span>
+                            {{/unless}}
                         </h3>
                         {{#each product.subscriptions as |sub|}}
                         <div class="gh-memberproduct-subscription">
@@ -138,7 +141,7 @@
                                     <span class="gh-badge active">Active</span>
                                 {{/if}}
                             </div>
-                            <div>Created on {{sub.startDate}}</div>
+                            <div class="gh-memberproduct-created">Created on {{sub.startDate}}</div>
 
                             <span class="action-menu">
                                 <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon only-has-icon" @title="User Actions">
