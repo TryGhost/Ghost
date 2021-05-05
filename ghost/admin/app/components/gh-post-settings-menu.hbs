@@ -215,7 +215,7 @@
                                         @focus-out={{action "setMetaDescription" this.metaDescriptionScratch}}
                                         @stopEnterKeyDownPropagation="true"
                                         data-test-field="meta-description" />
-                                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.metaDescriptionScratch 156}}</p>
+                                    <p>Recommended: <b>145</b> characters. You’ve used {{gh-count-down-characters this.metaDescriptionScratch 145}}</p>
                                     <GhErrorMessage @errors={{this.post.errors}} @property="meta-description" />
                                 </GhFormGroup>
 
@@ -242,7 +242,7 @@
                                             </div>
                                             <div class="gh-seo-preview-link">{{this.seoURL}}</div>
                                             <div class="gh-seo-preview-title">{{truncate this.seoTitle 60}}</div>
-                                            <div class="gh-seo-preview-desc">{{this.seoDescription}}</div>
+                                            <div class="gh-seo-preview-desc">{{moment-format (now) "DD MMM YYYY"}} — {{truncate this.seoDescription 149}}</div>
                                         </div>
                                     </div>
                                 </div>

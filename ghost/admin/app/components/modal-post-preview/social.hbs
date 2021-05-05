@@ -249,7 +249,7 @@
                     >{{@post.metaDescription}}</textarea>
                 {{else}}
                     <div class="gh-seo-preview-desc editable pointer" {{on "click" this.editMetaDescription}}>
-                        {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 170}}
+                        {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 149}}
                     </div>
                 {{/if}}
             </div>

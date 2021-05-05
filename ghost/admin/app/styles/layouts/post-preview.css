@@ -639,14 +639,11 @@
 }
 
 .gh-seo-preview-desc {
-    max-height: 45px;
-    overflow: hidden;
     color: #4d5156;
     font-family: Arial, sans-serif;
     font-size: 14px;
     line-height: 22px;
     font-weight: 400;
-    text-overflow: ellipsis;
 }
 
 .gh-seo-preview-desc.editable:hover {
