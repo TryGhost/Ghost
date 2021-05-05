@@ -554,11 +554,13 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-stripe-info {
-    border-bottom: 1px solid var(--whitegrey);
+    margin-top: 24px;
 }
 
-.gh-member-stripe-info:last-of-type {
-    border-bottom: none;
+.gh-member-stripe-info p {
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin: 4px 0 0;
 }
 
 .gh-member-stripe-table {
@@ -1598,73 +1600,14 @@ p.gh-members-import-errordetail:first-of-type {
     color: var(--red);
 }
 
-.gh-cp-memberproduct-showmore {
-    line-height: 1;
-    margin-top: 5px;
-}
-
-.gh-cp-memberproduct-showmore label {
-    display: inline-block;
-    font-size: 1.3rem;
-    font-weight: 400;
-    line-height: 1.5em;
-    color: var(--middarkgrey);
-    margin: 4px 0 2px;
-    cursor: pointer;
-}
-
-.gh-cp-memberproduct-showmore label:hover {
-    color: var(--darkgrey);
-}
-
 .gh-cp-memberproduct-pricelabel {
     font-weight: 600;
 }
 
-.gh-cp-memberproduct-showmore label span.archived {
+.gh-memberproduct-subscription span.archived {
     background: var(--lightgrey-l2);
     color: var(--midgrey);
     font-size: 1.2rem;
-}
-
-.gh-cp-memberproduct-showmore label svg {
-    width: 9px;
-    height: 9px;
-    margin-right: 2px;
-}
-
-.gh-cp-memberproduct-showmore label svg path {
-    fill: var(--midgrey);
-}
-
-.gh-cp-memberproduct-showmore .details {
-    display: none;
-    flex-direction: column;
-    font-size: 1.3rem;
-    line-height: 1.7em;
-    color: var(--middarkgrey);
-    margin: 2px 0 16px 15px;
-}
-
-.gh-cp-memberproduct-showmore .details .actions {
-    display: flex;
-    margin-top: 3px;
-}
-
-.gh-cp-memberproduct-showmore .details .actions button span {
-    font-size: 1.3rem;
-}
-
-.gh-cp-memberproduct-showmore input[type=checkbox] {
-    display: none;
-}
-
-.gh-cp-memberproduct-showmore input[type=checkbox]:checked ~ .details {
-    display: flex;
-}
-
-.gh-cp-memberproduct-showmore input[type=checkbox]:checked ~ label svg {
-    transform: rotate(90deg);
 }
 
 .gh-memberproduct-archived .gh-memberproduct-name {
@@ -1728,10 +1671,10 @@ p.gh-members-import-errordetail:first-of-type {
     right: 0;
 }
 
-.gh-memberproduct-subscription .action-menu .gh-btn span {
+.gh-memberproduct-subscription .action-menu > .gh-btn span {
     height: 28px;
 }
 
-.gh-memberproduct-subscription .action-menu .gh-btn svg {
+.gh-memberproduct-subscription .action-menu > .gh-btn svg {
     margin: 0;
 }
