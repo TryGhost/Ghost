@@ -1616,6 +1616,10 @@ p.gh-members-import-errordetail:first-of-type {
     border-top: 1px solid var(--whitegrey);
 }
 
+.gh-memberproduct-created {
+    margin-top: 1px;
+}
+
 .gh-memberproduct-archived .gh-memberproduct-name {
     opacity: 0.5;
 }
@@ -1687,4 +1691,10 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-memberproduct-subscription .action-menu > .gh-btn svg {
     margin: 0;
+}
+
+.gh-memberproduct-subcount {
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--midgrey);
 }
