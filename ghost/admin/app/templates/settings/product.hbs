@@ -43,9 +43,18 @@
 
                 <GhFormGroup @property="_welcome-page" @classNames="max-width">
                     <label for="_welcome-page">Welcome page</label>
-                    <GhTextInput data-test-input="_welcome-page" @value="" />
+                    <GhUrlInput
+                        @value={{readonly this.settings.membersPaidSignupRedirect}}
+                        @baseUrl={{readonly this.siteUrl}}
+                        @setResult={{action "setPaidSignupRedirect"}}
+                        @validateUrl={{action "validatePaidSignupRedirect"}}
+                        @placeholder={{readonly this.siteUrl}}
+                    />
                     <p>Redirect to this URL after signup for this product</p>
-                    <GhErrorMessage @property="_welcome-page" />
+                    <GhErrorMessage
+                        @errors={{settings.errors}}
+                        @property="membersPaidSignupRedirect"
+                    />
                 </GhFormGroup>
             </div>
         </div>
