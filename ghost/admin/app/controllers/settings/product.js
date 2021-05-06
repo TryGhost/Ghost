@@ -6,11 +6,18 @@ import {tracked} from '@glimmer/tracking';
 
 export default class ProductController extends Controller {
     @service settings;
+    @service config;
 
     @tracked showLeaveSettingsModal = false;
     @tracked showPriceModal = false;
     @tracked priceModel = null;
     @tracked showUnsavedChangesModal = false;
+    @tracked paidSignupRedirect;
+
+    constructor() {
+        super(...arguments);
+        this.siteUrl = this.config.get('blogUrl');
+    }
 
     get product() {
         return this.model;
@@ -111,8 +118,47 @@ export default class ProductController extends Controller {
         this.showPriceModal = false;
     }
 
+    @action
+    setPaidSignupRedirect(url) {
+        this.paidSignupRedirect = url;
+    }
+
+    @action
+    validatePaidSignupRedirect() {
+        return this._validateSignupRedirect(this.paidSignupRedirect, 'membersPaidSignupRedirect');
+    }
+
     @task({drop: true})
     *saveTask() {
+        this.send('validatePaidSignupRedirect');
+        if (this.settings.get('errors').length !== 0) {
+            return;
+        }
+        yield this.settings.save();
         return yield this.product.save();
+    }
+
+    _validateSignupRedirect(url, type) {
+        let errMessage = `Please enter a valid URL`;
+        this.settings.get('errors').remove(type);
+        this.settings.get('hasValidated').removeObject(type);
+
+        if (url === null) {
+            this.settings.get('errors').add(type, errMessage);
+            this.settings.get('hasValidated').pushObject(type);
+            return false;
+        }
+
+        if (url === undefined) {
+            // Not initialised
+            return;
+        }
+
+        if (url.href.startsWith(this.siteUrl)) {
+            const path = url.href.replace(this.siteUrl, '');
+            this.settings.set(type, path);
+        } else {
+            this.settings.set(type, url.href);
+        }
     }
 }
