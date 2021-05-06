@@ -109,7 +109,7 @@ export const site = {
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
-    portal_plans: [...priceIds],
+    portal_plans: ['free', ...priceIds],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
     portal_button_style: 'icon-and-text',
@@ -192,7 +192,7 @@ export const member = {
                 currency: 'USD'
             },
             price: {
-                id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                id: '6086eff0823dd7240afc8083',
                 nickname: 'Complimentary',
                 amount: 0,
                 interval: 'year',
@@ -232,6 +232,20 @@ export const member = {
                 interval: 'year',
                 amount: 500,
                 currency: 'USD'
+            },
+            price: {
+                id: '6086ead8070218227791fe4f',
+                stripe_price_id: 'price_1IkXLAFToJelIqAseQdK4WSU',
+                nickname: 'Yearly',
+                currency: 'usd',
+                amount: 1500,
+                type: 'recurring',
+                interval: 'month',
+                product: {
+                    id: 'prod_JNGGBrrogUXcoM',
+                    name: 'Main Product',
+                    product_id: '6086cd1b27c7d417b4a18eaf'
+                }
             },
             status: 'active',
             start_date: '2019-05-01T11:42:40.000Z',
