@@ -102,15 +102,15 @@
                 </div>
             </div>
 
-            <h4 class="gh-main-section-header small bn">Products</h4>
+            <h4 class="gh-main-section-header small bn">Subscriptions</h4>
 
             {{#unless this.products}}
             <div class="gh-main-section-content bordered">
                 <div class="gh-cp-memberproduct-noproduct">
-                    <div class="mb2">This member doesn't have any products.</div>
+                    <div class="mb2">This member doesn't have any subscriptions.</div>
                     {{#unless this.member.isNew}}
                     <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                        <span>{{svg-jar "add"}} Add product</span>
+                        <span>{{svg-jar "add"}} Add subscription</span>
                     </button>
                     {{/unless}}
                 </div>
@@ -177,6 +177,12 @@
                             </span>
                         </div>
                         {{/each}}
+
+                        <div class="gh-memberproduct-list-footer">
+                        <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
+                            <span>{{svg-jar "add"}} Add subscription</span>
+                        </button>
+                        </div>
                     </div>
                 </div>
             {{/each}}
