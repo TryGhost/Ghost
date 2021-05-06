@@ -364,7 +364,7 @@ module.exports = {
     },
     products: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         description: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
