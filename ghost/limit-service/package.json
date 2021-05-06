@@ -20,7 +20,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "date-fns": "^2.21.2",
+    "date-fns": "2.21.2",
     "mocha": "8.3.2",
     "should": "13.2.3",
     "sinon": "10.0.0"
