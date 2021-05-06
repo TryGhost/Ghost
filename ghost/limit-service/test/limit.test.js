@@ -3,7 +3,7 @@
 require('./utils');
 
 const errors = require('./fixtures/errors');
-const {MaxLimit, AllowlistLimit, FlagLimit} = require('../lib/limit');
+const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
 
 describe('Limit Service', function () {
     describe('Flag Limit', function () {
@@ -200,6 +200,93 @@ describe('Limit Service', function () {
 
                     should.exist(err.message);
                     should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                }
+            });
+        });
+    });
+
+    describe('Periodic Max Limit', function () {
+        describe('Constructor', function () {
+            it('throws if initialized without a maxPeriodic limit', function () {
+                const config = {};
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'no limits!', config, errors});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/periodic max limit without a limit/gi);
+                }
+            });
+
+            it('throws if initialized without a current count query', function () {
+                const config = {
+                    maxPeriodic: 100
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/periodic max limit without a current count query/gi);
+                }
+            });
+
+            it('throws if initialized without interval', function () {
+                const config = {
+                    maxPeriodic: 100,
+                    currentCountQuery: () => {}
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/periodic max limit without an interval/gi);
+                }
+            });
+
+            it('throws if initialized with unsupported interval', function () {
+                const config = {
+                    maxPeriodic: 100,
+                    currentCountQuery: () => {},
+                    interval: 'week'
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/periodic max limit without unsupported interval. Please specify one of: month/gi);
+                }
+            });
+
+            it('throws if initialized without start date', function () {
+                const config = {
+                    maxPeriodic: 100,
+                    currentCountQuery: () => {},
+                    interval: 'month'
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/periodic max limit without a start date/gi);
                 }
             });
         });
