@@ -1,8 +1,9 @@
-const should = require('should');
+require('./utils');
+
 const tmp = require('tmp');
 const join = require('path').join;
 const fs = require('fs-extra');
-const PackageJSON = require('../../../../../core/server/lib/fs/package-json/package-json');
+const PackageJSON = require('../');
 
 const packageJSON = new PackageJSON({
     i18n: {
