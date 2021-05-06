@@ -16,6 +16,10 @@
         "rotation": {
             "enabled": true
         },
+
+        "privacy": {
+     "useGravatar": false
+},
         "transports": ["file", "stdout"]
     }
 }
