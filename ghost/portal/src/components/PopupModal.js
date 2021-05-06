@@ -4,7 +4,7 @@ import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
-import {isCookiesDisabled} from '../utils/helpers';
+import {isCookiesDisabled, isInviteOnlySite} from '../utils/helpers';
 
 const React = require('react');
 
@@ -101,10 +101,9 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page, site} = this.context;
+        const {page, site, pageQuery} = this.context;
         const {portal_plans: portalPlans} = site;
-        const {is_stripe_configured: isStripeConfigured,
-            allow_self_signup: allowSelfSignup} = site;
+        const {is_stripe_configured: isStripeConfigured} = site;
 
         getActivePage({page});
         const Styles = StylesWrapper({page});
@@ -113,10 +112,10 @@ class PopupContent extends React.Component {
         };
         let popupWidthStyle = '';
         if (page === 'signup' || page === 'signin') {
-            if (allowSelfSignup && portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
-                popupWidthStyle = 'gh-portal-container-wide';
+            if (!isInviteOnlySite({site, pageQuery}) && portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
+                popupWidthStyle = ' gh-portal-container-wide';
             }
-            if (portalPlans.length <= 1 || (!allowSelfSignup && portalPlans.length > 1 && portalPlans.indexOf('free') !== -1) || !isStripeConfigured) {
+            if (portalPlans.length <= 1 || !isStripeConfigured) {
                 popupWidthStyle = 'gh-portal-container-narrow';
             }
         }
