@@ -1,6 +1,6 @@
 // run in context allows us to change the templateSettings without causing havoc
 const _ = require('lodash').runInContext();
-const {SUPPORTED_INTERVALS} = require('./date-utils');
+const {lastPeriodStart, SUPPORTED_INTERVALS} = require('./date-utils');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
@@ -154,6 +154,63 @@ class MaxPeriodicLimit extends Limit {
         this.interval = config.interval;
         this.startDate = config.startDate;
         this.fallbackMessage = `This action would exceed the ${_.lowerCase(this.name)} limit on your current plan.`;
+    }
+
+    generateError(count) {
+        let errorObj = super.generateError();
+
+        errorObj.message = this.fallbackMessage;
+
+        if (this.error) {
+            try {
+                errorObj.message = _.template(this.error)(
+                    {
+                        max: Intl.NumberFormat().format(this.maxPeriodic),
+                        count: Intl.NumberFormat().format(count)
+                    });
+            } catch (e) {
+                errorObj.message = this.fallbackMessage;
+            }
+        }
+
+        errorObj.errorDetails.limit = this.maxPeriodic;
+        errorObj.errorDetails.total = count;
+
+        return new this.errors.HostLimitError(errorObj);
+    }
+
+    async currentCountQuery() {
+        const lastPeriodStartDate = lastPeriodStart(this.startDate, this.interval);
+
+        return await this.currentCountQueryFn(this.db, lastPeriodStartDate);
+    }
+
+    /**
+     * Throws a HostLimitError if the configured or passed max limit is ecceded by currentCountQuery
+     *
+     * @param {Object} options
+     * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
+     */
+    async errorIfWouldGoOverLimit({max} = {}) {
+        let currentCount = await this.currentCountQuery(this.db);
+
+        if ((currentCount + 1) > (max || this.maxPeriodic)) {
+            throw this.generateError(currentCount);
+        }
+    }
+
+    /**
+     * Throws a HostLimitError if the configured or passed max limit is ecceded by currentCountQuery
+     *
+     * @param {Object} options
+     * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
+     */
+    async errorIfIsOverLimit({max} = {}) {
+        let currentCount = await this.currentCountQuery(this.db);
+
+        if (currentCount > (max || this.maxPeriodic)) {
+            throw this.generateError(currentCount);
+        }
     }
 }
 
