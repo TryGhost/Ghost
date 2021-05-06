@@ -1,0 +1,27 @@
+{
+  "name": "@tryghost/package-json",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/package-json",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*_spec.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "8.3.2",
+    "should": "13.2.3",
+    "sinon": "10.0.0"
+  },
+  "dependencies": {}
+}
