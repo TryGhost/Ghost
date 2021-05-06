@@ -13,16 +13,32 @@ const get = require('lodash/get');
 class I18n {
     /**
      * @param {objec} [options]
+     * @param {string} basePath - the base path to the translations directory
      * @param {string} [locale] - a locale string
      * @param {{dot|fulltext}} [stringMode] - which mode our translation keys use
      * @param {{object}} [logging] - logging method
      */
     constructor(options = {}) {
+        this._basePath = options.basePath || __dirname;
         this._locale = options.locale || this.defaultLocale();
         this._stringMode = options.stringMode || 'dot';
         this._logging = options.logging || console;
 
         this._strings = null;
+    }
+
+    /**
+     * BasePath getter & setter used for testing
+     */
+    set basePath(basePath) {
+        this._basePath = basePath;
+    }
+
+    /**
+         * Need to call init after this
+         */
+    get basePath() {
+        return this._basePath;
     }
 
     /**
@@ -185,7 +201,7 @@ class I18n {
     }
 
     _translationFileDirs() {
-        return [__dirname, 'translations'];
+        return [this.basePath];
     }
 
     // If we are passed a locale, use that, else use this.locale

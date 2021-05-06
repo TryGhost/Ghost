@@ -11,21 +11,6 @@ class ThemeI18n extends i18n.I18n {
         super(options);
         // We don't care what gets passed in, themes use fulltext mode
         this._stringMode = 'fulltext';
-        this._basePath = options.basePath;
-    }
-
-    /**
-     * BasePath getter & setter used for testing
-     */
-    set basePath(basePath) {
-        this._basePath = basePath;
-    }
-
-    /**
-     * Need to call init after this
-     */
-    get basePath() {
-        return this._basePath;
     }
 
     /**
