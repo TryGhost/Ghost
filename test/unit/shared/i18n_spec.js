@@ -3,20 +3,25 @@ const sinon = require('sinon');
 
 const I18n = require('../../../core/shared/i18n').I18n;
 
+const logging = {
+    warn: sinon.stub(),
+    error: sinon.stub()
+};
+
 describe('I18n Class Behaviour', function () {
     it('defaults to en', function () {
-        const i18n = new I18n();
+        const i18n = new I18n({logging});
         i18n.locale().should.eql('en');
     });
 
     it('can have a different locale set', function () {
-        const i18n = new I18n({locale: 'fr'});
+        const i18n = new I18n({locale: 'fr', logging});
         i18n.locale().should.eql('fr');
     });
 
     describe('file loading behaviour', function () {
         it('will fallback to en file correctly without changing locale', function () {
-            const i18n = new I18n({locale: 'fr'});
+            const i18n = new I18n({locale: 'fr', logging});
 
             let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
 
@@ -36,7 +41,7 @@ describe('I18n Class Behaviour', function () {
         let i18n;
 
         beforeEach(function initBasicI18n() {
-            i18n = new I18n();
+            i18n = new I18n({logging});
             sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
             i18n.init();
         });
@@ -65,7 +70,7 @@ describe('I18n Class Behaviour', function () {
         let i18n;
 
         beforeEach(function initFulltextI18n() {
-            i18n = new I18n({stringMode: 'fulltext'});
+            i18n = new I18n({stringMode: 'fulltext', logging});
             sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
             i18n.init();
         });
