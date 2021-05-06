@@ -55,13 +55,24 @@ export default ModalComponent.extend({
 
     filteredPrices: computed('prices', 'settings.portalPlans.[]', function () {
         const portalPlans = this.get('settings.portalPlans');
-        return this.prices.filter((d) => {
+        const prices = this.prices || [];
+        return prices.filter((d) => {
             return d.amount !== 0 && d.type === 'recurring';
         }).map((price) => {
             return {
                 ...price,
                 checked: !!portalPlans.find(d => d === price.id)
             };
+        });
+    }),
+
+    hasPaidPriceChecked: computed('prices', 'settings.portalPlans.[]', function () {
+        const portalPlans = this.get('settings.portalPlans');
+        const prices = this.prices || [];
+        return prices.filter((d) => {
+            return d.amount !== 0 && d.type === 'recurring';
+        }).some((price) => {
+            return !!portalPlans.find(d => d === price.id);
         });
     }),
 
