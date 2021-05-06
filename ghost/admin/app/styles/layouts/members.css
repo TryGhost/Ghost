@@ -1675,6 +1675,15 @@ p.gh-members-import-errordetail:first-of-type {
     right: 0;
 }
 
+.gh-memberproduct-subscription .action-menu .gh-btn-subscription-action {
+    opacity: 0;
+}
+
+.gh-memberproduct-subscription:hover .action-menu .gh-btn-subscription-action,
+.gh-memberproduct-subscription .action-menu .gh-btn-subscription-action.open {
+    opacity: 1;
+}
+
 .gh-cp-memberproduct.multiple-subs .gh-memberproduct-subscription .action-menu {
     top: 20px;
 }
