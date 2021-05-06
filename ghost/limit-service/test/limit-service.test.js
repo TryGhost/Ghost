@@ -3,7 +3,7 @@
 require('./utils');
 
 const LimitService = require('../lib/limit-service');
-const {MaxLimit, FlagLimit} = require('../lib/limit');
+const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../lib/limit');
 
 const errors = require('./fixtures/errors');
 
@@ -81,6 +81,46 @@ describe('Limit Service', function () {
             limitService.limits.staff.should.be.an.instanceOf(MaxLimit);
             limitService.isLimited('staff').should.be.true();
             limitService.isLimited('members').should.be.false();
+        });
+
+        it('can load a periodic max limit', function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                emails: {
+                    maxPeriodic: 3
+                }
+            };
+
+            let subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, subscription, errors});
+
+            limitService.limits.should.be.an.Object().with.properties(['emails']);
+            limitService.limits.emails.should.be.an.instanceOf(MaxPeriodicLimit);
+            limitService.isLimited('emails').should.be.true();
+            limitService.isLimited('staff').should.be.false();
+        });
+
+        it('throws when loadding a periodic max limit without a subscription', function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                emails: {
+                    maxPeriodic: 3
+                }
+            };
+
+            try {
+                limitService.loadLimits({limits, errors});
+                throw new Error('Should have failed earlier...');
+            } catch (error) {
+                error.errorType.should.equal('IncorrectUsageError');
+                error.message.should.match(/periodic max limit without a subscription/);
+            }
         });
 
         it('can load multiple limits', function () {
