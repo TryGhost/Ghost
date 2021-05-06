@@ -211,10 +211,12 @@ textarea {
     resize: vertical;
 }
 
-.gh-input[disabled] {
+.gh-input[disabled],
+.gh-select select {
     background: var(--whitegrey-l2);
     color: var(--midlightgrey);
     border-color: var(--whitegrey);
+    opacity: 1.0;
 }
 
 
