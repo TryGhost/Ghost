@@ -23,30 +23,34 @@
     </GhCanvasHeader>
 
     <form>
-    <div class="gh-product-details">
-        <section class="gh-product-config">
-            <h4 class="gh-main-section-header small bn">Product details</h4>
-            <div class="gh-main-section-content grey gh-product-details-form">
-                {{!-- <GhFormGroup @property="name" @class="gh-product-icon-container">
-                    <label for="member-name">ICON</label>
-                    <div class="gh-product-icon whitegrey">Icon</div>
-                </GhFormGroup> --}}
-                <div class="gh-product-details-fields">
-                    <GhFormGroup @property="name" @classNames="max-width">
-                        <label for="product-name">Product name</label>
-                        <GhTextInput data-test-input="product-name" @id="product-name" @value={{product.name}}/>
-                        <GhErrorMessage @property="name" />
-                    </GhFormGroup>
 
-                    <GhFormGroup @property="description" @classNames="max-width gh-product-description-container">
-                        <label for="product-description">Description</label>
-                        <GhTextInput data-test-input="product-description" @value={{product.description}} />
-                        <GhErrorMessage @property="description" />
-                    </GhFormGroup>
-                </div>
+    <section class="gh-main-section">
+    <div class="gh-main-section-block">
+        <h4 class="gh-main-section-header small bn">Product details</h4>
+        <div class="gh-main-section-content grey gh-product-details-form">
+            <div class="gh-product-details-fields">
+                <GhFormGroup @property="name" @classNames="max-width">
+                    <label for="product-name">Product name</label>
+                    <GhTextInput data-test-input="product-name" @id="product-name" @value={{product.name}}/>
+                    <GhErrorMessage @property="name" />
+                </GhFormGroup>
+
+                <GhFormGroup @property="description" @classNames="max-width">
+                    <label for="product-description">Description</label>
+                    <GhTextInput data-test-input="product-description" @value={{product.description}} />
+                    <GhErrorMessage @property="description" />
+                </GhFormGroup>
+
+                <GhFormGroup @property="_welcome-page" @classNames="max-width">
+                    <label for="_welcome-page">Welcome page</label>
+                    <GhTextInput data-test-input="_welcome-page" @value="" />
+                    <p>Redirect to this URL after signup for this product</p>
+                    <GhErrorMessage @property="_welcome-page" />
+                </GhFormGroup>
             </div>
-        </section>
+        </div>
     </div>
+    </section>
     </form>
 
     <div class="gh-main-section">
