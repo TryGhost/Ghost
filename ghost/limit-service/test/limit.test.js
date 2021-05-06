@@ -55,11 +55,14 @@ describe('Limit Service', function () {
                     should.exist(err);
                     should.exist(err.errorType);
                     should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/max limit without a limit/);
                 }
             });
 
             it('throws if initialized without a current count query', function () {
-                const config = {};
+                const config = {
+                    max: 100
+                };
 
                 try {
                     const limit = new MaxLimit({name: 'no accountability!', config, errors});
@@ -68,6 +71,7 @@ describe('Limit Service', function () {
                     should.exist(err);
                     should.exist(err.errorType);
                     should.equal(err.errorType, 'IncorrectUsageError');
+                    err.message.should.match(/max limit without a current count query/);
                 }
             });
         });
@@ -299,6 +303,7 @@ describe('Limit Service', function () {
                 throw new Error('Should have failed earlier...');
             } catch (error) {
                 error.errorType.should.equal('IncorrectUsageError');
+                error.message.should.match(/allowlist limit without an allowlist/);
             }
         });
 
