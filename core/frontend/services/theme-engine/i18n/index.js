@@ -1,5 +1,7 @@
-const ThemeI18n = require('./i18n');
-const themeI18n = new ThemeI18n();
+const config = require('../../../../shared/config');
+const logging = require('../../../../shared/logging');
 
-module.exports = themeI18n;
+const ThemeI18n = require('./i18n');
+
+module.exports = new ThemeI18n({logging, basePath: config.getContentPath('themes')});
 module.exports.ThemeI18n = ThemeI18n;
