@@ -1,13 +1,9 @@
-{{!-- <header class="modal-header" data-test-modal="webhook-form">
-    <h1 data-test-text="title">Add product</h1>
-</header> --}}
 <button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}
 </button>
 
 <form>
 <div class="modal-body">
-
     <div class="gh-main-section-block">
         <div class="gh-main-section-content gh-member-product-memberdetails">
             <GhMemberAvatar
@@ -26,15 +22,7 @@
         <div class="gh-main-section-content grey gh-member-product-form-block">
             <GhFormGroup>
                 <label for="product" class="fw6">Product</label>
-                <span class="gh-select">
-                    <OneWaySelect
-                        @options={{this.products}}
-                        @optionValuePath="id"
-                        @optionLabelPath="name"
-                        @update={{this.setProduct}}
-                    />
-                    {{svg-jar "arrow-down-small"}}
-                </span>
+                <h3 class="gh-memberproduct-name">{{this.product.name}}</h3>
             </GhFormGroup>
             <GhFormGroup>
                 <label for="price" class="fw6">Price</label>
@@ -47,9 +35,7 @@
                     />
                     {{svg-jar "arrow-down-small"}}
                 </span>
-                {{#if this.cannotAddPrice}}
-                <p>Please select a price with zero value. You can add non-zero prices on <a href="https://dashboard.stripe.com" target="_blank">Stripe Dashboard</a>.</p>
-                {{/if}}
+                <p>You can only use zero value prices when adding a product manually. Use <a href="https://dashboard.stripe.com" target="_blank">Stripe Dashboard</a> to add product with non-zero prices.</p>
             </GhFormGroup>
         </div>
     </div>
@@ -64,9 +50,9 @@
         {{action (optional this.noop) on="mouseDown"}}
         data-test-button="cancel-webhook"
     >
-        <span>Cancel</span>
+        <span>{{if this.prices.length "Cancel" "OK"}}</span>
     </button>
-    <GhTaskButton @buttonText="Add product to member"
+    <GhTaskButton @buttonText="Add subscription"
         @successText={{this.successText}}
         @task={{this.addPriceTask}}
         @disabled={{this.cannotAddPrice}}
