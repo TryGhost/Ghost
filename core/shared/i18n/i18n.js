@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const fs = require('fs-extra');
 const path = require('path');
 const MessageFormat = require('intl-messageformat');
@@ -8,18 +9,19 @@ const isEqual = require('lodash/isEqual');
 const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
-const errors = require('@tryghost/errors');
-const logging = require('../logging');
 
 class I18n {
     /**
      * @param {objec} [options]
      * @param {string} [locale] - a locale string
      * @param {{dot|fulltext}} [stringMode] - which mode our translation keys use
+     * @param {{object}} [logging] - logging method
      */
     constructor(options = {}) {
         this._locale = options.locale || this.defaultLocale();
         this._stringMode = options.stringMode || 'dot';
+        this._logging = options.logging || console;
+
         this._strings = null;
     }
 
@@ -257,29 +259,29 @@ class I18n {
     }
 
     _handleFormatError(err) {
-        logging.error(err.message);
+        this._logging.error(err.message);
     }
 
     _handleFallbackToDefault() {
-        logging.warn(`i18n is falling back to ${this.defaultLocale()}.json.`);
+        this._logging.warn(`i18n is falling back to ${this.defaultLocale()}.json.`);
     }
 
     _handleMissingFileError(locale) {
-        logging.warn(`i18n was unable to find ${locale}.json.`);
+        this._logging.warn(`i18n was unable to find ${locale}.json.`);
     }
     _handleInvalidFileError(locale, err) {
-        logging.error(new errors.IncorrectUsageError({
+        this._logging.error(new errors.IncorrectUsageError({
             err,
             message: `i18n was unable to parse ${locale}.json. Please check that it is valid JSON.`
         }));
     }
 
     _handleEmptyKeyError() {
-        logging.warn('i18n.t() was called without a key');
+        this._logging.warn('i18n.t() was called without a key');
     }
 
     _handleMissingKeyError(key) {
-        logging.error(new errors.IncorrectUsageError({
+        this._logging.error(new errors.IncorrectUsageError({
             message: `i18n.t() was called with a key that could not be found: ${key}`
         }));
     }
