@@ -74,10 +74,6 @@
     margin-bottom: 3vw;
 }
 
-.gh-product-details .max-width {
-    max-width: 620px;
-}
-
 .gh-product-details-form {
     display: flex;
     align-items: flex-start;
@@ -106,7 +102,11 @@
     width: 100%;
 }
 
-.gh-product-description-container {
+.gh-product-details-fields .max-width {
+    max-width: 840px;
+}
+
+.gh-product-details-fields .form-group:last-of-type {
     padding-bottom: 0;
     margin-bottom: 0;
 }
