@@ -21,7 +21,13 @@
   "devDependencies": {
     "mocha": "8.3.2",
     "should": "13.2.3",
-    "sinon": "10.0.0"
+    "sinon": "10.0.0",
+    "tmp": "0.2.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tryghost/errors": "^0.2.11",
+    "bluebird": "^3.7.2",
+    "fs-extra": "^10.0.0",
+    "lodash": "^4.17.21"
+  }
 }
