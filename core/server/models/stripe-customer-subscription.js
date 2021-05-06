@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+const _ = require('lodash');
 
 const StripeCustomerSubscription = ghostBookshelf.Model.extend({
     tableName: 'members_stripe_customers_subscriptions',
@@ -37,7 +38,7 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
             current_period_end: defaultSerializedObject.current_period_end
         };
 
-        if (defaultSerializedObject.stripePrice) {
+        if (!_.isEmpty(defaultSerializedObject.stripePrice)) {
             serialized.price = {
                 id: defaultSerializedObject.stripePrice.stripe_price_id,
                 price_id: defaultSerializedObject.stripePrice.id,
