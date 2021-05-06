@@ -255,7 +255,8 @@ class I18n {
     }
 
     _handleUninitialisedError(key) {
-        throw new errors.IncorrectUsageError({message: `i18n was used before it was initialised with key ${key}`});
+        this._logging.warn(`i18n was used before it was initialised with key ${key}`);
+        this.init();
     }
 
     _handleFormatError(err) {
