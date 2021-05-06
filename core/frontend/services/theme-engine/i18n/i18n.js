@@ -49,6 +49,10 @@ class ThemeI18n extends i18n.I18n {
         return [this.basePath, this._activetheme, 'locales'];
     }
 
+    _handleUninitialisedError(key) {
+        throw new errors.IncorrectUsageError({message: `Theme translation was used before it was initialised with key ${key}`});
+    }
+
     _handleFallbackToDefault() {
         this._logging.warn(`Theme translations falling back to locales/${this.defaultLocale()}.json.`);
     }
