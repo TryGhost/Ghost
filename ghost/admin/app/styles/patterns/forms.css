@@ -212,7 +212,7 @@ textarea {
 }
 
 .gh-input[disabled],
-.gh-select select {
+.gh-select select[disabled] {
     background: var(--whitegrey-l2);
     color: var(--midlightgrey);
     border-color: var(--whitegrey);
