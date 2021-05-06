@@ -221,7 +221,7 @@
                             />
                             <p>Redirect to this URL after free signup</p>
                         </GhFormGroup>
-                        {{#if (and this.isStripeConfigured (or this.isMonthlyChecked this.isYearlyChecked))}}
+                        {{#if (and this.isStripeConfigured hasPaidPriceChecked)}}
                         <GhFormGroup
                             @errors={{settings.errors}}
                             @hasValidated={{settings.hasValidated}}
