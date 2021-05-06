@@ -10,9 +10,10 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-section {
+        display: flex;
+        flex-direction: column;
         flex: 1;
         position: relative;
-        display: grid;
         align-items: center;
         justify-items: center;
         font-size: 1.4rem;
@@ -110,6 +111,7 @@ export const PlanSectionStyles = `
         line-height: 1.25em;
         text-align: center;
         letter-spacing: 0.2px;
+        word-break: break-word;
     }
 
     .gh-portal-plan-checkbox {
@@ -231,6 +233,8 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plans-container.vertical .gh-portal-plan-section {
+        display: grid;
+        flex-direction: unset;
         grid-template-columns: 32px auto auto;
         grid-template-rows: auto auto;
         justify-items: start;
