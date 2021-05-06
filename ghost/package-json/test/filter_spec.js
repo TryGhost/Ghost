@@ -1,5 +1,5 @@
-const should = require('should');
-const PackageJSON = require('../../../../../core/server/lib/fs/package-json/package-json');
+require('./utils');
+const PackageJSON = require('../');
 
 const packageJSON = new PackageJSON({
     i18n: {
