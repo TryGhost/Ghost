@@ -294,6 +294,42 @@ describe('Limit Service', function () {
                 }
             });
         });
+
+        describe('Is over limit', function () {
+            it('throws if is over the limit', async function () {
+                const currentCountyQueryMock = sinon.mock().returns(11);
+
+                const config = {
+                    maxPeriodic: 3,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: currentCountyQueryMock
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
+                    await limit.errorIfIsOverLimit();
+                } catch (error) {
+                    error.errorType.should.equal('HostLimitError');
+                    error.errorDetails.name.should.equal('mailguard');
+                    error.errorDetails.limit.should.equal(3);
+                    error.errorDetails.total.should.equal(11);
+
+                    currentCountyQueryMock.callCount.should.equal(1);
+                    should(currentCountyQueryMock.args).not.be.undefined();
+                    should(currentCountyQueryMock.args[0][0]).be.undefined(); //knex db connection
+
+                    const nowDate = new Date();
+                    const startOfTheMonthDate = new Date(Date.UTC(
+                        nowDate.getUTCFullYear(),
+                        nowDate.getUTCMonth()
+                    )).toISOString();
+
+                    currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
+                }
+            });
+        });
     });
 
     describe('Allowlist limit', function () {
