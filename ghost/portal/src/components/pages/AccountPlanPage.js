@@ -286,8 +286,8 @@ export default class AccountPlanPage extends React.Component {
     }
 
     getInitialState() {
-        const {member, site} = this.context;
-        this.prices = getSitePrices({site, includeFree: false});
+        const {member, site, pageQuery} = this.context;
+        this.prices = getSitePrices({site, pageQuery, includeFree: false});
         let activePrice = getMemberActivePrice({member});
         let selectedPrice = activePrice ? this.prices.find((d) => {
             return (d.id === activePrice.id);
