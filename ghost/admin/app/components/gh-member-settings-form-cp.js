@@ -40,7 +40,9 @@ export default class extends Component {
     get products() {
         let products = this.member.get('products') || [];
         let subscriptions = this.member.get('subscriptions') || [];
-        let subscriptionData = subscriptions.map((sub) => {
+        let subscriptionData = subscriptions.filter((sub) => {
+            return !!sub.price;
+        }).map((sub) => {
             return {
                 ...sub,
                 startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
