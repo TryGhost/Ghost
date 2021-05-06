@@ -84,7 +84,8 @@ module.exports = class PackageJson {
         try {
             source = await fs.readFile(path);
         } catch (readError) {
-            const err = new Error(this.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
+            const err = new errors.IncorrectUsageError();
+            err.message = this.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage');
             err.context = path;
             err.err = readError;
 
@@ -94,7 +95,8 @@ module.exports = class PackageJson {
         try {
             json = JSON.parse(source);
         } catch (parseError) {
-            const err = new Error(this.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed'));
+            const err = new errors.IncorrectUsageError();
+            err.message = this.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed');
             err.context = path;
             err.err = parseError;
             err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/themes/'});
@@ -105,7 +107,8 @@ module.exports = class PackageJson {
         const hasRequiredKeys = json.name && json.version;
 
         if (!hasRequiredKeys) {
-            const err = new Error(this.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing'));
+            const err = new errors.IncorrectUsageError();
+            err.message = this.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing');
             err.context = path;
             err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/themes/'});
 
