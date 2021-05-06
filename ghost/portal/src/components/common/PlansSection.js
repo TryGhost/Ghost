@@ -61,17 +61,21 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-pricelabel {
         display: flex;
-        margin-top: 8px;
+        margin-top: 5px;
     }
 
     .gh-portal-plan-name {
-        flex-grow: 1;
+        display: flex;
+        align-items: center;
         font-size: 1.2rem;
         font-weight: 500;
+        line-height: 1.0em;
         letter-spacing: 0.5px;
         text-transform: uppercase;
-        margin-top: 8px;
+        margin-top: 7px;
         text-align: center;
+        min-height: 24px;
+        word-break: break-word;
     }
 
     .gh-portal-plan-currency {
@@ -243,6 +247,7 @@ export const PlanSectionStyles = `
         min-height: 60px;
         border-right: none;
         border-bottom: 1px solid var(--grey10);
+        padding: 10px;
     }
 
     .gh-portal-plans-container.vertical .gh-portal-plan-checkbox {
@@ -261,8 +266,10 @@ export const PlanSectionStyles = `
     .gh-portal-plans-container.vertical .gh-portal-plan-name {
         text-transform: none;
         font-size: 1.4rem;
+        line-height: 1.1em;
         letter-spacing: 0.2px;
         margin: 0;
+        min-height: unset;
     }
 
     .gh-portal-plans-container.vertical .gh-portal-plan-featurewrapper {
