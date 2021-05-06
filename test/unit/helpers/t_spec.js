@@ -2,15 +2,16 @@ const should = require('should');
 const path = require('path');
 const helpers = require('../../../core/frontend/helpers');
 const themeI18n = require('../../../core/frontend/services/theme-engine/i18n');
-const configUtils = require('../../utils/configUtils');
 
 describe('{{t}} helper', function () {
-    beforeEach(function () {
-        configUtils.set('paths:contentPath', path.join(__dirname, '../../utils/fixtures/'));
+    let ogBasePath = themeI18n.basePath;
+
+    before(function () {
+        themeI18n.basePath = path.join(__dirname, '../../utils/fixtures/themes/');
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    after(function () {
+        themeI18n.basePath = ogBasePath;
     });
 
     it('theme translation is DE', function () {
