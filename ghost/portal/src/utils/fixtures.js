@@ -71,7 +71,7 @@ export const site = {
             stripe_price_id: 'price_1IkY0CFToJelIqAs5h7qlgP5',
             stripe_product_id: 'prod_JNGGBrrogUXcoM',
             active: 1,
-            nickname: 'Test Price B That',
+            nickname: 'Test Price B',
             currency: 'gbp',
             amount: 12000,
             type: 'recurring',
