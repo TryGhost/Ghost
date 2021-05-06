@@ -12,13 +12,14 @@ const debug = require('ghost-ignition').debug('boot');
 
 /**
  * Helper class to create consistent log messages
- */class BootLogger {
+ */
+class BootLogger {
     constructor(logging, startTime) {
         this.logging = logging;
         this.startTime = startTime;
     }
     log(message) {
-        let {logging, startTime} = this;
+        let { logging, startTime } = this;
         logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
     }
 }
@@ -39,21 +40,23 @@ function notifyServerReady(error) {
 }
 
 /**
-  * Get the Database into a ready state
-  * - DatabaseStateManager handles doing all this for us
-  * - Passing logging makes it output state messages
-  */
-async function initDatabase({config, logging}) {
+ * Get the Database into a ready state
+ * - DatabaseStateManager handles doing all this for us
+ * - Passing logging makes it output state messages
+ */
+async function initDatabase({ config, logging }) {
     const DatabaseStateManager = require('./server/data/db/state-manager');
-    const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
-    await dbStateManager.makeReady({logging});
+    const dbStateManager = new DatabaseStateManager({
+        knexMigratorFilePath: config.get('paths:appRoot'),
+    });
+    await dbStateManager.makeReady({ logging });
 }
 
 /**
  * Core is intended to be all the bits of Ghost that are fundamental and we can't do anything without them!
  * (There's more to do to make this true)
  */
-async function initCore({ghostServer}) {
+async function initCore({ ghostServer }) {
     debug('Begin: initCore');
     // Models are the heart of Ghost - this is a syncronous operation
     debug('Begin: models');
@@ -124,7 +127,7 @@ async function initExpressApps() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({config}) {
+async function initServices({ config }) {
     debug('Begin: initServices');
 
     const defaultApiVersion = config.get('api:versions:default');
@@ -149,7 +152,7 @@ async function initServices({config}) {
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
-    const {mega} = require('./server/services/mega');
+    const { mega } = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
     const appService = require('./frontend/services/apps');
     const limits = require('./server/services/limits');
@@ -166,8 +169,12 @@ async function initServices({config}) {
         appService.init(),
         limits.init(),
         scheduling.init({
-            apiUrl: urlUtils.urlFor('api', {version: defaultApiVersion, versionType: 'admin'}, true)
-        })
+            apiUrl: urlUtils.urlFor(
+                'api',
+                { version: defaultApiVersion, versionType: 'admin' },
+                true
+            ),
+        }),
     ]);
     debug('End: Services');
 
@@ -184,7 +191,7 @@ async function initServices({config}) {
  * These are things that happen on boot, but we don't need to wait for them to finish
  * Later, this might be a service hook
  */
-async function initBackgroundServices({config}) {
+async function initBackgroundServices({ config }) {
     debug('Begin: initBackgroundServices');
 
     // we don't want to kick off background services that will interfere with tests
@@ -271,23 +278,23 @@ async function bootGhost() {
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
         const GhostServer = require('./server/ghost-server');
-        ghostServer = new GhostServer({url: urlUtils.urlFor('home', true)});
+        ghostServer = new GhostServer({ url: urlUtils.urlFor('home', true) });
         await ghostServer.start(rootApp);
         bootLogger.log('server started');
         debug('End: load server + minimal app');
 
         // Step 3 - Get the DB ready
         debug('Begin: Get DB ready');
-        await initDatabase({config, logging});
+        await initDatabase({ config, logging });
         bootLogger.log('database ready');
         debug('End: Get DB ready');
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer});
+        await initCore({ ghostServer });
         await initFrontend();
         const ghostApp = await initExpressApps({});
-        await initServices({config});
+        await initServices({ config });
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
@@ -301,7 +308,7 @@ async function bootGhost() {
         notifyServerReady();
 
         // Step 7 - Init our background services, we don't wait for this to finish
-        initBackgroundServices({config});
+        initBackgroundServices({ config });
 
         // We return the server purely for testing purposes
         debug('End Boot: Returning Ghost Server');
@@ -312,7 +319,10 @@ async function bootGhost() {
         // Ensure the error we have is an ignition error
         let serverStartError = error;
         if (!errors.utils.isIgnitionError(serverStartError)) {
-            serverStartError = new errors.GhostError({message: serverStartError.message, err: serverStartError});
+            serverStartError = new errors.GhostError({
+                message: serverStartError.message,
+                err: serverStartError,
+            });
         }
 
         logging.error(serverStartError);
