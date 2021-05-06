@@ -65,11 +65,13 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plan-name {
+        flex-grow: 1;
         font-size: 1.2rem;
         font-weight: 500;
         letter-spacing: 0.5px;
         text-transform: uppercase;
         margin-top: 8px;
+        text-align: center;
     }
 
     .gh-portal-plan-currency {
