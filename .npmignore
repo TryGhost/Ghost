@@ -55,3 +55,4 @@ package-lock.json
 content/themes/casper/config.*.json
 config.*.json
 !core/server/config/env/**
+.prettierrc.json
