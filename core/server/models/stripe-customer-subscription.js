@@ -39,7 +39,8 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
 
         if (defaultSerializedObject.stripePrice) {
             serialized.price = {
-                id: defaultSerializedObject.stripePrice.stripe_price_id,
+                id: defaultSerializedObject.stripePrice.id,
+                stripe_price_id: defaultSerializedObject.stripePrice.stripe_price_id,
                 nickname: defaultSerializedObject.stripePrice.nickname,
                 amount: defaultSerializedObject.stripePrice.amount,
                 interval: defaultSerializedObject.stripePrice.interval,
