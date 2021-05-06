@@ -1572,7 +1572,8 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-memberproduct-name {
     display: flex;
     justify-content: space-between;
-    font-size: 1.5rem;
+    font-size: 1.65rem !important;
+    font-weight: 600;
     margin-bottom: 4px !important;
 }
 
@@ -1614,8 +1615,11 @@ p.gh-members-import-errordetail:first-of-type {
     opacity: 0.5;
 }
 
-.gh-memberproduct-add-product .gh-list-data {
-    padding: 12px 0;
+.gh-memberproduct-list-footer {
+    margin-top: 12px;
+    margin-bottom: -8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--whitegrey);
 }
 
 .gh-btn-addproduct svg path {
@@ -1680,5 +1684,9 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-memberproduct-subscription .action-menu > .gh-btn svg {
+    margin: 0;
+}
+
+.gh-member-product-form-block .form-group:last-of-type {
     margin: 0;
 }
