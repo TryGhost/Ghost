@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class ProductsController extends Controller {
+    @service settings;
     @service config;
 
     @tracked iconStyle = '';

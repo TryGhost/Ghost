@@ -12,8 +12,8 @@
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="name">
                 <label for="name" class="fw6">Portal display name</label>
                 <GhTextInput
-                    @value={{readonly this.price.nickname}}
-                    {{!-- @input={{action (mut this.price.nickname) value="target.value"}} --}}
+                    @value={{readonly this.settings.membersFreePriceName}}
+                    @input={{action "updateName" value="target.value"}}
                     @name="name"
                     @id="name"
                     @class="gh-input" />
@@ -22,7 +22,8 @@
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="description">
                 <label for="description" class="fw6">Description</label>
                 <GhTextInput
-                    @value=''
+                    @value={{readonly this.settings.membersFreePriceDescription}}
+                    @input={{action "updateDescription" value="target.value"}}
                     @name="description"
                     @id="description"
                     @class="gh-input" />
@@ -30,11 +31,17 @@
             </GhFormGroup>
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="welcome-page">
                 <label for="welcome-page" class="fw6">Welcome page</label>
-                <GhTextInput
-                    @value=''
-                    @name="welcome-page"
-                    @id="welcome-page"
-                    @class="gh-input" />
+                <GhUrlInput
+                    @value={{readonly this.settings.membersFreeSignupRedirect}}
+                    @baseUrl={{readonly this.siteUrl}}
+                    @setResult={{action "setFreeSignupRedirect"}}
+                    @validateUrl={{action "validateFreeSignupRedirect"}}
+                    @placeholder={{readonly this.siteUrl}}
+                />
+                <GhErrorMessage
+                    @errors={{settings.errors}}
+                    @property="membersFreeSignupRedirect"
+                />
                 <p>Redirect to this URL after signing up for a free membership</p>
                 <GhErrorMessage @errors={{this.price.errors}} @property="welcome-page" />
             </GhFormGroup>
@@ -55,7 +62,7 @@
     </button>
     <GhTaskButton @buttonText="Save"
         {{!-- @successText={{this.successText}} --}}
-        {{!-- @task={{this.savePrice}} --}}
+        @task={{this.save}}
         @class="gh-btn gh-btn-black gh-btn-icon"
         data-test-button="save-price" />
 </div>
