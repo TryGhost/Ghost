@@ -217,12 +217,18 @@ class ProductRepository {
                         interval: existingPrice.interval
                     }, options);
                 } else {
-                    await this._StripePrice.edit({
+                    const updated = await this._StripePrice.edit({
                         nickname: existingPrice.nickname,
-                        description: existingPrice.description
+                        description: existingPrice.description,
+                        active: existingPrice.active
                     }, {
                         ...options,
                         id: stripePrice.id
+                    });
+
+                    await this._stripeAPIService.updatePrice(updated.get('stripe_price_id'), {
+                        nickname: updated.get('nickname'),
+                        active: updated.get('active')
                     });
                 }
             }
