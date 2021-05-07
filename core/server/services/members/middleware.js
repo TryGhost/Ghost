@@ -85,9 +85,13 @@ const getDefaultProductPrices = async function () {
     if (product) {
         const model = await membersService.api.productRepository.get({id: product.get('id')}, {withRelated: ['stripePrices']});
         const productData = model.toJSON();
-        return productData.stripePrices || [];
+        const prices = productData.stripePrices || [];
+        return {
+            product: productData,
+            prices
+        };
     }
-    return [];
+    return {};
 };
 
 const getMemberSiteData = async function (req, res) {
@@ -99,7 +103,7 @@ const getMemberSiteData = async function (req, res) {
     if (!supportAddress.includes('@')) {
         supportAddress = `${supportAddress}@${blogDomain}`;
     }
-    const defaultPrices = await getDefaultProductPrices();
+    const {product = {}, prices = []} = await getDefaultProductPrices() || {};
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
@@ -109,7 +113,11 @@ const getMemberSiteData = async function (req, res) {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
-        prices: defaultPrices,
+        prices,
+        product: {
+            name: product.name || '',
+            description: product.description || ''
+        },
         allow_self_signup: membersService.config.getAllowSelfSignup(),
         members_signup_access: settingsCache.get('members_signup_access'),
         is_stripe_configured: isStripeConfigured,
