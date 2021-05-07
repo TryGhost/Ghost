@@ -11,8 +11,23 @@ module.exports = {
         // @TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',
         'no-var': 'error',
-        'one-var': [2, 'never'],
-        // @TODO: enable this for all components once it gets a bit quieter
-        'ghost/ghost-custom/no-cross-requires': ['warn', {shared: true, server: false, frontend: false}]
-    }
+        'one-var': [2, 'never']
+    },
+    overrides: [
+        {
+            files: 'core/shared/**',
+            rules: {
+                'ghost/node/no-restricted-require': ['warn', [
+                    {
+                        name: '../server/**',
+                        message: 'Invalid require of core/server from core/shared.'
+                    },
+                    {
+                        name: '../frontend/**',
+                        message: 'Invalid require of core/frontend from core/shared.'
+                    }
+                ]]
+            }
+        }
+    ]
 };
