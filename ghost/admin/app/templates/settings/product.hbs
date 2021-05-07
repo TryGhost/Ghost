@@ -92,7 +92,10 @@
                 <li class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
                     <div class="gh-list-data gh-price-list-title">
                         <h3 class="gh-price-list-name">
-                            {{price.nickname}}
+                            <span class="name">{{price.nickname}}</span>
+                            {{#unless price.active}}
+                            <span class="gh-badge archived">Archived</span>
+                            {{/unless}}
                         </h3>
                         <p class="ma0 pa0 f8 midgrey gh-price-list-description">
                             {{price.description}}
@@ -109,11 +112,11 @@
                                 <span>Edit</span>
                             </button>
                             {{#if price.active}}
-                                <button class="gh-btn gh-btn-link archived" {{action "archivePrice" price}}>
+                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle archived" {{action "archivePrice" price}}>
                                     <span>Archive</span>
                                 </button>
                             {{else}}
-                                <button class="gh-btn gh-btn-link" {{action "activatePrice" price}}>
+                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle" {{action "activatePrice" price}}>
                                     <span>Activate</span>
                                 </button>
                             {{/if}}
