@@ -730,6 +730,28 @@ input:focus,
     background: var(--main-color-content-greybg) !important;
 }
 
+/* Segment input */
+
+.token-segment-status-free {
+    border: 1px solid var(--green-d1);
+    background: var(--green-d1);
+}
+
+.token-segment-status-paid {
+    border: 1px solid var(--pink-d1);
+    background: var(--pink-d1);
+}
+
+.token-segment-product {
+    background: var(--darkgrey);
+    color: var(--white);
+}
+
+.token-segment-product svg path {
+    stroke: var(--lightgrey);
+    fill: var(--lightgrey);
+}
+
 /* Post preview modal */
 .gh-post-preview-header,
 .gh-post-preview-browser-footer {

@@ -4,6 +4,6 @@
     {{did-insert (perform this.fetchTotalsTask)}}
     {{did-update (perform this.fetchSegmentTotalTask) @segment}}
 >
-    {{format-number this.segmentTotal}} / {{format-number this.total}} members
+    <strong>{{format-number this.segmentTotal}}</strong> members
 </span>
 {{/if}}
