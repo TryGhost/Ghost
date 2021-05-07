@@ -101,8 +101,24 @@ export function hasPrice({site = {}, plan}) {
         return prices && prices.length > 0 && prices.find(p => p.name === 'Monthly');
     } else if (plan === 'yearly') {
         return prices && prices.length > 0 && prices.find(p => p.name === 'Yearly');
+    } else if (plan) {
+        return prices && prices.length > 0 && prices.find(p => p.id === plan);
     }
     return false;
+}
+
+export function getQueryPrice({site = {}, priceId}) {
+    const prices = getAvailablePrices({site});
+    if (priceId === 'free') {
+        return !prices || prices.length === 0 || prices.find(p => p.type === 'free');
+    } else if (priceId === 'monthly') {
+        return prices && prices.length > 0 && prices.find(p => p.name === 'Monthly');
+    } else if (priceId === 'yearly') {
+        return prices && prices.length > 0 && prices.find(p => p.name === 'Yearly');
+    } else if (priceId) {
+        return prices && prices.length > 0 && prices.find(p => p.id === priceId);
+    }
+    return null;
 }
 
 export function getProductDetails({site}) {
@@ -128,6 +144,49 @@ export function capitalize(str) {
 export function isInviteOnlySite({site = {}, pageQuery}) {
     const prices = getSitePrices({site, pageQuery});
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
+}
+
+export function getAvailablePrices({site = {}, includeFree = true} = {}) {
+    const {
+        prices,
+        allow_self_signup: allowSelfSignup,
+        is_stripe_configured: isStripeConfigured
+    } = site || {};
+
+    if (!prices) {
+        return [];
+    }
+
+    const plansData = [];
+
+    const stripePrices = prices.map((d) => {
+        return {
+            ...d,
+            price_id: d.id,
+            price: d.amount / 100,
+            name: d.nickname,
+            currency_symbol: getCurrencySymbol(d.currency)
+        };
+    }).filter((price) => {
+        return price.amount !== 0 && price.type === 'recurring';
+    });
+
+    if (allowSelfSignup && includeFree) {
+        plansData.push({
+            id: 'free',
+            type: 'free',
+            price: 0,
+            currency_symbol: '$',
+            name: 'Free'
+        });
+    }
+
+    if (isStripeConfigured) {
+        stripePrices.forEach((price) => {
+            plansData.push(price);
+        });
+    }
+    return plansData;
 }
 
 export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {

@@ -108,7 +108,7 @@ export const site = {
         description: 'The default product'
     },
     prices: prices,
-    allow_self_signup: false,
+    allow_self_signup: true,
     members_signup_access: 'all',
     is_stripe_configured: true,
     portal_button: true,
