@@ -86,9 +86,12 @@ const getDefaultProductPrices = async function () {
         const model = await membersService.api.productRepository.get({id: product.get('id')}, {withRelated: ['stripePrices']});
         const productData = model.toJSON();
         const prices = productData.stripePrices || [];
+        const activePrices = prices.filter((d) => {
+            return !!d.active;
+        });
         return {
             product: productData,
-            prices
+            prices: activePrices
         };
     }
     return {};
