@@ -773,6 +773,7 @@
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
+                    "label": ["browse", "read"],
                     "product": ["browse", "read"]
                 },
                 "Author": {
