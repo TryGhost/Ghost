@@ -105,11 +105,13 @@
                                 <span>Edit</span>
                             </button>
                             {{#if price.active}}
-                                <button class="gh-btn gh-btn-link archived">
+                                <button class="gh-btn gh-btn-link archived" {{action "archivePrice" price}}>
                                     <span>Archive</span>
                                 </button>
                             {{else}}
-                                <button class="gh-btn gh-btn-link"><span>Activate</span></button>
+                                <button class="gh-btn gh-btn-link" {{action "activatePrice" price}}>
+                                    <span>Activate</span>
+                                </button>
                             {{/if}}
                         </div>
                     </div>

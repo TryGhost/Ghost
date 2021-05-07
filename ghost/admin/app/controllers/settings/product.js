@@ -81,6 +81,18 @@ export default class ProductController extends Controller {
     }
 
     @action
+    async archivePrice(price) {
+        price.active = false;
+        this.send('savePrice', price);
+    }
+
+    @action
+    async activatePrice(price) {
+        price.active = true;
+        this.send('savePrice', price);
+    }
+
+    @action
     async confirmLeave() {
         this.settings.rollbackAttributes();
         this.showLeaveSettingsModal = false;
@@ -102,12 +114,21 @@ export default class ProductController extends Controller {
     savePrice(price) {
         const stripePrices = this.product.stripePrices.map((d) => {
             if (d.id === price.id) {
-                return EmberObject.create(price);
+                return EmberObject.create({
+                    ...price,
+                    active: !!price.active
+                });
             }
-            return d;
+            return {
+                ...d,
+                active: !!d.active
+            };
         });
         if (!price.id) {
-            stripePrices.push(EmberObject.create(price));
+            stripePrices.push(EmberObject.create({
+                ...price,
+                active: !!price.active
+            }));
         }
         this.product.set('stripePrices', stripePrices);
         this.saveTask.perform();
@@ -128,7 +149,7 @@ export default class ProductController extends Controller {
         return this._validateSignupRedirect(this.paidSignupRedirect, 'membersPaidSignupRedirect');
     }
 
-    @task({drop: true})
+    @task({restartable: true})
     *saveTask() {
         this.send('validatePaidSignupRedirect');
         if (this.settings.get('errors').length !== 0) {

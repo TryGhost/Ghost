@@ -332,6 +332,9 @@ export default ModalComponent.extend({
         const products = yield this.store.query('product', {include: 'stripe_prices'});
         const product = products.firstObject;
         const prices = product.get('stripePrices');
-        this.set('prices', prices);
+        const activePrices = prices.filter((d) => {
+            return !!d.active;
+        });
+        this.set('prices', activePrices);
     }).drop()
 });
