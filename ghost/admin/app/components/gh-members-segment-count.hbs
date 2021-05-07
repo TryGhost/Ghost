@@ -1,3 +1,4 @@
+{{#if this.session.user.isOwnerOrAdmin}}
 <span
     class="segment-totals"
     {{did-insert (perform this.fetchTotalsTask)}}
@@ -5,3 +6,4 @@
 >
     {{format-number this.segmentTotal}} / {{format-number this.total}} members
 </span>
+{{/if}}
