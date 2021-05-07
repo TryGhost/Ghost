@@ -16,7 +16,9 @@ export default class GhMembersSegmentCountComponent extends Component {
     *fetchTotalsTask() {
         this.fetchSegmentTotalTask.perform();
 
-        const members = yield this.store.query('member', {limit: 1});
+        const filter = this.args.enforcedFilter || undefined;
+
+        const members = yield this.store.query('member', {limit: 1, filter});
         this.total = members.meta.pagination.total;
     }
 
@@ -26,7 +28,15 @@ export default class GhMembersSegmentCountComponent extends Component {
             return this.segmentTotal = 0;
         }
 
-        const members = yield this.store.query('member', {limit: 1, filter: this.args.segment});
+        let filter;
+
+        if (this.args.enforcedFilter) {
+            filter = `${this.args.enforcedFilter}+(${this.args.segment})`;
+        } else {
+            filter = this.args.segment;
+        }
+
+        const members = yield this.store.query('member', {limit: 1, filter});
         this.segmentTotal = members.meta.pagination.total;
         this.args.onSegmentCountChange?.(this.segmentTotal);
     }
