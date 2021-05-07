@@ -121,6 +121,8 @@ const getMemberSiteData = async function (req, res) {
             name: product.name || '',
             description: product.description || ''
         },
+        free_price_name: settingsCache.get('members_free_price_name'),
+        free_price_description: settingsCache.get('members_free_price_description'),
         allow_self_signup: membersService.config.getAllowSelfSignup(),
         members_signup_access: settingsCache.get('members_signup_access'),
         is_stripe_configured: isStripeConfigured,
