@@ -74,12 +74,16 @@
                     <tr class="gh-list-row {{if price.active "" "gh-price-list-archived"}}">
                         <td colspan="4" class="gh-list-data">
                             <div class="gh-price-list-noprices">
-                                <div class="mb2">There are no prices for this product.</div>
-                                {{#unless this.product.isNew}}
-                                    <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
-                                        <span>Add price</span>
-                                    </button>
-                                {{/unless}}
+                                <div class="mb2">There are no prices for this product</div>
+                                {{#if this.settings.stripeConnectAccountId}}
+                                    {{#unless this.product.isNew}}
+                                        <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
+                                            <span>Add price</span>
+                                        </button>
+                                    {{/unless}}
+                                {{else}}
+                                    You need to <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="members-payments">connect to Stripe</LinkTo> to add prices
+                                {{/if}}
                             </div>
                         </td>
                     </tr>
