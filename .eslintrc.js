@@ -17,6 +17,12 @@ module.exports = {
     },
     overrides: [
         {
+            files: 'core/server/api/canary/*',
+            rules: {
+                'ghost/ghost-custom/max-api-complexity': 'warn'
+            }
+        },
+        {
             files: 'core/shared/**',
             rules: {
                 'ghost/node/no-restricted-require': ['warn', [
