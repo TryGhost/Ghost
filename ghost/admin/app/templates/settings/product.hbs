@@ -68,7 +68,6 @@
                 <li class="gh-list-row header">
                     <div class="gh-list-header">Prices({{this.noOfPrices}})</div>
                     <div class="gh-list-header">Price</div>
-                    <div class="gh-list-header">Subscriptions</div>
                     <div class="gh-list-header"></div>
                 </li>
                 {{#unless this.stripePrices}}
@@ -98,10 +97,6 @@
 
                     <div class="gh-list-data gh-price-list-price">
                         <span>{{currency-symbol price.currency}}{{price.amount}} / {{price.interval}}</span>
-                    </div>
-
-                    <div class="gh-list-data gh-price-list-subscriptions">
-                        <span>0</span>
                     </div>
 
                     <div class="gh-list-data gh-price-list-actions">
