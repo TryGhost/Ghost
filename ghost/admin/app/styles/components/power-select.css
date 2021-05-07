@@ -103,25 +103,17 @@
 .ember-power-select-group .ember-power-select-group-name {
     position: relative;
     display: inline-block;
-    padding: 7px 12px;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px 8px;
     cursor: default;
+    border-top: 1px solid var(--list-color-divider);
     text-transform: uppercase;
     color: var(--midlightgrey);
     white-space: nowrap;
     letter-spacing: 0.1px;
     font-size: 1.2rem;
     font-weight: 500;
-}
-
-.ember-power-select-group .ember-power-select-group-name:after {
-    content: "";
-    position: absolute;
-    top: 60%;
-    left: calc(100% - 3px);
-    display: block;
-    width: calc(540px - 100%);
-    height: 1px;
-    border-bottom: color-mod(var(--lightgrey) l(-5%)) 1px solid;
 }
 
 @media (max-width: 900px) {
@@ -208,16 +200,17 @@
 }
 
 .ember-power-select-multiple-remove-btn:not(:hover) {
-    opacity: 0.75;
+    opacity: 1;
 }
 
 .ember-power-select-multiple-remove-btn svg {
-    width: 9px;
-    height: 9px;
+    width: 8px;
+    height: 8px;
 }
 
 .ember-power-select-multiple-remove-btn svg path {
     stroke: white;
+    stroke-width: 2px;
     fill: white;
 }
 
@@ -244,6 +237,10 @@
     max-height: 172px; /* 5.5 options */
 }
 
+.ember-power-select-options[role="listbox"] {
+    overflow-x: hidden;
+}
+
 /* Tag input */
 
 .tag-token--internal {
@@ -258,34 +255,37 @@
 
 /* Segment input */
 
-.token-segment-status {
-    background: color-mod(var(--blue) alpha(0.1));
-    color: var(--blue);
+.token-segment-status-free {
+    border: 1px solid var(--green-d1);
+    color: var(--white);
+    background: var(--green-d1);
 }
 
-.token-segment-status svg path {
-    stroke: var(--blue);
-    fill: var(--blue);
+.token-segment-status-paid {
+    border: 1px solid var(--pink-d1);
+    color: var(--white);
+    background: var(--pink-d1);
 }
 
 .token-segment-label {
-    background: color-mod(var(--green) alpha(0.1));
-    color: var(--green);
+    border: 1px solid var(--whitegrey-d1);
+    color: var(--darkgrey);
+    background: var(--whitegrey-d1);
 }
 
 .token-segment-label svg path {
-    stroke: var(--green);
-    fill: var(--green);
+    stroke: var(--middarkgrey);
+    fill: var(--middarkgrey);
 }
 
 .token-segment-product {
-    background: color-mod(var(--purple) alpha(0.1));
-    color: var(--purple);
+    background: var(--black);
+    color: var(--white);
 }
 
 .token-segment-product svg path {
-    stroke: var(--purple);
-    fill: var(--purple);
+    stroke: var(--white);
+    fill: var(--white);
 }
 
 /* Inside settings / Mailgun region */

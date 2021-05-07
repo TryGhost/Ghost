@@ -31,7 +31,7 @@
     right: 0;
     margin: 5px 0 20px 0;
     padding: 0px;
-    width: 320px;
+    width: 332px;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
@@ -118,7 +118,7 @@
     font-size: 1.3rem;
     line-height: 1.4em;
     font-weight: 300;
-    color: color-mod(var(--midgrey) l(+10%));
+    color: var(--midgrey-l1);
     margin-top: 2px;
 }
 
@@ -233,6 +233,16 @@
     padding: 12px 16px;
     font-size: 1.3rem;
     line-height: 1.5em;    
+}
+
+.gh-publishmenu-email .select-members {
+    margin-bottom: .2rem;
+}
+
+.gh-publishmenu-email .segment-totals {
+    color: var(--midgrey-l1);
+    font-size: 1.3rem;
+    font-weight: 300;
 }
 
 .for-checkbox .gh-publishmenu-email-checkbox {
