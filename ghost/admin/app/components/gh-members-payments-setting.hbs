@@ -152,7 +152,7 @@
             <div class="gh-expandable-header">
                 <div>
                     <h4 class="gh-expandable-title">Subscription pricing</h4>
-                    <p class="gh-expandable-description">Set monthly and yearly recurring subscription prices</p>
+                    <p class="gh-expandable-description">Set default subscription currency</p>
                 </div>
                 <button type="button" class="gh-btn" {{action (toggle "membersPricingOpen" this)}} data-test-toggle-memberspricing><span>{{if this.membersPricingOpen "Close" "Expand"}}</span></button>
             </div>
@@ -161,7 +161,7 @@
                     <div class="w-100 w-50-l flex flex-column flex-row-ns">
                         <div class="w-100">
                             <GhFormGroup @class="for-select">
-                                <label class="fw6 f8"for="currency">Plan currency</label>
+                                <label class="fw6 f8"for="currency">Default currency</label>
                                 <span class="gh-select mt1">
                                     {{one-way-select this.selectedCurrency
                                         id="currency"
@@ -173,37 +173,6 @@
                                     }}
                                     {{svg-jar "arrow-down-small"}}
                                 </span>
-                            </GhFormGroup>
-                        </div>
-                    </div>
-                    <div class="w-100 w-50-l flex flex-column flex-row-ns">
-                        <div class="w-100 w-50-ns mr3-ns">
-                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{settings.hasValidated}} @property="stripePlans">
-                            <label class="fw6 f8">Monthly price</label>
-
-                            <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
-                                <GhTextInput
-                                    @value={{readonly this.stripePlans.monthly.amount}}
-                                    @type="number"
-                                    @input={{action (mut this._scratchStripeMonthlyAmount) value="target.value"}}
-                                    @focus-out={{action "validateStripePlans"}}
-                                />
-                                <span class="gh-input-append"><span class="ttu">{{this.stripePlans.monthly.currency}}</span>/month</span>
-                            </div>
-                            </GhFormGroup>
-                        </div>
-                        <div class="w-100 w-50-ns ml2-ns">
-                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{settings.hasValidated}} @property="stripePlans">
-                            <label class="fw6 f8">Yearly price</label>
-                            <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
-                                <GhTextInput
-                                    @value={{readonly this.stripePlans.yearly.amount}}
-                                    @type="number"
-                                    @input={{action (mut this._scratchStripeYearlyAmount) value="target.value"}}
-                                    @focus-out={{action "validateStripePlans"}}
-                                />
-                                <span class="gh-input-append"><span class="ttu">{{this.stripePlans.yearly.currency}}</span>/year</span>
-                            </div>
                             </GhFormGroup>
                         </div>
                     </div>
