@@ -2,7 +2,6 @@ import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class DashboardController extends Controller {
@@ -36,7 +35,6 @@ export default class DashboardController extends Controller {
     @tracked whatsNewEntries = null;
     @tracked whatsNewEntriesLoading = null;
     @tracked whatsNewEntriesError = null;
-    @tracked product = null;
 
     get topMembersDataHasOpenRates() {
         return this.topMembersData && this.topMembersData.find((member) => {
@@ -49,26 +47,10 @@ export default class DashboardController extends Controller {
     }
 
     initialise() {
-        this.loadProducts.perform();
         this.loadEvents();
         this.loadTopMembers();
         this.loadCharts();
         this.loadWhatsNew();
-    }
-
-    get showLaunchWizard() {
-        const hasPrices = this.product && this.product.get('stripePrices').length > 0;
-        return !this.feature.launchComplete && !hasPrices;
-    }
-
-    @task({drop: true})
-    *loadProducts() {
-        try {
-            const products = yield this.store.query('product', {include: 'stripe_prices'});
-            this.product = products.firstObject;
-        } catch (e) {
-            this.product = null;
-        }
     }
 
     loadMRRStats() {
