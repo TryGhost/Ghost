@@ -604,6 +604,40 @@ describe('Posts API (canary)', function () {
                     should.equal(res.body.posts[0].plaintext, undefined);
                 });
         });
+
+        it('errors with invalid email recipient filter', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Ready to be emailed',
+                        status: 'draft'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then((res) => {
+                    return request
+                        .put(`${localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/`)}?email_recipient_filter=not a filter`)
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                title: res.body.posts[0].title,
+                                mobilecdoc: res.body.posts[0].mobilecdoc,
+                                updated_at: res.body.posts[0].updated_at,
+                                status: 'published'
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(400);
+                })
+                .then((res) => {
+                    res.text.should.match(/invalid filter/i);
+                });
+        });
     });
 
     describe('Destroy', function () {

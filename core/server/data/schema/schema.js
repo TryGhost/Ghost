@@ -34,8 +34,7 @@ module.exports = {
             type: 'string',
             maxlength: 50,
             nullable: false,
-            defaultTo: 'none',
-            validations: {isIn: [['none', 'all', 'free', 'paid']]}
+            defaultTo: 'none'
         },
         /**
          * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
@@ -529,8 +528,7 @@ module.exports = {
             type: 'string',
             maxlength: 50,
             nullable: false,
-            defaultTo: 'paid',
-            validations: {isIn: [['all', 'free', 'paid']]}
+            defaultTo: 'status:-free'
         },
         error: {type: 'string', maxlength: 2000, nullable: true},
         error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},

@@ -3,6 +3,7 @@ const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const {mega} = require('../../services/mega');
+const {BadRequestError} = require('@tryghost/errors');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -141,9 +142,6 @@ module.exports = {
                 source: {
                     values: ['html']
                 },
-                email_recipient_filter: {
-                    values: ['none', 'free', 'paid', 'all']
-                },
                 send_email_when_published: {
                     values: [true, false]
                 }
@@ -183,7 +181,20 @@ module.exports = {
             }
 
             /**Handle newsletter email */
-            if (model.get('email_recipient_filter') !== 'none') {
+            const emailRecipientFilter = model.get('email_recipient_filter');
+            if (emailRecipientFilter !== 'none') {
+                if (emailRecipientFilter !== 'all') {
+                    // check filter is valid
+                    try {
+                        await models.Member.findPage({filter: `subscribed:true+${emailRecipientFilter}`, limit: 1});
+                    } catch (err) {
+                        return Promise.reject(new BadRequestError({
+                            message: i18n.t('errors.api.posts.invalidEmailRecipientFilter'),
+                            context: err.message
+                        }));
+                    }
+                }
+
                 const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
                 if (postPublished) {
                     let postEmail = model.relations.email;

@@ -355,7 +355,8 @@
                 "notificationDoesNotExist": "Notification does not exist."
             },
             "posts": {
-                "postNotFound": "Post not found."
+                "postNotFound": "Post not found.",
+                "invalidEmailRecipientFilter": "Invalid filter in email_recipient_filter param."
             },
             "authors": {
                 "notFound": "Author not found."
