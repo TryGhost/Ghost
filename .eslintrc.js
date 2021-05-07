@@ -17,6 +17,12 @@ module.exports = {
     },
     overrides: [
         {
+            files: '**/index.js',
+            rules: {
+                'max-lines': ['warn', {skipBlankLines: true, skipComments: true, max: 50}]
+            }
+        },
+        {
             files: 'core/server/api/canary/*',
             rules: {
                 'ghost/ghost-custom/max-api-complexity': 'warn'
