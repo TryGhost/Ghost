@@ -4,20 +4,6 @@ import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
-const MEMBERS_SEGMENT_MAP = [{
-    name: 'all',
-    segment: 'status:free,status:-free'
-}, {
-    name: 'free',
-    segment: 'status:free'
-}, {
-    name: 'paid',
-    segment: 'status:-free'
-}, {
-    name: 'none',
-    segment: null
-}];
-
 export default Component.extend({
     feature: service(),
     settings: service(),
@@ -86,11 +72,6 @@ export default Component.extend({
 
             post.set('publishedAtBlogTime', time);
             return post.validate();
-        },
-
-        setSendEmailWhenPublished(segment) {
-            const segmentName = MEMBERS_SEGMENT_MAP.findBy('segment', segment).name;
-            this.setSendEmailWhenPublished(segmentName);
         }
     },
 
