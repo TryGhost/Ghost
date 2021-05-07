@@ -29,7 +29,7 @@
     "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
     "lint:shared": "eslint --ignore-path .eslintignore 'core/shared/**/*.js'",
     "lint:frontend": "eslint --ignore-path .eslintignore 'core/frontend/**/*.js'",
-    "lint:test": "eslint -c test/.eslintrc.json --ignore-path test/.eslintignore 'test/**/*.js'",
+    "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js'",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
     "posttest": "yarn lint",
