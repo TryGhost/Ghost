@@ -783,10 +783,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.20.tgz#82e72c5b1015438dc474dd85632736ce53623ae2"
   integrity sha512-w3yjYYwEMchkEZG/YE00b2dcJtf3WWJr2i9xVHQIr9ZnARHwrkVcDmbvGMunvbugVgfA00+u6MtEmZUl+r+brw==
 
-"@tryghost/package-json@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-0.1.0.tgz#de349c71b25ab76f3b20f86f46fa0f7b65ef78c5"
-  integrity sha512-RKRFfWqnwAlLSzDXSUA8/w/bxGN2R7Lm9Z+mxhI8Hr5fqPePRr9yAvNS78frxnyxjtrBfYUhGeUGhGDU0HOsOA==
+"@tryghost/package-json@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-0.1.1.tgz#fdb12be61e9bf51fb076694c2f868e07e40b15ac"
+  integrity sha512-04wOfvxrIqf0eJ4jx8hPtpFLFhsWGv9VdlMzwuNlsdMCAOMy+4eU1qUe4skLuatPNo/MAWTGM4jzcgyWFNGzMg==
   dependencies:
     "@tryghost/errors" "^0.2.11"
     bluebird "^3.7.2"
