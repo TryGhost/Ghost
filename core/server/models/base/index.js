@@ -32,9 +32,6 @@ let proto;
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
 ghostBookshelf = bookshelf(db.knex);
 
-// Load the Bookshelf registry plugin, which helps us avoid circular dependencies
-ghostBookshelf.plugin('registry');
-
 ghostBookshelf.plugin(plugins.eagerLoad);
 
 // Add committed/rollback events.
@@ -165,6 +162,8 @@ const addAction = (model, event, options) => {
 ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Bookshelf `hasTimestamps` - handles created_at and updated_at properties
     hasTimestamps: true,
+
+    requireFetch: false,
 
     // https://github.com/bookshelf/bookshelf/commit/a55db61feb8ad5911adb4f8c3b3d2a97a45bd6db
     parsedIdAttribute: function () {
@@ -332,7 +331,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
     },
 
-    onCreated(model, attrs, options) {
+    onCreated(model, options) {
         addAction(model, 'added', options);
     },
 
@@ -393,7 +392,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
     },
 
-    onUpdated(model, attrs, options) {
+    onUpdated(model, options) {
         addAction(model, 'edited', options);
     },
 
@@ -1321,17 +1320,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                 if (!withRelated) {
                     return _.map(objects, (object) => {
-                        object = ghostBookshelf._models[modelName].prototype.toJSON.bind({
+                        object = ghostBookshelf.registry.models[modelName].prototype.toJSON.bind({
                             attributes: object,
                             related: function (key) {
                                 return object[key];
                             },
-                            serialize: ghostBookshelf._models[modelName].prototype.serialize,
-                            formatsToJSON: ghostBookshelf._models[modelName].prototype.formatsToJSON
+                            serialize: ghostBookshelf.registry.models[modelName].prototype.serialize,
+                            formatsToJSON: ghostBookshelf.registry.models[modelName].prototype.formatsToJSON
                         })();
 
-                        object = ghostBookshelf._models[modelName].prototype.fixBools(object);
-                        object = ghostBookshelf._models[modelName].prototype.fixDatesWhenFetch(object);
+                        object = ghostBookshelf.registry.models[modelName].prototype.fixBools(object);
+                        object = ghostBookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
                         return object;
                     });
                 }
@@ -1395,7 +1394,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                                 object[relation] = relationsToAttach[relation][object.id];
                             });
 
-                            object = ghostBookshelf._models[modelName].prototype.toJSON.bind({
+                            object = ghostBookshelf.registry.models[modelName].prototype.toJSON.bind({
                                 attributes: object,
                                 _originalOptions: {
                                     withRelated: Object.keys(relationsToAttach)
@@ -1403,12 +1402,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                                 related: function (key) {
                                     return object[key];
                                 },
-                                serialize: ghostBookshelf._models[modelName].prototype.serialize,
-                                formatsToJSON: ghostBookshelf._models[modelName].prototype.formatsToJSON
+                                serialize: ghostBookshelf.registry.models[modelName].prototype.serialize,
+                                formatsToJSON: ghostBookshelf.registry.models[modelName].prototype.formatsToJSON
                             })();
 
-                            object = ghostBookshelf._models[modelName].prototype.fixBools(object);
-                            object = ghostBookshelf._models[modelName].prototype.fixDatesWhenFetch(object);
+                            object = ghostBookshelf.registry.models[modelName].prototype.fixBools(object);
+                            object = ghostBookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
                             return object;
                         });
 
