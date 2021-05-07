@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getSiteDomain, hasPrice, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getAvailablePrices, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -440,10 +440,12 @@ export default class App extends React.Component {
 
     /** Handle direct signup link for a price */
     handleSignupQuery({site, pageQuery}) {
-        const queryPrice = hasPrice({site: site, plan: pageQuery});
+        const queryPrice = getQueryPrice({site: site, priceId: pageQuery});
+        const availablePrices = getAvailablePrices({site, includeFree: false});
+        const isQueryPriceAvailable = availablePrices.some(d => d.id === pageQuery);
         if (!this.state.member
-            && ['monthly', 'yearly'].includes(pageQuery)
             && queryPrice
+            && isQueryPriceAvailable
         ) {
             removePortalLinkFromUrl();
             this.dispatchAction('signup', {plan: queryPrice.id});
@@ -452,9 +454,16 @@ export default class App extends React.Component {
 
     /**Get Portal page from Link/Data-attribute path*/
     getPageFromLinkPath(path) {
+        const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         if (path === 'signup') {
             return {
                 page: 'signup'
+            };
+        } else if (customPricesSignupRegex.test(path)) {
+            const [, pageQuery] = path.match(customPricesSignupRegex);
+            return {
+                page: 'signup',
+                pageQuery: pageQuery
             };
         } else if (path === 'signup/free') {
             return {
