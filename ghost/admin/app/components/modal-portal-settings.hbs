@@ -197,56 +197,6 @@
                             {{/if}}
                         {{/if}}
                     </div>
-                    <div class="gh-portal-setting-section redirects">
-                        <h4 class="gh-portal-setting-sectionheading">Welcome page</h4>
-                        <GhFormGroup
-                            @errors={{settings.errors}}
-                            @hasValidated={{settings.hasValidated}}
-                            @property="membersFreeSignupRedirect"
-                            @classNames="mt2"
-                        >
-                            <h4 class="gh-portal-setting-title">For free signups</h4>
-                            <div class="flex items-center mt2">
-                                <GhUrlInput
-                                    @value={{readonly this.settings.membersFreeSignupRedirect}}
-                                    @baseUrl={{readonly this.siteUrl}}
-                                    @setResult={{action "setFreeSignupRedirect"}}
-                                    @validateUrl={{action "validateFreeSignupRedirect"}}
-                                    @placeholder={{readonly this.siteUrl}}
-                                />
-                            </div>
-                            <GhErrorMessage
-                                @errors={{settings.errors}}
-                                @property="membersFreeSignupRedirect"
-                            />
-                            <p>Redirect to this URL after free signup</p>
-                        </GhFormGroup>
-                        {{#if (and this.isStripeConfigured hasPaidPriceChecked)}}
-                        <GhFormGroup
-                            @errors={{settings.errors}}
-                            @hasValidated={{settings.hasValidated}}
-                            @property="membersPaidSignupRedirect"
-                            @classNames="space-l pb5"
-                        >
-                            <h4 class="gh-portal-setting-title">For paid signups</h4>
-
-                            <div class="flex items-center mt2">
-                                <GhUrlInput
-                                    @value={{readonly this.settings.membersPaidSignupRedirect}}
-                                    @baseUrl={{readonly this.siteUrl}}
-                                    @setResult={{action "setPaidSignupRedirect"}}
-                                    @validateUrl={{action "validatePaidSignupRedirect"}}
-                                    @placeholder={{readonly this.siteUrl}}
-                                />
-                            </div>
-                            <GhErrorMessage
-                                @errors={{settings.errors}}
-                                @property="membersPaidSignupRedirect"
-                            />
-                            <p>Redirect to this URL after paid signup</p>
-                        </GhFormGroup>
-                        {{/if}}
-                    </div>
                 </fieldset>
             </div>
         </div>
