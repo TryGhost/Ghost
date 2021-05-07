@@ -8,7 +8,7 @@ const Email = ghostBookshelf.Model.extend({
         return {
             uuid: uuid.v4(),
             status: 'pending',
-            recipient_filter: 'paid',
+            recipient_filter: 'status:-free',
             track_opens: false,
             delivered_count: 0,
             opened_count: 0,
@@ -16,12 +16,40 @@ const Email = ghostBookshelf.Model.extend({
         };
     },
 
+    parse() {
+        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+
+        // update legacy recipient_filter values to proper NQL
+        if (attrs.recipient_filter === 'free') {
+            attrs.recipient_filter = 'status:free';
+        }
+        if (attrs.recipient_filter === 'paid') {
+            attrs.recipient_filter = 'status:-free';
+        }
+
+        return attrs;
+    },
+
+    formatOnWrite(attrs) {
+        // update legacy recipient_filter values to proper NQL
+        if (attrs.recipient_filter === 'free') {
+            attrs.recipient_filter = 'status:free';
+        }
+        if (attrs.recipient_filter === 'paid') {
+            attrs.recipient_filter = 'status:-free';
+        }
+
+        return attrs;
+    },
+
     post() {
         return this.belongsTo('Post', 'post_id');
     },
+
     emailBatches() {
         return this.hasMany('EmailBatch', 'email_id');
     },
+
     recipients() {
         return this.hasMany('EmailRecipient', 'email_id');
     },
