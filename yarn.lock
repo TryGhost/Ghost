@@ -603,6 +603,16 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.19.tgz#9d02734ed03a5538fbed1d848acfb6de5b2291f5"
   integrity sha512-a0g/dHfKee5esK78qZdjT4AHBFw7bUc0AlHb93DR1NbACsSiIIFy6S4khkMNye6g+2iQ04u9vCPfOUCHwqXp0A==
 
+"@tryghost/package-json@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-0.1.0.tgz#de349c71b25ab76f3b20f86f46fa0f7b65ef78c5"
+  integrity sha512-RKRFfWqnwAlLSzDXSUA8/w/bxGN2R7Lm9Z+mxhI8Hr5fqPePRr9yAvNS78frxnyxjtrBfYUhGeUGhGDU0HOsOA==
+  dependencies:
+    "@tryghost/errors" "^0.2.11"
+    bluebird "^3.7.2"
+    fs-extra "^10.0.0"
+    lodash "^4.17.21"
+
 "@tryghost/pretty-cli@1.2.16":
   version "1.2.16"
   resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.16.tgz#9f47d4e341326690d3816fec9fd5bf0c946805f3"
@@ -3686,7 +3696,7 @@ fs-constants@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
-fs-extra@10.0.0:
+fs-extra@10.0.0, fs-extra@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-10.0.0.tgz#9ff61b655dde53fb34a82df84bb214ce802e17c1"
   integrity sha512-C5owb14u9eJwizKGdchcDUQeFtlSHHthBk8pbX9Vc1PFZrLombudjDnNns88aYslCyF6IY5SUw3Roz6xShcEIQ==
