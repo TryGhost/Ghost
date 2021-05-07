@@ -209,12 +209,12 @@
 }
 
 .gh-price-list-name span.archived {
-    background: var(--midgrey);
-    color: #fff;
+    background: var(--lightgrey-l2);
+    color: var(--midgrey);
     font-size: 1.2rem;
 }
 
-.gh-price-list-archived .gh-price-list-name,
+.gh-price-list-archived .gh-price-list-name .name,
 .gh-price-list-archived .gh-price-list-description,
 .gh-price-list-archived .gh-price-list-price span,
 .gh-price-list-archived .gh-price-list-subscriptions span {
@@ -231,6 +231,10 @@
     top: calc(100% + 6px);
     right: 10px;
     left: auto;
+}
+
+.gh-btn-archive-toggle {
+    width: 80px;
 }
 
 .product-actions-menu.fade-out {
