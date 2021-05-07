@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
     env: {
         es6: true,
@@ -19,12 +21,37 @@ module.exports = {
             rules: {
                 'ghost/node/no-restricted-require': ['warn', [
                     {
-                        name: '../server/**',
+                        name: path.resolve(__dirname, 'core/server/**'),
                         message: 'Invalid require of core/server from core/shared.'
                     },
                     {
-                        name: '../frontend/**',
+                        name: path.resolve(__dirname, 'core/server/**'),
                         message: 'Invalid require of core/frontend from core/shared.'
+                    }
+                ]]
+            }
+        },
+        /**
+         * @TODO: enable these soon
+         */
+        {
+            files: 'core/frontend/**',
+            rules: {
+                'ghost/node/no-restricted-require': ['off', [
+                    {
+                        name: path.resolve(__dirname, 'core/server/**'),
+                        message: 'Invalid require of core/server from core/frontend.'
+                    }
+                ]]
+            }
+        },
+        {
+            files: 'core/server/**',
+            rules: {
+                'ghost/node/no-restricted-require': ['off', [
+                    {
+                        name: path.resolve(__dirname, 'core/frontend/**'),
+                        message: 'Invalid require of core/frontend from core/server.'
                     }
                 ]]
             }
