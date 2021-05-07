@@ -140,6 +140,10 @@ const addEmail = async (postModel, options) => {
         return null;
     }
 
+    if (limitService.isLimited('emails')) {
+        await limitService.errorIfWouldGoOverLimit('emails', {addedCount: membersCount});
+    }
+
     const postId = postModel.get('id');
     const existing = await models.Email.findOne({post_id: postId}, knexOptions);
 
