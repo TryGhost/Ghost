@@ -714,12 +714,13 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.17"
 
-"@tryghost/limit-service@0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.4.3.tgz#2594941c14b14fc9e99846a13fd218ecbbe253b3"
-  integrity sha512-ZdiT5irH6+EUXKw/8ie9CccDfhpS6CbnW0WtzvLbHWP7nPfbZ2iXasmdhNYugHeWHJcZyW41CrKBM/qIxvDUNQ==
+"@tryghost/limit-service@0.4.4":
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.4.4.tgz#09c0cbb7c32dc88226f6658b3ef15354d75e81f7"
+  integrity sha512-ZYP1TOUqcdOiq2eArOOKvZD5zW6pioLesdp7EK9L2Bgv90doU8qotTqMjuKdkyeMFjcmkYwTNkawNg3oaGpyhg==
   dependencies:
     lodash "^4.17.21"
+    luxon "^1.26.0"
 
 "@tryghost/magic-link@1.0.2", "@tryghost/magic-link@^1.0.2":
   version "1.0.2"
@@ -6140,6 +6141,11 @@ lru_map@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/lru_map/-/lru_map-0.3.3.tgz#b5c8351b9464cbd750335a79650a0ec0e56118dd"
   integrity sha1-tcg1G5Rky9dQM1p5ZQoOwOVhGN0=
+
+luxon@^1.26.0:
+  version "1.26.0"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.26.0.tgz#d3692361fda51473948252061d0f8561df02b578"
+  integrity sha512-+V5QIQ5f6CDXQpWNICELwjwuHdqeJM1UenlZWx5ujcRMc9venvluCjFb4t5NYLhb6IhkbMVOxzVuOqkgMxee2A==
 
 mailcomposer@~0.2.10:
   version "0.2.12"
