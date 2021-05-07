@@ -4,7 +4,7 @@ import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getProductDetails, getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -421,12 +421,12 @@ class SignupPage extends React.Component {
     renderFormHeader() {
         const {site} = this.context;
         const siteTitle = site.title || '';
-
+        const {name, description} = getProductDetails({site});
         return (
             <header className='gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <h2 className="gh-portal-main-title">{siteTitle}</h2>
-                <p className="gh-portal-main-subtitle">Your primary news source on woodworking</p>
+                <h2 className="gh-portal-main-title">{name || siteTitle}</h2>
+                <p className="gh-portal-main-subtitle">{description}</p>
             </header>
         );
     }

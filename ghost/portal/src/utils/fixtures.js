@@ -103,6 +103,10 @@ export const site = {
         yearly: 150000,
         currency: 'USD'
     },
+    product: {
+        name: 'Main Product',
+        description: 'The default product'
+    },
     prices: prices,
     allow_self_signup: false,
     members_signup_access: 'all',
@@ -149,8 +153,8 @@ export const member = {
                 currency: 'USD'
             },
             price: {
-                id: '6086ead8070218227791fe4f',
-                stripe_price_id: 'price_1IkXLAFToJelIqAseQdK4WSU',
+                id: 'price_1IkXLAFToJelIqAseQdK4WSU',
+                price_id: '6086ead8070218227791fe4f',
                 nickname: 'Yearly',
                 currency: 'usd',
                 amount: 1500,
@@ -192,7 +196,7 @@ export const member = {
                 currency: 'USD'
             },
             price: {
-                id: '6086eff0823dd7240afc8083',
+                price_id: '6086eff0823dd7240afc8083',
                 nickname: 'Complimentary',
                 amount: 0,
                 interval: 'year',
@@ -234,8 +238,8 @@ export const member = {
                 currency: 'USD'
             },
             price: {
-                id: '6086ead8070218227791fe4f',
-                stripe_price_id: 'price_1IkXLAFToJelIqAseQdK4WSU',
+                price_id: '6086ead8070218227791fe4f',
+                id: 'price_1IkXLAFToJelIqAseQdK4WSU',
                 nickname: 'Yearly',
                 currency: 'usd',
                 amount: 1500,

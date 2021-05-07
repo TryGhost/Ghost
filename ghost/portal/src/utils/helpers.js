@@ -65,6 +65,8 @@ export function getPriceFromSubscription({subscription}) {
     if (subscription && subscription.price) {
         return {
             ...subscription.price,
+            stripe_price_id: subscription.price.id,
+            id: subscription.price.price_id,
             price: subscription.price.amount / 100,
             name: subscription.price.nickname,
             currency_symbol: getCurrencySymbol(subscription.price.currency)
@@ -101,6 +103,19 @@ export function hasPrice({site = {}, plan}) {
         return prices && prices.length > 0 && prices.find(p => p.name === 'Yearly');
     }
     return false;
+}
+
+export function getProductDetails({site}) {
+    if (site && site.product) {
+        return {
+            name: site.product.name || '',
+            description: site.product.description || ''
+        };
+    }
+    return {
+        name: '',
+        description: ''
+    };
 }
 
 export function capitalize(str) {
