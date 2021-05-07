@@ -165,7 +165,6 @@
     align-items: center;
     justify-content: flex-end;
     width: 100%;
-    opacity: 0;
     line-height: 1;
 }
 
@@ -206,7 +205,7 @@
 
 .gh-price-list-title,
 .gh-price-list-price {
-    width: 35%;
+    width: 50%;
 }
 
 .gh-price-list-name span.archived {
