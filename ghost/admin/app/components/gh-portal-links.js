@@ -60,9 +60,9 @@ export default Component.extend({
         this.set('copiedPrice', price.id);
         let data = '';
         if (this.isLink) {
-            data = `#/portal/${price.id}`;
+            data = `#/portal/signup/${price.id}`;
         } else {
-            data = `data-portal="${price.id}"`;
+            data = `data-portal="signup/${price.id}"`;
         }
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
