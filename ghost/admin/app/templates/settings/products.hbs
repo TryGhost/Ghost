@@ -15,7 +15,7 @@
                     Free membership
                 </h3>
                 <p class="gh-product-card-description">
-                    Product description
+                    {{this.settings.membersFreePriceDescription}}
                 </p>
                 <LinkTo @route="settings.products" class="gh-btn" {{action (toggle "showFreeMembershipModal" this)}}>
                     <span>Customize</span>
