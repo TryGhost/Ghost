@@ -41,7 +41,8 @@
                         <div class="form-group">
                             <GhMembersSegmentSelect
                                 @segment={{this.recipientsSegment}}
-                                @onChange={{action "setSendEmailWhenPublished"}}
+                                @onChange={{this.setSendEmailWhenPublished}}
+                                @onSegmentCountChange={{this.updateMemberCount}}
                                 @renderInPlace={{true}}
                             />
                         </div>

@@ -28,5 +28,6 @@ export default class GhMembersSegmentCountComponent extends Component {
 
         const members = yield this.store.query('member', {limit: 1, filter: this.args.segment});
         this.segmentTotal = members.meta.pagination.total;
+        this.args.onSegmentCountChange?.(this.segmentTotal);
     }
 }

@@ -62,6 +62,8 @@ export default class SettingsDefaultEmailRecipientsComponent extends Component {
 
     @action
     setDefaultEmailRecipients(value) {
+        this.segmentSelected = false;
+
         if (['disabled', 'visibility'].includes(value)) {
             this.settings.set('editorDefaultEmailRecipients', value);
             return;
@@ -83,6 +85,15 @@ export default class SettingsDefaultEmailRecipientsComponent extends Component {
             this.settings.set('editorDefaultEmailRecipientsFilter', 'status:-free');
         }
 
+        if (value === 'segment') {
+            this.segmentSelected = true;
+        }
+
         this.settings.set('editorDefaultEmailRecipients', 'filter');
+    }
+
+    @action
+    setDefaultEmailRecipientsFilter(filter) {
+        this.settings.set('editorDefaultEmailRecipientsFilter', filter);
     }
 }

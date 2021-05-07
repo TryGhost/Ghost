@@ -64,6 +64,21 @@
                         <div class="gh-radio-label">Paid members</div>
                     </div>
                 </div>
+                <div
+                    class="gh-radio {{if this.isSegmentSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "segment")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Specific segment:</div>
+                        <div class="gh-radio-desc">
+                            <GhMembersSegmentSelect
+                                @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                @onChange={{this.setDefaultEmailRecipientsFilter}}
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/liquid-if}}
