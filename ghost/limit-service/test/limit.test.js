@@ -167,6 +167,30 @@ describe('Limit Service', function () {
                 }
             });
 
+            it('throws if would go over the limit with with custom added count', async function () {
+                const config = {
+                    max: 23,
+                    currentCountQuery: () => 13
+                };
+                const limit = new MaxLimit({name: 'maxy', config, errors});
+
+                try {
+                    await limit.errorIfWouldGoOverLimit({addedCount: 11});
+                    should.fail(limit, 'Should have errored');
+                } catch (err) {
+                    should.exist(err);
+
+                    should.exist(err.errorType);
+                    should.equal(err.errorType, 'HostLimitError');
+
+                    should.exist(err.errorDetails);
+                    should.equal(err.errorDetails.name, 'maxy');
+
+                    should.exist(err.message);
+                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                }
+            });
+
             it('passes if does not go over the limit', async function () {
                 const config = {
                     max: 2,
@@ -315,6 +339,95 @@ describe('Limit Service', function () {
                     error.errorDetails.name.should.equal('mailguard');
                     error.errorDetails.limit.should.equal(3);
                     error.errorDetails.total.should.equal(11);
+
+                    currentCountyQueryMock.callCount.should.equal(1);
+                    should(currentCountyQueryMock.args).not.be.undefined();
+                    should(currentCountyQueryMock.args[0][0]).be.undefined(); //knex db connection
+
+                    const nowDate = new Date();
+                    const startOfTheMonthDate = new Date(Date.UTC(
+                        nowDate.getUTCFullYear(),
+                        nowDate.getUTCMonth()
+                    )).toISOString();
+
+                    currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
+                }
+            });
+        });
+
+        describe('Would go over limit', function () {
+            it('passes if within the limit', async function () {
+                const currentCountyQueryMock = sinon.mock().returns(4);
+
+                const config = {
+                    maxPeriodic: 5,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: currentCountyQueryMock
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
+                    await limit.errorIfWouldGoOverLimit();
+                } catch (error) {
+                    should.fail('MaxPeriodicLimit errorIfWouldGoOverLimit check should not have errored');
+                }
+            });
+
+            it('throws if would go over limit', async function () {
+                const currentCountyQueryMock = sinon.mock().returns(5);
+
+                const config = {
+                    maxPeriodic: 5,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: currentCountyQueryMock
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
+                    await limit.errorIfWouldGoOverLimit();
+                } catch (error) {
+                    error.errorType.should.equal('HostLimitError');
+                    error.errorDetails.name.should.equal('mailguard');
+                    error.errorDetails.limit.should.equal(5);
+                    error.errorDetails.total.should.equal(5);
+
+                    currentCountyQueryMock.callCount.should.equal(1);
+                    should(currentCountyQueryMock.args).not.be.undefined();
+                    should(currentCountyQueryMock.args[0][0]).be.undefined(); //knex db connection
+
+                    const nowDate = new Date();
+                    const startOfTheMonthDate = new Date(Date.UTC(
+                        nowDate.getUTCFullYear(),
+                        nowDate.getUTCMonth()
+                    )).toISOString();
+
+                    currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
+                }
+            });
+
+            it('throws if would go over limit with custom added count', async function () {
+                const currentCountyQueryMock = sinon.mock().returns(5);
+
+                const config = {
+                    maxPeriodic: 13,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: currentCountyQueryMock
+                };
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
+                    await limit.errorIfWouldGoOverLimit({addedCount: 9});
+                } catch (error) {
+                    error.errorType.should.equal('HostLimitError');
+                    error.errorDetails.name.should.equal('mailguard');
+                    error.errorDetails.limit.should.equal(13);
+                    error.errorDetails.total.should.equal(5);
 
                     currentCountyQueryMock.callCount.should.equal(1);
                     should(currentCountyQueryMock.args).not.be.undefined();
