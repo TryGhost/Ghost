@@ -1,6 +1,4 @@
-const differenceInMonths = require('date-fns/differenceInMonths');
-const parseISO = require('date-fns/parseISO');
-const addMonths = require('date-fns/addMonths');
+const {DateTime} = require('luxon');
 
 const SUPPORTED_INTERVALS = ['month'];
 /**
@@ -14,11 +12,13 @@ const SUPPORTED_INTERVALS = ['month'];
  */
 const lastPeriodStart = (startDate, interval) => {
     if (interval === 'month') {
-        const startDateISO = parseISO(startDate);
-        const fullPeriodsPast = differenceInMonths(new Date(), startDateISO);
-        const lastPeriodStartDate = addMonths(startDateISO, fullPeriodsPast);
+        const startDateISO = DateTime.fromISO(startDate, {zone: 'UTC'});
+        const now = DateTime.now().setZone('UTC');
+        const fullPeriodsPast = Math.floor(now.diff(startDateISO, 'months').months);
 
-        return lastPeriodStartDate.toISOString();
+        const lastPeriodStartDate = startDateISO.plus({months: fullPeriodsPast});
+
+        return lastPeriodStartDate.toISO();
     }
 
     throw new Error('Invalid interval specified. Only "month" value is accepted.');
