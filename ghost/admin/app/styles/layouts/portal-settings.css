@@ -442,7 +442,7 @@
     letter-spacing: 0;
     text-rendering: optimizeLegibility;
     background: var(--white);
-    width: 640px;
+    width: 720px;
     padding: 32px;
     margin: 95px auto 32px;
     border-radius: 5px;
@@ -521,7 +521,7 @@
 }
 
 .gh-portal-page-url-container .page-url-label {
-    max-width: 380px;
+    max-width: 470px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
