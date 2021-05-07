@@ -183,7 +183,6 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                 ...data,
                 product: null
             });
-            this.args.nextStep();
         }
     }
 
