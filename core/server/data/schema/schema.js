@@ -490,7 +490,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_products.stripe_product_id'},
-        active: {type: 'boolean', nullable: false},
+        active: {type: 'bool', nullable: false},
         nickname: {type: 'string', maxlength: 50, nullable: true},
         currency: {type: 'string', maxLength: 3, nullable: false},
         amount: {type: 'integer', nullable: false},
