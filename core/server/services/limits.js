@@ -13,7 +13,22 @@ const initFn = () => {
         helpLink = 'https://ghost.org/help/';
     }
 
-    limitService.loadLimits({limits: config.get('hostSettings:limits'), db, helpLink, errors});
+    let subscription;
+
+    if (config.get('hostSettings:subscription')) {
+        subscription = {
+            startDate: config.get('hostSettings:subscription:start'),
+            interval: 'month'
+        };
+    }
+
+    limitService.loadLimits({
+        limits: config.get('hostSettings:limits'),
+        subscription,
+        db,
+        helpLink,
+        errors
+    });
 };
 
 module.exports = limitService;
