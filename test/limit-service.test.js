@@ -70,7 +70,7 @@ describe('Limit Service', function () {
             }
         });
 
-        it('can load a basic limit', function () {
+        it('can load a max limit', function () {
             const limitService = new LimitService();
 
             let limits = {staff: {max: 2}};
