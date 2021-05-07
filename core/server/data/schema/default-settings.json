@@ -477,5 +477,23 @@
             "defaultValue": null,
             "type": "string"
         }
+    },
+    "editor": {
+        "editor_default_email_recipients": {
+            "defaultValue": "visibility",
+            "type": "string",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [[
+                    "disabled",
+                    "visibility",
+                    "filter"
+                ]]
+            }
+        },
+        "editor_default_email_recipients_filter": {
+            "defaultValue": "all",
+            "type": "string"
+        }
     }
 }
