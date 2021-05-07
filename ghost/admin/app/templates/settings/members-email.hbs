@@ -21,10 +21,11 @@
         {{#if this.session.user.isOwner}}
         <div class="gh-setting-liquid-section">
             <GhMembersEmailSetting
-                @settings={{this.settings}}
                 @fromAddress={{this.fromAddress}}
                 @supportAddress={{this.supportAddress}}
                 @setEmailAddress={{this.setEmailAddress}}
+                @emailRecipientsExpanded={{this.emailRecipientsOpen}}
+                @toggleEmailRecipientsExpansion={{this.toggleEmailRecipientsOpen}}
             />
         </div>
         {{/if}}

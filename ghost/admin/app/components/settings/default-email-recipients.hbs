@@ -1,0 +1,71 @@
+<div class="gh-expandable-block">
+    <h4 class="gh-expandable-header">
+        <div>
+            <h4 class="gh-expandable-title">Default newsletter recipients</h4>
+            <p class="gh-expandable-description">Who do you usually want to send emails to?</p>
+        </div>
+        <button type="button" class="gh-btn" {{on "click" @toggleExpansion}} data-test-toggle="post-access"><span>{{if @expanded "Close" "Expand"}}</span></button>
+    </h4>
+    <div class="gh-expandable-content">
+        {{#liquid-if @expanded}}
+        <div class="flex flex-column w-50">
+            <div class="{{if this.isDisabled "disabled-overlay"}}">
+                <div
+                    class="gh-radio {{if this.isDisabledSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "disabled")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Disabled</div>
+                    </div>
+                </div>
+                <div
+                    class="gh-radio {{if this.isVisibilitySelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "visibility")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Match post access level</div>
+                    </div>
+                </div>
+                <div
+                    class="gh-radio {{if this.isNobodySelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "none")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Nobody</div>
+                    </div>
+                </div>
+                <div
+                    class="gh-radio {{if this.isAllSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "all")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">All members</div>
+                    </div>
+                </div>
+                <div
+                    class="gh-radio {{if this.isFreeSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "free")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Free members</div>
+                    </div>
+                </div>
+                <div
+                    class="gh-radio {{if this.isPaidSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "paid")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Paid members</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/liquid-if}}
+    </div>
+</div>

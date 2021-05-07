@@ -8,17 +8,15 @@
             <GhPublishmenuPublished
                 @post={{this.post}}
                 @saveType={{this.saveType}}
-                @setSaveType={{action "setSaveType"}}
-                @backgroundTask={{this.backgroundTask}} />
+                @setSaveType={{action "setSaveType"}} />
 
         {{else if (eq this.displayState "scheduled")}}
             <GhPublishmenuScheduled
                 @post={{this.post}}
                 @saveType={{this.saveType}}
                 @isClosing={{this.isClosing}}
-                @memberCount={{this.memberCount}}
-                @paidMemberCount={{this.paidMemberCount}}
-                @freeMemberCount={{this.freeMemberCount}}
+                @canSendEmail={{this.canSendEmail}}
+                @recipientsSegment={{this.recipientsSegment}}
                 @setSaveType={{action "setSaveType"}}
                 @setTypedDateError={{action (mut this.typedDateError)}}
                 @isSendingEmailLimited={{this.isSendingEmailLimited}}
@@ -30,12 +28,9 @@
                 @saveType={{this.saveType}}
                 @setSaveType={{action "setSaveType"}}
                 @setTypedDateError={{action (mut this.typedDateError)}}
+                @canSendEmail={{this.canSendEmail}}
+                @recipientsSegment={{this.recipientsSegment}}
                 @setSendEmailWhenPublished={{action "setSendEmailWhenPublished"}}
-                @backgroundTask={{this.backgroundTask}}
-                @memberCount={{this.memberCount}}
-                @paidMemberCount={{this.paidMemberCount}}
-                @freeMemberCount={{this.freeMemberCount}}
-                @sendEmailWhenPublished={{this.sendEmailWhenPublished}}
                 @isSendingEmailLimited={{this.isSendingEmailLimited}}
                 @sendingEmailLimitError={{this.sendingEmailLimitError}} />
         {{/if}}
