@@ -7,7 +7,13 @@ export default ApplicationAdapter.extend({
         let parsedUrl = new URL(url);
 
         if (snapshot && snapshot.adapterOptions && snapshot.adapterOptions.sendEmailWhenPublished) {
-            parsedUrl.searchParams.append('email_recipient_filter', snapshot.adapterOptions.sendEmailWhenPublished);
+            let emailRecipientFilter = snapshot.adapterOptions.sendEmailWhenPublished;
+
+            if (emailRecipientFilter === 'status:free,status:-free') {
+                emailRecipientFilter = 'all';
+            }
+
+            parsedUrl.searchParams.append('email_recipient_filter', emailRecipientFilter);
         }
 
         return parsedUrl.toString();

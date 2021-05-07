@@ -9,20 +9,6 @@ import {task, timeout} from 'ember-concurrency';
 const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
-const MEMBERS_SEGMENT_MAP = [{
-    name: 'all',
-    segment: 'status:free,status:-free'
-}, {
-    name: 'free',
-    segment: 'status:free'
-}, {
-    name: 'paid',
-    segment: 'status:-free'
-}, {
-    name: 'none',
-    segment: null
-}];
-
 export default Component.extend({
     clock: service(),
     feature: service(),
@@ -38,7 +24,7 @@ export default Component.extend({
     postStatus: 'draft',
     runningText: null,
     saveTask: null,
-    sendEmailWhenPublished: 'none',
+    sendEmailWhenPublished: null,
     typedDateError: null,
     isSendingEmailLimited: false,
     sendingEmailLimitError: '',
@@ -65,11 +51,6 @@ export default Component.extend({
             mailgunIsConfigured &&
             isPost &&
             !hasSentEmail;
-    }),
-
-    recipientsSegment: computed('sendEmailWhenPublished', function () {
-        const segmentName = this.sendEmailWhenPublished;
-        return MEMBERS_SEGMENT_MAP.findBy('name', segmentName).segment;
     }),
 
     postState: computed('post.{isPublished,isScheduled}', 'forcePublishedMenu', function () {
@@ -157,21 +138,21 @@ export default Component.extend({
     defaultEmailRecipients: computed('settings.{editorDefaultEmailRecipients,editorDefaultEmailRecipientsFilter}', 'post.visibility', function () {
         const defaultEmailRecipients = this.settings.get('editorDefaultEmailRecipients');
 
-        if (defaultEmailRecipients === 'disabled' || defaultEmailRecipients === 'none') {
-            return 'none';
+        if (defaultEmailRecipients === 'disabled') {
+            return null;
         }
 
         if (defaultEmailRecipients === 'visibility') {
             if (this.post.visibility === 'public' || this.post.visibility === 'members') {
-                return 'all';
+                return 'status:free,status:-free';
             }
 
             if (this.post.visibility === 'paid') {
-                return 'paid';
+                return 'status:-free';
             }
         }
 
-        return MEMBERS_SEGMENT_MAP.findBy('segment', this.settings.get('editorDefaultEmailRecipientsFilter')).name;
+        return this.settings.get('editorDefaultEmailRecipientsFilter');
     }),
 
     didReceiveAttrs() {
@@ -249,6 +230,10 @@ export default Component.extend({
             this.set('isClosing', true);
 
             return true;
+        },
+
+        updateMemberCount(count) {
+            this.memberCount = count;
         }
     },
 

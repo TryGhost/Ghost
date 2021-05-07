@@ -105,7 +105,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     updatedBy: attr('number'),
     url: attr('string'),
     uuid: attr('string'),
-    emailRecipientFilter: attr('string', {defaultValue: 'none'}),
+    emailRecipientFilter: attr('members-segment-string', {defaultValue: null}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
@@ -152,7 +152,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     isPage: equal('displayName', 'page'),
 
     willEmail: computed('emailRecipientFilter', function () {
-        return this.emailRecipientFilter !== 'none';
+        return this.emailRecipientFilter !== null;
     }),
 
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
