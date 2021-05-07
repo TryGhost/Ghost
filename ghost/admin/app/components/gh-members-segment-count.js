@@ -5,6 +5,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class GhMembersSegmentCountComponent extends Component {
     @service store;
+    @service session;
 
     @tracked total = 0;
     @tracked segmentTotal = 0;
