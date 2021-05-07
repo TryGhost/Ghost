@@ -38,6 +38,14 @@ export const SignupPageStyles = `
         margin: 4px 0 0;
     }
 
+    .gh-portal-signup-header .gh-portal-main-subtitle {
+        font-size: 1.5rem;
+        text-align: center;
+        line-height: 1.45em;
+        margin: 4px 0 0;
+        color: var(--grey3);
+    }
+
     .gh-portal-signup-header.nodivider {
         border: none;
         margin-bottom: 0;
@@ -418,6 +426,7 @@ class SignupPage extends React.Component {
             <header className='gh-portal-signup-header'>
                 {this.renderSiteLogo()}
                 <h2 className="gh-portal-main-title">{siteTitle}</h2>
+                <p className="gh-portal-main-subtitle">Your primary news source on woodworking</p>
             </header>
         );
     }
