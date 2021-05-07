@@ -111,12 +111,16 @@ export function getQueryPrice({site = {}, priceId}) {
     const prices = getAvailablePrices({site});
     if (priceId === 'free') {
         return !prices || prices.length === 0 || prices.find(p => p.type === 'free');
-    } else if (priceId === 'monthly') {
-        return prices && prices.length > 0 && prices.find(p => p.name === 'Monthly');
-    } else if (priceId === 'yearly') {
-        return prices && prices.length > 0 && prices.find(p => p.name === 'Yearly');
-    } else if (priceId) {
-        return prices && prices.length > 0 && prices.find(p => p.id === priceId);
+    } else if (prices && prices.length > 0 && priceId === 'monthly') {
+        const monthlyByName = prices.find(p => p.name === 'Monthly');
+        const monthlyByInterval = prices.find(p => p.interval === 'month');
+        return monthlyByName || monthlyByInterval;
+    } else if (prices && prices.length > 0 && priceId === 'yearly') {
+        const yearlyByName = prices.find(p => p.name === 'Yearly');
+        const yearlyByInterval = prices.find(p => p.interval === 'year');
+        return yearlyByName || yearlyByInterval;
+    } else if (prices && prices.length > 0 && priceId) {
+        return prices.find(p => p.id === priceId);
     }
     return null;
 }
