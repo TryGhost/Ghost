@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const {subWeeks, subMonths} = require('date-fns');
+const {DateTime} = require('luxon');
 const sinon = require('sinon');
 const {lastPeriodStart} = require('../lib/date-utils');
 
@@ -17,8 +17,8 @@ describe('Date Utils', function () {
         });
 
         it('returns same date if current date is less than a period away from current date', async function () {
-            const weekAgoDate = subWeeks(new Date(), 1);
-            const weekAgoISO = weekAgoDate.toISOString();
+            const weekAgoDate = DateTime.now().toUTC().plus({weeks: -1});
+            const weekAgoISO = weekAgoDate.toISO();
 
             const lastPeriodStartDate = lastPeriodStart(weekAgoISO, 'month');
 
@@ -26,11 +26,11 @@ describe('Date Utils', function () {
         });
 
         it('returns beginning of last month\'s period', async function () {
-            const weekAgoDate = subWeeks(new Date(), 1);
-            const weekAgoISO = weekAgoDate.toISOString();
+            const weekAgoDate = DateTime.now().toUTC().plus({weeks: -1});
+            const weekAgoISO = weekAgoDate.toISO();
 
-            const weekAndAMonthAgo = subMonths(weekAgoDate, 1);
-            const weekAndAMonthAgoISO = weekAndAMonthAgo.toISOString();
+            const weekAndAMonthAgo = weekAgoDate.plus({months: -1});
+            const weekAndAMonthAgoISO = weekAndAMonthAgo.toISO();
 
             const lastPeriodStartDate = lastPeriodStart(weekAndAMonthAgoISO, 'month');
 
