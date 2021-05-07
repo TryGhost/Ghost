@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import AppContext from '../../AppContext';
 import {isCookiesDisabled, formatNumber, hasOnlyFreePlan} from '../../utils/helpers';
 
 export const PlanSectionStyles = `
@@ -345,6 +346,8 @@ function PriceLabel({currencySymbol, price}) {
 }
 
 function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
+    const {site} = useContext(AppContext);
+    const {free_price_name: freePriceName, free_price_description: freePriceDescription} = site;
     return plans.map(({name, currency_symbol: currencySymbol, price, description, id}) => {
         const isChecked = selectedPlan === id;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
@@ -352,7 +355,8 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
         let displayName = name;
         switch (name) {
         case 'Free':
-            planDetails.feature = 'Free preview';
+            displayName = freePriceName || name;
+            planDetails.feature = freePriceDescription || 'Free preview';
             break;
         default:
             planDetails.feature = description || 'Full access';
