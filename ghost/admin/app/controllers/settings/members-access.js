@@ -7,6 +7,8 @@ import {tracked} from '@glimmer/tracking';
 export default class MembersAccessController extends Controller {
     @service settings;
 
+    queryParams = ['signupAccessOpen', 'postAccessOpen']
+
     @tracked showLeaveSettingsModal = false;
     @tracked signupAccessOpen = false;
     @tracked postAccessOpen = false;

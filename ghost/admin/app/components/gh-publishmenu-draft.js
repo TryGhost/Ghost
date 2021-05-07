@@ -1,10 +1,22 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
-import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {isEmpty} from '@ember/utils';
-import {or} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
+
+const MEMBERS_SEGMENT_MAP = [{
+    name: 'all',
+    segment: 'status:free,status:-free'
+}, {
+    name: 'free',
+    segment: 'status:free'
+}, {
+    name: 'paid',
+    segment: 'status:-free'
+}, {
+    name: 'none',
+    segment: null
+}];
 
 export default Component.extend({
     feature: service(),
@@ -19,48 +31,9 @@ export default Component.extend({
     _publishedAtBlogTZ: null,
 
     'data-test-publishmenu-draft': true,
-    showSendEmail: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
     disableEmailOption: computed('memberCount', function () {
         return (this.get('session.user.isOwnerOrAdmin') && this.memberCount === 0);
-    }),
-
-    disableFreeMemberCheckbox: computed('freeMemberCount', function () {
-        return (this.get('session.user.isOwnerOrAdmin') && this.freeMemberCount === 0);
-    }),
-
-    disablePaidMemberCheckbox: computed('paidMemberCount', function () {
-        return (this.get('session.user.isOwnerOrAdmin') && this.paidMemberCount === 0);
-    }),
-
-    freeMemberCountLabel: computed('freeMemberCount', function () {
-        if (this.get('freeMemberCount') !== undefined) {
-            return `(${formatNumber(this.get('freeMemberCount'))})`;
-        }
-        return '';
-    }),
-
-    paidMemberCountLabel: computed('freeMemberCount', function () {
-        if (this.get('freeMemberCount') !== undefined) {
-            return `(${formatNumber(this.get('paidMemberCount'))})`;
-        }
-        return '';
-    }),
-
-    canSendEmail: computed('post.{isPost,email}', 'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}', 'config.mailgunIsConfigured', function () {
-        let mailgunIsConfigured = this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
-        let isPost = this.post.isPost;
-        let hasSentEmail = !!this.post.email;
-
-        return mailgunIsConfigured && isPost && !hasSentEmail;
-    }),
-
-    sendEmailToFreeMembersWhenPublished: computed('sendEmailWhenPublished', function () {
-        return ['free', 'all'].includes(this.sendEmailWhenPublished);
-    }),
-
-    sendEmailToPaidMembersWhenPublished: computed('sendEmailWhenPublished', function () {
-        return ['paid', 'all'].includes(this.sendEmailWhenPublished);
     }),
 
     didInsertElement() {
@@ -115,23 +88,9 @@ export default Component.extend({
             return post.validate();
         },
 
-        toggleSendEmailWhenPublished(type) {
-            let isFree = this.get('sendEmailToFreeMembersWhenPublished');
-            let isPaid = this.get('sendEmailToPaidMembersWhenPublished');
-            if (type === 'free') {
-                isFree = !isFree;
-            } else if (type === 'paid') {
-                isPaid = !isPaid;
-            }
-            if (isFree && isPaid) {
-                this.setSendEmailWhenPublished('all');
-            } else if (isFree && !isPaid) {
-                this.setSendEmailWhenPublished('free');
-            } else if (!isFree && isPaid) {
-                this.setSendEmailWhenPublished('paid');
-            } else if (!isFree && !isPaid) {
-                this.setSendEmailWhenPublished('none');
-            }
+        setSendEmailWhenPublished(segment) {
+            const segmentName = MEMBERS_SEGMENT_MAP.findBy('segment', segment).name;
+            this.setSendEmailWhenPublished(segmentName);
         }
     },
 

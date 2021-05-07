@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import Model, {attr} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {and} from '@ember/object/computed';
 
 export default Model.extend(ValidationEngine, {
     validationType: 'setting',
@@ -51,8 +52,8 @@ export default Model.extend(ValidationEngine, {
     /**
      * Members settings
      */
-    defaultContentVisibility: attr('string'),
     membersSignupAccess: attr('string'),
+    defaultContentVisibility: attr('string'),
     membersFromAddress: attr('string'),
     membersSupportAddress: attr('string'),
     membersReplyAddress: attr('string'),
@@ -79,5 +80,12 @@ export default Model.extend(ValidationEngine, {
      * OAuth settings
      */
     oauthClientId: attr('string'),
-    oauthClientSecret: attr('string')
+    oauthClientSecret: attr('string'),
+    /**
+     * Editor settings
+     */
+    editorDefaultEmailRecipients: attr('string'),
+    editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
+
+    mailgunIsConfigured: and('mailgunApiKey', 'mailgunDomain', 'mailgunBaseUrl')
 });

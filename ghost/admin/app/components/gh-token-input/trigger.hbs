@@ -10,7 +10,7 @@
     {{#each @select.selected as |opt idx|}}
         {{#component (or @extra.tokenComponent "draggable-object")
             tagName="li"
-            class="ember-power-select-multiple-option"
+            class=(concat "ember-power-select-multiple-option" (if opt.class (concat " token-" opt.class)))
             select=@select
             content=(readonly opt)
             idx=idx

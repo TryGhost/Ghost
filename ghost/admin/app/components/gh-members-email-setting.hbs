@@ -16,6 +16,11 @@
 <div class="gh-main-section">
     <h4 class="gh-main-section-header small bn">Email</h4>
     <section class="gh-expandable">
+        <Settings::DefaultEmailRecipients
+            @expanded={{this.emailRecipientsExpanded}}
+            @toggleExpansion={{this.toggleEmailRecipientsExpansion}}
+        />
+
         <div class="gh-expandable-block">
             <div class="gh-expandable-header">
                 <div>

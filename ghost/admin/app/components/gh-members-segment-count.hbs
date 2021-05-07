@@ -1,0 +1,7 @@
+<span
+    class="segment-totals"
+    {{did-insert (perform this.fetchTotalsTask)}}
+    {{did-update (perform this.fetchSegmentTotalTask) @segment}}
+>
+    {{format-number this.segmentTotal}} / {{format-number this.total}} members
+</span>

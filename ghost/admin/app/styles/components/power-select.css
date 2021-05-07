@@ -256,6 +256,18 @@
     fill: var(--black);
 }
 
+/* Segment input */
+
+.token-segment-status {
+    background: color-mod(var(--blue) alpha(0.1));
+    color: var(--blue);
+}
+
+.token-segment-status svg path {
+    stroke: var(--blue);
+    fill: var(--blue);
+}
+
 /* Inside settings / Mailgun region */
 /* TODO: make these general styles? */
 
