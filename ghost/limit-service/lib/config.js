@@ -12,7 +12,7 @@ module.exports = {
     emails: {
         currentCountQuery: async (db, startDate) => {
             let result = await db.knex('emails')
-                .count('id', {as: 'count'})
+                .sum('email_count', {as: 'count'})
                 .where('created_at', '>=', startDate)
                 .first();
 
