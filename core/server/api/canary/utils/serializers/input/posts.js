@@ -102,6 +102,15 @@ const forceStatusFilter = (frame) => {
     }
 };
 
+const transformLegacyEmailRecipientFilters = (frame) => {
+    if (frame.options.email_recipient_filter === 'free') {
+        frame.options.email_recipient_filter = 'status:free';
+    }
+    if (frame.options.email_recipient_filter === 'paid') {
+        frame.options.email_recipient_filter = 'status:-free';
+    }
+};
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -196,6 +205,7 @@ module.exports = {
             });
         }
 
+        transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);
@@ -205,6 +215,7 @@ module.exports = {
         debug('edit');
         this.add(apiConfig, frame, {add: false});
 
+        transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
         forceStatusFilter(frame);
         forcePageFilter(frame);

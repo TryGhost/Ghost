@@ -101,6 +101,14 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
+        // update legacy email_recipient_filter values to proper NQL
+        if (attrs.email_recipient_filter === 'free') {
+            attrs.email_recipient_filter = 'status:free';
+        }
+        if (attrs.email_recipient_filter === 'paid') {
+            attrs.email_recipient_filter = 'status:-free';
+        }
+
         return attrs;
     },
 
@@ -138,6 +146,14 @@ Post = ghostBookshelf.Model.extend({
                 attrs[attrToTransform] = urlUtils[method](attrs[attrToTransform], transformOptions);
             }
         });
+
+        // update legacy email_recipient_filter values to proper NQL
+        if (attrs.email_recipient_filter === 'free') {
+            attrs.email_recipient_filter = 'status:free';
+        }
+        if (attrs.email_recipient_filter === 'paid') {
+            attrs.email_recipient_filter = 'status:-free';
+        }
 
         return attrs;
     },

@@ -60,6 +60,29 @@ describe('Post Model', function () {
                     });
             });
 
+            describe('findOne', function () {
+                it('transforms legacy email_recipient_filter values on read', function (done) {
+                    const postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                    db.knex('posts').where({id: postId}).update({
+                        email_recipient_filter: 'paid'
+                    }).then(() => {
+                        return db.knex('posts').where({id: postId});
+                    }).then((knexResult) => {
+                        const [knexPost] = knexResult;
+                        knexPost.email_recipient_filter.should.equal('paid');
+
+                        return models.Post.findOne({id: postId});
+                    }).then((result) => {
+                        should.exist(result);
+                        const post = result.toJSON();
+                        post.email_recipient_filter.should.equal('status:-free');
+
+                        done();
+                    }).catch(done);
+                });
+            });
+
             describe('findPage', function () {
                 // @TODO: this test case fails for mysql currently if you run all regression tests, the test does not fail if you run this as a single test
                 describe.skip('with more posts/tags', function () {
@@ -688,6 +711,24 @@ describe('Post Model', function () {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
                     edited.attributes.published_by.should.equal(context.context.user);
+
+                    done();
+                }).catch(done);
+            });
+
+            it('transforms legacy email_recipient_filter values on save', function (done) {
+                const postId = testUtils.DataGenerator.Content.posts[3].id;
+
+                models.Post.findOne({id: postId}).then(() => {
+                    return models.Post.edit({
+                        email_recipient_filter: 'free'
+                    }, _.extend({}, context, {id: postId}));
+                }).then((edited) => {
+                    edited.attributes.email_recipient_filter.should.equal('status:free');
+                    return db.knex('posts').where({id: edited.id});
+                }).then((knexResult) => {
+                    const [knexPost] = knexResult;
+                    knexPost.email_recipient_filter.should.equal('status:free');
 
                     done();
                 }).catch(done);
