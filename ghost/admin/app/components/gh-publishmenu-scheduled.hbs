@@ -28,55 +28,25 @@
             </div>
         </div>
     </section>
-    {{#if (and canSendEmail showSendEmail)}}
-        {{#unless this.post.email}}
-            <section class="gh-publishmenu-section">
-                <div class="gh-publishmenu-email">
-                    {{#if this.backgroundLoader.isRunning}}
-                        <div class="gh-loading-spinner" style="zoom: 50%"></div>
-                    {{else if this.isSendingEmailLimited}}
-                        <p>{{html-safe this.sendingEmailLimitError}}</p>
-                    {{else}}
-                        <div class="gh-publishmenu-email-label">
-                        <label class="gh-publishmenu-radio-label mb3 pe-none">Send by email to</label>
-                            <div class="form-group">
-                                <div class="gh-publishmenu-send-to-option gh-publishmenu-checkbox-disabled">
-                                    <p>Free members</p>
-                                    <div class="for-switch small">
-                                        <label class="switch" for="send-email-to-free">
-                                            <input
-                                                id="send-email-to-free"
-                                                type="checkbox"
-                                                checked={{this.sendEmailToFreeMembersWhenPublished}}
-                                                disabled={{this.disableEmailOption}}
-                                                class="gh-input post-settings-featured"
-                                                data-test-checkbox="free-members"
-                                            >
-                                            <span class="input-toggle-component"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="gh-publishmenu-send-to-option gh-publishmenu-checkbox-disabled">
-                                    <p>Paid members</p>
-                                    <div class="for-switch small">
-                                        <label class="switch" for="send-email-to-paid">
-                                            <input
-                                                id="send-email-to-paid"
-                                                type="checkbox"
-                                                checked={{this.sendEmailToPaidMembersWhenPublished}}
-                                                disabled={{this.disableEmailOption}}
-                                                class="gh-input post-settings-featured"
-                                                data-test-checkbox="paid-members"
-                                            >
-                                            <span class="input-toggle-component"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
+    {{#if this.canSendEmail}}
+        <section class="gh-publishmenu-section">
+            <div class="gh-publishmenu-email">
+                {{#if this.isSendingEmailLimited}}
+                    <p>{{html-safe this.sendingEmailLimitError}}</p>
+                {{else}}
+                    <div class="gh-publishmenu-email-label {{if this.disableEmailOption "pe-none"}}">
+                        <label class="gh-publishmenu-radio-label mb3 {{if this.disableEmailOption "midgrey"}}">Send by email to</label>
+
+                        <div class="form-group">
+                            <GhMembersSegmentSelect
+                                @segment={{this.recipientsSegment}}
+                                @disabled={{true}}
+                                @renderInPlace={{true}}
+                            />
                         </div>
-                    {{/if}}
-                </div>
-            </section>
-        {{/unless}}
+                    </div>
+                {{/if}}
+            </div>
+        </section>
     {{/if}}
 </div>
