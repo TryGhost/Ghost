@@ -75,6 +75,7 @@
                             <GhMembersSegmentSelect
                                 @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
                                 @onChange={{this.setDefaultEmailRecipientsFilter}}
+                                @enforcedCountFilter="subscribed:true"
                             />
                         </div>
                     </div>
