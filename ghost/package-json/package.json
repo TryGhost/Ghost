@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha './test/**/*_spec.js'",
+    "test": "NODE_ENV=testing c8 --check-coverage mocha './test/**/*_spec.js'",
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
@@ -19,6 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "c8": "7.7.2",
     "mocha": "8.3.2",
     "should": "13.2.3",
     "sinon": "10.0.0",
