@@ -11,12 +11,19 @@
         <div class="flex flex-column w-50">
             <div class="{{if this.isDisabled "disabled-overlay"}}">
                 <div
-                    class="gh-radio {{if this.isDisabledSelected "active"}}"
-                    {{on "click" (fn this.setDefaultEmailRecipients "disabled")}}
+                    class="gh-radio {{if this.isSegmentSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "segment")}}
                 >
                     <div class="gh-radio-button"></div>
                     <div class="gh-radio-content">
-                        <div class="gh-radio-label">Disabled</div>
+                        <div class="gh-radio-label">Send emails to</div>
+                        <div class="gh-radio-desc">
+                            <GhMembersSegmentSelect
+                                @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                @onChange={{this.setDefaultEmailRecipientsFilter}}
+                                @enforcedCountFilter="subscribed:true"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div
@@ -38,46 +45,12 @@
                     </div>
                 </div>
                 <div
-                    class="gh-radio {{if this.isAllSelected "active"}}"
-                    {{on "click" (fn this.setDefaultEmailRecipients "all")}}
+                    class="gh-radio {{if this.isDisabledSelected "active"}}"
+                    {{on "click" (fn this.setDefaultEmailRecipients "disabled")}}
                 >
                     <div class="gh-radio-button"></div>
                     <div class="gh-radio-content">
-                        <div class="gh-radio-label">All members</div>
-                    </div>
-                </div>
-                <div
-                    class="gh-radio {{if this.isFreeSelected "active"}}"
-                    {{on "click" (fn this.setDefaultEmailRecipients "free")}}
-                >
-                    <div class="gh-radio-button"></div>
-                    <div class="gh-radio-content">
-                        <div class="gh-radio-label">Free members</div>
-                    </div>
-                </div>
-                <div
-                    class="gh-radio {{if this.isPaidSelected "active"}}"
-                    {{on "click" (fn this.setDefaultEmailRecipients "paid")}}
-                >
-                    <div class="gh-radio-button"></div>
-                    <div class="gh-radio-content">
-                        <div class="gh-radio-label">Paid members</div>
-                    </div>
-                </div>
-                <div
-                    class="gh-radio {{if this.isSegmentSelected "active"}}"
-                    {{on "click" (fn this.setDefaultEmailRecipients "segment")}}
-                >
-                    <div class="gh-radio-button"></div>
-                    <div class="gh-radio-content">
-                        <div class="gh-radio-label">Specific segment:</div>
-                        <div class="gh-radio-desc">
-                            <GhMembersSegmentSelect
-                                @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
-                                @onChange={{this.setDefaultEmailRecipientsFilter}}
-                                @enforcedCountFilter="subscribed:true"
-                            />
-                        </div>
+                        <div class="gh-radio-label">Disabled</div>
                     </div>
                 </div>
             </div>
