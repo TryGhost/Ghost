@@ -29,34 +29,9 @@ export default class SettingsDefaultEmailRecipientsComponent extends Component {
             this.settings.get('editorDefaultEmailRecipientsFilter') === null;
     }
 
-    get isAllSelected() {
-        return !this.isDisabled &&
-            !this.segmentSelected &&
-            this.settings.get('editorDefaultEmailRecipients') === 'filter' &&
-            this.settings.get('editorDefaultEmailRecipientsFilter') === 'status:free,status:-free';
-    }
-
-    get isFreeSelected() {
-        return !this.isDisabled &&
-            !this.segmentSelected &&
-            this.settings.get('editorDefaultEmailRecipients') === 'filter' &&
-            this.settings.get('editorDefaultEmailRecipientsFilter') === 'status:free';
-    }
-
-    get isPaidSelected() {
-        return !this.isDisabled &&
-            !this.segmentSelected &&
-            this.settings.get('editorDefaultEmailRecipients') === 'filter' &&
-            this.settings.get('editorDefaultEmailRecipientsFilter') === 'status:-free';
-    }
-
     get isSegmentSelected() {
         const isCustomSegment = this.settings.get('editorDefaultEmailRecipients') === 'filter' &&
-            !this.isNobodySelected &&
-            !this.isAllSelected &&
-            !this.isFreeSelected &&
-            !this.isPaidSelected;
-
+            !this.isNobodySelected;
         return !this.isDisabled && (this.segmentSelected || isCustomSegment);
     }
 
@@ -71,18 +46,6 @@ export default class SettingsDefaultEmailRecipientsComponent extends Component {
 
         if (value === 'none') {
             this.settings.set('editorDefaultEmailRecipientsFilter', null);
-        }
-
-        if (value === 'all') {
-            this.settings.set('editorDefaultEmailRecipientsFilter', 'status:free,status:-free');
-        }
-
-        if (value === 'free') {
-            this.settings.set('editorDefaultEmailRecipientsFilter', 'status:free');
-        }
-
-        if (value === 'paid') {
-            this.settings.set('editorDefaultEmailRecipientsFilter', 'status:-free');
         }
 
         if (value === 'segment') {
