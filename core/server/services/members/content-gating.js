@@ -1,3 +1,5 @@
+const nql = require('@nexes/nql');
+
 // @ts-check
 /** @typedef { boolean } AccessFlag */
 
@@ -23,7 +25,9 @@ function checkPostAccess(post, member) {
         return PERMIT_ACCESS;
     }
 
-    if (post.visibility === 'paid' && (member.status === 'paid' || member.status === 'comped' || member.comped)) {
+    const visibility = post.visibility === 'paid' ? 'status:-free' : post.visibility;
+
+    if (visibility && member.status && nql(visibility).queryJSON(member)) {
         return PERMIT_ACCESS;
     }
 
