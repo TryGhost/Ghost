@@ -77,7 +77,8 @@
                                 <div class="mb2">There are no prices for this product</div>
                                 {{#if this.settings.stripeConnectAccountId}}
                                     {{#unless this.product.isNew}}
-                                        <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}>
+                                        <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}
+                                        disabled={{this.saveTask.isRunning}} >
                                             <span>Add price</span>
                                         </button>
                                     {{/unless}}
@@ -112,11 +113,11 @@
                                 <span>Edit</span>
                             </button>
                             {{#if price.active}}
-                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle archived" {{action "archivePrice" price}}>
+                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle archived" {{action "archivePrice" price}} disabled={{this.saveTask.isRunning}}>
                                     <span>Archive</span>
                                 </button>
                             {{else}}
-                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle" {{action "activatePrice" price}}>
+                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle" {{action "activatePrice" price}} disabled={{this.saveTask.isRunning}}>
                                     <span>Activate</span>
                                 </button>
                             {{/if}}
