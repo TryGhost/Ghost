@@ -33,6 +33,13 @@ module.exports = {
                     return auth.setup.setupUser(setupDetails);
                 })
                 .then((data) => {
+                    try {
+                        return auth.setup.doProduct(data, api.products);
+                    } catch (e) {
+                        return data;
+                    }
+                })
+                .then((data) => {
                     return auth.setup.doSettings(data, api.settings);
                 })
                 .then((user) => {
