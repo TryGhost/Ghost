@@ -143,15 +143,25 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         this.args.nextStep();
     }
 
+    calculateDiscount(monthly, yearly) {
+        if (isNaN(monthly) || isNaN(yearly)) {
+            return 0;
+        }
+
+        return monthly ? 100 - Math.floor((yearly / 12 * 100) / monthly) : 0;
+    }
+
     getProduct() {
         if (this.product) {
             const stripePrices = this.product.stripePrices || [];
             if (stripePrices.length === 0 && this.stripeMonthlyAmount && this.stripeYearlyAmount) {
+                const yearlyDiscount = this.calculateDiscount(this.stripeMonthlyAmount, this.stripeYearlyAmount);
                 stripePrices.push(
                     {
                         nickname: 'Monthly',
                         amount: this.stripeMonthlyAmount * 100,
                         active: 1,
+                        description: 'Full Access',
                         currency: this.currency,
                         interval: 'month',
                         type: 'recurring'
@@ -161,6 +171,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                         amount: this.stripeYearlyAmount * 100,
                         active: 1,
                         currency: this.currency,
+                        description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full Access',
                         interval: 'month',
                         type: 'recurring'
                     }
