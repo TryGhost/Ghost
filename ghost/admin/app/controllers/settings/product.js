@@ -89,12 +89,14 @@ export default class ProductController extends Controller {
     @action
     async archivePrice(price) {
         price.active = false;
+        price.amount = price.amount * 100;
         this.send('savePrice', price);
     }
 
     @action
     async activatePrice(price) {
         price.active = true;
+        price.amount = price.amount * 100;
         this.send('savePrice', price);
     }
 
