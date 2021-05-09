@@ -84,6 +84,30 @@ async function doSettings(data, settingsAPI) {
     return user;
 }
 
+async function doProduct(data, productsAPI) {
+    const context = {context: {user: data.user.id}};
+    const user = data.user;
+    const blogTitle = data.userData.blogTitle;
+
+    if (!blogTitle || typeof blogTitle !== 'string') {
+        return user;
+    }
+    try {
+        const page = await productsAPI.browse({limit: 1});
+
+        const [product] = page.products;
+        if (!product) {
+            return data;
+        }
+
+        productsAPI.edit({products: [{name: blogTitle.trim()}]}, {context: context.context, id: product.id});
+    } catch (e) {
+        return data;
+    }
+
+    return data;
+}
+
 function sendWelcomeEmail(email, mailAPI) {
     if (config.get('sendWelcomeEmail')) {
         const data = {
@@ -121,5 +145,6 @@ module.exports = {
     assertSetupCompleted: assertSetupCompleted,
     setupUser: setupUser,
     doSettings: doSettings,
+    doProduct: doProduct,
     sendWelcomeEmail: sendWelcomeEmail
 };
