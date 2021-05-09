@@ -30,6 +30,12 @@ export default class ProductController extends Controller {
                 ...d,
                 amount: d.amount / 100
             };
+        }).sort((a, b) => {
+            return a.amount - b.amount;
+        }).sort((a, b) => {
+            return a.currency.localeCompare(b.currency, undefined, {ignorePunctuation: true});
+        }).sort((a, b) => {
+            return (a.active === b.active) ? 0 : (a.active ? -1 : 1);
         });
     }
 
