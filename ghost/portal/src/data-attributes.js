@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 
-function handleDataAttributes({siteUrl}) {
+const {getQueryPrice} = require('./utils/helpers');
+
+function handleDataAttributes({siteUrl, site}) {
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
@@ -60,8 +62,12 @@ function handleDataAttributes({siteUrl}) {
         function clickHandler(event) {
             el.removeEventListener('click', clickHandler);
             event.preventDefault();
-
             let plan = el.dataset.membersPlan;
+            let priceId = '';
+            if (plan) {
+                const price = getQueryPrice({site, priceId: plan.toLowerCase()});
+                priceId = price ? price.id : '';
+            }
             let successUrl = el.dataset.membersSuccess;
             let cancelUrl = el.dataset.membersCancel;
             let checkoutSuccessUrl;
@@ -93,7 +99,7 @@ function handleDataAttributes({siteUrl}) {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        plan: plan,
+                        priceId: priceId,
                         identity: identity,
                         successUrl: checkoutSuccessUrl,
                         cancelUrl: checkoutCancelUrl
