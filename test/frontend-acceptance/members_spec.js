@@ -12,6 +12,26 @@ const settingsCache = require('../../core/server/services/settings/cache');
 describe('Front-end members behaviour', function () {
     let request;
 
+    async function loginAsMember(email) {
+        // membersService needs to be required after Ghost start so that settings
+        // are pre-populated with defaults
+        const membersService = require('../../core/server/services/members');
+
+        const signinLink = await membersService.api.getMagicLink(email);
+        const signinURL = new URL(signinLink);
+        // request needs a relative path rather than full url with host
+        const signinPath = `${signinURL.pathname}${signinURL.search}`;
+
+        // perform a sign-in request to set members cookies on superagent
+        await request.get(signinPath)
+            .expect(302)
+            .then((res) => {
+                const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
+                should.exist(redirectUrl.searchParams.get('success'));
+                redirectUrl.searchParams.get('success').should.eql('true');
+            });
+    }
+
     before(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
 
@@ -114,6 +134,8 @@ describe('Front-end members behaviour', function () {
         let membersPost;
         let paidPost;
         let membersPostWithPaywallCard;
+        let labelPost;
+        let productPost;
 
         before(function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
@@ -142,11 +164,25 @@ describe('Front-end members behaviour', function () {
                 published_at: moment().add(5, 'seconds').toDate()
             });
 
+            labelPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-must-be-labelled-vip',
+                visibility: 'label:vip',
+                published_at: moment().toDate()
+            });
+
+            productPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-must-have-ghost-product',
+                visibility: 'product:ghost-product',
+                published_at: moment().toDate()
+            });
+
             return testUtils.fixtures.insertPosts([
                 publicPost,
                 membersPost,
                 paidPost,
-                membersPostWithPaywallCard
+                membersPostWithPaywallCard,
+                labelPost,
+                productPost
             ]);
         });
 
@@ -168,9 +204,28 @@ describe('Front-end members behaviour', function () {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
                     });
             });
+
             it('cannot read paid post content', function () {
                 return request
                     .get('/thou-shalt-be-paid-for/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read label-only post content', function () {
+                return request
+                    .get('/thou-must-be-labelled-vip/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read product-only post content', function () {
+                return request
+                    .get('/thou-must-have-ghost-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
@@ -180,23 +235,7 @@ describe('Front-end members behaviour', function () {
 
         describe('as free member', function () {
             before(async function () {
-                // membersService needs to be required after Ghost start so that settings
-                // are pre-populated with defaults
-                const membersService = require('../../core/server/services/members');
-
-                const signinLink = await membersService.api.getMagicLink('member1@test.com');
-                const signinURL = new URL(signinLink);
-                // request needs a relative path rather than full url with host
-                const signinPath = `${signinURL.pathname}${signinURL.search}`;
-
-                // perform a sign-in request to set members cookies on superagent
-                await request.get(signinPath)
-                    .expect(302)
-                    .then((res) => {
-                        const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
-                        should.exist(redirectUrl.searchParams.get('success'));
-                        redirectUrl.searchParams.get('success').should.eql('true');
-                    });
+                await loginAsMember('member1@test.com');
             });
 
             it('can read public post content', function () {
@@ -223,6 +262,39 @@ describe('Front-end members behaviour', function () {
                     .expect(200)
                     .then((res) => {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read label-only post content', function () {
+                return request
+                    .get('/thou-must-be-labelled-vip/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read product-only post content', function () {
+                return request
+                    .get('/thou-must-have-ghost-product/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+        });
+
+        describe('as free member with vip label', function () {
+            before(async function () {
+                await loginAsMember('vip@test.com');
+            });
+
+            it('can read label-only post content', function () {
+                return request
+                    .get('/thou-must-be-labelled-vip/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
                     });
             });
         });
@@ -274,27 +346,44 @@ describe('Front-end members behaviour', function () {
                         res.text.should.containEql('<h2 id="markdown">markdown</h2>');
                     });
             });
+
+            it('cannot read label-only post content', function () {
+                return request
+                    .get('/thou-must-be-labelled-vip/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read product-only post content', function () {
+                return request
+                    .get('/thou-must-have-ghost-product/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+        });
+
+        describe('as paid member with vip label', function () {
+            before(async function () {
+                await loginAsMember('vip-paid@test.com');
+            });
+
+            it('can read label-only post content', function () {
+                return request
+                    .get('/thou-must-be-labelled-vip/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
         });
 
         describe('as comped member', function () {
             before(async function () {
-                // membersService needs to be required after Ghost start so that settings
-                // are pre-populated with defaults
-                const membersService = require('../../core/server/services/members');
-
-                const signinLink = await membersService.api.getMagicLink('comped@test.com');
-                const signinURL = new URL(signinLink);
-                // request needs a relative path rather than full url with host
-                const signinPath = `${signinURL.pathname}${signinURL.search}`;
-
-                // perform a sign-in request to set members cookies on superagent
-                await request.get(signinPath)
-                    .expect(302)
-                    .then((res) => {
-                        const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
-                        should.exist(redirectUrl.searchParams.get('success'));
-                        redirectUrl.searchParams.get('success').should.eql('true');
-                    });
+                await loginAsMember('comped@test.com');
             });
 
             it('can read public post content', function () {
@@ -318,6 +407,39 @@ describe('Front-end members behaviour', function () {
             it('can read paid post content', function () {
                 return request
                     .get('/thou-shalt-be-paid-for/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read label-only post content', function () {
+                return request
+                    .get('/thou-must-be-labelled-vip/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+
+            it('cannot read product-only post content', function () {
+                return request
+                    .get('/thou-must-have-ghost-product/')
+                    .expect(200)
+                    .then((res) => {
+                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+                    });
+            });
+        });
+
+        describe('as member with product', function () {
+            before(async function () {
+                await loginAsMember('with-product@test.com');
+            });
+
+            it.only('can read product-only post content', function () {
+                return request
+                    .get('/thou-must-have-ghost-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.containEql('<h2 id="markdown">markdown</h2>');
