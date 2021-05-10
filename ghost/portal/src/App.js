@@ -452,11 +452,9 @@ export default class App extends React.Component {
     /** Handle direct signup link for a price */
     handleSignupQuery({site, pageQuery}) {
         const queryPrice = getQueryPrice({site: site, priceId: pageQuery});
-        const availablePrices = getAvailablePrices({site, includeFree: false});
-        const isQueryPriceAvailable = availablePrices.some(d => d.id === pageQuery);
         if (!this.state.member
+            && pageQuery !== 'free'
             && queryPrice
-            && isQueryPriceAvailable
         ) {
             removePortalLinkFromUrl();
             this.dispatchAction('signup', {plan: queryPrice.id});
