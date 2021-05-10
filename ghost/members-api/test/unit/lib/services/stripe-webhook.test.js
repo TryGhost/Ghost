@@ -2,8 +2,8 @@ const {describe, it} = require('mocha');
 const should = require('should');
 const sinon = require('sinon');
 const StripeAPIService = require('../../../../lib/services/stripe-api');
-const StripePlansService = require('../../../../lib/services/stripe-plans');
 const StripeWebhookService = require('../../../../lib/services/stripe-webhook');
+const ProductRepository = require('../../../../lib/repositories/product');
 const MemberRepository = require('../../../../lib/repositories/member');
 
 function mock(Class) {
@@ -15,7 +15,7 @@ describe('StripeWebhookService', function () {
         it('Should throw a 404 error when a member is not found for a valid Ghost Members invoice', async function () {
             const stripeWebhookService = new StripeWebhookService({
                 stripeAPIService: mock(StripeAPIService),
-                stripePlansService: mock(StripePlansService),
+                productRepository: mock(ProductRepository),
                 memberRepository: mock(MemberRepository)
             });
 
@@ -28,7 +28,7 @@ describe('StripeWebhookService', function () {
 
             stripeWebhookService._memberRepository.get.resolves(null);
 
-            stripeWebhookService._stripePlansService.getProduct.returns({
+            stripeWebhookService._productRepository.get.resolves({
                 id: 'product_id'
             });
 
