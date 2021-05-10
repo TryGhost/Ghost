@@ -114,10 +114,9 @@ describe('Front-end members behaviour', function () {
         });
     });
 
-    describe.only('Price data', function () {
+    describe('Price data', function () {
         it('Can be used as a number, and with the price helper', async function () {
             const res = await request.get('/');
-            console.log(res.text);
 
             // Check out test/utils/fixtures/themes/price-data-test-theme/index.hbs
             // To see where this is coming from.

@@ -461,6 +461,27 @@ const fixtures = {
         return Promise.map(DataGenerator.forKnex.labels, function (label) {
             return models.Label.add(label, context.internal);
         }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members), function (member) {
+                let memberLabelRelations = _.filter(DataGenerator.forKnex.members_labels, {member_id: member.id});
+
+                memberLabelRelations = _.map(memberLabelRelations, function (memberLabelRelation) {
+                    return _.find(DataGenerator.forKnex.labels, {id: memberLabelRelation.label_id});
+                });
+
+                member.labels = memberLabelRelations;
+
+                // TODO: replace with full member/product associations
+                if (member.email === 'with-product@test.com') {
+                    member.products = [{slug: 'default-product'}];
+                }
+
+                return models.Member.add(member, context.internal);
+            });
+        }).then(function (member) {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members_stripe_customers), function (customer) {
+                return models.MemberStripeCustomer.add(customer, context.internal);
+            });
+        }).then(function () {
             let productsToInsert = fixtureUtils.findModelFixtures('Product').entries;
             return Promise.map(productsToInsert, product => models.Product.add(product, context.internal));
         }).then(function () {
@@ -473,24 +494,6 @@ const fixtures = {
         }).then(function () {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_prices), function (stripePrice) {
                 return models.StripePrice.add(stripePrice, context.internal);
-            });
-        }).then(function () {
-            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members), function (member) {
-                let memberLabelRelations = _.filter(DataGenerator.forKnex.members_labels, {member_id: member.id});
-
-                memberLabelRelations = _.map(memberLabelRelations, function (memberLabelRelation) {
-                    return _.find(DataGenerator.forKnex.labels, {id: memberLabelRelation.label_id});
-                });
-                const memberProductRelations = [{slug: 'default-product'}];
-
-                member.labels = memberLabelRelations;
-                member.products = memberProductRelations;
-
-                return models.Member.add(member, context.internal);
-            });
-        }).then(function (member) {
-            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members_stripe_customers), function (customer) {
-                return models.MemberStripeCustomer.add(customer, context.internal);
             });
         }).then(function () {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions), function (subscription) {

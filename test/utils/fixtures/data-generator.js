@@ -893,15 +893,6 @@ DataGenerator.forKnex = (function () {
         };
     }
 
-    function createMembersProduct(member_id, product_id, sort_order = 0) {
-        return {
-            id: ObjectId().toHexString(),
-            member_id,
-            product_id,
-            sort_order
-        };
-    }
-
     function createSetting(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -1263,13 +1254,6 @@ DataGenerator.forKnex = (function () {
         )
     ];
 
-    const members_products = [
-        createMembersProduct(
-            DataGenerator.Content.members[7].id,
-            DataGenerator.Content.products[0].id
-        )
-    ];
-
     const stripe_prices = [
         createBasic(DataGenerator.Content.stripe_prices[0]),
         createBasic(DataGenerator.Content.stripe_prices[1]),
@@ -1306,7 +1290,6 @@ DataGenerator.forKnex = (function () {
         createMembersLabels,
         createMembersStripeCustomer: createBasic,
         createStripeCustomerSubscription: createBasic,
-        createMembersProduct,
         createInvite,
         createWebhook,
         createIntegration,
@@ -1332,7 +1315,6 @@ DataGenerator.forKnex = (function () {
         products,
         members_labels,
         members_stripe_customers,
-        members_products,
         stripe_customer_subscriptions,
         stripe_prices,
         stripe_products,
