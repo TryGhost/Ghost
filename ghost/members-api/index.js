@@ -4,7 +4,6 @@ const MagicLink = require('@tryghost/magic-link');
 const common = require('./lib/common');
 
 const StripeAPIService = require('./lib/services/stripe-api');
-const StripePlansService = require('./lib/services/stripe-plans');
 const StripeWebhookService = require('./lib/services/stripe-webhook');
 const TokenService = require('./lib/services/token');
 const GeolocationSerice = require('./lib/services/geolocation');
@@ -77,10 +76,6 @@ module.exports = function MembersApi({
         logger
     });
 
-    const stripePlansService = new StripePlansService({
-        stripeAPIService
-    });
-
     const productRepository = new ProductRepository({
         Product,
         StripeProduct,
@@ -90,7 +85,6 @@ module.exports = function MembersApi({
 
     const memberRepository = new MemberRepository({
         stripeAPIService,
-        stripePlansService,
         logger,
         productRepository,
         Member,
@@ -114,7 +108,7 @@ module.exports = function MembersApi({
     const stripeWebhookService = new StripeWebhookService({
         StripeWebhook,
         stripeAPIService,
-        stripePlansService,
+        productRepository,
         memberRepository,
         eventRepository,
         sendEmailWithMagicLink
@@ -161,11 +155,6 @@ module.exports = function MembersApi({
     });
 
     const ready = paymentConfig.stripe ? Promise.all([
-        stripePlansService.configure({
-            product: stripeConfig.product,
-            plans: stripeConfig.plans,
-            mode: process.env.NODE_ENV || 'development'
-        }),
         stripeMigrations.populateProductsAndPrices().then(() => {
             return stripeMigrations.populateStripePricesFromStripePlansSetting(stripeConfig.plans);
         }).then(() => {
