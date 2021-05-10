@@ -11,6 +11,11 @@ describe('Unit: canary/utils/validators/input/pages', function () {
         return models.init();
     });
 
+    beforeEach(function () {
+        const memberFindPageStub = sinon.stub(models.Member, 'findPage').returns(Promise.reject());
+        memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).returns(Promise.resolve());
+    });
+
     afterEach(function () {
         sinon.restore();
     });
