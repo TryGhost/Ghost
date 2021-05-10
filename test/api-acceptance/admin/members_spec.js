@@ -35,7 +35,7 @@ describe('Members API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
-        jsonResponse.members.should.have.length(5);
+        jsonResponse.members.should.have.length(8);
         localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
 
         testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
@@ -44,7 +44,7 @@ describe('Members API', function () {
         jsonResponse.meta.pagination.should.have.property('page', 1);
         jsonResponse.meta.pagination.should.have.property('limit', 15);
         jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 5);
+        jsonResponse.meta.pagination.should.have.property('total', 8);
         jsonResponse.meta.pagination.should.have.property('next', null);
         jsonResponse.meta.pagination.should.have.property('prev', null);
     });
@@ -98,7 +98,7 @@ describe('Members API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
-        jsonResponse.members.should.have.length(2);
+        jsonResponse.members.should.have.length(4);
         jsonResponse.members[0].email.should.equal('paid@test.com');
         jsonResponse.members[1].email.should.equal('trialing@test.com');
         localUtils.API.checkResponse(jsonResponse, 'members');

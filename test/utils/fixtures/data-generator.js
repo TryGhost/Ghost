@@ -341,6 +341,27 @@ DataGenerator.Content = {
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
             status: 'comped'
+        },
+        {
+            id: ObjectId().toHexString(),
+            email: 'vip@test.com',
+            name: 'Winston Zeddemore',
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
+            status: 'free'
+        },
+        {
+            id: ObjectId().toHexString(),
+            email: 'vip-paid@test.com',
+            name: 'Peter Venkman',
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
+            status: 'paid'
+        },
+        {
+            id: ObjectId().toHexString(),
+            email: 'with-product@test.com',
+            name: 'Dana Barrett',
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
+            status: 'paid'
         }
     ],
 
@@ -362,6 +383,11 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             name: 'Label 2',
             slug: 'label-2'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'VIP',
+            slug: 'vip'
         }
     ],
 
@@ -381,10 +407,25 @@ DataGenerator.Content = {
             email: 'trialing@test.com'
         },
         {
+            id: ObjectId().toHexString(),
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZ0',
             name: 'Vinz Clortho',
             email: 'comped@test.com'
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: null, // relation added later
+            customer_id: 'cus_HR3tBmNhx4QsZ1',
+            name: 'Peter Venkman',
+            email: 'vip-paid@test.com'
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: null, // relation added later
+            customer_id: 'cus_HR3tBmNhx4QsZ2',
+            name: 'Dana Barrett',
+            email: 'with-product@test.com'
         }
     ],
 
@@ -643,6 +684,8 @@ DataGenerator.Content.email_recipients[3].member_id = DataGenerator.Content.memb
 DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_stripe_customers[2].member_id = DataGenerator.Content.members[4].id;
+DataGenerator.Content.members_stripe_customers[3].member_id = DataGenerator.Content.members[6].id;
+DataGenerator.Content.members_stripe_customers[4].member_id = DataGenerator.Content.members[7].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -1166,17 +1209,29 @@ DataGenerator.forKnex = (function () {
         createMember(DataGenerator.Content.members[1]),
         createMember(DataGenerator.Content.members[2]),
         createMember(DataGenerator.Content.members[3]),
-        createMember(DataGenerator.Content.members[4])
+        createMember(DataGenerator.Content.members[4]),
+        createMember(DataGenerator.Content.members[5]),
+        createMember(DataGenerator.Content.members[6]),
+        createMember(DataGenerator.Content.members[7])
     ];
 
     const labels = [
-        createLabel(DataGenerator.Content.labels[0])
+        createLabel(DataGenerator.Content.labels[0]),
+        createLabel(DataGenerator.Content.labels[2])
     ];
 
     const members_labels = [
         createMembersLabels(
             DataGenerator.Content.members[0].id,
             DataGenerator.Content.labels[0].id
+        ),
+        createMembersLabels(
+            DataGenerator.Content.members[5].id,
+            DataGenerator.Content.labels[2].id
+        ),
+        createMembersLabels(
+            DataGenerator.Content.members[6].id,
+            DataGenerator.Content.labels[2].id
         )
     ];
 
@@ -1187,7 +1242,9 @@ DataGenerator.forKnex = (function () {
     const members_stripe_customers = [
         createBasic(DataGenerator.Content.members_stripe_customers[0]),
         createBasic(DataGenerator.Content.members_stripe_customers[1]),
-        createBasic(DataGenerator.Content.members_stripe_customers[2])
+        createBasic(DataGenerator.Content.members_stripe_customers[2]),
+        createBasic(DataGenerator.Content.members_stripe_customers[3]),
+        createBasic(DataGenerator.Content.members_stripe_customers[4])
     ];
 
     const stripe_products = [
