@@ -32,6 +32,7 @@ export default class ModalMemberProduct extends ModalComponent {
     async fetchProducts() {
         this.products = await this.store.query('product', {include: 'stripe_prices'});
         this.product = this.products.firstObject;
+        this.price = this.prices ? this.prices[0] : null;
     }
 
     get member() {
@@ -47,9 +48,27 @@ export default class ModalMemberProduct extends ModalComponent {
             return [];
         }
         if (this.product) {
-            return this.products.find((product) => {
-                return product.id === this.product.id;
-            }).stripePrices.map((price) => {
+            let subscriptions = this.member.get('subscriptions') || [];
+            let activeCurrency;
+            if (subscriptions.length > 0) {
+                activeCurrency = subscriptions[0].price?.currency;
+            }
+
+            const product = this.products.find((_product) => {
+                return _product.id === this.product.id;
+            });
+            return product.stripePrices.sort((a, b) => {
+                return a.amount - b.amount;
+            }).filter((price) => {
+                return price.active;
+            }).filter((price) => {
+                if (activeCurrency) {
+                    return price.currency?.toLowerCase() === activeCurrency.toLowerCase();
+                }
+                return true;
+            }).sort((a, b) => {
+                return a.currency.localeCompare(b.currency, undefined, {ignorePunctuation: true});
+            }).map((price) => {
                 return {
                     ...price,
                     label: `${price.nickname} (${getSymbol(price.currency)}${getNonDecimal(price.amount)}/${price.interval})`
