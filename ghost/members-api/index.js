@@ -283,9 +283,9 @@ module.exports = function MembersApi({
             });
         }
 
-        const member = await users.get({email}, {
-            withRelated: ['labels']
-        });
+        // toJSON() is needed here otherwise users.update() will pick methods off
+        // the model object rather than data and fail to edit correctly
+        const member = (await users.get({email})).toJSON();
 
         if (!member) {
             throw new common.errors.NotFoundError({
