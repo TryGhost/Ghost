@@ -4,7 +4,7 @@ import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
-import {isCookiesDisabled, isInviteOnlySite} from '../utils/helpers';
+import {isCookiesDisabled, getSitePrices, isInviteOnlySite} from '../utils/helpers';
 
 const React = require('react');
 
@@ -102,7 +102,6 @@ class PopupContent extends React.Component {
 
     render() {
         const {page, site, pageQuery} = this.context;
-        const {portal_plans: portalPlans} = site;
         const {is_stripe_configured: isStripeConfigured} = site;
 
         getActivePage({page});
@@ -111,6 +110,9 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         let popupWidthStyle = '';
+        
+        const portalPlans = getSitePrices({site, pageQuery});
+
         if (page === 'signup' || page === 'signin') {
             if (!isInviteOnlySite({site, pageQuery}) && portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
                 popupWidthStyle = ' gh-portal-container-wide';
