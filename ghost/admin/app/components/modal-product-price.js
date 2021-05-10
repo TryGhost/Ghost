@@ -107,7 +107,7 @@ export default class ModalProductPrice extends ModalBase {
                 message: 'Please enter name'
             }]);
         }
-        if (isNaN(this.price.amount)) {
+        if (isNaN(this.price.amount) || this.price.amount === '') {
             this.errors.set('amount', [{
                 message: 'Please enter amount'
             }]);
