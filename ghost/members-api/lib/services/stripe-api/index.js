@@ -137,6 +137,22 @@ module.exports = class StripeAPIService {
     }
 
     /**
+     * @param {string} id
+     * @param {object} options
+     * @param {string} options.name
+     *
+     * @returns {Promise<IProduct>}
+     */
+    async updateProduct(id, options) {
+        await this._rateLimitBucket.throttle();
+        const product = await this._stripe.products.update(id, {
+            name: options.name
+        });
+
+        return product;
+    }
+
+    /**
      * ensureProduct.
      *
      * @param {string} name

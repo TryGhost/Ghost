@@ -176,7 +176,7 @@ class ProductRepository {
 
             if (!product.related('stripeProducts').first()) {
                 const stripeProduct = await this._stripeAPIService.createProduct({
-                    name: productData.name
+                    name: product.get('name')
                 });
 
                 await this._StripeProduct.add({
@@ -185,6 +185,13 @@ class ProductRepository {
                 }, options);
 
                 await product.related('stripeProducts').fetch(options);
+            } else {
+                if (product.attributes.name !== product._previousAttributes.name) {
+                    const stripeProduct = product.related('stripeProducts').first();
+                    await this._stripeAPIService.updateProduct(stripeProduct.get('stripe_product_id'), {
+                        name: product.get('name')
+                    });
+                }
             }
 
             const defaultStripeProduct = product.related('stripeProducts').first();
