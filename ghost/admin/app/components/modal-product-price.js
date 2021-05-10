@@ -1,7 +1,8 @@
+import EmberObject, {action} from '@ember/object';
 import ModalBase from 'ghost-admin/components/modal-base';
 import classic from 'ember-classic-decorator';
-import {action} from '@ember/object';
 import {currencies} from 'ghost-admin/utils/currency';
+import {isEmpty} from '@ember/utils';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
@@ -12,6 +13,7 @@ export default class ModalProductPrice extends ModalBase {
     @tracked price;
     @tracked currencyVal;
     @tracked periodVal;
+    @tracked errors = EmberObject.create();
 
     init() {
         super.init(...arguments);
@@ -40,7 +42,7 @@ export default class ModalProductPrice extends ModalBase {
             {
                 groupName: '—',
                 options: this.get('currencies')
-            }  
+            }
         ];
         this.currencyVal = this.price.currency || 'usd';
         this.periodVal = this.price.interval || 'month';
@@ -80,22 +82,40 @@ export default class ModalProductPrice extends ModalBase {
 
     @task({drop: true})
     *savePrice() {
-        try {
-            const priceObj = {
-                ...this.price,
-                amount: (this.price.amount || 0) * 100
-            };
-            if (!priceObj.id) {
-                priceObj.active = 1;
-                priceObj.currency = priceObj.currency || 'usd';
-                priceObj.interval = priceObj.interval || 'month';
-                priceObj.type = 'recurring';
-            }
-            yield this.confirm(priceObj);
-        } catch (error) {
-            this.notifications.showAPIError(error, {key: 'price.save.failed'});
-        } finally {
-            this.send('closeModal');
+        this.validatePriceData();
+        if (!isEmpty(this.errors) && Object.keys(this.errors).length > 0) {
+            return;
+        }
+        const priceObj = {
+            ...this.price,
+            amount: (this.price.amount || 0) * 100
+        };
+        if (!priceObj.id) {
+            priceObj.active = 1;
+            priceObj.currency = priceObj.currency || 'usd';
+            priceObj.interval = priceObj.interval || 'month';
+            priceObj.type = 'recurring';
+        }
+        yield this.confirm(priceObj);
+        this.send('closeModal');
+    }
+
+    validatePriceData() {
+        this.errors = EmberObject.create();
+        if (!this.price.nickname) {
+            this.errors.set('name', [{
+                message: 'Please enter name'
+            }]);
+        }
+        if (isNaN(this.price.amount)) {
+            this.errors.set('amount', [{
+                message: 'Please enter amount'
+            }]);
+        }
+        if (!this.price.interval || !['month', 'year'].includes(this.price.interval)) {
+            this.errors.set('interval', [{
+                message: 'Please enter billing interval'
+            }]);
         }
     }
 
