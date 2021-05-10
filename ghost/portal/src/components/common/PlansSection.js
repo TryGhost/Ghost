@@ -63,7 +63,19 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-pricelabel {
         display: flex;
-        margin-top: 5px;
+        flex-direction: row;
+        min-height: 28px;
+        margin-top: 8px;
+    }
+
+    .gh-portal-plan-pricecontainer {
+        display: flex;
+    }
+
+    .gh-portal-plan-priceinterval {
+        font-size: 1.25rem;
+        line-height: 2;
+        color: var(--grey7);
     }
 
     .gh-portal-plan-name {
@@ -261,8 +273,16 @@ export const PlanSectionStyles = `
     .gh-portal-plans-container.vertical .gh-portal-plan-pricelabel {
         grid-column: 3 / 4;
         grid-row: 1 / 3;
+        flex-direction: column;
         justify-self: end;
-        margin: 0 4px 0 12px;
+        align-items: flex-end;
+        margin: 4px 4px 0 12px;
+        min-height: unset;
+    }
+
+    .gh-portal-plans-container.vertical .gh-portal-plan-priceinterval {
+        line-height: unset;
+        line-height: 1.7;
     }
 
     .gh-portal-plans-container.vertical .gh-portal-plan-name {
@@ -340,9 +360,11 @@ function PriceLabel({currencySymbol, price, interval}) {
     const currencyClass = isSymbol ? 'gh-portal-plan-currency gh-portal-plan-currency-symbol' : 'gh-portal-plan-currency gh-portal-plan-currency-code';
     return (
         <div className='gh-portal-plan-pricelabel'>
-            <span className={currencyClass}>{currencySymbol}</span>
-            <span className='gh-portal-plan-price'>{formatNumber(price)}</span>
-            {interval ? <span className=''> / {interval}</span> : null}
+            <div className='gh-portal-plan-pricecontainer'>
+                <span className={currencyClass}>{currencySymbol}</span>
+                <span className='gh-portal-plan-price'>{formatNumber(price)}</span>
+            </div>
+            {interval ? <div className='gh-portal-plan-priceinterval'>/{interval}</div> : null}
         </div>
     );
 }
