@@ -104,7 +104,7 @@ function normalizeStringParams(arr) {
 }
 
 // TODO: use GQL to parse filter string?
-export function extractFilterParam(param, filter) {
+export function extractFilterParam(param, filter = '') {
     let filterRegex = new RegExp(`${param}:(.*?)(?:\\+|$)`);
     let match;
 
