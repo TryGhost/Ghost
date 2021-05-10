@@ -1,6 +1,7 @@
 <div class="gh-launch-wizard-settings-container">
     {{#if this.isHidden}}
-        <p> Price already set</p>
+        <h4 class="gh-setting-title">Subscriptions already set</h4>
+        <p>You can change product subscription pricing and Portal look and feel in Settings.</p>
     {{else}}
         <div class="gh-stack overflow-y-auto flex-grow-1">
             <div class="gh-stack-item flex-column">
@@ -135,7 +136,7 @@
             @class="w-70 ml4 right gh-btn gh-btn-black gh-btn-large gh-btn-icon-right"
             data-test-button="wizard-next"
         >
-            <span>Save and continue{{svg-jar "arrow-right-tail"}}</span>
+            <span>{{if this.isHidden "Continue" "Save and continue"}}{{svg-jar "arrow-right-tail"}}</span>
         </GhTaskButton>
     </div>
 </div>
