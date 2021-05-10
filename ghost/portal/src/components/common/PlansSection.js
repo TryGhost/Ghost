@@ -335,13 +335,14 @@ function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
     );
 }
 
-function PriceLabel({currencySymbol, price}) {
+function PriceLabel({currencySymbol, price, interval}) {
     const isSymbol = currencySymbol.length !== 3;
     const currencyClass = isSymbol ? 'gh-portal-plan-currency gh-portal-plan-currency-symbol' : 'gh-portal-plan-currency gh-portal-plan-currency-code';
     return (
         <div className='gh-portal-plan-pricelabel'>
             <span className={currencyClass}>{currencySymbol}</span>
             <span className='gh-portal-plan-price'>{formatNumber(price)}</span>
+            {interval ? <span className=''> / {interval}</span> : null}
         </div>
     );
 }
@@ -365,7 +366,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site} = useContext(AppContext);
     const {free_price_name: freePriceName, free_price_description: freePriceDescription} = site;
     addDiscountToPlans(plans);
-    return plans.map(({name, currency_symbol: currencySymbol, amount, description, id}) => {
+    return plans.map(({ name, currency_symbol: currencySymbol, amount, description, interval, id}) => {
         const price = amount / 100;
         const isChecked = selectedPlan === id;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
@@ -387,7 +388,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             <div className={classes} key={id} onClick={e => onPlanSelect(e, id)}>
                 <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className={planNameClass}>{displayName}</h4>
-                <PriceLabel currencySymbol={currencySymbol} price={price} />
+                <PriceLabel currencySymbol={currencySymbol} price={price} interval={interval} />
                 <div className='gh-portal-plan-featurewrapper'>
                     <div className='gh-portal-plan-feature'>
                         {planDetails.feature}
