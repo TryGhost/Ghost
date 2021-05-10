@@ -437,7 +437,7 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember('with-product@test.com');
             });
 
-            it.only('can read product-only post content', function () {
+            it('can read product-only post content', function () {
                 return request
                     .get('/thou-must-have-ghost-product/')
                     .expect(200)

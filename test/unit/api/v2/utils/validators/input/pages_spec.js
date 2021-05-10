@@ -4,8 +4,13 @@ const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const validators = require('../../../../../../../core/server/api/v2/utils/validators');
+const models = require('../../../../../../../core/server/models');
 
 describe('Unit: v2/utils/validators/input/pages', function () {
+    before(function () {
+        return models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });
@@ -179,6 +184,21 @@ describe('Unit: v2/utils/validators/input/pages', function () {
 
                     return Promise.all(checks);
                 });
+            });
+
+            it('should pass for valid NQL visibility', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        pages: [{
+                            title: 'pass',
+                            authors: [{id: 'correct'}],
+                            visibility: 'label:vip'
+                        }]
+                    }
+                };
+
+                return validators.input.pages.add(apiConfig, frame);
             });
         });
 
