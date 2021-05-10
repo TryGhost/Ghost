@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 
-const handleDataAttributes = require('./data-attributes');
 const ROOT_DIV_ID = 'ghost-portal-root';
 
 function addRootDiv() {
@@ -31,18 +30,14 @@ function handleTokenUrl() {
     }
 }
 
-function setup({siteUrl}) {
-    const allowDataAttributeHandling = true;
+function setup() {
     addRootDiv();
-    if (allowDataAttributeHandling) {
-        handleDataAttributes({siteUrl});
-    }
     handleTokenUrl();
 }
 
 function init() {
     const siteUrl = getSiteUrl() || window.location.origin;
-    setup({siteUrl});
+    setup();
     ReactDOM.render(
         <React.StrictMode>
             <App siteUrl={siteUrl} />

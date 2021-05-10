@@ -10,6 +10,8 @@ import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
 import {createPopupNotification, getAvailablePrices, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
+
+const handleDataAttributes = require('./data-attributes');
 const React = require('react');
 
 const DEV_MODE_DATA = {
@@ -50,6 +52,15 @@ export default class App extends React.Component {
         /**Handle custom trigger class change on popup open state change */
         if (prevState.showPopup !== this.state.showPopup) {
             this.handleCustomTriggerClassUpdate();
+        }
+
+        if (this.state.initStatus === 'success' && prevState.initStatus !== this.state.initStatus) {
+            const {siteUrl} = this.props;
+            const contextState = this.getContextFromState();
+            handleDataAttributes({
+                siteUrl,
+                site: contextState.site
+            });
         }
     }
 
