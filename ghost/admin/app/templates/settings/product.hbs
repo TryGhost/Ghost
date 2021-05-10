@@ -29,10 +29,10 @@
         <h4 class="gh-main-section-header small bn">Product details</h4>
         <div class="gh-main-section-content grey gh-product-details-form">
             <div class="gh-product-details-fields">
-                <GhFormGroup @property="name" @classNames="max-width">
+                <GhFormGroup @errors={{this.product.errors}} @hasValidated={{this.product.hasValidated}} @property="name" @classNames="max-width">
                     <label for="product-name">Product name</label>
                     <GhTextInput data-test-input="product-name" @id="product-name" @value={{product.name}}/>
-                    <GhErrorMessage @property="name" />
+                    <GhErrorMessage @errors={{this.product.errors}} @property="name" />
                 </GhFormGroup>
 
                 <GhFormGroup @property="description" @classNames="max-width">
