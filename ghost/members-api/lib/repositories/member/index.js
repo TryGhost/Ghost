@@ -11,7 +11,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.productRepository
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
-     * @param {import('../../services/stripe-plans')} deps.stripePlansService
      * @param {any} deps.logger
      */
     constructor({
@@ -23,7 +22,6 @@ module.exports = class MemberRepository {
         StripeCustomer,
         StripeCustomerSubscription,
         stripeAPIService,
-        stripePlansService,
         productRepository,
         logger
     }) {
@@ -35,7 +33,6 @@ module.exports = class MemberRepository {
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
-        this._stripePlansService = stripePlansService;
         this._productRepository = productRepository;
         this._logging = logger;
     }
@@ -613,40 +610,64 @@ module.exports = class MemberRepository {
             return this.isActiveSubscriptionStatus(subscription.get('status'));
         });
 
-        // NOTE: Because we allow for multiple Complimentary plans, need to take into account currently availalbe
-        //       plan currencies so that we don't end up giving a member complimentary subscription in wrong currency.
-        //       Giving member a subscription in different currency would prevent them from resubscribing with a regular
-        //       plan if Complimentary is cancelled (ref. https://stripe.com/docs/billing/customer#currency)
-        let complimentaryCurrency = this._stripePlansService.getPlans().find(plan => plan.interval === 'month').currency.toLowerCase();
+        const productPage = await this._productRepository.list({limit: 1, withRelated: ['stripePrices'], ...options});
+
+        const defaultProduct = productPage && productPage.data && productPage.data[0] && productPage.data[0].toJSON();
+
+        if (!defaultProduct) {
+            throw new Error('Could not find default product');
+        }
+
+        const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
+            return price.amount === 0;
+        });
 
         if (activeSubscriptions.length) {
-            complimentaryCurrency = activeSubscriptions[0].get('plan_currency').toLowerCase();
-        }
+            for (const subscription of activeSubscriptions) {
+                const price = await subscription.related('stripePrice').fetch(options);
 
-        const complimentaryPlan = this._stripePlansService.getComplimentaryPlan(complimentaryCurrency);
+                let zeroValuePrice = zeroValuePrices.find((p) => {
+                    return p.currency.toLowerCase() === price.get('currency').toLowerCase();
+                });
 
-        if (!complimentaryPlan) {
-            throw new Error('Could not find Complimentary plan');
-        }
-
-        let stripeCustomer;
-
-        await member.related('stripeCustomers').fetch(options);
-
-        for (const customer of member.related('stripeCustomers').models) {
-            try {
-                const fetchedCustomer = await this._stripeAPIService.getCustomer(customer.get('customer_id'));
-                if (!fetchedCustomer.deleted) {
-                    stripeCustomer = fetchedCustomer;
-                    break;
+                if (!zeroValuePrice) {
+                    const product = (await this._productRepository.update({
+                        id: defaultProduct.id,
+                        name: defaultProduct.name,
+                        description: defaultProduct.description,
+                        stripe_prices: [{
+                            nickname: 'Complimentary',
+                            currency: price.get('currency'),
+                            type: 'recurring',
+                            interval: 'year',
+                            amount: 0
+                        }]
+                    }, options)).toJSON();
+                    zeroValuePrice = product.stripePrices.find((price) => {
+                        return price.currency.toLowerCase() === subscription.get('currency').toLowerCase() && price.amount === 0;
+                    });
+                    zeroValuePrices.push(zeroValuePrice);
                 }
-            } catch (err) {
-                console.log('Ignoring error for fetching customer for checkout');
-            }
-        }
 
-        if (!stripeCustomer) {
-            stripeCustomer = await this._stripeAPIService.createCustomer({
+                const stripeSubscription = await this._stripeAPIService.getSubscription(
+                    subscription.get('subscription_id')
+                );
+
+                const subscriptionItem = stripeSubscription.items.data[0];
+
+                const updatedSubscription = await this._stripeAPIService.updateSubscriptionItemPrice(
+                    stripeSubscription.id,
+                    subscriptionItem.id,
+                    zeroValuePrice.stripe_price_id
+                );
+
+                await this.linkSubscription({
+                    id: member.id,
+                    subscription: updatedSubscription
+                }, options);
+            }
+        } else {
+            const stripeCustomer = await this._stripeAPIService.createCustomer({
                 email: member.get('email')
             });
 
@@ -656,28 +677,37 @@ module.exports = class MemberRepository {
                 email: stripeCustomer.email,
                 name: stripeCustomer.name
             }, options);
-        }
 
-        if (!activeSubscriptions.length) {
-            const subscription = await this._stripeAPIService.createSubscription(stripeCustomer.id, complimentaryPlan.id);
+            let zeroValuePrice = zeroValuePrices[0];
+
+            if (!zeroValuePrice) {
+                const product = (await this._productRepository.update({
+                    id: defaultProduct.id,
+                    name: defaultProduct.name,
+                    description: defaultProduct.description,
+                    stripe_prices: [{
+                        nickname: 'Complimentary',
+                        currency: 'USD',
+                        type: 'recurring',
+                        interval: 'year',
+                        amount: 0
+                    }]
+                }, options)).toJSON();
+                zeroValuePrice = product.stripePrices.find((price) => {
+                    return price.currency.toLowerCase() === 'usd' && price.amount === 0;
+                });
+                zeroValuePrices.push(zeroValuePrice);
+            }
+
+            const subscription = await this._stripeAPIService.createSubscription(
+                stripeCustomer.id,
+                zeroValuePrice.stripe_price_id
+            );
 
             await this.linkSubscription({
                 id: member.id,
                 subscription
             }, options);
-        } else {
-            // NOTE: we should only ever have 1 active subscription, but just in case there is more update is done on all of them
-            for (const subscription of activeSubscriptions) {
-                const updatedSubscription = await this._stripeAPIService.changeSubscriptionPlan(
-                    subscription.get('subscription_id'),
-                    complimentaryPlan.id
-                );
-
-                await this.linkSubscription({
-                    id: member.id,
-                    subscription: updatedSubscription
-                }, options);
-            }
         }
     }
 
