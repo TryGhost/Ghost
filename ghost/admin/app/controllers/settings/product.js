@@ -160,6 +160,10 @@ export default class ProductController extends Controller {
     @task({restartable: true})
     *saveTask() {
         this.send('validatePaidSignupRedirect');
+        this.product.validate();
+        if (this.product.get('errors').length !== 0) {
+            return;
+        }
         if (this.settings.get('errors').length !== 0) {
             return;
         }
