@@ -41,6 +41,13 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return true;
     }
 
+    get isHidden() {
+        if (this.product) {
+            return this.product.get('stripePrices') && this.product.get('stripePrices').length > 0;
+        }
+        return true;
+    }
+
     get isPaidPriceDisabled() {
         return this.disabled || !this.membersUtils.isStripeEnabled;
     }
@@ -194,7 +201,6 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                 ...data,
                 product: null
             });
-            this.args.nextStep();
         }
     }
 
