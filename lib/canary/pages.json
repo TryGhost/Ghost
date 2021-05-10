@@ -42,8 +42,7 @@
           "maxLength": 6
         },
         "visibility": {
-          "type": ["string", "null"],
-          "enum": ["public", "members", "paid"]
+          "type": ["string", "null"]
         },
         "meta_title": {
           "type": ["string", "null"],
