@@ -47,7 +47,6 @@
                     <p>Configure members usage and default access levels</p>
                 </div>
             </LinkTo>
-            {{#if (enable-developer-experiments)}}
             <LinkTo class="gh-setting-group" @route="settings.products" data-test-nav="members-access">
                 <span class="green">{{svg-jar "module"}}</span>
                 <div>
@@ -55,7 +54,6 @@
                     <p>Set up subscription products and prices</p>
                 </div>
             </LinkTo>
-            {{/if}}
             <button type="button" class="gh-setting-group portal" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
                 <span class="pink">{{svg-jar "portal-logo-stroke"}}</span>
                 <div>
