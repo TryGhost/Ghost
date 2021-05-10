@@ -6,7 +6,7 @@
 
 <div class="modal-body">
     <p>
-        Your current plan allows you to have up to <strong>{{gh-pluralize upgradeMessage.limit "member"}}</strong>, but you currently have <strong>{{gh-pluralize upgradeMessage.total "member"}}</strong>.
+        {{html-safe upgradeMessage.message}}
     </p>
 </div>
 
