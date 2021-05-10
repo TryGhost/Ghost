@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
+import calculateDiscount from '../../utils/discount';
 import {isCookiesDisabled, formatNumber, hasOnlyFreePlan} from '../../utils/helpers';
 
 export const PlanSectionStyles = `
@@ -314,7 +315,7 @@ export const PlanSectionStyles = `
     }
 `;
 
-function Checkbox({name, id, onPlanSelect, isChecked, disabled}) {
+function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
     if (isCookiesDisabled()) {
         disabled = true;
     }
@@ -345,9 +346,25 @@ function PriceLabel({currencySymbol, price}) {
     );
 }
 
+function addDiscountToPlans(plans) {
+    const filteredPlans = plans.filter(d => d.id !== 'free');
+    const monthlyPlan = plans.find((d) => {
+        return d.name === 'Monthly' && !d.description && d.interval === 'month';
+    });
+    const yearlyPlan = plans.find((d) => {
+        return d.name === 'Yearly' && !d.description && d.interval === 'year';
+    });
+
+    if (filteredPlans.length === 2 && monthlyPlan && yearlyPlan) {
+        const discount = calculateDiscount(monthlyPlan.amount, yearlyPlan.amount);
+        yearlyPlan.description = discount > 0 ? `${discount}% discount` : '';
+    }
+}
+
 function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site} = useContext(AppContext);
     const {free_price_name: freePriceName, free_price_description: freePriceDescription} = site;
+    addDiscountToPlans(plans);
     return plans.map(({name, currency_symbol: currencySymbol, price, description, id}) => {
         const isChecked = selectedPlan === id;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
@@ -369,7 +386,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             <div className={classes} key={id} onClick={e => onPlanSelect(e, id)}>
                 <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className={planNameClass}>{displayName}</h4>
-                <PriceLabel name={name} currencySymbol={currencySymbol} price={price} />
+                <PriceLabel currencySymbol={currencySymbol} price={price} />
                 <div className='gh-portal-plan-featurewrapper'>
                     <div className='gh-portal-plan-feature'>
                         {planDetails.feature}
