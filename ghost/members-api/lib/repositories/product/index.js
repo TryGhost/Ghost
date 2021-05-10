@@ -204,6 +204,7 @@ class ProductRepository {
                     }, options);
                 }
                 const stripePrice = await this._StripePrice.findOne({stripe_price_id: existingPrice.stripe_price_id}, options);
+
                 if (!stripePrice) {
                     await this._StripePrice.add({
                         stripe_price_id: existingPrice.stripe_price_id,
