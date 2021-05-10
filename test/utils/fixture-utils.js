@@ -475,20 +475,13 @@ const fixtures = {
                 return models.StripePrice.add(stripePrice, context.internal);
             });
         }).then(function () {
-            return Promise.map(DataGenerator.forKnex.products, function (product) {
-                return models.Product.add(product, context.internal);
-            });
-        }).then(function () {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.members), function (member) {
                 let memberLabelRelations = _.filter(DataGenerator.forKnex.members_labels, {member_id: member.id});
-                let memberProductRelations = _.filter(DataGenerator.forKnex.members_products, {member_id: member.id});
 
                 memberLabelRelations = _.map(memberLabelRelations, function (memberLabelRelation) {
                     return _.find(DataGenerator.forKnex.labels, {id: memberLabelRelation.label_id});
                 });
-                memberProductRelations = _.map(memberProductRelations, function (memberProductRelation) {
-                    return _.find(DataGenerator.forKnex.products, {id: memberProductRelation.product_id});
-                });
+                const memberProductRelations = [{slug: 'default-product'}];
 
                 member.labels = memberLabelRelations;
                 member.products = memberProductRelations;

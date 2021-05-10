@@ -172,8 +172,8 @@ describe('Front-end members behaviour', function () {
             });
 
             productPost = testUtils.DataGenerator.forKnex.createPost({
-                slug: 'thou-must-have-ghost-product',
-                visibility: 'product:ghost-product',
+                slug: 'thou-must-have-default-product',
+                visibility: 'product:default-product',
                 published_at: moment().toDate()
             });
 
@@ -226,7 +226,7 @@ describe('Front-end members behaviour', function () {
 
             it('cannot read product-only post content', function () {
                 return request
-                    .get('/thou-must-have-ghost-product/')
+                    .get('/thou-must-have-default-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
@@ -277,7 +277,7 @@ describe('Front-end members behaviour', function () {
 
             it('cannot read product-only post content', function () {
                 return request
-                    .get('/thou-must-have-ghost-product/')
+                    .get('/thou-must-have-default-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
@@ -359,7 +359,7 @@ describe('Front-end members behaviour', function () {
 
             it('cannot read product-only post content', function () {
                 return request
-                    .get('/thou-must-have-ghost-product/')
+                    .get('/thou-must-have-default-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
@@ -425,7 +425,7 @@ describe('Front-end members behaviour', function () {
 
             it('cannot read product-only post content', function () {
                 return request
-                    .get('/thou-must-have-ghost-product/')
+                    .get('/thou-must-have-default-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
@@ -440,7 +440,7 @@ describe('Front-end members behaviour', function () {
 
             it('can read product-only post content', function () {
                 return request
-                    .get('/thou-must-have-ghost-product/')
+                    .get('/thou-must-have-default-product/')
                     .expect(200)
                     .then((res) => {
                         res.text.should.containEql('<h2 id="markdown">markdown</h2>');
