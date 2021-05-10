@@ -6,22 +6,22 @@ module.exports = class StripeWebhookService {
      * @param {object} deps
      * @param {any} deps.StripeWebhook
      * @param {import('../stripe-api')} deps.stripeAPIService
-     * @param {import('../stripe-plans')} deps.stripePlansService
      * @param {import('../../repositories/member')} deps.memberRepository
+     * @param {import('../../repositories/product')} deps.productRepository
      * @param {import('../../repositories/event')} deps.eventRepository
      * @param {any} deps.sendEmailWithMagicLink
      */
     constructor({
         StripeWebhook,
         stripeAPIService,
-        stripePlansService,
+        productRepository,
         memberRepository,
         eventRepository,
         sendEmailWithMagicLink
     }) {
         this._StripeWebhook = StripeWebhook;
         this._stripeAPIService = stripeAPIService;
-        this._stripePlansService = stripePlansService;
+        this._productRepository = productRepository;
         this._memberRepository = memberRepository;
         this._eventRepository = eventRepository;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
@@ -169,9 +169,13 @@ module.exports = class StripeWebhookService {
                 return;
             }
             // Subscription is for a different product - ignore.
-            if (this._stripePlansService.getProduct().id !== subscription.plan.product) {
+            const product = await this._productRepository.get({
+                stripe_product_id: subscription.plan.product
+            });
+            if (!product) {
                 return;
             }
+
             // Could not find the member, which we need in order to insert an payment event.
             throw new errors.NotFoundError({
                 message: `No member found for customer ${subscription.customer}`
