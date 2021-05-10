@@ -168,7 +168,11 @@ export default class ProductController extends Controller {
             return;
         }
         yield this.settings.save();
-        return yield this.product.save();
+        const response = yield this.product.save();
+        if (this.showPriceModal) {
+            this.closePriceModal();
+        }
+        return response;
     }
 
     _validateSignupRedirect(url, type) {

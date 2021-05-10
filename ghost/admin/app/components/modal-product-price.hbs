@@ -9,7 +9,7 @@
 <div class="modal-body">
     <div class="gh-main-section-block">
         <div class="gh-main-section-content grey gh-product-priceform-block">
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="name">
+            <GhFormGroup @errors={{this.errors}} @property="name">
                 <label for="name" class="fw6">Name</label>
                 <GhTextInput
                     @value={{readonly this.price.nickname}}
@@ -17,9 +17,9 @@
                     @name="name"
                     @id="name"
                     @class="gh-input" />
-                <GhErrorMessage @errors={{this.price.errors}} @property="name" />
+                <GhErrorMessage @errors={{this.errors}} @property="name" />
             </GhFormGroup>
-            <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="description">
+            <GhFormGroup @errors={{this.errors}} @property="description">
                 <label for="description" class="fw6">Description</label>
                 <GhTextInput
                     @value={{readonly this.price.description}}
@@ -27,20 +27,21 @@
                     @name="description"
                     @id="description"
                     @class="gh-input" />
-                <GhErrorMessage @errors={{this.price.errors}} @property="description" />
+                <GhErrorMessage @errors={{this.errors}} @property="description" />
             </GhFormGroup>
             <div class="gh-product-priceform-pricecurrency">
-                <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="price">
-                    <label for="price" class="fw6">Price</label>
+                <GhFormGroup @errors={{this.errors}} @property="amount">
+                    <label for="amount" class="fw6">Price</label>
                     <div class="flex items-center justify-center gh-labs-price-label">
                         <GhTextInput
+                            @id="amount"
                             @value={{this.price.amount}}
                             @type="number"
                             @disabled={{this.isExistingPrice}}
                             @input={{action "setAmount" value="target.value"}}
                         />
                     </div>
-                    <GhErrorMessage @errors={{this.price.errors}} @property="price" />
+                    <GhErrorMessage @errors={{this.errors}} @property="amount" />
                 </GhFormGroup>
                 <GhFormGroup @class="for-select">
                     <label class="fw6 f8"for="currency">Plan currency</label>
@@ -65,6 +66,7 @@
                     @triggerId="period-input"
                     @value={{this.price.interval}} @disabled={{this.isExistingPrice}}
                 />
+                <GhErrorMessage @errors={{this.errors}} @property="interval" />
             </GhFormGroup>
         </div>
     </div>
