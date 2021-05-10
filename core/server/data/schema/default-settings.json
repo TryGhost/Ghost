@@ -310,7 +310,7 @@
             "type": "string"
         },
         "members_free_price_description": {
-            "defaultValue": "",
+            "defaultValue": "Free Preview",
             "type": "string"
         }
     },
