@@ -127,11 +127,11 @@ module.exports = class StripeMigrations {
 
         if (!defaultStripeProduct) {
             this._logging.info('Could not find Stripe Product - creating one');
-            const stripeProduct = await this._stripeAPIService.createProduct({
-                name: 'Ghost Product'
-            });
             const productsPage = await this._Product.findPage({limit: 1});
             const defaultProduct = productsPage.data[0];
+            const stripeProduct = await this._stripeAPIService.createProduct({
+                name: defaultProduct.get('name')
+            });
             if (!defaultProduct) {
                 this._logging.error('Could not find Product - skipping stripe_plans -> stripe_prices migration');
                 return;
