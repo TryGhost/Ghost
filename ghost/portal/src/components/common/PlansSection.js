@@ -365,7 +365,8 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site} = useContext(AppContext);
     const {free_price_name: freePriceName, free_price_description: freePriceDescription} = site;
     addDiscountToPlans(plans);
-    return plans.map(({name, currency_symbol: currencySymbol, price, description, id}) => {
+    return plans.map(({name, currency_symbol: currencySymbol, amount, description, id}) => {
+        const price = amount / 100;
         const isChecked = selectedPlan === id;
         const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         const planDetails = {};
