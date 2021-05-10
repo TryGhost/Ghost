@@ -161,7 +161,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                         nickname: 'Monthly',
                         amount: this.stripeMonthlyAmount * 100,
                         active: 1,
-                        description: 'Full Access',
+                        description: 'Full access',
                         currency: this.currency,
                         interval: 'month',
                         type: 'recurring'
@@ -171,7 +171,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                         amount: this.stripeYearlyAmount * 100,
                         active: 1,
                         currency: this.currency,
-                        description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full Access',
+                        description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
                         interval: 'month',
                         type: 'recurring'
                     }
