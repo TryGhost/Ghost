@@ -9,6 +9,7 @@ import mockLabels from './config/labels';
 import mockMembers from './config/members';
 import mockPages from './config/pages';
 import mockPosts from './config/posts';
+import mockProducts from './config/products';
 import mockRoles from './config/roles';
 import mockSettings from './config/settings';
 import mockSite from './config/site';
@@ -72,6 +73,7 @@ export function testConfig() {
     mockUploads(this);
     mockUsers(this);
     mockWebhooks(this);
+    mockProducts(this);
 
     /* Notifications -------------------------------------------------------- */
 
