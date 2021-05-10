@@ -193,7 +193,7 @@ export function getAvailablePrices({site = {}, includeFree = true} = {}) {
     return plansData;
 }
 
-export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
+export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = {}) {
     const {
         prices,
         allow_self_signup: allowSelfSignup,
@@ -219,6 +219,15 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
         return price.amount !== 0 && price.type === 'recurring';
     }).filter((price) => {
         return (portalPlans || []).includes(price.price_id);
+    }).sort((a, b) => {
+        return a.amount - b.amount;
+    }).sort((a, b) => {
+        if (!a.currency || !b.currency) {
+            return 0;
+        }
+        return a.currency.localeCompare(b.currency, undefined, {ignorePunctuation: true});
+    }).sort((a, b) => {
+        return (a.active === b.active) ? 0 : (a.active ? -1 : 1);
     });
 
     if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
@@ -226,6 +235,7 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery} = {}) {
             id: 'free',
             type: 'free',
             price: 0,
+            amount: 0,
             currency_symbol: '$',
             name: 'Free'
         });
