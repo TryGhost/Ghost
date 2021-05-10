@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const {sequence} = require('@tryghost/promise');
 const i18n = require('../../shared/i18n');
 const errors = require('@tryghost/errors');
+const nql = require('@nexes/nql');
 const htmlToPlaintext = require('../../shared/html-to-plaintext');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
@@ -153,6 +154,20 @@ Post = ghostBookshelf.Model.extend({
         }
         if (attrs.email_recipient_filter === 'paid') {
             attrs.email_recipient_filter = 'status:-free';
+        }
+
+        // transform visibility NQL queries to special-case values where necessary
+        // ensures checks against special-case values such as `{{#has visibility="paid"}}` continue working
+        if (attrs.visibility && !['public', 'members', 'paid'].includes(attrs.visibility)) {
+            if (attrs.visibility === 'status:-free') {
+                attrs.visibility = 'paid';
+            } else {
+                const visibilityNql = nql(attrs.visibility);
+
+                if (visibilityNql.queryJSON({status: 'free'}) && visibilityNql.queryJSON({status: '-free'})) {
+                    attrs.visibility = 'members';
+                }
+            }
         }
 
         return attrs;

@@ -733,6 +733,44 @@ describe('Post Model', function () {
                     done();
                 }).catch(done);
             });
+
+            it('transforms special-case visibility values on save', function (done) {
+                // status:-free === paid
+                // status:-free,status:free (+variations) === members
+
+                const postId = testUtils.DataGenerator.Content.posts[3].id;
+
+                models.Post.findOne({id: postId}).then(() => {
+                    return models.Post.edit({
+                        visibility: 'status:-free'
+                    }, _.extend({}, context, {id: postId}));
+                }).then((edited) => {
+                    edited.attributes.visibility.should.equal('paid');
+                    return db.knex('posts').where({id: edited.id});
+                }).then((knexResult) => {
+                    const [knexPost] = knexResult;
+                    knexPost.visibility.should.equal('paid');
+                }).then(() => {
+                    return models.Post.edit({
+                        visibility: 'status:-free,status:free'
+                    }, _.extend({}, context, {id: postId}));
+                }).then((edited) => {
+                    edited.attributes.visibility.should.equal('members');
+
+                    return models.Post.edit({
+                        visibility: 'status:free,status:-free'
+                    }, _.extend({}, context, {id: postId}));
+                }).then((edited) => {
+                    edited.attributes.visibility.should.equal('members');
+
+                    return models.Post.edit({
+                        visibility: 'status:free,status:-free,label:vip'
+                    }, _.extend({}, context, {id: postId}));
+                }).then((edited) => {
+                    edited.attributes.visibility.should.equal('members');
+                    done();
+                }).catch(done);
+            });
         });
 
         describe('add', function () {

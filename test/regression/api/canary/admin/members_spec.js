@@ -13,7 +13,7 @@ const ghost = testUtils.startGhost;
 
 let request;
 
-describe('Members API', function () {
+describe('Members API (canary)', function () {
     before(function () {
         sinon.stub(labs, 'isSet').withArgs('members').returns(true);
     });
@@ -96,7 +96,7 @@ describe('Members API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.members);
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                jsonResponse.members.should.have.length(5);
+                jsonResponse.members.should.have.length(8);
 
                 jsonResponse.members[0].email.should.equal('paid@test.com');
                 jsonResponse.members[0].email_open_rate.should.equal(80);
@@ -117,7 +117,7 @@ describe('Members API', function () {
             .then((res) => {
                 const jsonResponse = res.body;
                 localUtils.API.checkResponse(jsonResponse, 'members');
-                jsonResponse.members.should.have.length(5);
+                jsonResponse.members.should.have.length(8);
 
                 jsonResponse.members[0].email.should.equal('member2@test.com');
                 jsonResponse.members[0].email_open_rate.should.equal(50);

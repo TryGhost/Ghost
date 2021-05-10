@@ -4,8 +4,18 @@ const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const validators = require('../../../../../../../core/server/api/v3/utils/validators');
+const models = require('../../../../../../../core/server/models');
 
 describe('Unit: v3/utils/validators/input/pages', function () {
+    before(function () {
+        return models.init();
+    });
+
+    beforeEach(function () {
+        const memberFindPageStub = sinon.stub(models.Member, 'findPage').returns(Promise.reject());
+        memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).returns(Promise.resolve());
+    });
+
     afterEach(function () {
         sinon.restore();
     });
@@ -179,6 +189,21 @@ describe('Unit: v3/utils/validators/input/pages', function () {
 
                     return Promise.all(checks);
                 });
+            });
+
+            it('should pass for valid NQL visibility', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        pages: [{
+                            title: 'pass',
+                            authors: [{id: 'correct'}],
+                            visibility: 'label:vip'
+                        }]
+                    }
+                };
+
+                return validators.input.pages.add(apiConfig, frame);
             });
         });
 

@@ -27,8 +27,7 @@ module.exports = {
             type: 'string',
             maxlength: 50,
             nullable: false,
-            defaultTo: 'public',
-            validations: {isIn: [['public', 'members', 'paid']]}
+            defaultTo: 'public'
         },
         email_recipient_filter: {
             type: 'string',
