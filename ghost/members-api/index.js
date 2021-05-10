@@ -261,7 +261,15 @@ module.exports = function MembersApi({
     }
 
     async function getMemberIdentityData(email) {
-        const model = await users.get({email}, {withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct', 'stripeSubscriptions.stripePrice.stripeProduct.product']});
+        const model = await users.get({email}, {withRelated: [
+            'stripeSubscriptions',
+            'stripeSubscriptions.customer',
+            'stripeSubscriptions.stripePrice',
+            'stripeSubscriptions.stripePrice.stripeProduct',
+            'stripeSubscriptions.stripePrice.stripeProduct.product',
+            'labels',
+            'products'
+        ]});
         if (!model) {
             return null;
         }
