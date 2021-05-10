@@ -2,8 +2,7 @@ import Component from '@ember/component';
 import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
-import post from '../adapters/post';
-import {alias, equal, or} from '@ember/object/computed';
+import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
