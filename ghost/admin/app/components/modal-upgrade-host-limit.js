@@ -7,7 +7,9 @@ export default ModalComponent.extend({
 
     upgradeMessage: computed('details', function () {
         const {limit, total} = this.model.details;
-        return {limit, total};
+        const message = this.model.message;
+
+        return {limit, total, message};
     }),
     actions: {
         upgrade: function () {
