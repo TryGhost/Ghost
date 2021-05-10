@@ -77,10 +77,34 @@
 
 
                 {{#if this.showVisibilityInput}}
-                    <div class="form-group">
+                    <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
                         <label for="visibility-input">Post access</label>
-                        <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
-                    </div>
+                        <div
+                            class="gh-radio {{if this.post.isPublic "active"}}"
+                            {{on "click" (action "setVisibility" "public")}}
+                        >
+                            <div class="gh-radio-button"></div>
+                            <div class="gh-radio-content">
+                                <div class="gh-radio-label">Public</div>
+                            </div>
+                        </div>
+                        <div
+                            class="gh-radio {{if (not this.post.isPublic) "active"}}"
+                        >
+                            <div class="gh-radio-button"></div>
+                            <div class="gh-radio-content">
+                                <div class="gh-radio-label" {{on "click" (action "setVisibility" this.post.visibilitySegment)}}>Members-only</div>
+                                <div class="gh-radio-desc">
+                                    <GhMembersSegmentSelect
+                                        @segment={{this.post.visibilitySegment}}
+                                        @onChange={{action "setVisibility"}}
+                                        @renderInPlace={{true}}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <GhErrorMessage @errors={{this.post.errors}} @property="visibility" data-test-error="visibility" />
+                    </GhFormGroup>
                 {{/if}}
 
 
