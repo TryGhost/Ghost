@@ -11,7 +11,7 @@ const validateVisibility = async function (frame) {
     // validate visibility - not done at schema level because this can be an NQL query so needs model access
     const visibility = frame.data.pages[0].visibility;
     if (visibility) {
-        if (!['public', 'members', 'paid'].includes('visibility')) {
+        if (!['public', 'members', 'paid'].includes(visibility)) {
             // check filter is valid
             try {
                 await models.Member.findPage({filter: visibility, limit: 1});
