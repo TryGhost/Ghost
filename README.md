@@ -127,6 +127,12 @@ At the moment there are four different types of limits that limit service allows
 3. `maxPeriodic` - it's a variation of `max` type with a difference that the check is done over certain period of time. Example usecase: "disable sending emails when the sent emails count has acceded a limit for last billing period". To enable this limit define `maxPeriodic: NUMBER` in the limit configuration and provide a subscription configuration when initializing the limit service instance. The subscription object comes as a separate parameter and has to contain two properties: `startDate` and `interval`, where `startDate` is a date in  ISO 8601 format and period is `'month'` (other values like `'year'` are not supported yet)
 4. `allowList` - checks if provided value is defined in configured "allowlist". Example usecase: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter. 
 
+### Supported limits
+There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`. 
+
+All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`, and`customIntegrations`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
+
+
 ```js
 const limitService = new LimitService();
 
