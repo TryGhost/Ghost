@@ -44,7 +44,29 @@ const limits = {
     customIntegrations: {
         disabled: true,
         error: 'You can use all our official, built-in integrations on the Starter plan. If you upgrade to one of our higher tiers, you’ll also be able to create and edit custom integrations and API keys for advanced workflows.'
-    }
+    },
+    // emails is a hybrid type of limit that can be a "flag" or a "max periodic" type
+    // below is a "flag" type configuration
+    emails: {
+        disabled: true,
+        error: 'Email sending has been temporarily disabled whilst your account is under review.'
+    },
+    // following is a "max periodic" type of configuration
+    // note if you use this configuration, the limit service has to also get a 
+    // "subscription" parameter to work as expected
+    // emails: {
+    //     maxPeriodic: 42,
+    //     error: 'Your plan supports up to {{max}} emails. Please upgrade to reenable sending emails.'
+    // }
+};
+
+// This information is needed for the limit service to work with "max periodic" limits
+// The interval value has to be 'month' as thats the only interval that was needed for
+// current usecase
+// The startDate has to be in ISO 8601 format (https://en.wikipedia.org/wiki/ISO_8601)
+const subscription = {
+    interval: 'month',
+    startDate: '2021-09-18T19:00:52Z'
 };
 
 // initialize the URL linking to help documentation etc.
@@ -62,7 +84,7 @@ const db = knex({
 });
 
 // finish initializing the limits service
-limitService.loadLimits({limits, db, helpLink, errors});
+limitService.loadLimits({limits, subscription, db, helpLink, errors});
 
 // perform limit checks
 
