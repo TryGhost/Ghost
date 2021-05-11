@@ -185,7 +185,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                         active: 1,
                         currency: this.currency,
                         description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
-                        interval: 'month',
+                        interval: 'year',
                         type: 'recurring'
                     }
                 );
