@@ -29,6 +29,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     @tracked isYearlyChecked = true;
     @tracked stripePlanError = '';
     @tracked product;
+    @tracked loadingProduct = false;
 
     get selectedCurrency() {
         return this.currencies.findBy('value', this.currency);
@@ -42,6 +43,10 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     }
 
     get isHidden() {
+        if (this.loadingProduct) {
+            return false;
+        }
+
         if (this.product) {
             return this.product.get('stripePrices') && this.product.get('stripePrices').length > 0;
         }
@@ -66,6 +71,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             this.stripeYearlyAmount = 50;
         }
         this.updatePreviewUrl();
+        this.loadingProduct = true;
         this.fetchDefaultProduct();
     }
 
@@ -195,6 +201,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     async fetchDefaultProduct() {
         const products = await this.store.query('product', {include: 'stripe_prices'});
         this.product = products.firstObject;
+        this.loadingProduct = false;
         if (this.product.get('stripePrices').length > 0) {
             const data = this.args.getData() || {};
             this.args.storeData({
