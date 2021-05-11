@@ -7,7 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class GhMembersSegmentSelect extends Component {
     @service store;
 
-    @tracked options = [];
+    @tracked _options = [];
 
     get renderInPlace() {
         return this.args.renderInPlace === undefined ? false : this.args.renderInPlace;
@@ -16,6 +16,17 @@ export default class GhMembersSegmentSelect extends Component {
     constructor() {
         super(...arguments);
         this.fetchOptionsTask.perform();
+    }
+
+    get options() {
+        if (this.args.hideOptionsWhenAllSelected) {
+            const selectedSegments = this.selectedOptions.mapBy('segment');
+            if (selectedSegments.includes('status:free') && selectedSegments.includes('status:-free')) {
+                return this._options.filter(option => !option.groupName);
+            }
+        }
+
+        return this._options;
     }
 
     get flatOptions() {
@@ -29,7 +40,7 @@ export default class GhMembersSegmentSelect extends Component {
             options.push(option);
         }
 
-        this.options.forEach(getOptions);
+        this._options.forEach(getOptions);
 
         return options;
     }
@@ -101,6 +112,6 @@ export default class GhMembersSegmentSelect extends Component {
             options.push(productsGroup);
         }
 
-        this.options = options;
+        this._options = options;
     }
 }
