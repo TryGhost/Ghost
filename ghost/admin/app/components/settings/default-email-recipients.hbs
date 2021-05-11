@@ -11,13 +11,13 @@
         <div class="flex flex-column w-50">
             <div class="{{if this.isDisabled "disabled-overlay"}}">
                 <div
-                    class="gh-radio {{if this.isSegmentSelected "active"}}"
+                    class="gh-radio member-segments {{if this.isSegmentSelected "active"}}"
                     {{on "click" (fn this.setDefaultEmailRecipients "segment")}}
                 >
                     <div class="gh-radio-button"></div>
                     <div class="gh-radio-content">
                         <div class="gh-radio-label">Send emails to</div>
-                        <div class="gh-radio-desc">
+                        <div class="gh-radio-desc select-members">
                             <GhMembersSegmentSelect
                                 @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
                                 @onChange={{this.setDefaultEmailRecipientsFilter}}

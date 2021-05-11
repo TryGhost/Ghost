@@ -166,6 +166,26 @@
     margin-top: 0;
 }
 
+.settings-menu-content .gh-radio {
+    margin: 20px 0; 
+}
+
+.settings-menu-content .no-selection {
+    margin-top: -16px;
+}
+
+.settings-menu-content .gh-radio-desc {
+    margin: 8px 0 0 -32px;
+}
+
+.settings-menu-content .select-members {
+    margin-bottom: .4rem;
+}
+
+.settings-menu-content .segment-totals {
+    line-height: 1.65;
+}
+
 .settings-menu-content textarea {
     height: 108px;
 }

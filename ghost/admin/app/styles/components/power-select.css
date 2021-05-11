@@ -54,6 +54,10 @@
     border-top: 1px solid color-mod(var(--whitegrey) a(70%) s(-10%));
 }
 
+.ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    border-bottom: none;
+}
+
 .ember-power-select-option {
     margin: 0;
     padding: 6px 14px;
@@ -73,6 +77,10 @@
 
 .ember-power-select-options:not([role="group"]) {
     max-height: 50vh;
+}
+
+.ember-power-select-options li {
+    margin-bottom: 0;
 }
 
 .ember-power-select-search input {

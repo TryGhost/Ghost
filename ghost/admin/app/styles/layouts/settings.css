@@ -804,6 +804,20 @@
 }
 
 
+/* Email newsletter
+/* ---------------------------------------------------------- */
+
+.member-segments .select-members {
+    margin-bottom: .4rem;
+}
+
+.member-segments .segment-totals {
+    position: relative;
+    top: 2px;
+    line-height: 1.65;
+}
+
+
 /* Code injection
 /* ---------------------------------------------------------- */
 
