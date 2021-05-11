@@ -643,8 +643,8 @@ module.exports = class MemberRepository {
                             amount: 0
                         }]
                     }, options)).toJSON();
-                    zeroValuePrice = product.stripePrices.find((price) => {
-                        return price.currency.toLowerCase() === subscription.get('currency').toLowerCase() && price.amount === 0;
+                    zeroValuePrice = product.stripePrices.find((p) => {
+                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0;
                     });
                     zeroValuePrices.push(zeroValuePrice);
                 }
