@@ -143,13 +143,11 @@ export default Component.extend({
         }
 
         if (defaultEmailRecipients === 'visibility') {
-            if (this.post.visibility === 'public' || this.post.visibility === 'members') {
+            if (this.post.visibility === 'public') {
                 return 'status:free,status:-free';
             }
 
-            if (this.post.visibility === 'paid') {
-                return 'status:-free';
-            }
+            return this.post.visibility;
         }
 
         return this.settings.get('editorDefaultEmailRecipientsFilter');
