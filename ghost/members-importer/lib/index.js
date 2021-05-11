@@ -136,16 +136,15 @@ module.exports = class MembersCSVImporter {
                     member = await membersApi.members.create(row, options);
                 }
 
-                if (row.complimentary_plan) {
-                    await membersApi.members.setComplimentarySubscription(member, options);
-                }
-
                 if (row.stripe_customer_id) {
                     await membersApi.members.linkStripeCustomer({
                         customer_id: row.stripe_customer_id,
                         member_id: member.id
                     }, options);
+                } else if (row.complimentary_plan) {
+                    await membersApi.members.setComplimentarySubscription(member, options);
                 }
+
                 await trx.commit();
                 return {
                     ...resultAccumulator,
