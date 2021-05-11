@@ -41,6 +41,10 @@ const limits = {
         disabled: true,
         error: 'All our official built-in themes are available the Starter plan, if you upgrade to one of our higher tiers you will also be able to edit and upload custom themes for your site.'
     },
+    // customThemes: {
+    //     allowlist: ['casper', 'dawn', 'lyra'],
+    //     error: "All our official built-in themes are available the Starter plan, if you upgrade to one of our higher tiers you will also be able to edit and upload custom themes for your site."
+    // },
     customIntegrations: {
         disabled: true,
         error: 'You can use all our official, built-in integrations on the Starter plan. If you upgrade to one of our higher tiers, you’ll also be able to create and edit custom integrations and API keys for advanced workflows.'
