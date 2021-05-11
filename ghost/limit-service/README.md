@@ -132,6 +132,8 @@ There's a limited amount of limits that are supported by limit service. The are 
 
 All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`, and`customIntegrations`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
 
+### Frontend usage
+In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" or "maxPeriodic" type of limit. An example usecase would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:
 
 ```js
 const limitService = new LimitService();
