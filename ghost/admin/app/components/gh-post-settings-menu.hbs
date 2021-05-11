@@ -90,10 +90,11 @@
                         </div>
                         <div
                             class="gh-radio {{if (not this.post.isPublic) "active"}}"
+                             {{on "click" (action "setVisibility" this.post.visibilitySegment)}}
                         >
                             <div class="gh-radio-button"></div>
                             <div class="gh-radio-content">
-                                <div class="gh-radio-label" {{on "click" (action "setVisibility" this.post.visibilitySegment)}}>Members-only</div>
+                                <div class="gh-radio-label">Members-only</div>
                                 <div class="gh-radio-desc">
                                     <GhMembersSegmentSelect
                                         @segment={{this.post.visibilitySegment}}
