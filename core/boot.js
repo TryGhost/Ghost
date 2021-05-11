@@ -157,6 +157,10 @@ async function initServices({config}) {
 
     const urlUtils = require('./shared/url-utils');
 
+    // NOTE: limits service has to be initialized first
+    // in case it limits initialization of any other service (e.g. webhooks)
+    await limits.init();
+
     await Promise.all([
         permissions.init(),
         xmlrpc.listen(),
@@ -164,7 +168,6 @@ async function initServices({config}) {
         mega.listen(),
         webhooks.listen(),
         appService.init(),
-        limits.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {version: defaultApiVersion, versionType: 'admin'}, true)
         })
