@@ -60,6 +60,25 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
 });
 
 const membersService = {
+    async init() {
+        const env = config.get('env');
+        const paymentConfig = membersConfig.getStripePaymentConfig();
+
+        if (env !== 'production') {
+            if (!process.env.WEBHOOK_SECRET && membersConfig.isStripeConnected()) {
+                throw new Error('Cannot use remote webhooks in development. Please restart in production mode or see https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.');
+            }
+
+            if (paymentConfig && paymentConfig.secretKey.startsWith('sk_live')) {
+                throw new Error('Cannot use live stripe keys in development. Please restart in production mode.');
+            }
+        } else {
+            const siteUrl = urlUtils.getSiteUrl();
+            if (!/^https/.test(siteUrl)) {
+                throw new Error('Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://"');
+            }
+        }
+    },
     contentGating: require('./content-gating'),
 
     config: membersConfig,
@@ -70,9 +89,6 @@ const membersService = {
 
             membersApi.bus.on('error', function (err) {
                 logging.error(err);
-                if (err.fatal) {
-                    process.exit(1);
-                }
             });
         }
         return membersApi;
