@@ -9,7 +9,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -516,10 +516,11 @@ export default class App extends React.Component {
     }
 
     /**Get final page set in App context from state data*/
-    getContextPage({page, member}) {
+    getContextPage({site, page, member}) {
         /**Set default page based on logged-in status */
         if (!page) {
-            page = member ? 'accountHome' : 'signup';
+            const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
+            page = member ? 'accountHome' : loggedOutPage;
         }
 
         if (page === 'accountPlan' && isComplimentaryMember({member})) {
@@ -552,7 +553,7 @@ export default class App extends React.Component {
     /**Get final App level context from App state*/
     getContextFromState() {
         const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification} = this.state;
-        const contextPage = this.getContextPage({page, member});
+        const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member});
         return {
             site,
