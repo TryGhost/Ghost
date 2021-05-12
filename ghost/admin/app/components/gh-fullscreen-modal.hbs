@@ -1,7 +1,7 @@
 <LiquidWormhole @class="fullscreen-modal-container">
     <div class="fullscreen-modal-background" {{action "clickOverlay"}}></div>
     <div class={{this.modalClasses}}>
-        {{#if hasBlock}}
+        {{#if (has-block)}}
           {{yield}}
         {{else}}
             {{#let (component this.modalPath) as |ModalComponent|}}
