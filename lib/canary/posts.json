@@ -170,6 +170,9 @@
         },
         "email_recipient_filter": {
           "strip": true
+        },
+        "frontmatter": {
+          "strip": true
         }
       }
     },

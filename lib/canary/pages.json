@@ -151,6 +151,9 @@
         },
         "plaintext": {
           "strip": true
+        },
+        "frontmatter": {
+          "strip": true
         }
       }
     },
