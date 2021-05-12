@@ -6707,10 +6707,10 @@ ember-cli-shims@1.2.0:
     ember-rfc176-data "^0.3.1"
     silent-error "^1.0.1"
 
-ember-cli-string-helpers@6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-string-helpers/-/ember-cli-string-helpers-6.0.1.tgz#6690b23b5cd60cc3ab86ce78125a2f9bd0f1cd41"
-  integrity sha512-91Po3HRroSI60zm9QUpnt6DXNB3rNBKFAmCptDD758gZyjfDMXtu1ZWWixB7EQXQaMy8bVq+2ZvQIPkclieJPw==
+ember-cli-string-helpers@6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-string-helpers/-/ember-cli-string-helpers-6.1.0.tgz#aeb96112bb91c540b869ed8b9c680f7fd5859cb6"
+  integrity sha512-Lw8B6MJx2n8CNF2TSIKs+hWLw0FqSYjr2/NRPyquyYA05qsl137WJSYW3ZqTsLgoinHat0DGF2qaCXocLhLmyA==
   dependencies:
     "@babel/core" "^7.13.10"
     broccoli-funnel "^3.0.3"
