@@ -6,7 +6,7 @@
         @renderInPlace={{true}}
         @disabled={{this.disabled}} as |dp|
     >
-        <dp.Trigger @tabindex="-1" data-test-date-time-picker-datepicker=true>
+        <dp.Trigger @tabindex="-1" data-test-date-time-picker-datepicker={{true}}>
             <div class="gh-date-time-picker-date {{if this.dateError "error"}}">
                 <input type="text"
                     placeholder={{this.dateFormat}}
