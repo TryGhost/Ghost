@@ -50,9 +50,9 @@ function ensureActiveTheme(req, res, next) {
 async function haxGetMembersPriceData() {
     const defaultPrice = {
         amount: 0,
-        currency: null,
-        interval: null,
-        nickname: null
+        currency: 'usd',
+        interval: 'year',
+        nickname: ''
     };
 
     function makePriceObject(price) {
@@ -103,7 +103,7 @@ async function haxGetMembersPriceData() {
         return {
             monthly: makePriceObject(defaultPrice),
             yearly: makePriceObject(defaultPrice),
-            currency: null
+            currency: 'usd'
         };
     }
 }
