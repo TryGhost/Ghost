@@ -146,6 +146,7 @@ async function initServices({config}) {
     debug('End: Dynamic Routing');
 
     debug('Begin: Services');
+    const members = require('./server/services/members');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
@@ -162,6 +163,7 @@ async function initServices({config}) {
     await limits.init();
 
     await Promise.all([
+        members.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
