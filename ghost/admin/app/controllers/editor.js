@@ -531,6 +531,11 @@ export default Controller.extend({
         try {
             return yield this._savePost.perform();
         } catch (error) {
+            if (error === undefined) {
+                // validation error
+                return;
+            }
+
             if (error) {
                 let status = this.get('post.status');
                 this._showErrorAlert(status, status, error);
