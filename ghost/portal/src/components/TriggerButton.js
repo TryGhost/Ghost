@@ -9,6 +9,7 @@ import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
 import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import TriggerButtonStyle from './TriggerButton.styles';
+import {isInviteOnlySite} from '../utils/helpers';
 
 const React = require('react');
 
@@ -163,11 +164,12 @@ class TriggerButtonContent extends React.Component {
     }
 
     onToggle() {
-        const {showPopup, member} = this.context;
+        const {showPopup, member, site} = this.context;
         if (showPopup) {
             this.context.onAction('closePopup');
         } else {
-            const page = member ? 'accountHome' : 'signup';
+            const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
+            const page = member ? 'accountHome' : loggedOutPage;
             this.context.onAction('openPopup', {page});
         }
     }
