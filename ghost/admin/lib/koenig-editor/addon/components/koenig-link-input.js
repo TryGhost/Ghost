@@ -4,7 +4,7 @@ import relativeToAbsolute from '../lib/relative-to-absolute';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {computed} from '@ember/object';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 

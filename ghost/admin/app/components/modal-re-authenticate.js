@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';

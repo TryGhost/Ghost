@@ -2,7 +2,7 @@ import Component from '@ember/component';
 import Ember from 'ember';
 import {computed} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';

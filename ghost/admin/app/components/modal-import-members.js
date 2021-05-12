@@ -9,7 +9,7 @@ import {
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 

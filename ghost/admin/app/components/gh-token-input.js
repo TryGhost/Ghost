@@ -10,7 +10,7 @@ import {
     defaultMatcher,
     filterOptions
 } from 'ember-power-select/utils/group-utils';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {tagName} from '@ember-decorators/component';
 import {task} from 'ember-concurrency-decorators';

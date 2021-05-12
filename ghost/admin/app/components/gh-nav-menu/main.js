@@ -4,7 +4,7 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {and, equal, match, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {getOwner} from '@ember/application';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
