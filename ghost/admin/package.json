@@ -132,7 +132,7 @@
     "pretender": "3.4.3",
     "reframe.js": "3.0.2",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
-    "testem": "3.2.0",
+    "testem": "3.4.1",
     "top-gh-contribs": "2.0.4",
     "validator": "7.2.0",
     "walk-sync": "2.2.0"
