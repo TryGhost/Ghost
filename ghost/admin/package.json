@@ -93,8 +93,8 @@
     "ember-moment": "8.0.1",
     "ember-one-way-select": "4.0.1",
     "ember-power-calendar-moment": "0.1.7",
-    "ember-power-datepicker": "0.8.1",
-    "ember-power-select": "4.1.4",
+    "ember-power-datepicker": "cibernox/ember-power-datepicker",
+    "ember-power-select": "4.1.5",
     "ember-resolver": "8.0.2",
     "ember-route-action-helper": "2.0.8",
     "ember-simple-auth": "3.1.0",
@@ -142,5 +142,8 @@
       "lib/asset-delivery",
       "lib/koenig-editor"
     ]
+  },
+  "resolutions": {
+    "ember-basic-dropdown": "3.0.16"
   }
 }
