@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 

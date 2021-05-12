@@ -9,7 +9,7 @@ import validator from 'validator';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {A as emberA} from '@ember/array';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isInvalidError} from 'ember-ajax/errors';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';

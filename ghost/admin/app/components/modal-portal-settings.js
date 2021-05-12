@@ -2,7 +2,7 @@ import $ from 'jquery';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {reads} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';

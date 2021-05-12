@@ -2,7 +2,7 @@ import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 

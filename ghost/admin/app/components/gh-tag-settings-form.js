@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 import Ember from 'ember';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {or} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
