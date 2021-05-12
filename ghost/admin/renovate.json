@@ -21,10 +21,6 @@
       "packageNames": ["ember-source", "ember-cli", "ember-data"]
     },
     {
-      "groupName": "ember testing",
-      "packageNames": ["ember-mocha", "ember-exam", "testem"]
-    },
-    {
       "groupName": "disable css",
       "packagePatterns": [
         "^postcss",
