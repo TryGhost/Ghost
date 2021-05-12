@@ -2,7 +2,7 @@ const jsonSchema = require('@tryghost/admin-api-schema');
 
 /**
  *
- * @param {Object} apiConfig "frame" api configruation object
+ * @param {Object} apiConfig "frame" api configuration object
  * @param {string} apiConfig.docName the name of the resource
  * @param {string} apiConfig.method API's method name
  * @param {Object} frame "frame" object with data attached to it
