@@ -76,7 +76,11 @@ async function haxGetMembersPriceData() {
 
         const defaultProduct = products[0];
 
-        const nonZeroPrices = defaultProduct.stripe_prices.filter((price) => {
+        const activePrices = defaultProduct.stripe_prices.filter((price) => {
+            return price.active;
+        });
+
+        const nonZeroPrices = activePrices.filter((price) => {
             return price.amount !== 0;
         });
 
