@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const logging = require('../../../shared/logging');
-const membersService = require('./index');
+const membersService = require('./service');
 const urlUtils = require('../../../shared/url-utils');
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../settings/cache');
