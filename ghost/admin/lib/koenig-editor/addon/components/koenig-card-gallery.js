@@ -6,7 +6,7 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';

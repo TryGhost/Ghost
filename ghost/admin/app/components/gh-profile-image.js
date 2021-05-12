@@ -3,7 +3,7 @@ import Component from '@ember/component';
 import md5 from 'blueimp-md5';
 import request from 'ember-ajax/request';
 import validator from 'validator';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 

@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 
 export default Component.extend({

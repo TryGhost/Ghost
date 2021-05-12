@@ -1,8 +1,9 @@
 import Service, {inject as service} from '@ember/service';
-import {dasherize, htmlSafe} from '@ember/string';
+import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
 import {get, set} from '@ember/object';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {
     isMaintenanceError,

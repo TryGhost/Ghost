@@ -4,7 +4,7 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isEmpty, typeOf} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';

@@ -1,6 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import {get, set} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 
 export default Service.extend({
     notifications: service(),

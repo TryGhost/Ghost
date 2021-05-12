@@ -6,7 +6,7 @@ import {
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';

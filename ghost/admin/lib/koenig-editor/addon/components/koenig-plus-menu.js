@@ -3,7 +3,7 @@ import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
 import snippetIcon from '../utils/snippet-icon';
 import {CARD_MENU} from '../options/cards';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 
 export default Component.extend({
