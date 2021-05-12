@@ -64,11 +64,22 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     constructor() {
         super(...arguments);
         const storedData = this.args.getData();
-        if (storedData && storedData.product) {
-            this.updatePricesFromProduct(storedData.product);
-        } else {
-            this.stripeMonthlyAmount = 5;
-            this.stripeYearlyAmount = 50;
+        if (storedData) {
+            if (storedData.product) {
+                this.updatePricesFromProduct(storedData.product);
+            } else {
+                this.stripeMonthlyAmount = 5;
+                this.stripeYearlyAmount = 50;
+            }
+            if (storedData.isMonthlyChecked !== undefined) {
+                this.isMonthlyChecked = storedData.isMonthlyChecked;
+            }
+            if (storedData.isYearlyChecked !== undefined) {
+                this.isYearlyChecked = storedData.isYearlyChecked;
+            }
+            if (storedData.isFreeChecked !== undefined) {
+                this.isFreeChecked = storedData.isFreeChecked;
+            }
         }
         this.updatePreviewUrl();
         this.loadingProduct = true;
@@ -93,6 +104,22 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     willDestroy() {
         // clear any unsaved settings changes when going back/forward/closing
         this.args.updatePreview('');
+    }
+
+    @action
+    backStep() {
+        const product = this.getProduct();
+        const data = this.args.getData() || {};
+        this.args.storeData({
+            ...data,
+            product,
+            isFreeChecked: this.isFreeChecked,
+            isMonthlyChecked: this.isMonthlyChecked,
+            isYearlyChecked: this.isYearlyChecked,
+            monthlyAmount: this.stripeMonthlyAmount,
+            yearlyAmount: this.stripeYearlyAmount
+        });
+        this.args.backStep();
     }
 
     @action
@@ -150,8 +177,11 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         this.args.storeData({
             ...data,
             product,
+            isFreeChecked: this.isFreeChecked,
             isMonthlyChecked: this.isMonthlyChecked,
-            isYearlyChecked: this.isYearlyChecked
+            isYearlyChecked: this.isYearlyChecked,
+            monthlyAmount: this.stripeMonthlyAmount,
+            yearlyAmount: this.stripeYearlyAmount
         });
         this.args.nextStep();
     }
