@@ -1624,6 +1624,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-btn-addproduct svg path {
     fill: var(--green);
+    stroke: none !important;
 }
 
 .gh-member-product-memberdetails {
