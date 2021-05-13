@@ -73,7 +73,7 @@ describe('Front-end members behaviour', function () {
 
         it('should error for invalid member token on member data endpoint', async function () {
             await request.get('/members/api/member')
-                .expect(401);
+                .expect(204);
         });
 
         it('should serve member site endpoint', async function () {
