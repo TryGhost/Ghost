@@ -22,6 +22,9 @@ All of the information and code related to this service is available in the [upd
 
 Ghost uses a number of third party services for specific functionality within Ghost.
 
+### UNPKG
+To easily load member functionality for membership features, Ghost leverages [UNPKG](https://unpkg.com) to provide a CDN for drop-in script known as Portal. If member signups are disabled, no CDN will be injected.
+
 ### Gravatar
 
 To automatically populate your profile picture, Ghost pings [Gravatar](http://gravatar.com) to see if your email address is associated with a profile there. If it is, we pull in your profile picture. If not: nothing happens.
