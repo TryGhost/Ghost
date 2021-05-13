@@ -240,8 +240,8 @@ input:focus,
     color: var(--white);
 }
 
-.gh-btn-black:hover,
-.gh-btn-primary:hover {
+.gh-btn-black:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
+.gh-btn-primary:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
     background: var(--black) !important;
 }
 
