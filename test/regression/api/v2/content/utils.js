@@ -11,33 +11,38 @@ const expectedProperties = {
     authors: ['authors', 'meta'],
     pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
 
-    post: _(schema.posts)
-        .keys()
-        .filter(key => key.indexOf('@@') === -1)
-        // by default we only return html
-        .without('mobiledoc', 'plaintext')
-        // v2 doesn't return author_id OR author
-        .without('author_id', 'author')
-        // and always returns computed properties: url, primary_tag, primary_author
-        .concat('url', 'primary_tag', 'primary_author')
-        // v2 API doesn't return unused fields
-        .without('locale', 'visibility')
-        // emails are not supported in API v2
-        .without('email_recipient_filter')
-        // These fields aren't useful as they always have known values
-        .without('status')
-        .concat('page')
-        .without('type')
-        // v2 returns a calculated excerpt field
-        .concat('excerpt')
-        // returns meta fields from `posts_meta` schema
-        .concat(
-            ..._(schema.posts_meta).keys()
-                .without('post_id', 'id')
-                // emails are not supported in API v2
-                .without('email_subject')
-        )
-    ,
+    post: [
+        'id',
+        'uuid',
+        'title',
+        'slug',
+        'html',
+        'comment_id',
+        'feature_image',
+        'featured',
+        'created_at',
+        'updated_at',
+        'published_at',
+        'custom_excerpt',
+        'codeinjection_head',
+        'codeinjection_foot',
+        'custom_template',
+        'canonical_url',
+        'url',
+        'primary_tag',
+        'primary_author',
+        'page',
+        'excerpt',
+        'og_image',
+        'og_title',
+        'og_description',
+        'twitter_image',
+        'twitter_title',
+        'twitter_description',
+        'meta_title',
+        'meta_description',
+        'frontmatter'
+    ],
     author: _(schema.users)
         .keys()
         .without(

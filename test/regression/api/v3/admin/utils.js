@@ -21,26 +21,45 @@ const expectedProperties = {
 
     site: ['title', 'description', 'logo', 'accent_color', 'url', 'version'],
 
-    post: _(schema.posts)
-        .keys()
-        .filter(key => key.indexOf('@@') === -1)
-        // by default we only return mobiledoc
-        .without('html', 'plaintext')
-        .without('locale')
-        .without('page')
-        .without('author_id', 'author')
-        .without('type')
-        // always returns computed properties
-        // primary_tag and primary_author properties are included
-        // only because authors and tags are always included
-        .concat('url', 'primary_tag', 'primary_author', 'excerpt')
-        .concat('authors', 'tags', 'email')
-        // returns meta fields from `posts_meta` schema
-        .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
-        )
-        .concat('send_email_when_published')
-    ,
+    post: [
+        'id',
+        'uuid',
+        'title',
+        'slug',
+        'mobiledoc',
+        'comment_id',
+        'feature_image',
+        'featured',
+        'status',
+        'visibility',
+        'email_recipient_filter',
+        'created_at',
+        'updated_at',
+        'published_at',
+        'custom_excerpt',
+        'codeinjection_head',
+        'codeinjection_foot',
+        'custom_template',
+        'canonical_url',
+        'url',
+        'primary_tag',
+        'primary_author',
+        'excerpt',
+        'authors',
+        'tags',
+        'email',
+        'og_image',
+        'og_title',
+        'og_description',
+        'twitter_image',
+        'twitter_title',
+        'twitter_description',
+        'meta_title',
+        'meta_description',
+        'email_subject',
+        'frontmatter',
+        'send_email_when_published'
+    ],
     user: _(schema.users)
         .keys()
         .without('visibility')
