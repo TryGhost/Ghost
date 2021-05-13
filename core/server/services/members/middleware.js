@@ -51,8 +51,8 @@ const getMemberData = async function (req, res) {
             res.json(null);
         }
     } catch (err) {
-        res.writeHead(401);
-        res.end(err.message);
+        res.writeHead(204);
+        res.end();
     }
 };
 
