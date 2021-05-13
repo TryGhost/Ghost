@@ -102,14 +102,14 @@ fieldset[disabled] .gh-btn {
 }
 
 .gh-btn-blue:hover {
-    color: #fff;
-    background: color-mod(var(--blue) l(-4%));
+    color: #fff !important;
+    background: color-mod(var(--blue) l(-4%)) !important;
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-blue:active,
 .gh-btn-blue:focus {
-    background: color-mod(var(--blue) l(-7%));
+    background: color-mod(var(--blue) l(-7%)) !important;
 }
 
 /* Green button
@@ -124,14 +124,14 @@ fieldset[disabled] .gh-btn {
 }
 
 .gh-btn-green:hover {
-    color: #fff;
-    background: color-mod(var(--green) l(-4%));
+    color: #fff !important;
+    background: color-mod(var(--green) l(-4%)) !important;
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-green:active,
 .gh-btn-green:focus {
-    background: color-mod(var(--green) l(-7%));
+    background: color-mod(var(--green) l(-7%)) !important;
 }
 
 
