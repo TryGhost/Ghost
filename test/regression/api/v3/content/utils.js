@@ -11,33 +11,41 @@ const expectedProperties = {
     authors: ['authors', 'meta'],
     pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
 
-    post: _(schema.posts)
-        .keys()
-        .filter(key => key.indexOf('@@') === -1)
-        // by default we only return html
-        .without('mobiledoc', 'plaintext')
-        // v3 doesn't return author_id OR author
-        .without('author_id', 'author')
-        // and always returns computed properties: url, primary_tag, primary_author
-        .concat('url')
-        // v3 API doesn't return unused fields
-        .without('locale')
-        // These fields aren't useful as they always have known values
-        .without('status')
-        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-        // .without('page')
-        .without('type')
-        // v3 returns a calculated excerpt field
-        .concat('excerpt')
-        // Access is a calculated property in >= v3
-        .concat('access')
-        // returns meta fields from `posts_meta` schema
-        .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
-        )
-        .concat('reading_time')
-        .concat('send_email_when_published')
-    ,
+    post: [
+        'id',
+        'uuid',
+        'title',
+        'slug',
+        'html',
+        'comment_id',
+        'feature_image',
+        'featured',
+        'visibility',
+        'email_recipient_filter',
+        'created_at',
+        'updated_at',
+        'published_at',
+        'custom_excerpt',
+        'codeinjection_head',
+        'codeinjection_foot',
+        'custom_template',
+        'canonical_url',
+        'url',
+        'excerpt',
+        'access',
+        'og_image',
+        'og_title',
+        'og_description',
+        'twitter_image',
+        'twitter_title',
+        'twitter_description',
+        'meta_title',
+        'meta_description',
+        'email_subject',
+        'frontmatter',
+        'reading_time',
+        'send_email_when_published'
+    ],
     author: _(schema.users)
         .keys()
         .without(

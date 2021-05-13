@@ -20,28 +20,41 @@ const expectedProperties = {
 
     site: ['title', 'url', 'version'],
 
-    post: _(schema.posts)
-        .keys()
-        .filter(key => key.indexOf('@@') === -1)
-        // by default we only return mobiledoc
-        .without('html', 'plaintext')
-        .without('visibility')
-        .without('locale')
-        .without('page')
-        .without('author_id', 'author')
-        // emails are not supported in API v2
-        .without('email_recipient_filter')
-        // always returns computed properties
-        .concat('url', 'primary_tag', 'primary_author', 'excerpt')
-        .concat('authors', 'tags')
-        // returns meta fields from `posts_meta` schema
-        .concat(
-            ..._(schema.posts_meta).keys()
-                .without('post_id', 'id')
-                // emails are not supported in API v2
-                .without('email_subject')
-        )
-    ,
+    post: [
+        'id',
+        'uuid',
+        'title',
+        'slug',
+        'mobiledoc',
+        'comment_id',
+        'feature_image',
+        'featured',
+        'type',
+        'status',
+        'created_at',
+        'updated_at',
+        'published_at',
+        'custom_excerpt',
+        'codeinjection_head',
+        'codeinjection_foot',
+        'custom_template',
+        'canonical_url',
+        'url',
+        'primary_tag',
+        'primary_author',
+        'excerpt',
+        'authors',
+        'tags',
+        'og_image',
+        'og_title',
+        'og_description',
+        'twitter_image',
+        'twitter_title',
+        'twitter_description',
+        'meta_title',
+        'meta_description',
+        'frontmatter'
+    ],
     user: _(schema.users)
         .keys()
         .without('visibility')
