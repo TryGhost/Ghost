@@ -172,6 +172,37 @@ describe('Posts API (v2)', function () {
                 });
         });
 
+        it('read-only value do not cause errors when edited', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                frontmatter: 'hey!',
+                                plaintext: 'hello!',
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    // NOTE: when ONLY ignored fields are posted they should not change a thing, thus cache stays untouched
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].published_at);
+                    should.equal(res.body.posts[0].frontmatter, null);
+                    should.equal(res.body.posts[0].plaintext, testUtils.DataGenerator.Content.posts[0].plaintext);
+                });
+        });
+
         it('html to plaintext', function () {
             return request
                 .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
