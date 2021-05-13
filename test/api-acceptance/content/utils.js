@@ -81,23 +81,6 @@ const expectedProperties = {
     ]
 };
 
-_.each(expectedProperties, (value, key) => {
-    if (!value.__wrapped__) {
-        return;
-    }
-
-    /**
-     * @deprecated: x_by
-     */
-    expectedProperties[key] = value
-        .without(
-            'created_by',
-            'updated_by',
-            'published_by'
-        )
-        .value();
-});
-
 module.exports = {
     API: {
         getApiQuery(route) {
