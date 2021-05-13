@@ -180,6 +180,7 @@ export function getAvailablePrices({site = {}, includeFree = true} = {}) {
             id: 'free',
             type: 'free',
             price: 0,
+            currency: 'usd',
             currency_symbol: '$',
             name: 'Free'
         });
@@ -195,7 +196,7 @@ export function getAvailablePrices({site = {}, includeFree = true} = {}) {
 
 export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = {}) {
     const {
-        prices,
+        prices = [],
         allow_self_signup: allowSelfSignup,
         is_stripe_configured: isStripeConfigured,
         portal_plans: portalPlans
@@ -229,15 +230,23 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
     }).sort((a, b) => {
         return (a.active === b.active) ? 0 : (a.active ? -1 : 1);
     });
-
+    let freePriceCurrencyDetail = {
+        currency: 'usd',
+        currency_symbol: '$'
+    };
+    if (stripePrices && stripePrices.length > 0) {
+        freePriceCurrencyDetail.currency = stripePrices[0].currency;
+        freePriceCurrencyDetail.currency_symbol = stripePrices[0].currency_symbol;
+    }
     if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
         plansData.push({
             id: 'free',
             type: 'free',
             price: 0,
             amount: 0,
-            currency_symbol: '$',
-            name: 'Free'
+            name: 'Free',
+            ...freePriceCurrencyDetail
+
         });
     }
     const showOnlyFree = pageQuery === 'free' && hasPrice({site, plan: 'free'});
