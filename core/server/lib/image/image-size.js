@@ -2,6 +2,7 @@ const debug = require('ghost-ignition').debug('utils:image-size');
 const sizeOf = require('image-size');
 const probeSizeOf = require('probe-image-size');
 const url = require('url');
+const path = require('path');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
@@ -38,14 +39,14 @@ class ImageSize {
         return new Promise((resolve, reject) => {
             try {
                 const dimensions = sizeOf(buffer);
-    
+
                 // CASE: `.ico` files might have multiple images and therefore multiple sizes.
                 // We return the largest size found (image-size default is the first size found)
                 if (dimensions.images) {
                     dimensions.width = _.maxBy(dimensions.images, img => img.width).width;
                     dimensions.height = _.maxBy(dimensions.images, img => img.height).height;
                 }
-    
+
                 return resolve(dimensions);
             } catch (err) {
                 return reject(err);
@@ -65,7 +66,7 @@ class ImageSize {
                 context: imageUrl
             }));
         }
-    
+
         return probeSizeOf(imageUrl, this.REQUEST_OPTIONS);
     }
 
@@ -82,23 +83,23 @@ class ImageSize {
     _imageSizeFromUrl(imageUrl) {
         return new Promise((resolve, reject) => {
             let parsedUrl;
-    
+
             try {
                 parsedUrl = url.parse(imageUrl);
             } catch (err) {
                 reject(err);
             }
-    
+
             // check if we got an url without any protocol
             if (!parsedUrl.protocol) {
                 // CASE: our gravatar URLs start with '//' and we need to add 'http:'
                 // to make the request work
                 imageUrl = 'http:' + imageUrl;
             }
-    
+
             const extensionMatch = imageUrl.match(/(?:\.)([a-zA-Z]{3,4})(\?|$)/) || [];
             const extension = (extensionMatch[1] || '').toLowerCase();
-    
+
             if (FETCH_ONLY_FORMATS.includes(extension)) {
                 return resolve(this._fetchImageSizeFromUrl(imageUrl));
             } else {
@@ -123,7 +124,7 @@ class ImageSize {
     // In case the image is not stored locally and is missing the protocol (like //www.gravatar.com/andsoon),
     // we add the protocol and use urlFor() to get the absolute URL.
     // If the request fails or image-size is not able to read the file, we reject with error.
-    
+
     /**
      * @description read image dimensions from URL
      * @param {string} imagePath as URL
@@ -134,17 +135,17 @@ class ImageSize {
             // don't make a request for a locally stored image
             return this.getImageSizeFromStoragePath(imagePath);
         }
-    
+
         // CASE: pre 1.0 users were able to use an asset path for their blog logo
         if (imagePath.match(/^\/assets/)) {
             imagePath = this.urlUtils.urlJoin(this.urlUtils.urlFor('home', true), this.urlUtils.getSubdir(), '/', imagePath);
         }
-    
+
         debug('requested imagePath:', imagePath);
-    
+
         return this._imageSizeFromUrl(imagePath).then((dimensions) => {
             debug('Image fetched (URL):', imagePath);
-    
+
             return {
                 url: imagePath,
                 width: dimensions.width,
@@ -175,7 +176,7 @@ class ImageSize {
             if (errors.utils.isIgnitionError(err)) {
                 return Promise.reject(err);
             }
-    
+
             return Promise.reject(new errors.InternalServerError({
                 message: 'Unknown Request error.',
                 code: 'IMAGE_SIZE_URL',
@@ -205,12 +206,12 @@ class ImageSize {
      */
     getImageSizeFromStoragePath(imagePath) {
         let filePath;
-    
+
         imagePath = this.urlUtils.urlFor('image', {image: imagePath}, true);
-    
+
         // get the storage readable filePath
         filePath = this.storageUtils.getLocalFileStoragePath(imagePath);
-    
+
         return this.storage.getStorage()
             .read({path: filePath})
             .then((buf) => {
@@ -239,7 +240,7 @@ class ImageSize {
                 if (errors.utils.isIgnitionError(err)) {
                     return Promise.reject(err);
                 }
-    
+
                 return Promise.reject(new errors.InternalServerError({
                     message: err.message,
                     code: 'IMAGE_SIZE_STORAGE',
@@ -253,22 +254,53 @@ class ImageSize {
             });
     }
 
+    async getOriginalImageSizeFromStoragePath(imagePath) {
+        const {dir, name, ext} = path.parse(imagePath);
+        const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
+
+        if (!imageNameMatched) {
+            return this.getImageSizeFromStoragePath(imagePath);
+        }
+
+        const originalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
+        const originalImageExists = await this.storage.getStorage().exists(originalImagePath);
+
+        return this.getImageSizeFromStoragePath(originalImageExists ? originalImagePath : imagePath);
+    }
+
+    _getPathFromUrl(imageUrl) {
+        // local storage adapter's .exists() expects image paths without any prefixes
+        const subdirRegex = new RegExp(`^${this.urlUtils.getSubdir()}`);
+        const contentRegex = new RegExp(`^/${this.urlUtils.STATIC_IMAGE_URL_PREFIX}`);
+        const storagePath = imageUrl.replace(subdirRegex, '').replace(contentRegex, '');
+
+        return storagePath;
+    }
+
+    getImageSizeFromStorageUrl(imageUrl) {
+        return this.getImageSizeFromStoragePath(this._getPathFromUrl(imageUrl));
+    }
+
+    getOriginalImageSizeFromStorageUrl(imageUrl) {
+        return this.getOriginalImageSizeFromStoragePath(this._getPathFromUrl(imageUrl));
+    }
+
     /**
      * Supported formats of https://github.com/image-size/image-size:
      * BMP, GIF, JPEG, PNG, PSD, TIFF, WebP, SVG, ICO
      * Get dimensions for a file from its real file storage path
      * Always returns {object} getImageDimensions
-     * @param {string} path
+     * @param {string} imagePath
      * @returns {Promise<Object>} getImageDimensions
      * @description Takes a file path and returns width and height.
      */
-    getImageSizeFromPath(path) {
+    getImageSizeFromPath(imagePath) {
         return new Promise(function getSize(resolve, reject) {
             let dimensions;
-    
+
             try {
-                dimensions = sizeOf(path);
-    
+                dimensions = sizeOf(imagePath);
+
                 if (dimensions.images) {
                     dimensions.width = _.maxBy(dimensions.images, (w) => {
                         return w.width;
@@ -277,7 +309,7 @@ class ImageSize {
                         return h.height;
                     }).height;
                 }
-    
+
                 return resolve({
                     width: dimensions.width,
                     height: dimensions.height
@@ -285,7 +317,7 @@ class ImageSize {
             } catch (err) {
                 return reject(new errors.ValidationError({
                     message: this.i18n.t('errors.utils.images.invalidDimensions', {
-                        file: path,
+                        file: imagePath,
                         error: err.message
                     })
                 }));
