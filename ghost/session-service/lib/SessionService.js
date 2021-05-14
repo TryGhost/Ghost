@@ -119,7 +119,10 @@ module.exports = function createSessionService({getSession, findUserById, getOri
         }
 
         const session = await getSession(req, res);
-        cookieCsrfProtection(req, session);
+        // Enable CSRF bypass (useful for OAuth for example)
+        if (!res || !res.locals || !res.locals.bypassCsrfProtection) {
+            cookieCsrfProtection(req, session);
+        }
 
         if (!session || !session.user_id) {
             return null;
