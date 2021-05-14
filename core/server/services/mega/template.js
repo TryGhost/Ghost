@@ -914,7 +914,7 @@ ${ templateSettings.showBadge ? `
                                     </tr>
                                     ${post.feature_image ? `
                                     <tr>
-                                        <td class="feature-image"><img src="${post.feature_image}"></td>
+                                        <td class="feature-image"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''}></td>
                                     </tr>
                                     ` : ``}
                                     <tr>
