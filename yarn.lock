@@ -818,10 +818,10 @@
     bluebird "^3.7.2"
     lodash "^4.17.21"
 
-"@tryghost/session-service@0.1.21":
-  version "0.1.21"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.21.tgz#9151b4cdd99657df4dcc58c5d1b4d5ac199891af"
-  integrity sha512-JahahCRx0BwsB27NvRXdehW2Vvt9bRi4Zof+Y35jSbu8++HmkuE7kkv1qeJgA4Zn4OJ4WQDrgv3mOsjPGWKTEQ==
+"@tryghost/session-service@0.1.22":
+  version "0.1.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.22.tgz#8f9c0f9357beb2bf9b28e7a3df8379ba24e70d6a"
+  integrity sha512-9R7BWhtA9DQYKrWiU6I7y6LIe9sEw62PDwQE7ApeBUEeE5CiOaWIpenh/iycRpnE/Rygyf9WtoDFGFVuO8MfVA==
   dependencies:
     "@tryghost/errors" "^0.2.11"
 
