@@ -1,22 +1,38 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
 
 export default class SettingsMembersDefaultPostAccess extends Component {
     @service settings;
 
-    @tracked postAccessOpen = false;
+    get options() {
+        return [{
+            name: 'Public',
+            description: 'All site visitors to your site, no login required',
+            value: 'public'
+        }, {
+            name: 'Members only',
+            description: 'All logged-in members',
+            value: 'members'
+        }, {
+            name: 'Paid-members only',
+            description: 'Only logged-in mmembers with an active Stripe subscription',
+            value: 'paid'
+        }];
+    }
 
-    @action
-    togglePostAccess() {
-        this.postAccessOpen = !this.postAccessOpen;
+    get selectedOption() {
+        if (this.settings.get('membersSignupAccess') === 'none') {
+            return this.options.find(o => o.value === 'public');
+        }
+
+        return this.options.find(o => o.value === this.settings.get('defaultContentVisibility'));
     }
 
     @action
-    setDefaultContentVisibility(value) {
+    setDefaultContentVisibility(option) {
         if (this.settings.get('membersSignupAccess') !== 'none') {
-            this.settings.set('defaultContentVisibility', value);
+            this.settings.set('defaultContentVisibility', option.value);
         }
     }
 }
