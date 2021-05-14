@@ -1,0 +1,47 @@
+<div class="gh-expandable-block">
+    <div class="gh-expandable-header">
+        <div>
+            <h4 class="gh-expandable-title">Subscription access</h4>
+            <p class="gh-expandable-description">Who should be able to subscribe to your site?</p>
+        </div>
+        <button type="button" class="gh-btn" {{on "click" this.toggleSignupAccess}} data-test-toggle="subscription-access"><span>{{if this.signupAccessOpen "Close" "Expand"}}</span></button>
+    </div>
+    <div class="gh-expandable-content">
+        {{#liquid-if this.signupAccessOpen}}
+            <div class="flex flex-column w-50">
+                <div
+                    class="gh-radio {{if (eq this.settings.membersSignupAccess "all") "active"}}"
+                    {{on "click" (fn this.setSignupAccess "all")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Anyone can sign up</div>
+                        <div class="gh-radio-desc">All visitors will be able to subscribe and sign in</div>
+                    </div>
+                </div>
+
+                <div
+                    class="gh-radio {{if (eq this.settings.membersSignupAccess "invite") "active"}}"
+                    {{on "click" (fn this.setSignupAccess "invite")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Only people I invite</div>
+                        <div class="gh-radio-desc">People can sign in from your site but won't be able to sign up</div>
+                    </div>
+                </div>
+
+                <div
+                    class="gh-radio {{if (eq this.settings.membersSignupAccess "none") "active"}}"
+                    {{on "click" (fn this.setSignupAccess "none")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Nobody</div>
+                        <div class="gh-radio-desc">No one will be able to subscribe or sign in</div>
+                    </div>
+                </div>
+            </div>
+        {{/liquid-if}}
+    </div>
+</div>

@@ -7,11 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class MembersAccessController extends Controller {
     @service settings;
 
-    queryParams = ['signupAccessOpen', 'postAccessOpen']
-
     @tracked showLeaveSettingsModal = false;
-    @tracked signupAccessOpen = false;
-    @tracked postAccessOpen = false;
 
     leaveRoute(transition) {
         if (this.settings.get('hasDirtyAttributes')) {
@@ -32,32 +28,6 @@ export default class MembersAccessController extends Controller {
     cancelLeave() {
         this.showLeaveSettingsModal = false;
         this.leaveSettingsTransition = null;
-    }
-
-    @action
-    toggleSignupAccess() {
-        this.signupAccessOpen = !this.signupAccessOpen;
-    }
-
-    @action
-    togglePostAccess() {
-        this.postAccessOpen = !this.postAccessOpen;
-    }
-
-    @action
-    setDefaultContentVisibility(value) {
-        if (this.settings.get('membersSignupAccess') !== 'none') {
-            this.settings.set('defaultContentVisibility', value);
-        }
-    }
-
-    @action
-    setSignupAccess(value) {
-        this.settings.set('membersSignupAccess', value);
-        if (value === 'none') {
-            this.settings.set('defaultContentVisibility', 'public');
-            this.postAccessOpen = true;
-        }
     }
 
     @task({drop: true})
