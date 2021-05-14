@@ -9,7 +9,6 @@ export default BaseValidator.create({
         'authors',
         'customExcerpt',
         'canonicalUrl',
-        'visibility',
         'codeinjectionHead',
         'codeinjectionFoot',
         'metaTitle',
@@ -63,13 +62,6 @@ export default BaseValidator.create({
     customExcerpt(model) {
         if (!validator.isLength(model.customExcerpt || '', 0, 300)) {
             model.errors.add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
-            this.invalidate();
-        }
-    },
-
-    visibility(model) {
-        if (isBlank(model.visibility) && !model.isNew) {
-            model.errors.add('visibility', 'A members group must be selected for members-only posts');
             this.invalidate();
         }
     },
