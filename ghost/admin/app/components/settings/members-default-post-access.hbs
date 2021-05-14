@@ -1,0 +1,47 @@
+<div class="gh-expandable-block">
+    <h4 class="gh-expandable-header">
+        <div>
+            <h4 class="gh-expandable-title">Default post access</h4>
+            <p class="gh-expandable-description">When a new post is created, who should have access to it?</p>
+        </div>
+        <button type="button" class="gh-btn" {{on "click" this.togglePostAccess}} data-test-toggle="post-access"><span>{{if this.postAccessOpen "Close" "Expand"}}</span></button>
+    </h4>
+    <div class="gh-expandable-content">
+        {{#liquid-if this.postAccessOpen}}
+        <div class="flex flex-column w-50">
+            <div
+                class="gh-radio {{if (eq this.settings.defaultContentVisibility "public") "active"}}"
+                {{on "click" (fn this.setDefaultContentVisibility "public")}}
+            >
+                <div class="gh-radio-button"></div>
+                <div class="gh-radio-content">
+                    <div class="gh-radio-label">Public<br>
+                    <div class="gh-radio-desc">All site visitors to your site, no login required</div></div>
+                </div>
+            </div>
+            <div class="{{if (eq this.settings.membersSignupAccess "none") "disabled-overlay"}}">
+                <div
+                    class="gh-radio {{if (eq this.settings.defaultContentVisibility "members") "active"}}"
+                    {{on "click" (fn this.setDefaultContentVisibility "members")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Members only<br>
+                        <div class="gh-radio-desc">All logged-in members</div></div>
+                    </div>
+                </div>
+                <div
+                    class="gh-radio {{if (eq this.settings.defaultContentVisibility "paid") "active"}}"
+                    {{on "click" (fn this.setDefaultContentVisibility "paid")}}
+                >
+                    <div class="gh-radio-button"></div>
+                    <div class="gh-radio-content">
+                        <div class="gh-radio-label">Paid-members only<br>
+                        <div class="gh-radio-desc">Only logged-in members with an active Stripe subscription</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/liquid-if}}
+    </div>
+</div>
