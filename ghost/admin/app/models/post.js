@@ -92,7 +92,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     twitterDescription: attr('string'),
     emailSubject: attr('string'),
     html: attr('string'),
-    visibility: attr('visibility-string'),
+    visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
     mobiledoc: attr('json-string'),
@@ -192,18 +192,6 @@ export default Model.extend(Comparable, ValidationEngine, {
             let momentValue = value ? moment(value) : null;
             this._setPublishedAtBlogStrings(momentValue);
             return this._getPublishedAtBlogTZ();
-        }
-    }),
-
-    isPublic: computed('visibility', function () {
-        return this.visibility === 'public' ? true : false;
-    }),
-
-    visibilitySegment: computed('visibility', 'isPublic', function () {
-        if (this.isPublic) {
-            return this.settings.get('defaultContentVisibility') === 'paid' ? 'status:-free' : 'status:free,status:-free';
-        } else {
-            return this.visibility;
         }
     }),
 

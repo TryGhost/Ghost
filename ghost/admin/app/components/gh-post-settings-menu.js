@@ -153,23 +153,6 @@ export default Component.extend(SettingsMenuMixin, {
             }
         },
 
-        async setVisibility(segment) {
-            this.post.set('visibility', segment);
-            try {
-                await this.post.validate({property: 'visibility'});
-                if (this.post.changedAttributes().visibility) {
-                    await this.savePost.perform();
-                }
-            } catch (e) {
-                if (!e) {
-                    // validation error
-                    return;
-                }
-
-                throw e;
-            }
-        },
-
         setCustomExcerpt(excerpt) {
             let post = this.post;
             let currentExcerpt = post.get('customExcerpt');
