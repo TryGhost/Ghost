@@ -119,7 +119,7 @@ class ImageSize {
     // };
     // if the dimensions can be fetched, and rejects with error, if not.
     // ***
-    // In case we get a locally stored image, which is checked withing the `isLocalImage`
+    // In case we get a locally stored image, which is checked within the `isLocalImage`
     // function we switch to read the image from the local file storage with `getImageSizeFromStoragePath`.
     // In case the image is not stored locally and is missing the protocol (like //www.gravatar.com/andsoon),
     // we add the protocol and use urlFor() to get the absolute URL.
