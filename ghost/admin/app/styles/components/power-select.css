@@ -9,7 +9,7 @@
     border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-5%));
 }
 
-.ember-power-select-trigger svg {
+.ember-power-select-trigger:not(.gh-setting-dropdown) svg {
     height: 4px;
     width: 6.11px;
     margin-left: 2px;
@@ -17,7 +17,7 @@
     vertical-align: middle;
 }
 
-.ember-power-select-trigger svg path {
+.ember-power-select-trigger:not(.gh-setting-dropdown) svg path {
     stroke: var(--darkgrey);
 }
 
