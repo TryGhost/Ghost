@@ -1427,7 +1427,7 @@ p.theme-validation-details {
 }
 
 .gh-setting-members-tierscontainer {
-    margin-top: 3vmin;
+    margin-top: 7vmin;
 }
 
 .gh-settings-members-tiersheader {
@@ -1506,6 +1506,182 @@ p.theme-validation-details {
     ;
     width: 420px;
     height: 582px;
-    margin-bottom: 60px;
+    margin-bottom: 32px;
     border-radius: 5px;
+}
+
+/* Stripe Connect modal */
+.fullscreen-modal-stripe-connect {
+    max-width: 860px;
+}
+
+.fullscreen-modal-stripe-connected {
+    max-width: 440px;
+}
+
+.fullscreen-modal-stripe-connect .gh-main-section {
+    margin: 0 0 -32px;
+}
+
+.fullscreen-modal-stripe-connected .gh-main-section {
+    margin-bottom: -20px;
+}
+
+.gh-members-stripe-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gh-members-stripe-info-header h4 {
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    color: #555ABF;
+}
+
+.gh-members-stripe-info {
+    border-radius: 0.9rem;
+    background: color-mod(#555ABF a(12%));
+    padding: 12px;
+    width: 380px;
+    color: #555ABF;
+}
+
+.gh-members-stripe-badge {
+    width: 180px;
+}
+
+.gh-members-stripe-link,
+.gh-members-stripe-link:hover {
+    color: #555ABF;
+    text-decoration: underline;
+}
+
+.gh-members-connectbutton-container {
+    max-width: 380px;
+}
+
+.gh-members-connectbutton-container .for-switch {
+    line-height: 1em;
+}
+
+.gh-members-connectbutton-container .for-switch label {
+    width: 36px !important
+}
+
+.gh-members-connectbutton-container .for-switch input:checked + .input-toggle-component {
+    background: #F1946A;
+}
+
+.gh-members-connect-testmodeon {
+    color: #F1946A;
+}
+
+.gh-members-stripe-connect-token {
+    background: var(--whitegrey-l2);
+    min-height: unset;
+    height: 80px;
+    max-width: 380px;
+    font-family: var(--font-family-mono);
+    font-size: 1.3rem;
+    resize: none;
+}
+
+.gh-members-connect-testmodelabel {
+    display: inline-block;
+    background: #f8e5b9;
+    color: #983705;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1em;
+    border-radius: 999px;
+    padding: 4px 8px;
+}
+
+.gh-members-connect-savecontainer {
+    height: 0px;
+    overflow-y: hidden;
+    transition: all 0.2s ease-in-out;
+    opacity: 0;
+    margin-top: 16px;
+    margin-bottom: 0;
+}
+
+.gh-members-connect-savecontainer.expanded {
+    margin-bottom: 20px;
+}
+
+.gh-members-connect-savecontainer.expanded {
+    height: 36px;
+    opacity: 1.0;
+}
+
+.gh-stripe-connected-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gh-stripe-connected-container .check-circle {
+    width: 60px;
+    height: 60px;
+    color: var(--green);
+    margin-top: 20px;
+}
+
+.gh-stripe-connected-container .check-circle path {
+    stroke-width: 1px;
+}
+
+.gh-stripe-connected-container h1 {
+    font-size: 2.1rem;
+    font-weight: 600;
+    letter-spacing: -.1px;
+    margin: 20px 0 4px;
+}
+
+.gh-stripe-connected-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.gh-stripe-connected-info p {
+    margin-bottom: 8px;
+}
+
+.gh-btn-stripe-disconnect {
+    align-self: flex-start;
+    margin-bottom: -34px;
+}
+
+.gh-stripe-error-hasactivesub {
+    margin: 24px 24px -8px;
+    color: var(--red);
+}
+
+@media (max-width: 500px) {
+    .gh-members-stripe-info-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gh-members-stripe-info-header h4 {
+        order: 2;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--whitegrey);
+    }
+
+    .gh-members-stripe-badge {
+        order: 1;
+        /* margin: -10px 0 0 -10px; */
+    }
+
+    .gh-members-stripe-info {
+        width: 100%;
+    }
 }
