@@ -19,6 +19,23 @@
 
     <section class="view-container settings-debug">
         <div class="gh-main-section">
+            <h4 class="gh-main-section-header small">Portal settings</h4>
+        </div>
+        <div class="flex flex-row pa2">
+            <div class="flex-grow-1">
+                <h4>Portal Settings</h4>
+                <span>Customize members modal signup flow</span>
+            </div>
+            <div>
+                <button type="button" class="gh-btn gh-btn-green gh-btn-outline" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
+                    <span> Customise Portal </span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="view-container settings-debug">
+        <div class="gh-main-section">
             <h4 class="gh-main-section-header small">Access and payments</h4>
         </div>
         <Settings::MembersSubscriptionAccess />
@@ -32,5 +49,13 @@
             @close={{this.cancelLeave}}
             @modifier="action wide"
         />
+    {{/if}}
+    {{#if this.showPortalSettings}}
+        <GhFullscreenModal @modal="portal-settings"
+            @model={{hash
+                openStripeSettings=(action "openStripeSettings")
+            }}
+            @close={{action "closePortalSettings"}}
+            @modifier="full-overlay portal-settings" />
     {{/if}}
 </section>
