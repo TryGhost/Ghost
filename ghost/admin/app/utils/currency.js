@@ -128,3 +128,34 @@ export function getSymbol(currency) {
 export function getNonDecimal(amount/*, currency*/) {
     return amount / 100;
 }
+
+export function getCurrencyOptions() {
+    const noOfTopCurrencies = 5;
+
+    const topCurrencies = currencies.slice(0, noOfTopCurrencies).map((currency) => {
+        return {
+            value: currency.isoCode.toLowerCase(),
+            label: `${currency.isoCode} - ${currency.name}`,
+            isoCode: currency.isoCode
+        };
+    });
+
+    const otherCurrencies = currencies.slice(noOfTopCurrencies, currencies.length).map((currency) => {
+        return {
+            value: currency.isoCode.toLowerCase(),
+            label: `${currency.isoCode} - ${currency.name}`,
+            isoCode: currency.isoCode
+        };
+    });
+
+    return [
+        {
+            groupName: '—',
+            options: topCurrencies
+        },
+        {
+            groupName: '—',
+            options: otherCurrencies
+        }
+    ];
+}
