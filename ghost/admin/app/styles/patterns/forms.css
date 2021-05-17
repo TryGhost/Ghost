@@ -647,11 +647,6 @@ textarea {
     min-width: 0; /* Firefox fix */
 }
 
-.form-group:not(.error) .gh-input-group .gh-input:focus + .gh-input-append {
-    border-color: color-mod(var(--green));
-    box-shadow: inset 0 0 0 1px var(--green);
-}
-
 .gh-input-group .gh-input:focus + .gh-input-append,
 .gh-input-group .gh-input:focus + .gh-input-append:before {
     background: var(--white);
@@ -677,6 +672,15 @@ textarea {
     border-bottom-left-radius: 0;
     flex: 1;
     color: var(--midlightgrey);
+}
+
+.gh-expandable-content .gh-input-append {
+    border-color: var(--whitegrey-d1);
+}
+
+.form-group:not(.error) .gh-input-group .gh-input:focus + .gh-input-append {
+    border-color: color-mod(var(--green));
+    box-shadow: inset 0 0 0 1px var(--green);
 }
 
 .gh-input-append:before {

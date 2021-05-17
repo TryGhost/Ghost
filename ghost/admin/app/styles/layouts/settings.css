@@ -1379,3 +1379,71 @@ p.theme-validation-details {
     margin: -8px 0 0;
     font-size: 1.3rem;
 }
+
+/* Membership */
+.gh-setting-members-basics {
+    display: grid;
+    grid-template-columns: auto 460px;
+    grid-gap: 32px;
+}
+
+.gh-setting-members-basicsform .intro {
+    font-size: 1.6rem;
+}
+
+.gh-setting-members-portalpreview {
+    flex-basis: 460px;
+    justify-self: end;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--midgrey);
+}
+
+.gh-setting-richdd-container {
+    margin: 32px 0;
+}
+
+.gh-setting-members-tierscontainer {
+    margin-top: 3vmin;
+}
+
+.gh-settings-members-tiersheader {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.gh-settings-members-tiersheader .gh-btn-stripe-status {
+    margin-bottom: 12px;
+}
+
+.gh-settings-members-tiersheader .gh-btn-stripe-status span {
+    height: 28px;
+    line-height: 28px;
+    font-size: 1.25rem;
+}
+
+.gh-setting-members-tierscontainer .gh-expandable:not(:first-of-type) {
+    margin-top: 20px;
+}
+
+.gh-settings-members-pricelabelcont {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-settings-members-pricelabelcont span {
+    margin: 0 4px;
+}
+
+.gh-settings-members-pricelabelcont span,
+.gh-settings-members-pricelabelcont div {
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.gh-setting-members-prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+}

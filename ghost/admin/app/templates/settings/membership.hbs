@@ -7,7 +7,7 @@
         </h2>
         <section class="view-actions">
             <GhTaskButton
-                @buttonText="Save settings"
+                @buttonText="Save"
                 @task={{this.saveSettingsTask}}
                 @successText="Saved"
                 @runningText="Saving"
@@ -18,28 +18,128 @@
     </GhCanvasHeader>
 
     <section class="view-container settings-debug">
-        <div class="gh-main-section">
-            <h4 class="gh-main-section-header small">Portal settings</h4>
-        </div>
-        <div class="flex flex-row pa2">
-            <div class="flex-grow-1">
-                <h4>Portal Settings</h4>
-                <span>Customize members modal signup flow</span>
+
+        <div class="gh-setting-members-basics">
+            <div class="gh-setting-members-basicsform">
+                <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $2 million per year, while Ghost takes 0% payment fees.</p>
+
+                <section class="gh-expandable">
+                    <div class="gh-expandable-block">
+                        <div class="gh-expandable-header">
+                            <div>
+                                <h4 class="gh-expandable-title">Portal Settings</h4>
+                                <p class="gh-expandable-description">
+                                    Customize members modal signup flow
+                                </p>
+                            </div>
+                            <div>
+                                <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
+                                    <span>Customise Portal</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="gh-setting-members-access">
+                    <Settings::MembersSubscriptionAccess />
+                    <Settings::MembersDefaultPostAccess />
+                </div>
             </div>
-            <div>
-                <button type="button" class="gh-btn gh-btn-green gh-btn-outline" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
-                    <span> Customise Portal </span>
+            <div class="gh-setting-members-portalpreview">
+                PORTAL PREVIEW
+            </div>
+        </div>
+
+        <div class="gh-setting-members-tierscontainer">
+            <div class="gh-settings-members-tiersheader">
+                <h4 class="gh-main-section-header small bn">Membership tiers</h4>
+                <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status">
+                    <span>Stripe not connected</span>
                 </button>
             </div>
-        </div>
-    </section>
+            <section class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Free</h4>
+                            <p class="gh-expandable-description">Free membership signup settings</p>
+                        </div>
+                        <button type="button" class="gh-btn" {{action (toggle "freeOpen" this)}} data-test-toggle-pub-info><span>{{if this.freeOpen "Close" "Expand"}}</span></button>
+                    </div>
+                    <div class="gh-expandable-content">
+                        {{#liquid-if this.freeOpen}}
+                        <div class="gh-setting-content-extended">
+                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
+                                <label for="freeWelcomePage">Welcome page</label>
+                                <GhTextInput
+                                    @id="freeWelcomePage"
+                                    @placeholder='https://'
+                                    data-test-title-input={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="free-welcome-page" />
+                                <p>Redirect to this URL after signup for a free membership</p>
+                            </GhFormGroup>
+                        </div>
+                        {{/liquid-if}}
+                    </div>
+                </div>
+            </section>
+            <section class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Premium</h4>
+                            <p class="gh-expandable-description">Customise prices and premium signup options</p>
+                        </div>
+                        <button type="button" class="gh-btn" {{action (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
+                    </div>
+                    <div class="gh-expandable-content">
+                        {{#liquid-if this.paidOpen}}
+                        <div class="gh-setting-content-extended">
+                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
+                                <div class="gh-settings-members-pricelabelcont">
+                                    <label for="monthlyPrice">Prices</label>
+                                    <span>–</span>
+                                    <div>USD</div>
+                                </div>
+                                <div class="gh-setting-members-prices">
+                                    <div class="gh-input-group">
+                                        <GhTextInput
+                                            @id="monthlyPrice"
+                                            @placeholder=''
+                                            data-test-title-input={{true}}
+                                        />
+                                        <div class="gh-input-append">USD/month</div>
+                                    </div>
+                                    <div class="gh-input-group">
+                                        <GhTextInput
+                                            @id="yearlyPrice"
+                                            @placeholder=''
+                                            data-test-title-input={{true}}
+                                        />
+                                        <div class="gh-input-append">USD/year</div>
+                                    </div>
+                                </div>
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="prices" />
+                            </GhFormGroup>
 
-    <section class="view-container settings-debug">
-        <div class="gh-main-section">
-            <h4 class="gh-main-section-header small">Access and payments</h4>
+                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="paid-welcome-page">
+                                <label for="paidWelcomePage">Welcome page</label>
+                                <GhTextInput
+                                    @id="paidWelcomePage"
+                                    @placeholder='https://'
+                                    data-test-title-input={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="paid-welcome-page" />
+                                <p>Redirect to this URL after signup for premium membership</p>
+                            </GhFormGroup>
+                        </div>
+                        {{/liquid-if}}
+                    </div>
+                </div>
+            </section>
         </div>
-        <Settings::MembersSubscriptionAccess />
-        <Settings::MembersDefaultPostAccess />
     </section>
 
     {{#if this.showLeaveSettingsModal}}
