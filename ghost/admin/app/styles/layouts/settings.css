@@ -225,7 +225,7 @@
     align-self: center;
 }
 
-.gh-setting-action .for-checkbox label, 
+.gh-setting-action .for-checkbox label,
 .gh-setting-action .for-radio label {
     padding-bottom: 0;
     margin-bottom: 0;
@@ -1463,6 +1463,26 @@ p.theme-validation-details {
 .gh-settings-members-pricelabelcont div {
     display: inline-block;
     margin-bottom: 4px;
+}
+
+.gh-settings-members-pricelabelcont .gh-select {
+    padding: 0;
+    width: 320px;
+    background: transparent;
+    border: none;
+}
+
+.gh-settings-members-pricelabelcont .gh-select select {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.gh-settings-members-pricelabelcont .gh-select svg {
+    position: absolute;
+    bottom: unset;
+    width: 12px;
+    margin-right: unset;
 }
 
 .gh-setting-members-prices {
