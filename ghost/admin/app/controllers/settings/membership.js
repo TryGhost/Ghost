@@ -7,7 +7,8 @@ import {tracked} from '@glimmer/tracking';
 export default class MembersAccessController extends Controller {
     @service settings;
 
-    @tracked showLeaveSettingsModal = false;
+    @tracked showLeavePortalModal = false;
+    @tracked showLeaveRouteModal = false;
     @tracked showPortalSettings = false;
 
     queryParams = ['showPortalSettings'];
@@ -16,15 +17,35 @@ export default class MembersAccessController extends Controller {
         if (this.settings.get('hasDirtyAttributes')) {
             transition.abort();
             this.leaveSettingsTransition = transition;
-            this.showLeaveSettingsModal = true;
+            this.showLeaveRouteModal = true;
+        }
+    }
+
+    @action openPortalSettings() {
+        this.saveSettingsTask.perform();
+        this.showPortalSettings = true;
+    }
+
+    @action
+    closePortalSettings() {
+        const changedAttributes = this.settings.changedAttributes();
+        if (changedAttributes && Object.keys(changedAttributes).length > 0) {
+            this.showLeavePortalModal = true;
+        } else {
+            this.showPortalSettings = false;
         }
     }
 
     @action
-    async leavePortalSettings() {
+    async confirmClosePortalSettings() {
         this.settings.rollbackAttributes();
         this.showPortalSettings = false;
-        this.showLeaveSettingsModal = false;
+        this.showLeavePortalModal = false;
+    }
+
+    @action
+    cancelClosePortalSettings() {
+        this.showLeavePortalModal = false;
     }
 
     @action
@@ -33,30 +54,25 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    closePortalSettings() {
-        const changedAttributes = this.settings.changedAttributes();
-        if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-            this.showLeaveSettingsModal = true;
-        } else {
-            this.showPortalSettings = false;
-        }
-    }
-
-    @action
     async confirmLeave() {
         this.settings.rollbackAttributes();
-        this.showLeaveSettingsModal = false;
         this.leaveSettingsTransition.retry();
     }
 
     @action
     cancelLeave() {
-        this.showLeaveSettingsModal = false;
+        this.showLeaveRouteModal = false;
         this.leaveSettingsTransition = null;
     }
 
     @task({drop: true})
     *saveSettingsTask() {
         return yield this.settings.save();
+    }
+
+    reset() {
+        this.showLeaveRouteModal = false;
+        this.showLeavePortalModal = false;
+        this.showPortalSettings = false;
     }
 }

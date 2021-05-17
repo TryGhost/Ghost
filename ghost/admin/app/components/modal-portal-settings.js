@@ -153,7 +153,9 @@ export default ModalComponent.extend({
         this._super(...arguments);
         this.get('settings.errors').clear();
         run.later(this, function () {
-            this.set('hidePreviewFrame', false);
+            if (!this.isDestroyed && !this.isDestroying) {
+                this.set('hidePreviewFrame', false);
+            }
         }, 1200);
     },
 

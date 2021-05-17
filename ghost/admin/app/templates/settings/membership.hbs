@@ -33,14 +33,14 @@
                                 </p>
                             </div>
                             <div>
-                                <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
+                                <button type="button" class="gh-btn gh-btn-green" {{on "click" this.openPortalSettings}} data-test-toggle="portal-settings">
                                     <span>Customise Portal &rarr;</span>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </section>
-                
+
                 <div class="gh-setting-members-access">
                     <Settings::MembersSubscriptionAccess />
                     <Settings::MembersDefaultPostAccess />
@@ -67,7 +67,7 @@
                             <h4 class="gh-expandable-title">Free</h4>
                             <p class="gh-expandable-description">Free membership signup settings</p>
                         </div>
-                        <button type="button" class="gh-btn" {{action (toggle "freeOpen" this)}} data-test-toggle-pub-info><span>{{if this.freeOpen "Close" "Expand"}}</span></button>
+                        <button type="button" class="gh-btn" {{on "click" (toggle "freeOpen" this)}} data-test-toggle-pub-info><span>{{if this.freeOpen "Close" "Expand"}}</span></button>
                     </div>
                     <div class="gh-expandable-content">
                         {{#liquid-if this.freeOpen}}
@@ -94,7 +94,7 @@
                             <h4 class="gh-expandable-title">Premium</h4>
                             <p class="gh-expandable-description">Customise prices and premium signup options</p>
                         </div>
-                        <button type="button" class="gh-btn" {{action (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
+                        <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
                     </div>
                     <div class="gh-expandable-content">
                         {{#liquid-if this.paidOpen}}
@@ -144,7 +144,7 @@
         </div>
     </section>
 
-    {{#if this.showLeaveSettingsModal}}
+    {{#if this.showLeaveRouteModal}}
         <GhFullscreenModal
             @modal="leave-settings"
             @confirm={{this.confirmLeave}}
@@ -152,12 +152,22 @@
             @modifier="action wide"
         />
     {{/if}}
+
     {{#if this.showPortalSettings}}
         <GhFullscreenModal @modal="portal-settings"
             @model={{hash
-                openStripeSettings=(action "openStripeSettings")
+                openStripeSettings=this.openStripeSettings
             }}
-            @close={{action "closePortalSettings"}}
+            @close={{this.closePortalSettings}}
             @modifier="full-overlay portal-settings" />
+    {{/if}}
+
+    {{#if this.showLeavePortalModal}}
+        <GhFullscreenModal
+            @modal="leave-settings"
+            @confirm={{this.confirmClosePortalSettings}}
+            @close={{this.cancelClosePortalSettings}}
+            @modifier="action wide"
+        />
     {{/if}}
 </section>
