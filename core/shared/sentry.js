@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
-    const version = process.env.npm_package_version;
+    const version = require('../../package.json').version;
     const environment = config.get('env');
     Sentry.init({
         dsn: sentryConfig.dsn,
