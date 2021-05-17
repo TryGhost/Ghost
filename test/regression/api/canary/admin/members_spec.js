@@ -491,7 +491,6 @@ describe('Members API (canary)', function () {
                 should(importedMember1.name).equal(null);
                 should(importedMember1.note).equal(null);
                 importedMember1.subscribed.should.equal(true);
-                importedMember1.comped.should.equal(false);
                 importedMember1.subscriptions.should.not.be.undefined();
                 importedMember1.subscriptions.length.should.equal(0);
 
@@ -558,7 +557,6 @@ describe('Members API (canary)', function () {
                 should(importedMember1.name).equal('Hannah');
                 should(importedMember1.note).equal('no need to map me');
                 importedMember1.subscribed.should.equal(true);
-                importedMember1.comped.should.equal(false);
                 importedMember1.subscriptions.should.not.be.undefined();
                 importedMember1.subscriptions.length.should.equal(0);
                 importedMember1.labels.length.should.equal(1); // auto-generated import label
@@ -603,7 +601,6 @@ describe('Members API (canary)', function () {
                 should(defaultMember1.name).equal(null);
                 should(defaultMember1.note).equal(null);
                 defaultMember1.subscribed.should.equal(true);
-                defaultMember1.comped.should.equal(false);
                 defaultMember1.subscriptions.should.not.be.undefined();
                 defaultMember1.subscriptions.length.should.equal(0);
                 defaultMember1.labels.length.should.equal(1); // auto-generated import label
