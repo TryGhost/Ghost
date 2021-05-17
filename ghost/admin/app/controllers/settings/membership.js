@@ -113,11 +113,6 @@ export default class MembersAccessController extends Controller {
         }
     }
 
-    openStripeSettings() {
-        // Open stripe settings here
-
-    }
-
     @action
     closeStripeConnect() {
         this.showStripeConnect = false;
