@@ -78,17 +78,6 @@ function serializeMember(member, options) {
         stripe = {
             subscriptions: json.subscriptions
         };
-        const hasCompedSubscription = !!json.subscriptions.find(
-            /**
-             * @param {SerializedMemberStripeSubscription} sub
-             */
-            function (sub) {
-                return sub.plan.nickname === 'Complimentary' && sub.status === 'active';
-            }
-        );
-        if (hasCompedSubscription) {
-            comped = true;
-        }
     }
 
     return {
