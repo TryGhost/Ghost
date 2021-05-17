@@ -340,7 +340,7 @@ DataGenerator.Content = {
             email: 'comped@test.com',
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
-            status: 'comped'
+            status: 'paid'
         },
         {
             id: ObjectId().toHexString(),
