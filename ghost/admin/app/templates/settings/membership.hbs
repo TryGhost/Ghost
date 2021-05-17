@@ -122,7 +122,11 @@
                                         <label for="monthlyPrice">Prices</label>
                                         <span>–</span>
                                         <div>
-                                            <span class="gh-select">
+                                            <span class="gh-setting-members-currency gh-select">
+                                                <div class="gh-setting-members-currencylabel">
+                                                    <span>{{this.currency}}</span>
+                                                    {{svg-jar "arrow-down-small"}}
+                                                </div>
                                                 <OneWaySelect
                                                     @value={{this.selectedCurrency}}
                                                     id="currency"
@@ -132,7 +136,6 @@
                                                     @optionLabelPath="label"
                                                     @update={{this.setStripePlansCurrency}}
                                                 />
-                                                {{svg-jar "arrow-down-small"}}
                                             </span>
                                         </div>
                                     </div>
