@@ -1,5 +1,5 @@
-<section class="gh-canvas">
-    <GhCanvasHeader class="gh-canvas-header">
+<section class="gh-canvas gh-setting-members-canvas">
+    <GhCanvasHeader class="gh-canvas-header gh-setting-members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="settings">Settings</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
@@ -23,7 +23,7 @@
             <div class="gh-setting-members-basicsform">
                 <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $2 million per year, while Ghost takes 0% payment fees.</p>
 
-                <section class="gh-expandable">
+                <section class="gh-expandable gh-setting-members-portalcta">
                     <div class="gh-expandable-block">
                         <div class="gh-expandable-header">
                             <div>
@@ -34,7 +34,7 @@
                             </div>
                             <div>
                                 <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
-                                    <span>Customise Portal</span>
+                                    <span>Customise Portal &rarr;</span>
                                 </button>
                             </div>
                         </div>
@@ -47,7 +47,9 @@
                 </div>
             </div>
             <div class="gh-setting-members-portalpreview">
+                <div class="gh-setting-members-portal-mock">
                 PORTAL PREVIEW
+                </div>
             </div>
         </div>
 
