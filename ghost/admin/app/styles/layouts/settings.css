@@ -1407,6 +1407,7 @@ p.theme-validation-details {
 }
 
 .gh-setting-members-basicsform .intro {
+    margin: 0 0 2em;
     font-size: 1.6rem;
 }
 
@@ -1422,8 +1423,32 @@ p.theme-validation-details {
     color: var(--midgrey);
 }
 
+.gh-setting-dropdown {
+    margin-top: 1.2rem;
+}
+
+.gh-setting-dropdown .gh-setting-dropdown-content {
+    display: flex;
+    margin: 1.6rem 1rem;
+}
+
+.gh-setting-dropdown-list .ember-power-select-option {
+    padding: 6px 8px;
+}
+
+.gh-setting-dropdown-list .gh-setting-dropdown-content {
+    display: flex;
+    margin: 1.4rem 1rem;
+}
+
+.gh-setting-dropdown-content svg {
+    width: 3.2rem;
+    height: 3.2rem;
+    margin-right: 1rem;
+}
+
 .gh-setting-richdd-container {
-    margin: 32px 0;
+    margin: 36px 0;
 }
 
 .gh-setting-members-tierscontainer {

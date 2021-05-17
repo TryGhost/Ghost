@@ -20,7 +20,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
             icon_color: 'green'
         }, {
             name: 'Paid-members only',
-            description: 'Only logged-in mmembers with an active Stripe subscription',
+            description: 'Only logged-in members with an active Stripe subscription',
             value: 'paid',
             icon: 'globe',
             icon_color: 'green'
