@@ -56,8 +56,10 @@
         <div class="gh-setting-members-tierscontainer">
             <div class="gh-settings-members-tiersheader">
                 <h4 class="gh-main-section-header small bn">Membership tiers</h4>
-                <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status">
-                    <span>Stripe not connected</span>
+                <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status {{if this.settings.stripeConnectAccountId "connected" ""}}" {{action (toggle "showStripeConnect" this)}}>
+                    <span>
+                        {{if this.settings.stripeConnectAccountId "Connected to Stripe" "Stripe not connected"}}
+                    </span>
                 </button>
             </div>
             <section class="gh-expandable">
@@ -100,7 +102,14 @@
                             <h4 class="gh-expandable-title">Premium</h4>
                             <p class="gh-expandable-description">Customise prices and premium signup options</p>
                         </div>
-                        <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
+
+                        {{#if this.settings.stripeConnectAccountId}}
+                            <button type="button" class="gh-btn" {{action (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
+                        {{else}}
+                            <button type="button" class="stripe-connect" {{action (toggle "showStripeConnect" this)}}>
+                                <span>Connect with Stripe</span>
+                            </button>
+                        {{/if}}
                     </div>
                     <div class="gh-expandable-content">
                         {{#liquid-if this.paidOpen}}
@@ -206,5 +215,12 @@
             @close={{this.cancelClosePortalSettings}}
             @modifier="action wide"
         />
+    {{/if}}
+    
+    {{#if this.showStripeConnect}}
+        <GhFullscreenModal
+            @modal="stripe-connect"
+            @close={{action "closeStripeConnect"}}
+            @modifier="action wide stripe-connect {{if this.settings.stripeConnectAccountId "stripe-connected" ""}}" />
     {{/if}}
 </section>
