@@ -9,15 +9,21 @@ export default class SettingsMembersSubscriptionAccess extends Component {
         return [{
             name: 'Anyone can sign up',
             description: 'All visitors will be able to subscribe and sign in',
-            value: 'all'
+            value: 'all',
+            icon: 'globe',
+            icon_color: 'green'
         }, {
             name: 'Only people I invite',
             description: 'People can sign in from your site but won\'t be able to sign up',
-            value: 'invite'
+            value: 'invite',
+            icon: 'globe',
+            icon_color: 'green'
         }, {
             name: 'Nobody',
             description: 'No one will be able to subscribe or sign in',
-            value: 'none'
+            value: 'none',
+            icon: 'globe',
+            icon_color: 'green'
         }];
     }
 

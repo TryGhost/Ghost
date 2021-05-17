@@ -9,15 +9,21 @@ export default class SettingsMembersDefaultPostAccess extends Component {
         return [{
             name: 'Public',
             description: 'All site visitors to your site, no login required',
-            value: 'public'
+            value: 'public',
+            icon: 'globe',
+            icon_color: 'green'
         }, {
             name: 'Members only',
             description: 'All logged-in members',
-            value: 'members'
+            value: 'members',
+            icon: 'globe',
+            icon_color: 'green'
         }, {
             name: 'Paid-members only',
             description: 'Only logged-in mmembers with an active Stripe subscription',
-            value: 'paid'
+            value: 'paid',
+            icon: 'globe',
+            icon_color: 'green'
         }];
     }
 
