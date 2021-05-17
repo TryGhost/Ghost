@@ -19,4 +19,10 @@ export default class MembershipSettingsRoute extends AuthenticatedRoute {
             titleToken: 'Settings - Membership'
         };
     }
+
+    resetController(controller, isExiting) {
+        if (isExiting) {
+            controller.reset();
+        }
+    }
 }
