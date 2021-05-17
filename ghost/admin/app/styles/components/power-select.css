@@ -1,12 +1,12 @@
 .ember-power-select-trigger {
     padding: 0 16px 0 8px;
-    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-5%));
+    border: var(--input-border);
     border-radius: var(--border-radius);
     background: transparent;
 }
 
 .ember-power-select-trigger:focus, .ember-power-select-trigger--active {
-    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-5%));
+    border: var(--input-border);
 }
 
 .ember-power-select-trigger:not(.gh-setting-dropdown) svg {
@@ -55,7 +55,8 @@
 }
 
 .ember-power-select-dropdown.ember-basic-dropdown-content--below {
-    border-bottom: none;
+    border: 1px solid var(--input-border-color);
+    border-top: none;
 }
 
 .ember-power-select-option {

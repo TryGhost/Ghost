@@ -16,7 +16,7 @@ export default class SettingsMembersSubscriptionAccess extends Component {
             name: 'Only people I invite',
             description: 'People can sign in from your site but won\'t be able to sign up',
             value: 'invite',
-            icon: 'globe',
+            icon: 'email-love-letter',
             icon_color: 'green'
         }, {
             name: 'Nobody',
