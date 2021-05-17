@@ -13,6 +13,7 @@ export default class MembersAccessController extends Controller {
     @tracked showLeavePortalModal = false;
     @tracked showLeaveRouteModal = false;
     @tracked showPortalSettings = false;
+    @tracked showStripeConnect = false;
 
     @tracked product = null;
     @tracked stripePrices = [];
@@ -110,6 +111,16 @@ export default class MembersAccessController extends Controller {
         } catch (err) {
             this.stripePlanError = err.message;
         }
+    }
+
+    openStripeSettings() {
+        // Open stripe settings here
+
+    }
+
+    @action
+    closeStripeConnect() {
+        this.showStripeConnect = false;
     }
 
     @action

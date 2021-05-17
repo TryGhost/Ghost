@@ -248,6 +248,10 @@ export default Component.extend({
         }
     }).drop(),
 
+    saveSettings: task(function* () {
+        return yield this.settings.save();
+    }).drop(),
+
     get liveStripeConnectAuthUrl() {
         return this.ghostPaths.url.api('members/stripe_connect') + '?mode=live';
     },
