@@ -41,39 +41,18 @@
         <div class="gh-setting-header">Members</div>
         <div class="gh-settings-main-grid">
             <LinkTo class="gh-setting-group" @route="settings.membership" data-test-nav="members-membership">
-                <span class="blue">{{svg-jar "eye"}}</span>
+                <span class="blue">{{svg-jar "portal-logo-stroke"}}</span>
                 <div>
                     <h4>Membership</h4>
-                    <p>REPLACE ME</p>
+                    <p>Access, prices and sign-up options</p>
                 </div>
             </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.products" data-test-nav="members-products">
-                <span class="green">{{svg-jar "module"}}</span>
-                <div>
-                    <h4>Products</h4>
-                    <p>Set up subscription products and prices</p>
-                </div>
-            </LinkTo>
-            <button type="button" class="gh-setting-group portal" {{action (toggle "showPortalSettings" this)}} data-test-toggle-membersFrom>
-                <span class="pink">{{svg-jar "portal-logo-stroke"}}</span>
-                <div>
-                    <h4>Portal</h4>
-                    <p>Customize members modal signup flow</p>
-                </div>
-            </button>
             {{#if this.session.user.isOwner}}
             <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="members-email">
                 <span class="yellow">{{svg-jar "email-stroke"}}</span>
                 <div>
                     <h4>Email newsletter</h4>
                     <p>Customise emails and set email addresses</p>
-                </div>
-            </LinkTo>
-            <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="members-payments">
-                <span class="blue">{{svg-jar "piggy-bank"}}</span>
-                <div>
-                    <h4>Payments</h4>
-                    <p>Stripe connection settings</p>
                 </div>
             </LinkTo>
             {{/if}}
