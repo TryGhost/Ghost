@@ -304,7 +304,7 @@ const FrameStyles = `
     }
 
     .gh-portal-container-wide {
-        width: 468px;
+        width: 440px;
     }
 
     .gh-portal-container-narrow {

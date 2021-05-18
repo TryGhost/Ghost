@@ -20,73 +20,73 @@ const prices = [
         amount: 1500,
         type: 'recurring',
         interval: 'month'
-    },
-    {
-        id: '6086eb2a823dd7240afc8081',
-        stripe_price_id: 'price_1IkXMUFToJelIqAstq0R3Ero',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price USD',
-        currency: 'usd',
-        amount: 1100,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
-        id: '6086eb3e823dd7240afc8082',
-        stripe_price_id: 'price_1IkXMoFToJelIqAsTHKl5ELV',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price Comp',
-        currency: 'usd',
-        amount: 0,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
-        id: '6086eff0823dd7240afc8083',
-        stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Yearly',
-        currency: 'aud',
-        amount: 12200,
-        type: 'recurring',
-        interval: 'year'
-    },
-    {
-        id: '6086f4c9823dd7240afc8084',
-        stripe_price_id: 'price_1IkY0CFToJelIqAs5h7qlgP5',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price B',
-        currency: 'gbp',
-        amount: 12000,
-        type: 'recurring',
-        interval: 'year'
-    },
-    {
-        id: '6087c314d3e64b3266bf715e',
-        stripe_price_id: 'price_1IkljzFToJelIqAsPNGA2Lov',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price A',
-        currency: 'cad',
-        amount: 12200,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
-        id: '6087c36ed3e64b3266bf715f',
-        stripe_price_id: 'price_1IkllSFToJelIqAsvElnxOwF',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price X',
-        currency: 'gbp',
-        amount: 12300,
-        type: 'recurring',
-        interval: 'month'
     }
+    // {
+    //     id: '6086eb2a823dd7240afc8081',
+    //     stripe_price_id: 'price_1IkXMUFToJelIqAstq0R3Ero',
+    //     stripe_product_id: 'prod_JNGGBrrogUXcoM',
+    //     active: 1,
+    //     nickname: 'Test Price USD',
+    //     currency: 'usd',
+    //     amount: 1100,
+    //     type: 'recurring',
+    //     interval: 'month'
+    // },
+    // {
+    //     id: '6086eb3e823dd7240afc8082',
+    //     stripe_price_id: 'price_1IkXMoFToJelIqAsTHKl5ELV',
+    //     stripe_product_id: 'prod_JNGGBrrogUXcoM',
+    //     active: 1,
+    //     nickname: 'Test Price Comp',
+    //     currency: 'usd',
+    //     amount: 0,
+    //     type: 'recurring',
+    //     interval: 'month'
+    // },
+    // {
+    //     id: '6086eff0823dd7240afc8083',
+    //     stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+    //     stripe_product_id: 'prod_JNGGBrrogUXcoM',
+    //     active: 1,
+    //     nickname: 'Yearly',
+    //     currency: 'aud',
+    //     amount: 12200,
+    //     type: 'recurring',
+    //     interval: 'year'
+    // },
+    // {
+    //     id: '6086f4c9823dd7240afc8084',
+    //     stripe_price_id: 'price_1IkY0CFToJelIqAs5h7qlgP5',
+    //     stripe_product_id: 'prod_JNGGBrrogUXcoM',
+    //     active: 1,
+    //     nickname: 'Test Price B',
+    //     currency: 'gbp',
+    //     amount: 12000,
+    //     type: 'recurring',
+    //     interval: 'year'
+    // },
+    // {
+    //     id: '6087c314d3e64b3266bf715e',
+    //     stripe_price_id: 'price_1IkljzFToJelIqAsPNGA2Lov',
+    //     stripe_product_id: 'prod_JNGGBrrogUXcoM',
+    //     active: 1,
+    //     nickname: 'Test Price A',
+    //     currency: 'cad',
+    //     amount: 12200,
+    //     type: 'recurring',
+    //     interval: 'month'
+    // },
+    // {
+    //     id: '6087c36ed3e64b3266bf715f',
+    //     stripe_price_id: 'price_1IkllSFToJelIqAsvElnxOwF',
+    //     stripe_product_id: 'prod_JNGGBrrogUXcoM',
+    //     active: 1,
+    //     nickname: 'Test Price X',
+    //     currency: 'gbp',
+    //     amount: 12300,
+    //     type: 'recurring',
+    //     interval: 'month'
+    // }
 ];
 
 const priceIds = prices.map(d => d.id);
