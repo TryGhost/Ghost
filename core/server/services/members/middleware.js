@@ -89,9 +89,14 @@ const getDefaultProductPrices = async function () {
         const activePrices = prices.filter((d) => {
             return !!d.active;
         });
+        const monthlyPriceId = settingsCache.get('members_monthly_price_id');
+        const yearlyPriceId = settingsCache.get('members_yearly_price_id');
+        const filteredPrices = activePrices.filter((d) => {
+            return [monthlyPriceId, yearlyPriceId].includes(d.id);
+        });
         return {
             product: productData,
-            prices: activePrices
+            prices: filteredPrices
         };
     }
     return {};
