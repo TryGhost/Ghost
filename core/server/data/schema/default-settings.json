@@ -312,6 +312,14 @@
         "members_free_price_description": {
             "defaultValue": "Free preview",
             "type": "string"
+        },
+        "members_monthly_price_id": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "members_yearly_price_id": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "portal": {
