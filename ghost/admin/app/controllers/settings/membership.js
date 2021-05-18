@@ -177,13 +177,29 @@ export default class MembersAccessController extends Controller {
     @action
     updatePortalPreview() {
         // TODO: can these be worked out from settings in membersUtils?
-        const monthlyPrice = this.stripeMonthlyAmount;
-        const yearlyPrice = this.stripeYearlyAmount;
+        const monthlyPrice = this.stripeMonthlyAmount * 100;
+        const yearlyPrice = this.stripeYearlyAmount * 100;
+        let portalPlans = this.settings.get('portalPlans') || [];
+        const currentMontlyPriceId = this.settings.get('membersMonthlyPriceId');
+        const currentYearlyPriceId = this.settings.get('membersYearlyPriceId');
+        let isMonthlyChecked = false;
+        let isYearlyChecked = false;
+        if (portalPlans.includes(currentMontlyPriceId)) {
+            isMonthlyChecked = true;
+        }
+
+        if (portalPlans.includes(currentYearlyPriceId)) {
+            isYearlyChecked = true;
+        }
 
         this.portalPreviewUrl = this.membersUtils.getPortalPreviewUrl({
             button: false,
             monthlyPrice,
-            yearlyPrice
+            yearlyPrice,
+            currency: this.currency,
+            isMonthlyChecked,
+            isYearlyChecked,
+            portalPlans: null
         });
 
         this.resizePortalPreviewTask.perform();
@@ -291,12 +307,12 @@ export default class MembersAccessController extends Controller {
         const currentMontlyPriceId = this.settings.get('membersMonthlyPriceId');
         const currentYearlyPriceId = this.settings.get('membersYearlyPriceId');
         if (portalPlans.includes(currentMontlyPriceId)) {
-            portalPlans = portalPlans.filter(d => d.id !== currentMontlyPriceId);
+            portalPlans = portalPlans.filter(priceId => priceId !== currentMontlyPriceId);
             portalPlans.push(monthlyPriceId);
         }
 
         if (portalPlans.includes(currentYearlyPriceId)) {
-            portalPlans = portalPlans.filter(d => d.id !== currentYearlyPriceId);
+            portalPlans = portalPlans.filter(priceId => priceId !== currentYearlyPriceId);
             portalPlans.push(yearlyPriceId);
         }
         this.settings.set('portalPlans', portalPlans);
@@ -341,6 +357,7 @@ export default class MembersAccessController extends Controller {
             if (yearlyPrice && yearlyPrice.amount) {
                 this.stripeYearlyAmount = (yearlyPrice.amount / 100);
             }
+            this.updatePortalPreview();
         }
     }
 
