@@ -1,14 +1,14 @@
 <div class="gh-launch-wizard-settings-container">
     <div class="gh-stack overflow-y-auto flex-grow-1">
         <div class="gh-stack-item gh-setting-first">
-            <div class="gh-launch-wizard-stripe-info">
-                <div class="flex justify-between items-center mb2">
-                    <div class="gh-setting-title">How you get paid</div>
+            <div class="gh-members-stripe-info gh-launch-wizard-stripe-info">
+                <div class="gh-members-stripe-info-header">
+                    <h4>Getting paid</h4>
                     {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
                 </div>
-                <div class="gh-setting-desc">
+                <p class="f8 mt2 mb0">
                     Stripe is our exclusive direct payments partner. Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
-                </div>
+                </p>
             </div>
         </div>
         {{#if this.config.stripeDirect}}

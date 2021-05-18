@@ -1620,7 +1620,7 @@ p.theme-validation-details {
 }
 
 .gh-members-connectbutton-container {
-    max-width: 380px;
+    margin-right: 4px;
 }
 
 .gh-members-connectbutton-container .for-switch {
