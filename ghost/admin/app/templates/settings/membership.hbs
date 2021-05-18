@@ -51,10 +51,7 @@
                     {{#if (eq this.settings.membersSignupAccess 'none')}}
                         PORTAL DISABLED
                     {{else}}
-                        <GhSiteIframe
-                            @src={{this.portalPreviewUrl}}
-                            @classNames="{{if this.hidePreviewFrame "invisible"}}"
-                        ></GhSiteIframe>
+                        <GhSiteIframe @src={{this.portalPreviewUrl}} />
                     {{/if}}
                 </div>
             </div>
