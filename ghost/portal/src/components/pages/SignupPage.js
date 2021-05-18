@@ -4,7 +4,7 @@ import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getProductDetails, getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getSitePrices, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -147,13 +147,8 @@ export const SignupPageStyles = `
 
     .gh-portal-icon-invitation {
         width: 44px;
+        height: 44px;
         margin: 12px 0 2px;
-    }
-
-    .gh-portal-icon-invitation path,
-    .gh-portal-icon-invitation circle,
-    .gh-portal-icon-invitation line {
-        stroke-width: 1.2px;
     }
 `;
 
