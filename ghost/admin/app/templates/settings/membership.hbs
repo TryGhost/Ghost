@@ -1,4 +1,4 @@
-<section class="gh-canvas gh-setting-members-canvas">
+<section class="gh-canvas gh-setting-members-canvas" {{did-insert this.updatePortalPreview}}>
     <GhCanvasHeader class="gh-canvas-header gh-setting-members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="settings">Settings</LinkTo>
@@ -41,14 +41,21 @@
                     </section>
 
                     <div class="gh-setting-members-access">
-                        <Settings::MembersSubscriptionAccess />
+                        <Settings::MembersSubscriptionAccess @onChange={{this.updatePortalPreview}} />
                         <Settings::MembersDefaultPostAccess />
                     </div>
                 </div>
             </div>
             <div class="gh-setting-members-portalpreview">
                 <div class="gh-setting-members-portal-mock">
-                PORTAL PREVIEW
+                    {{#if (eq this.settings.membersSignupAccess 'none')}}
+                        PORTAL DISABLED
+                    {{else}}
+                        <GhSiteIframe
+                            @src={{this.portalPreviewUrl}}
+                            @classNames="{{if this.hidePreviewFrame "invisible"}}"
+                        ></GhSiteIframe>
+                    {{/if}}
                 </div>
             </div>
         </div>
@@ -219,7 +226,7 @@
             @modifier="action wide"
         />
     {{/if}}
-    
+
     {{#if this.showStripeConnect}}
         <GhFullscreenModal
             @modal="stripe-connect"

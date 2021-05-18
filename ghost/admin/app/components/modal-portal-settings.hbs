@@ -29,7 +29,7 @@
                                 </div>
                             </div>
                         </GhFormGroup>
-                        {{#if this.isStripeConfigured}}
+                        {{#if this.membersUtils.isStripeEnabled}}
                         <div>
                             <div class="mb3">
                                 <h4 class="gh-portal-setting-title">Prices available at signup</h4>
@@ -41,10 +41,10 @@
                                 >
                                     <input
                                         type="checkbox"
-                                        checked={{this.isFreeChecked}}
+                                        checked={{this.membersUtils.isFreeChecked}}
                                         id="free-plan"
                                         name="free-plan"
-                                        disabled={{or (not this.isStripeConfigured) (not-eq this.settings.membersSignupAccess "all")}}
+                                        disabled={{or (not this.membersUtils.isStripeEnabled) (not-eq this.settings.membersSignupAccess "all")}}
                                         class="gh-input post-settings-featured"
                                         {{on "click" (action "toggleFreePlan" value="target.checked")}}
                                         data-test-checkbox="featured"
@@ -63,7 +63,7 @@
                                                 id={{price.id}}
                                                 name={{price.id}}
                                                 disabled={{or
-                                                    (not this.isStripeConfigured)
+                                                    (not this.membersUtils.isStripeEnabled)
                                                     (not-eq this.settings.membersSignupAccess "all")
                                                 }}
                                                 class="gh-input post-settings-featured"
@@ -138,8 +138,8 @@
                                         >
                                             <div class="flex items-center justify-between mt2 br3 ba b--whitegrey bg-white">
                                                 <div class="gh-portal-settings-icons">
-                                                    {{#each this.defaultButtonIcons as |imgIcon| }}
-                                                        <span class="gh-portal-button-icon {{if (eq this.buttonIcon imgIcon.value) "selected-icon"}}" onclick={{action "selectDefaultIcon" imgIcon.value}}>
+                                                    {{#each this.membersUtils.defaultButtonIcons as |imgIcon| }}
+                                                        <span class="gh-portal-button-icon {{if (eq this.membersUtils.buttonIcon imgIcon.value) "selected-icon"}}" onclick={{action "selectDefaultIcon" imgIcon.value}}>
                                                             {{svg-jar imgIcon.icon}}
                                                         </span>
                                                     {{/each}}
@@ -151,13 +151,13 @@
                                                         </div>
                                                     {{else if this.customIcon}}
                                                         <img
-                                                            class="gh-portal-button-icon gh-portal-button-custom {{if (eq this.buttonIcon this.customIcon) "selected-icon"}}"
+                                                            class="gh-portal-button-icon gh-portal-button-custom {{if (eq this.membersUtils.buttonIcon this.customIcon) "selected-icon"}}"
                                                             src="{{this.customIcon}}"
                                                             onclick={{action "selectDefaultIcon" this.customIcon}}
                                                             alt="icon"
                                                             data-test-icon-img
                                                         >
-                                                        {{#if (eq this.buttonIcon this.customIcon)}}
+                                                        {{#if (eq this.membersUtils.buttonIcon this.customIcon)}}
                                                         <button type="button" class="gh-btn gh-btn-hover-red gh-portal-button-deleteicon" {{action "deleteCustomIcon"}}>
                                                             <span> {{svg-jar "trash" class="w5 h5"}} </span>
                                                         </button>

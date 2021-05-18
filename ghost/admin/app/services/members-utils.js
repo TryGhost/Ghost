@@ -1,5 +1,4 @@
 import Service from '@ember/service';
-import {ICON_MAPPING} from 'ghost-admin/components/modal-portal-settings';
 import {inject as service} from '@ember/service';
 export default class MembersUtilsService extends Service {
     @service config;
@@ -18,31 +17,80 @@ export default class MembersUtilsService extends Service {
         return hasConnectKeys || hasDirectKeys;
     }
 
-    getPortalPreviewUrl(args) {
-        let {
-            disableBackground,
-            buttonIcon,
+    // Button / Icon helpers ---------------------------------------------------
+
+    get defaultButtonIcons() {
+        return [
+            {
+                icon: 'portal-icon-1',
+                value: 'icon-1'
+            },
+            {
+                icon: 'portal-icon-2',
+                value: 'icon-2'
+            },
+            {
+                icon: 'portal-icon-3',
+                value: 'icon-3'
+            },
+            {
+                icon: 'portal-icon-4',
+                value: 'icon-4'
+            },
+            {
+                icon: 'portal-icon-5',
+                value: 'icon-5'
+            }
+        ];
+    }
+
+    get defaultIconKeys() {
+        return this.defaultButtonIcons.map(buttonIcon => buttonIcon.value);
+    }
+
+    get buttonIcon() {
+        return this.settings.get('portalButtonIcon') || this.defaultIconKeys[0];
+    }
+
+    // Plan helpers ------------------------------------------------------------
+
+    get isFreeChecked() {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return !!(this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
+    }
+
+    get isMonthlyChecked() {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return !!(this.isStripeConfigured && allowedPlans.includes('monthly'));
+    }
+
+    get isYearlyChecked() {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return !!(this.isStripeConfigured && allowedPlans.includes('yearly'));
+    }
+
+    // Portal preview ----------------------------------------------------------
+
+    getPortalPreviewUrl(overrides) {
+        const {
+            disableBackground = false,
             page = 'signup',
-            isFreeChecked = true,
-            isMonthlyChecked = true,
-            isYearlyChecked = true,
+            buttonIcon = this.buttonIcon,
+            isFreeChecked = this.isFreeChecked,
+            isMonthlyChecked = this.isMonthlyChecked,
+            isYearlyChecked = this.isYearlyChecked,
             monthlyPrice,
             yearlyPrice,
-            portalPlans,
-            currency
-        } = args;
-
-        if (!buttonIcon) {
-            const defaultIconKeys = ICON_MAPPING.map(icon => icon.value);
-            buttonIcon = this.settings.get('portalButtonIcon') || defaultIconKeys[0];
-        }
+            portalPlans = this.settings.get('portalPlans'),
+            currency,
+            membersSignupAccess = this.settings.get('membersSignupAccess')
+        } = overrides;
 
         const baseUrl = this.config.get('blogUrl');
         const portalBase = '/#/portal/preview';
         const settingsParam = new URLSearchParams();
         const signupButtonText = this.settings.get('portalButtonSignupText') || '';
-        const allowSelfSignup = this.settings.get('membersSignupAccess') === 'all' &&
-            (!this.isStripeEnabled || isFreeChecked);
+        const allowSelfSignup = membersSignupAccess === 'all' && (!this.isStripeEnabled || isFreeChecked);
 
         settingsParam.append('button', this.settings.get('portalButton'));
         settingsParam.append('name', this.settings.get('portalName'));
@@ -52,6 +100,7 @@ export default class MembersUtilsService extends Service {
         settingsParam.append('page', page);
         settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
         settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
+        settingsParam.append('membersSignupAccess', membersSignupAccess);
         settingsParam.append('allowSelfSignup', allowSelfSignup);
 
         if (portalPlans) {
