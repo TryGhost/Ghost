@@ -22,26 +22,28 @@
         <div class="gh-setting-members-basics">
             <div class="gh-setting-members-basicsform">
                 <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $2 million per year, while Ghost takes 0% payment fees.</p>
-
-                <section class="gh-expandable gh-setting-members-portalcta">
-                    <div class="gh-expandable-block">
-                        <div class="gh-expandable-header">
-                            <div>
-                                <h4 class="gh-expandable-title">Portal Settings</h4>
-                                <p class="gh-expandable-description">
-                                    Customize members modal signup flow
-                                </p>
+                <hr>
+                <div>
+                    <section class="gh-expandable gh-setting-members-portalcta">
+                        <div class="gh-expandable-block">
+                            <div class="gh-expandable-header">
+                                <div>
+                                    <h4 class="gh-expandable-title">Portal Settings</h4>
+                                    <p class="gh-expandable-description">
+                                        Customize members modal signup flow
+                                    </p>
+                                </div>
+                                <button type="button" class="gh-btn gh-btn-green" {{on "click" this.openPortalSettings}} data-test-toggle="portal-settings">
+                                    <span>Customise Portal &rarr;</span>
+                                </button>
                             </div>
-                            <button type="button" class="gh-btn gh-btn-green" {{on "click" this.openPortalSettings}} data-test-toggle="portal-settings">
-                                <span>Customise Portal &rarr;</span>
-                            </button>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <div class="gh-setting-members-access">
-                    <Settings::MembersSubscriptionAccess />
-                    <Settings::MembersDefaultPostAccess />
+                    <div class="gh-setting-members-access">
+                        <Settings::MembersSubscriptionAccess />
+                        <Settings::MembersDefaultPostAccess />
+                    </div>
                 </div>
             </div>
             <div class="gh-setting-members-portalpreview">

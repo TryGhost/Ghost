@@ -1406,8 +1406,14 @@ p.theme-validation-details {
     grid-gap: 32px;
 }
 
+.gh-setting-members-basicsform {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 .gh-setting-members-basicsform .intro {
-    margin: 0 0 2em;
+    margin: 0;
     font-size: 1.6rem;
 }
 
@@ -1415,8 +1421,11 @@ p.theme-validation-details {
     background: linear-gradient(to left, color-mod(var(--main-color-content-greybg) l(-3%)), var(--main-color-content-greybg));
 }
 
+.gh-setting-members-access {
+    margin-bottom: 30px;
+}
+
 .gh-setting-members-portalpreview {
-    flex-basis: 460px;
     justify-self: end;
     font-size: 1.3rem;
     font-weight: 500;
@@ -1452,7 +1461,7 @@ p.theme-validation-details {
 }
 
 .gh-setting-members-tierscontainer {
-    margin-top: 7vmin;
+    margin-top: 4vmin;
 }
 
 .gh-settings-members-tiersheader {
