@@ -1,3 +1,4 @@
+const debug = require('ghost-ignition').debug('theme:validate');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
@@ -12,16 +13,19 @@ const canActivate = function canActivate(checkedTheme) {
 };
 
 const check = function check(theme, isZip) {
+    debug('Begin: Check');
     // gscan can slow down boot time if we require on boot, for now nest the require.
     const gscan = require('gscan');
     let checkPromise;
 
     if (isZip) {
+        debug('zip mode');
         checkPromise = gscan.checkZip(theme, {
             keepExtractedDir: true,
             checkVersion: 'canary'
         });
     } else {
+        debug('non-zip mode');
         checkPromise = gscan.check(theme.path, {
             checkVersion: 'canary'
         });
@@ -34,6 +38,7 @@ const check = function check(theme, isZip) {
                 checkVersion: 'canary'
             });
 
+            debug('End: Check');
             return checkedTheme;
         });
 };
