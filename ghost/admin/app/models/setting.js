@@ -61,6 +61,8 @@ export default Model.extend(ValidationEngine, {
     membersFreeSignupRedirect: attr('string'),
     membersFreePriceName: attr('string'),
     membersFreePriceDescription: attr('string'),
+    membersMonthlyPriceId: attr('string'),
+    membersYearlyPriceId: attr('string'),
     stripeProductName: attr('string'),
     stripeSecretKey: attr('string'),
     stripePublishableKey: attr('string'),

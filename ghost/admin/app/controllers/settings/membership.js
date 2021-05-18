@@ -1,9 +1,17 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
-import {getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
+import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
+
+const CURRENCIES = currencies.map((currency) => {
+    return {
+        value: currency.isoCode.toLowerCase(),
+        label: `${currency.isoCode} - ${currency.name}`,
+        isoCode: currency.isoCode
+    };
+});
 
 export default class MembersAccessController extends Controller {
     @service settings;
@@ -32,6 +40,10 @@ export default class MembersAccessController extends Controller {
         this.fetchDefaultProduct.perform();
 
         this.allCurrencies = getCurrencyOptions();
+    }
+
+    get selectedCurrency() {
+        return CURRENCIES.findBy('value', this.currency);
     }
 
     leaveRoute(transition) {
@@ -157,19 +169,36 @@ export default class MembersAccessController extends Controller {
         this.leaveSettingsTransition = null;
     }
 
-    saveProduct() {
+    async saveProduct() {
         if (this.product) {
             const stripePrices = this.product.stripePrices || [];
-            if (this.stripeMonthlyAmount && this.stripeYearlyAmount) {
+            const monthlyAmount = this.stripeMonthlyAmount * 100;
+            const yearlyAmount = this.stripeYearlyAmount * 100;
+            const getActivePrice = (prices, type, amount) => {
+                return prices.find((price) => {
+                    return (
+                        price.active && price.amount === amount && price.type === 'recurring' &&
+                        price.interval === type && price.currency.toLowerCase() === this.currency.toLowerCase()
+                    );
+                });
+            };
+            const monthlyPrice = getActivePrice(stripePrices, 'month', monthlyAmount);
+            const yearlyPrice = getActivePrice(stripePrices, 'year', yearlyAmount);
+
+            if (!monthlyPrice) {
                 stripePrices.push(
                     {
                         nickname: 'Monthly',
-                        amount: this.stripeMonthlyAmount * 100,
+                        amount: monthlyAmount,
                         active: 1,
                         currency: this.currency,
                         interval: 'month',
                         type: 'recurring'
-                    },
+                    }
+                );
+            }
+            if (!yearlyPrice) {
+                stripePrices.push(
                     {
                         nickname: 'Yearly',
                         amount: this.stripeYearlyAmount * 100,
@@ -179,12 +208,44 @@ export default class MembersAccessController extends Controller {
                         type: 'recurring'
                     }
                 );
-                this.product.set('stripePrices', stripePrices);
+            }
+            if (monthlyPrice && yearlyPrice) {
+                this.settings.set('membersMonthlyPriceId', monthlyPrice.id);
+                this.settings.set('membersYearlyPriceId', yearlyPrice.id);
                 return this.product;
             } else {
-                return this.product;
+                this.product.set('stripePrices', stripePrices);
+                const savedProduct = await this.product.save();
+                const updatedStripePrices = savedProduct.stripePrices || [];
+                const updatedMonthlyPrice = getActivePrice(updatedStripePrices, 'month', monthlyAmount);
+                const updatedYearlyPrice = getActivePrice(updatedStripePrices, 'year', yearlyAmount);
+                this.settings.set('membersMonthlyPriceId', updatedMonthlyPrice.id);
+                this.settings.set('membersYearlyPriceId', updatedYearlyPrice.id);
+                return savedProduct;
             }
         }
+    }
+
+    getPrice(prices, type) {
+        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
+        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
+
+        if (type === 'monthly') {
+            return (
+                prices.find(price => price.id === monthlyPriceId) ||
+                prices.find(price => price.nickname === 'Monthly') ||
+                prices.find(price => price.interval === 'month')
+            );
+        }
+
+        if (type === 'yearly') {
+            return (
+                prices.find(price => price.id === yearlyPriceId) ||
+                prices.find(price => price.nickname === 'Yearly') ||
+                prices.find(price => price.interval === 'year')
+            );
+        }
+        return null;
     }
 
     @task({drop: true})
@@ -193,9 +254,10 @@ export default class MembersAccessController extends Controller {
         this.product = products.firstObject;
         this.stripePrices = [];
         if (this.product) {
-            this.stripePrices = this.product.get('stripePrices');
-            const monthlyPrice = this.stripePrices.find(d => d.nickname === 'Monthly');
-            const yearlyPrice = this.stripePrices.find(d => d.nickname === 'Yearly');
+            this.stripePrices = this.product.get('stripePrices') || [];
+            const activePrices = this.stripePrices.filter(price => !!price.active);
+            const monthlyPrice = this.getPrice(activePrices, 'monthly');
+            const yearlyPrice = this.getPrice(activePrices, 'yearly');
             if (monthlyPrice && monthlyPrice.amount) {
                 this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
                 this.currency = monthlyPrice.currency;
@@ -217,6 +279,7 @@ export default class MembersAccessController extends Controller {
         if (this.settings.get('errors').length !== 0) {
             return;
         }
+        yield this.saveProduct();
         return yield this.settings.save();
     }
 
