@@ -242,6 +242,8 @@ export default class App extends React.Component {
                 data.site.disableBackground = JSON.parse(value);
             } else if (key === 'allowSelfSignup') {
                 data.site.allow_self_signup = JSON.parse(value);
+            } else if (key === 'membersSignupAccess' && value) {
+                data.site.members_signup_access = value;
             }
         }
         data.site.portal_plans = allowedPlans;
