@@ -53,7 +53,9 @@
                     {{else}}
                         <GhSiteIframe
                             @src={{this.portalPreviewUrl}}
-                            @invisibleUntilLoaded={{true}} />
+                            @invisibleUntilLoaded={{true}}
+                            @onLoad={{this.portalPreviewLoaded}}
+                            @onDestroyed={{this.portalPreviewDestroyed}} />
                     {{/if}}
                 </div>
             </div>

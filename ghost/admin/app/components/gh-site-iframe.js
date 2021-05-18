@@ -8,6 +8,10 @@ export default class GhSiteIframeComponent extends Component {
 
     @tracked isInvisible = this.args.invisibleUntilLoaded;
 
+    willDestroy() {
+        this.args.onDestroyed?.();
+    }
+
     get srcUrl() {
         return this.args.src || `${this.config.get('blogUrl')}/`;
     }
