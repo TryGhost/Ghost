@@ -15,12 +15,18 @@ export default Component.extend({
 
     filteredPrices: computed('prices', 'settings.portalPlans.[]', function () {
         const portalPlans = this.get('settings.portalPlans');
+        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
+        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
         const prices = this.prices || [];
         return prices.filter((d) => {
+            return [monthlyPriceId, yearlyPriceId].includes(d.id);
+        }).filter((d) => {
             return d.amount !== 0 && d.type === 'recurring';
         }).map((price) => {
             return {
                 ...price,
+                oldId: price.interval === 'month' ? 'monthly' : 'yearly',
+                oldNickname: price.interval === 'month' ? 'Monthly' : 'Yearly',
                 checked: !!portalPlans.find(d => d === price.id)
             };
         });
