@@ -26,10 +26,14 @@ export default ModalComponent.extend({
 
     confirm() {},
 
-    filteredPrices: computed('prices', 'settings.portalPlans.[]', function () {
+    filteredPrices: computed('prices', 'settings.{portalPlans.[],membersMonthlyPriceId,membersYearlyPriceId}', function () {
+        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
+        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
         const portalPlans = this.settings.get('portalPlans');
         const prices = this.prices || [];
         return prices.filter((d) => {
+            return [monthlyPriceId, yearlyPriceId].includes(d.id);
+        }).filter((d) => {
             return d.amount !== 0 && d.type === 'recurring';
         }).map((price) => {
             return {
