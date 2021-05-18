@@ -3,7 +3,6 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 const ICON_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
