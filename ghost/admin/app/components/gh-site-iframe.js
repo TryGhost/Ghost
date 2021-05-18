@@ -1,9 +1,12 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class GhSiteIframeComponent extends Component {
     @service config;
+
+    @tracked isInvisible = this.args.invisibleUntilLoaded;
 
     get srcUrl() {
         return this.args.src || `${this.config.get('blogUrl')}/`;
@@ -19,5 +22,13 @@ export default class GhSiteIframeComponent extends Component {
             }
         }
         this._lastGuid = this.args.guid;
+    }
+
+    @action
+    onLoad(event) {
+        if (this.args.invisibleUntilLoaded) {
+            this.isInvisible = false;
+        }
+        this.args.onLoad?.(event);
     }
 }
