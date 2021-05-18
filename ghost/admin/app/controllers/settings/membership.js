@@ -3,6 +3,7 @@ import {action} from '@ember/object';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const CURRENCIES = currencies.map((currency) => {
@@ -184,6 +185,40 @@ export default class MembersAccessController extends Controller {
             monthlyPrice,
             yearlyPrice
         });
+
+        this.resizePortalPreviewTask.perform();
+    }
+
+    @action
+    portalPreviewLoaded(event) {
+        this.portalPreviewIframe = event.target;
+        this.resizePortalPreviewTask.perform();
+    }
+
+    @action
+    portalPreviewDestroyed() {
+        this.portalPreviewIframe = null;
+        this.resizePortalPreviewTask.cancelAll();
+    }
+
+    @task({restartable: true})
+    *resizePortalPreviewTask() {
+        if (this.portalPreviewIframe && this.portalPreviewIframe.contentWindow) {
+            yield timeout(100); // give time for portal to re-render
+
+            const portalIframe = this.portalPreviewIframe.contentWindow.document.querySelector('#ghost-portal-root iframe');
+            if (!portalIframe) {
+                return;
+            }
+
+            const portalContainer = portalIframe.contentWindow.document.querySelector('.gh-portal-popup-container');
+            if (!portalContainer) {
+                return;
+            }
+
+            const height = portalContainer.clientHeight;
+            this.portalPreviewIframe.parentNode.style.height = `${height}px`;
+        }
     }
 
     @action
