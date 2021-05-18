@@ -65,7 +65,7 @@ export const PlanSectionStyles = `
         display: flex;
         flex-direction: row;
         min-height: 28px;
-        margin-top: 8px;
+        margin-top: 2px;
     }
 
     .gh-portal-plan-pricecontainer {
@@ -120,7 +120,6 @@ export const PlanSectionStyles = `
         flex-direction: column;
         align-items: center;
         border-top: 1px solid var(--grey12);
-        margin-top: 12px;
         padding-top: 12px;
         width: 100%;
     }
@@ -364,7 +363,6 @@ function PriceLabel({currencySymbol, price, interval}) {
                 <span className={currencyClass}>{currencySymbol}</span>
                 <span className='gh-portal-plan-price'>{formatNumber(price)}</span>
             </div>
-            {interval ? <div className='gh-portal-plan-priceinterval'>/{interval}</div> : null}
         </div>
     );
 }
