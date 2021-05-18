@@ -179,6 +179,7 @@ export default class MembersAccessController extends Controller {
         const yearlyPrice = this.stripeYearlyAmount;
 
         this.portalPreviewUrl = this.membersUtils.getPortalPreviewUrl({
+            button: false,
             monthlyPrice,
             yearlyPrice
         });
