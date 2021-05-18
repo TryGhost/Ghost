@@ -37,12 +37,12 @@ export default class MembersAccessController extends Controller {
 
     queryParams = ['showPortalSettings'];
 
-    constructor(...args) {
-        super(...args);
-        this.siteUrl = this.config.get('blogUrl');
-        this.fetchDefaultProduct.perform();
+    get allCurrencies() {
+        return getCurrencyOptions();
+    }
 
-        this.allCurrencies = getCurrencyOptions();
+    get siteUrl() {
+        return this.config.get('blogUrl');
     }
 
     get selectedCurrency() {
@@ -58,6 +58,7 @@ export default class MembersAccessController extends Controller {
     }
 
     _validateSignupRedirect(url, type) {
+        const siteUrl = this.config.get('blogUrl');
         let errMessage = `Please enter a valid URL`;
         this.settings.get('errors').remove(type);
         this.settings.get('hasValidated').removeObject(type);
@@ -73,8 +74,8 @@ export default class MembersAccessController extends Controller {
             return;
         }
 
-        if (url.href.startsWith(this.siteUrl)) {
-            const path = url.href.replace(this.siteUrl, '');
+        if (url.href.startsWith(siteUrl)) {
+            const path = url.href.replace(siteUrl, '');
             this.settings.set(type, path);
         } else {
             this.settings.set(type, url.href);
@@ -183,6 +184,11 @@ export default class MembersAccessController extends Controller {
             monthlyPrice,
             yearlyPrice
         });
+    }
+
+    setup() {
+        this.fetchDefaultProduct.perform();
+        this.updatePortalPreview();
     }
 
     async saveProduct() {
