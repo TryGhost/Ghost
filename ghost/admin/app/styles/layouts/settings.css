@@ -1478,6 +1478,22 @@ p.theme-validation-details {
     background: var(--white);
 }
 
+.gh-setting-dropdown[aria-disabled="true"] {
+    background: var(--whitegrey-l2);
+}
+
+.gh-setting-dropdown[aria-disabled="true"] svg path {
+    fill: var(--lightgrey-d1);
+}
+
+.gh-setting-dropdown[aria-disabled="true"] .gh-radio-label {
+    opacity: .65;
+}
+
+.gh-setting-dropdown:focus-visible {
+    outline: none;
+}
+
 .gh-setting-dropdown .ember-power-select-status-icon {
     right: 24px;
 }
