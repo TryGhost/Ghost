@@ -107,10 +107,10 @@
             {{#unless this.products}}
             <div class="gh-main-section-content bordered">
                 <div class="gh-cp-memberproduct-noproduct">
-                    <div class="mb2">This member doesn't have any subscriptions.</div>
+                    <div class="mb2">This member doesn't have subscriptions.</div>
                     {{#unless this.member.isNew}}
                     <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                        <span>{{svg-jar "add"}} Add subscription</span>
+                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
                     </button>
                     {{/unless}}
                 </div>
@@ -180,7 +180,7 @@
 
                         <div class="gh-memberproduct-list-footer">
                         <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                            <span>{{svg-jar "add"}} Add subscription</span>
+                            <span>{{svg-jar "add"}} Add complimentary subscription</span>
                         </button>
                         </div>
                     </div>
