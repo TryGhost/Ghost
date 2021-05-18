@@ -421,12 +421,10 @@ class SignupPage extends React.Component {
     renderFormHeader() {
         const {site} = this.context;
         const siteTitle = site.title || '';
-        const {name, description} = getProductDetails({site});
         return (
             <header className='gh-portal-signup-header'>
                 {this.renderSiteLogo()}
-                <h2 className="gh-portal-main-title">{name || siteTitle}</h2>
-                <p className="gh-portal-main-subtitle">{description}</p>
+                <h2 className="gh-portal-main-title">{siteTitle}</h2>
             </header>
         );
     }
