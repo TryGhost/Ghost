@@ -127,7 +127,12 @@ module.exports = function setupOAuthApp() {
         res.sendStatus(404);
     });
 
-    oauthApp.get('/:provider/callback', auth.authenticate.authenticateAdminApi, (req, res, next) => {
+    oauthApp.get('/:provider/callback', (req, res, next) => {
+        // Bypass CSRF protection to authenticate users as they are redirected from
+        // Google OAuth consent screen
+        res.locals.bypassCsrfProtection = true;
+        next();
+    }, auth.authenticate.authenticateAdminApi, (req, res, next) => {
         if (req.params.provider !== 'google') {
             return res.sendStatus(404);
         }
