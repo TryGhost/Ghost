@@ -1434,10 +1434,17 @@ p.theme-validation-details {
 
 .gh-setting-dropdown {
     margin-top: 1.2rem;
+    cursor: pointer;
+    background: var(--white);
+}
+
+.gh-setting-dropdown .ember-power-select-status-icon {
+    right: 24px;
 }
 
 .gh-setting-dropdown .gh-setting-dropdown-content {
     display: flex;
+    align-items: center;
     margin: 1.6rem 1rem;
 }
 
@@ -1447,13 +1454,14 @@ p.theme-validation-details {
 
 .gh-setting-dropdown-list .gh-setting-dropdown-content {
     display: flex;
+    align-items: center;
     margin: 1.4rem 1rem;
 }
 
 .gh-setting-dropdown-content svg {
-    width: 3.2rem;
-    height: 3.2rem;
-    margin-right: 1rem;
+    width: 3rem;
+    height: 3rem;
+    margin-right: 1.2rem;
 }
 
 .gh-setting-richdd-container {

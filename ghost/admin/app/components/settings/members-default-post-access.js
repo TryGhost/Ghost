@@ -16,14 +16,14 @@ export default class SettingsMembersDefaultPostAccess extends Component {
             name: 'Members only',
             description: 'All logged-in members',
             value: 'members',
-            icon: 'globe',
-            icon_color: 'green'
+            icon: 'members-all',
+            icon_color: 'blue'
         }, {
             name: 'Paid-members only',
             description: 'Only logged-in members with an active Stripe subscription',
             value: 'paid',
-            icon: 'globe',
-            icon_color: 'green'
+            icon: 'members-paid',
+            icon_color: 'pink'
         }];
     }
 

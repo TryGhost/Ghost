@@ -17,13 +17,13 @@ export default class SettingsMembersSubscriptionAccess extends Component {
             description: 'People can sign in from your site but won\'t be able to sign up',
             value: 'invite',
             icon: 'email-love-letter',
-            icon_color: 'green'
+            icon_color: 'blue'
         }, {
             name: 'Nobody',
             description: 'No one will be able to subscribe or sign in',
             value: 'none',
-            icon: 'globe',
-            icon_color: 'green'
+            icon: 'no-members',
+            icon_color: 'pink'
         }];
     }
 
