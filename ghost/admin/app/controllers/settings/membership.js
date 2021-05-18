@@ -186,6 +186,7 @@ export default class MembersAccessController extends Controller {
         });
     }
 
+    @action
     setup() {
         this.fetchDefaultProduct.perform();
         this.updatePortalPreview();
