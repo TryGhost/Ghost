@@ -238,9 +238,9 @@ export default class App extends React.Component {
                 data.site.plans.currency = currencyValue;
                 data.site.plans.currency_symbol = getCurrencySymbol(currencyValue);
                 currency = currencyValue;
-            } else if (key === 'disableBackground' && JSON.parse(value)) {
+            } else if (key === 'disableBackground') {
                 data.site.disableBackground = JSON.parse(value);
-            } else if (key === 'allowSelfSignup' && JSON.parse(value)) {
+            } else if (key === 'allowSelfSignup') {
                 data.site.allow_self_signup = JSON.parse(value);
             }
         }
