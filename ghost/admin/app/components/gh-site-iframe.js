@@ -1,26 +1,23 @@
-import Component from '@ember/component';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    config: service(),
+export default class GhSiteIframeComponent extends Component {
+    @service config;
 
-    tagName: '',
+    get srcUrl() {
+        return this.args.src || `${this.config.get('blogUrl')}/`;
+    }
 
-    srcUrl: computed('src', function () {
-        return this.src || `${this.config.get('blogUrl')}/`;
-    }),
-
-    didReceiveAttrs() {
+    @action
+    resetSrcAttribute(iframe) {
         // reset the src attribute each time the guid changes - allows for
         // a click on the navigation item to reset back to the homepage
-        if ((this.guid !== this._lastGuid) || (this.src !== this._lastSrc)) {
-            let iframe = document.querySelector('#site-frame');
+        if (this.args.guid !== this._lastGuid) {
             if (iframe) {
-                iframe.src = this.src || `${this.config.get('blogUrl')}/`;
+                iframe.src = this.srcUrl;
             }
         }
-        this._lastGuid = this.guid;
-        this._lastSrc = this.src;
+        this._lastGuid = this.args.guid;
     }
-});
+}
