@@ -14,9 +14,10 @@ const CURRENCIES = currencies.map((currency) => {
 });
 
 export default class MembersAccessController extends Controller {
+    @service config;
+    @service membersUtils;
     @service settings;
     @service store;
-    @service config;
 
     @tracked showLeavePortalModal = false;
     @tracked showLeaveRouteModal = false;
@@ -31,6 +32,8 @@ export default class MembersAccessController extends Controller {
     @tracked stripeYearlyAmount = 50;
     @tracked currency = 'usd';
     @tracked stripePlanError = '';
+
+    @tracked portalPreviewUrl = '';
 
     queryParams = ['showPortalSettings'];
 
@@ -78,11 +81,6 @@ export default class MembersAccessController extends Controller {
         }
     }
 
-    @action openPortalSettings() {
-        this.saveSettingsTask.perform();
-        this.showPortalSettings = true;
-    }
-
     @action
     setStripePlansCurrency(event) {
         const newCurrency = event.value;
@@ -120,6 +118,8 @@ export default class MembersAccessController extends Controller {
             if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
                 throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
             }
+
+            this.updatePortalPreview();
         } catch (err) {
             this.stripePlanError = err.message;
         }
@@ -131,12 +131,19 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
+    openPortalSettings() {
+        this.saveSettingsTask.perform();
+        this.showPortalSettings = true;
+    }
+
+    @action
     closePortalSettings() {
         const changedAttributes = this.settings.changedAttributes();
         if (changedAttributes && Object.keys(changedAttributes).length > 0) {
             this.showLeavePortalModal = true;
         } else {
             this.showPortalSettings = false;
+            this.updatePortalPreview();
         }
     }
 
@@ -145,16 +152,12 @@ export default class MembersAccessController extends Controller {
         this.settings.rollbackAttributes();
         this.showPortalSettings = false;
         this.showLeavePortalModal = false;
+        this.updatePortalPreview();
     }
 
     @action
     cancelClosePortalSettings() {
         this.showLeavePortalModal = false;
-    }
-
-    @action
-    openStripeSettings() {
-        // Open stripe settings here
     }
 
     @action
@@ -167,6 +170,18 @@ export default class MembersAccessController extends Controller {
     cancelLeave() {
         this.showLeaveRouteModal = false;
         this.leaveSettingsTransition = null;
+    }
+
+    @action
+    updatePortalPreview() {
+        // TODO: can these be worked out from settings in membersUtils?
+        const monthlyPrice = this.stripeMonthlyAmount;
+        const yearlyPrice = this.stripeYearlyAmount;
+
+        this.portalPreviewUrl = this.membersUtils.getPortalPreviewUrl({
+            monthlyPrice,
+            yearlyPrice
+        });
     }
 
     async saveProduct() {
@@ -279,8 +294,13 @@ export default class MembersAccessController extends Controller {
         if (this.settings.get('errors').length !== 0) {
             return;
         }
+
         yield this.saveProduct();
-        return yield this.settings.save();
+        const result = yield this.settings.save();
+
+        this.updatePortalPreview();
+
+        return result;
     }
 
     reset() {
