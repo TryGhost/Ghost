@@ -75,6 +75,7 @@ export default class MembersUtilsService extends Service {
         const {
             disableBackground = false,
             page = 'signup',
+            button = this.settings.get('portalButton'),
             buttonIcon = this.buttonIcon,
             isFreeChecked = this.isFreeChecked,
             isMonthlyChecked = this.isMonthlyChecked,
@@ -92,7 +93,7 @@ export default class MembersUtilsService extends Service {
         const signupButtonText = this.settings.get('portalButtonSignupText') || '';
         const allowSelfSignup = membersSignupAccess === 'all' && (!this.isStripeEnabled || isFreeChecked);
 
-        settingsParam.append('button', this.settings.get('portalButton'));
+        settingsParam.append('button', button);
         settingsParam.append('name', this.settings.get('portalName'));
         settingsParam.append('isFree', isFreeChecked);
         settingsParam.append('isMonthly', isMonthlyChecked);
