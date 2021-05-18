@@ -2,7 +2,7 @@
 
 const {getQueryPrice} = require('./utils/helpers');
 
-function handleDataAttributes({siteUrl, site}) {
+function handleDataAttributes({siteUrl, site, member}) {
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
@@ -85,6 +85,9 @@ function handleDataAttributes({siteUrl, site}) {
                 errorEl.innerText = '';
             }
             el.classList.add('loading');
+            const metadata = member ? {
+                checkoutType: 'upgrade'
+            } : {};
             fetch(`${siteUrl}/members/api/session`, {
                 credentials: 'same-origin'
             }).then(function (res) {
@@ -102,7 +105,8 @@ function handleDataAttributes({siteUrl, site}) {
                         priceId: priceId,
                         identity: identity,
                         successUrl: checkoutSuccessUrl,
-                        cancelUrl: checkoutCancelUrl
+                        cancelUrl: checkoutCancelUrl,
+                        metadata
                     })
                 }).then(function (res) {
                     if (!res.ok) {

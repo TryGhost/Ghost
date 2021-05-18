@@ -59,7 +59,8 @@ export default class App extends React.Component {
             const contextState = this.getContextFromState();
             handleDataAttributes({
                 siteUrl,
-                site: contextState.site
+                site: contextState.site,
+                member: contextState.member
             });
         }
     }
