@@ -34,6 +34,7 @@ export default class SettingsMembersSubscriptionAccess extends Component {
     @action
     setSignupAccess(option) {
         this.settings.set('membersSignupAccess', option.value);
+        this.args.onChange?.(option.value);
 
         if (option.value === 'none') {
             this.settings.set('defaultContentVisibility', 'public');

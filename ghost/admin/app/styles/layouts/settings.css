@@ -1554,6 +1554,7 @@ p.theme-validation-details {
 
 .gh-setting-members-portal-mock {
     display: flex;
+    position: relative;
     align-items: center;
     justify-content: center;
     background: #fff;
@@ -1569,6 +1570,7 @@ p.theme-validation-details {
     height: 582px;
     margin-bottom: 32px;
     border-radius: 5px;
+    pointer-events: none;
 }
 
 /* Stripe Connect modal */
