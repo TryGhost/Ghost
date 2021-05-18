@@ -233,6 +233,7 @@ export default class MembersAccessController extends Controller {
                 );
             }
             if (monthlyPrice && yearlyPrice) {
+                this.updatePortalPlans(monthlyPrice.id, yearlyPrice.id);
                 this.settings.set('membersMonthlyPriceId', monthlyPrice.id);
                 this.settings.set('membersYearlyPriceId', yearlyPrice.id);
                 return this.product;
@@ -242,11 +243,28 @@ export default class MembersAccessController extends Controller {
                 const updatedStripePrices = savedProduct.stripePrices || [];
                 const updatedMonthlyPrice = getActivePrice(updatedStripePrices, 'month', monthlyAmount);
                 const updatedYearlyPrice = getActivePrice(updatedStripePrices, 'year', yearlyAmount);
+                this.updatePortalPlans(updatedMonthlyPrice.id, updatedYearlyPrice.id);
                 this.settings.set('membersMonthlyPriceId', updatedMonthlyPrice.id);
                 this.settings.set('membersYearlyPriceId', updatedYearlyPrice.id);
                 return savedProduct;
             }
         }
+    }
+
+    updatePortalPlans(monthlyPriceId, yearlyPriceId) {
+        let portalPlans = this.settings.get('portalPlans') || [];
+        const currentMontlyPriceId = this.settings.get('membersMonthlyPriceId');
+        const currentYearlyPriceId = this.settings.get('membersYearlyPriceId');
+        if (portalPlans.includes(currentMontlyPriceId)) {
+            portalPlans = portalPlans.filter(d => d.id !== currentMontlyPriceId);
+            portalPlans.push(monthlyPriceId);
+        }
+
+        if (portalPlans.includes(currentYearlyPriceId)) {
+            portalPlans = portalPlans.filter(d => d.id !== currentYearlyPriceId);
+            portalPlans.push(yearlyPriceId);
+        }
+        this.settings.set('portalPlans', portalPlans);
     }
 
     getPrice(prices, type) {
