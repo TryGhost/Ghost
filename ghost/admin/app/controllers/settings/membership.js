@@ -56,6 +56,23 @@ export default class MembersAccessController extends Controller {
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
+    get hasChangedPrices() {
+        if (this.product) {
+            const activePrices = this.stripePrices.filter(price => !!price.active);
+            const monthlyPrice = this.getPrice(activePrices, 'monthly');
+            const yearlyPrice = this.getPrice(activePrices, 'yearly');
+
+            if (monthlyPrice?.amount && this.stripeMonthlyAmount !== (monthlyPrice.amount / 100)) {
+                return true;
+            }
+            if (yearlyPrice?.amount && this.stripeYearlyAmount !== (yearlyPrice.amount / 100)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @action
     setup() {
         this.fetchDefaultProduct.perform();
@@ -63,7 +80,7 @@ export default class MembersAccessController extends Controller {
     }
 
     leaveRoute(transition) {
-        if (this.settings.get('hasDirtyAttributes')) {
+        if (this.settings.get('hasDirtyAttributes') || this.hasChangedPrices) {
             transition.abort();
             this.leaveSettingsTransition = transition;
             this.showLeaveRouteModal = true;
@@ -361,6 +378,15 @@ export default class MembersAccessController extends Controller {
         this.updatePortalPreview();
 
         return result;
+    }
+
+    resetPrices() {
+        const activePrices = this.stripePrices.filter(price => !!price.active);
+        const monthlyPrice = this.getPrice(activePrices, 'monthly');
+        const yearlyPrice = this.getPrice(activePrices, 'yearly');
+
+        this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
+        this.stripeYearlyAmount = (yearlyPrice.amount / 100);
     }
 
     reset() {
