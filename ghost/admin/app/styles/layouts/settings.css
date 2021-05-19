@@ -1812,3 +1812,42 @@ p.theme-validation-details {
         width: 100%;
     }
 }
+
+.gh-setting-nossl {
+    border-top: 1px solid var(--whitegrey-d1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 16px -24px -12px;
+}
+
+.gh-setting-nossl-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    text-align: center;
+    max-width: 520px;
+}
+
+.gh-setting-nossl-container svg {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 12px;
+}
+
+.gh-setting-nossl-container svg path,
+.gh-setting-nossl-container svg rect,
+.gh-setting-nossl-container svg circle {
+    stroke-width: 1px;
+}
+
+.gh-setting-nossl-container h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.gh-setting-nossl-container p {
+    margin: 8px 0 0;
+    color: var(--midgrey);
+}

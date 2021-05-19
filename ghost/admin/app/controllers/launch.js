@@ -1,8 +1,34 @@
 import Controller from '@ember/controller';
+import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
+const DEFAULT_STEPS = {
+    'customise-design': {
+        title: 'Customise your site',
+        position: 'Step 1',
+        next: 'connect-stripe'
+    },
+    'connect-stripe': {
+        title: 'Connect to Stripe',
+        position: 'Step 2',
+        next: 'set-pricing',
+        back: 'customise-design',
+        skip: 'finalise'
+    },
+    'set-pricing': {
+        title: 'Set up subscriptions',
+        position: 'Step 3',
+        next: 'finalise',
+        back: 'connect-stripe'
+    },
+    finalise: {
+        title: 'Launch your site',
+        position: 'Final step',
+        back: 'set-pricing'
+    }
+};
 export default class LaunchController extends Controller {
     @service config;
     @service router;
@@ -15,33 +41,37 @@ export default class LaunchController extends Controller {
     @tracked step = 'customise-design';
     @tracked data = null;
 
-    steps = {
-        'customise-design': {
-            title: 'Customise your site',
-            position: 'Step 1',
-            next: 'connect-stripe'
-        },
-        'connect-stripe': {
-            title: 'Connect to Stripe',
-            position: 'Step 2',
-            next: 'set-pricing',
-            back: 'customise-design',
-            skip: 'finalise'
-        },
-        'set-pricing': {
-            title: 'Set up subscriptions',
-            position: 'Step 3',
-            next: 'finalise',
-            back: 'connect-stripe'
-        },
-        finalise: {
-            title: 'Launch your site',
-            position: 'Final step',
-            back: 'set-pricing'
-        }
-    };
+    steps = DEFAULT_STEPS;
 
     skippedSteps = [];
+
+    constructor(...args) {
+        super(...args);
+        const siteUrl = this.config.get('blogUrl');
+
+        if (envConfig.environment !== 'development' && !/^https:/.test(siteUrl)) {
+            this.steps = {
+                'customise-design': {
+                    title: 'Customise your site',
+                    position: 'Step 1',
+                    next: 'set-pricing'
+                },
+                'set-pricing': {
+                    title: 'Set up subscriptions',
+                    position: 'Step 2',
+                    next: 'finalise',
+                    back: 'customise-design'
+                },
+                finalise: {
+                    title: 'Launch your site',
+                    position: 'Final step',
+                    back: 'set-pricing'
+                }
+            };
+        } else {
+            this.steps = DEFAULT_STEPS;
+        }
+    }
 
     get currentStep() {
         return this.steps[this.step];

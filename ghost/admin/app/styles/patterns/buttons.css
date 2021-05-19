@@ -743,3 +743,8 @@ Usage: CTA buttons grouped together horizontally.
 .gh-btn-stripe-status.connected:before {
     background: var(--green);
 }
+
+.stripe-connect.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
