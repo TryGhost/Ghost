@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {currencies, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
@@ -33,6 +34,12 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
     get selectedCurrency() {
         return this.currencies.findBy('value', this.currency);
+    }
+
+    get isConnectDisallowed() {
+        const siteUrl = this.config.get('blogUrl');
+
+        return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
     get disabled() {
@@ -167,23 +174,27 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
     @task
     *saveAndContinue() {
-        yield this.validateStripePlans();
+        if (this.isHidden || !this.isConnectDisallowed) {
+            this.args.nextStep();
+        } else {
+            yield this.validateStripePlans();
 
-        if (this.stripePlanError) {
-            return false;
+            if (this.stripePlanError) {
+                return false;
+            }
+            const product = this.getProduct();
+            const data = this.args.getData() || {};
+            this.args.storeData({
+                ...data,
+                product,
+                isFreeChecked: this.isFreeChecked,
+                isMonthlyChecked: this.isMonthlyChecked,
+                isYearlyChecked: this.isYearlyChecked,
+                monthlyAmount: this.stripeMonthlyAmount,
+                yearlyAmount: this.stripeYearlyAmount
+            });
+            this.args.nextStep();
         }
-        const product = this.getProduct();
-        const data = this.args.getData() || {};
-        this.args.storeData({
-            ...data,
-            product,
-            isFreeChecked: this.isFreeChecked,
-            isMonthlyChecked: this.isMonthlyChecked,
-            isYearlyChecked: this.isYearlyChecked,
-            monthlyAmount: this.stripeMonthlyAmount,
-            yearlyAmount: this.stripeYearlyAmount
-        });
-        this.args.nextStep();
     }
 
     calculateDiscount(monthly, yearly) {
