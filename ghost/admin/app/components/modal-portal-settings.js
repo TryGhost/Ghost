@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -22,6 +22,7 @@ export default ModalComponent.extend({
     freeSignupRedirect: undefined,
     paidSignupRedirect: undefined,
     prices: null,
+    isPreloading: true,
 
     confirm() {},
 
@@ -93,14 +94,6 @@ export default ModalComponent.extend({
             {name: 'text-only', label: 'Text only'}
         ];
         this.iconExtensions = ICON_EXTENSIONS;
-
-        const portalButtonIcon = this.settings.get('portalButtonIcon') || '';
-        if (portalButtonIcon && !this.membersUtils.defaultIconKeys.includes(portalButtonIcon)) {
-            this.set('customIcon', this.settings.get('portalButtonIcon'));
-        }
-
-        this.getAvailablePrices.perform();
-        this.siteUrl = this.config.get('blogUrl');
     },
 
     didInsertElement() {
@@ -262,6 +255,22 @@ export default ModalComponent.extend({
             this.settings.set(type, url.href);
         }
     },
+
+    finishPreloading: action(async function () {
+        if (this.model.preloadTask?.isRunning) {
+            await this.model.preloadTask;
+        }
+
+        const portalButtonIcon = this.settings.get('portalButtonIcon') || '';
+        if (portalButtonIcon && !this.membersUtils.defaultIconKeys.includes(portalButtonIcon)) {
+            this.set('customIcon', this.settings.get('portalButtonIcon'));
+        }
+
+        this.getAvailablePrices.perform();
+        this.siteUrl = this.config.get('blogUrl');
+
+        this.set('isPreloading', false);
+    }),
 
     copyLinkOrAttribute: task(function* () {
         copyTextToClipboard(this.showModalLinkOrAttribute);

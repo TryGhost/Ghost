@@ -222,6 +222,7 @@
     {{#if this.showPortalSettings}}
         <GhFullscreenModal @modal="portal-settings"
             @model={{hash
+                preloadTask=this.saveSettingsTask
                 openStripeSettings=this.openStripeSettings
             }}
             @close={{this.closePortalSettings}}
