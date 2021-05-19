@@ -9,11 +9,6 @@ export default class ModalStripeConnect extends ModalBase {
     @service settings;
 
     @action
-    setDefaultContentVisibility(value) {
-        this.settings.set('defaultContentVisibility', value);
-    }
-
-    @action
     setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
         this.settings.set('stripeConnectIntegrationToken', stripeConnectIntegrationToken);
     }
