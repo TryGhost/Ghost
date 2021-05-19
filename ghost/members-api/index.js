@@ -159,6 +159,10 @@ module.exports = function MembersApi({
             return stripeMigrations.populateStripePricesFromStripePlansSetting(stripeConfig.plans);
         }).then(() => {
             return stripeMigrations.updatePortalPlansSetting(stripeConfig.plans);
+        }).then(() => {
+            return stripeMigrations.populateMembersMonthlyPriceIdSettings();
+        }).then(() => {
+            return stripeMigrations.populateMembersYearlyPriceIdSettings();
         }),
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,

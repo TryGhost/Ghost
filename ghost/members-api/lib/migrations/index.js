@@ -235,4 +235,150 @@ module.exports = class StripeMigrations {
             id: portalPlansSetting.id
         });
     }
+
+    async populateMembersMonthlyPriceIdSettings() {
+        this._logging.info('Populating members_monthly_price_id from stripe_plans');
+        const monthlyPriceId = await this._Settings.findOne({key: 'members_monthly_price_id'});
+
+        if (monthlyPriceId.get('value')) {
+            this._logging.info('Skipping population of members_monthly_price_id, already populated');
+            return;
+        }
+
+        const stripePlans = await this._Settings.findOne({key: 'stripe_plans'});
+        let plans;
+        try {
+            plans = JSON.parse(stripePlans.get('value'));
+        } catch (err) {
+            this._logging.warn('Skipping population of members_monthly_price_id, could not parse stripe_plans');
+        }
+
+        const monthlyPlan = plans.find((plan) => {
+            return plan.name === 'Monthly';
+        });
+
+        if (!monthlyPlan) {
+            this._logging.warn('Skipping population of members_monthly_price_id, could not find Monthly plan');
+            return;
+        }
+
+        let monthlyPrice;
+
+        monthlyPrice = await this._StripePrice.findOne({
+            amount: monthlyPlan.amount,
+            currency: monthlyPlan.currency,
+            interval: monthlyPlan.interval,
+            active: true
+        });
+
+        if (!monthlyPrice) {
+            this._logging.info('Could not find active Monthly price from stripe_plans - searching by interval');
+            monthlyPrice = await this._StripePrice.findOne({
+                interval: 'month',
+                active: true
+            });
+        }
+
+        if (!monthlyPrice) {
+            this._logging.info('Could not any active Monthly price - creating a new one');
+            let defaultStripeProduct;
+            const stripeProductsPage = await this._StripeProduct.findPage({limit: 1});
+            defaultStripeProduct = stripeProductsPage.data[0];
+            const price = await this._stripeAPIService.createPrice({
+                currency: 'usd',
+                amount: 5000,
+                nickname: 'Monthly',
+                interval: 'month',
+                active: true,
+                type: 'recurring',
+                product: defaultStripeProduct.get('stripe_product_id')
+            });
+
+            monthlyPrice = await this._StripePrice.add({
+                stripe_price_id: price.id,
+                stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                active: price.active,
+                nickname: price.nickname,
+                currency: price.currency,
+                amount: price.unit_amount,
+                type: 'recurring',
+                interval: price.recurring.interval
+            });
+        }
+
+        await this._Settings.edit({key: 'members_monthly_price_id', value: monthlyPrice.id}, {id: monthlyPriceId.id});
+    }
+
+    async populateMembersYearlyPriceIdSettings() {
+        this._logging.info('Populating members_yearly_price_id from stripe_plans');
+        const yearlyPriceId = await this._Settings.findOne({key: 'members_yearly_price_id'});
+
+        if (yearlyPriceId.get('value')) {
+            this._logging.info('Skipping population of members_yearly_price_id, already populated');
+            return;
+        }
+
+        const stripePlans = await this._Settings.findOne({key: 'stripe_plans'});
+        let plans;
+        try {
+            plans = JSON.parse(stripePlans.get('value'));
+        } catch (err) {
+            this._logging.warn('Skipping population of members_yearly_price_id, could not parse stripe_plans');
+        }
+
+        const yearlyPlan = plans.find((plan) => {
+            return plan.name === 'Yearly';
+        });
+
+        if (!yearlyPlan) {
+            this._logging.warn('Skipping population of members_yearly_price_id, could not find yearly plan');
+            return;
+        }
+
+        let yearlyPrice;
+
+        yearlyPrice = await this._StripePrice.findOne({
+            amount: yearlyPlan.amount,
+            currency: yearlyPlan.currency,
+            interval: yearlyPlan.interval,
+            active: true
+        });
+
+        if (!yearlyPrice) {
+            this._logging.info('Could not find active yearly price from stripe_plans - searching by interval');
+            yearlyPrice = await this._StripePrice.findOne({
+                interval: 'year',
+                active: true
+            });
+        }
+
+        if (!yearlyPrice) {
+            this._logging.info('Could not any active yearly price - creating a new one');
+            let defaultStripeProduct;
+            const stripeProductsPage = await this._StripeProduct.findPage({limit: 1});
+            defaultStripeProduct = stripeProductsPage.data[0];
+            const price = await this._stripeAPIService.createPrice({
+                currency: 'usd',
+                amount: 500,
+                nickname: 'Yearly',
+                interval: 'year',
+                active: true,
+                type: 'recurring',
+                product: defaultStripeProduct.get('stripe_product_id')
+            });
+
+            yearlyPrice = await this._StripePrice.add({
+                stripe_price_id: price.id,
+                stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                active: price.active,
+                nickname: price.nickname,
+                currency: price.currency,
+                amount: price.unit_amount,
+                type: 'recurring',
+                interval: price.recurring.interval
+            });
+        }
+
+        await this._Settings.edit({key: 'members_yearly_price_id', value: yearlyPrice.id}, {id: yearlyPriceId.id});
+    }
 };
