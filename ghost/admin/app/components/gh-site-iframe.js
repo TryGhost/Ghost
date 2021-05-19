@@ -18,11 +18,19 @@ export default class GhSiteIframeComponent extends Component {
 
     @action
     resetSrcAttribute(iframe) {
-        // reset the src attribute each time the guid changes - allows for
-        // a click on the navigation item to reset back to the homepage
+        // reset the src attribute and force reload each time the guid changes
+        // - allows for a click on the navigation item to reset back to the homepage
+        //   or a portal preview modal to force a reload so it can fetch server-side data
         if (this.args.guid !== this._lastGuid) {
             if (iframe) {
-                iframe.src = this.srcUrl;
+                if (this.args.invisibleUntilLoaded) {
+                    this.isInvisible = true;
+                }
+                if (iframe.contentWindow.location.href !== this.srcUrl) {
+                    iframe.contentWindow.location = this.srcUrl;
+                } else {
+                    iframe.contentWindow.location.reload();
+                }
             }
         }
         this._lastGuid = this.args.guid;
