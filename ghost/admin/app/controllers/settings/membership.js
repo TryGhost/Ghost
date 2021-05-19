@@ -56,6 +56,12 @@ export default class MembersAccessController extends Controller {
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
+    @action
+    setup() {
+        this.fetchDefaultProduct.perform();
+        this.updatePortalPreview();
+    }
+
     leaveRoute(transition) {
         if (this.settings.get('hasDirtyAttributes')) {
             transition.abort();
@@ -64,29 +70,17 @@ export default class MembersAccessController extends Controller {
         }
     }
 
-    _validateSignupRedirect(url, type) {
-        const siteUrl = this.config.get('blogUrl');
-        let errMessage = `Please enter a valid URL`;
-        this.settings.get('errors').remove(type);
-        this.settings.get('hasValidated').removeObject(type);
+    @action
+    async confirmLeave() {
+        this.settings.rollbackAttributes();
+        this.resetPrices();
+        this.leaveSettingsTransition.retry();
+    }
 
-        if (url === null) {
-            this.settings.get('errors').add(type, errMessage);
-            this.settings.get('hasValidated').pushObject(type);
-            return false;
-        }
-
-        if (url === undefined) {
-            // Not initialised
-            return;
-        }
-
-        if (url.href.startsWith(siteUrl)) {
-            const path = url.href.replace(siteUrl, '');
-            this.settings.set(type, path);
-        } else {
-            this.settings.set(type, url.href);
-        }
+    @action
+    cancelLeave() {
+        this.showLeaveRouteModal = false;
+        this.leaveSettingsTransition = null;
     }
 
     @action
@@ -169,18 +163,6 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    async confirmLeave() {
-        this.settings.rollbackAttributes();
-        this.leaveSettingsTransition.retry();
-    }
-
-    @action
-    cancelLeave() {
-        this.showLeaveRouteModal = false;
-        this.leaveSettingsTransition = null;
-    }
-
-    @action
     updatePortalPreview() {
         // TODO: can these be worked out from settings in membersUtils?
         const monthlyPrice = this.stripeMonthlyAmount * 100;
@@ -241,12 +223,6 @@ export default class MembersAccessController extends Controller {
             const height = portalContainer.clientHeight;
             this.portalPreviewIframe.parentNode.style.height = `${height}px`;
         }
-    }
-
-    @action
-    setup() {
-        this.fetchDefaultProduct.perform();
-        this.updatePortalPreview();
     }
 
     async saveProduct() {
@@ -391,5 +367,30 @@ export default class MembersAccessController extends Controller {
         this.showLeaveRouteModal = false;
         this.showLeavePortalModal = false;
         this.showPortalSettings = false;
+    }
+
+    _validateSignupRedirect(url, type) {
+        const siteUrl = this.config.get('blogUrl');
+        let errMessage = `Please enter a valid URL`;
+        this.settings.get('errors').remove(type);
+        this.settings.get('hasValidated').removeObject(type);
+
+        if (url === null) {
+            this.settings.get('errors').add(type, errMessage);
+            this.settings.get('hasValidated').pushObject(type);
+            return false;
+        }
+
+        if (url === undefined) {
+            // Not initialised
+            return;
+        }
+
+        if (url.href.startsWith(siteUrl)) {
+            const path = url.href.replace(siteUrl, '');
+            this.settings.set(type, path);
+        } else {
+            this.settings.set(type, url.href);
+        }
     }
 }
