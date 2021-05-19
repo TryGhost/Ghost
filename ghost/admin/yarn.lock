@@ -1699,10 +1699,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.42":
-  version "0.2.42"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.42.tgz#dcd59e2262e73a2df3aa7de28354f1eb41d483ad"
-  integrity sha512-2nt7gGougbkIvZgnhh3hBCLjcWgXIDGc+dM8Ixwhl0uo8fx/8OHM88UoDHkpgvz8Z8LNS7c33/stveIEO/HO2A==
+"@tryghost/timezone-data@0.2.43":
+  version "0.2.43"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.43.tgz#8bea7bdfd5dce1dcc8571eb64252f5c2a6d9f08e"
+  integrity sha512-jl07Eoh8vq3jsKN/NE8u8/RvZ0a/sw4zbAo7QonPh3cD1H3rnOxj4vIi5bEymEVuLJuSoLVJ9zJMeqsFwdmcYA==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
