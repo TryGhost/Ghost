@@ -314,12 +314,12 @@ export default class MembersAccessController extends Controller {
         const currentYearlyPriceId = this.settings.get('membersYearlyPriceId');
         if (portalPlans.includes(currentMontlyPriceId)) {
             portalPlans = portalPlans.filter(priceId => priceId !== currentMontlyPriceId);
-            portalPlans.push(monthlyPriceId);
+            portalPlans.pushObject(monthlyPriceId);
         }
 
         if (portalPlans.includes(currentYearlyPriceId)) {
             portalPlans = portalPlans.filter(priceId => priceId !== currentYearlyPriceId);
-            portalPlans.push(yearlyPriceId);
+            portalPlans.pushObject(yearlyPriceId);
         }
         this.settings.set('portalPlans', portalPlans);
     }
