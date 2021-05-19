@@ -40,6 +40,7 @@ const GhTaskButton = Component.extend({
     successClass: 'gh-btn-green',
     failureText: 'Retry',
     failureClass: 'gh-btn-red',
+    unlinkedTask: false,
 
     isTesting: undefined,
 
@@ -180,7 +181,16 @@ const GhTaskButton = Component.extend({
 
     _handleMainTask: task(function* () {
         this._resetButtonState.cancelAll();
-        yield this.task.perform(this.taskArgs);
+
+        // if the task button will be removed by the result of the task then
+        // it needs to be marked as unlinked to ensure it runs to completion
+        // and ember-concurrency doesn't output self-cancel warnings
+        if (this.unlinkedTask) {
+            yield this.task.unlinked().perform(this.taskArgs);
+        } else {
+            yield this.task.perform(this.taskArgs);
+        }
+
         const isTaskSuccess = this.get('task.last.isSuccessful') && this.get('task.last.value');
         if (this.autoReset && this.showSuccess && isTaskSuccess) {
             this._resetButtonState.perform();

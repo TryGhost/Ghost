@@ -112,6 +112,7 @@
             <div class="gh-members-connect-savecontainer {{if this.settings.stripeConnectIntegrationToken "expanded"}}">
                 <GhTaskButton @buttonText="Save Stripe settings"
                             @task={{this.saveStripeSettings}}
+                            @unlinkedTask={{true}}
                             @successText="Saved"
                             @disabled={{is-empty this.settings.stripeConnectIntegrationToken}}
                             @runningText="Saving"

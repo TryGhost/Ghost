@@ -23,6 +23,7 @@ export default ModalComponent.extend({
     paidSignupRedirect: undefined,
     prices: null,
     isPreloading: true,
+    portalPreviewGuid: 'modal-portal-settings',
 
     confirm() {},
 
@@ -203,8 +204,8 @@ export default ModalComponent.extend({
         },
 
         openStripeSettings() {
+            this.isWaitingForStripeConnection = true;
             this.model.openStripeSettings();
-            this.closeModal();
         },
 
         leaveSettings() {
@@ -270,6 +271,15 @@ export default ModalComponent.extend({
         this.siteUrl = this.config.get('blogUrl');
 
         this.set('isPreloading', false);
+    }),
+
+    refreshAfterStripeConnected: action(async function () {
+        if (this.isWaitingForStripeConnection) {
+            await this.finishPreloading();
+            this.notifyPropertyChange('page'); // force preview url to recompute
+            this.set('portalPreviewGuid', Date.now().valueOf()); // force preview re-render
+            this.isWaitingForStripeConnection = false;
+        }
     }),
 
     copyLinkOrAttribute: task(function* () {
