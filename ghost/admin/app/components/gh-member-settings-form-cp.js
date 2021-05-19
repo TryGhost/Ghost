@@ -79,6 +79,11 @@ export default class extends Component {
         return null;
     }
 
+    get isCreatingComplimentary() {
+        const {comped} = this.member.changedAttributes() || {};
+        return comped && comped[0] === false && comped[1] === true && this.args.isSaveRunning;
+    }
+
     @action
     setProperty(property, value) {
         this.args.setProperty(property, value);
@@ -103,6 +108,7 @@ export default class extends Component {
     continueSubscription(subscriptionId) {
         this.continueSubscriptionTask.perform(subscriptionId);
     }
+
     @action
     addCompedSubscription() {
         this.args.setProperty('comped', true);
