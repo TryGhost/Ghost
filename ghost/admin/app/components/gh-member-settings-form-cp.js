@@ -80,8 +80,7 @@ export default class extends Component {
     }
 
     get isCreatingComplimentary() {
-        const {comped} = this.member.changedAttributes() || {};
-        return comped && comped[0] === false && comped[1] === true && this.args.isSaveRunning;
+        return this.args.isSaveRunning;
     }
 
     @action
