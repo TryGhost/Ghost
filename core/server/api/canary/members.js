@@ -197,7 +197,7 @@ module.exports = {
                         await membersService.api.members.cancelComplimentarySubscription(member);
                     }
 
-                    await member.load(['stripeSubscriptions']);
+                    await member.load(['stripeSubscriptions', 'products', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
                 }
 
                 await member.load(['stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
