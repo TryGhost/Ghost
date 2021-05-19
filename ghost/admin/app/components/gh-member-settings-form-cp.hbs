@@ -74,7 +74,7 @@
                         <label for="label-input">Labels</label>
                         <GhMemberLabelInput @onChange={{action "setLabels"}} @labels={{this.member.labels}} @triggerId="label-input" data-test-input="" />
                     </GhFormGroup>
-                
+
                     <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0 gh-member-note">
                         <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
                         <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
@@ -110,9 +110,13 @@
                     <div class="mb2">This member doesn't have subscriptions.</div>
                     {{#unless this.member.isNew}}
                         {{#if this.isAddComplimentaryAllowed}}
-                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
-                                <span>{{svg-jar "add"}} Add complimentary subscription</span>
-                            </button>
+                            {{#if this.isCreatingComplimentary}}
+                                Loading...
+                            {{else}}
+                                <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
+                                    <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                </button>
+                            {{/if}}
                         {{/if}}
                     {{/unless}}
                 </div>
@@ -181,9 +185,13 @@
                         {{/each}}
                         {{#if this.isAddComplimentaryAllowed}}
                             <div class="gh-memberproduct-list-footer">
-                                <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
-                                    <span>{{svg-jar "add"}} Add complimentary subscription</span>
-                                </button>
+                                {{#if this.isCreatingComplimentary}}
+                                    Loading...
+                                {{else}}
+                                    <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
+                                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                    </button>
+                                {{/if}}
                             </div>
                         {{/if}}
                     </div>
