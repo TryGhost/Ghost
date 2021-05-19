@@ -29,6 +29,14 @@ export default class extends Component {
         return !this.member.get('isNew') && this.membersUtils.isStripeEnabled;
     }
 
+    get isAddComplimentaryAllowed() {
+        let subscriptions = this.member.get('subscriptions') || [];
+        const hasZeroPriceSub = subscriptions.find((sub) => {
+            return !sub?.price?.amount;
+        });
+        return !hasZeroPriceSub;
+    }
+
     get products() {
         let products = this.member.get('products') || [];
         let subscriptions = this.member.get('subscriptions') || [];
@@ -94,6 +102,11 @@ export default class extends Component {
     @action
     continueSubscription(subscriptionId) {
         this.continueSubscriptionTask.perform(subscriptionId);
+    }
+    @action
+    addCompedSubscription() {
+        this.args.setProperty('comped', true);
+        this.args.saveMember();
     }
 
     @task({drop: true})

@@ -109,9 +109,11 @@
                 <div class="gh-cp-memberproduct-noproduct">
                     <div class="mb2">This member doesn't have subscriptions.</div>
                     {{#unless this.member.isNew}}
-                    <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
-                    </button>
+                        {{#if this.isAddComplimentaryAllowed}}
+                            <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
+                                <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                            </button>
+                        {{/if}}
                     {{/unless}}
                 </div>
             </div>
@@ -121,7 +123,7 @@
                 <div class="gh-main-section-content bordered">
                     <div class="gh-cp-memberproduct {{if (not (eq product.subscriptions.length 1)) "multiple-subs" ""}}">
                         <h3 class="gh-memberproduct-name">
-                            {{product.name}} 
+                            {{product.name}}
                             {{#unless (eq product.subscriptions.length 1)}}
                             <span class="gh-memberproduct-subcount">{{product.subscriptions.length}} subscriptions</span>
                             {{/unless}}
@@ -177,12 +179,13 @@
                             </span>
                         </div>
                         {{/each}}
-
-                        <div class="gh-memberproduct-list-footer">
-                        <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
-                            <span>{{svg-jar "add"}} Add complimentary subscription</span>
-                        </button>
-                        </div>
+                        {{#if this.isAddComplimentaryAllowed}}
+                            <div class="gh-memberproduct-list-footer">
+                                <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
+                                    <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                </button>
+                            </div>
+                        {{/if}}
                     </div>
                 </div>
             {{/each}}
