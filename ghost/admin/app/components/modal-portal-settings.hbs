@@ -1,5 +1,8 @@
 <div class="modal-body gh-ps-modal-body">
-    <div class="flex pa0 flex-grow-1 gh-portal-settings">
+    <div class="flex pa0 flex-grow-1 gh-portal-settings" {{did-insert (fn this.finishPreloading)}}>
+        {{#if this.isPreloading}}
+            <GhLoadingSpinner />
+        {{else}}
         <div class="gh-portal-settings-sidebar">
             <h2 class="gh-portal-settings-title">Portal settings</h2>
             <div class="gh-portal-form-wrapper">
@@ -248,5 +251,6 @@
             </div>
 
         </div>
+        {{/if}}
     </div>
 </div>
