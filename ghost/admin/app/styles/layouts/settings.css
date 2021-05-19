@@ -1637,6 +1637,34 @@ p.theme-validation-details {
     pointer-events: none;
 }
 
+.gh-setting-members-portal-disabled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 32px;
+    text-align: center;
+}
+
+.gh-setting-members-portal-disabled svg {
+    width: 44px;
+    height: 44px;
+}
+
+.gh-setting-members-portal-disabled svg path {
+    stroke-width: 1.2px;
+}
+
+.gh-setting-members-portal-disabled h4 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-setting-members-portal-disabled p {
+    max-width: 240px;
+    font-weight: 400;
+}
+
 .gh-setting-members-portal-mock .site-frame {
     border-radius: 5px;
 }

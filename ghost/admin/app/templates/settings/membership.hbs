@@ -49,7 +49,11 @@
             <div class="gh-setting-members-portalpreview">
                 <div class="gh-setting-members-portal-mock">
                     {{#if (eq this.settings.membersSignupAccess 'none')}}
-                        PORTAL DISABLED
+                        <div class="gh-setting-members-portal-disabled">
+                            <span class="lightgrey">{{svg-jar "portal-logo-stroke"}}</span>
+                            <h4>Portal disabled</h4>
+                            <p>Change your Subscription Access setting to re-enable Portal</p>
+                        </div>
                     {{else}}
                         <GhSiteIframe
                             @src={{this.portalPreviewUrl}}
@@ -182,7 +186,7 @@
                                         </div>
                                     </div>
                                     {{#if this.stripePlanError}}
-                                        <p class="response w-100 red"> {{this.stripePlanError}} </p>
+                                        <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                                     {{/if}}
                                 </GhFormGroup>
 
