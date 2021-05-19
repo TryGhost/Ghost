@@ -1648,12 +1648,17 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-cp-memberproduct-noproduct {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     font-size: 1.4rem;
     color: var(--midgrey);
     padding: 48px 0;
+}
+
+.gh-cp-memberproduct-noproduct .gh-loading-content {
+    padding-bottom: unset;
 }
 
 .gh-btn-add-memberproduct[disabled],
