@@ -1637,6 +1637,10 @@ p.theme-validation-details {
     pointer-events: none;
 }
 
+.gh-setting-members-portal-mock .site-frame {
+    border-radius: 5px;
+}
+
 /* Stripe Connect modal */
 .fullscreen-modal-stripe-connect {
     max-width: 860px;
@@ -1709,7 +1713,6 @@ p.theme-validation-details {
     background: var(--whitegrey-l2);
     min-height: unset;
     height: 80px;
-    max-width: 380px;
     font-family: var(--font-family-mono);
     font-size: 1.3rem;
     resize: none;
