@@ -557,6 +557,10 @@ textarea {
     transform: translateX(16px);
 }
 
+.for-switch.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
 
 /* Select
 /* ---------------------------------------------------------- */

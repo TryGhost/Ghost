@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
@@ -48,6 +49,11 @@ export default class MembersAccessController extends Controller {
 
     get selectedCurrency() {
         return CURRENCIES.findBy('value', this.currency);
+    }
+
+    get isConnectDisallowed() {
+        const siteUrl = this.config.get('blogUrl');
+        return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
     leaveRoute(transition) {
