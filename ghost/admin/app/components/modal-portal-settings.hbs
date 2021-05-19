@@ -33,7 +33,7 @@
                             </div>
                         </GhFormGroup>
                         {{#if this.membersUtils.isStripeEnabled}}
-                        <div>
+                        <div {{did-insert this.refreshAfterStripeConnected}}>
                             <div class="mb3">
                                 <h4 class="gh-portal-setting-title">Prices available at signup</h4>
                             </div>
@@ -82,7 +82,7 @@
                         </div>
                         {{else}}
                         <div class="gh-portal-setting-no-stripe">
-                            You need to <button class="gh-btn gh-btn-link black" {{action "openStripeSettings"}}>connect to Stripe</button> to take payments
+                            You need to <button class="gh-btn gh-btn-link black" {{on "click" (action "openStripeSettings")}}>connect to Stripe</button> to take payments
                         </div>
                         {{/if}}
                     </div>
@@ -247,6 +247,7 @@
                 <GhSiteIframe
                     class="gh-portal-siteiframe"
                     @src={{this.portalPreviewUrl}}
+                    @guid={{this.portalPreviewGuid}}
                     @invisibleUntilLoaded={{true}} />
             </div>
 

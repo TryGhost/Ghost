@@ -145,6 +145,11 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
+    openStripeConnect() {
+        this.showStripeConnect = true;
+    }
+
+    @action
     closeStripeConnect() {
         this.showStripeConnect = false;
     }
