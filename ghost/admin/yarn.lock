@@ -12500,10 +12500,10 @@ redeyed@~1.0.0:
   dependencies:
     esprima "~3.0.0"
 
-reframe.js@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-3.0.2.tgz#8c97c591f3c3266f74a1baf6d7261e4224f51bc0"
-  integrity sha512-R39DRjAdwwsKeBBue1VukDktqdjfP8SFvZk/FtXtELC3Axutvk48VIrhj0IRK2nW1impTeDJKBKTm9smy+P90w==
+reframe.js@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-3.0.3.tgz#4a073e5d1d2105e10999acfaa969f9f696d701ea"
+  integrity sha512-DQ4MR949mKay3S3YV2kQ9my9RWCE5KGCf/mU0KYTt0Y0z/kaO2N/r7QfW0LaRmwv7T+d1gPagx7I9Gh9FcXK8Q==
 
 regenerate-unicode-properties@^8.2.0:
   version "8.2.0"
