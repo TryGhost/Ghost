@@ -7,26 +7,14 @@ export default Controller.extend({
     settings: service(),
     session: service(),
 
-    queryParams: ['showPortalSettings', 'showBrandingModal'],
+    queryParams: ['showBrandingModal'],
 
-    showPortalSettings: false,
     showBrandingModal: false,
     showLeaveSettingsModal: false,
-
-    tagName: '',
 
     actions: {
         openStripeSettings() {
             this.set('membersStripeOpen', true);
-        },
-
-        closePortalSettings() {
-            const changedAttributes = this.settings.changedAttributes();
-            if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-                this.set('showLeaveSettingsModal', true);
-            } else {
-                this.set('showPortalSettings', false);
-            }
         },
 
         closeLeaveSettingsModal() {
@@ -35,7 +23,6 @@ export default Controller.extend({
 
         async leavePortalSettings() {
             this.settings.rollbackAttributes();
-            this.set('showPortalSettings', false);
             this.set('showLeaveSettingsModal', false);
         },
 

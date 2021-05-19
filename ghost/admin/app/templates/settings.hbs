@@ -78,14 +78,6 @@
     </section>
 </section>
 
-{{#if this.showPortalSettings}}
-    <GhFullscreenModal @modal="portal-settings"
-        @model={{hash
-            openStripeSettings=(action "openStripeSettings")
-        }}
-        @close={{action "closePortalSettings"}}
-        @modifier="full-overlay portal-settings" />
-{{/if}}
 {{#if this.showBrandingModal}}
     <GhFullscreenModal @modal="branding"
         @close={{action "closeBrandingModal"}}
