@@ -159,7 +159,7 @@ export default class MemberController extends Controller {
     _saveMemberProperty(propKey, newValue) {
         let currentValue = this.member.get(propKey);
 
-        if (newValue) {
+        if (newValue && typeof newValue === 'string') {
             newValue = newValue.trim();
         }
 
