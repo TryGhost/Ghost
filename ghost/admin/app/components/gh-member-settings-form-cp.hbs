@@ -107,11 +107,14 @@
             {{#unless this.products}}
             <div class="gh-main-section-content bordered">
                 <div class="gh-cp-memberproduct-noproduct">
+                    {{#unless this.isCreatingComplimentary}}
                     <div class="mb2">This member doesn't have subscriptions.</div>
+                    {{/unless}}
+
                     {{#unless this.member.isNew}}
                         {{#if this.isAddComplimentaryAllowed}}
                             {{#if this.isCreatingComplimentary}}
-                                Loading...
+                                <GhLoadingSpinner />
                             {{else}}
                                 <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
                                     <span>{{svg-jar "add"}} Add complimentary subscription</span>
