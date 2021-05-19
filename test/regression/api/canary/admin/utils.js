@@ -2,15 +2,9 @@ const url = require('url');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 
-// NOTE: the dependance on the schema here is wrong! It is a design flaw which is causing problems for API maintenance and compatibility
-//       whenever you need to modify any of the below property lists using schema - rework them into an "allowlist" array like it's done in
-//       the commit introducing this comment.
-const schema = require('../../../../../core/server/data/schema').tables;
-
 const API_URL = '/ghost/api/canary/admin/';
 
 const expectedProperties = {
-    // API top level
     posts: ['posts', 'meta'],
     tags: ['tags', 'meta'],
     users: ['users', 'meta'],
@@ -23,9 +17,15 @@ const expectedProperties = {
     invites: ['invites', 'meta'],
     themes: ['themes'],
     members: ['members', 'meta'],
-
-    site: ['title', 'description', 'logo', 'icon', 'accent_color', 'url', 'version'],
-
+    site: [
+        'title',
+        'description',
+        'logo',
+        'icon',
+        'accent_color',
+        'url',
+        'version'
+    ],
     post: [
         'id',
         'uuid',
@@ -64,65 +64,125 @@ const expectedProperties = {
         'email_subject',
         'frontmatter'
     ],
+    user: [
+        'id',
+        'name',
+        'slug',
+        'email',
+        'profile_image',
+        'cover_image',
+        'bio',
+        'website',
+        'location',
+        'facebook',
+        'twitter',
+        'accessibility',
+        'status',
+        'meta_title',
+        'meta_description',
+        'tour',
+        'last_seen',
+        'created_at',
+        'updated_at',
+        'url'
+    ],
+    tag: [
+        'id',
+        'name',
+        'slug',
+        'description',
+        'feature_image',
+        'visibility',
+        'og_image',
+        'og_title',
+        'og_description',
+        'twitter_image',
+        'twitter_title',
+        'twitter_description',
+        'meta_title',
+        'meta_description',
+        'codeinjection_head',
+        'codeinjection_foot',
+        'canonical_url',
+        'accent_color',
+        'created_at',
+        'updated_at'
+    ],
+    setting: [
+        'id',
+        'group',
+        'key',
+        'value',
+        'type',
+        'flags',
+        'created_at',
+        'updated_at'
+    ],
 
-    user: _(schema.users)
-        .keys()
-        .without('visibility')
-        .without('password')
-        .without('locale')
-        .concat('url')
-    ,
-    tag: _(schema.tags)
-        .keys()
-        // unused field
-        .without('parent_id')
-    ,
-    setting: _(schema.settings)
-        .keys()
-    ,
-    subscriber: _(schema.subscribers)
-        .keys()
-    ,
-    member: _(schema.members)
-        .keys()
-        .concat('avatar_image')
-        .concat('labels')
-    ,
+    member: [
+        'id',
+        'uuid',
+        'email',
+        'status',
+        'name',
+        'note',
+        'geolocation',
+        'subscribed',
+        'email_count',
+        'email_opened_count',
+        'email_open_rate',
+        'created_at',
+        'updated_at',
+        'avatar_image',
+        'labels'
+    ],
     member_signin_url: ['member_id', 'url'],
-    role: _(schema.roles)
-        .keys()
-    ,
-    permission: _(schema.permissions)
-        .keys()
-    ,
-    notification: ['type', 'message', 'status', 'id', 'dismissible', 'location', 'custom'],
+    role: ['id', 'name', 'description', 'created_at', 'updated_at'],
+    permission: [
+        'id',
+        'name',
+        'object_type',
+        'action_type',
+        'object_id',
+        'created_at',
+        'updated_at'
+    ],
+    notification: [
+        'type',
+        'message',
+        'status',
+        'id',
+        'dismissible',
+        'location',
+        'custom'
+    ],
     theme: ['name', 'package', 'active'],
-    invite: _(schema.invites)
-        .keys()
-        .without('token')
-    ,
-    webhook: _(schema.webhooks)
-        .keys()
-    ,
+    invite: [
+        'id',
+        'role_id',
+        'status',
+        'email',
+        'expires',
+        'created_at',
+        'updated_at'
+    ],
+    webhook: [
+        'id',
+        'event',
+        'target_url',
+        'name',
+        'secret',
+        'api_version',
+        'integration_id',
+        'status',
+        'last_triggered_at',
+        'last_triggered_status',
+        'last_triggered_error',
+        'created_at',
+        'updated_at'
+    ],
     email_preview: ['html', 'subject', 'plaintext']
 };
-
-_.each(expectedProperties, (value, key) => {
-    if (!value.__wrapped__) {
-        return;
-    }
-
-    /**
-     * @deprecated: x_by
-     */
-    expectedProperties[key] = value
-        .without(
-            'created_by',
-            'updated_by',
-            'published_by'
-        )
-        .value();
-});
 
 module.exports = {
     API: {
