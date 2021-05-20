@@ -1,4 +1,5 @@
 const _ = require('lodash');
+
 module.exports = class MemberRepository {
     /**
      * @param {object} deps
@@ -185,7 +186,10 @@ module.exports = class MemberRepository {
                         from_plan: subscription.get('plan_id'),
                         to_plan: null,
                         currency: subscription.get('plan_currency'),
-                        mrr_delta: -1 * (subscription.get('plan_interval') === 'month' ? subscription.get('plan_amount') : Math.floor(subscription.get('plan_amount') / 12))
+                        mrr_delta: -1 * getMRRDelta({
+                            interval: subscription.get('plan_interval'),
+                            amount: subscription.get('plan_amount')
+                        })
                     }, options);
                 }
             }
@@ -321,28 +325,6 @@ module.exports = class MemberRepository {
             plan_amount: subscriptionPriceData.unit_amount,
             plan_currency: subscriptionPriceData.currency
         };
-        function getMRRDelta({interval, amount, status}) {
-            if (status === 'trialing') {
-                return 0;
-            }
-            if (status === 'incomplete') {
-                return 0;
-            }
-            if (status === 'incomplete_expired') {
-                return 0;
-            }
-            if (status === 'canceled') {
-                return 0;
-            }
-
-            if (interval === 'year') {
-                return Math.floor(amount / 12);
-            }
-
-            if (interval === 'month') {
-                return amount;
-            }
-        }
         if (model) {
             const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
@@ -729,3 +711,34 @@ module.exports = class MemberRepository {
         return true;
     }
 };
+
+function getMRRDelta({interval, amount, status = null}) {
+    if (status === 'trialing') {
+        return 0;
+    }
+    if (status === 'incomplete') {
+        return 0;
+    }
+    if (status === 'incomplete_expired') {
+        return 0;
+    }
+    if (status === 'canceled') {
+        return 0;
+    }
+
+    if (interval === 'year') {
+        return Math.floor(amount / 12);
+    }
+
+    if (interval === 'month') {
+        return amount;
+    }
+
+    if (interval === 'week') {
+        return amount * 4;
+    }
+
+    if (interval === 'day') {
+        return amount * 30;
+    }
+}
