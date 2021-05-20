@@ -1686,6 +1686,14 @@ p.theme-validation-details {
     margin-bottom: -20px;
 }
 
+.fullscreen-modal-stripe-connect:not(.fullscreen-modal-stripe-connected) .modal-footer .gh-btn {
+    display: none;
+}
+
+.fullscreen-modal-stripe-connect.fullscreen-modal-stripe-connected .modal-header {
+    display: none;
+}
+
 .gh-members-stripe-info-header {
     display: flex;
     justify-content: space-between;

@@ -1,8 +1,6 @@
-{{#unless this.settings.stripeConnectAccountId}}
 <header class="modal-header" data-test-modal="webhook-form">
     <h1 data-test-text="title">Connect with Stripe</h1>
 </header>
-{{/unless}}
 <button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}
 </button>
