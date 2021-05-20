@@ -3,9 +3,6 @@ const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
 const EXPECTED_API_EFFICIENCY = 0.95;
 
-/** @type {(data: string) => string} */
-const hash = data => require('crypto').createHash('sha256').update(data).digest('hex');
-
 const STRIPE_API_VERSION = '2020-08-27';
 
 /**
@@ -21,10 +18,6 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {(x: any) => void} error
  * @prop {(x: any) => void} info
  * @prop {(x: any) => void} warn
- */
-
-/**
- * @typedef {'customers'|'subscriptions'|'plans'} StripeResource
  */
 
 module.exports = class StripeAPIService {
@@ -150,92 +143,6 @@ module.exports = class StripeAPIService {
         });
 
         return product;
-    }
-
-    /**
-     * ensureProduct.
-     *
-     * @param {string} name
-     *
-     * @returns {Promise<IProduct>}
-     */
-    async ensureProduct(name) {
-        const idSeed = 'Ghost Subscription';
-
-        /** @type {(x: string) => string} */
-        const prefixHashSeed = seed => (this._testMode ? `test_${seed}` : `prod_${seed}`);
-
-        /** @type {(idSeed: string) => Promise<IProduct>} */
-        const getOrCreateActiveProduct = async (idSeed) => {
-            const id = hash(prefixHashSeed(idSeed));
-            try {
-                await this._rateLimitBucket.throttle();
-                const product = await this._stripe.products.retrieve(id);
-
-                if (product.active) {
-                    return product;
-                }
-
-                return getOrCreateActiveProduct(id);
-            } catch (err) {
-                if (err.code !== 'resource_missing') {
-                    throw err;
-                }
-                await this._rateLimitBucket.throttle();
-                return this._stripe.products.create({
-                    id,
-                    name
-                });
-            }
-        };
-
-        return getOrCreateActiveProduct(idSeed);
-    }
-
-    /**
-     * ensurePlan.
-     *
-     * @param {object} plan
-     * @param {object} product
-     *
-     * @returns {Promise<IPlan>}
-     */
-    async ensurePlan(plan, product) {
-        const idSeed = product.id + plan.interval + plan.currency + plan.amount;
-
-        /** @type {(x: string) => string} */
-        const prefixHashSeed = seed => (this._testMode ? `test_${seed}` : `prod_${seed}`);
-
-        /** @type {(idSeed: string) => Promise<IPlan>} */
-        const getOrCreateActivePlan = async (idSeed) => {
-            const id = hash(prefixHashSeed(idSeed));
-            try {
-                await this._rateLimitBucket.throttle();
-                const plan = await this._stripe.plans.retrieve(id);
-
-                if (plan.active) {
-                    return plan;
-                }
-
-                return getOrCreateActivePlan(id);
-            } catch (err) {
-                if (err.code !== 'resource_missing') {
-                    throw err;
-                }
-                await this._rateLimitBucket.throttle();
-                return this._stripe.plans.create({
-                    id,
-                    nickname: plan.name,
-                    amount: plan.amount,
-                    interval: plan.interval,
-                    currency: plan.currency,
-                    product: product.id,
-                    billing_scheme: 'per_unit'
-                });
-            }
-        };
-
-        return getOrCreateActivePlan(idSeed);
     }
 
     /**
@@ -486,20 +393,6 @@ module.exports = class StripeAPIService {
         debug(`getPrice(${id}, ${JSON.stringify(options)})`);
 
         return await this._stripe.prices.retrieve(id, options);
-    }
-
-    /**
-     * getPlan
-     *
-     * @param {string} id
-     * @param {object} options
-     *
-     * @returns {Promise<import('stripe').Stripe.Plan>}
-     */
-    async getPlan(id, options = {}) {
-        debug(`getSubscription(${id}, ${JSON.stringify(options)})`);
-
-        return await this._stripe.plans.retrieve(id, options);
     }
 
     /**
