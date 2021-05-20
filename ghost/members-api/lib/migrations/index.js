@@ -50,23 +50,18 @@ module.exports = class StripeMigrations {
         });
         const defaultProduct = data[0] && data[0].toJSON();
 
-        /** Only run when -
-         * No rows in stripe_products,
-         * No rows in stripe_prices,
-         * One or more rows in members_stripe_customers_subscriptions
-         * */
         if (subscriptions.length > 0 && products.length === 0 && prices.length === 0 && defaultProduct) {
             try {
                 this._logging.info(`Populating products and prices for existing stripe customers`);
                 const uniquePlans = _.uniq(subscriptions.map(d => _.get(d, 'plan.id')));
 
-                let stripePlans = [];
+                let stripePrices = [];
                 for (const plan of uniquePlans) {
                     try {
-                        const stripePlan = await this._stripeAPIService.getPlan(plan, {
+                        const stripePrice = await this._stripeAPIService.getPrice(plan, {
                             expand: ['product']
                         });
-                        stripePlans.push(stripePlan);
+                        stripePrices.push(stripePrice);
                     } catch (err) {
                         if (err && err.statusCode === 404) {
                             this._logging.warn(`Plan ${plan} not found on Stripe - ignoring`);
@@ -75,9 +70,11 @@ module.exports = class StripeMigrations {
                         }
                     }
                 }
-                this._logging.info(`Adding ${stripePlans.length} plans from Stripe`);
-                for (const stripePlan of stripePlans) {
-                    const stripeProduct = stripePlan.product;
+                this._logging.info(`Adding ${stripePrices.length} prices from Stripe`);
+                for (const stripePrice of stripePrices) {
+                    // We expanded the product when fetching this price.
+                    /** @type {import('stripe').Stripe.Product} */
+                    const stripeProduct = (stripePrice.product);
 
                     await this._StripeProduct.upsert({
                         product_id: defaultProduct.id,
@@ -85,14 +82,14 @@ module.exports = class StripeMigrations {
                     });
 
                     await this._StripePrice.add({
-                        stripe_price_id: stripePlan.id,
+                        stripe_price_id: stripePrice.id,
                         stripe_product_id: stripeProduct.id,
-                        active: stripePlan.active,
-                        nickname: stripePlan.nickname,
-                        currency: stripePlan.currency,
-                        amount: stripePlan.amount,
+                        active: stripePrice.active,
+                        nickname: stripePrice.nickname,
+                        currency: stripePrice.currency,
+                        amount: stripePrice.unit_amount,
                         type: 'recurring',
-                        interval: stripePlan.interval
+                        interval: stripePrice.recurring.interval
                     });
                 }
             } catch (e) {
