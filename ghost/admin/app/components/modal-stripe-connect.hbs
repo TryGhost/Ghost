@@ -8,9 +8,11 @@
 </button>
 
 <form>
-<div class="modal-body">
+<div class="modal-body" {{did-insert this.updateSuccessModifier}}>
     <GhMembersPaymentsSetting
         @setStripeConnectIntegrationTokenSetting={{this.setStripeConnectIntegrationTokenSetting}}
+        @onConnected={{this.updateSuccessModifier}}
+        @onDisconnected={{this.updateSuccessModifier}}
     />
 </div>
 </form>

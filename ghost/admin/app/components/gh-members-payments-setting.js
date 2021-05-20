@@ -226,6 +226,8 @@ export default Component.extend({
 
         yield this.ajax.delete(url);
         yield this.settings.reload();
+
+        this.onDisconnected?.();
     }),
 
     calculateDiscount(monthly, yearly) {
@@ -262,8 +264,10 @@ export default Component.extend({
         if (this.get('settings.stripeConnectIntegrationToken')) {
             try {
                 let response = yield this.settings.save();
+
                 const products = yield this.store.query('product', {include: 'stripe_prices'});
                 this.product = products.firstObject;
+
                 if (this.product) {
                     const stripePrices = this.product.stripePrices || [];
                     const yearlyDiscount = this.calculateDiscount(5, 50);
@@ -297,8 +301,11 @@ export default Component.extend({
                     this.settings.set('membersYearlyPriceId', yearlyPrice.id);
                     response = yield this.settings.save();
                 }
+
                 this.set('membersStripeOpen', false);
                 this.set('stripeConnectSuccess', true);
+                this.onConnected?.();
+
                 return response;
             } catch (error) {
                 if (error.payload && error.payload.errors) {
