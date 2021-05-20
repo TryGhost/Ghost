@@ -7,6 +7,7 @@ const STRIPE_API_VERSION = '2020-08-27';
 
 /**
  * @typedef {import('stripe').Stripe.Customer} ICustomer
+ * @typedef {import('stripe').Stripe.DeletedCustomer} IDeletedCustomer
  * @typedef {import('stripe').Stripe.Product} IProduct
  * @typedef {import('stripe').Stripe.Plan} IPlan
  * @typedef {import('stripe').Stripe.Price} IPrice
@@ -149,7 +150,7 @@ module.exports = class StripeAPIService {
      * @param {string} id
      * @param {import('stripe').Stripe.CustomerRetrieveParams} options
      *
-     * @returns {Promise<ICustomer>}
+     * @returns {Promise<ICustomer|IDeletedCustomer>}
      */
     async getCustomer(id, options = {}) {
         debug(`getCustomer(${id}, ${JSON.stringify(options)})`);
@@ -181,7 +182,7 @@ module.exports = class StripeAPIService {
             try {
                 const customer = await this.getCustomer(data.get('customer_id'));
                 if (!customer.deleted) {
-                    return customer;
+                    return /** @type {ICustomer} */(customer);
                 }
             } catch (err) {
                 debug(`Ignoring Error getting customer for member ${err.message}`);
