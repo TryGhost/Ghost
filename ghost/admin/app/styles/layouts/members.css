@@ -1615,10 +1615,20 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-memberproduct-list-footer {
+    position:relative;
     margin-top: 12px;
     margin-bottom: -8px;
     padding-top: 12px;
     border-top: 1px solid var(--whitegrey);
+}
+
+.gh-memberproduct-list-footer.min-height {
+    min-height: 74px;
+}
+
+.gh-memberproduct-list-footer .gh-loading-content {
+    padding-bottom: unset;
+    padding-top: 12px;
 }
 
 .gh-btn-addproduct svg path {
