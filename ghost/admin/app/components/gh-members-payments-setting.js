@@ -288,7 +288,7 @@ export default Component.extend({
                         }
                     );
                     this.product.set('stripePrices', stripePrices);
-                    yield timeout(1000);
+                    yield timeout(3000);
                     const updatedProduct = yield this.product.save();
                     const monthlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'month', 500, 'usd');
                     const yearlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'year', 5000, 'usd');
@@ -296,9 +296,9 @@ export default Component.extend({
                     this.settings.set('membersMonthlyPriceId', monthlyPrice.id);
                     this.settings.set('membersYearlyPriceId', yearlyPrice.id);
                     response = yield this.settings.save();
-                    this.set('membersStripeOpen', false);
-                    this.set('stripeConnectSuccess', true);
                 }
+                this.set('membersStripeOpen', false);
+                this.set('stripeConnectSuccess', true);
                 return response;
             } catch (error) {
                 if (error.payload && error.payload.errors) {
