@@ -343,6 +343,15 @@ module.exports = class StripeAPIService {
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: this._config.enablePromoCodes,
             metadata,
+            /*
+            line_items: [{
+                price: priceId
+            }]
+            */
+            // This is deprecated and using the old way of doing things with Plans.
+            // It should be replaced with the line_items entry above when possible,
+            // however, this would lose the "trial from plan" feature which has also
+            // been deprecated by Stripe
             subscription_data: {
                 trial_from_plan: true,
                 items: [{
