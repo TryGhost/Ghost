@@ -102,7 +102,11 @@
             @class="w-70 ml4 right gh-btn gh-btn-black gh-btn-large gh-btn-icon-right"
             data-test-button="wizard-next"
         >
-            <span>{{if this.settings.stripeConnectAccountId "Continue" "Save and continue"}}{{svg-jar "arrow-right-tail"}}</span>
+            {{#if this.saveAndContinueTask.isRunning}}
+                <span>Saving...</span>
+            {{else}}
+                <span>{{if this.settings.stripeConnectAccountId "Continue" "Save and continue"}}{{svg-jar "arrow-right-tail"}}</span>
+            {{/if}}
         </GhTaskButton>
     </div>
 </div>
