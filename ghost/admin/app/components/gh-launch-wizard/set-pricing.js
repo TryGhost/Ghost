@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
-import {currencies, getSymbol} from 'ghost-admin/utils/currency';
+import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
@@ -36,6 +36,10 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return this.currencies.findBy('value', this.currency);
     }
 
+    get allCurrencies() {
+        return getCurrencyOptions();
+    }
+
     get isConnectDisallowed() {
         const siteUrl = this.config.get('blogUrl');
 
@@ -43,21 +47,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     }
 
     get disabled() {
-        if (this.product) {
-            return this.product.get('stripePrices') && this.product.get('stripePrices').length > 0;
-        }
-        return true;
-    }
-
-    get isHidden() {
-        if (this.loadingProduct) {
-            return false;
-        }
-
-        if (this.product) {
-            return this.product.get('stripePrices') && this.product.get('stripePrices').length > 0;
-        }
-        return true;
+        return false;
     }
 
     get isPaidPriceDisabled() {
@@ -68,44 +58,32 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return this.disabled || this.settings.get('membersSignupAccess') !== 'all';
     }
 
-    constructor() {
-        super(...arguments);
-        const storedData = this.args.getData();
-        if (storedData) {
-            if (storedData.product) {
-                this.updatePricesFromProduct(storedData.product);
-            } else {
-                this.stripeMonthlyAmount = 5;
-                this.stripeYearlyAmount = 50;
-            }
-            if (storedData.isMonthlyChecked !== undefined) {
-                this.isMonthlyChecked = storedData.isMonthlyChecked;
-            }
-            if (storedData.isYearlyChecked !== undefined) {
-                this.isYearlyChecked = storedData.isYearlyChecked;
-            }
-            if (storedData.isFreeChecked !== undefined) {
-                this.isFreeChecked = storedData.isFreeChecked;
-            }
+    getPrice(prices, type) {
+        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
+        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
+
+        if (type === 'monthly') {
+            return (
+                prices.find(price => price.id === monthlyPriceId) ||
+                prices.find(price => price.nickname === 'Monthly') ||
+                prices.find(price => price.interval === 'month')
+            );
         }
-        this.updatePreviewUrl();
-        this.loadingProduct = true;
-        this.fetchDefaultProduct();
+
+        if (type === 'yearly') {
+            return (
+                prices.find(price => price.id === yearlyPriceId) ||
+                prices.find(price => price.nickname === 'Yearly') ||
+                prices.find(price => price.interval === 'year')
+            );
+        }
+        return null;
     }
 
-    updatePricesFromProduct(product) {
-        if (product) {
-            const prices = product.get('stripePrices') || [];
-            const monthlyPrice = prices.find(d => d.nickname === 'Monthly');
-            const yearlyPrice = prices.find(d => d.nickname === 'Yearly');
-            if (monthlyPrice && monthlyPrice.amount) {
-                this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
-                this.currency = monthlyPrice.currency;
-            }
-            if (yearlyPrice && yearlyPrice.amount) {
-                this.stripeYearlyAmount = (yearlyPrice.amount / 100);
-            }
-        }
+    @action
+    setup() {
+        this.fetchDefaultProduct.perform();
+        this.updatePreviewUrl();
     }
 
     willDestroy() {
@@ -115,7 +93,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
     @action
     backStep() {
-        const product = this.getProduct();
+        const product = this.product;
         const data = this.args.getData() || {};
         this.args.storeData({
             ...data,
@@ -124,7 +102,8 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             isMonthlyChecked: this.isMonthlyChecked,
             isYearlyChecked: this.isYearlyChecked,
             monthlyAmount: this.stripeMonthlyAmount,
-            yearlyAmount: this.stripeYearlyAmount
+            yearlyAmount: this.stripeYearlyAmount,
+            currency: this.currency
         });
         this.args.backStep();
     }
@@ -174,7 +153,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
     @task
     *saveAndContinue() {
-        if (this.isHidden || !this.isConnectDisallowed) {
+        if (this.isConnectDisallowed) {
             this.args.nextStep();
         } else {
             yield this.validateStripePlans();
@@ -182,7 +161,7 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             if (this.stripePlanError) {
                 return false;
             }
-            const product = this.getProduct();
+            const product = this.product;
             const data = this.args.getData() || {};
             this.args.storeData({
                 ...data,
@@ -191,65 +170,65 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
                 isMonthlyChecked: this.isMonthlyChecked,
                 isYearlyChecked: this.isYearlyChecked,
                 monthlyAmount: this.stripeMonthlyAmount,
-                yearlyAmount: this.stripeYearlyAmount
+                yearlyAmount: this.stripeYearlyAmount,
+                currency: this.currency
             });
             this.args.nextStep();
         }
     }
 
-    calculateDiscount(monthly, yearly) {
-        if (isNaN(monthly) || isNaN(yearly)) {
-            return 0;
-        }
+    @task({drop: true})
+    *fetchDefaultProduct() {
+        const storedData = this.args.getData();
+        if (storedData?.product) {
+            this.product = storedData.product;
+            this.stripePrices = this.product.get('stripePrices') || [];
 
-        return monthly ? 100 - Math.floor((yearly / 12 * 100) / monthly) : 0;
-    }
-
-    getProduct() {
-        if (this.product) {
-            const stripePrices = this.product.stripePrices || [];
-            if (stripePrices.length === 0 && this.stripeMonthlyAmount && this.stripeYearlyAmount) {
-                const yearlyDiscount = this.calculateDiscount(this.stripeMonthlyAmount, this.stripeYearlyAmount);
-                stripePrices.push(
-                    {
-                        nickname: 'Monthly',
-                        amount: this.stripeMonthlyAmount * 100,
-                        active: 1,
-                        description: 'Full access',
-                        currency: this.currency,
-                        interval: 'month',
-                        type: 'recurring'
-                    },
-                    {
-                        nickname: 'Yearly',
-                        amount: this.stripeYearlyAmount * 100,
-                        active: 1,
-                        currency: this.currency,
-                        description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
-                        interval: 'year',
-                        type: 'recurring'
-                    }
-                );
-                this.product.set('stripePrices', stripePrices);
-                return this.product;
-            } else {
-                return this.product;
+            if (storedData.isMonthlyChecked !== undefined) {
+                this.isMonthlyChecked = storedData.isMonthlyChecked;
+            }
+            if (storedData.isYearlyChecked !== undefined) {
+                this.isYearlyChecked = storedData.isYearlyChecked;
+            }
+            if (storedData.isFreeChecked !== undefined) {
+                this.isFreeChecked = storedData.isFreeChecked;
+            }
+            if (storedData.currency !== undefined) {
+                this.currency = storedData.currency;
+            }
+            this.stripeMonthlyAmount = storedData.monthlyAmount;
+            this.stripeYearlyAmount = storedData.yearlyAmount;
+        } else {
+            const products = yield this.store.query('product', {include: 'stripe_prices'});
+            this.product = products.firstObject;
+            let portalPlans = this.settings.get('portalPlans') || [];
+            const currentMontlyPriceId = this.settings.get('membersMonthlyPriceId');
+            const currentYearlyPriceId = this.settings.get('membersYearlyPriceId');
+            this.isMonthlyChecked = false;
+            this.isYearlyChecked = false;
+            this.isFreeChecked = false;
+            if (portalPlans.includes(currentMontlyPriceId)) {
+                this.isMonthlyChecked = true;
+            }
+            if (portalPlans.includes(currentYearlyPriceId)) {
+                this.isYearlyChecked = true;
+            }
+            if (portalPlans.includes('free')) {
+                this.isFreeChecked = true;
+            }
+            this.stripePrices = this.product.get('stripePrices') || [];
+            const activePrices = this.stripePrices.filter(price => !!price.active);
+            const monthlyPrice = this.getPrice(activePrices, 'monthly');
+            const yearlyPrice = this.getPrice(activePrices, 'yearly');
+            if (monthlyPrice && monthlyPrice.amount) {
+                this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
+                this.currency = monthlyPrice.currency;
+            }
+            if (yearlyPrice && yearlyPrice.amount) {
+                this.stripeYearlyAmount = (yearlyPrice.amount / 100);
             }
         }
-        return null;
-    }
-
-    async fetchDefaultProduct() {
-        const products = await this.store.query('product', {include: 'stripe_prices'});
-        this.product = products.firstObject;
-        this.loadingProduct = false;
-        if (this.product.get('stripePrices').length > 0) {
-            const data = this.args.getData() || {};
-            this.args.storeData({
-                ...data,
-                product: null
-            });
-        }
+        this.updatePreviewUrl();
     }
 
     updatePreviewUrl() {
@@ -260,7 +239,8 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             yearlyPrice: this.stripeYearlyAmount * 100,
             isMonthlyChecked: this.isMonthlyChecked,
             isYearlyChecked: this.isYearlyChecked,
-            isFreeChecked: this.isFreeChecked
+            isFreeChecked: this.isFreeChecked,
+            portalPlans: null
         };
 
         const url = this.membersUtils.getPortalPreviewUrl(options);
