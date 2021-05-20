@@ -36,6 +36,7 @@ export default class MembersAccessController extends Controller {
     @tracked stripePlanError = '';
 
     @tracked portalPreviewUrl = '';
+    @tracked portalPreviewGuid = Date.now().valueOf();
 
     queryParams = ['showPortalSettings'];
 
@@ -147,11 +148,16 @@ export default class MembersAccessController extends Controller {
 
     @action
     openStripeConnect() {
+        this.stripeEnabledOnOpen = this.membersUtils.isStripeEnabled;
         this.showStripeConnect = true;
     }
 
     @action
-    closeStripeConnect() {
+    async closeStripeConnect() {
+        if (this.stripeEnabledOnOpen !== this.membersUtils.isStripeEnabled) {
+            await this.saveSettingsTask.perform();
+            this.portalPreviewGuid = Date.now().valueOf();
+        }
         this.showStripeConnect = false;
     }
 

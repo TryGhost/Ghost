@@ -57,6 +57,7 @@
                     {{else}}
                         <GhSiteIframe
                             @src={{this.portalPreviewUrl}}
+                            @guid={{this.portalPreviewGuid}}
                             @invisibleUntilLoaded={{true}}
                             @onLoad={{this.portalPreviewLoaded}}
                             @onDestroyed={{this.portalPreviewDestroyed}} />
@@ -92,8 +93,8 @@
                                     @id="freeWelcomePage"
                                     @value={{readonly this.settings.membersFreeSignupRedirect}}
                                     @baseUrl={{readonly this.siteUrl}}
-                                    @setResult={{action "setFreeSignupRedirect"}}
-                                    @validateUrl={{action "validateFreeSignupRedirect"}}
+                                    @setResult={{this.setFreeSignupRedirect}}
+                                    @validateUrl={{this.validateFreeSignupRedirect}}
                                     @placeholder={{readonly this.siteUrl}}
                                 />
                                 <GhErrorMessage
@@ -116,9 +117,9 @@
                         </div>
 
                         {{#if this.settings.stripeConnectAccountId}}
-                            <button type="button" class="gh-btn" {{action (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
+                            <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
                         {{else}}
-                            <button type="button" class="stripe-connect {{if this.isConnectDisallowed "disabled"}}" {{action (toggle "showStripeConnect" this)}}>
+                            <button type="button" class="stripe-connect {{if this.isConnectDisallowed "disabled"}}" {{on "click" this.openStripeConnect}}>
                                 <span>Connect with Stripe</span>
                             </button>
                         {{/if}}
@@ -178,7 +179,7 @@
                                                 @value={{readonly this.stripeYearlyAmount}}
                                                 @type="number"
                                                 @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                                @focus-out={{action "validateStripePlans"}}
+                                                @focus-out={{this.validateStripePlans}}
                                                 @placeholder=''
                                                 data-test-title-input={{true}}
                                             />
@@ -195,8 +196,8 @@
                                     <GhUrlInput
                                         @value={{readonly this.settings.membersPaidSignupRedirect}}
                                         @baseUrl={{readonly this.siteUrl}}
-                                        @setResult={{action "setPaidSignupRedirect"}}
-                                        @validateUrl={{action "validatePaidSignupRedirect"}}
+                                        @setResult={{this.setPaidSignupRedirect}}
+                                        @validateUrl={{this.validatePaidSignupRedirect}}
                                         @placeholder={{readonly this.siteUrl}}
                                     />
                                     <GhErrorMessage
@@ -245,7 +246,7 @@
     {{#if this.showStripeConnect}}
         <GhFullscreenModal
             @modal="stripe-connect"
-            @close={{action "closeStripeConnect"}}
+            @close={{this.closeStripeConnect}}
             @modifier="action wide stripe-connect {{if this.settings.stripeConnectAccountId "stripe-connected" ""}}" />
     {{/if}}
 </section>
