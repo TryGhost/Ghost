@@ -1,4 +1,4 @@
-<div class="gh-launch-wizard-settings-container">
+<div class="gh-launch-wizard-settings-container" {{did-insert this.setup}}>
     {{#if this.isConnectDisallowed}}
         <div class="gh-stack overflow-y-auto flex-grow-1">
             <div class="gh-setting-nossl-container">
@@ -29,11 +29,6 @@
                 </div>
             </div>
         </div>
-    {{else if this.isHidden}}
-        <div class="gh-stack overflow-y-auto flex-grow-1">
-            <h4 class="gh-setting-title">Subscriptions already set</h4>
-            <p>You can change product subscription pricing and signup options in Membership settings.</p>
-        </div>
     {{else}}
         <div class="gh-stack overflow-y-auto flex-grow-1">
             <div class="gh-stack-item flex-column">
@@ -46,7 +41,7 @@
                                 @value={{this.selectedCurrency}}
                                 id="currency"
                                 name="currency"
-                                @options={{this.currencies}}
+                                @options={{readonly this.allCurrencies}}
                                 @optionValuePath="value"
                                 @optionLabelPath="label"
                                 @update={{this.setStripePlansCurrency}}
