@@ -12,4 +12,17 @@ export default class ModalStripeConnect extends ModalBase {
     setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
         this.settings.set('stripeConnectIntegrationToken', stripeConnectIntegrationToken);
     }
+
+    @action
+    updateSuccessModifier() {
+        if (this.settings.get('stripeConnectAccountId')) {
+            if (this.modifier?.indexOf('stripe-connected') === -1) {
+                this.updateModifier(`${this.modifier} stripe-connected`);
+            }
+        } else {
+            if (this.modifier?.indexOf('stripe-connected') !== -1) {
+                this.updateModifier(this.modifier.replace(/\s?stripe-connected/, ''));
+            }
+        }
+    }
 }

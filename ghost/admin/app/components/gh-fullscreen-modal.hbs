@@ -9,6 +9,8 @@
                     @model={{this.model}}
                     @confirm={{action "confirm"}}
                     @closeModal={{action "close"}}
+                    @modifier={{this.modifier}}
+                    @updateModifier={{action (mut this.modifier)}}
                 />
             {{/let}}
         {{/if}}
