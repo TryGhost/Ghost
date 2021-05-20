@@ -167,8 +167,7 @@ module.exports = function MembersApi({
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,
             webhookHandlerUrl: stripeConfig.webhookHandlerUrl,
-            webhook: stripeConfig.webhook || {},
-            mode: process.env.NODE_ENV || 'development'
+            webhook: stripeConfig.webhook || {}
         })
     ]) : Promise.resolve();
 
