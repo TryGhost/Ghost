@@ -10,6 +10,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     @service config;
     @service ghostPaths;
     @service settings;
+    @service store;
 
     @tracked hasActiveStripeSubscriptions = false;
     @tracked showDisconnectStripeConnectModal = false;
@@ -57,6 +58,34 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         this.settings.set('stripeProductName', this.settings.get('title'));
         this.settings.set('stripeConnectIntegrationToken', event.target.value);
         this.stripeConnectError = null;
+    }
+
+    calculateDiscount(monthly, yearly) {
+        if (isNaN(monthly) || isNaN(yearly)) {
+            return 0;
+        }
+
+        return monthly ? 100 - Math.floor((yearly / 12 * 100) / monthly) : 0;
+    }
+
+    getActivePrice(prices, interval, amount, currency) {
+        return prices.find((price) => {
+            return (
+                price.active && price.amount === amount && price.type === 'recurring' &&
+                price.interval === interval && price.currency.toLowerCase() === currency.toLowerCase()
+            );
+        });
+    }
+
+    updatePortalPlans(monthlyPriceId, yearlyPriceId) {
+        let portalPlans = ['free'];
+        if (monthlyPriceId) {
+            portalPlans.push(monthlyPriceId);
+        }
+        if (yearlyPriceId) {
+            portalPlans.push(yearlyPriceId);
+        }
+        this.settings.set('portalPlans', portalPlans);
     }
 
     @task({drop: true})
@@ -114,6 +143,43 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
         try {
             yield this.settings.save();
+
+            const products = yield this.store.query('product', {include: 'stripe_prices'});
+            this.product = products.firstObject;
+            if (this.product) {
+                const stripePrices = this.product.stripePrices || [];
+                const yearlyDiscount = this.calculateDiscount(5, 50);
+                stripePrices.push(
+                    {
+                        nickname: 'Monthly',
+                        amount: 500,
+                        active: 1,
+                        description: 'Full access',
+                        currency: 'usd',
+                        interval: 'month',
+                        type: 'recurring'
+                    },
+                    {
+                        nickname: 'Yearly',
+                        amount: 5000,
+                        active: 1,
+                        currency: 'usd',
+                        description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
+                        interval: 'year',
+                        type: 'recurring'
+                    }
+                );
+                this.product.set('stripePrices', stripePrices);
+                yield timeout(1000);
+                const updatedProduct = yield this.product.save();
+                const monthlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'month', 500, 'usd');
+                const yearlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'year', 5000, 'usd');
+                this.updatePortalPlans(monthlyPrice.id, yearlyPrice.id);
+                this.settings.set('membersMonthlyPriceId', monthlyPrice.id);
+                this.settings.set('membersYearlyPriceId', yearlyPrice.id);
+                yield this.settings.save();
+            }
+
             this.pauseAndContinueTask.perform();
             return true;
         } catch (error) {
