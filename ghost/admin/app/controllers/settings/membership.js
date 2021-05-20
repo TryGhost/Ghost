@@ -104,7 +104,7 @@ export default class MembersAccessController extends Controller {
 
     @action
     async membersSubscriptionAccessChanged() {
-        const [oldValue] = this.settings.changedAttributes().membersSignupAccess;
+        const oldValue = this.settings.changedAttributes().membersSignupAccess?.[0];
 
         if (oldValue === 'none') {
             // when saved value is 'none' the server won't inject the portal script
