@@ -103,6 +103,22 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
+    async membersSubscriptionAccessChanged() {
+        const [oldValue] = this.settings.changedAttributes().membersSignupAccess;
+
+        if (oldValue === 'none') {
+            // when saved value is 'none' the server won't inject the portal script
+            // to work around that and show the expected portal preview we save and
+            // force a refresh
+            await this.saveSettingsTask.perform();
+            this.updatePortalPreview();
+            this.portalPreviewGuid = Date.now().valueOf();
+        } else {
+            this.updatePortalPreview();
+        }
+    }
+
+    @action
     setStripePlansCurrency(event) {
         const newCurrency = event.value;
         this.currency = newCurrency;
