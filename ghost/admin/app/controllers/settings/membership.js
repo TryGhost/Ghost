@@ -58,6 +58,7 @@ export default class MembersAccessController extends Controller {
 
     get hasChangedPrices() {
         if (this.product) {
+            this.stripePrices = this.product.get('stripePrices') || [];
             const activePrices = this.stripePrices.filter(price => !!price.active);
             const monthlyPrice = this.getPrice(activePrices, 'monthly');
             const yearlyPrice = this.getPrice(activePrices, 'yearly');
