@@ -52,7 +52,7 @@
 
     {{else}}
 
-        {{#if this.stripeConnectAccountId}}
+        {{#if (and this.stripeConnectAccountId (not this.saveStripeSettings.isRunning))}}
             <div class="gh-stripe-connected-container">
                 {{svg-jar "check-circle-stroke" class="check-circle"}}
                 <h1>You are connected to Stripe</h1>
