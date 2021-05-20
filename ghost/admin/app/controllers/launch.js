@@ -156,6 +156,7 @@ export default class LaunchController extends Controller {
 
     @action
     reset() {
+        this.data = null;
         this.step = 'customise-design';
         this.skippedSteps = [];
     }
