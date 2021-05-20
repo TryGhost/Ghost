@@ -29,10 +29,24 @@ module.exports = createTransactionalMigration(
             if (interval === 'month') {
                 return amount;
             }
+
+            if (interval === 'week') {
+                return amount * 4;
+            }
+
+            if (interval === 'day') {
+                return amount * 30;
+            }
+
+            throw new Error(`Unknown Subscription interval "${interval}" found.`);
         }
 
         const allEvents = allSubscriptions.reduce((allEventsAcc, subscription) => {
             if (['incomplete', 'incomplete_expired'].includes(subscription.status)) {
+                return allEventsAcc;
+            }
+
+            if (!['year', 'month', 'week', 'day'].includes(subscription.plan_interval)) {
                 return allEventsAcc;
             }
 
