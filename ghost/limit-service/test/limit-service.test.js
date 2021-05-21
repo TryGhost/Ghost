@@ -320,7 +320,7 @@ describe('Limit Service', function () {
                 await limitService.checkIfAnyOverLimit();
                 should.fail(limitService, 'Should have errored');
             } catch (err) {
-                err.message.should.eql(`Cannot read property 'value' of undefined`);
+                err.message.should.eql(`Attempted to check an allowlist limit without a value`);
             }
         });
     });
