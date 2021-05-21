@@ -234,4 +234,74 @@ describe('Limit Service', function () {
             (await limitService.checkWouldGoOverLimit('members')).should.be.true();
         });
     });
+
+    describe('Check if any of configured limits are acceded', function () {
+        it('Confirms an acceded limit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 5
+                },
+                members: {
+                    max: 100,
+                    currentCountQuery: () => 100
+                },
+                emails: {
+                    maxPeriodic: 3,
+                    currentCountQuery: () => 5
+                },
+                customIntegrations: {
+                    disabled: true
+                }
+            };
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            (await limitService.checkIfAnyOverLimit()).should.be.true();
+        });
+
+        it('Does not confirm if no limits are acceded', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 1
+                },
+                members: {
+                    max: 100,
+                    currentCountQuery: () => 2
+                },
+                emails: {
+                    maxPeriodic: 3,
+                    currentCountQuery: () => 2
+                },
+                // TODO: allowlist type of limits doesn't have "checkIsOverLimit" implemented yet!
+                // customThemes: {
+                //     allowlist: ['casper', 'dawn', 'lyra']
+                // },
+                // NOTE: the flag limit has flawed assumption of not being acceded previously
+                //       this test might fail when the flaw is addressed
+                customIntegrations: {
+                    disabled: true
+                }
+            };
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            (await limitService.checkIfAnyOverLimit()).should.be.false();
+        });
+    });
 });
