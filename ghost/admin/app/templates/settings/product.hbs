@@ -75,7 +75,7 @@
                         <td colspan="4" class="gh-list-data">
                             <div class="gh-price-list-noprices">
                                 <div class="mb2">There are no prices for this product</div>
-                                {{#if this.settings.stripeConnectAccountId}}
+                                {{#if this.membersUtils.isStripeEnabled}}
                                     {{#unless this.product.isNew}}
                                         <button type="button" class="gh-btn gh-btn-green" {{action "openNewPrice"}}
                                         disabled={{this.saveTask.isRunning}} >
@@ -83,7 +83,7 @@
                                         </button>
                                     {{/unless}}
                                 {{else}}
-                                    You need to <LinkTo class="gh-setting-group" @route="settings.members-payments" data-test-nav="members-payments">connect to Stripe</LinkTo> to add prices
+                                    You need to <button class="b gh-setting-group" {{on "click" this.openStripeConnect}}>connect to Stripe</button> to add prices
                                 {{/if}}
                             </div>
                         </td>
