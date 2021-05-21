@@ -128,9 +128,8 @@ module.exports = function setupOAuthApp() {
     });
 
     oauthApp.get('/:provider/callback', (req, res, next) => {
-        // Bypass CSRF protection to authenticate users as they are redirected from
-        // Google OAuth consent screen
-        res.locals.bypassCsrfProtection = true;
+        // Set the referrer as the ghost instance domain so that the session is linked to the ghost instance domain
+        req.headers.referrer = urlUtils.getSiteUrl();
         next();
     }, auth.authenticate.authenticateAdminApi, (req, res, next) => {
         if (req.params.provider !== 'google') {
