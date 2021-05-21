@@ -557,6 +557,20 @@ textarea {
     transform: translateX(16px);
 }
 
+.for-switch.x-small .input-toggle-component {
+    width: 34px !important;
+    height: 20px !important;
+}
+
+.for-switch.x-small .input-toggle-component:before {
+    height: 16px !important;
+    width: 16px !important;
+}
+
+.for-switch.x-small input:checked + .input-toggle-component:before {
+    transform: translateX(14px);
+}
+
 .for-switch.disabled {
     opacity: 0.5;
     pointer-events: none;

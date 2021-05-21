@@ -4,6 +4,10 @@ export default class MembersUtilsService extends Service {
     @service config;
     @service settings;
 
+    get isMembersEnabled() {
+        return this.settings.get('membersSignupAccess') !== 'none';
+    }
+
     get isStripeEnabled() {
         const stripeDirect = this.config.get('stripeDirect');
 
