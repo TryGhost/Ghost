@@ -14,6 +14,13 @@ export default class ModalStripeConnect extends ModalBase {
     }
 
     @action
+    reset() {
+        // stripeConnectIntegrationToken is not a persisted value so we don't want
+        // to keep it around across transitions
+        this.settings.set('stripeConnectIntegrationToken', undefined);
+    }
+
+    @action
     updateSuccessModifier() {
         if (this.settings.get('stripeConnectAccountId')) {
             if (this.modifier?.indexOf('stripe-connected') === -1) {
