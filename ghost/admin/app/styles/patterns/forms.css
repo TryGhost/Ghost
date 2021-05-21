@@ -647,7 +647,7 @@ textarea {
     border-right: none;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
-    padding-right: 0;
+    padding-right: 2px;
     min-width: 0; /* Firefox fix */
 }
 
@@ -676,6 +676,12 @@ textarea {
     border-bottom-left-radius: 0;
     flex: 1;
     color: var(--midlightgrey);
+}
+
+@media (max-width: 430px) {
+    .gh-input-append {
+        padding: 6px 8px;
+    }
 }
 
 .gh-expandable-content .gh-input-append {
