@@ -1,3 +1,5 @@
+const {UpdateCollisionError} = require('@tryghost/errors');
+
 /**
  * @typedef {object} ProductModel
  */
@@ -98,6 +100,12 @@ class ProductRepository {
      * @returns {Promise<ProductModel>}
      **/
     async create(data, options) {
+        if (!this._stripeAPIService.configured && data.stripe_prices) {
+            throw new UpdateCollisionError({
+                code: 'STRIPE_NOT_CONFIGURED'
+            });
+        }
+
         const productData = {
             name: data.name,
             description: data.description
@@ -161,6 +169,12 @@ class ProductRepository {
      * @returns {Promise<ProductModel>}
      **/
     async update(data, options) {
+        if (!this._stripeAPIService.configured && data.stripe_prices) {
+            throw new UpdateCollisionError({
+                code: 'STRIPE_NOT_CONFIGURED'
+            });
+        }
+
         const productData = {
             name: data.name,
             description: data.description
