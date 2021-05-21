@@ -303,5 +303,25 @@ describe('Limit Service', function () {
 
             (await limitService.checkIfAnyOverLimit()).should.be.false();
         });
+
+        it('Throws an error when an allowlist limit is checked', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                // TODO: allowlist type of limits doesn't have "checkIsOverLimit" implemented yet!
+                customThemes: {
+                    allowlist: ['casper', 'dawn', 'lyra']
+                }
+            };
+
+            limitService.loadLimits({limits, errors});
+
+            try {
+                await limitService.checkIfAnyOverLimit();
+                should.fail(limitService, 'Should have errored');
+            } catch (err) {
+                err.message.should.eql(`Cannot read property 'value' of undefined`);
+            }
+        });
     });
 });
