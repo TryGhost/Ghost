@@ -50,7 +50,6 @@ Router.map(function () {
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});
     this.route('settings.members-email', {path: '/settings/members-email'});
-    this.route('settings.members-payments', {path: '/settings/members-payments'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
 
     this.route('settings.products', {path: '/settings/products'});
