@@ -1412,7 +1412,7 @@ p.theme-validation-details {
     grid-gap: 32px;
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 1320px) {
     .gh-setting-members-basics {
         grid-gap: 0;
     }
@@ -1453,6 +1453,11 @@ p.theme-validation-details {
         margin-top: 1rem;
         margin-left: 0;
     }
+}
+
+.gh-setting-members-portalcta .gh-expandable-description {
+    padding-top: 2px;
+    line-height: 1.4;
 }
 
 .gh-setting-members-access {
@@ -1502,6 +1507,11 @@ p.theme-validation-details {
     display: flex;
     align-items: center;
     margin: 1.6rem 2.4rem 1.6rem 1rem;
+}
+
+.gh-setting-dropdown-list {
+    margin-top: -1px;
+    border-top: 1px solid var(--input-border-color) !important;
 }
 
 .gh-setting-dropdown-list .ember-power-select-option {
