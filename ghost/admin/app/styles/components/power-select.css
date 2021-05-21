@@ -137,6 +137,10 @@
     }
 }
 
+.ember-power-select-options .ember-power-select-group:first-child .ember-power-select-group-name {
+    border-top: none;
+}
+
 .ember-power-select-group:first-of-type .ember-power-select-group-name {
     margin: 8px 0;
     padding-top: 0;

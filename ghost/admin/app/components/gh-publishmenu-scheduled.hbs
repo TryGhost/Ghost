@@ -38,11 +38,9 @@
                         <label class="gh-publishmenu-radio-label mb3 {{if this.disableEmailOption "midgrey"}}">Send by email to</label>
 
                         <div class="form-group">
-                            <GhMembersSegmentSelect
-                                @segment={{this.recipientsSegment}}
+                            <GhMembersRecipientSelect
+                                @filter={{this.recipientsFilter}}
                                 @disabled={{true}}
-                                @renderInPlace={{true}}
-                                @enforcedCountFilter="subscribed:true"
                             />
                         </div>
                     </div>
