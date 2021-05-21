@@ -115,6 +115,11 @@ if (limitService.isLimited('members')) {
     // useful in cases you need to check if specific instance would still be over the limit if the limit changed
     await limitService.errorIfIsOverLimit('members', {max: 10000});
 }
+
+// check if any of the limits are acceding
+if (limitService.checkIfAnyOverLimit()) {
+    console.log('One of the limits has acceded!');
+}
 ```
 
 ### Types of limits
