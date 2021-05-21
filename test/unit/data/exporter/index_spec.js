@@ -164,4 +164,34 @@ describe('Exporter', function () {
             }).catch(done);
         });
     });
+
+    describe('Export table whitelists', function () {
+        it('should be fixed when db schema introduces new tables', function () {
+            const {
+                BACKUP_TABLES,
+                TABLES_ALLOWLIST
+            } = require('../../../../core/server/data/exporter/table-lists.js');
+
+            const nonSchemaTables = ['migrations', 'migrations_lock'];
+
+            // NOTE: this test is serving a role of a reminder to have a look into exported tables allowlists
+            //       if it failed you probably need to add or remove a table entry from table-lists module
+            [...Object.keys(schema.tables), ...nonSchemaTables].sort().should.eql([...BACKUP_TABLES, ...TABLES_ALLOWLIST].sort());
+        });
+
+        it('should be fixed when default settings is changed', function () {
+            const {
+                SETTING_KEYS_BLOCKLIST
+            } = require('../../../../core/server/data/exporter/table-lists.js');
+            const defaultSettings = require('../../../../core/server/data/schema/default-settings.json');
+
+            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr, index) => {
+                return acc + Object.keys(defaultSettings[curr]).length;
+            }, 0);
+
+            // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
+            const allowedKeysLength = 76;
+            totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
+        });
+    });
 });
