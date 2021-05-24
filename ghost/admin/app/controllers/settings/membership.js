@@ -239,8 +239,8 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    portalPreviewLoaded(event) {
-        this.portalPreviewIframe = event.target;
+    portalPreviewLoaded(iframe) {
+        this.portalPreviewIframe = iframe;
         this.resizePortalPreviewTask.perform();
     }
 
