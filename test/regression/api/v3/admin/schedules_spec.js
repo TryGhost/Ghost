@@ -27,68 +27,62 @@ describe('v3 Schedules API', function () {
         sinon.restore();
     });
 
-    before(function () {
-        return ghost()
-            .then(() => {
-                request = supertest.agent(config.get('url'));
-            });
-    });
+    before(async function () {
+        await ghost();
 
-    before(function () {
-        return ghost()
-            .then(function () {
-                resources.push(testUtils.DataGenerator.forKnex.createPost({
-                    created_by: testUtils.existingData.users[0].id,
-                    author_id: testUtils.existingData.users[0].id,
-                    published_by: testUtils.existingData.users[0].id,
-                    published_at: moment().add(30, 'seconds').toDate(),
-                    status: 'scheduled',
-                    slug: 'first'
-                }));
+        request = supertest.agent(config.get('url'));
 
-                resources.push(testUtils.DataGenerator.forKnex.createPost({
-                    created_by: testUtils.existingData.users[0].id,
-                    author_id: testUtils.existingData.users[0].id,
-                    published_by: testUtils.existingData.users[0].id,
-                    published_at: moment().subtract(30, 'seconds').toDate(),
-                    status: 'scheduled',
-                    slug: 'second'
-                }));
+        resources.push(testUtils.DataGenerator.forKnex.createPost({
+            created_by: testUtils.existingData.users[0].id,
+            author_id: testUtils.existingData.users[0].id,
+            published_by: testUtils.existingData.users[0].id,
+            published_at: moment().add(30, 'seconds').toDate(),
+            status: 'scheduled',
+            slug: 'first'
+        }));
 
-                resources.push(testUtils.DataGenerator.forKnex.createPost({
-                    created_by: testUtils.existingData.users[0].id,
-                    author_id: testUtils.existingData.users[0].id,
-                    published_by: testUtils.existingData.users[0].id,
-                    published_at: moment().add(10, 'minute').toDate(),
-                    status: 'scheduled',
-                    slug: 'third'
-                }));
+        resources.push(testUtils.DataGenerator.forKnex.createPost({
+            created_by: testUtils.existingData.users[0].id,
+            author_id: testUtils.existingData.users[0].id,
+            published_by: testUtils.existingData.users[0].id,
+            published_at: moment().subtract(30, 'seconds').toDate(),
+            status: 'scheduled',
+            slug: 'second'
+        }));
 
-                resources.push(testUtils.DataGenerator.forKnex.createPost({
-                    created_by: testUtils.existingData.users[0].id,
-                    author_id: testUtils.existingData.users[0].id,
-                    published_by: testUtils.existingData.users[0].id,
-                    published_at: moment().subtract(10, 'minute').toDate(),
-                    status: 'scheduled',
-                    slug: 'fourth'
-                }));
+        resources.push(testUtils.DataGenerator.forKnex.createPost({
+            created_by: testUtils.existingData.users[0].id,
+            author_id: testUtils.existingData.users[0].id,
+            published_by: testUtils.existingData.users[0].id,
+            published_at: moment().add(10, 'minute').toDate(),
+            status: 'scheduled',
+            slug: 'third'
+        }));
 
-                resources.push(testUtils.DataGenerator.forKnex.createPost({
-                    created_by: testUtils.existingData.users[0].id,
-                    author_id: testUtils.existingData.users[0].id,
-                    published_by: testUtils.existingData.users[0].id,
-                    published_at: moment().add(30, 'seconds').toDate(),
-                    status: 'scheduled',
-                    slug: 'fifth',
-                    type: 'page'
-                }));
+        resources.push(testUtils.DataGenerator.forKnex.createPost({
+            created_by: testUtils.existingData.users[0].id,
+            author_id: testUtils.existingData.users[0].id,
+            published_by: testUtils.existingData.users[0].id,
+            published_at: moment().subtract(10, 'minute').toDate(),
+            status: 'scheduled',
+            slug: 'fourth'
+        }));
 
-                return Promise.mapSeries(resources, function (post) {
-                    return models.Post.add(post, {context: {internal: true}});
-                }).then(function (result) {
-                    result.length.should.eql(5);
-                });
-            });
+        resources.push(testUtils.DataGenerator.forKnex.createPost({
+            created_by: testUtils.existingData.users[0].id,
+            author_id: testUtils.existingData.users[0].id,
+            published_by: testUtils.existingData.users[0].id,
+            published_at: moment().add(30, 'seconds').toDate(),
+            status: 'scheduled',
+            slug: 'fifth',
+            type: 'page'
+        }));
+
+        const result = await Promise.mapSeries(resources, function (post) {
+            return models.Post.add(post, {context: {internal: true}});
+        });
+
+        result.length.should.eql(5);
     });
 
     describe('publish', function () {
