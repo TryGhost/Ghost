@@ -1,4 +1,5 @@
 const jwt = require('express-jwt');
+const {UnauthorizedError} = require('@tryghost/errors');
 const membersService = require('../../members');
 const config = require('../../../../shared/config');
 
@@ -37,8 +38,19 @@ module.exports = {
                 }
             }));
         }
-        return function (req, res, next) {
-            UNO_MEMBERINO.then(fn => fn(req, res, next)).catch(next);
+        return async function (req, res, next) {
+            try {
+                const middleware = await UNO_MEMBERINO;
+
+                middleware(req, res, function (err, ...rest) {
+                    if (err && err.name === 'UnauthorizedError') {
+                        return next(new UnauthorizedError({err}), ...rest);
+                    }
+                    return next(err, ...rest);
+                });
+            } catch (err) {
+                next(err);
+            }
         };
     }
 };
