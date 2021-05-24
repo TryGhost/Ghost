@@ -260,6 +260,9 @@ export default class MembersAccessController extends Controller {
                 return;
             }
 
+            portalIframe.contentWindow.document.body.style.overflow = 'hidden';
+            portalIframe.contentWindow.document.body.style['scrollbar-width'] = 'none';
+
             const portalContainer = portalIframe.contentWindow.document.querySelector('.gh-portal-popup-container');
             if (!portalContainer) {
                 return;

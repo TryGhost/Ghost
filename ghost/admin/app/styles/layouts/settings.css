@@ -1645,6 +1645,7 @@ p.theme-validation-details {
     margin-bottom: 32px;
     border-radius: 5px;
     pointer-events: none;
+    transition: height 0.35s ease-in-out;
 }
 
 .gh-setting-members-portal-disabled {
