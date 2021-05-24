@@ -413,8 +413,8 @@ export default class MembersAccessController extends Controller {
         const monthlyPrice = this.getPrice(activePrices, 'monthly');
         const yearlyPrice = this.getPrice(activePrices, 'yearly');
 
-        this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
-        this.stripeYearlyAmount = (yearlyPrice.amount / 100);
+        this.stripeMonthlyAmount = monthlyPrice ? (monthlyPrice.amount / 100) : 5;
+        this.stripeYearlyAmount = yearlyPrice ? (yearlyPrice.amount / 100) : 50;
     }
 
     reset() {
