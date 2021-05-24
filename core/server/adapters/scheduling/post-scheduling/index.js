@@ -1,12 +1,12 @@
 const Promise = require('bluebird');
 const moment = require('moment');
-const jwt = require('jsonwebtoken');
 const localUtils = require('../utils');
 const events = require('../../../lib/common/events');
 const i18n = require('../../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
+const getSignedAdminToken = require('./scheduling-auth-token');
 const _private = {};
 const SCHEDULED_RESOURCES = ['post', 'page'];
 
@@ -30,40 +30,6 @@ _private.getSchedulerIntegration = function () {
 };
 
 /**
- * @description Get signed admin token for making authenticated scheduling requests
- *
- * @return {Promise}
- */
-_private.getSignedAdminToken = function ({publishedAt, apiUrl, integration}) {
-    let key = integration.api_keys[0];
-
-    const JWT_OPTIONS = {
-        keyid: key.id,
-        algorithm: 'HS256',
-        audience: apiUrl,
-        noTimestamp: true
-    };
-
-    // Default token expiry is till 6 hours after scheduled time
-    // or if published_at is in past then till 6 hours after blog start
-    // to allow for retries in case of network issues
-    // and never before 10 mins to publish time
-    let tokenExpiry = moment(publishedAt).add(6, 'h');
-    if (tokenExpiry.isBefore(moment())) {
-        tokenExpiry = moment().add(6, 'h');
-    }
-
-    return jwt.sign(
-        {
-            exp: tokenExpiry.unix(),
-            nbf: moment(publishedAt).subtract(10, 'm').unix()
-        },
-        Buffer.from(key.secret, 'hex'),
-        JWT_OPTIONS
-    );
-};
-
-/**
  * @description Normalize model data into scheduler notation.
  * @param {Object} options
  * @return {Object}
@@ -71,7 +37,7 @@ _private.getSignedAdminToken = function ({publishedAt, apiUrl, integration}) {
 _private.normalize = function normalize({model, apiUrl, resourceType, integration}, event = '') {
     const resource = `${resourceType}s`;
     let publishedAt = (event === 'unscheduled') ? model.previous('published_at') : model.get('published_at');
-    const signedAdminToken = _private.getSignedAdminToken({publishedAt, apiUrl, integration});
+    const signedAdminToken = getSignedAdminToken({publishedAt, apiUrl, integration});
     let url = `${urlUtils.urlJoin(apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
     return {
         // NOTE: The scheduler expects a unix timestamp.
