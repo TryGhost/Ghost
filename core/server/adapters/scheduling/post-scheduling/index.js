@@ -17,9 +17,17 @@ const SCHEDULED_RESOURCES = ['post', 'page'];
  */
 _private.normalize = function normalize({model, apiUrl, resourceType, integration}, event = '') {
     const resource = `${resourceType}s`;
-    let publishedAt = (event === 'unscheduled') ? model.previous('published_at') : model.get('published_at');
-    const signedAdminToken = getSignedAdminToken({publishedAt, apiUrl, integration});
+    const publishedAt = (event === 'unscheduled') ? model.previous('published_at') : model.get('published_at');
+    const signedAdminToken = getSignedAdminToken({
+        publishedAt,
+        apiUrl,
+        key: {
+            id: integration.api_keys[0].id,
+            secret: integration.api_keys[0].secret
+        }
+    });
     let url = `${urlUtils.urlJoin(apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
+
     return {
         // NOTE: The scheduler expects a unix timestamp.
         time: moment(publishedAt).valueOf(),
@@ -58,6 +66,7 @@ _private.loadScheduledResources = async function () {
 /**
  * @description Initialise post scheduling.
  * @param {Object} options
+ * @param {string} options.apiUrl -
  * @return {*}
  */
 exports.init = async function init(options = {}) {
