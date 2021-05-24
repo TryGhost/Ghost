@@ -154,7 +154,7 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        xit('Can not request settings by group, returns all settings instead', function () {
+        it('Can not request settings by group, returns all settings instead', function () {
             return request.get(localUtils.API.getApiQuery(`settings/?group=theme`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -170,8 +170,8 @@ describe('Settings API (v2)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    Object.keys(settings).length.should.equal(39);
-                    settings.map(s => s.key).should.deepEqual(defaultSettingsKeyTypes);
+                    Object.keys(settings).length.should.equal(defaultSettingsKeyTypes.length);
+                    settings.map(s => s.key).sort().should.eql(defaultSettingsKeyTypes.map(s => s.key).sort());
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
