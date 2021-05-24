@@ -84,12 +84,14 @@ describe('Post Model', function () {
             });
 
             describe('findPage', function () {
-                // @TODO: this test case fails for mysql currently if you run all regression tests, the test does not fail if you run this as a single test
-                describe.skip('with more posts/tags', function () {
+                describe('with more posts/tags', function () {
                     beforeEach(function () {
                         return testUtils.truncate('posts_tags')
                             .then(function () {
                                 return testUtils.truncate('tags');
+                            })
+                            .then(function () {
+                                return testUtils.truncate('posts_meta');
                             })
                             .then(function () {
                                 return testUtils.truncate('posts');
