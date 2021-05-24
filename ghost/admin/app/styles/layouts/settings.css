@@ -1641,11 +1641,11 @@ p.theme-validation-details {
         0 100px 80px rgba(0, 0, 0, 0.07)
     ;
     width: 420px;
-    height: 582px;
+    height: 562px;
     margin-bottom: 32px;
     border-radius: 5px;
     pointer-events: none;
-    transition: height 0.35s ease-in-out;
+    transition: height 0.17s ease-out;
 }
 
 .gh-setting-members-portal-disabled {
