@@ -125,6 +125,7 @@ export default Component.extend({
                 if (email.status === 'failed') {
                     throw new EmailFailedError(email.error);
                 }
+                pollTimeout += RETRY_EMAIL_POLL_LENGTH;
             }
         }
 
