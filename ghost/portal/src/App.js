@@ -57,6 +57,7 @@ export default class App extends React.Component {
         if (this.state.initStatus === 'success' && prevState.initStatus !== this.state.initStatus) {
             const {siteUrl} = this.props;
             const contextState = this.getContextFromState();
+            this.sendPortalReadyEvent(siteUrl);
             handleDataAttributes({
                 siteUrl,
                 site: contextState.site,
@@ -71,6 +72,14 @@ export default class App extends React.Component {
         this.customTriggerButtons && this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.removeEventListener('click', this.clickHandler);
         });
+    }
+
+    sendPortalReadyEvent(siteUrl) {
+        const siteOrigin = ((new URL(siteUrl)).origin).replace(/\/$/, '');
+
+        if (window.self !== window.parent) {
+            window.parent.postMessage('portal-ready', siteOrigin);
+        }
     }
 
     /** Setup custom trigger buttons handling on page */
