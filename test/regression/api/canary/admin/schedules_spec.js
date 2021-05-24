@@ -12,8 +12,7 @@ const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
 
-// TODO: Fix with token in URL
-describe.skip('Canary Schedules API', function () {
+describe('Canary Schedules API', function () {
     const resources = [];
     let request;
 
@@ -93,16 +92,17 @@ describe.skip('Canary Schedules API', function () {
     });
 
     describe('publish', function () {
-        let schedulerKey;
+        let token;
 
         before(function () {
-            schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
+            const schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
+
+            token = localUtils.getValidAdminToken('/canary/admin/', schedulerKey);
         });
 
         it('publishes posts', function () {
             return request
-                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[0].id}/`))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
+                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[0].id}/?token=${token}`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -118,8 +118,7 @@ describe.skip('Canary Schedules API', function () {
 
         it('publishes page', function () {
             return request
-                .put(localUtils.API.getApiQuery(`schedules/pages/${resources[4].id}/`))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
+                .put(localUtils.API.getApiQuery(`schedules/pages/${resources[4].id}/?token=${token}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
@@ -134,9 +133,10 @@ describe.skip('Canary Schedules API', function () {
 
         it('no access', function () {
             const zapierKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-backup'}});
+            const zapierToken = localUtils.getValidAdminToken('/canary/admin/', zapierKey);
+
             return request
-                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[0].id}/`))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', zapierKey)}`)
+                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[0].id}/?token=${zapierToken}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
@@ -144,8 +144,7 @@ describe.skip('Canary Schedules API', function () {
 
         it('should fail with invalid resource type', function () {
             return request
-                .put(localUtils.API.getApiQuery(`schedules/this_is_invalid/${resources[0].id}/`))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
+                .put(localUtils.API.getApiQuery(`schedules/this_is_invalid/${resources[0].id}/?token=${token}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(422);
@@ -153,8 +152,7 @@ describe.skip('Canary Schedules API', function () {
 
         it('published_at is x seconds in past, but still in tolerance', function () {
             return request
-                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[1].id}/`))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
+                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[1].id}/?token=${token}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
@@ -162,8 +160,7 @@ describe.skip('Canary Schedules API', function () {
 
         it('not found', function () {
             return request
-                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[2].id}/`))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
+                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[2].id}/?token=${token}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404);
@@ -171,11 +168,10 @@ describe.skip('Canary Schedules API', function () {
 
         it('force publish', function () {
             return request
-                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[3].id}/`))
+                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[3].id}/?token=${token}`))
                 .send({
                     force: true
                 })
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
