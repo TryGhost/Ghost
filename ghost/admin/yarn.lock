@@ -7258,10 +7258,10 @@ eslint-visitor-keys@^2.0.0, eslint-visitor-keys@^2.1.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-2.1.0.tgz#f65328259305927392c938ed44eb0a5c9b2bd303"
   integrity sha512-0rSmRBzXgDzIsD6mGdJgevzgezI534Cer5L/vyMX0kHzT/jiB43jRhd9YUlMGYLQy2zprNmoT8qasCGtY+QaKw==
 
-eslint@7.26.0:
-  version "7.26.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.26.0.tgz#d416fdcdcb3236cd8f282065312813f8c13982f6"
-  integrity sha512-4R1ieRf52/izcZE7AlLy56uIHHDLT74Yzz2Iv2l6kDaYvEu9x+wMB5dZArVL8SYGXSYV2YAg70FcW5Y5nGGNIg==
+eslint@7.27.0:
+  version "7.27.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.27.0.tgz#665a1506d8f95655c9274d84bd78f7166b07e9c7"
+  integrity sha512-JZuR6La2ZF0UD384lcbnd0Cgg6QJjiCwhMD6eU4h/VGPcVGwawNNzKU41tgokGXnfjOOyI6QIffthhJTPzzuRA==
   dependencies:
     "@babel/code-frame" "7.12.11"
     "@eslint/eslintrc" "^0.4.1"
@@ -7271,12 +7271,14 @@ eslint@7.26.0:
     debug "^4.0.1"
     doctrine "^3.0.0"
     enquirer "^2.3.5"
+    escape-string-regexp "^4.0.0"
     eslint-scope "^5.1.1"
     eslint-utils "^2.1.0"
     eslint-visitor-keys "^2.0.0"
     espree "^7.3.1"
     esquery "^1.4.0"
     esutils "^2.0.2"
+    fast-deep-equal "^3.1.3"
     file-entry-cache "^6.0.1"
     functional-red-black-tree "^1.0.1"
     glob-parent "^5.0.0"
@@ -7288,7 +7290,7 @@ eslint@7.26.0:
     js-yaml "^3.13.1"
     json-stable-stringify-without-jsonify "^1.0.1"
     levn "^0.4.1"
-    lodash "^4.17.21"
+    lodash.merge "^4.6.2"
     minimatch "^3.0.4"
     natural-compare "^1.4.0"
     optionator "^0.9.1"
@@ -7297,7 +7299,7 @@ eslint@7.26.0:
     semver "^7.2.1"
     strip-ansi "^6.0.0"
     strip-json-comments "^3.1.0"
-    table "^6.0.4"
+    table "^6.0.9"
     text-table "^0.2.0"
     v8-compile-cache "^2.0.3"
 
@@ -7693,7 +7695,7 @@ fast-deep-equal@^2.0.1:
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
   integrity sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
 
-fast-deep-equal@^3.1.1:
+fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
   integrity sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==
@@ -13814,7 +13816,7 @@ table@^5.2.3:
     slice-ansi "^2.1.0"
     string-width "^3.0.0"
 
-table@^6.0.4:
+table@^6.0.9:
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/table/-/table-6.7.1.tgz#ee05592b7143831a8c94f3cee6aae4c1ccef33e2"
   integrity sha512-ZGum47Yi6KOOFDE8m223td53ath2enHcYLgOCjGr5ngu8bdIARQk6mN/wRMv4yMRcHnCSnHbCEha4sobQx5yWg==
