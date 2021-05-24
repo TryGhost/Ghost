@@ -1,6 +1,8 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhSiteIframeComponent extends Component {
@@ -39,8 +41,16 @@ export default class GhSiteIframeComponent extends Component {
     @action
     onLoad(event) {
         if (this.args.invisibleUntilLoaded) {
-            this.isInvisible = false;
+            this.makeVisible.perform();
         }
         this.args.onLoad?.(event);
+    }
+
+    @task
+    *makeVisible() {
+        // give any scripts a bit of time to render before making visible
+        // allows portal to render it's overlay and prevent site background flashes
+        yield timeout(100);
+        this.isInvisible = false;
     }
 }
