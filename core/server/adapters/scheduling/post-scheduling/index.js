@@ -2,32 +2,13 @@ const Promise = require('bluebird');
 const moment = require('moment');
 const localUtils = require('../utils');
 const events = require('../../../lib/common/events');
-const i18n = require('../../../../shared/i18n');
 const errors = require('@tryghost/errors');
-const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
 const getSignedAdminToken = require('./scheduling-auth-token');
+const getSchedulerIntegration = require('./scheduler-intergation');
+
 const _private = {};
 const SCHEDULED_RESOURCES = ['post', 'page'];
-
-/**
- * @description Load the internal scheduler integration
- *
- * @return {Promise}
- */
-_private.getSchedulerIntegration = function () {
-    return models.Integration.findOne({slug: 'ghost-scheduler'}, {withRelated: 'api_keys'})
-        .then((integration) => {
-            if (!integration) {
-                throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.resource.resourceNotFound', {
-                        resource: 'Integration'
-                    })
-                });
-            }
-            return integration.toJSON();
-        });
-};
 
 /**
  * @description Normalize model data into scheduler notation.
@@ -92,7 +73,7 @@ exports.init = function init(options = {}) {
         return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
     }
 
-    return _private.getSchedulerIntegration()
+    return getSchedulerIntegration()
         .then((_integration) => {
             integration = _integration;
             return localUtils.createAdapter();
