@@ -18,7 +18,13 @@ export default class GhSiteIframeComponent extends Component {
     }
 
     get srcUrl() {
-        return this.args.src || `${this.config.get('blogUrl')}/`;
+        const srcUrl = new URL(this.args.src || `${this.config.get('blogUrl')}/`);
+
+        if (this.args.guid) {
+            srcUrl.searchParams.set('v', this.args.guid);
+        }
+
+        return srcUrl.href;
     }
 
     @action
@@ -43,10 +49,13 @@ export default class GhSiteIframeComponent extends Component {
 
     @action
     onLoad(event) {
+        this.iframe = event.target;
+
         if (this.args.invisibleUntilLoaded && typeof this.args.invisibleUntilLoaded === 'boolean') {
             this.makeVisible.perform();
+        } else {
+            this.args.onLoad?.(this.iframe);
         }
-        this.args.onLoad?.(event);
     }
 
     @action
@@ -73,5 +82,6 @@ export default class GhSiteIframeComponent extends Component {
         // allows portal to render it's overlay and prevent site background flashes
         yield timeout(100);
         this.isInvisible = false;
+        this.args.onLoad?.(this.iframe);
     }
 }
