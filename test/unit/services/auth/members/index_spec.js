@@ -3,7 +3,7 @@ const should = require('should');
 const {UnauthorizedError} = require('@tryghost/errors');
 const members = require('../../../../../core/server/services/auth/members');
 
-describe.skip('Auth Service - Members', function () {
+describe('Auth Service - Members', function () {
     it('exports an authenticateMembersToken method', function () {
         const actual = typeof members.authenticateMembersToken;
         const expected = 'function';
@@ -36,7 +36,7 @@ describe.skip('Auth Service - Members', function () {
                 should.equal(actual, expected);
             });
         });
-        describe('attempts to verify the credentials as a JWT, allowing the "NONE" algorithm', function () {
+        describe('attempts to verify the credentials as a JWT, not allowing the "NONE" algorithm', function () {
             it('calls next with an UnauthorizedError if the verification fails', function () {
                 members.authenticateMembersToken({
                     get() {
@@ -49,7 +49,7 @@ describe.skip('Auth Service - Members', function () {
                     should.equal(actual, expected);
                 });
             });
-            it('calls next without an error after attaching the JWT claims to req.member if the verification suceeds', function () {
+            it('calls next with an error if the token is using the "none" algorithm', function () {
                 const claims = {
                     rumpel: 'stiltskin'
                 };
@@ -62,12 +62,10 @@ describe.skip('Auth Service - Members', function () {
                     }
                 };
                 members.authenticateMembersToken(req, {}, function next(err) {
-                    should.equal(err, undefined);
+                    const actual = err instanceof UnauthorizedError;
+                    const expected = true;
 
-                    const actual = req.member.rumpel;
-                    const expected = claims.rumpel;
-
-                    should.deepEqual(actual, expected);
+                    should.equal(actual, expected);
                 });
             });
         });
