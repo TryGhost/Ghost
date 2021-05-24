@@ -3,6 +3,7 @@
     src={{this.srcUrl}}
     frameborder="0"
     allowtransparency="true"
+    {{did-insert this.attachMessageListener}}
     {{did-update this.resetSrcAttribute @guid}}
     {{on "load" this.onLoad}}
     ...attributes

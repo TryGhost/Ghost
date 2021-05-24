@@ -11,6 +11,9 @@ export default class GhSiteIframeComponent extends Component {
     @tracked isInvisible = this.args.invisibleUntilLoaded;
 
     willDestroy() {
+        if (this.messageListener) {
+            window.removeEventListener('message', this.messageListener);
+        }
         this.args.onDestroyed?.();
     }
 
@@ -40,10 +43,28 @@ export default class GhSiteIframeComponent extends Component {
 
     @action
     onLoad(event) {
-        if (this.args.invisibleUntilLoaded) {
+        if (this.args.invisibleUntilLoaded && typeof this.args.invisibleUntilLoaded === 'boolean') {
             this.makeVisible.perform();
         }
         this.args.onLoad?.(event);
+    }
+
+    @action
+    attachMessageListener() {
+        if (typeof this.args.invisibleUntilLoaded === 'string') {
+            this.messageListener = (event) => {
+                const srcURL = new URL(this.srcUrl);
+                const originURL = new URL(event.origin);
+
+                if (originURL.origin === srcURL.origin) {
+                    if (event.data === this.args.invisibleUntilLoaded) {
+                        this.makeVisible.perform();
+                    }
+                }
+            };
+
+            window.addEventListener('message', this.messageListener, true);
+        }
     }
 
     @task
