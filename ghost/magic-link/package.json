@@ -19,7 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "8.5.0",
+    "@types/jsonwebtoken": "8.5.1",
     "@types/node": "14.17.0",
     "@types/nodemailer": "6.4.0",
     "mocha": "6.2.3",
