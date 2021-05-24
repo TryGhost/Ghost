@@ -4,11 +4,16 @@ const jwt = require('jsonwebtoken');
 /**
  * @description Get signed admin token for making authenticated scheduling requests
  *
- * @return {Promise}
+ * @param {Object} options
+ * @param {string} options.publishedAt - ISO date
+ * @param {string} options.apiUrl - url of the JWT's audience
+ * @param {string} options.key - integration key
+ * @param {string} options.key.id - key ID
+ * @param {string} options.key.secret - key secret
+ *
+ * @return {string} the JSON Web Token
  */
-const getSignedAdminToken = function ({publishedAt, apiUrl, integration}) {
-    let key = integration.api_keys[0];
-
+const getSignedAdminToken = function ({publishedAt, apiUrl, key}) {
     const JWT_OPTIONS = {
         keyid: key.id,
         algorithm: 'HS256',
