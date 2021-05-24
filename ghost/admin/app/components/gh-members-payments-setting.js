@@ -5,6 +5,9 @@ import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
+const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
+const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
+
 export default Component.extend({
     config: service(),
     ghostPaths: service(),
@@ -258,6 +261,27 @@ export default Component.extend({
         this.settings.set('portalPlans', portalPlans);
     },
 
+    saveProduct: task(function* () {
+        let pollTimeout = 0;
+        while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
+            yield timeout(RETRY_PRODUCT_SAVE_POLL_LENGTH);
+
+            try {
+                const updatedProduct = yield this.product.save();
+                return updatedProduct;
+            } catch (error) {
+                if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
+                    pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
+                    // no-op: will try saving again as stripe is not ready
+                    continue;
+                } else {
+                    throw error;
+                }
+            }
+        }
+        return this.product;
+    }),
+
     saveStripeSettings: task(function* () {
         this.set('stripeConnectError', null);
         this.set('stripeConnectSuccess', null);
@@ -292,8 +316,7 @@ export default Component.extend({
                         }
                     );
                     this.product.set('stripePrices', stripePrices);
-                    yield timeout(3000);
-                    const updatedProduct = yield this.product.save();
+                    const updatedProduct = yield this.saveProduct.perform();
                     const monthlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'month', 500, 'usd');
                     const yearlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'year', 5000, 'usd');
                     this.updatePortalPlans(monthlyPrice.id, yearlyPrice.id);
