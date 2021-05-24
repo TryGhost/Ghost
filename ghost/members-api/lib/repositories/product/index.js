@@ -102,6 +102,7 @@ class ProductRepository {
     async create(data, options) {
         if (!this._stripeAPIService.configured && data.stripe_prices) {
             throw new UpdateCollisionError({
+                message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
                 code: 'STRIPE_NOT_CONFIGURED'
             });
         }
@@ -171,6 +172,7 @@ class ProductRepository {
     async update(data, options) {
         if (!this._stripeAPIService.configured && data.stripe_prices) {
             throw new UpdateCollisionError({
+                message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
                 code: 'STRIPE_NOT_CONFIGURED'
             });
         }
