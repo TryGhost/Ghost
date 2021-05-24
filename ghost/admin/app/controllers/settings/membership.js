@@ -36,7 +36,8 @@ export default class MembersAccessController extends Controller {
     @tracked stripePlanError = '';
 
     @tracked portalPreviewUrl = '';
-    @tracked portalPreviewGuid = Date.now().valueOf();
+
+    portalPreviewGuid = Date.now().valueOf();
 
     queryParams = ['showPortalSettings'];
 
@@ -110,9 +111,7 @@ export default class MembersAccessController extends Controller {
             // when saved value is 'none' the server won't inject the portal script
             // to work around that and show the expected portal preview we save and
             // force a refresh
-            await this.saveSettingsTask.perform();
-            this.updatePortalPreview();
-            this.portalPreviewGuid = Date.now().valueOf();
+            await this.saveSettingsTask.perform({forceRefresh: true});
         } else {
             this.updatePortalPreview();
         }
@@ -145,7 +144,7 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    validateStripePlans() {
+    validateStripePlans({updatePortalPreview = true} = {}) {
         this.stripePlanError = undefined;
 
         try {
@@ -156,7 +155,9 @@ export default class MembersAccessController extends Controller {
                 throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
             }
 
-            this.updatePortalPreview();
+            if (updatePortalPreview) {
+                this.updatePortalPreview();
+            }
         } catch (err) {
             this.stripePlanError = err.message;
         }
@@ -171,8 +172,7 @@ export default class MembersAccessController extends Controller {
     @action
     async closeStripeConnect() {
         if (this.stripeEnabledOnOpen !== this.membersUtils.isStripeEnabled) {
-            await this.saveSettingsTask.perform();
-            this.portalPreviewGuid = Date.now().valueOf();
+            await this.saveSettingsTask.perform({forceRefresh: true});
         }
         this.showStripeConnect = false;
     }
@@ -208,7 +208,7 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    updatePortalPreview() {
+    updatePortalPreview({forceRefresh} = {}) {
         // TODO: can these be worked out from settings in membersUtils?
         const monthlyPrice = this.stripeMonthlyAmount * 100;
         const yearlyPrice = this.stripeYearlyAmount * 100;
@@ -225,7 +225,7 @@ export default class MembersAccessController extends Controller {
             isYearlyChecked = true;
         }
 
-        this.portalPreviewUrl = this.membersUtils.getPortalPreviewUrl({
+        const newUrl = new URL(this.membersUtils.getPortalPreviewUrl({
             button: false,
             monthlyPrice,
             yearlyPrice,
@@ -233,7 +233,14 @@ export default class MembersAccessController extends Controller {
             isMonthlyChecked,
             isYearlyChecked,
             portalPlans: null
-        });
+        }));
+
+        if (forceRefresh) {
+            this.portalPreviewGuid = Date.now().valueOf();
+        }
+        newUrl.searchParams.set('v', this.portalPreviewGuid);
+
+        this.portalPreviewUrl = newUrl;
 
         this.resizePortalPreviewTask.perform();
     }
@@ -393,8 +400,8 @@ export default class MembersAccessController extends Controller {
     }
 
     @task({drop: true})
-    *saveSettingsTask() {
-        yield this.validateStripePlans();
+    *saveSettingsTask(options) {
+        yield this.validateStripePlans({updatePortalPreview: false});
 
         if (this.stripePlanError) {
             return;
@@ -407,7 +414,7 @@ export default class MembersAccessController extends Controller {
         yield this.saveProduct();
         const result = yield this.settings.save();
 
-        this.updatePortalPreview();
+        this.updatePortalPreview(options);
 
         return result;
     }
