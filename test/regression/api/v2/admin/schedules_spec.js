@@ -94,35 +94,33 @@ describe('v2 Schedules API', function () {
             token = localUtils.getValidAdminToken('/v2/admin/', schedulerKey);
         });
 
-        it('publishes posts', function () {
-            return request
+        it('publishes posts', async function () {
+            const res = await request
                 .put(localUtils.API.getApiQuery(`schedules/posts/${resources[0].id}/?token=${token}`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    should.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    jsonResponse.posts[0].id.should.eql(resources[0].id);
-                    jsonResponse.posts[0].status.should.eql('published');
-                });
+                .expect(200);
+
+            should.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+            should.exist(jsonResponse);
+            jsonResponse.posts[0].id.should.eql(resources[0].id);
+            jsonResponse.posts[0].status.should.eql('published');
         });
 
-        it('publishes page', function () {
-            return request
+        it('publishes page', async function () {
+            const res = await request
                 .put(localUtils.API.getApiQuery(`schedules/pages/${resources[4].id}/?token=${token}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    should.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    jsonResponse.pages[0].id.should.eql(resources[4].id);
-                    jsonResponse.pages[0].status.should.eql('published');
-                });
+                .expect(200);
+
+            should.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+            should.exist(jsonResponse);
+            jsonResponse.pages[0].id.should.eql(resources[4].id);
+            jsonResponse.pages[0].status.should.eql('published');
         });
 
         it('no access', function () {
