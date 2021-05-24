@@ -24,7 +24,7 @@
     "delay": "5.0.0",
     "mocha": "8.3.2",
     "should": "13.2.3",
-    "sinon": "10.0.0"
+    "sinon": "11.0.0"
   },
   "dependencies": {
     "@breejs/later": "^4.0.2",
