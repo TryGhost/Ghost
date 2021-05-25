@@ -1,12 +1,13 @@
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils');
+const mobiledocLib = require('../lib/mobiledoc');
 
 const Snippet = ghostBookshelf.Model.extend({
     tableName: 'snippets',
 
     formatOnWrite(attrs) {
         if (attrs.mobiledoc) {
-            attrs.mobiledoc = urlUtils.mobiledocToTransformReady(attrs.mobiledoc);
+            attrs.mobiledoc = urlUtils.mobiledocToTransformReady(attrs.mobiledoc, {cardTransformers: mobiledocLib.cards});
         }
 
         return attrs;
