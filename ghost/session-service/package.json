@@ -22,7 +22,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/express": "4.17.11",
+    "@types/express": "4.17.12",
     "@types/mocha": "8.2.2",
     "express": "4.17.1",
     "mocha": "8.3.2",
