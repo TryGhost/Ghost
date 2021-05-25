@@ -111,7 +111,7 @@ export default class MembersAccessController extends Controller {
             // when saved value is 'none' the server won't inject the portal script
             // to work around that and show the expected portal preview we save and
             // force a refresh
-            await this.saveSettingsTask.perform({forceRefresh: true});
+            await this.switchFromNoneTask.perform();
         } else {
             this.updatePortalPreview();
         }
@@ -255,6 +255,11 @@ export default class MembersAccessController extends Controller {
     portalPreviewDestroyed() {
         this.portalPreviewIframe = null;
         this.resizePortalPreviewTask.cancelAll();
+    }
+
+    @task
+    *switchFromNoneTask() {
+        return yield this.saveSettingsTask.perform({forceRefresh: true});
     }
 
     @task({restartable: true})
