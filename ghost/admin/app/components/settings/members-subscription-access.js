@@ -23,7 +23,7 @@ export default class SettingsMembersSubscriptionAccess extends Component {
             description: 'No one will be able to subscribe or sign in',
             value: 'none',
             icon: 'no-members',
-            icon_color: 'pink'
+            icon_color: 'midlightgrey-d2'
         }];
     }
 
