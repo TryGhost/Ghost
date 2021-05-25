@@ -1,5 +1,6 @@
 const logging = require('../../../../../shared/logging');
 const urlUtils = require('../../../../../shared/url-utils');
+const mobiledocLib = require('../../../../lib/mobiledoc');
 const {createIrreversibleMigration} = require('../../utils');
 
 module.exports = createIrreversibleMigration(async (knex) => {
@@ -156,7 +157,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
                     'mobiledoc'
                 ]);
 
-            const mobiledoc = urlUtils.mobiledocToTransformReady(snippet.mobiledoc);
+            const mobiledoc = urlUtils.mobiledocToTransformReady(snippet.mobiledoc, {cardTransformers: mobiledocLib.cards});
 
             await knex('snippets')
                 .transacting(trx)
