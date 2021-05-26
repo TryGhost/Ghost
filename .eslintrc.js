@@ -31,7 +31,7 @@ module.exports = {
         {
             files: 'core/shared/**',
             rules: {
-                'ghost/node/no-restricted-require': ['warn', [
+                'ghost/node/no-restricted-require': ['error', [
                     {
                         name: path.resolve(__dirname, 'core/server/**'),
                         message: 'Invalid require of core/server from core/shared.'
