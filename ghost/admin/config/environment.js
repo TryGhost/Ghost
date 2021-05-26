@@ -39,6 +39,11 @@ module.exports = function (environment) {
 
         emberKeyboard: {
             disableInputsInitializer: true
+        },
+
+        '@sentry/ember': {
+            disablePerformance: true,
+            sentry: {}
         }
     };
 
