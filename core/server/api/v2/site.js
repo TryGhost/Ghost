@@ -1,6 +1,4 @@
-const ghostVersion = require('../../lib/ghost-version');
-const settingsCache = require('../../services/settings/cache');
-const urlUtils = require('../../../shared/url-utils');
+const publicConfig = require('../../services/public-config');
 
 const site = {
     docName: 'site',
@@ -8,11 +6,7 @@ const site = {
     read: {
         permissions: false,
         query() {
-            return {
-                title: settingsCache.get('title'),
-                url: urlUtils.urlFor('home', true),
-                version: ghostVersion.safe
-            };
+            return publicConfig.site;
         }
     }
 };
