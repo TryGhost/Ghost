@@ -1,4 +1,5 @@
 import Service, {inject as service} from '@ember/service';
+import {captureMessage} from '@sentry/browser';
 import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
@@ -29,6 +30,7 @@ export default Service.extend({
         this.content = emberA();
     },
 
+    config: service(),
     upgradeStatus: service(),
 
     alerts: filter('content', function (notification) {
@@ -99,6 +101,10 @@ export default Service.extend({
     },
 
     showAPIError(resp, options) {
+        if (this.config.get('sentry_dsn')) {
+            captureMessage(resp);
+        }
+
         // handle "global" errors
         if (isVersionMismatchError(resp)) {
             return this.upgradeStatus.requireUpgrade();
