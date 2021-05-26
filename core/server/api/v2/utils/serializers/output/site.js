@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:site');
 
 module.exports = {
@@ -5,7 +6,11 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            site: data
+            site: _.pick(data, [
+                'title',
+                'url',
+                'version'
+            ])
         };
     }
 };
