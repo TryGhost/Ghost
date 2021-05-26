@@ -163,6 +163,10 @@ module.exports = function MembersApi({
             return stripeMigrations.populateMembersMonthlyPriceIdSettings();
         }).then(() => {
             return stripeMigrations.populateMembersYearlyPriceIdSettings();
+        }).then(() => {
+            return stripeMigrations.populateDefaultProductMonthlyPriceId();
+        }).then(() => {
+            return stripeMigrations.populateDefaultProductYearlyPriceId();
         }),
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,
