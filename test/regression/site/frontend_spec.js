@@ -292,89 +292,7 @@ describe('Frontend Routing', function () {
         });
     });
 
-    // @TODO: unskip this, need to fix rebooting ghost with a subdirectory
-    describe('Subdirectory (no slash)', function () {
-        let ghostServer;
-
-        before(function () {
-            configUtils.set('url', 'http://localhost/blog');
-            urlUtils.stubUrlUtilsFromConfig();
-
-            return ghost({forceStart: true, subdir: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-
-                    request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
-                });
-        });
-
-        after(function () {
-            configUtils.restore();
-            urlUtils.restore();
-        });
-
-        it('http://localhost should 404', function (done) {
-            request.get('/')
-                .expect(404)
-                .end(doEnd(done));
-        });
-
-        it('http://localhost/ should 404', function (done) {
-            request.get('/')
-                .expect(404)
-                .end(doEnd(done));
-        });
-
-        it('http://localhost/blog should 301 to  http://localhost/blog/', function (done) {
-            request.get('/blog')
-                .expect(301)
-                .expect('Location', '/blog/')
-                .end(doEnd(done));
-        });
-
-        it('http://localhost/blog/ should 200', function (done) {
-            request.get('/blog/')
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        it('http://localhost/blog/welcome should 301 to http://localhost/blog/welcome/', function (done) {
-            request.get('/blog/welcome')
-                .expect(301)
-                .expect('Location', '/blog/welcome/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .end(doEnd(done));
-        });
-
-        it('http://localhost/blog/welcome/ should 200', function (done) {
-            request.get('/blog/welcome/')
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        it('/blog/tag/getting-started should 301 to /blog/tag/getting-started/', function (done) {
-            request.get('/blog/tag/getting-started')
-                .expect(301)
-                .expect('Location', '/blog/tag/getting-started/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .end(doEnd(done));
-        });
-
-        it('/blog/tag/getting-started/ should 200', function (done) {
-            request.get('/blog/tag/getting-started/')
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        it('/blog/welcome/amp/ should 200', function (done) {
-            request.get('/blog/welcome/amp/')
-                .expect(200)
-                .end(doEnd(done));
-        });
-    });
-
-    // @TODO: unskip this, need to fix rebooting ghost with a subdirectory
-    describe('Subdirectory (with slash)', function () {
+    describe('Subdirectory config', function () {
         let ghostServer;
 
         before(function () {
@@ -399,12 +317,6 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('http://localhost/ should 404', function (done) {
-            request.get('/')
-                .expect(404)
-                .end(doEnd(done));
-        });
-
         it('/blog should 301 to /blog/', function (done) {
             request.get('/blog')
                 .expect(301)
@@ -418,25 +330,15 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('/blog/welcome should 301 to /blog/welcome/', function (done) {
-            request.get('/blog/welcome')
-                .expect(301)
-                .expect('Location', '/blog/welcome/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .end(doEnd(done));
-        });
-
         it('/blog/welcome/ should 200', function (done) {
             request.get('/blog/welcome/')
                 .expect(200)
                 .end(doEnd(done));
         });
 
-        it('/blog/tag/getting-started should 301 to /blog/tag/getting-started/', function (done) {
-            request.get('/blog/tag/getting-started')
-                .expect(301)
-                .expect('Location', '/blog/tag/getting-started/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
+        it('/welcome/ should 404', function (done) {
+            request.get('/welcome/')
+                .expect(404)
                 .end(doEnd(done));
         });
 
@@ -446,17 +348,21 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
+        it('/tag/getting-started/ should 404', function (done) {
+            request.get('/tag/getting-started/')
+                .expect(404)
+                .end(doEnd(done));
+        });
+
         it('/blog/welcome/amp/ should 200', function (done) {
             request.get('/blog/welcome/amp/')
                 .expect(200)
                 .end(doEnd(done));
         });
 
-        it('should uncapitalise correctly with 301 to subdir', function (done) {
-            request.get('/blog/AAA/')
-                .expect('Location', '/blog/aaa/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
+        it('/welcome/amp/ should 404', function (done) {
+            request.get('/welcome/amp/')
+                .expect(404)
                 .end(doEnd(done));
         });
     });
@@ -789,7 +695,6 @@ describe('Frontend Routing', function () {
             });
         });
 
-        // @TODO: unskip this, need to fix rebooting ghost with a subdirectory
         describe(`Subdirectory redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
             var ghostServer;
 
