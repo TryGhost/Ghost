@@ -76,6 +76,9 @@ async function haxGetMembersPriceData() {
 
         const defaultProduct = products[0];
 
+        const monthlyPriceId = settingsCache.get('members_monthly_price_id');
+        const yearlyPriceId = settingsCache.get('members_yearly_price_id');
+
         const activePrices = defaultProduct.stripe_prices.filter((price) => {
             return price.active;
         });
@@ -85,15 +88,11 @@ async function haxGetMembersPriceData() {
         });
 
         const monthlyPrice = nonZeroPrices.find((price) => {
-            return price.nickname === 'Monthly';
-        }) || nonZeroPrices.find((price) => {
-            return price.interval === 'month';
+            return price.id === monthlyPriceId;
         });
 
         const yearlyPrice = nonZeroPrices.find((price) => {
-            return price.nickname === 'Yearly';
-        }) || nonZeroPrices.find((price) => {
-            return price.interval === 'year';
+            return price.id === yearlyPriceId;
         });
 
         const priceData = {

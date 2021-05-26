@@ -482,34 +482,45 @@ DataGenerator.Content = {
     stripe_prices: [
         {
             id: ObjectId().toHexString(),
-            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
-            active: 1,
+            active: true,
             nickname: 'Monthly',
             currency: 'USD',
-            amount: 500,
+            amount: 5000,
             type: 'recurring',
             interval: 'month'
         },
         {
             id: ObjectId().toHexString(),
-            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
-            active: 1,
-            nickname: 'Yearly',
+            active: true,
+            nickname: 'Monthly',
             currency: 'USD',
-            amount: 1500,
+            amount: 1200,
             type: 'recurring',
-            interval: 'year'
+            interval: 'month'
         },
         {
             id: ObjectId().toHexString(),
             stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
-            active: 1,
+            active: true,
             nickname: 'Yearly',
             currency: 'USD',
-            amount: 2400,
+            amount: 12000,
+            type: 'recurring',
+            interval: 'year'
+        },
+        {
+            id: ObjectId().toHexString(),
+            stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: true,
+            nickname: 'Yearly',
+            currency: 'USD',
+            amount: 15000,
             type: 'recurring',
             interval: 'year'
         }
@@ -1257,7 +1268,8 @@ DataGenerator.forKnex = (function () {
     const stripe_prices = [
         createBasic(DataGenerator.Content.stripe_prices[0]),
         createBasic(DataGenerator.Content.stripe_prices[1]),
-        createBasic(DataGenerator.Content.stripe_prices[2])
+        createBasic(DataGenerator.Content.stripe_prices[2]),
+        createBasic(DataGenerator.Content.stripe_prices[3])
     ];
 
     const stripe_customer_subscriptions = [
