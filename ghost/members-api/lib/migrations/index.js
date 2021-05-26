@@ -378,4 +378,36 @@ module.exports = class StripeMigrations {
 
         await this._Settings.edit({key: 'members_yearly_price_id', value: yearlyPrice.id}, {id: yearlyPriceId.id});
     }
+
+    async populateDefaultProductMonthlyPriceId() {
+        this._logging.info('Migrating members_monthly_price_id setting to monthly_price_id column');
+        const productsPage = await this._Product.findPage({limit: 1});
+        const defaultProduct = productsPage.data[0];
+
+        if (defaultProduct.get('monthly_price_id')) {
+            this._logging.warn('Skipping migration, monthly_price_id already set');
+            return;
+        }
+
+        const monthlyPriceIdSetting = await this._Settings.findOne({key: 'members_monthly_price_id'});
+        const monthlyPriceId = monthlyPriceIdSetting.get('value');
+
+        await this._Product.edit({monthly_price_id: monthlyPriceId}, {id: defaultProduct.id});
+    }
+
+    async populateDefaultProductYearlyPriceId() {
+        this._logging.info('Migrating members_yearly_price_id setting to yearly_price_id column');
+        const productsPage = await this._Product.findPage({limit: 1});
+        const defaultProduct = productsPage.data[0];
+
+        if (defaultProduct.get('yearly_price_id')) {
+            this._logging.warn('Skipping migration, yearly_price_id already set');
+            return;
+        }
+
+        const yearlyPriceIdSetting = await this._Settings.findOne({key: 'members_yearly_price_id'});
+        const yearlyPriceId = yearlyPriceIdSetting.get('value');
+
+        await this._Product.edit({yearly_price_id: yearlyPriceId}, {id: defaultProduct.id});
+    }
 };
