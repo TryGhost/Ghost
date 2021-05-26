@@ -1,5 +1,6 @@
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../settings/cache');
+const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 
 module.exports = function getSiteProperties() {
@@ -16,6 +17,11 @@ module.exports = function getSiteProperties() {
     if (settingsCache.get('oauth_client_id') && settingsCache.get('oauth_client_secret')) {
         // Only set the oauth flag if oauth is enabled to avoid API changes
         siteProperties.oauth = true;
+    }
+
+    if (config.get('client_sentry') && !config.get('client_sentry').disabled) {
+        siteProperties.sentry_dsn = config.get('client_sentry').dsn;
+        siteProperties.sentry_env = config.get('env');
     }
 
     return siteProperties;
