@@ -293,7 +293,7 @@ describe('Frontend Routing', function () {
     });
 
     // @TODO: unskip this, need to fix rebooting ghost with a subdirectory
-    describe.skip('Subdirectory (no slash)', function () {
+    describe('Subdirectory (no slash)', function () {
         let ghostServer;
 
         before(function () {
@@ -374,7 +374,7 @@ describe('Frontend Routing', function () {
     });
 
     // @TODO: unskip this, need to fix rebooting ghost with a subdirectory
-    describe.skip('Subdirectory (with slash)', function () {
+    describe('Subdirectory (with slash)', function () {
         let ghostServer;
 
         before(function () {
@@ -790,7 +790,7 @@ describe('Frontend Routing', function () {
         });
 
         // @TODO: unskip this, need to fix rebooting ghost with a subdirectory
-        describe.skip(`Subdirectory redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
+        describe(`Subdirectory redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
             var ghostServer;
 
             before(function () {
