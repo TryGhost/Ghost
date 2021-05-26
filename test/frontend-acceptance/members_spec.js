@@ -44,6 +44,15 @@ describe('Front-end members behaviour', function () {
                 return 'price-data-test-theme';
             }
 
+            const stripePrices = testUtils.DataGenerator.forKnex.stripe_prices;
+            if (key === 'members_monthly_price_id') {
+                return stripePrices[1].id;
+            }
+
+            if (key === 'members_yearly_price_id') {
+                return stripePrices[2].id;
+            }
+
             return originalSettingsCacheGetFn(key, options);
         });
         await testUtils.startGhost();
@@ -121,8 +130,8 @@ describe('Front-end members behaviour', function () {
             // Check out test/utils/fixtures/themes/price-data-test-theme/index.hbs
             // To see where this is coming from.
             //
-            const legacyUse = /You can use the price data as a number: 5/;
-            const withPriceHelper = /You can pass price data to the price helper: \$5/;
+            const legacyUse = /You can use the price data as a number: 12/;
+            const withPriceHelper = /You can pass price data to the price helper: \$12/;
 
             should.exist(res.text.match(legacyUse));
             should.exist(res.text.match(withPriceHelper));
