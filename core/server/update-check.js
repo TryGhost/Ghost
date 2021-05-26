@@ -226,54 +226,58 @@ function updateCheckRequest() {
  * @param {Object} response
  * @return {Promise}
  */
-function updateCheckResponse(response) {
+async function updateCheckResponse(response) {
     let notifications = [];
     let notificationGroups = (config.get('notificationGroups') || []).concat(['all']);
 
     debug('Notification Groups', notificationGroups);
     debug('Response Update Check Service', response);
 
-    return api.settings.edit({settings: [{key: 'next_update_check', value: response.next_check}]}, internal)
-        .then(function () {
-            /**
-             * @NOTE:
-             *
-             * When we refactored notifications in Ghost 1.20, the service did not support returning multiple messages.
-             * But we wanted to already add the support for future functionality.
-             * That's why this helper supports two ways: returning an array of messages or returning an object with
-             * a "notifications" key. The second one is probably the best, because we need to support "next_check"
-             * on the root level of the response.
-             */
-            if (_.isArray(response)) {
-                notifications = response;
-            } else if ((Object.prototype.hasOwnProperty.call(response, 'notifications') && _.isArray(response.notifications))) {
-                notifications = response.notifications;
-            } else {
-                // CASE: default right now
-                notifications = [response];
+    await api.settings.edit({
+        settings: [{
+            key: 'next_update_check',
+            value: response.next_check
+        }]
+    }, internal);
+
+    /**
+     * @NOTE:
+     *
+     * When we refactored notifications in Ghost 1.20, the service did not support returning multiple messages.
+     * But we wanted to already add the support for future functionality.
+     * That's why this helper supports two ways: returning an array of messages or returning an object with
+     * a "notifications" key. The second one is probably the best, because we need to support "next_check"
+     * on the root level of the response.
+     */
+    if (_.isArray(response)) {
+        notifications = response;
+    } else if ((Object.prototype.hasOwnProperty.call(response, 'notifications') && _.isArray(response.notifications))) {
+        notifications = response.notifications;
+    } else {
+        // CASE: default right now
+        notifications = [response];
+    }
+
+    // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
+    if (notificationGroups.length) {
+        notifications = notifications.filter(function (notification) {
+            // CASE: release notification, keep
+            if (!notification.custom) {
+                return true;
             }
 
-            // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
-            if (notificationGroups.length) {
-                notifications = notifications.filter(function (notification) {
-                    // CASE: release notification, keep
-                    if (!notification.custom) {
-                        return true;
-                    }
+            // CASE: filter out messages based on your groups
+            return _.includes(notificationGroups.map(function (groupIdentifier) {
+                if (notification.version.match(new RegExp(groupIdentifier))) {
+                    return true;
+                }
 
-                    // CASE: filter out messages based on your groups
-                    return _.includes(notificationGroups.map(function (groupIdentifier) {
-                        if (notification.version.match(new RegExp(groupIdentifier))) {
-                            return true;
-                        }
-
-                        return false;
-                    }), true) === true;
-                });
-            }
-
-            return Promise.each(notifications, createCustomNotification);
+                return false;
+            }), true) === true;
         });
+    }
+
+    return Promise.each(notifications, createCustomNotification);
 }
 
 /**
@@ -284,27 +288,29 @@ function updateCheckResponse(response) {
  *
  * @returns {Promise}
  */
-function updateCheck() {
+async function updateCheck() {
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
     if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
-        return Promise.resolve();
+        return;
     }
 
-    return api.settings.read(_.extend({key: 'next_update_check'}, internal))
-        .then(function then(result) {
-            const nextUpdateCheck = result.settings[0];
+    const result = await api.settings.read(_.extend({key: 'next_update_check'}, internal));
 
-            // CASE: Next update check should happen now?
-            // @NOTE: You can skip this check by adding a config value. This is helpful for developing.
-            if (!config.get('updateCheck:forceUpdate') && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
-                return Promise.resolve();
-            }
+    const nextUpdateCheck = result.settings[0];
 
-            return updateCheckRequest()
-                .then(updateCheckResponse)
-                .catch(updateCheckError);
-        })
-        .catch(updateCheckError);
+    // CASE: Next update check should happen now?
+    // @NOTE: You can skip this check by adding a config value. This is helpful for developing.
+    if (!config.get('updateCheck:forceUpdate') && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
+        return;
+    }
+
+    try {
+        const response = await updateCheckRequest();
+
+        await updateCheckResponse(response);
+    } catch (err) {
+        updateCheckError(err);
+    }
 }
 
 module.exports = updateCheck;
