@@ -2237,7 +2237,7 @@ commander@^4.1.1:
   resolved "https://registry.yarnpkg.com/commander/-/commander-4.1.1.tgz#9fd602bd936294e9e9ef46a3f4d6964044b18068"
   integrity sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==
 
-commander@^6.2.0:
+commander@^6.1.0, commander@^6.2.0:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
   integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
@@ -5664,7 +5664,18 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-juice@7.0.0, juice@^7.0.0:
+juice@8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/juice/-/juice-8.0.0.tgz#ac77d3372373409b06a875aee425b9d381f645fe"
+  integrity sha512-LRCfXBOqI1wt+zYR/5xwDnf+ZyiJiDt44DGZaBSAVwZWyWv3BliaiGTLS6KCvadv3uw6XGiPPFcTfY7CdF7Z/Q==
+  dependencies:
+    cheerio "^1.0.0-rc.3"
+    commander "^6.1.0"
+    mensch "^0.3.4"
+    slick "^1.12.2"
+    web-resource-inliner "^5.0.0"
+
+juice@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/juice/-/juice-7.0.0.tgz#509bed6adbb6e4bbaa7fbfadac4e2e83e8c89ba3"
   integrity sha512-AjKQX31KKN+uJs+zaf+GW8mBO/f/0NqSh2moTMyvwBY+4/lXIYTU8D8I2h6BAV3Xnz6GGsbalUyFqbYMe+Vh+Q==
