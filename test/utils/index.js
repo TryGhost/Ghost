@@ -231,9 +231,7 @@ const freshModeGhostStart = async (options) => {
     await knexMigrator.reset({force: true});
 
     // Stop the serve (forceStart Mode)
-    if (ghostServer && ghostServer.httpServer) {
-        await ghostServer.stop();
-    }
+    await stopGhost();
 
     // Reset the settings cache
     // @TODO: Prob A: why/how is this different to using settingsService.init() and why to do we need this?
@@ -290,6 +288,7 @@ const startGhost = async (options) => {
 const stopGhost = async () => {
     if (ghostServer && ghostServer.httpServer) {
         await ghostServer.stop();
+        delete require.cache[require.resolve('../../core/app')];
         urlService.resetGenerators();
     }
 };
