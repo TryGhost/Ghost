@@ -144,8 +144,10 @@ export default Controller.extend({
         return this.store.peekAll('snippet');
     }),
 
-    snippets: computed('_snippets.@each.isNew', function () {
-        return this._snippets.reject(snippet => snippet.get('isNew'));
+    snippets: computed('_snippets.@each.{name,isNew}', function () {
+        return this._snippets
+            .reject(snippet => snippet.get('isNew'))
+            .sort((a, b) => a.name.localeCompare(b.name));
     }),
 
     canManageSnippets: computed('session.user.{isOwnerOrAdmin,isEditor}', function () {
