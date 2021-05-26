@@ -8895,17 +8895,17 @@ simple-swizzle@^0.2.2:
     rai "~0.1.11"
     xoauth2 "~0.1.8"
 
-sinon@11.1.0:
-  version "11.1.0"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-11.1.0.tgz#e8aa528ffb964d98a588b5f3b81a27720b6e3ed3"
-  integrity sha512-wCbMjy6pepGX3CE/IBz3QDqOmdYP96tWrrqTMVnbREgJG989725EbMZD9vp+Cd+A6MNXDjb7weWLi/bPPpcH/g==
+sinon@11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-11.1.1.tgz#99a295a8b6f0fadbbb7e004076f3ae54fc6eab91"
+  integrity sha512-ZSSmlkSyhUWbkF01Z9tEbxZLF/5tRC9eojCdFh33gtQaP7ITQVaMWQHGuFM7Cuf/KEfihuh1tTl3/ABju3AQMg==
   dependencies:
     "@sinonjs/commons" "^1.8.3"
     "@sinonjs/fake-timers" "^7.1.0"
     "@sinonjs/samsam" "^6.0.2"
     diff "^5.0.0"
     nise "^5.1.0"
-    supports-color "^8.1.1"
+    supports-color "^7.2.0"
 
 slice-ansi@^2.1.0:
   version "2.1.0"
@@ -9299,7 +9299,7 @@ supertest@6.1.3:
     methods "^1.1.2"
     superagent "^6.1.0"
 
-supports-color@8.1.1, supports-color@^8.1.1:
+supports-color@8.1.1:
   version "8.1.1"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-8.1.1.tgz#cd6fc17e28500cff56c1b86c0a7fd4a54a73005c"
   integrity sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==
@@ -9318,7 +9318,7 @@ supports-color@^5.3.0:
   dependencies:
     has-flag "^3.0.0"
 
-supports-color@^7.1.0:
+supports-color@^7.1.0, supports-color@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-7.2.0.tgz#1b7dcdcb32b8138801b3e478ba6a51caa89648da"
   integrity sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==
