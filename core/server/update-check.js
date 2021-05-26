@@ -62,13 +62,13 @@ function updateCheckError(err) {
  * @param {Object} notification
  * @return {Promise}
  */
-function createCustomNotification(notification) {
+async function createCustomNotification(notification) {
     if (!notification) {
-        return Promise.resolve();
+        return;
     }
 
-    return Promise.each(notification.messages, function (message) {
-        let toAdd = {
+    for (const message of notification.messages) {
+        const toAdd = {
             // @NOTE: the update check service returns "0" or "1" (https://github.com/TryGhost/UpdateCheck/issues/43)
             custom: !!notification.custom,
             createdAt: moment(notification.created_at).toDate(),
@@ -81,8 +81,8 @@ function createCustomNotification(notification) {
         };
 
         debug('Add Custom Notification', toAdd);
-        return api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
-    });
+        await api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
+    }
 }
 
 /**
