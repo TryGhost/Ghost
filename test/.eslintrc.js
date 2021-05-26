@@ -23,7 +23,7 @@ module.exports = {
         'no-unused-vars': 'off',
         'no-useless-escape': 'off',
 
-        'ghost/mocha/no-skipped-tests': 'warn',
+        'ghost/mocha/no-skipped-tests': 'error',
 
         // TODO: remove these custom rules and fix problems in test files
         'ghost/mocha/max-top-level-suites': 'off',
