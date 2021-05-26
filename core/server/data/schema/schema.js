@@ -364,6 +364,8 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        monthly_price: {type: 'string', maxlength: 24, nullable: true, references: 'stripe_prices.id'},
+        yearly_price: {type: 'string', maxlength: 24, nullable: true, references: 'stripe_prices.id'},
         description: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
