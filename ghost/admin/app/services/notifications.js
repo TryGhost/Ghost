@@ -1,5 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import {captureMessage} from '@sentry/browser';
+import {captureException} from '@sentry/browser';
 import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
@@ -102,7 +102,7 @@ export default Service.extend({
 
     showAPIError(resp, options) {
         if (this.config.get('sentry_dsn')) {
-            captureMessage(resp);
+            captureException(resp);
         }
 
         // handle "global" errors
