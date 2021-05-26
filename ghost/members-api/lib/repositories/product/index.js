@@ -92,6 +92,8 @@ class ProductRepository {
      * @param {string} data.name
      * @param {string} data.description
      * @param {StripePriceInput[]} data.stripe_prices
+     * @param {StripePriceInput|null} data.monthly_price
+     * @param {StripePriceInput|null} data.yearly_price
      * @param {string} data.product_id
      * @param {string} data.stripe_product_id
      *
@@ -100,7 +102,7 @@ class ProductRepository {
      * @returns {Promise<ProductModel>}
      **/
     async create(data, options) {
-        if (!this._stripeAPIService.configured && data.stripe_prices) {
+        if (!this._stripeAPIService.configured && (data.stripe_prices || data.monthly_price || data.yearly_price)) {
             throw new UpdateCollisionError({
                 message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
                 code: 'STRIPE_NOT_CONFIGURED'
@@ -124,7 +126,57 @@ class ProductRepository {
                 stripe_product_id: stripeProduct.id
             }, options);
 
-            if (data.stripe_prices) {
+            if (data.monthly_price || data.yearly_price) {
+                if (data.monthly_price) {
+                    const price = await this._stripeAPIService.createPrice({
+                        product: stripeProduct.id,
+                        active: true,
+                        nickname: `Monthly`,
+                        currency: data.monthly_price.currency,
+                        amount: data.monthly_price.amount,
+                        type: 'recurring',
+                        interval: 'month'
+                    });
+
+                    const stripePrice = await this._StripePrice.add({
+                        stripe_price_id: price.id,
+                        stripe_product_id: stripeProduct.id,
+                        active: true,
+                        nickname: price.nickname,
+                        currency: price.currency,
+                        amount: price.unit_amount,
+                        type: 'recurring',
+                        interval: 'month'
+                    }, options);
+
+                    await this._Product.edit({monthly_price_id: stripePrice.id}, {id: product.id});
+                }
+
+                if (data.yearly_price) {
+                    const price = await this._stripeAPIService.createPrice({
+                        product: stripeProduct.id,
+                        active: true,
+                        nickname: `Yearly`,
+                        currency: data.yearly_price.currency,
+                        amount: data.yearly_price.amount,
+                        type: 'recurring',
+                        interval: 'year'
+                    });
+
+                    const stripePrice = await this._StripePrice.add({
+                        stripe_price_id: price.id,
+                        stripe_product_id: stripeProduct.id,
+                        active: true,
+                        nickname: price.nickname,
+                        currency: price.currency,
+                        amount: price.unit_amount,
+                        type: 'recurring',
+                        interval: 'year'
+                    }, options);
+
+                    await this._Product.edit({yearly_price_id: stripePrice.id}, {id: product.id});
+                }
+            } else if (data.stripe_prices) {
                 for (const newPrice of data.stripe_prices) {
                     const price = await this._stripeAPIService.createPrice({
                         product: stripeProduct.id,
@@ -150,6 +202,8 @@ class ProductRepository {
             }
 
             await product.related('stripePrices').fetch(options);
+            await product.related('monthlyPrice').fetch(options);
+            await product.related('yearlyPrice').fetch(options);
         }
 
         return product;
@@ -164,13 +218,15 @@ class ProductRepository {
      * @param {string} data.description
      *
      * @param {StripePriceInput[]=} data.stripe_prices
+     * @param {StripePriceInput|null} data.monthly_price
+     * @param {StripePriceInput|null} data.yearly_price
      *
      * @param {object} options
      *
      * @returns {Promise<ProductModel>}
      **/
     async update(data, options) {
-        if (!this._stripeAPIService.configured && data.stripe_prices) {
+        if (!this._stripeAPIService.configured && (data.stripe_prices || data.monthly_price || data.yearly_price)) {
             throw new UpdateCollisionError({
                 message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
                 code: 'STRIPE_NOT_CONFIGURED'
@@ -182,12 +238,12 @@ class ProductRepository {
             description: data.description
         };
 
-        const product = await this._Product.edit(productData, {
+        let product = await this._Product.edit(productData, {
             ...options,
             id: data.id || options.id
         });
 
-        if (this._stripeAPIService.configured && data.stripe_prices) {
+        if (this._stripeAPIService.configured) {
             await product.related('stripeProducts').fetch(options);
 
             if (!product.related('stripeProducts').first()) {
@@ -212,80 +268,203 @@ class ProductRepository {
 
             const defaultStripeProduct = product.related('stripeProducts').first();
 
-            const newPrices = data.stripe_prices.filter(price => !price.stripe_price_id);
-            const existingPrices = data.stripe_prices.filter((price) => {
-                return !!price.stripe_price_id && !!price.stripe_product_id;
-            });
-
-            for (const existingPrice of existingPrices) {
-                const productId = existingPrice.stripe_product_id;
-                let stripeProduct = await this._StripeProduct.findOne({stripe_product_id: productId}, options);
-                if (!stripeProduct) {
-                    stripeProduct = await this._StripeProduct.add({
-                        product_id: product.id,
-                        stripe_product_id: productId
-                    }, options);
-                }
-                const stripePrice = await this._StripePrice.findOne({stripe_price_id: existingPrice.stripe_price_id}, options);
-
-                if (!stripePrice) {
-                    await this._StripePrice.add({
-                        stripe_price_id: existingPrice.stripe_price_id,
-                        stripe_product_id: stripeProduct.get('stripe_product_id'),
-                        active: existingPrice.active,
-                        nickname: existingPrice.nickname,
-                        description: existingPrice.description,
-                        currency: existingPrice.currency,
-                        amount: existingPrice.amount,
-                        type: existingPrice.type,
-                        interval: existingPrice.interval
-                    }, options);
-                } else {
-                    const updated = await this._StripePrice.edit({
-                        nickname: existingPrice.nickname,
-                        description: existingPrice.description,
-                        active: existingPrice.active
-                    }, {
-                        ...options,
-                        id: stripePrice.id
+            if (data.monthly_price || data.yearly_price) {
+                if (data.monthly_price) {
+                    const existingPrice = await this._StripePrice.findOne({
+                        stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                        amount: data.monthly_price.amount,
+                        currency: data.monthly_price.currency,
+                        type: 'recurring',
+                        interval: 'month'
                     });
+                    let priceModel;
+                    if (existingPrice) {
+                        priceModel = existingPrice;
 
-                    await this._stripeAPIService.updatePrice(updated.get('stripe_price_id'), {
-                        nickname: updated.get('nickname'),
-                        active: updated.get('active')
-                    });
+                        await this._stripeAPIService.updatePrice(priceModel.get('stripe_price_id'), {
+                            active: true
+                        });
+
+                        await this._StripePrice.edit({
+                            active: true
+                        }, {...options, id: priceModel.id});
+                    } else {
+                        const price = await this._stripeAPIService.createPrice({
+                            product: defaultStripeProduct.get('stripe_product_id'),
+                            active: true,
+                            nickname: `Monthly`,
+                            currency: data.monthly_price.currency,
+                            amount: data.monthly_price.amount,
+                            type: 'recurring',
+                            interval: 'month'
+                        });
+
+                        const stripePrice = await this._StripePrice.add({
+                            stripe_price_id: price.id,
+                            stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                            active: true,
+                            nickname: price.nickname,
+                            currency: price.currency,
+                            amount: price.unit_amount,
+                            type: 'recurring',
+                            interval: 'month'
+                        }, options);
+
+                        priceModel = stripePrice;
+                    }
+
+                    const existingMonthlyPrice = await product.related('monthlyPrice').fetch(options);
+
+                    if (existingMonthlyPrice) {
+                        await this._stripeAPIService.updatePrice(existingMonthlyPrice.get('stripe_price_id'), {
+                            active: false
+                        });
+
+                        await this._StripePrice.edit({
+                            active: false
+                        }, {...options, id: existingMonthlyPrice.id});
+                    }
+
+                    product = await this._Product.edit({monthly_price_id: priceModel.id}, {...options, id: product.id});
                 }
-            }
 
-            for (const newPrice of newPrices) {
-                const productId = newPrice.stripe_product_id;
-                const stripeProduct = productId ?
-                    await this._StripeProduct.findOne({stripe_product_id: productId}, options) : defaultStripeProduct;
+                if (data.yearly_price) {
+                    const existingPrice = await this._StripePrice.findOne({
+                        stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                        amount: data.yearly_price.amount,
+                        currency: data.yearly_price.currency,
+                        type: 'recurring',
+                        interval: 'year'
+                    });
+                    let priceModel;
 
-                const price = await this._stripeAPIService.createPrice({
-                    product: stripeProduct.get('stripe_product_id'),
-                    active: true,
-                    nickname: newPrice.nickname,
-                    currency: newPrice.currency,
-                    amount: newPrice.amount,
-                    type: newPrice.type,
-                    interval: newPrice.interval
+                    if (existingPrice) {
+                        priceModel = existingPrice;
+
+                        await this._stripeAPIService.updatePrice(priceModel.get('stripe_price_id'), {
+                            active: true
+                        });
+
+                        await this._StripePrice.edit({
+                            active: true
+                        }, {...options, id: priceModel.id});
+                    } else {
+                        const price = await this._stripeAPIService.createPrice({
+                            product: defaultStripeProduct.get('stripe_product_id'),
+                            active: true,
+                            nickname: `Yearly`,
+                            currency: data.yearly_price.currency,
+                            amount: data.yearly_price.amount,
+                            type: 'recurring',
+                            interval: 'year'
+                        });
+
+                        const stripePrice = await this._StripePrice.add({
+                            stripe_price_id: price.id,
+                            stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                            active: true,
+                            nickname: price.nickname,
+                            currency: price.currency,
+                            amount: price.unit_amount,
+                            type: 'recurring',
+                            interval: 'year'
+                        }, options);
+
+                        priceModel = stripePrice;
+                    }
+
+                    const existingYearlyPrice = await product.related('yearlyPrice').fetch(options);
+
+                    if (existingYearlyPrice) {
+                        await this._stripeAPIService.updatePrice(existingYearlyPrice.get('stripe_price_id'), {
+                            active: false
+                        });
+
+                        await this._StripePrice.edit({
+                            active: false
+                        }, {...options, id: existingYearlyPrice.id});
+                    }
+
+                    product = await this._Product.edit({yearly_price_id: priceModel.id}, {...options, id: product.id});
+                }
+            } else if (data.stripe_prices) {
+                const newPrices = data.stripe_prices.filter(price => !price.stripe_price_id);
+                const existingPrices = data.stripe_prices.filter((price) => {
+                    return !!price.stripe_price_id && !!price.stripe_product_id;
                 });
 
-                await this._StripePrice.add({
-                    stripe_price_id: price.id,
-                    stripe_product_id: stripeProduct.get('stripe_product_id'),
-                    active: price.active,
-                    nickname: price.nickname,
-                    description: newPrice.description,
-                    currency: price.currency,
-                    amount: price.unit_amount,
-                    type: price.type,
-                    interval: price.recurring && price.recurring.interval || null
-                }, options);
+                for (const existingPrice of existingPrices) {
+                    const productId = existingPrice.stripe_product_id;
+                    let stripeProduct = await this._StripeProduct.findOne({stripe_product_id: productId}, options);
+                    if (!stripeProduct) {
+                        stripeProduct = await this._StripeProduct.add({
+                            product_id: product.id,
+                            stripe_product_id: productId
+                        }, options);
+                    }
+                    const stripePrice = await this._StripePrice.findOne({stripe_price_id: existingPrice.stripe_price_id}, options);
+
+                    if (!stripePrice) {
+                        await this._StripePrice.add({
+                            stripe_price_id: existingPrice.stripe_price_id,
+                            stripe_product_id: stripeProduct.get('stripe_product_id'),
+                            active: existingPrice.active,
+                            nickname: existingPrice.nickname,
+                            description: existingPrice.description,
+                            currency: existingPrice.currency,
+                            amount: existingPrice.amount,
+                            type: existingPrice.type,
+                            interval: existingPrice.interval
+                        }, options);
+                    } else {
+                        const updated = await this._StripePrice.edit({
+                            nickname: existingPrice.nickname,
+                            description: existingPrice.description,
+                            active: existingPrice.active
+                        }, {
+                            ...options,
+                            id: stripePrice.id
+                        });
+
+                        await this._stripeAPIService.updatePrice(updated.get('stripe_price_id'), {
+                            nickname: updated.get('nickname'),
+                            active: updated.get('active')
+                        });
+                    }
+                }
+
+                for (const newPrice of newPrices) {
+                    const productId = newPrice.stripe_product_id;
+                    const stripeProduct = productId ?
+                        await this._StripeProduct.findOne({stripe_product_id: productId}, options) : defaultStripeProduct;
+
+                    const price = await this._stripeAPIService.createPrice({
+                        product: stripeProduct.get('stripe_product_id'),
+                        active: true,
+                        nickname: newPrice.nickname,
+                        currency: newPrice.currency,
+                        amount: newPrice.amount,
+                        type: newPrice.type,
+                        interval: newPrice.interval
+                    });
+
+                    await this._StripePrice.add({
+                        stripe_price_id: price.id,
+                        stripe_product_id: stripeProduct.get('stripe_product_id'),
+                        active: price.active,
+                        nickname: price.nickname,
+                        description: newPrice.description,
+                        currency: price.currency,
+                        amount: price.unit_amount,
+                        type: price.type,
+                        interval: price.recurring && price.recurring.interval || null
+                    }, options);
+                }
             }
 
             await product.related('stripePrices').fetch(options);
+            await product.related('monthlyPrice').fetch(options);
+            await product.related('yearlyPrice').fetch(options);
         }
 
         return product;
