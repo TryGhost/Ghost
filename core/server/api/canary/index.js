@@ -173,5 +173,9 @@ module.exports = {
 
     get authorsPublic() {
         return shared.pipeline(require('./authors-public'), localUtils, 'content');
+    },
+
+    get productsPublic() {
+        return shared.pipeline(require('./products-public'), localUtils, 'content');
     }
 };

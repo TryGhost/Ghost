@@ -33,5 +33,7 @@ module.exports = function apiRoutes() {
     // ## Settings
     router.get('/settings', mw.authenticatePublic, http(apiCanary.publicSettings.browse));
 
+    router.get('/products', mw.authenticatePublic, http(apiCanary.productsPublic.browse));
+
     return router;
 };

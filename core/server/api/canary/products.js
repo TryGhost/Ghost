@@ -5,7 +5,7 @@ const membersService = require('../../services/members');
 
 const i18n = require('../../../shared/i18n');
 
-const allowedIncludes = ['stripe_prices'];
+const allowedIncludes = ['stripe_prices', 'monthly_price', 'yearly_price'];
 
 module.exports = {
     docName: 'products',
