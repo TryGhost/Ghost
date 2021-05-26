@@ -8,6 +8,12 @@ module.exports = {
             if (relation === 'stripe_prices') {
                 return 'stripePrices';
             }
+            if (relation === 'monthly_price') {
+                return 'monthlyPrice';
+            }
+            if (relation === 'yearly_price') {
+                return 'yearlyPrice';
+            }
             return relation;
         });
     },
