@@ -22,7 +22,7 @@
     "mocha": "8.4.0",
     "nock": "13.0.11",
     "should": "13.2.3",
-    "sinon": "10.0.0"
+    "sinon": "11.1.1"
   },
   "dependencies": {
     "@tryghost/email-analytics-service": "^1.0.0",

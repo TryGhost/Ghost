@@ -21,7 +21,7 @@
   "devDependencies": {
     "mocha": "8.4.0",
     "should": "13.2.3",
-    "sinon": "10.0.0"
+    "sinon": "11.1.1"
   },
   "dependencies": {
     "ghost-ignition": "^4.2.4",
