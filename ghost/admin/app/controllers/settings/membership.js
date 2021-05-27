@@ -4,7 +4,6 @@ import {action} from '@ember/object';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const CURRENCIES = currencies.map((currency) => {
@@ -241,56 +240,41 @@ export default class MembersAccessController extends Controller {
         newUrl.searchParams.set('v', this.portalPreviewGuid);
 
         this.portalPreviewUrl = newUrl;
-
-        this.resizePortalPreviewTask.perform();
     }
 
     @action
-    portalPreviewLoaded(iframe) {
+    portalPreviewInserted(iframe) {
         this.portalPreviewIframe = iframe;
-        this.resizePortalPreviewTask.perform();
+
+        if (!this.portalMessageListener) {
+            this.portalMessageListener = (event) => {
+                // don't resize membership portal preview when events fire in customize portal modal
+                if (this.showPortalSettings) {
+                    return;
+                }
+
+                const resizeEvents = ['portal-ready', 'portal-preview-updated'];
+                if (resizeEvents.includes(event.data.type) && event.data.payload?.height) {
+                    this.portalPreviewIframe.parentNode.style.height = `${event.data.payload.height}px`;
+                }
+            };
+
+            window.addEventListener('message', this.portalMessageListener, true);
+        }
     }
 
     @action
     portalPreviewDestroyed() {
         this.portalPreviewIframe = null;
-        this.resizePortalPreviewTask.cancelAll();
+
+        if (this.portalMessageListener) {
+            window.removeEventListener('message', this.portalMessageListener);
+        }
     }
 
     @task
     *switchFromNoneTask() {
         return yield this.saveSettingsTask.perform({forceRefresh: true});
-    }
-
-    @task({restartable: true})
-    *resizePortalPreviewTask() {
-        if (this.portalPreviewIframe && this.portalPreviewIframe.contentWindow) {
-            yield timeout(100); // give time for portal to re-render
-
-            try {
-                const portalIframe = this.portalPreviewIframe.contentWindow.document.querySelector('#ghost-portal-root iframe');
-                if (!portalIframe) {
-                    return;
-                }
-
-                portalIframe.contentWindow.document.body.style.overflow = 'hidden';
-                portalIframe.contentWindow.document.body.style['scrollbar-width'] = 'none';
-
-                const portalContainer = portalIframe.contentWindow.document.querySelector('.gh-portal-popup-container');
-                if (!portalContainer) {
-                    return;
-                }
-
-                const height = portalContainer.clientHeight;
-                this.portalPreviewIframe.parentNode.style.height = `${height}px`;
-            } catch (e) {
-                if (e.name === 'SecurityError') {
-                    // cross-origin blocked
-                    return;
-                }
-                throw e;
-            }
-        }
     }
 
     async saveProduct() {
