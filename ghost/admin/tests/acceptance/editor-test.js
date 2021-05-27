@@ -595,7 +595,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-title-input]').value,
                 'title value after autosave'
-            ).to.equal('(Untitled)');
+            ).to.equal('');
 
             expect(
                 currentURL(),
