@@ -75,10 +75,8 @@ export default class App extends React.Component {
     }
 
     sendPortalReadyEvent(siteUrl) {
-        const siteOrigin = ((new URL(siteUrl)).origin).replace(/\/$/, '');
-
         if (window.self !== window.parent) {
-            window.parent.postMessage('portal-ready', siteOrigin);
+            window.parent.postMessage('portal-ready', '*');
         }
     }
 
