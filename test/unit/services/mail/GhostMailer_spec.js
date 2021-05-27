@@ -105,22 +105,12 @@ describe('Mail: Ghostmailer', function () {
         }).catch(done);
     });
 
-    it('should fail to send messages when given insufficient data', function (done) {
+    it('should fail to send messages when given insufficient data', async function () {
         mailer = new mail.GhostMailer();
 
-        Promise.all([
-            mailer.send().reflect(),
-            mailer.send({}).reflect(),
-            mailer.send({subject: '123'}).reflect(),
-            mailer.send({subject: '', html: '123'}).reflect()
-        ]).then(function (descriptors) {
-            descriptors.forEach(function (d) {
-                d.isFulfilled().should.be.false();
-                d.reason().should.be.an.instanceOf(Error);
-                d.reason().message.should.eql('Incomplete message data.');
-            });
-            done();
-        }).catch(done);
+        await mailer.send().should.be.rejectedWith('Incomplete message data.');
+        await mailer.send({subject: '123'}).should.be.rejectedWith('Incomplete message data.');
+        await mailer.send({subject: '', html: '123'}).should.be.rejectedWith('Incomplete message data.');
     });
 
     describe('Direct', function () {
