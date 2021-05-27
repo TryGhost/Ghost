@@ -33,6 +33,12 @@ function getFromAddress(requestedFromAddress) {
     return address;
 }
 
+/**
+ * Decorates incoming message object wit    h nodemailer compatible fields.
+ * For nodemailer 0.7.1 reference see - https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields
+ * @param {Object} message
+ * @returns {Object}
+ */
 function createMessage(message) {
     const encoding = 'base64';
     const generateTextFromHTML = !message.forceTextContent;
@@ -70,22 +76,34 @@ module.exports = class GhostMailer {
         this.transport = nodemailer.createTransport(transport, options);
     }
 
-    send(message) {
+    /**
+     *
+     * @param {Object} message
+     * @param {string} message.subject - email subject
+     * @param {string} message.html - email content
+     * @param {string} message.to - email recipient address
+     * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
+     * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
+     * (ref: https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields)
+     * @returns {Promise}
+     */
+    async send(message) {
         if (!(message && message.subject && message.html && message.to)) {
-            return Promise.reject(createMailError({
+            throw createMailError({
                 message: i18n.t('errors.mail.incompleteMessageData.error'),
                 ignoreDefaultMessage: true
-            }));
+            });
         }
 
         const messageToSend = createMessage(message);
 
-        return this.sendMail(messageToSend).then((response) => {
-            if (this.transport.transportType === 'DIRECT') {
-                return this.handleDirectTransportResponse(response);
-            }
-            return response;
-        });
+        const response = await this.sendMail(messageToSend);
+
+        if (this.transport.transportType === 'DIRECT') {
+            return this.handleDirectTransportResponse(response);
+        }
+
+        return response;
     }
 
     sendMail(message) {
