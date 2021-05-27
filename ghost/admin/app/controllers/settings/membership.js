@@ -267,21 +267,29 @@ export default class MembersAccessController extends Controller {
         if (this.portalPreviewIframe && this.portalPreviewIframe.contentWindow) {
             yield timeout(100); // give time for portal to re-render
 
-            const portalIframe = this.portalPreviewIframe.contentWindow.document.querySelector('#ghost-portal-root iframe');
-            if (!portalIframe) {
-                return;
+            try {
+                const portalIframe = this.portalPreviewIframe.contentWindow.document.querySelector('#ghost-portal-root iframe');
+                if (!portalIframe) {
+                    return;
+                }
+
+                portalIframe.contentWindow.document.body.style.overflow = 'hidden';
+                portalIframe.contentWindow.document.body.style['scrollbar-width'] = 'none';
+
+                const portalContainer = portalIframe.contentWindow.document.querySelector('.gh-portal-popup-container');
+                if (!portalContainer) {
+                    return;
+                }
+
+                const height = portalContainer.clientHeight;
+                this.portalPreviewIframe.parentNode.style.height = `${height}px`;
+            } catch (e) {
+                if (e.name === 'SecurityError') {
+                    // cross-origin blocked
+                    return;
+                }
+                throw e;
             }
-
-            portalIframe.contentWindow.document.body.style.overflow = 'hidden';
-            portalIframe.contentWindow.document.body.style['scrollbar-width'] = 'none';
-
-            const portalContainer = portalIframe.contentWindow.document.querySelector('.gh-portal-popup-container');
-            if (!portalContainer) {
-                return;
-            }
-
-            const height = portalContainer.clientHeight;
-            this.portalPreviewIframe.parentNode.style.height = `${height}px`;
         }
     }
 
