@@ -1,6 +1,6 @@
 # Portal
 
-[![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/portal/actions)
+[![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=main)](https://github.com/TryGhost/portal/actions)
 [![npm version](https://badge.fury.io/js/%40tryghost%2Fportal.svg)](https://badge.fury.io/js/%40tryghost%2Fportal)
 
 Drop-in script to make the bulk of Ghost membership features work on any theme.
@@ -21,7 +21,7 @@ The `data-ghost` attribute expects the URL for your site, which is the only inpu
 
 By default, the script adds a default floating trigger button on the bottom right of your page which is used to trigger the popup on screen.
 
-Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specfic [page](https://github.com/TryGhost/Portal/blob/master/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
+Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specfic [page](https://github.com/TryGhost/Portal/blob/main/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
