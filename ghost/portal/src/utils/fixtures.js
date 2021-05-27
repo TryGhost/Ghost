@@ -49,7 +49,7 @@ const prices = [
         stripe_product_id: 'prod_JNGGBrrogUXcoM',
         active: 1,
         nickname: 'Yearly',
-        currency: 'aud',
+        currency: 'usd',
         amount: 12200,
         type: 'recurring',
         interval: 'year'
@@ -108,7 +108,7 @@ export const site = {
         description: 'The default product'
     },
     prices: prices,
-    allow_self_signup: false,
+    allow_self_signup: true,
     members_signup_access: 'all',
     free_price_name: 'Free',
     free_price_description: 'Free preview',
@@ -265,5 +265,6 @@ export const member = {
 
 export const testSite = {
     ...site,
-    portal_plans: ['free', 'monthly', 'yearly']
+    allow_self_signup: true,
+    portal_plans: ['free', ...priceIds]
 };
