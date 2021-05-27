@@ -6,9 +6,14 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const settingsCache = require('../../core/server/services/settings/cache');
 
-// @TODO: if only this suite is run some of the tests will fail due to
-//       wrong template loading issues which would need to be investigated
-//       As a workaround run it with some of other tests e.g. "frontend_spec"
+function assertContentIsPresent(res) {
+    res.text.should.containEql('<h2 id="markdown">markdown</h2>');
+}
+
+function assertContentIsAbsent(res) {
+    res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
+}
+
 describe('Front-end members behaviour', function () {
     let request;
 
@@ -25,7 +30,7 @@ describe('Front-end members behaviour', function () {
         // perform a sign-in request to set members cookies on superagent
         await request.get(signinPath)
             .expect(302)
-            .then((res) => {
+            .expect((res) => {
                 const redirectUrl = new URL(res.headers.location, testUtils.API.getURL());
                 should.exist(redirectUrl.searchParams.get('success'));
                 redirectUrl.searchParams.get('success').should.eql('true');
@@ -125,16 +130,17 @@ describe('Front-end members behaviour', function () {
 
     describe('Price data', function () {
         it('Can be used as a number, and with the price helper', async function () {
-            const res = await request.get('/');
-
             // Check out test/utils/fixtures/themes/price-data-test-theme/index.hbs
             // To see where this is coming from.
             //
             const legacyUse = /You can use the price data as a number and currency: £12/;
             const withPriceHelper = /You can pass price data to the price helper: £12/;
 
-            should.exist(res.text.match(legacyUse));
-            should.exist(res.text.match(withPriceHelper));
+            await request.get('/')
+                .expect((res) => {
+                    should.exist(res.text.match(legacyUse));
+                    should.exist(res.text.match(withPriceHelper));
+                });
         });
     });
 
@@ -196,49 +202,39 @@ describe('Front-end members behaviour', function () {
         });
 
         describe('as non-member', function () {
-            it('can read public post content', function () {
-                return request
+            it('can read public post content', async function () {
+                await request
                     .get('/free-to-see/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('cannot read members post content', function () {
-                return request
+            it('cannot read members post content', async function () {
+                await request
                     .get('/thou-shalt-not-be-seen/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read paid post content', function () {
-                return request
+            it('cannot read paid post content', async function () {
+                await request
                     .get('/thou-shalt-be-paid-for/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read label-only post content', function () {
-                return request
+            it('cannot read label-only post content', async function () {
+                await request
                     .get('/thou-must-be-labelled-vip/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read product-only post content', function () {
-                return request
+            it('cannot read product-only post content', async function () {
+                await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
         });
 
@@ -247,49 +243,39 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember('member1@test.com');
             });
 
-            it('can read public post content', function () {
-                return request
+            it('can read public post content', async function () {
+                await request
                     .get('/free-to-see/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('can read members post content', function () {
-                return request
+            it('can read members post content', async function () {
+                await request
                     .get('/thou-shalt-not-be-seen/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('cannot read paid post content', function () {
-                return request
+            it('cannot read paid post content', async function () {
+                await request
                     .get('/thou-shalt-be-paid-for/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read label-only post content', function () {
-                return request
+            it('cannot read label-only post content', async function () {
+                await request
                     .get('/thou-must-be-labelled-vip/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read product-only post content', function () {
-                return request
+            it('cannot read product-only post content', async function () {
+                await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
         });
 
@@ -298,13 +284,11 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember('vip@test.com');
             });
 
-            it('can read label-only post content', function () {
-                return request
+            it('can read label-only post content', async function () {
+                await request
                     .get('/thou-must-be-labelled-vip/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
         });
 
@@ -329,49 +313,39 @@ describe('Front-end members behaviour', function () {
                     });
             });
 
-            it('can read public post content', function () {
-                return request
+            it('can read public post content', async function () {
+                await request
                     .get('/free-to-see/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('can read members post content', function () {
-                return request
+            it('can read members post content', async function () {
+                await request
                     .get('/thou-shalt-not-be-seen/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('can read paid post content', function () {
-                return request
+            it('can read paid post content', async function () {
+                await request
                     .get('/thou-shalt-be-paid-for/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('cannot read label-only post content', function () {
-                return request
+            it('cannot read label-only post content', async function () {
+                await request
                     .get('/thou-must-be-labelled-vip/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read product-only post content', function () {
-                return request
+            it('cannot read product-only post content', async function () {
+                await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
         });
 
@@ -380,13 +354,11 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember('vip-paid@test.com');
             });
 
-            it('can read label-only post content', function () {
-                return request
+            it('can read label-only post content', async function () {
+                await request
                     .get('/thou-must-be-labelled-vip/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
         });
 
@@ -395,49 +367,39 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember('comped@test.com');
             });
 
-            it('can read public post content', function () {
-                return request
+            it('can read public post content', async function () {
+                await request
                     .get('/free-to-see/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('can read members post content', function () {
-                return request
+            it('can read members post content', async function () {
+                await request
                     .get('/thou-shalt-not-be-seen/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('can read paid post content', function () {
-                return request
+            it('can read paid post content', async function () {
+                await request
                     .get('/thou-shalt-be-paid-for/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
 
-            it('cannot read label-only post content', function () {
-                return request
+            it('cannot read label-only post content', async function () {
+                await request
                     .get('/thou-must-be-labelled-vip/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
 
-            it('cannot read product-only post content', function () {
-                return request
+            it('cannot read product-only post content', async function () {
+                await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsAbsent);
             });
         });
 
@@ -446,13 +408,11 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember('with-product@test.com');
             });
 
-            it('can read product-only post content', function () {
-                return request
+            it('can read product-only post content', async function () {
+                await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .then((res) => {
-                        res.text.should.containEql('<h2 id="markdown">markdown</h2>');
-                    });
+                    .expect(assertContentIsPresent);
             });
         });
     });
