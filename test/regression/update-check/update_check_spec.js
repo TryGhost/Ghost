@@ -9,6 +9,7 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const packageInfo = require('../../../package.json');
 const api = require('../../../core/server/api').v2;
+const mailService = require('../../../core/server/services/mail/');
 
 let updateCheck = rewire('../../../core/server/update-check');
 let ghostVersion = rewire('../../../core/server/lib/ghost-version');
@@ -17,6 +18,7 @@ describe('Update Check', function () {
     beforeEach(function () {
         updateCheck = rewire('../../../core/server/update-check');
         ghostVersion = rewire('../../../core/server/lib/ghost-version');
+        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Stubed email response');
     });
 
     afterEach(function () {
@@ -321,6 +323,43 @@ describe('Update Check', function () {
                     done();
                 })
                 .catch(done);
+        });
+
+        it('should send an email for critical notification', async function () {
+            const createCustomNotification = updateCheck.__get__('createCustomNotification');
+
+            const notification = {
+                id: 1,
+                custom: 1,
+                messages: [{
+                    id: uuid.v4(),
+                    version: 'custom1',
+                    content: '<p>Critical message. Upgrade your site!</p>',
+                    dismissible: false,
+                    top: true,
+                    type: 'alert'
+                }]
+            };
+
+            await createCustomNotification(notification);
+
+            mailService.GhostMailer.prototype.send.called.should.be.true();
+            mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('jbloggs@example.com');
+            mailService.GhostMailer.prototype.send.args[0][0].subject.should.equal('Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
+            mailService.GhostMailer.prototype.send.args[0][0].html.should.equal('<p>Critical message. Upgrade your site!</p>');
+            mailService.GhostMailer.prototype.send.args[0][0].forceTextContent.should.equal(true);
+
+            const results = await api.notifications.browse(testUtils.context.internal);
+
+            should.exist(results);
+            should.exist(results.notifications);
+            results.notifications.length.should.eql(1);
+
+            const targetNotification = _.find(results.notifications, {id: notification.messages[0].id});
+            should.exist(targetNotification);
+            targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
+            targetNotification.top.should.eql(notification.messages[0].top);
+            targetNotification.type.should.eql(notification.messages[0].type);
         });
     });
 

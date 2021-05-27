@@ -16,6 +16,7 @@ const _ = require('lodash');
 const url = require('url');
 const debug = require('ghost-ignition').debug('update-check');
 const api = require('./api').v2;
+const GhostMailer = require('./services/mail').GhostMailer;
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const errors = require('@tryghost/errors');
@@ -23,8 +24,11 @@ const i18n = require('../shared/i18n');
 const logging = require('../shared/logging');
 const request = require('./lib/request');
 const ghostVersion = require('./lib/ghost-version');
+
 const internal = {context: {internal: true}};
 const allowedCheckEnvironments = ['development', 'production'];
+
+const ghostMailer = new GhostMailer();
 
 function nextCheckTimestamp() {
     const now = Math.round(new Date().getTime() / 1000);
@@ -67,6 +71,17 @@ async function createCustomNotification(notification) {
         return;
     }
 
+    const {users} = await api.users.browse(Object.assign({
+        limit: 'all',
+        include: ['roles']
+    }, internal));
+
+    const adminEmails = users
+        .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
+        .map(user => user.email);
+
+    const siteUrl = config.get('url');
+
     for (const message of notification.messages) {
         const toAdd = {
             // @NOTE: the update check service returns "0" or "1" (https://github.com/TryGhost/UpdateCheck/issues/43)
@@ -79,6 +94,21 @@ async function createCustomNotification(notification) {
             top: !!message.top,
             message: message.content
         };
+
+        if (toAdd.type === 'alert') {
+            for (const email of adminEmails) {
+                try {
+                    ghostMailer.send({
+                        to: email,
+                        subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
+                        html: toAdd.message,
+                        forceTextContent: true
+                    });
+                } catch (err) {
+                    logging.err(err);
+                }
+            }
+        }
 
         debug('Add Custom Notification', toAdd);
         await api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
