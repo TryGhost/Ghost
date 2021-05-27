@@ -65,6 +65,27 @@ class PopupContent extends React.Component {
             this.node.ownerDocument.removeEventListener('keyup', this.keyUphandler);
             this.node.ownerDocument.addEventListener('keyup', this.keyUphandler);
         }
+        this.sendContainerHeightChangeEvent();
+    }
+
+    sendContainerHeightChangeEvent() {
+        if (this.node && hasMode(['preview'])) {
+            if (this.node?.clientHeight !== this.lastContainerHeight) {
+                this.lastContainerHeight = this.node?.clientHeight;
+                window.document.body.style.overflow = 'hidden';
+                window.document.body.style['scrollbar-width'] = 'none';
+                window.parent.postMessage({
+                    type: 'portal-preview-updated',
+                    payload: {
+                        height: this.lastContainerHeight
+                    }
+                }, '*');
+            }
+        }
+    }
+
+    componentDidUpdate() {
+        this.sendContainerHeightChangeEvent();
     }
 
     componentWillUnmount() {
@@ -110,7 +131,7 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         let popupWidthStyle = '';
-        
+
         const portalPlans = getSitePrices({site, pageQuery});
 
         if (page === 'signup' || page === 'signin') {
@@ -145,9 +166,10 @@ class PopupContent extends React.Component {
             break;
         }
         const className = (hasMode(['preview', 'dev']) && !site.disableBackground) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container';
+        const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
         return (
             <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
-                <div className={className + ' ' + popupWidthStyle + ' ' + pageClass} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
+                <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                     <CookieDisabledBanner message={cookieBannerText} />
                     {this.renderPopupNotification()}
                     {this.renderActivePage()}
