@@ -1,37 +1,40 @@
-{{!-- full height content pane --}}
-<div
-    class="gh-koenig-editor-pane flex flex-column mih-100"
-    onmousedown={{action "trackMousedown"}}
-    onmouseup={{action "focusEditor"}}
->
-    <GhTextarea
-        @class="gh-editor-title"
-        @placeholder={{this.titlePlaceholder}}
-        @tabindex="1"
-        @autoExpand=".gh-koenig-editor"
-        @value={{readonly this.title}}
-        @input={{action "onTitleChange" value="target.value"}}
-        @focus-out={{action "onTitleFocusOut"}}
-        @keyDown={{action "onTitleKeydown"}}
-        @didCreateTextarea={{action "onTitleCreated"}} data-test-editor-title-input={{true}}
-    />
+<div class="gh-koenig-editor relative w-100 vh-100 overflow-x-hidden overflow-y-auto z-0" {{did-insert this.registerElement}} ...attributes>
+    {{!-- full height content pane --}}
+    <div
+        class="gh-koenig-editor-pane flex flex-column mih-100"
+        {{on "mousedown" this.trackMousedown}}
+        {{on "mouseup" this.focusEditor}}
+    >
+        <GhTextarea
+            @class="gh-editor-title"
+            @placeholder={{@titlePlaceholder}}
+            @tabindex="1"
+            @autoExpand=".gh-koenig-editor"
+            @value={{readonly @title}}
+            @input={{this.updateTitle}}
+            @focus-out={{optional @onTitleBlur}}
+            @keyDown={{this.onTitleKeydown}}
+            @didCreateTextarea={{this.registerTitleElement}}
+            data-test-editor-title-input={{true}}
+        />
 
-    <KoenigEditor
-        @mobiledoc={{this.body}}
-        @placeholder={{this.bodyPlaceholder}}
-        @autofocus={{this.bodyAutofocus}}
-        @spellcheck={{true}}
-        @onChange={{action "onBodyChange"}}
-        @didCreateEditor={{action "onEditorCreated"}}
-        @cursorDidExitAtTop={{action "focusTitle"}}
-        @headerOffset={{this.headerOffset}}
-        @dropTargetSelector=".gh-koenig-editor-pane"
-        @scrollContainerSelector={{this.scrollContainerSelector}}
-        @scrollOffsetTopSelector={{this.scrollOffsetTopSelector}}
-        @scrollOffsetBottomSelector={{this.scrollOffsetBottomSelector}}
-        @wordCountDidChange={{action this.onWordCountChange}}
-        @snippets={{@snippets}}
-        @saveSnippet={{@saveSnippet}}
-        @deleteSnippet={{@deleteSnippet}}
-    />
+        <KoenigEditor
+            @mobiledoc={{@body}}
+            @placeholder={{@bodyPlaceholder}}
+            @autofocus={{or @bodyAutofocus false}}
+            @spellcheck={{true}}
+            @onChange={{@onBodyChange}}
+            @didCreateEditor={{this.onEditorCreated}}
+            @cursorDidExitAtTop={{this.focusTitle}}
+            @headerOffset={{@headerOffset}}
+            @dropTargetSelector=".gh-koenig-editor-pane"
+            @scrollContainerSelector={{@scrollContainerSelector}}
+            @scrollOffsetTopSelector={{@scrollOffsetTopSelector}}
+            @scrollOffsetBottomSelector={{@scrollOffsetBottomSelector}}
+            @wordCountDidChange={{@onWordCountChange}}
+            @snippets={{@snippets}}
+            @saveSnippet={{@saveSnippet}}
+            @deleteSnippet={{@deleteSnippet}}
+        />
+    </div>
 </div>
