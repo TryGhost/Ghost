@@ -13,19 +13,18 @@ const cheerio = require('cheerio');
 const _ = require('lodash');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
-const config = require('../../core/shared/config');
 const settingsCache = require('../../core/server/services/settings/cache');
 const origCache = _.cloneDeep(settingsCache);
 
+function assertCorrectFrontendHeaders(res) {
+    should.not.exist(res.headers['x-cache-invalidate']);
+    should.not.exist(res.headers['X-CSRF-Token']);
+    should.not.exist(res.headers['set-cookie']);
+    should.exist(res.headers.date);
+}
+
 describe('Default Frontend routing', function () {
     let request;
-
-    function doEnd(res) {
-        should.not.exist(res.headers['x-cache-invalidate']);
-        should.not.exist(res.headers['X-CSRF-Token']);
-        should.not.exist(res.headers['set-cookie']);
-        should.exist(res.headers.date);
-    }
 
     afterEach(function () {
         sinon.restore();
@@ -33,143 +32,137 @@ describe('Default Frontend routing', function () {
 
     before(async function () {
         await testUtils.startGhost();
-        request = supertest.agent(config.get('url'));
+        request = supertest.agent(configUtils.config.get('url'));
     });
 
     describe('Error', function () {
         it('should 404 for unknown post', async function () {
-            const res = await request.get('/spectacular/')
+            await request.get('/spectacular/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .expect(/Page not found/);
-
-            doEnd(res);
+                .expect(/Page not found/)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('should 404 for unknown file', async function () {
-            const res = await request.get('/content/images/some/file/that/doesnt-exist.jpg')
+            await request.get('/content/images/some/file/that/doesnt-exist.jpg')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .expect(/404 Image not found/);
-
-            doEnd(res);
+                .expect(/404 Image not found/)
+                .expect(assertCorrectFrontendHeaders);
         });
     });
 
     describe('Main Routes', function () {
         it('/ should respond with valid HTML', async function () {
-            const res = await request.get('/')
+            await request.get('/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
 
-            const $ = cheerio.load(res.text);
+                    // NOTE: "Ghost" is the title from the settings.
+                    $('title').text().should.equal('Ghost');
 
-            // NOTE: "Ghost" is the title from the settings.
-            $('title').text().should.equal('Ghost');
+                    $('body.home-template').length.should.equal(1);
+                    $('article.post').length.should.equal(7);
+                    $('article.tag-getting-started').length.should.equal(7);
 
-            $('body.home-template').length.should.equal(1);
-            $('article.post').length.should.equal(7);
-            $('article.tag-getting-started').length.should.equal(7);
-
-            res.text.should.not.containEql('__GHOST_URL__');
-
-            doEnd(res);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('/author/ghost/ should respond with valid HTML', async function () {
-            const res = await request.get('/author/ghost/')
+            await request.get('/author/ghost/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
 
-            const $ = cheerio.load(res.text);
+                    // NOTE: "Ghost" is the title from the settings.
+                    $('title').text().should.equal('Ghost - Ghost');
 
-            // NOTE: "Ghost" is the title from the settings.
-            $('title').text().should.equal('Ghost - Ghost');
+                    $('body.author-template').length.should.equal(1);
+                    $('article.post').length.should.equal(7);
+                    $('article.tag-getting-started').length.should.equal(7);
 
-            $('body.author-template').length.should.equal(1);
-            $('article.post').length.should.equal(7);
-            $('article.tag-getting-started').length.should.equal(7);
-
-            res.text.should.not.containEql('__GHOST_URL__');
-
-            doEnd(res);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('/tag/getting-started/ should respond with valid HTML', async function () {
-            const res = await request.get('/tag/getting-started/')
+            await request.get('/tag/getting-started/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
 
-            const $ = cheerio.load(res.text);
+                    // NOTE: "Ghost" is the title from the settings.
+                    $('title').text().should.equal('Getting Started - Ghost');
 
-            // NOTE: "Ghost" is the title from the settings.
-            $('title').text().should.equal('Getting Started - Ghost');
+                    $('body.tag-template').length.should.equal(1);
+                    $('article.post').length.should.equal(7);
+                    $('article.tag-getting-started').length.should.equal(7);
 
-            $('body.tag-template').length.should.equal(1);
-            $('article.post').length.should.equal(7);
-            $('article.tag-getting-started').length.should.equal(7);
-
-            res.text.should.not.containEql('__GHOST_URL__');
-
-            doEnd(res);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
     });
 
     describe('Single post', function () {
         it('/welcome/ should respond with valid HTML', async function () {
-            const res = await request.get('/welcome/')
+            await request.get('/welcome/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200);
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
 
-            const $ = cheerio.load(res.text);
+                    // NOTE: This is the title from the settings.
+                    $('title').text().should.equal('Start here for a quick overview of everything you need to know');
 
-            // NOTE: This is the title from the settings.
-            $('title').text().should.equal('Start here for a quick overview of everything you need to know');
+                    $('body.post-template').length.should.equal(1);
+                    $('body.tag-getting-started').length.should.equal(1);
+                    $('article.post').length.should.equal(2);
+                    $('article.tag-getting-started').length.should.equal(2);
 
-            $('body.post-template').length.should.equal(1);
-            $('body.tag-getting-started').length.should.equal(1);
-            $('article.post').length.should.equal(2);
-            $('article.tag-getting-started').length.should.equal(2);
-
-            res.text.should.not.containEql('__GHOST_URL__');
-
-            doEnd(res);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should not work with date permalinks', async function () {
             // get today's date
             const date = moment().format('YYYY/MM/DD');
 
-            const res = await request.get('/' + date + '/welcome/')
+            await request.get('/' + date + '/welcome/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .expect(/Page not found/);
-
-            doEnd(res);
+                .expect(/Page not found/)
+                .expect(assertCorrectFrontendHeaders);
         });
     });
 
     describe('Post edit', function () {
         it('should redirect to editor', async function () {
-            const res = await request.get('/welcome/edit/')
+            await request.get('/welcome/edit/')
                 .expect('Location', /ghost\/#\/editor\/\w+/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302);
-
-            doEnd(res);
+                .expect(302)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('should 404 for non-edit parameter', async function () {
-            const res = await request.get('/welcome/notedit/')
+            await request.get('/welcome/notedit/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .expect(/Page not found/);
-
-            doEnd(res);
+                .expect(/Page not found/)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         describe('Admin Redirects Disabled', function () {
@@ -177,61 +170,59 @@ describe('Default Frontend routing', function () {
                 configUtils.set('admin:redirects', false);
 
                 await testUtils.startGhost({forceStart: true});
-                request = supertest.agent(config.get('url'));
+                request = supertest.agent(configUtils.config.get('url'));
             });
 
             after(async function () {
                 configUtils.restore();
 
                 await testUtils.startGhost({forceStart: true});
-                request = supertest.agent(config.get('url'));
+                request = supertest.agent(configUtils.config.get('url'));
             });
 
             it('/edit/ should NOT redirect to the editor', async function () {
-                const res = await request.get('/welcome/edit/')
+                await request.get('/welcome/edit/')
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404);
-
-                doEnd(res);
+                    .expect(404)
+                    .expect(assertCorrectFrontendHeaders);
             });
         });
     });
 
     describe('AMP post', function () {
         it('should respond with html for valid url', async function () {
-            const res = await request.get('/welcome/amp/')
+            await request.get('/welcome/amp/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
 
-            const $ = cheerio.load(res.text);
+                    $('.post-title').text().should.equal('Start here for a quick overview of everything you need to know');
 
-            $('.post-title').text().should.equal('Start here for a quick overview of everything you need to know');
+                    $('.content .post').length.should.equal(1);
+                    $('.powered').text().should.equal(' Published with Ghost');
+                    $('body.amp-template').length.should.equal(1);
+                    $('article.post').length.should.equal(1);
 
-            $('.content .post').length.should.equal(1);
-            $('.powered').text().should.equal(' Published with Ghost');
-            $('body.amp-template').length.should.equal(1);
-            $('article.post').length.should.equal(1);
+                    $('style[amp-custom]').length.should.equal(1);
 
-            $('style[amp-custom]').length.should.equal(1);
+                    res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
 
-            res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
-
-            res.text.should.not.containEql('__GHOST_URL__');
-
-            doEnd(res);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should not work with date permalinks', async function () {
             // get today's date
             const date = moment().format('YYYY/MM/DD');
 
-            const res = await request.get('/' + date + '/welcome/amp/')
+            await request.get('/' + date + '/welcome/amp/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .expect(/Page not found/);
-
-            doEnd(res);
+                .expect(/Page not found/)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         describe('AMP Disabled', function () {
@@ -243,75 +234,74 @@ describe('Default Frontend routing', function () {
                     return origCache.get(key, options);
                 });
 
-                const res = await request.get('/welcome/amp/?q=a')
+                await request.get('/welcome/amp/?q=a')
                     .expect('Location', '/welcome/?q=a')
-                    .expect(301);
-
-                doEnd(res);
+                    .expect(301)
+                    .expect(assertCorrectFrontendHeaders);
             });
         });
     });
 
     describe('RSS', function () {
         it('/rss/ should serve an RSS feed', async function () {
-            const res = await request.get('/rss/')
+            await request.get('/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('/author/ghost/rss/ should serve an RSS feed', async function () {
-            const res = await request.get('/author/ghost/rss/')
+            await request.get('/author/ghost/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('/tag/getting-started/rss/ should serve an RSS feed', async function () {
-            const res = await request.get('/tag/getting-started/rss/')
+            await request.get('/tag/getting-started/rss/')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
     });
 
     describe('Static assets', function () {
         it('should retrieve theme assets', async function () {
-            const res = await request.get('/assets/css/screen.css')
+            await request.get('/assets/css/screen.css')
                 .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(200);
-
-            doEnd(res);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('should retrieve default robots.txt', async function () {
-            const res = await request.get('/robots.txt')
+            await request.get('/robots.txt')
                 .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('ETag', /[0-9a-f]{32}/i)
-                .expect(200);
-
-            doEnd(res);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('should retrieve default favicon.ico', async function () {
-            const res = await request.get('/favicon.ico')
+            await request.get('/favicon.ico')
                 .expect('Cache-Control', testUtils.cacheRules.day)
                 .expect('ETag', /[0-9a-f]{32}/i)
-                .expect(200);
-
-            doEnd(res);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
         });
     });
 
@@ -323,69 +313,75 @@ describe('Default Frontend routing', function () {
         });
 
         it('should serve sitemap.xml', async function () {
-            const res = await request.get('/sitemap.xml')
+            await request.get('/sitemap.xml')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/sitemapindex/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/sitemapindex/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should serve sitemap-posts.xml', async function () {
-            const res = await request.get('/sitemap-posts.xml')
+            await request.get('/sitemap-posts.xml')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/urlset/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/urlset/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should serve sitemap-pages.xml', async function () {
-            const res = await request.get('/sitemap-pages.xml')
+            await request.get('/sitemap-pages.xml')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/urlset/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/urlset/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should serve sitemap-tags.xml', async function () {
-            const res = await request.get('/sitemap-tags.xml')
+            await request.get('/sitemap-tags.xml')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/urlset/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/urlset/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should serve sitemap-users.xml', async function () {
-            const res = await request.get('/sitemap-users.xml')
+            await request.get('/sitemap-users.xml')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.hour)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/urlset/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/urlset/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
 
         it('should serve sitemap.xsl', async function () {
-            const res = await request.get('/sitemap.xsl')
+            await request.get('/sitemap.xsl')
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.day)
-                .expect('Content-Type', 'text/xsl');
-
-            res.text.should.match(/urlset/);
-            res.text.should.not.containEql('__GHOST_URL__');
-            doEnd(res);
+                .expect('Content-Type', 'text/xsl')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/urlset/);
+                    res.text.should.not.containEql('__GHOST_URL__');
+                });
         });
     });
 
@@ -400,83 +396,80 @@ describe('Default Frontend routing', function () {
         });
 
         it('/ should redirect to /private/', async function () {
-            const res = await request.get('/')
+            await request.get('/')
                 .expect('Location', '/private/?r=%2F')
-                .expect(302);
-
-            doEnd(res);
+                .expect(302)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('/welcome/ should redirect to /private/', async function () {
-            const res = await request.get('/welcome/')
+            await request.get('/welcome/')
                 .expect('Location', '/private/?r=%2Fwelcome%2F')
-                .expect(302);
-
-            doEnd(res);
+                .expect(302)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('/private/?r=%2Fwelcome%2F should not redirect', async function () {
-            const res = await request.get('/private/?r=%2Fwelcome%2F')
-                .expect(200);
-
-            doEnd(res);
+            await request.get('/private/?r=%2Fwelcome%2F')
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('should redirect, NOT 404 for private route with extra path', async function () {
-            const res = await request.get('/private/welcome/')
+            await request.get('/private/welcome/')
                 .expect('Location', '/private/?r=%2Fprivate%2Fwelcome%2F')
-                .expect(302);
-
-            doEnd(res);
+                .expect(302)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         it('should still serve private RSS feed', async function () {
-            const res = await request.get(`/${settingsCache.get('public_hash')}/rss/`)
+            await request.get(`/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                });
         });
 
         it('should still serve private tag RSS feed', async function () {
-            const res = await request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/`)
+            await request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect('Content-Type', 'text/xml; charset=utf-8');
-
-            res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
-            doEnd(res);
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match(/<!\[CDATA\[Start here for a quick overview of everything you need to know\]\]>/);
+                });
         });
 
         it('should redirect, NOT 404 for private tag RSS feed with extra path', async function () {
-            const res = await request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/hack/`)
+            await request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/hack/`)
                 .expect('Location', `/private/?r=%2Ftag%2Fgetting-started%2F${settingsCache.get('public_hash')}%2Frss%2Fhack%2F`)
-                .expect(302);
-
-            doEnd(res);
+                .expect(302)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         // NOTE: this case is covered by extra error handling, and cannot be unit tested
         it('should redirect, NOT 404 for unknown private RSS feed', async function () {
             // NOTE: the redirect will be to /hack/rss because we strip the hash from the URL before trying to serve RSS
             // This isn't ideal, but it's better to expose this internal logic than it is a 404 page
-            const res = await request.get(`/hack/${settingsCache.get('public_hash')}/rss/`)
+            await request.get(`/hack/${settingsCache.get('public_hash')}/rss/`)
                 .expect('Location', '/private/?r=%2Fhack%2Frss%2F')
-                .expect(302);
-
-            doEnd(res);
+                .expect(302)
+                .expect(assertCorrectFrontendHeaders);
         });
 
         // NOTE: this test extends the unit test, checking that there is no other robots.txt middleware overriding private blogging
         it('should serve private robots.txt', async function () {
-            const res = await request.get('/robots.txt')
+            await request.get('/robots.txt')
                 .expect('Cache-Control', 'public, max-age=3600000')
-                .expect(200);
-
-            res.text.should.match('User-agent: *\nDisallow: /');
-            doEnd(res);
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    res.text.should.match('User-agent: *\nDisallow: /');
+                });
         });
     });
 });
