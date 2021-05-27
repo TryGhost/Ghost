@@ -74,7 +74,7 @@ const membersService = {
             }
         } else {
             const siteUrl = urlUtils.getSiteUrl();
-            if (!/^https/.test(siteUrl)) {
+            if (!/^https/.test(siteUrl) && membersConfig.isStripeConnected()) {
                 throw new Error('Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://"');
             }
         }
