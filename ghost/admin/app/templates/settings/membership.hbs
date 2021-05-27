@@ -59,7 +59,7 @@
                             scrolling="no"
                             @src={{this.portalPreviewUrl}}
                             @invisibleUntilLoaded="portal-ready"
-                            @onLoad={{this.portalPreviewLoaded}}
+                            @onInserted={{this.portalPreviewInserted}}
                             @onDestroyed={{this.portalPreviewDestroyed}} />
                     {{/if}}
                 </div>
