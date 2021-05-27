@@ -354,19 +354,6 @@ module.exports = {
         author: {user: {roles: [DataGenerator.Content.roles[2]]}},
         contributor: {user: {roles: [DataGenerator.Content.roles[4]]}}
     },
-    users: {
-        ids: {
-            owner: DataGenerator.Content.users[0].id,
-            admin: DataGenerator.Content.users[1].id,
-            editor: DataGenerator.Content.users[2].id,
-            author: DataGenerator.Content.users[3].id,
-            admin2: DataGenerator.Content.users[6].id,
-            editor2: DataGenerator.Content.users[4].id,
-            author2: DataGenerator.Content.users[5].id,
-            contributor: DataGenerator.Content.users[7].id,
-            contributor2: DataGenerator.Content.users[8].id
-        }
-    },
     roles: {
         ids: {
             owner: DataGenerator.Content.roles[3].id,
