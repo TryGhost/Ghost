@@ -497,7 +497,7 @@ DataGenerator.Content = {
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
             nickname: 'Monthly',
-            currency: 'USD',
+            currency: 'GBP',
             amount: 1200,
             type: 'recurring',
             interval: 'month'
@@ -508,7 +508,7 @@ DataGenerator.Content = {
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
             nickname: 'Yearly',
-            currency: 'USD',
+            currency: 'GBP',
             amount: 12000,
             type: 'recurring',
             interval: 'year'
@@ -519,7 +519,7 @@ DataGenerator.Content = {
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
             nickname: 'Yearly',
-            currency: 'USD',
+            currency: 'GBP',
             amount: 15000,
             type: 'recurring',
             interval: 'year'

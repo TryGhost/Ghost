@@ -130,8 +130,8 @@ describe('Front-end members behaviour', function () {
             // Check out test/utils/fixtures/themes/price-data-test-theme/index.hbs
             // To see where this is coming from.
             //
-            const legacyUse = /You can use the price data as a number: 12/;
-            const withPriceHelper = /You can pass price data to the price helper: \$12/;
+            const legacyUse = /You can use the price data as a number and currency: £12/;
+            const withPriceHelper = /You can pass price data to the price helper: £12/;
 
             should.exist(res.text.match(legacyUse));
             should.exist(res.text.match(withPriceHelper));

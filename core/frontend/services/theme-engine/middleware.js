@@ -98,7 +98,7 @@ async function haxGetMembersPriceData() {
         const priceData = {
             monthly: makePriceObject(monthlyPrice || defaultPrice),
             yearly: makePriceObject(yearlyPrice || defaultPrice),
-            currency: nonZeroPrices[0].currency
+            currency: monthlyPrice ? monthlyPrice.currency : defaultPrice.currency
         };
 
         return priceData;
