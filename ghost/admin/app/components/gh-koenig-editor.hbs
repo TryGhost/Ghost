@@ -10,7 +10,7 @@
             @placeholder={{@titlePlaceholder}}
             @tabindex="1"
             @autoExpand=".gh-koenig-editor"
-            @value={{readonly @title}}
+            @value={{readonly this.title}}
             @input={{this.updateTitle}}
             @focus-out={{optional @onTitleBlur}}
             @keyDown={{this.onTitleKeydown}}

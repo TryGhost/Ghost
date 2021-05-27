@@ -7,6 +7,10 @@ export default class GhKoenigEditorComponent extends Component {
     koenigEditor = null;
     mousedownY = 0;
 
+    get title() {
+        return this.args.title === '(Untitled)' ? '' : this.args.title;
+    }
+
     @action
     registerElement(element) {
         this.containerElement = element;
