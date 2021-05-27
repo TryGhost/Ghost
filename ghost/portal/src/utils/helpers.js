@@ -238,6 +238,7 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
         freePriceCurrencyDetail.currency = stripePrices[0].currency;
         freePriceCurrencyDetail.currency_symbol = stripePrices[0].currency_symbol;
     }
+
     if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
         plansData.push({
             id: 'free',
