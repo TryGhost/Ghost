@@ -24,6 +24,6 @@
     "sinon": "9.2.4"
   },
   "dependencies": {
-    "papaparse": "5.3.0"
+    "papaparse": "5.3.1"
   }
 }
