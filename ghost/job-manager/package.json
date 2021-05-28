@@ -19,7 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@sinonjs/fake-timers": "7.1.1",
+    "@sinonjs/fake-timers": "7.1.2",
     "date-fns": "2.22.1",
     "delay": "5.0.0",
     "mocha": "8.3.2",
