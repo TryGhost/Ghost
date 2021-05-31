@@ -64,7 +64,7 @@ class UpdateCheckService {
      * @description Collect stats from your blog.
      * @returns {Promise}
      */
-    updateCheckData() {
+    async updateCheckData() {
         let data = {};
         let mailConfig = this.config.get('mail');
 
@@ -77,18 +77,13 @@ class UpdateCheckService {
                 mailConfig.options.service :
                 mailConfig.transport);
 
-        return Promise.props({
-            hash: this.api.settings.read(_.extend({key: 'db_hash'}, internal)).reflect(),
-            theme: this.api.settings.read(_.extend({key: 'active_theme'}, internal)).reflect(),
-            posts: this.api.posts.browse().reflect(),
-            users: this.api.users.browse(internal).reflect(),
-            npm: Promise.promisify(exec)('npm -v').reflect()
-        }).then(function (descriptors) {
-            const hash = descriptors.hash.value().settings[0];
-            const theme = descriptors.theme.value().settings[0];
-            const posts = descriptors.posts.value();
-            const users = descriptors.users.value();
-            const npm = descriptors.npm.value();
+        try {
+            const hash = (await this.api.settings.read(_.extend({key: 'db_hash'}, internal))).settings[0];
+            const theme = (await this.api.settings.read(_.extend({key: 'active_theme'}, internal))).settings[0];
+            const posts = await this.api.posts.browse();
+            const users = await this.api.users.browse(internal);
+            const npm = await Promise.promisify(exec)('npm -v');
+
             const blogUrl = this.urlUtils.urlFor('home', true);
             const parsedBlogUrl = url.parse(blogUrl);
             const blogId = parsedBlogUrl.hostname + parsedBlogUrl.pathname.replace(/\//, '') + hash.value;
@@ -102,7 +97,9 @@ class UpdateCheckService {
             data.npm_version = npm.trim();
 
             return data;
-        }).catch(this.updateCheckError);
+        } catch (err) {
+            this.updateCheckError(err);
+        }
     }
 
     /**
@@ -115,52 +112,50 @@ class UpdateCheckService {
      * @returns {Promise}
      */
     async updateCheckRequest() {
-        return this.updateCheckData()
-            .then(function then(reqData) {
-                let reqObj = {
-                    timeout: 1000,
-                    headers: {}
+        const reqData = await this.updateCheckData();
+
+        let reqObj = {
+            timeout: 1000,
+            headers: {}
+        };
+
+        let checkEndpoint = this.config.get('updateCheck:url');
+        let checkMethod = this.config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
+
+        // CASE: Expose stats and do a check-in
+        if (checkMethod === 'POST') {
+            reqObj.json = true;
+            reqObj.body = reqData;
+            reqObj.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(reqData));
+            reqObj.headers['Content-Type'] = 'application/json';
+        } else {
+            reqObj.json = true;
+            reqObj.query = {
+                ghost_version: reqData.ghost_version
+            };
+        }
+
+        debug('Request Update Check Service', checkEndpoint);
+
+        try {
+            const response = await this.request(checkEndpoint, reqObj);
+            return response.body;
+        } catch (err) {
+            // CASE: no notifications available, ignore
+            if (err.statusCode === 404) {
+                return {
+                    next_check: this.nextCheckTimestamp(),
+                    notifications: []
                 };
+            }
 
-                let checkEndpoint = this.config.get('updateCheck:url');
-                let checkMethod = this.config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
-
-                // CASE: Expose stats and do a check-in
-                if (checkMethod === 'POST') {
-                    reqObj.json = true;
-                    reqObj.body = reqData;
-                    reqObj.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(reqData));
-                    reqObj.headers['Content-Type'] = 'application/json';
-                } else {
-                    reqObj.json = true;
-                    reqObj.query = {
-                        ghost_version: reqData.ghost_version
-                    };
-                }
-
-                debug('Request Update Check Service', checkEndpoint);
-
-                return this.request(checkEndpoint, reqObj)
-                    .then(function (response) {
-                        return response.body;
-                    })
-                    .catch(function (err) {
-                    // CASE: no notifications available, ignore
-                        if (err.statusCode === 404) {
-                            return {
-                                next_check: this.nextCheckTimestamp(),
-                                notifications: []
-                            };
-                        }
-
-                        // CASE: service returns JSON error, deserialize into JS error
-                        if (err.response && err.response.body && typeof err.response.body === 'object') {
-                            err = errors.utils.deserialize(err.response.body);
-                        }
-
-                        throw err;
-                    });
-            });
+            // CASE: service returns JSON error, deserialize into JS error
+            if (err.response && err.response.body && typeof err.response.body === 'object') {
+                throw errors.utils.deserialize(err.response.body);
+            } else {
+                throw err;
+            }
+        }
     }
 
     /**
@@ -331,7 +326,7 @@ class UpdateCheckService {
         try {
             const response = await this.updateCheckRequest();
 
-            await this.updateCheckResponse(response);
+            return await this.updateCheckResponse(response);
         } catch (err) {
             this.updateCheckError(err);
         }
