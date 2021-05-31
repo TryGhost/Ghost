@@ -36,6 +36,8 @@ const stubUrlUtils = (options, sandbox) => {
             });
         }
     });
+
+    return stubInstance;
 };
 
 // Method for regressions tests must be used with restore method
@@ -49,7 +51,8 @@ const stubUrlUtilsFromConfig = () => {
         redirectCacheMaxAge: config.get('caching:301:maxAge'),
         baseApiPath: '/ghost/api'
     };
-    stubUrlUtils(options, defaultSandbox);
+
+    return stubUrlUtils(options, defaultSandbox);
 };
 
 const restore = () => {
