@@ -450,11 +450,11 @@ const configureGrunt = function (grunt) {
     // `grunt validate` will either run all tests or run linting
     // `grunt validate` is called by `yarn test` and is used by Travis.
     grunt.registerTask('validate', 'Run tests', function () {
-        grunt.task.run(['test-acceptance', 'test-unit']);
+        grunt.task.run(['test-unit', 'test-acceptance']);
     });
 
     grunt.registerTask('test-all', 'Run all server tests',
-        ['test-acceptance', 'test-unit', 'test-regression']);
+        ['test-unit', 'test-acceptance', 'test-regression']);
 
     // ### Lint
     //
