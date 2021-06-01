@@ -1,12 +1,11 @@
 const should = require('should');
-const rewire = require('rewire');
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const packageInfo = require('../../../package.json');
-let ghostVersion = rewire('../../../core/server/lib/ghost-version');
+const ghostVersion = require('../../../core/server/lib/ghost-version');
 
 const UpdateCheckService = require('../../../core/server/update-check-service');
 
