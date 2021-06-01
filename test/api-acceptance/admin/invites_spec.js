@@ -73,7 +73,7 @@ describe('Invites API', function () {
             .post(localUtils.API.getApiQuery('invites/'))
             .set('Origin', config.get('url'))
             .send({
-                invites: [{email: 'test@example.com', role_id: testUtils.existingData.roles[1].id}]
+                invites: [{email: 'test@example.com', role_id: testUtils.getExistingData().roles[1].id}]
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -86,7 +86,7 @@ describe('Invites API', function () {
         jsonResponse.invites.should.have.length(1);
 
         localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-        jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
+        jsonResponse.invites[0].role_id.should.eql(testUtils.getExistingData().roles[1].id);
 
         mailService.GhostMailer.prototype.send.called.should.be.true();
 

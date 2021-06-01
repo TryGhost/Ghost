@@ -33,45 +33,45 @@ describe('v2 Schedules API', function () {
         request = supertest.agent(config.get('url'));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.existingData.users[0].id,
-            author_id: testUtils.existingData.users[0].id,
-            published_by: testUtils.existingData.users[0].id,
+            created_by: testUtils.getExistingData().users[0].id,
+            author_id: testUtils.getExistingData().users[0].id,
+            published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(30, 'seconds').toDate(),
             status: 'scheduled',
             slug: 'first'
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.existingData.users[0].id,
-            author_id: testUtils.existingData.users[0].id,
-            published_by: testUtils.existingData.users[0].id,
+            created_by: testUtils.getExistingData().users[0].id,
+            author_id: testUtils.getExistingData().users[0].id,
+            published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().subtract(30, 'seconds').toDate(),
             status: 'scheduled',
             slug: 'second'
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.existingData.users[0].id,
-            author_id: testUtils.existingData.users[0].id,
-            published_by: testUtils.existingData.users[0].id,
+            created_by: testUtils.getExistingData().users[0].id,
+            author_id: testUtils.getExistingData().users[0].id,
+            published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(10, 'minute').toDate(),
             status: 'scheduled',
             slug: 'third'
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.existingData.users[0].id,
-            author_id: testUtils.existingData.users[0].id,
-            published_by: testUtils.existingData.users[0].id,
+            created_by: testUtils.getExistingData().users[0].id,
+            author_id: testUtils.getExistingData().users[0].id,
+            published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().subtract(10, 'minute').toDate(),
             status: 'scheduled',
             slug: 'fourth'
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
-            created_by: testUtils.existingData.users[0].id,
-            author_id: testUtils.existingData.users[0].id,
-            published_by: testUtils.existingData.users[0].id,
+            created_by: testUtils.getExistingData().users[0].id,
+            author_id: testUtils.getExistingData().users[0].id,
+            published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(30, 'seconds').toDate(),
             status: 'scheduled',
             slug: 'fifth',
@@ -89,7 +89,7 @@ describe('v2 Schedules API', function () {
         let token;
 
         before(function () {
-            const schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
+            const schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
 
             token = localUtils.getValidAdminToken('/v2/admin/', schedulerKey);
         });
@@ -124,7 +124,7 @@ describe('v2 Schedules API', function () {
         });
 
         it('no access', function () {
-            const zapierKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-backup'}});
+            const zapierKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
             const zapierToken = localUtils.getValidAdminToken('/v2/admin/', zapierKey);
 
             return request

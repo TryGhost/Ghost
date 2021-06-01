@@ -59,7 +59,7 @@ describe('Tag API', function () {
 
     it('Can read a tag', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}/?include=count.posts`))
+            .get(localUtils.API.getApiQuery(`tags/${testUtils.getExistingData().tags[0].id}/?include=count.posts`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -132,10 +132,10 @@ describe('Tag API', function () {
 
     it('Can edit a tag', async function () {
         const res = await request
-            .put(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}`))
+            .put(localUtils.API.getApiQuery(`tags/${testUtils.getExistingData().tags[0].id}`))
             .set('Origin', config.get('url'))
             .send({
-                tags: [Object.assign({}, testUtils.existingData.tags[0], {description: 'hey ho ab ins klo'})]
+                tags: [Object.assign({}, testUtils.getExistingData().tags[0], {description: 'hey ho ab ins klo'})]
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -152,7 +152,7 @@ describe('Tag API', function () {
 
     it('Can destroy a tag', async function () {
         const res = await request
-            .del(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}`))
+            .del(localUtils.API.getApiQuery(`tags/${testUtils.getExistingData().tags[0].id}`))
             .set('Origin', config.get('url'))
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(204);

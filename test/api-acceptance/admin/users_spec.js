@@ -100,7 +100,7 @@ describe('User API', function () {
     });
 
     it('Can retrieve a user by id', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('users/' + testUtils.existingData.users[0].id + '/?include=roles,roles.permissions,count.posts'))
+        const res = await request.get(localUtils.API.getApiQuery('users/' + testUtils.getExistingData().users[0].id + '/?include=roles,roles.permissions,count.posts'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -186,7 +186,7 @@ describe('User API', function () {
     });
 
     it('Can destroy an active user', async function () {
-        const userId = testUtils.existingData.users[1].id;
+        const userId = testUtils.getExistingData().users[1].id;
 
         const res = await request
             .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${userId}`))
@@ -257,7 +257,7 @@ describe('User API', function () {
                     newPassword: '1234abcde!!',
                     ne2Password: '1234abcde!!',
                     oldPassword: 'Sl1m3rson99',
-                    user_id: testUtils.existingData.users[0].id
+                    user_id: testUtils.getExistingData().users[0].id
                 }]
             })
             .expect('Content-Type', /json/)
@@ -287,7 +287,7 @@ describe('User API', function () {
     });
 
     it('Can\'t read another user\'s Personal Token', async function () {
-        const userNotAdmin = testUtils.existingData.users.find(user => user.email === 'ghost-author@example.com');
+        const userNotAdmin = testUtils.getExistingData().users.find(user => user.email === 'ghost-author@example.com');
         const res = await request
             .get(localUtils.API.getApiQuery('users/' + userNotAdmin.id + '/token/'))
             .set('Origin', config.get('url'))

@@ -217,7 +217,7 @@ describe('User API', function () {
                     .set('Origin', config.get('url'))
                     .send({
                         owner: [{
-                            id: testUtils.existingData.users[1].id
+                            id: testUtils.getExistingData().users[1].id
                         }]
                     })
                     .expect('Content-Type', /json/)
