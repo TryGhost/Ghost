@@ -178,36 +178,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     steps:
-      - uses: actions/checkout@v2
+      - name: Invoke Canary Build
+        uses: benc-uk/workflow-dispatch@v1
         with:
-          fetch-depth: 0
-          submodules: true
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14.16.1'
-
-      - name: Set up Git
-        run: |
-          git config --global pull.rebase true
-          git config --global user.name "Ghost CI"
-          git config --global user.email "ghost@example.com"
-
-      - run: yarn
-      - run: grunt master
-
-      - run: echo "ghost_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-      - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-        working-directory: core/client
-      - run: if [ -n "$(git status --porcelain)" ]; then git add core/client content/themes/casper && git commit -m "Updated Ghost-Admin and Casper"; fi
-
-      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
-      - run: npm version preminor --preid="pre.$ghost_hash.$ghost_admin_hash"
-        working-directory: core/client
-
-      - run: grunt release --skip-update
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ghost-canary
-          path: .dist/release/*
-          retention-days: 7
+          workflow: Canary Build
+          token: ${{ secrets.RELEASE_TOKEN }}
