@@ -28,8 +28,8 @@ describe('DB API', function () {
                 return localUtils.doAuth(request);
             })
             .then(() => {
-                backupKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-backup'}});
-                schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
+                backupKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
+                schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
             });
     });
 
