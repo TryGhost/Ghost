@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-card-factory",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-card-factory",
   "author": "Ghost Foundation",
   "license": "MIT",
