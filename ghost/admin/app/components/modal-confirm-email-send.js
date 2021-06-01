@@ -14,6 +14,18 @@ export default ModalComponent.extend({
     // Allowed actions
     confirm: () => {},
 
+    actions: {
+        confirm() {
+            if (this.errorMessage) {
+                return this.retryEmailTask.perform();
+            } else {
+                if (!this.countPaidMembersTask.isRunning) {
+                    return this.confirmAndCheckErrorTask.perform();
+                }
+            }
+        }
+    },
+
     countPaidMembers: action(function () {
         // TODO: remove editor conditional once editors can query member counts
         if (['free', 'paid'].includes(this.model.sendEmailWhenPublished) && !this.session.get('user.isEditor')) {
