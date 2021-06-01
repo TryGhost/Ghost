@@ -117,6 +117,24 @@ input {
 /* Input Icons
 /* ---------------------------------------------------------- */
 
+.gh-input svg {
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    left: inherit;
+    width: 12px;
+    height: 6px;
+    margin-top: -0.2em;
+    transform: inherit;
+    pointer-events: none;
+
+    speak: none;
+}
+
+.gh-input svg path {
+    stroke: var(--midlightgrey);
+}
+
 .gh-input-icon {
     position: relative;
     display: block;
