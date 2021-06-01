@@ -155,30 +155,32 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 
     // Outlook will render feature images at full-size breaking the layout.
     // Content images fix this by rendering max 600px images - do the same for feature image here
-    if (isUnsplashImage(post.feature_image)) {
-        // Unsplash images have a minimum size so assuming 1200px is safe
-        const unsplashUrl = new URL(post.feature_image);
-        unsplashUrl.searchParams.set('w', 1200);
+    if (post.feature_image) {
+        if (isUnsplashImage(post.feature_image)) {
+            // Unsplash images have a minimum size so assuming 1200px is safe
+            const unsplashUrl = new URL(post.feature_image);
+            unsplashUrl.searchParams.set('w', 1200);
 
-        post.feature_image = unsplashUrl.href;
-        post.feature_image_width = 600;
-    } else {
-        const {imageSize} = require('../../lib/image');
-        try {
-            const size = await imageSize.getImageSizeFromUrl(post.feature_image);
+            post.feature_image = unsplashUrl.href;
+            post.feature_image_width = 600;
+        } else {
+            const {imageSize} = require('../../lib/image');
+            try {
+                const size = await imageSize.getImageSizeFromUrl(post.feature_image);
 
-            if (size.width >= 600) {
-                // keep original image, just set a fixed width
-                post.feature_image_width = 600;
+                if (size.width >= 600) {
+                    // keep original image, just set a fixed width
+                    post.feature_image_width = 600;
+                }
+
+                if (isLocalContentImage(post.feature_image, urlUtils.getSiteUrl())) {
+                    // we can safely request a 1200px image - Ghost will serve the original if it's smaller
+                    post.feature_image = post.feature_image.replace(/\/content\/images\//, '/content/images/size/w1200/');
+                }
+            } catch (err) {
+                // log and proceed. Using original feature_image without fixed width isn't fatal.
+                logging.error(err);
             }
-
-            if (isLocalContentImage(post.feature_image, urlUtils.getSiteUrl())) {
-                // we can safely request a 1200px image - Ghost will serve the original if it's smaller
-                post.feature_image = post.feature_image.replace(/\/content\/images\//, '/content/images/size/w1200/');
-            }
-        } catch (err) {
-            // log and proceed. Using original feature_image without fixed width isn't fatal.
-            logging.error(err);
         }
     }
 
