@@ -250,7 +250,7 @@ const AccountActions = () => {
 
     const onToggleSubscription = (e, sub) => {
         e.preventDefault();
-        this.context.onAction('updateNewsletter', {subscribed: !sub});
+        onAction('updateNewsletter', {subscribed: !sub});
     };
 
     let label = subscribed ? 'Subscribed' : 'Unsubscribed';
