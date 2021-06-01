@@ -50,7 +50,7 @@ describe('Update Check', function () {
         configUtils.restore();
     });
 
-    describe('fn: updateCheck', function () {
+    describe('UpdateCheck execution', function () {
         it('update check was executed', async function () {
             const updateCheckService = new UpdateCheckService({
                 api: {
