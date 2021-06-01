@@ -72,3 +72,16 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  canary:
+    runs-on: ubuntu-18.04
+    needs: [lint, test, prod-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Canary
+    steps:
+      - name: Invoke Canary Build
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Canary Build
+          repo: TryGhost/Ghost
+          token: ${{ secrets.WORKFLOW_TOKEN }}
