@@ -25,6 +25,14 @@ const Product = ghostBookshelf.Model.extend({
         }
     },
 
+    monthlyPrice() {
+        return this.belongsTo('StripePrice', 'monthly_price_id', 'id');
+    },
+
+    yearlyPrice() {
+        return this.belongsTo('StripePrice', 'yearly_price_id', 'id');
+    },
+
     stripeProducts() {
         return this.hasMany('StripeProduct', 'product_id', 'id');
     },
