@@ -142,7 +142,9 @@ export default class GhBrandSettingsFormComponent extends Component {
                 'x-ghost-preview': this.previewData
             }
         };
-        const frontendUrl = this.config.get('blogUrl');
+
+        // TODO: config.blogUrl always removes trailing slash - switch to always have trailing slash
+        const frontendUrl = `${this.config.get('blogUrl')}/`;
         const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
 
         // inject extra CSS to disable navigation and prevent clicks
