@@ -33,7 +33,7 @@ export default class ModalPostPreviewComponent extends ModalBase {
 
         // needed because ModalBase uses .send() for keyboard events
         closeModal() {
-            this.args.close();
+            this.close();
         }
     }
 }
