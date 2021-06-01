@@ -86,7 +86,7 @@
     "ember-fetch": "8.0.4",
     "ember-in-viewport": "3.9.0",
     "ember-infinity": "2.2.0",
-    "ember-keyboard": "6.0.2",
+    "ember-keyboard": "6.0.3",
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.2",
     "ember-mocha": "0.16.2",
