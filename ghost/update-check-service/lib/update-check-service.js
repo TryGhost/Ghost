@@ -238,7 +238,7 @@ class UpdateCheckService {
 
                 // CASE: filter out messages based on your groups
                 return _.includes(notificationGroups.map(function (groupIdentifier) {
-                    if (notification.version.match(new RegExp(groupIdentifier))) {
+                    if (notification && notification.version && notification.version.match(new RegExp(groupIdentifier))) {
                         return true;
                     }
 
@@ -247,7 +247,9 @@ class UpdateCheckService {
             });
         }
 
-        return Promise.each(notifications, this.createCustomNotification);
+        for (const notification of notifications) {
+            await this.createCustomNotification(notification);
+        }
     }
 
     /**
