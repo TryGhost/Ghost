@@ -3723,20 +3723,17 @@ broccoli-funnel@2.0.1:
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
 
-broccoli-funnel@3.0.5, broccoli-funnel@^3.0.0, broccoli-funnel@^3.0.3:
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-3.0.5.tgz#60da33d060fae2936b3d78217bd4008a6eea5e41"
-  integrity sha512-fcjvQIWq4lpKyzQ7FWRo/V8/nOALjIrAoRMFCLgFeO2xhOC1+i7QWbMndLTwpnLCoXpTa+luBu3WSFoxQ3VPlw==
+broccoli-funnel@3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-3.0.6.tgz#2216a802fc2f6d6875a66531cfbc07e4e4c22d6c"
+  integrity sha512-pJK+pO+2J6BYPiPNNAe16KiCK8SIVUHzjcDbtYMiAwGDhGrNXO91dm1Z/GOtpjqa3xmfm/IuQwMf01tW+FO2Ow==
   dependencies:
     array-equal "^1.0.0"
-    blank-object "^1.0.1"
     broccoli-plugin "^4.0.7"
     debug "^4.1.1"
-    fast-ordered-set "^1.0.0"
     fs-tree-diff "^2.0.1"
     heimdalljs "^0.2.0"
     minimatch "^3.0.0"
-    path-posix "^1.0.0"
     walk-sync "^2.0.2"
 
 broccoli-funnel@^1.0.1:
@@ -3777,6 +3774,22 @@ broccoli-funnel@^1.0.1:
     rimraf "^2.4.3"
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
+
+broccoli-funnel@^3.0.0, broccoli-funnel@^3.0.3:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-3.0.5.tgz#60da33d060fae2936b3d78217bd4008a6eea5e41"
+  integrity sha512-fcjvQIWq4lpKyzQ7FWRo/V8/nOALjIrAoRMFCLgFeO2xhOC1+i7QWbMndLTwpnLCoXpTa+luBu3WSFoxQ3VPlw==
+  dependencies:
+    array-equal "^1.0.0"
+    blank-object "^1.0.1"
+    broccoli-plugin "^4.0.7"
+    debug "^4.1.1"
+    fast-ordered-set "^1.0.0"
+    fs-tree-diff "^2.0.1"
+    heimdalljs "^0.2.0"
+    minimatch "^3.0.0"
+    path-posix "^1.0.0"
+    walk-sync "^2.0.2"
 
 broccoli-kitchen-sink-helpers@^0.3.1:
   version "0.3.1"
