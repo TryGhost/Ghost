@@ -34,6 +34,10 @@ const mapPost = (model, frame) => {
 
     const jsonModel = model.toJSON(extendedOptions);
 
+    if (typeof jsonModel.feature_image === 'object') {
+        jsonModel.feature_image = jsonModel.feature_image.url;
+    }
+
     url.forPost(model.id, jsonModel, frame);
 
     extraAttrs.forPost(frame, model, jsonModel);
