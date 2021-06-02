@@ -38,14 +38,12 @@ class UpdateCheckService {
      * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
      * @param {string} options.config.siteUrl - Ghost instance URL
      * @param {boolean} [options.config.forceUpdate]
-     * @param {Function} urlFor - function creating a URL for a certain context
     */
-    constructor({api, config, i18n, logging, urlFor, request, ghostVersion, ghostMailer}) {
+    constructor({api, config, i18n, logging, request, ghostVersion, ghostMailer}) {
         this.api = api;
         this.config = config;
         this.i18n = i18n;
         this.logging = logging;
-        this.urlFor = urlFor;
         this.request = request;
         this.ghostVersion = ghostVersion;
         this.ghostMailer = ghostMailer;
@@ -106,7 +104,7 @@ class UpdateCheckService {
             const users = await this.api.users.browse(internal);
             const npm = await Promise.promisify(exec)('npm -v');
 
-            const blogUrl = this.urlFor('home', true);
+            const blogUrl = this.config.siteUrl;
             const parsedBlogUrl = url.parse(blogUrl);
             const blogId = parsedBlogUrl.hostname + parsedBlogUrl.pathname.replace(/\//, '') + hash.value;
 
