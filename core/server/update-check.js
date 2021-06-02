@@ -42,7 +42,7 @@ module.exports = () => {
                 databaseType: config.get('database').client,
                 checkEndpoint: config.get('updateCheck:url'),
                 isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
-                notificationGroups: this.config.get('notificationGroups'),
+                notificationGroups: config.get('notificationGroups'),
                 siteUrl: urlUtils.urlFor('home', true),
                 forceUpdate: config.get('updateCheck:forceUpdate'),
                 ghostVersion: ghostVersion.original
