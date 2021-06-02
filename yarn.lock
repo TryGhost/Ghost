@@ -744,10 +744,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.11.1.tgz#63ff347f2fcce847023b3de7cd9b04a46e05fd5c"
-  integrity sha512-DCrWFSVHxNABBiUw5th277QyeyQSpQ3e7VRG0+/4P5bV68nOEsRdEhAEbORK4JX5MZ4A2foIEELDqrAAsLc1dA==
+"@tryghost/members-api@1.12.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.12.0.tgz#7d5de203338934e74f67a3f1e8e8c192009a7e05"
+  integrity sha512-JUWeol77zICe+tqIwJAIE31upfwmY+r428dy4PNzNxcb75Q/YsqAKG+5+6AQnAH3q3RS/mPSTrkreTqnivf5OA==
   dependencies:
     "@tryghost/errors" "^0.2.9"
     "@tryghost/magic-link" "^1.0.3"
