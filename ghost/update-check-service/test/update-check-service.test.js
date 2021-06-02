@@ -2,8 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
-const packageInfo = require('../../../package.json');
-const ghostVersion = require('../../../core/server/lib/ghost-version');
 
 const UpdateCheckService = require('../../../core/server/update-check-service');
 
@@ -38,7 +36,6 @@ describe('Update Check', function () {
         };
 
         requestStub = sinon.stub();
-        urlForStub = sinon.stub().returns('https://localhost:2368/');
     });
 
     afterEach(function () {
@@ -62,12 +59,13 @@ describe('Update Check', function () {
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
-                    isPrivacyDisabled: true
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: true,
+                    ghostVersion: '0.8.0'
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
                 request: requestStub,
-                ghostVersion,
                 ghostMailer: {
                     send: sinon.stub().resolves()
                 }
@@ -78,7 +76,7 @@ describe('Update Check', function () {
             requestStub.calledOnce.should.equal(true);
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].query.ghost_version.should.equal(ghostVersion.full);
+            requestStub.args[0][1].query.ghost_version.should.equal('0.8.0');
         });
 
         it('update check won\'t happen if it\'s too early', async function () {
@@ -125,12 +123,13 @@ describe('Update Check', function () {
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
-                    isPrivacyDisabled: true
+                    siteUrl: 'https://example.com',
+                    isPrivacyDisabled: true,
+                    ghostVersion: '5.3.4'
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
                 request: requestStub,
-                ghostVersion,
                 ghostMailer: {
                     send: sinon.stub().resolves()
                 }
@@ -141,7 +140,7 @@ describe('Update Check', function () {
             requestStub.calledOnce.should.equal(true);
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].query.ghost_version.should.equal(ghostVersion.full);
+            requestStub.args[0][1].query.ghost_version.should.equal('5.3.4');
         });
     });
 
@@ -172,14 +171,15 @@ describe('Update Check', function () {
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
                     isPrivacyDisabled: false,
                     env: process.env.NODE_ENV,
-                    databaseType: 'mysql'
+                    databaseType: 'mysql',
+                    ghostVersion: '4.0.0'
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
                 request: requestStub,
-                ghostVersion,
                 ghostMailer: {
                     send: sinon.stub().resolves()
                 }
@@ -192,7 +192,7 @@ describe('Update Check', function () {
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
 
             const data = requestStub.args[0][1].body;
-            data.ghost_version.should.equal(packageInfo.version);
+            data.ghost_version.should.equal('4.0.0');
             data.node_version.should.equal(process.versions.node);
             data.env.should.equal(process.env.NODE_ENV);
             data.database_type.should.match(/sqlite3|mysql/);
@@ -245,7 +245,9 @@ describe('Update Check', function () {
                         add: notificationsAPIAddStub
                     }
                 },
-                config: {},
+                config: {
+                    siteUrl: 'https://localhost:2368/test'
+                },
                 i18n: i18nStub,
                 logging: loggingStub,
                 request: sinon.stub().resolves({
@@ -253,7 +255,6 @@ describe('Update Check', function () {
                         notifications: [notification]
                     }
                 }),
-                ghostVersion,
                 ghostMailer: {
                     send: sinon.stub().resolves()
                 }
@@ -321,7 +322,6 @@ describe('Update Check', function () {
                 request: sinon.stub().resolves({
                     body: [notification]
                 }),
-                ghostVersion,
                 ghostMailer: mailServiceStub
             });
 
