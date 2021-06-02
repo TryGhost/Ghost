@@ -40,8 +40,8 @@ describe('Exporter', function () {
 
         it('should try to export all the correct tables (without excluded)', function (done) {
             exporter.doExport().then(function (exportData) {
-                // NOTE: 9 default tables
-                const expectedCallCount = 9;
+                // NOTE: 10 default tables
+                const expectedCallCount = 10;
 
                 should.exist(exportData);
 
@@ -71,8 +71,8 @@ describe('Exporter', function () {
             const include = ['mobiledoc_revisions', 'email_recipients'];
 
             exporter.doExport({include}).then(function (exportData) {
-                // NOTE: 9 default tables + 2 includes
-                const expectedCallCount = 11;
+                // NOTE: 10 default tables + 2 includes
+                const expectedCallCount = 12;
 
                 should.exist(exportData);
 

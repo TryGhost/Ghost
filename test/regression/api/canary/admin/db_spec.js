@@ -59,8 +59,8 @@ describe('DB API', function () {
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
 
-                // NOTE: 9 default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(10);
+                // NOTE: 11 default tables + 1 from include parameters
+                Object.keys(jsonResponse.db[0].data).length.should.eql(11);
             });
     });
 

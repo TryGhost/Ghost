@@ -47,7 +47,8 @@ const TABLES_ALLOWLIST = [
     'roles_users',
     'settings',
     'tags',
-    'users'
+    'users',
+    'images'
 ];
 
 // NOTE: these are settings keys which should never end up in the export file

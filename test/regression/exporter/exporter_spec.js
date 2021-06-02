@@ -28,6 +28,7 @@ describe('Exporter', function () {
                 'email_batches',
                 'email_recipients',
                 'emails',
+                'images',
                 'integrations',
                 'invites',
                 'labels',

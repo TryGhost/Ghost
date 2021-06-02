@@ -141,6 +141,7 @@ const exportedBodyLatest = () => {
                 version: '4.1.2'
             },
             data: {
+                images: [],
                 posts: [],
                 posts_authors: [],
                 posts_meta: [],
