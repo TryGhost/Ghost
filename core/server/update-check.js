@@ -44,12 +44,12 @@ module.exports = () => {
                 isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
                 notificationGroups: this.config.get('notificationGroups'),
                 siteUrl: urlUtils.urlFor('home', true),
-                forceUpdate: config.get('updateCheck:forceUpdate')
+                forceUpdate: config.get('updateCheck:forceUpdate'),
+                ghostVersion: ghostVersion.original
             },
             i18n,
             logging,
             request,
-            ghostVersion,
             ghostMailer
         });
     }
