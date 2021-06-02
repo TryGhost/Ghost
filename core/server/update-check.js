@@ -36,7 +36,16 @@ module.exports = () => {
                     browse: api.users.browse
                 }
             },
-            config,
+            config: {
+                mail: config.get('mail'),
+                env: config.get('env'),
+                databaseType: config.get('database').client,
+                checkEndpoint: config.get('updateCheck:url'),
+                isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
+                notificationGroups: this.config.get('notificationGroups'),
+                siteUrl: config.get('url'),
+                forceUpdate: config.get('updateCheck:forceUpdate')
+            },
             i18n,
             logging,
             urlUtils,
