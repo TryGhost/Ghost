@@ -1,9 +1,10 @@
-const should = require('should');
+require('./utils');
+
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
 
-const UpdateCheckService = require('../../../core/server/update-check-service');
+const UpdateCheckService = require('../lib/update-check-service');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};
