@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@types/mocha": "8.2.2",
-    "@types/sinon": "10.0.1",
+    "@types/sinon": "10.0.2",
     "mocha": "8.3.2",
     "should": "13.2.3",
     "sinon": "11.0.0",
