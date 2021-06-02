@@ -13,7 +13,6 @@ describe('Update Check', function () {
     let i18nStub;
     let loggingStub;
     let requestStub;
-    let urlForStub;
 
     beforeEach(function () {
         settingsStub = sinon.stub().resolves({
@@ -67,7 +66,6 @@ describe('Update Check', function () {
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
-                urlFor: urlForStub,
                 request: requestStub,
                 ghostVersion,
                 ghostMailer: {
@@ -131,7 +129,6 @@ describe('Update Check', function () {
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
-                urlFor: urlForStub,
                 request: requestStub,
                 ghostVersion,
                 ghostMailer: {
@@ -181,7 +178,6 @@ describe('Update Check', function () {
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
-                urlFor: urlForStub,
                 request: requestStub,
                 ghostVersion,
                 ghostMailer: {
@@ -252,7 +248,6 @@ describe('Update Check', function () {
                 config: {},
                 i18n: i18nStub,
                 logging: loggingStub,
-                urlFor: urlForStub,
                 request: sinon.stub().resolves({
                     body: {
                         notifications: [notification]
@@ -323,7 +318,6 @@ describe('Update Check', function () {
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
-                urlFor: urlForStub,
                 request: sinon.stub().resolves({
                     body: [notification]
                 }),
