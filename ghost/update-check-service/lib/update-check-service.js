@@ -29,6 +29,15 @@ class UpdateCheckService {
      * @param {Function} options.api.posts.browse - method allowing to read Ghost's posts
      * @param {Object} options.api.users - Users API methods
      * @param {Function} options.api.users.browse - method allowing to read Ghost's users
+     * @param {Object} options.config
+     * @param {Object} options.config.mail
+     * @param {string} options.config.env
+     * @param {string} options.config.databaseType
+     * @param {string} options.config.checkEndpoint - update check service URL
+     * @param {boolean} [options.config.isPrivacyDisabled]
+     * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
+     * @param {string} options.config.siteUrl - Ghost instance URL
+     * @param {boolean} [options.config.forceUpdate]
     */
     constructor({api, config, i18n, logging, urlUtils, request, ghostVersion, ghostMailer}) {
         this.api = api;
@@ -78,12 +87,12 @@ class UpdateCheckService {
      */
     async updateCheckData() {
         let data = {};
-        let mailConfig = this.config.get('mail');
+        let mailConfig = this.config.mail;
 
         data.ghost_version = this.ghostVersion.original;
         data.node_version = process.versions.node;
-        data.env = this.config.get('env');
-        data.database_type = this.config.get('database').client;
+        data.env = this.config.env;
+        data.database_type = this.config.databaseType;
         data.email_transport = mailConfig &&
             (mailConfig.options && mailConfig.options.service ?
                 mailConfig.options.service :
@@ -131,8 +140,8 @@ class UpdateCheckService {
             headers: {}
         };
 
-        let checkEndpoint = this.config.get('updateCheck:url');
-        let checkMethod = this.config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
+        let checkEndpoint = this.config.checkEndpoint;
+        let checkMethod = this.config.isPrivacyDisabled ? 'GET' : 'POST';
 
         // CASE: Expose stats and do a check-in
         if (checkMethod === 'POST') {
@@ -210,7 +219,7 @@ class UpdateCheckService {
      */
     async updateCheckResponse(response) {
         let notifications = [];
-        let notificationGroups = (this.config.get('notificationGroups') || []).concat(['all']);
+        let notificationGroups = (this.config.notificationGroups || []).concat(['all']);
 
         debug('Notification Groups', notificationGroups);
         debug('Response Update Check Service', response);
@@ -284,7 +293,7 @@ class UpdateCheckService {
             .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
             .map(user => user.email);
 
-        const siteUrl = this.config.get('url');
+        const siteUrl = this.config.siteUrl;
 
         for (const message of notification.messages) {
             const toAdd = {
@@ -333,7 +342,7 @@ class UpdateCheckService {
 
         // CASE: Next update check should happen now?
         // @NOTE: You can skip this check by adding a config value. This is helpful for developing.
-        if (!this.config.get('updateCheck:forceUpdate') && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
+        if (!this.config.forceUpdate && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
             return;
         }
 
