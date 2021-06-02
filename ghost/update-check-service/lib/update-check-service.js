@@ -18,6 +18,18 @@ const internal = {context: {internal: true}};
  * Blog owners can opt-out of update checks by setting `privacy: { useUpdateCheck: false }` in their config file.
  */
 class UpdateCheckService {
+    /**
+     *
+     * @param {Object} options
+     * @param {Object} options.api - set of Ghost's API methods needed for update check to function
+     * @param {Object} options.api.settings - Settings API methods
+     * @param {Function} options.api.settings.read - method allowing to read Ghost's settings
+     * @param {Function} options.api.settings.edit - method allowing to edit Ghost's settings
+     * @param {Object} options.api.posts - Posts API methods
+     * @param {Function} options.api.posts.browse - method allowing to read Ghost's posts
+     * @param {Object} options.api.users - Users API methods
+     * @param {Function} options.api.users.browse - method allowing to read Ghost's users
+    */
     constructor({api, config, i18n, logging, urlUtils, request, ghostVersion, ghostMailer}) {
         this.api = api;
         this.config = config;
