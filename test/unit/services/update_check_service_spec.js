@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
-const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const packageInfo = require('../../../package.json');
 const ghostVersion = require('../../../core/server/lib/ghost-version');
@@ -47,7 +46,6 @@ describe('Update Check', function () {
     afterEach(function () {
         sinon.restore();
         urlUtils.restore();
-        configUtils.restore();
     });
 
     describe('UpdateCheck execution', function () {
@@ -65,7 +63,10 @@ describe('Update Check', function () {
                         browse: sinon.stub().resolves()
                     }
                 },
-                config: configUtils.config,
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    isPrivacyDisabled: true
+                },
                 i18n: i18nStub,
                 logging: loggingStub,
                 urlUtils: urlUtilsStub,
@@ -97,7 +98,8 @@ describe('Update Check', function () {
                         read: lateSettingStub
                     }
                 },
-                config: configUtils.config
+                config: {},
+                request: requestStub
             });
 
             await updateCheckService.check();
@@ -125,7 +127,10 @@ describe('Update Check', function () {
                         browse: sinon.stub().resolves()
                     }
                 },
-                config: configUtils.config,
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    isPrivacyDisabled: true
+                },
                 i18n: i18nStub,
                 logging: loggingStub,
                 urlUtils: urlUtilsStub,
@@ -146,14 +151,6 @@ describe('Update Check', function () {
     });
 
     describe('Data sent with the POST request', function () {
-        before(function () {
-            configUtils.set('privacy:useUpdateCheck', true);
-        });
-
-        after(function () {
-            configUtils.restore();
-        });
-
         it('should report the correct data', async function () {
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -178,7 +175,12 @@ describe('Update Check', function () {
                         })
                     }
                 },
-                config: configUtils.config,
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    isPrivacyDisabled: false,
+                    env: process.env.NODE_ENV,
+                    databaseType: 'mysql'
+                },
                 i18n: i18nStub,
                 logging: loggingStub,
                 urlUtils: urlUtilsStub,
@@ -249,7 +251,7 @@ describe('Update Check', function () {
                         add: notificationsAPIAddStub
                     }
                 },
-                config: configUtils.config,
+                config: {},
                 i18n: i18nStub,
                 logging: loggingStub,
                 urlUtils: urlUtilsStub,
@@ -318,7 +320,9 @@ describe('Update Check', function () {
                         add: notificationsAPIAddStub
                     }
                 },
-                config: configUtils.config,
+                config: {
+                    siteUrl: 'http://127.0.0.1:2369'
+                },
                 i18n: i18nStub,
                 logging: loggingStub,
                 urlUtils: urlUtilsStub,
