@@ -682,6 +682,10 @@ Post = ghostBookshelf.Model.extend({
         return sequence(ops);
     },
 
+    feature_image: function featureImage() {
+        return this.morphOne('Image', 'imageable', 'feature_image');
+    },
+
     created_by: function createdBy() {
         return this.belongsTo('User', 'created_by');
     },
@@ -773,6 +777,11 @@ Post = ghostBookshelf.Model.extend({
         let attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
+
+        // don't output an empty object for non-existent feature_image relation
+        if (attrs.feature_image && _.isEmpty(attrs.feature_image)) {
+            attrs.feature_image = null;
+        }
 
         // CASE: never expose the revisions
         delete attrs.mobiledoc_revisions;
@@ -947,6 +956,11 @@ Post = ghostBookshelf.Model.extend({
         //       optimization is needed to be able to perform .findAll on large SQLite datasets
         if (!options.columns || (options.columns && _.intersection(META_ATTRIBUTES, options.columns).length)) {
             options.withRelated = _.union(['posts_meta'], options.withRelated || []);
+        }
+
+        // include feature_image relation when requested in 'columns' or by default
+        if (!options.columns || (options.columns && options.columns.includes('feature_image'))) {
+            options.withRelated = _.union(['feature_image'], options.withRelated || []);
         }
 
         return options;

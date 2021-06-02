@@ -23,6 +23,10 @@ const Image = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    imageable() {
+        return this.morphTo('imageable', ['Post', 'feature_image']);
+    },
+
     created_by: function createdBy() {
         return this.belongsTo('User', 'created_by');
     },
