@@ -706,10 +706,6 @@ Post = ghostBookshelf.Model.extend({
             .query('orderBy', 'sort_order', 'ASC');
     },
 
-    fields: function fields() {
-        return this.morphMany('AppField', 'relatable');
-    },
-
     mobiledoc_revisions() {
         return this.hasMany('MobiledocRevision', 'post_id');
     },
