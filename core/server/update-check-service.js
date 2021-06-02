@@ -38,14 +38,15 @@ class UpdateCheckService {
      * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
      * @param {string} options.config.siteUrl - Ghost instance URL
      * @param {boolean} [options.config.forceUpdate]
+     * @param {string} options.config.ghostVersion - Ghost instance version
+     * @param {Function} options.request - a HTTP request proxy function
     */
-    constructor({api, config, i18n, logging, request, ghostVersion, ghostMailer}) {
+    constructor({api, config, i18n, logging, request, ghostMailer}) {
         this.api = api;
         this.config = config;
         this.i18n = i18n;
         this.logging = logging;
         this.request = request;
-        this.ghostVersion = ghostVersion;
         this.ghostMailer = ghostMailer;
     }
 
@@ -88,7 +89,7 @@ class UpdateCheckService {
         let data = {};
         let mailConfig = this.config.mail;
 
-        data.ghost_version = this.ghostVersion.original;
+        data.ghost_version = this.config.ghostVersion;
         data.node_version = process.versions.node;
         data.env = this.config.env;
         data.database_type = this.config.databaseType;
