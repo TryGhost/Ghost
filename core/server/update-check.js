@@ -12,17 +12,7 @@ const ghostVersion = require('./lib/ghost-version');
 const UpdateCheckService = require('./update-check-service');
 
 const ghostMailer = new GhostMailer();
-
-const updateChecker = new UpdateCheckService({
-    api,
-    config,
-    i18n,
-    logging,
-    urlUtils,
-    request,
-    ghostVersion,
-    ghostMailer
-});
+let updateChecker;
 
 module.exports = () => {
     const allowedCheckEnvironments = ['development', 'production'];
@@ -30,6 +20,30 @@ module.exports = () => {
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
     if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         return;
+    }
+
+    if (updateChecker === undefined) {
+        updateChecker = new UpdateCheckService({
+            api: {
+                settings: {
+                    read: api.settings.read,
+                    edit: api.settings.edit
+                },
+                posts: {
+                    browse: api.posts.browse
+                },
+                users: {
+                    browse: api.users.browse
+                }
+            },
+            config,
+            i18n,
+            logging,
+            urlUtils,
+            request,
+            ghostVersion,
+            ghostMailer
+        });
     }
 
     updateChecker.check();
