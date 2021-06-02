@@ -22,5 +22,10 @@
     "should": "13.2.3",
     "sinon": "11.1.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tryghost/errors": "^0.2.11",
+    "bluebird": "3.7.2",
+    "lodash": "4.17.21",
+    "moment": "2.24.0"
+  }
 }
