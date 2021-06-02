@@ -65,10 +65,7 @@ describe('Update Check', function () {
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
-                request: requestStub,
-                ghostMailer: {
-                    send: sinon.stub().resolves()
-                }
+                request: requestStub
             });
 
             await updateCheckService.check();
@@ -129,10 +126,7 @@ describe('Update Check', function () {
                 },
                 i18n: i18nStub,
                 logging: loggingStub,
-                request: requestStub,
-                ghostMailer: {
-                    send: sinon.stub().resolves()
-                }
+                request: requestStub
             });
 
             await updateCheckService.check();
@@ -254,10 +248,7 @@ describe('Update Check', function () {
                     body: {
                         notifications: [notification]
                     }
-                }),
-                ghostMailer: {
-                    send: sinon.stub().resolves()
-                }
+                })
             });
 
             await updateCheckService.check();
@@ -287,9 +278,7 @@ describe('Update Check', function () {
             };
 
             const notificationsAPIAddStub = sinon.stub().resolves();
-            const mailServiceStub = {
-                send: sinon.stub().resolves()
-            };
+            const sendEmailStub = sinon.stub().resolves();
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -322,16 +311,16 @@ describe('Update Check', function () {
                 request: sinon.stub().resolves({
                     body: [notification]
                 }),
-                ghostMailer: mailServiceStub
+                sendEmail: sendEmailStub
             });
 
             await updateCheckService.check();
 
-            mailServiceStub.send.called.should.be.true();
-            mailServiceStub.send.args[0][0].to.should.equal('jbloggs@example.com');
-            mailServiceStub.send.args[0][0].subject.should.equal('Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            mailServiceStub.send.args[0][0].html.should.equal('<p>Critical message. Upgrade your site!</p>');
-            mailServiceStub.send.args[0][0].forceTextContent.should.equal(true);
+            sendEmailStub.called.should.be.true();
+            sendEmailStub.args[0][0].to.should.equal('jbloggs@example.com');
+            sendEmailStub.args[0][0].subject.should.equal('Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
+            sendEmailStub.args[0][0].html.should.equal('<p>Critical message. Upgrade your site!</p>');
+            sendEmailStub.args[0][0].forceTextContent.should.equal(true);
 
             notificationsAPIAddStub.calledOnce.should.equal(true);
             notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);

@@ -40,14 +40,15 @@ class UpdateCheckService {
      * @param {boolean} [options.config.forceUpdate]
      * @param {string} options.config.ghostVersion - Ghost instance version
      * @param {Function} options.request - a HTTP request proxy function
+     * @param {Function} options.sendEmail - function handling sending an email
     */
-    constructor({api, config, i18n, logging, request, ghostMailer}) {
+    constructor({api, config, i18n, logging, request, sendEmail}) {
         this.api = api;
         this.config = config;
         this.i18n = i18n;
         this.logging = logging;
         this.request = request;
-        this.ghostMailer = ghostMailer;
+        this.sendEmail = sendEmail;
     }
 
     nextCheckTimestamp() {
@@ -311,7 +312,7 @@ class UpdateCheckService {
             if (toAdd.type === 'alert') {
                 for (const email of adminEmails) {
                     try {
-                        this.ghostMailer.send({
+                        this.sendEmail({
                             to: email,
                             subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
                             html: toAdd.message,
