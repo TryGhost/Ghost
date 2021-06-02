@@ -48,7 +48,7 @@ module.exports = () => {
             },
             i18n,
             logging,
-            urlUtils,
+            urlFor: urlUtils.urlFor,
             request,
             ghostVersion,
             ghostMailer
