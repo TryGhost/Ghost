@@ -43,12 +43,11 @@ module.exports = () => {
                 checkEndpoint: config.get('updateCheck:url'),
                 isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
                 notificationGroups: this.config.get('notificationGroups'),
-                siteUrl: config.get('url'),
+                siteUrl: urlUtils.urlFor('home', true),
                 forceUpdate: config.get('updateCheck:forceUpdate')
             },
             i18n,
             logging,
-            urlFor: urlUtils.urlFor,
             request,
             ghostVersion,
             ghostMailer
