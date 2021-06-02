@@ -50,7 +50,7 @@ module.exports = () => {
             i18n,
             logging,
             request,
-            ghostMailer
+            sendEmail: ghostMailer.send
         });
     }
 
