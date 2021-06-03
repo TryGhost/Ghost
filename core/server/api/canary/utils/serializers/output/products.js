@@ -20,7 +20,7 @@ module.exports = {
  * @returns {{products: SerializedProduct[], meta: PageMeta}}
  */
 function paginatedProducts(page, _apiConfig, frame) {
-    const requestedIncludes = frame.original.include || [];
+    const requestedIncludes = frame.original && frame.original.options && frame.original.options.include || [];
     return {
         products: page.data.map((model) => {
             return cleanIncludes(
@@ -41,7 +41,7 @@ function paginatedProducts(page, _apiConfig, frame) {
  * @returns {{products: SerializedProduct[]}}
  */
 function singleProduct(model, _apiConfig, frame) {
-    const requestedIncludes = frame.original.include || [];
+    const requestedIncludes = frame.original && frame.original.options && frame.original.options.include || [];
     return {
         products: [
             cleanIncludes(
