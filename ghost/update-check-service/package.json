@@ -4,7 +4,8 @@
   "repository": "https://github.com/TryGhost/Core/tree/master/packages/update-check-service",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "main": "./lib/update-check-service.js",
+  "exports": "./lib/update-check-service.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
