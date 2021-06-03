@@ -134,7 +134,8 @@ const expectedProperties = {
         'created_at',
         'updated_at',
         'avatar_image',
-        'labels'
+        'labels',
+        'comped'
     ],
     member_signin_url: ['member_id', 'url'],
     role: ['id', 'name', 'description', 'created_at', 'updated_at'],

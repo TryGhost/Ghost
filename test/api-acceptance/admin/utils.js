@@ -127,6 +127,7 @@ const expectedProperties = {
     member: _(schema.members)
         .keys()
         .concat('avatar_image')
+        .concat('comped')
         .concat('labels')
     ,
     member_signin_url: ['member_id', 'url'],
