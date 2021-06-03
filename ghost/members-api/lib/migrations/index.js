@@ -113,6 +113,20 @@ module.exports = class StripeMigrations {
         return price;
     }
 
+    async getPlanFromPrice(priceId) {
+        const price = await this._StripePrice.findOne({
+            id: priceId
+        });
+
+        if (price && price.get('interval') === 'month') {
+            return 'monthly';
+        }
+        if (price && price.get('interval') === 'year') {
+            return 'yearly';
+        }
+        return null;
+    }
+
     async populateStripePricesFromStripePlansSetting(plans) {
         if (!plans) {
             this._logging.info('Skipping stripe_plans -> stripe_prices migration');
@@ -409,5 +423,61 @@ module.exports = class StripeMigrations {
         const yearlyPriceId = yearlyPriceIdSetting.get('value');
 
         await this._Product.edit({yearly_price_id: yearlyPriceId}, {id: defaultProduct.id});
+    }
+
+    async revertPortalPlansSetting() {
+        this._logging.info('Migrating portal_plans setting from ids to names');
+        const portalPlansSetting = await this._Settings.findOne({key: 'portal_plans'});
+
+        let portalPlans;
+        try {
+            portalPlans = JSON.parse(portalPlansSetting.get('value'));
+        } catch (err) {
+            this._logging.error({
+                message: 'Could not parse portal_plans setting, skipping migration',
+                err
+            });
+            return;
+        }
+
+        const containsNamedValues = !!portalPlans.find((plan) => {
+            return ['monthly', 'yearly'].includes(plan);
+        });
+
+        if (containsNamedValues) {
+            this._logging.info('The portal_plans setting already contains names, skipping migration');
+            return;
+        }
+        const portalPlanIds = portalPlans.filter((plan) => {
+            return plan !== 'free';
+        });
+
+        if (portalPlanIds.length === 0) {
+            this._logging.info('No price ids found in portal_plans setting, skipping migration');
+            return;
+        }
+        const defaultPortalPlans = portalPlans.filter((plan) => {
+            return plan === 'free';
+        });
+
+        const newPortalPlans = await portalPlanIds.reduce(async (newPortalPlansPromise, priceId) => {
+            const plan = await this.getPlanFromPrice(priceId);
+
+            if (!plan) {
+                return newPortalPlansPromise;
+            }
+
+            const newPortalPlans = await newPortalPlansPromise;
+            const updatedPortalPlans = newPortalPlans.filter(d => d !== plan).concat(plan);
+
+            return updatedPortalPlans;
+        }, defaultPortalPlans);
+        this._logging.info(`Updating portal_plans setting to ${JSON.stringify(newPortalPlans)}`);
+        await this._Settings.edit({
+            key: 'portal_plans',
+            value: JSON.stringify(newPortalPlans)
+        }, {
+            id: portalPlansSetting.id
+        });
     }
 };
