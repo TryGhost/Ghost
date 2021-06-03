@@ -111,6 +111,19 @@ async function haxGetMembersPriceData() {
     }
 }
 
+async function getProductAndPricesData() {
+    try {
+        const page = await api.canary.productsPublic.browse({
+            include: ['monthly_price', 'yearly_price'],
+            limit: 'all'
+        });
+
+        return page.products;
+    } catch (err) {
+        return [];
+    }
+}
+
 function getSiteData(req) {
     let siteData = settingsCache.getPublic();
 
@@ -140,6 +153,15 @@ async function updateGlobalTemplateOptions(req, res, next) {
         image_sizes: activeTheme.get().config('image_sizes')
     };
     const priceData = await haxGetMembersPriceData();
+    const productData = await getProductAndPricesData();
+
+    let products = null;
+    let product = null;
+    if (productData.length === 1) {
+        product = productData[0];
+    } else {
+        products = productData;
+    }
 
     // @TODO: only do this if something changed?
     // @TODO: remove blog in a major where we are happy to break more themes
@@ -150,7 +172,9 @@ async function updateGlobalTemplateOptions(req, res, next) {
                 site: siteData,
                 labs: labsData,
                 config: themeData,
-                price: priceData
+                price: priceData,
+                product,
+                products
             }
         });
     }
