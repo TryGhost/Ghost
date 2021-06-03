@@ -118,7 +118,6 @@ const expectedProperties = {
         'created_at',
         'updated_at'
     ],
-
     member: [
         'id',
         'uuid',
