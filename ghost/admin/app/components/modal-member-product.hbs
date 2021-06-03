@@ -1,38 +1,44 @@
-<button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
-    {{svg-jar "close"}}
-</button>
+<header class="modal-header" data-test-modal="delete-user">
+    <h1>Add subscription</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <form>
 <div class="modal-body">
-    <div class="gh-main-section-block">
-        <div class="gh-main-section-content gh-member-product-memberdetails">
-            <GhMemberAvatar
-                @member={{this.member}}
-                @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
-                @containerClass="w20 h20 mr4 gh-member-detail-avatar"
-            />
-            <h3>{{or this.member.name this.member.email}}</h3>
-            {{#if (and this.member.name this.member.email)}}
-                <p>
-                    {{this.member.email}}
-                </p>
-            {{/if}}
+    <p class="gh-member-addcomp-subhed">Select a product for <strong>{{or this.member.name this.member.email}}</strong>'s complimentary subscription.</p>
+    <div class="form-rich-radio">
+        <div class="gh-radio active">
+            <div class="gh-radio-content">
+                <div class="gh-radio-label">
+                    <div class="description">
+                        <h4>Bronze</h4>
+                        <p>Only the hottest marketing news</p>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-radio-button"></div>
         </div>
-
-        <div class="gh-main-section-content grey gh-member-product-form-block">
-            <GhFormGroup>
-                <label for="price" class="fw6">Add subscription</label>
-                <span class="gh-select">
-                    <OneWaySelect
-                        @options={{this.prices}}
-                        @optionValuePath="id"
-                        @optionLabelPath="label"
-                        @update={{this.setPrice}}
-                    />
-                    {{svg-jar "arrow-down-small"}}
-                </span>
-                <p>You can only use zero value prices when adding a product manually. Use <a href="https://dashboard.stripe.com" target="_blank">Stripe Dashboard</a> to add product with non-zero prices.</p>
-            </GhFormGroup>
+        <div class="gh-radio">
+            <div class="gh-radio-content">
+                <div class="gh-radio-label">
+                    <div class="description">
+                        <h4>Silver</h4>
+                        <p>Extra weekly newsletter</p>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-radio-button"></div>
+        </div>
+        <div class="gh-radio">
+            <div class="gh-radio-content">
+                <div class="gh-radio-label">
+                    <div class="description">
+                        <h4>Gold</h4>
+                        <p>All-in-one supporter pack!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-radio-button"></div>
         </div>
     </div>
 </div>
@@ -46,12 +52,21 @@
         {{action (optional this.noop) on="mouseDown"}}
         data-test-button="cancel-webhook"
     >
-        <span>{{if this.prices.length "Cancel" "OK"}}</span>
+        <span>Cancel</span>
     </button>
-    <GhTaskButton @buttonText="Add subscription"
+    <button
+        class="gh-btn gh-btn-green"
+        {{action "closeModal"}}
+        {{!-- disable mouseDown so it does not trigger focus-out validations --}}
+        {{action (optional this.noop) on="mouseDown"}}
+    >
+        <span>Add subscription</span>
+    </button>
+
+    {{!-- <GhTaskButton @buttonText="Add subscription"
         @successText={{this.successText}}
         @task={{this.addPriceTask}}
         @disabled={{this.cannotAddPrice}}
-        @class="gh-btn gh-btn-black gh-btn-icon gh-btn-add-memberproduct"
-        data-test-button="save-webhook" />
+        @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-memberproduct"
+        data-test-button="save-webhook" /> --}}
 </div>

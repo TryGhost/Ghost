@@ -116,9 +116,17 @@
                             {{#if this.isCreatingComplimentary}}
                                 <GhLoadingSpinner />
                             {{else}}
-                                <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
-                                    <span>{{svg-jar "add"}} Add complimentary subscription</span>
-                                </button>
+                                {{#if (enable-developer-experiments)}}
+                                    {{!-- {{if has multiple products!}} --}}
+                                    <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action (toggle "showMemberProductModal" this)}}>
+                                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                    </button>
+                                    {{!-- {{/if}} --}}
+                                {{else}}
+                                    <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
+                                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                    </button>
+                                {{/if}}
                             {{/if}}
                         {{/if}}
                     {{/unless}}
