@@ -167,6 +167,8 @@ module.exports = function MembersApi({
             return stripeMigrations.populateDefaultProductMonthlyPriceId();
         }).then(() => {
             return stripeMigrations.populateDefaultProductYearlyPriceId();
+        }).then(() => {
+            return stripeMigrations.revertPortalPlansSetting();
         }),
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,
