@@ -79,6 +79,20 @@ function exportCSV(page, _apiConfig, frame) {
 function serializeMember(member, options) {
     const json = member.toJSON(options);
 
+    let comped = false;
+    if (json.subscriptions) {
+        const hasCompedSubscription = !!json.subscriptions.find(
+            /**
+             * @param {SerializedMemberStripeSubscription} sub
+             */
+            function (sub) {
+                return sub.plan.nickname === 'Complimentary' && sub.status === 'active';
+            }
+        );
+        if (hasCompedSubscription) {
+            comped = true;
+        }
+    }
     const subscriptions = json.subscriptions || [];
 
     const serialized = {
@@ -94,6 +108,7 @@ function serializeMember(member, options) {
         labels: json.labels,
         subscriptions: subscriptions,
         avatar_image: json.avatar_image,
+        comped: comped,
         email_count: json.email_count,
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
@@ -148,6 +163,7 @@ function createSerializer(debugString, serialize) {
  * @prop {SerializedMemberStripeSubscription[]} subscriptions
  * @prop {SerializedMemberProduct[]=} products
  * @prop {string} avatar_image
+ * @prop {boolean} comped
  * @prop {number} email_count
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
