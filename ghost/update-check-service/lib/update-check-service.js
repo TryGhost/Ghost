@@ -29,6 +29,8 @@ class UpdateCheckService {
      * @param {Function} options.api.posts.browse - method allowing to read Ghost's posts
      * @param {Object} options.api.users - Users API methods
      * @param {Function} options.api.users.browse - method allowing to read Ghost's users
+     * @param {Object} options.api.notifications - Notification API methods
+     * @param {Function} options.api.notifications.add - method allowing to add Ghost notifications
      * @param {Object} options.config
      * @param {Object} options.config.mail
      * @param {string} options.config.env
