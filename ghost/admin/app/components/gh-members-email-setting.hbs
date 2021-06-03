@@ -7,7 +7,7 @@
                     <h4 class="gh-expandable-title">Email design</h4>
                     <p class="gh-expandable-description">Customize the look and feel of email newsletters</p>
                 </div>
-                <button type="button" class="gh-btn gh-btn-green" {{action (toggle "showEmailDesignSettings" this)}} data-test-toggle-membersFrom><span> Customize </span></button>
+                <button type="button" class="gh-btn gh-btn-green" {{on "click" @toggleEmailDesignSettings}} data-test-toggle-membersFrom><span> Customize </span></button>
             </div>
         </div>
     </section>
@@ -198,11 +198,3 @@
         {{/unless}}
     </section>
 </div>
-
-{{#if this.showEmailDesignSettings}}
-    <GhFullscreenModal @modifier="full-overlay portal-settings">
-        <ModalEmailDesignSettings
-            @closeModal={{action "closeEmailDesignSettings"}}
-        />
-    </GhFullscreenModal>
-{{/if}}

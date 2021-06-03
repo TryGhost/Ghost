@@ -25,6 +25,7 @@
                 @supportAddress={{this.supportAddress}}
                 @setEmailAddress={{this.setEmailAddress}}
                 @emailRecipientsExpanded={{this.emailRecipientsOpen}}
+                @toggleEmailDesignSettings={{this.toggleEmailDesignSettings}}
                 @toggleEmailRecipientsExpansion={{this.toggleEmailRecipientsOpen}}
             />
         </div>
@@ -41,3 +42,11 @@
         />
     {{/if}}
 </section>
+
+{{#if this.showEmailDesignSettings}}
+    <GhFullscreenModal @modifier="full-overlay portal-settings">
+        <ModalEmailDesignSettings
+            @closeModal={{this.toggleEmailDesignSettings}}
+        />
+    </GhFullscreenModal>
+{{/if}}
