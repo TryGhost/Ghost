@@ -6451,7 +6451,18 @@ ember-concurrency-decorators@2.0.3, ember-concurrency-decorators@^2.0.0:
     ember-cli-htmlbars "^4.3.1"
     ember-cli-typescript "^3.1.4"
 
-ember-concurrency@2.0.3, "ember-concurrency@>=1.0.0 <3", "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0 || ^2.0.0-rc.1":
+ember-concurrency@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-2.1.0.tgz#5e55c19f43fb245c4fbe0628cbf26cc6561af40c"
+  integrity sha512-NIJfphS9NvO3Fin+QPQkTvhD8rFDc9ydpy+my+VFLcCfC5F+yI6sr5tHVSgSVBh8UutloHvIbGvdfKuoY6Abyg==
+  dependencies:
+    "@glimmer/tracking" "^1.0.2"
+    ember-cli-babel "^7.22.1"
+    ember-cli-htmlbars "^5.6.3"
+    ember-compatibility-helpers "^1.2.0"
+    ember-destroyable-polyfill "^2.0.2"
+
+"ember-concurrency@>=1.0.0 <3", "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0 || ^2.0.0-rc.1":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-2.0.3.tgz#d8ac917fdf013a277bfc7b26e417937ee0638455"
   integrity sha512-+fOOFt32odnunDL3Du0LqMgnRzDDNKnzo1ry9ppICpvLXekJzYFwU1RniVivfJ+9nbpHMJZQUlZJAm1ZAnTExw==
