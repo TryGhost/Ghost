@@ -9,7 +9,7 @@ const i18n = require('../shared/i18n');
 const logging = require('../shared/logging');
 const request = require('./lib/request');
 const ghostVersion = require('./lib/ghost-version');
-const UpdateCheckService = require('./update-check-service');
+const UpdateCheckService = require('@tryghost/update-check-service');
 
 const ghostMailer = new GhostMailer();
 let updateChecker;
@@ -34,6 +34,9 @@ module.exports = () => {
                 },
                 users: {
                     browse: api.users.browse
+                },
+                notifications: {
+                    add: api.notifications.add
                 }
             },
             config: {
