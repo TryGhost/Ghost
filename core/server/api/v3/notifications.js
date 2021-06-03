@@ -55,8 +55,8 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            const allNotifications = notifications.destroy({
+        async query(frame) {
+            const allNotifications = await notifications.destroy({
                 notificationId: frame.options.notification_id,
                 user: {
                     id: frame.user && frame.user.id
