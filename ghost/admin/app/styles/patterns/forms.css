@@ -757,6 +757,62 @@ textarea {
 }
 
 
+/* Email newsletter design settings
+/* -------------------------------------------------------- */
+.form-rich-radio .gh-radio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: -1px 0 0;
+    padding: 0;
+}
+
+.form-rich-radio .gh-radio-content {
+    border: 1px solid var(--whitegrey);
+    margin: 0 -32px 0 0;
+}
+
+.form-rich-radio .gh-radio:first-of-type .gh-radio-content {
+    border-radius: 3px 3px 0 0;
+}
+
+.form-rich-radio .gh-radio:last-of-type .gh-radio-content {
+    border-radius: 0 0 3px 3px;
+}
+
+.form-rich-radio .active .gh-radio-content {
+    border: 1px solid transparent;
+    box-shadow: 0px 0px 0px 2px var(--green);
+    z-index: 9999;
+}
+
+.form-rich-radio .gh-radio-button {
+    margin-right: 12px;
+    opacity: 0;
+}
+
+.form-rich-radio .gh-radio-label {
+    padding: 12px 12px 12px 14px;
+    display: flex;
+    align-items: center;
+}
+
+.form-rich-radio .gh-radio-label .description h4 {
+    font-size: 1.4rem;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4em;
+}
+
+.form-rich-radio .gh-radio-label .description p {
+    font-size: 1.25rem !important;
+    font-weight: 400;
+    line-height: 1.45em;
+    margin: 2px 0 0;
+    padding: 0;
+}
+
+
 /* FFF: Fucking Firefox Fixes
 /* ---------------------------------------------------------- */
 
