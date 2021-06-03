@@ -5768,7 +5768,7 @@ ember-assign-polyfill@^2.6.0:
     ember-cli-babel "^7.20.5"
     ember-cli-version-checker "^2.0.0"
 
-ember-auto-import@1.11.3, ember-auto-import@^1.2.19, ember-auto-import@^1.5.2, ember-auto-import@^1.5.3, ember-auto-import@^1.6.0:
+ember-auto-import@1.11.3, ember-auto-import@^1.11.2, ember-auto-import@^1.2.19, ember-auto-import@^1.5.3, ember-auto-import@^1.6.0:
   version "1.11.3"
   resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-1.11.3.tgz#6e3384a7fbb163384a34546f2e902cd297b0e683"
   integrity sha512-ekq/XCvsonESobFU30zjZ0I4XMy2E/2ZILCYWuQ1JdhcCSTYhnXDZcqRW8itUG7kbsPqAHT/XZ1LEZYm3seVwQ==
@@ -6628,39 +6628,27 @@ ember-in-element-polyfill@^1.0.1:
     ember-cli-htmlbars "^5.3.1"
     ember-cli-version-checker "^5.1.2"
 
-ember-in-viewport@3.9.0:
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.9.0.tgz#2d1eea2e7ea058f8816f1e7a9b5bcc86e632f6fe"
-  integrity sha512-OhHKqJKseF1S3NefCRe0jeaGEVOmXqinrlYpi7jfjhsjwHCt8MUAhBZiWycwOmbYwVBPRwpFlDrLNmN1uJxAYA==
+ember-in-viewport@3.10.2, ember-in-viewport@~3.10.2:
+  version "3.10.2"
+  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.10.2.tgz#78ad3d42ba94354fd05e7adb7a701da351041556"
+  integrity sha512-mOLqknUm+OjPqyYq9BO+h9RIcI3dhebPpfd8jM90/GXVv7jLNz1szq5nk0K0yZT861kY+dEjGLqLGqo1J4pSDQ==
   dependencies:
-    ember-auto-import "^1.6.0"
-    ember-cli-babel "^7.22.1"
+    ember-auto-import "^1.11.2"
+    ember-cli-babel "^7.26.3"
     ember-modifier "^2.1.0"
     fast-deep-equal "^2.0.1"
-    intersection-observer-admin "~0.2.13"
+    intersection-observer-admin "~0.3.2"
     raf-pool "~0.1.4"
 
-ember-in-viewport@~3.7.2:
-  version "3.7.8"
-  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.7.8.tgz#0542cb4dad7763bd93ee6a5c660f39b2d28ea1d5"
-  integrity sha512-XEQ4q+ca3SaREL72Eb7XQRGrmNTjOS52ZUj7KvKLpywoyYKTpAfFoSHZMpyk15X9D7dtAihayTpEgeVoHaLa3Q==
-  dependencies:
-    ember-auto-import "^1.5.2"
-    ember-cli-babel "^7.7.3"
-    ember-modifier "^1.0.2"
-    fast-deep-equal "^2.0.1"
-    intersection-observer-admin "~0.2.12"
-    raf-pool "~0.1.4"
-
-ember-infinity@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-2.2.0.tgz#e2ef5724e7b7d33ae3a311be16ed3cc7ced3826a"
-  integrity sha512-pkaWUfLBAFztiyTK+xfDBEw3l6n403v0ArA3x0BEMLHmMv/y879X5rX9/RPDif1SrT+itcsnKBbV9tagVTfv7w==
+ember-infinity@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-2.2.1.tgz#2f1b170af4449c17b855af075f3c3d2d7e68d915"
+  integrity sha512-TXzUGclu7tG7wO0jhtFyzsOuCJBBy9457m15hZQZTJWl+CarGx04C43kob7oAqsp21nBrXfi2+C2Ttt2PH21iw==
   dependencies:
     "@ember/render-modifiers" "^1.0.2"
     ember-cli-babel "~7.19.0"
     ember-cli-htmlbars "^4.3.1"
-    ember-in-viewport "~3.7.2"
+    ember-in-viewport "~3.10.2"
 
 "ember-inflector@^2.0.0 || ^3.0.0 || ^4.0.0":
   version "4.0.1"
@@ -6765,18 +6753,6 @@ ember-modifier@2.1.2, ember-modifier@^2.1.0, ember-modifier@^2.1.1:
     ember-cli-typescript "^3.1.3"
     ember-compatibility-helpers "^1.2.4"
     ember-destroyable-polyfill "^2.0.2"
-    ember-modifier-manager-polyfill "^1.2.0"
-
-ember-modifier@^1.0.2:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-1.0.5.tgz#b0152a4b81b72debbff48ff75f0ff0959afa1df2"
-  integrity sha512-bOqWyp6bEa8i/2c2Gay6b9CVB7CAROg2UuX+C3eDMOdGUEzrsBZ5ENul5zF4RHey2RuAqZ/qvQpY/85R2fQ94A==
-  dependencies:
-    ember-cli-babel "^7.11.1"
-    ember-cli-is-package-missing "^1.0.0"
-    ember-cli-normalize-entity-name "^1.0.0"
-    ember-cli-string-utils "^1.1.0"
-    ember-compatibility-helpers "^1.2.1"
     ember-modifier-manager-polyfill "^1.2.0"
 
 ember-moment@8.0.1:
@@ -9246,10 +9222,10 @@ interpret@~1.1.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-1.1.0.tgz#7ed1b1410c6a0e0f78cf95d3b8440c63f78b8614"
   integrity sha1-ftGxQQxqDg94z5XTuEQMY/eLhhQ=
 
-intersection-observer-admin@~0.2.12, intersection-observer-admin@~0.2.13:
-  version "0.2.13"
-  resolved "https://registry.yarnpkg.com/intersection-observer-admin/-/intersection-observer-admin-0.2.13.tgz#00a021695bf5aef8d198204514d2f849fd27d089"
-  integrity sha512-REIM59IHXPe9U5eTnowurzzfhgqVkSImZJnOSJZTAJ0LnyJqw8S/eD5s8ZYneQfm9JszhGIBwudF9gF02A3BpQ==
+intersection-observer-admin@~0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/intersection-observer-admin/-/intersection-observer-admin-0.3.2.tgz#0b6e95ce7272a383e8bbdd47f9ff48de9eab9919"
+  integrity sha512-kJEcF9iVRuI4thXiJd28UzFDgvFHBNUgwkKA4F0bPMmRdzc+1Eq7/J13n2gSgfZ5tsVxb+wJOV7k3DXcsc7D6Q==
 
 into-stream@^3.1.0:
   version "3.1.0"
