@@ -219,7 +219,13 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
     }).filter((price) => {
         return price.amount !== 0 && price.type === 'recurring';
     }).filter((price) => {
-        return (portalPlans || []).includes(price.price_id);
+        if (price.interval === 'month') {
+            return (portalPlans || []).includes('monthly');
+        }
+        if (price.interval === 'year') {
+            return (portalPlans || []).includes('yearly');
+        }
+        return false;
     }).sort((a, b) => {
         return a.amount - b.amount;
     }).sort((a, b) => {
