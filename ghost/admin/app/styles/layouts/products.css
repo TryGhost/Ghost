@@ -62,7 +62,7 @@
 }
 
 .gh-product-card-description {
-    margin-top: 2px;
+    margin: 2px 0 0;
     color: var(--midgrey);
 }
 

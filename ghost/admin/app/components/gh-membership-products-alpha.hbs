@@ -1,5 +1,5 @@
 <div class="gh-product-cards">
-{{#each this.products as |product|}}
+{{#each this.products as |product productIdx|}}
     <div class="gh-product-card">
         <button class="gh-product-card-editbutton gh-btn gh-btn-text gh-btn-link green" {{action "openEditProduct" product}}>
             <span>Edit</span>
@@ -11,6 +11,9 @@
             <p class="gh-product-card-description">
                 {{product.description}}
             </p>
+            {{#if (eq productIdx 0)}}
+            <span class="gh-badge gh-badge-pink">Available in Portal</span>
+            {{/if}}
         </div>
         <div class="gh-product-card-block">
             <span class="gh-product-card-heading">Pricing</span>
