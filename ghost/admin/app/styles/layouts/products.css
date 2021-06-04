@@ -11,16 +11,20 @@
     }
 }
 
+.gh-product-cards {
+    margin: 0 0 24px;
+}
+
 .gh-product-card {
     position:relative;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    border: 1px solid var(--whitegrey);
     border-radius: 3px;
     padding: 24px;
     background: white;
     margin-bottom: 12px;
+    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 980px) {
@@ -76,6 +80,23 @@
 
 .gh-product-card-price .currency {
     text-transform: uppercase;
+}
+
+.gh-product-cards-footer {
+    display: flex;
+    align-items: center;
+    margin-top: -7px;
+    color: var(--midgrey);
+    font-size: 1.35rem;
+}
+
+.gh-btn-add-product,
+.gh-btn-add-product:hover {
+    margin-right: 5px;
+}
+
+.gh-btn-add-product svg {
+    margin-right: 2px;
 }
 
 .gh-product-list-icon {

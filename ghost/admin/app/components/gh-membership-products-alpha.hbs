@@ -1,3 +1,4 @@
+<div class="gh-product-cards">
 {{#each this.products as |product|}}
     <div class="gh-product-card">
         <button class="gh-product-card-editbutton gh-btn gh-btn-text gh-btn-link green" {{action "openEditProduct" product}}>
@@ -22,12 +23,11 @@
         </div>
     </div>
 {{/each}}
-<div class="gh-product-card" {{action "openNewProduct" product}} style="cursor: pointer">
-    <div style="display: flex;flex-direction:column;align-items: flex-start;flex-grow: 1">
-        <h3 class="gh-product-card-name">
-            + New tier
-        </h3>
-    </div>
+
+<div class="gh-product-cards-footer">
+    <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-product green" {{action "openNewProduct" product}}><span>{{svg-jar "add-stroke" class="stroke-green"}}Add product</span></button>
+    <span>&ndash; Advanced (<a href="javascript:">learn more</a>)</span>
+</div>
 </div>
 
 {{#if this.showProductModal}}
