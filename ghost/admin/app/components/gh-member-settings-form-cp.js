@@ -30,6 +30,9 @@ export default class extends Component {
     }
 
     get isAddComplimentaryAllowed() {
+        if (!this.membersUtils.isStripeEnabled) {
+            return false;
+        }
         let subscriptions = this.member.get('subscriptions') || [];
         const hasZeroPriceSub = subscriptions.find((sub) => {
             return !sub?.price?.amount;
