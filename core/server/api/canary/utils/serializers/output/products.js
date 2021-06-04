@@ -21,11 +21,13 @@ module.exports = {
  */
 function paginatedProducts(page, _apiConfig, frame) {
     const requestedIncludes = frame.original && frame.original.options && frame.original.options.include || [];
+    const defaultIncludes = ['monthly_price', 'yearly_price'];
     return {
         products: page.data.map((model) => {
             return cleanIncludes(
                 allowedIncludes,
                 requestedIncludes,
+                defaultIncludes,
                 serializeProduct(model, frame.options, frame.apiType)
             );
         }),
@@ -42,11 +44,13 @@ function paginatedProducts(page, _apiConfig, frame) {
  */
 function singleProduct(model, _apiConfig, frame) {
     const requestedIncludes = frame.original && frame.original.options && frame.original.options.include || [];
+    const defaultIncludes = ['monthly_price', 'yearly_price'];
     return {
         products: [
             cleanIncludes(
                 allowedIncludes,
                 requestedIncludes,
+                defaultIncludes,
                 serializeProduct(model, frame.options, frame.apiType)
             )
         ]
@@ -119,15 +123,17 @@ function serializeStripePrice(data, hideStripeData) {
  *
  * @returns {Data}
  */
-function cleanIncludes(allowed, requested, data) {
+function cleanIncludes(allowed, requested, defaults, data) {
     const cleaned = {
         ...data
     };
+
     for (const include of allowed) {
-        if (!requested.includes(include)) {
+        if (!requested.includes(include) && !defaults.includes(include)) {
             delete cleaned[include];
         }
     }
+
     return cleaned;
 }
 
