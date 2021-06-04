@@ -151,14 +151,24 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
 }
 
 export function getAvailablePrices({site = {}, includeFree = true} = {}) {
-    const {
+    let {
         prices,
+        products,
         allow_self_signup: allowSelfSignup,
         is_stripe_configured: isStripeConfigured
     } = site || {};
 
     if (!prices) {
-        return [];
+        prices = [];
+    }
+
+    if (products) {
+        prices = [];
+        products.forEach((product) => {
+            if (product.prices) {
+                prices = prices.concat(product.prices);
+            }
+        });
     }
 
     const plansData = [];
