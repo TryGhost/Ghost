@@ -798,7 +798,8 @@ textarea {
 }
 
 .form-rich-radio .gh-radio-label .description h4 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
+    font-weight: 600;
     margin: 0;
     padding: 0;
     line-height: 1.4em;
