@@ -19,7 +19,9 @@
     text-align: center;
     border: 1px solid var(--whitegrey);
     border-radius: 2px;
-    padding: 8vmin 48px;
+    padding: 24px 48px;
+    background: white;
+    margin-bottom: 12px;
 }
 
 @media (max-width: 980px) {
