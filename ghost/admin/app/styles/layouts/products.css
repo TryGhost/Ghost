@@ -50,7 +50,7 @@
 
 .gh-product-card-name {
     font-size: 1.8rem;
-    font-weight: 500;
+    font-weight: 600;
     margin: 0;
 }
 
@@ -306,6 +306,10 @@
 /* Price details */
 .gh-product-priceform-block {
     margin-bottom: 32px;
+}
+
+.gh-product-priceform-block .form-group:last-of-type {
+    margin-bottom: 0;
 }
 
 .gh-product-priceform-pricecurrency {
