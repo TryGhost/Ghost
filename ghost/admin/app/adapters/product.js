@@ -12,13 +12,9 @@ export default ApplicationAdapter.extend({
         return this._super(...arguments);
     },
 
-    urlForDeleteRecord(id, modelName, snapshot) {
+    urlForDeleteRecord() {
         let url = this._super(...arguments);
         let parsedUrl = new URL(url);
-
-        if (snapshot && snapshot.adapterOptions && snapshot.adapterOptions.cancel) {
-            parsedUrl.searchParams.set('cancel', 'true');
-        }
 
         return parsedUrl.toString();
     }
