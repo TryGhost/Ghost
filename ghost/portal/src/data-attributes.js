@@ -66,7 +66,7 @@ function handleDataAttributes({siteUrl, site, member}) {
             let priceId = '';
             if (plan) {
                 const price = getQueryPrice({site, priceId: plan.toLowerCase()});
-                priceId = price ? price.id : '';
+                priceId = price ? price.id : plan;
             }
             let successUrl = el.dataset.membersSuccess;
             let cancelUrl = el.dataset.membersCancel;
