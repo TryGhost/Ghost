@@ -13,25 +13,6 @@ export default Component.extend({
     prices: null,
     copiedPrice: null,
 
-    filteredPrices: computed('prices', 'settings.portalPlans.[]', function () {
-        const portalPlans = this.get('settings.portalPlans');
-        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
-        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
-        const prices = this.prices || [];
-        return prices.filter((d) => {
-            return [monthlyPriceId, yearlyPriceId].includes(d.id);
-        }).filter((d) => {
-            return d.amount !== 0 && d.type === 'recurring';
-        }).map((price) => {
-            return {
-                ...price,
-                oldId: price.interval === 'month' ? 'monthly' : 'yearly',
-                oldNickname: price.interval === 'month' ? 'Monthly' : 'Yearly',
-                checked: !!portalPlans.find(d => d === price.id)
-            };
-        });
-    }),
-
     toggleValue: computed('isLink', function () {
         return this.isLink ? 'Data attributes' : 'Links';
     }),
@@ -72,14 +53,5 @@ export default Component.extend({
         }
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
-    }),
-    getAvailablePrices: task(function* () {
-        const products = yield this.store.query('product', {include: 'stripe_prices'});
-        const product = products.firstObject;
-        const prices = product.get('stripePrices');
-        const activePrices = prices.filter((d) => {
-            return !!d.active;
-        });
-        this.set('prices', activePrices);
-    }).drop()
+    })
 });
