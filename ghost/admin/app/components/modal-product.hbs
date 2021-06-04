@@ -29,59 +29,57 @@
                     @class="gh-input" />
                 <GhErrorMessage @errors={{this.errors}} @property="description" />
             </GhFormGroup>
-            <div class="">
-                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
-                    <div class="gh-settings-members-pricelabelcont">
-                        <label for="monthlyPrice">Prices</label>
-                        <span>–</span>
-                        <div>
-                            <span class="gh-setting-members-currency gh-select">
-                                <div class="gh-setting-members-currencylabel">
-                                    <span>{{this.currency}}</span>
-                                    {{svg-jar "arrow-down-small"}}
-                                </div>
-                                <OneWaySelect
-                                    @value={{this.selectedCurrency}}
-                                    id="currency"
-                                    name="currency"
-                                    @options={{readonly this.allCurrencies}}
-                                    @optionValuePath="value"
-                                    @optionLabelPath="label"
-                                    @update={{action "setCurrency"}}
-                                />
-                            </span>
-                        </div>
+            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
+                <div class="gh-settings-members-pricelabelcont">
+                    <label for="monthlyPrice">Prices</label>
+                    <span>–</span>
+                    <div>
+                        <span class="gh-setting-members-currency gh-select">
+                            <div class="gh-setting-members-currencylabel">
+                                <span>{{this.currency}}</span>
+                                {{svg-jar "arrow-down-small"}}
+                            </div>
+                            <OneWaySelect
+                                @value={{this.selectedCurrency}}
+                                id="currency"
+                                name="currency"
+                                @options={{readonly this.allCurrencies}}
+                                @optionValuePath="value"
+                                @optionLabelPath="label"
+                                @update={{action "setCurrency"}}
+                            />
+                        </span>
                     </div>
-                    <div class="gh-setting-members-prices">
+                </div>
+                <div class="gh-setting-members-prices">
 
-                        <div class="gh-input-group">
-                            <GhTextInput
-                                @id="monthlyPrice"
-                                @value={{readonly this.stripeMonthlyAmount}}
-                                @type="number"
-                                @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                @focus-out={{action "validateStripePlans"}}
-                            />
-                            <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
-                        </div>
-                        <div class="gh-input-group">
-                            <GhTextInput
-                                @id="yearlyPrice"
-                                @value={{readonly this.stripeYearlyAmount}}
-                                @type="number"
-                                @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                @focus-out={{this.validateStripePlans}}
-                                @placeholder=''
-                                data-test-title-input={{true}}
-                            />
-                            <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
-                        </div>
+                    <div class="gh-input-group">
+                        <GhTextInput
+                            @id="monthlyPrice"
+                            @value={{readonly this.stripeMonthlyAmount}}
+                            @type="number"
+                            @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
+                            @focus-out={{action "validateStripePlans"}}
+                        />
+                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
                     </div>
-                    {{#if this.stripePlanError}}
-                        <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
-                    {{/if}}
-                </GhFormGroup>
-            </div>
+                    <div class="gh-input-group">
+                        <GhTextInput
+                            @id="yearlyPrice"
+                            @value={{readonly this.stripeYearlyAmount}}
+                            @type="number"
+                            @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
+                            @focus-out={{this.validateStripePlans}}
+                            @placeholder=''
+                            data-test-title-input={{true}}
+                        />
+                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
+                    </div>
+                </div>
+                {{#if this.stripePlanError}}
+                    <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
+                {{/if}}
+            </GhFormGroup>
         </div>
     </div>
 </div>
@@ -97,10 +95,10 @@
     >
         <span>Cancel</span>
     </button>
-    <GhTaskButton @buttonText="Save"
+    <GhTaskButton @buttonText="{{if this.isExistingProduct "Save" "Add product"}}"
         @successText={{this.successText}}
         @task={{this.saveProduct}}
         @idleClass="gh-btn-primary"
-        @class="gh-btn gh-btn-black gh-btn-icon"
+        @class="gh-btn {{if this.isExistingProduct "gh-btn-black" "gh-btn-green"}} gh-btn-icon"
         data-test-button="save-product" />
 </div>
