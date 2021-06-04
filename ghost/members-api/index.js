@@ -158,8 +158,6 @@ module.exports = function MembersApi({
         stripeMigrations.populateProductsAndPrices().then(() => {
             return stripeMigrations.populateStripePricesFromStripePlansSetting(stripeConfig.plans);
         }).then(() => {
-            return stripeMigrations.updatePortalPlansSetting(stripeConfig.plans);
-        }).then(() => {
             return stripeMigrations.populateMembersMonthlyPriceIdSettings();
         }).then(() => {
             return stripeMigrations.populateMembersYearlyPriceIdSettings();
