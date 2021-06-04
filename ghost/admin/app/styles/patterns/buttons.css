@@ -288,6 +288,14 @@ svg.gh-btn-icon-right {
     stroke: #fff;
 }
 
+.gh-btn-icon.green svg path {
+    stroke: var(--green);
+}
+
+.gh-btn-icon.red svg path {
+    stroke: var(--red);
+}
+
 .gh-btn-icon-no-margin {
     margin: 0;
 }
