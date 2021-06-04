@@ -144,7 +144,7 @@ describe('Settings API', function () {
                 },
                 {
                     key: 'labs',
-                    value: JSON.stringify({members: true})
+                    value: JSON.stringify({})
                 },
                 {
                     key: 'timezone',
@@ -171,8 +171,7 @@ describe('Settings API', function () {
         headers['x-cache-invalidate'].should.eql('/*');
         should.exist(putBody);
 
-        // NOTE: -1 for ignored labs setting
-        putBody.settings.length.should.equal(settingToChange.settings.length - 1);
+        putBody.settings.length.should.equal(settingToChange.settings.length);
 
         putBody.settings[0].key.should.eql('title');
         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
@@ -219,14 +218,17 @@ describe('Settings API', function () {
         putBody.settings[13].key.should.eql('lang');
         should.equal(putBody.settings[13].value, 'ua');
 
-        putBody.settings[14].key.should.eql('timezone');
-        should.equal(putBody.settings[14].value, 'Pacific/Auckland');
+        putBody.settings[14].key.should.eql('labs');
+        should.equal(putBody.settings[14].value, JSON.stringify({}));
 
-        putBody.settings[15].key.should.eql('unsplash');
-        should.equal(putBody.settings[15].value, false);
+        putBody.settings[15].key.should.eql('timezone');
+        should.equal(putBody.settings[15].value, 'Pacific/Auckland');
 
-        putBody.settings[16].key.should.eql('slack');
-        should.equal(putBody.settings[16].value, JSON.stringify([{
+        putBody.settings[16].key.should.eql('unsplash');
+        should.equal(putBody.settings[16].value, false);
+
+        putBody.settings[17].key.should.eql('slack');
+        should.equal(putBody.settings[17].value, JSON.stringify([{
             url: 'https://overrides.tld',
             username: 'New Slack Username'
         }]));
