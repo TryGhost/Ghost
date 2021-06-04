@@ -80,17 +80,6 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         });
     }
 
-    updatePortalPlans(monthlyPriceId, yearlyPriceId) {
-        let portalPlans = ['free'];
-        if (monthlyPriceId) {
-            portalPlans.push(monthlyPriceId);
-        }
-        if (yearlyPriceId) {
-            portalPlans.push(yearlyPriceId);
-        }
-        this.settings.set('portalPlans', portalPlans);
-    }
-
     @task({drop: true})
     *saveProduct() {
         let pollTimeout = 0;
@@ -169,38 +158,30 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         try {
             yield this.settings.save();
 
-            const products = yield this.store.query('product', {include: 'stripe_prices'});
+            const products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
             this.product = products.firstObject;
             if (this.product) {
-                const stripePrices = this.product.stripePrices || [];
                 const yearlyDiscount = this.calculateDiscount(5, 50);
-                stripePrices.push(
-                    {
-                        nickname: 'Monthly',
-                        amount: 500,
-                        active: 1,
-                        description: 'Full access',
-                        currency: 'usd',
-                        interval: 'month',
-                        type: 'recurring'
-                    },
-                    {
-                        nickname: 'Yearly',
-                        amount: 5000,
-                        active: 1,
-                        currency: 'usd',
-                        description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
-                        interval: 'year',
-                        type: 'recurring'
-                    }
-                );
-                this.product.set('stripePrices', stripePrices);
-                const updatedProduct = yield this.saveProduct.perform();
-                const monthlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'month', 500, 'usd');
-                const yearlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'year', 5000, 'usd');
-                this.updatePortalPlans(monthlyPrice.id, yearlyPrice.id);
-                this.settings.set('membersMonthlyPriceId', monthlyPrice.id);
-                this.settings.set('membersYearlyPriceId', yearlyPrice.id);
+                this.product.set('monthlyPrice', {
+                    nickname: 'Monthly',
+                    amount: 500,
+                    active: 1,
+                    description: 'Full access',
+                    currency: 'usd',
+                    interval: 'month',
+                    type: 'recurring'
+                });
+                this.product.set('yearlyPrice', {
+                    nickname: 'Yearly',
+                    amount: 5000,
+                    active: 1,
+                    currency: 'usd',
+                    description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
+                    interval: 'year',
+                    type: 'recurring'
+                });
+                yield this.saveProduct.perform();
+                this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
                 yield this.settings.save();
             }
 
