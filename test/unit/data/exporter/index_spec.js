@@ -190,7 +190,8 @@ describe('Exporter', function () {
             }, 0);
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
-            const allowedKeysLength = 76;
+            //       This is a reminder to think about the importer/exporter scenarios ;)
+            const allowedKeysLength = 77;
             totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });
