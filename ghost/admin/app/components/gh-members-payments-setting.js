@@ -250,32 +250,46 @@ export default Component.extend({
         });
     },
 
-    updatePortalPlans(monthlyPriceId, yearlyPriceId) {
-        let portalPlans = ['free'];
-        if (monthlyPriceId) {
-            portalPlans.push(monthlyPriceId);
-        }
-        if (yearlyPriceId) {
-            portalPlans.push(yearlyPriceId);
-        }
-        this.settings.set('portalPlans', portalPlans);
-    },
-
     saveProduct: task(function* () {
-        let pollTimeout = 0;
-        while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
-            yield timeout(RETRY_PRODUCT_SAVE_POLL_LENGTH);
+        const products = yield this.store.query('product', {include: 'monthly_price, yearly_price'});
+        this.product = products.firstObject;
+        if (this.product) {
+            const yearlyDiscount = this.calculateDiscount(5, 50);
+            this.product.set('monthlyPrice', {
+                nickname: 'Monthly',
+                amount: 500,
+                active: 1,
+                description: 'Full access',
+                currency: 'usd',
+                interval: 'month',
+                type: 'recurring'
+            });
+            this.product.set('yearlyPrice', {
+                nickname: 'Yearly',
+                amount: 5000,
+                active: 1,
+                currency: 'usd',
+                description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
+                interval: 'year',
+                type: 'recurring'
+            });
 
-            try {
-                const updatedProduct = yield this.product.save();
-                return updatedProduct;
-            } catch (error) {
-                if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
-                    pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
-                    // no-op: will try saving again as stripe is not ready
-                    continue;
-                } else {
-                    throw error;
+            let pollTimeout = 0;
+            /** To allow Stripe config to be ready in backend, we poll the save product request */
+            while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
+                yield timeout(RETRY_PRODUCT_SAVE_POLL_LENGTH);
+
+                try {
+                    const updatedProduct = yield this.product.save();
+                    return updatedProduct;
+                } catch (error) {
+                    if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
+                        pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
+                        // no-op: will try saving again as stripe is not ready
+                        continue;
+                    } else {
+                        throw error;
+                    }
                 }
             }
         }
@@ -289,41 +303,9 @@ export default Component.extend({
             try {
                 let response = yield this.settings.save();
 
-                const products = yield this.store.query('product', {include: 'stripe_prices'});
-                this.product = products.firstObject;
-
-                if (this.product) {
-                    const stripePrices = this.product.stripePrices || [];
-                    const yearlyDiscount = this.calculateDiscount(5, 50);
-                    stripePrices.push(
-                        {
-                            nickname: 'Monthly',
-                            amount: 500,
-                            active: 1,
-                            description: 'Full access',
-                            currency: 'usd',
-                            interval: 'month',
-                            type: 'recurring'
-                        },
-                        {
-                            nickname: 'Yearly',
-                            amount: 5000,
-                            active: 1,
-                            currency: 'usd',
-                            description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
-                            interval: 'year',
-                            type: 'recurring'
-                        }
-                    );
-                    this.product.set('stripePrices', stripePrices);
-                    const updatedProduct = yield this.saveProduct.perform();
-                    const monthlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'month', 500, 'usd');
-                    const yearlyPrice = this.getActivePrice(updatedProduct.stripePrices, 'year', 5000, 'usd');
-                    this.updatePortalPlans(monthlyPrice.id, yearlyPrice.id);
-                    this.settings.set('membersMonthlyPriceId', monthlyPrice.id);
-                    this.settings.set('membersYearlyPriceId', yearlyPrice.id);
-                    response = yield this.settings.save();
-                }
+                yield this.saveProduct.perform();
+                this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
+                response = yield this.settings.save();
 
                 this.set('membersStripeOpen', false);
                 this.set('stripeConnectSuccess', true);

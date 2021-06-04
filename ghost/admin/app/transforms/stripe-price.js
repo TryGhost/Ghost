@@ -3,10 +3,16 @@ import Transform from '@ember-data/serializer/transform';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 export default Transform.extend({
-    deserialize(serialized = []) {
-        const stripePrices = serialized.map(itemDetails => StripePrice.create(itemDetails));
+    deserialize(serialized) {
+        if (serialized === null || serialized === undefined) {
+            return null;
+        } else if (Array.isArray(serialized)) {
+            const stripePrices = serialized.map(itemDetails => StripePrice.create(itemDetails));
 
-        return emberA(stripePrices);
+            return emberA(stripePrices);
+        } else {
+            return StripePrice.create(serialized);
+        }
     },
 
     serialize(deserialized) {
@@ -15,7 +21,7 @@ export default Transform.extend({
                 return item;
             }).compact();
         } else {
-            return [];
+            return deserialized || null;
         }
     }
 });
