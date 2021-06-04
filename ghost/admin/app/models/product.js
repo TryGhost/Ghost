@@ -7,5 +7,6 @@ export default Model.extend(ValidationEngine, {
     name: attr('string'),
     description: attr('string'),
     slug: attr('string'),
-    stripePrices: attr('stripe-price')
+    monthlyPrice: attr('stripe-price'),
+    yearlyPrice: attr('stripe-price')
 });
