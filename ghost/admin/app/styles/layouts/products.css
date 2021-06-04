@@ -12,14 +12,13 @@
 }
 
 .gh-product-card {
+    position:relative;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    align-items: flex-start;
+    justify-content: space-between;
     border: 1px solid var(--whitegrey);
-    border-radius: 2px;
-    padding: 24px 48px;
+    border-radius: 3px;
+    padding: 24px;
     background: white;
     margin-bottom: 12px;
 }
@@ -30,14 +29,53 @@
     }
 }
 
+.gh-product-card-editbutton {
+    position: absolute;
+    right: 24px;
+    top: 16px;
+}
+
+.gh-product-card-block {
+    flex-basis: 50%;
+}
+
+.gh-product-card-block:not(:first-of-type) {
+    border-left: 1px solid var(--whitegrey);
+    padding-left: 16px;
+}
+
 .gh-product-card-name {
-    font-size: 1.75rem;
+    font-size: 1.8rem;
+    font-weight: 500;
     margin: 0;
 }
 
+.gh-product-card-heading {
+    display: inline-block;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
 .gh-product-card-description {
-    margin: 0 0 16px;
+    margin-top: 2px;
     color: var(--midgrey);
+}
+
+.gh-product-card-price {
+    margin: 0 0 2px;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-product-card-price .amount,
+.gh-product-card-price .currency {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-product-card-price .currency {
+    text-transform: uppercase;
 }
 
 .gh-product-list-icon {

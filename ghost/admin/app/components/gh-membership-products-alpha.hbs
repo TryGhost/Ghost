@@ -1,36 +1,24 @@
 {{#each this.products as |product|}}
-    <div class="gh-product-card" style="flex-direction: row;align-items: stretch">
-        <div style="display: flex;flex-grow: 1;flex-shrink: 0;flex-basis: 50%">
-            <div style="display: flex;flex-direction:column;align-items: flex-start;flex-grow: 1">
-                <h3 class="gh-product-card-name">
-                    {{product.name}}
-                </h3>
-                <p class="gh-product-card-description">
-                    {{product.description}}
-                </p>
-            </div>
-        </div>
-        <div style="display: flex;flex-direction:column;align-items: flex-start;flex-grow: 1; flex-shrink: 0; border-left: 1px solid #c4cad2;padding-left: 12px;flex-basis: 50%">
-            <h3 class="gh-product-card-name" style="margin-bottom: 12px">
-                Pricing
+    <div class="gh-product-card">
+        <button class="gh-product-card-editbutton gh-btn gh-btn-text gh-btn-link green" {{action "openEditProduct" product}}>
+            <span>Edit</span>
+        </button>
+        <div class="gh-product-card-block">
+            <h3 class="gh-product-card-name">
+                {{product.name}}
             </h3>
             <p class="gh-product-card-description">
-                <span class="ttu" style="font-weight: bold">{{product.monthlyPrice.currency}}</span>
-                <span style="font-weight: bold">{{gh-price-amount product.monthlyPrice.amount}}</span>/month
-            </p>
-            <p class="gh-product-card-description" style="margin-bottom: 0">
-                <span class="ttu" style="font-weight: bold">{{product.monthlyPrice.currency}}</span>
-                <span style="font-weight: bold">{{gh-price-amount product.yearlyPrice.amount}}</span>/year
+                {{product.description}}
             </p>
         </div>
-        <div>
-        </div>
-        <div style="display: flex;align-items: center">
-            <div>
-                <button class="gh-btn gh-btn-link" {{action "openEditProduct" product}}>
-                    <span>Edit</span>
-                </button>
-            </div>
+        <div class="gh-product-card-block">
+            <span class="gh-product-card-heading">Pricing</span>
+            <p class="gh-product-card-price">
+                <span class="amount">{{gh-price-amount product.monthlyPrice.amount}} </span><span class="currency">{{product.monthlyPrice.currency}}</span><span class="period">/month</span>
+            </p>
+            <p class="gh-product-card-price">
+                <span class="amount">{{gh-price-amount product.yearlyPrice.amount}} </span><span class="currency">{{product.monthlyPrice.currency}}</span><span class="period">/year</span>
+            </p>
         </div>
     </div>
 {{/each}}
