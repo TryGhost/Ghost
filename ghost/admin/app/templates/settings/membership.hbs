@@ -139,58 +139,65 @@
                             {{#if this.fetchDefaultProduct.isRunning}}
                                 Loading...
                             {{else}}
-                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
-                                    <div class="gh-settings-members-pricelabelcont">
-                                        <label for="monthlyPrice">Prices</label>
-                                        <span>–</span>
-                                        <div>
-                                            <span class="gh-setting-members-currency gh-select">
-                                                <div class="gh-setting-members-currencylabel">
-                                                    <span>{{this.currency}}</span>
-                                                    {{svg-jar "arrow-down-small"}}
-                                                </div>
-                                                <OneWaySelect
-                                                    @value={{this.selectedCurrency}}
-                                                    id="currency"
-                                                    name="currency"
-                                                    @options={{readonly this.allCurrencies}}
-                                                    @optionValuePath="value"
-                                                    @optionLabelPath="label"
-                                                    @update={{this.setStripePlansCurrency}}
+                                {{#if (enable-developer-experiments)}}
+                                    <GhMembershipProductsAlpha
+                                        @products={{this.products}}
+                                        @confirmProductSave={{this.confirmProductSave}}
+                                    />
+                                {{else}}
+                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
+                                        <div class="gh-settings-members-pricelabelcont">
+                                            <label for="monthlyPrice">Prices</label>
+                                            <span>–</span>
+                                            <div>
+                                                <span class="gh-setting-members-currency gh-select">
+                                                    <div class="gh-setting-members-currencylabel">
+                                                        <span>{{this.currency}}</span>
+                                                        {{svg-jar "arrow-down-small"}}
+                                                    </div>
+                                                    <OneWaySelect
+                                                        @value={{this.selectedCurrency}}
+                                                        id="currency"
+                                                        name="currency"
+                                                        @options={{readonly this.allCurrencies}}
+                                                        @optionValuePath="value"
+                                                        @optionLabelPath="label"
+                                                        @update={{this.setStripePlansCurrency}}
+                                                    />
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="gh-setting-members-prices">
+
+                                            <div class="gh-input-group">
+                                                <GhTextInput
+                                                    @id="monthlyPrice"
+                                                    @value={{readonly this.stripeMonthlyAmount}}
+                                                    @type="number"
+                                                    @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
+                                                    @focus-out={{action "validateStripePlans"}}
                                                 />
-                                            </span>
+                                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
+                                            </div>
+                                            <div class="gh-input-group">
+                                                <GhTextInput
+                                                    @id="yearlyPrice"
+                                                    @value={{readonly this.stripeYearlyAmount}}
+                                                    @type="number"
+                                                    @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
+                                                    @focus-out={{this.validateStripePlans}}
+                                                    @placeholder=''
+                                                    data-test-title-input={{true}}
+                                                />
+                                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="gh-setting-members-prices">
+                                        {{#if this.stripePlanError}}
+                                            <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
+                                        {{/if}}
+                                    </GhFormGroup>
 
-                                        <div class="gh-input-group">
-                                            <GhTextInput
-                                                @id="monthlyPrice"
-                                                @value={{readonly this.stripeMonthlyAmount}}
-                                                @type="number"
-                                                @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                                @focus-out={{action "validateStripePlans"}}
-                                            />
-                                            <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
-                                        </div>
-                                        <div class="gh-input-group">
-                                            <GhTextInput
-                                                @id="yearlyPrice"
-                                                @value={{readonly this.stripeYearlyAmount}}
-                                                @type="number"
-                                                @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                                @focus-out={{this.validateStripePlans}}
-                                                @placeholder=''
-                                                data-test-title-input={{true}}
-                                            />
-                                            <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
-                                        </div>
-                                    </div>
-                                    {{#if this.stripePlanError}}
-                                        <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
-                                    {{/if}}
-                                </GhFormGroup>
-
+                                {{/if}}
                                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="paid-welcome-page">
                                     <label for="paidWelcomePage">Welcome page</label>
                                     <GhUrlInput
