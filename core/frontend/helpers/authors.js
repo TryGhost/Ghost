@@ -6,8 +6,8 @@
 // By default, authors are separated by commas.
 //
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
-const _ = require('lodash');
-const {SafeString, templates, urlService} = require('../services/proxy');
+const isString = require('lodash/isString');
+const {SafeString, escapeExpression, templates, urlService} = require('../services/proxy');
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 
 module.exports = function authors(options = {}) {
@@ -25,7 +25,7 @@ module.exports = function authors(options = {}) {
     } = options.hash;
     let output = '';
 
-    autolink = !(_.isString(autolink) && autolink === 'false');
+    autolink = !(isString(autolink) && autolink === 'false');
     limit = limit ? parseInt(limit, 10) : limit;
     from = from ? parseInt(from, 10) : from;
     to = to ? parseInt(to, 10) : to;
@@ -34,8 +34,8 @@ module.exports = function authors(options = {}) {
         function processAuthor(author) {
             return autolink ? templates.link({
                 url: urlService.getUrlByResourceId(author.id, {withSubdirectory: true}),
-                text: _.escape(author.name)
-            }) : _.escape(author.name);
+                text: escapeExpression(author.name)
+            }) : escapeExpression(author.name);
         }
 
         return ghostHelperUtils.visibility.filter(authorsList, visibility, processAuthor);
