@@ -464,12 +464,13 @@ describe('Settings API (v3)', function () {
                 });
         });
 
-        it('Can edit labs', async function () {
+        it('Can edit only allowed labs keys', async function () {
             const settingToChange = {
                 settings: [{
                     key: 'labs',
                     value: JSON.stringify({
-                        matchHelper: true
+                        activitypub: true,
+                        gibberish: true
                     })
                 }]
             };
@@ -491,7 +492,7 @@ describe('Settings API (v3)', function () {
             jsonResponse.settings[0].key.should.eql('labs');
 
             jsonResponse.settings[0].value.should.eql(JSON.stringify({
-                matchHelper: true
+                activitypub: true
             }));
         });
 

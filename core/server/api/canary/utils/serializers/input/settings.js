@@ -2,6 +2,7 @@ const _ = require('lodash');
 const url = require('./utils/url');
 const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
 const settingsCache = require('../../../../../services/settings/cache');
+const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../services/labs');
 
 const DEPRECATED_SETTINGS = [
     'bulk_email_settings',
@@ -156,6 +157,19 @@ module.exports = {
 
             if (setting.key === 'locale') {
                 setting.key = 'lang';
+            }
+
+            if (setting.key === 'labs') {
+                const inputLabsValue = JSON.parse(setting.value);
+                const filteredLabsValue = {};
+
+                for (const flag in inputLabsValue) {
+                    if (WRITABLE_KEYS_ALLOWLIST.includes(flag)) {
+                        filteredLabsValue[flag] = inputLabsValue[flag];
+                    }
+                }
+
+                setting.value = JSON.stringify(filteredLabsValue);
             }
 
             setting = url.forSetting(setting);
