@@ -46,38 +46,12 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
-    get disabled() {
-        return false;
-    }
-
     get isPaidPriceDisabled() {
-        return this.disabled || !this.membersUtils.isStripeEnabled;
+        return !this.membersUtils.isStripeEnabled;
     }
 
     get isFreeDisabled() {
-        return this.disabled || this.settings.get('membersSignupAccess') !== 'all';
-    }
-
-    getPrice(prices, type) {
-        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
-        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
-
-        if (type === 'monthly') {
-            return (
-                prices.find(price => price.id === monthlyPriceId) ||
-                prices.find(price => price.nickname === 'Monthly') ||
-                prices.find(price => price.interval === 'month')
-            );
-        }
-
-        if (type === 'yearly') {
-            return (
-                prices.find(price => price.id === yearlyPriceId) ||
-                prices.find(price => price.nickname === 'Yearly') ||
-                prices.find(price => price.interval === 'year')
-            );
-        }
-        return null;
+        return this.settings.get('membersSignupAccess') !== 'all';
     }
 
     @action
@@ -182,7 +156,6 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         const storedData = this.args.getData();
         if (storedData?.product) {
             this.product = storedData.product;
-            this.stripePrices = this.product.get('stripePrices') || [];
 
             if (storedData.isMonthlyChecked !== undefined) {
                 this.isMonthlyChecked = storedData.isMonthlyChecked;
@@ -199,27 +172,16 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             this.stripeMonthlyAmount = storedData.monthlyAmount;
             this.stripeYearlyAmount = storedData.yearlyAmount;
         } else {
-            const products = yield this.store.query('product', {include: 'stripe_prices'});
+            const products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
             this.product = products.firstObject;
             let portalPlans = this.settings.get('portalPlans') || [];
-            const currentMontlyPriceId = this.settings.get('membersMonthlyPriceId');
-            const currentYearlyPriceId = this.settings.get('membersYearlyPriceId');
-            this.isMonthlyChecked = false;
-            this.isYearlyChecked = false;
-            this.isFreeChecked = false;
-            if (portalPlans.includes(currentMontlyPriceId)) {
-                this.isMonthlyChecked = true;
-            }
-            if (portalPlans.includes(currentYearlyPriceId)) {
-                this.isYearlyChecked = true;
-            }
-            if (portalPlans.includes('free')) {
-                this.isFreeChecked = true;
-            }
-            this.stripePrices = this.product.get('stripePrices') || [];
-            const activePrices = this.stripePrices.filter(price => !!price.active);
-            const monthlyPrice = this.getPrice(activePrices, 'monthly');
-            const yearlyPrice = this.getPrice(activePrices, 'yearly');
+
+            this.isMonthlyChecked = portalPlans.includes('monthly');
+            this.isYearlyChecked = portalPlans.includes('yearly');
+            this.isFreeChecked = portalPlans.includes('free');
+
+            const monthlyPrice = this.product.get('monthlyPrice');
+            const yearlyPrice = this.product.get('yearlyPrice');
             if (monthlyPrice && monthlyPrice.amount) {
                 this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
                 this.currency = monthlyPrice.currency;
