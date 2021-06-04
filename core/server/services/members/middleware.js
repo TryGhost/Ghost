@@ -77,29 +77,27 @@ const updateMemberData = async function (req, res) {
     }
 };
 
-const getDefaultProductPrices = async function () {
+const getPortalProductPrices = async function () {
     const page = await membersService.api.productRepository.list({
-        limit: 1
+        withRelated: ['monthlyPrice', 'yearlyPrice']
     });
-    const [product] = page.data;
-    if (product) {
-        const model = await membersService.api.productRepository.get({id: product.get('id')}, {withRelated: ['stripePrices']});
-        const productData = model.toJSON();
-        const prices = productData.stripePrices || [];
-        const activePrices = prices.filter((d) => {
-            return !!d.active;
-        });
-        const monthlyPriceId = settingsCache.get('members_monthly_price_id');
-        const yearlyPriceId = settingsCache.get('members_yearly_price_id');
-        const filteredPrices = activePrices.filter((d) => {
-            return [monthlyPriceId, yearlyPriceId].includes(d.id);
-        });
+
+    const products = page.data.map((productModel) => {
+        const product = productModel.toJSON();
+
         return {
-            product: productData,
-            prices: filteredPrices
+            id: product.id,
+            name: product.name,
+            description: product.description || '',
+            prices: [product.monthlyPrice, product.yearlyPrice]
         };
-    }
-    return {};
+    });
+
+    const defaultPrices = products[0] ? products[0].prices : [];
+    return {
+        prices: defaultPrices,
+        products: products
+    };
 };
 
 const getMemberSiteData = async function (req, res) {
@@ -111,7 +109,7 @@ const getMemberSiteData = async function (req, res) {
     if (!supportAddress.includes('@')) {
         supportAddress = `${supportAddress}@${blogDomain}`;
     }
-    const {product = {}, prices = []} = await getDefaultProductPrices() || {};
+    const {products = [], prices = []} = await getPortalProductPrices() || {};
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
@@ -122,10 +120,7 @@ const getMemberSiteData = async function (req, res) {
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
         prices,
-        product: {
-            name: product.name || '',
-            description: product.description || ''
-        },
+        products,
         free_price_name: settingsCache.get('members_free_price_name'),
         free_price_description: settingsCache.get('members_free_price_description'),
         allow_self_signup: membersService.config.getAllowSelfSignup(),
