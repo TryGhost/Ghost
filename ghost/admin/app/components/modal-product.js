@@ -60,7 +60,7 @@ export default class ModalProductPrice extends ModalBase {
     }
 
     get isExistingProduct() {
-        return !!this.model.product;
+        return !this.model.product.isNew;
     }
 
     // TODO: rename to confirm() when modals have full Glimmer support
