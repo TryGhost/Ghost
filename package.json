@@ -59,7 +59,7 @@
     "@tryghost/kg-mobiledoc-html-renderer": "4.0.0",
     "@tryghost/limit-service": "0.6.0",
     "@tryghost/magic-link": "1.0.3",
-    "@tryghost/members-api": "1.13.0",
+    "@tryghost/members-api": "1.13.1",
     "@tryghost/members-csv": "1.0.0",
     "@tryghost/members-ssr": "1.0.3",
     "@tryghost/mw-session-from-token": "0.1.20",
