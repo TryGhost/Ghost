@@ -89,8 +89,6 @@ const prices = [
     }
 ];
 
-const priceIds = prices.map(d => d.id);
-
 export const site = {
     title: 'A Ghost site',
     description: 'Thoughts, stories and ideas.',
