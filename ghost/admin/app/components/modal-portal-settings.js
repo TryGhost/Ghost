@@ -19,40 +19,10 @@ export default ModalComponent.extend({
     customIcon: null,
     showLinksPage: false,
     showLeaveSettingsModal: false,
-    freeSignupRedirect: undefined,
-    paidSignupRedirect: undefined,
-    prices: null,
     isPreloading: true,
     portalPreviewGuid: 'modal-portal-settings',
 
     confirm() {},
-
-    filteredPrices: computed('prices', 'settings.{portalPlans.[],membersMonthlyPriceId,membersYearlyPriceId}', function () {
-        const monthlyPriceId = this.settings.get('membersMonthlyPriceId');
-        const yearlyPriceId = this.settings.get('membersYearlyPriceId');
-        const portalPlans = this.settings.get('portalPlans');
-        const prices = this.prices || [];
-        return prices.filter((d) => {
-            return [monthlyPriceId, yearlyPriceId].includes(d.id);
-        }).filter((d) => {
-            return d.amount !== 0 && d.type === 'recurring';
-        }).map((price) => {
-            return {
-                ...price,
-                checked: !!portalPlans.find(d => d === price.id)
-            };
-        });
-    }),
-
-    hasPaidPriceChecked: computed('prices', 'settings.portalPlans.[]', function () {
-        const portalPlans = this.settings.get('portalPlans');
-        const prices = this.prices || [];
-        return prices.filter((d) => {
-            return d.amount !== 0 && d.type === 'recurring';
-        }).some((price) => {
-            return !!portalPlans.find(d => d === price.id);
-        });
-    }),
 
     backgroundStyle: computed('settings.accentColor', function () {
         let color = this.settings.get('accentColor') || '#ffffff';
@@ -87,6 +57,19 @@ export default ModalComponent.extend({
         });
     }),
 
+    isFreeChecked: computed('settings.{portalPlans.[],membersSignupAccess}', function () {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return (this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
+    }),
+    isMonthlyChecked: computed('settings.portalPlans.[]', 'isStripeConfigured', function () {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return (this.membersUtils.isStripeEnabled && allowedPlans.includes('monthly'));
+    }),
+    isYearlyChecked: computed('settings.portalPlans.[]', 'isStripeConfigured', function () {
+        const allowedPlans = this.settings.get('portalPlans') || [];
+        return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
+    }),
+
     init() {
         this._super(...arguments);
         this.buttonStyleOptions = [
@@ -106,14 +89,8 @@ export default ModalComponent.extend({
         toggleFreePlan(isChecked) {
             this.updateAllowedPlan('free', isChecked);
         },
-        toggleMonthlyPlan(isChecked) {
-            this.updateAllowedPlan('monthly', isChecked);
-        },
-        toggleYearlyPlan(isChecked) {
-            this.updateAllowedPlan('yearly', isChecked);
-        },
-        togglePlan(priceId, event) {
-            this.updateAllowedPlan(priceId, event.target.checked);
+        togglePlan(plan, event) {
+            this.updateAllowedPlan(plan, event.target.checked);
         },
         togglePortalButton(showButton) {
             this.settings.set('portalButton', showButton);
@@ -121,14 +98,6 @@ export default ModalComponent.extend({
 
         togglePortalName(showSignupName) {
             this.settings.set('portalName', showSignupName);
-        },
-
-        setPaidSignupRedirect(url) {
-            this.set('paidSignupRedirect', url);
-        },
-
-        setFreeSignupRedirect(url) {
-            this.set('freeSignupRedirect', url);
         },
 
         confirm() {
@@ -267,7 +236,6 @@ export default ModalComponent.extend({
             this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
 
-        this.getAvailablePrices.perform();
         this.siteUrl = this.config.get('blogUrl');
 
         this.set('isPreloading', false);
@@ -295,15 +263,5 @@ export default ModalComponent.extend({
         }
         yield this.settings.save();
         this.closeModal();
-    }).drop(),
-
-    getAvailablePrices: task(function* () {
-        const products = yield this.store.query('product', {include: 'stripe_prices'});
-        const product = products.firstObject;
-        const prices = product.get('stripePrices');
-        const activePrices = prices.filter((d) => {
-            return !!d.active;
-        });
-        this.set('prices', activePrices);
     }).drop()
 });
