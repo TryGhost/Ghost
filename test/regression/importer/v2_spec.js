@@ -821,12 +821,12 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it('does not import settings: labs', function () {
+        it('does import settings: labs', function () {
             const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'labs',
-                value: JSON.stringify({members: true})
+                value: JSON.stringify({activitypub: true})
             });
 
             return dataImporter.doImport(exportData, importOptions)
@@ -835,7 +835,29 @@ describe('Integration: Importer', function () {
                     return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    should.equal(result, null);
+                    should.equal(result.attributes.key, 'labs');
+                    should.equal(result.attributes.group, 'labs');
+                    should.equal(result.attributes.value, '{"activitypub":true}');
+                });
+        });
+
+        it('does not import unknown settings: labs', function () {
+            const exportData = exportedBodyV2().db[0];
+
+            exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'labs',
+                value: JSON.stringify({gibberish: true})
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (imported) {
+                    imported.problems.length.should.eql(0);
+                    return models.Settings.findOne(_.merge({key: 'labs'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    should.equal(result.attributes.key, 'labs');
+                    should.equal(result.attributes.group, 'labs');
+                    should.equal(result.attributes.value, '{}');
                 });
         });
 
