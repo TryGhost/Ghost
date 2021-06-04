@@ -24,7 +24,6 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         this.siteUrl = this.config.get('blogUrl');
-        this.getAvailablePrices.perform();
     },
 
     actions: {
