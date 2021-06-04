@@ -79,7 +79,8 @@ const defaultSettingsKeyTypes = [
     {key: 'oauth_client_id', type: 'oauth'},
     {key: 'oauth_client_secret', type: 'oauth'},
     {key: 'editor_default_email_recipients', type: 'editor'},
-    {key: 'editor_default_email_recipients_filter', type: 'editor'}
+    {key: 'editor_default_email_recipients_filter', type: 'editor'},
+    {key: 'labs', type: 'blog'}
 ];
 
 describe('Settings API (v2)', function () {
@@ -264,19 +265,23 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it('Can\'t read labs dropped in v4', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/labs/'))
+        it('Can read labs', async function () {
+            const res = await request.get(localUtils.API.getApiQuery('settings/labs/'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(404)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(200);
 
-                    done();
-                });
+            should.not.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+
+            should.exist(jsonResponse);
+            should.exist(jsonResponse.settings);
+
+            jsonResponse.settings.length.should.eql(1);
+            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+            jsonResponse.settings[0].key.should.eql('labs');
+            jsonResponse.settings[0].value.should.eql(JSON.stringify({}));
         });
 
         it('Can read default_locale deprecated in v3', function (done) {
@@ -516,31 +521,35 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it('Can\'t edit labs dropped in v4', function (done) {
+        it('Can edit labs', async function () {
             const settingToChange = {
-                settings: [{key: 'labs', value: JSON.stringify({members: false})}]
+                settings: [{
+                    key: 'labs',
+                    value: JSON.stringify({
+                        matchHelper: true
+                    })
+                }]
             };
 
-            request.put(localUtils.API.getApiQuery('settings/'))
+            const res = await request.put(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .send(settingToChange)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(200);
 
-                    const jsonResponse = res.body;
+            const jsonResponse = res.body;
 
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
+            should.exist(jsonResponse);
+            should.exist(jsonResponse.settings);
 
-                    jsonResponse.settings.length.should.eql(0);
+            jsonResponse.settings.length.should.eql(1);
+            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+            jsonResponse.settings[0].key.should.eql('labs');
 
-                    done();
-                });
+            jsonResponse.settings[0].value.should.eql(JSON.stringify({
+                matchHelper: true
+            }));
         });
 
         it('Can\'t edit non existent setting', function () {
