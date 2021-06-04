@@ -14,7 +14,15 @@ export default class extends Component {
     @tracked productModel = null;
 
     get products() {
-        return this.args.products;
+        return this.args.products.map((product, idx) => {
+            if (idx === 0) {
+                return {
+                    ...product.toJSON(),
+                    portal: true
+                };
+            }
+            return product;
+        });
     }
 
     @action
