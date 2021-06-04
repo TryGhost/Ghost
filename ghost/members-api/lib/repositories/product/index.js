@@ -313,18 +313,6 @@ class ProductRepository {
                         priceModel = stripePrice;
                     }
 
-                    const existingMonthlyPrice = await product.related('monthlyPrice').fetch(options);
-
-                    if (existingMonthlyPrice) {
-                        await this._stripeAPIService.updatePrice(existingMonthlyPrice.get('stripe_price_id'), {
-                            active: false
-                        });
-
-                        await this._StripePrice.edit({
-                            active: false
-                        }, {...options, id: existingMonthlyPrice.id});
-                    }
-
                     product = await this._Product.edit({monthly_price_id: priceModel.id}, {...options, id: product.id});
                 }
 
@@ -371,18 +359,6 @@ class ProductRepository {
                         }, options);
 
                         priceModel = stripePrice;
-                    }
-
-                    const existingYearlyPrice = await product.related('yearlyPrice').fetch(options);
-
-                    if (existingYearlyPrice) {
-                        await this._stripeAPIService.updatePrice(existingYearlyPrice.get('stripe_price_id'), {
-                            active: false
-                        });
-
-                        await this._StripePrice.edit({
-                            active: false
-                        }, {...options, id: existingYearlyPrice.id});
                     }
 
                     product = await this._Product.edit({yearly_price_id: priceModel.id}, {...options, id: product.id});
