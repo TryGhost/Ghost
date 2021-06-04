@@ -30,6 +30,18 @@ describe('{{authors}} helper', function () {
         String(rendered).should.equal('Michael, Thomas');
     });
 
+    it('can return string with authors with special chars', function () {
+        const authors = [
+            testUtils.DataGenerator.forKnex.createUser({name: 'John O\'Nolan'}),
+            testUtils.DataGenerator.forKnex.createUser({name: 'AB=CD`EF'})
+        ];
+
+        const rendered = helpers.authors.call({authors: authors}, {hash: {autolink: 'false'}});
+        should.exist(rendered);
+
+        String(rendered).should.equal('John O&#x27;Nolan, AB&#x3D;CD&#x60;EF');
+    });
+
     it('can use a different separator', function () {
         const authors = [
             testUtils.DataGenerator.forKnex.createUser({name: 'haunted'}),
