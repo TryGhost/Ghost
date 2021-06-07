@@ -12,342 +12,342 @@ const ghost = testUtils.startGhost;
 const defaultSettingsKeyTypes = [
     {
         key: 'title',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'description',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'logo',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'cover_image',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'icon',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'lang',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'locale',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'timezone',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'codeinjection_head',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'codeinjection_foot',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'facebook',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'twitter',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'navigation',
-        type: 'blog',
+        type: 'array',
         group: 'site'
     },
     {
         key: 'secondary_navigation',
-        type: 'blog',
+        type: 'array',
         group: 'site'
     },
     {
         key: 'meta_title',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'meta_description',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'og_image',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'og_title',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'og_description',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'twitter_image',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'twitter_title',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'twitter_description',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'active_theme',
-        type: 'theme',
+        type: 'string',
         group: 'theme'
     },
     {
         key: 'is_private',
-        type: 'private',
+        type: 'boolean',
         group: 'private'
     },
     {
         key: 'password',
-        type: 'private',
+        type: 'string',
         group: 'private'
     },
     {
         key: 'public_hash',
-        type: 'private',
+        type: 'string',
         group: 'private'
     },
     {
         key: 'default_content_visibility',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_signup_access',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_from_address',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_support_address',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_reply_address',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_paid_signup_redirect',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_free_signup_redirect',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_free_price_name',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_free_price_description',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_monthly_price_id',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'members_yearly_price_id',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_product_name',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_plans',
-        type: 'members',
+        type: 'array',
         group: 'members'
     },
     {
         key: 'stripe_secret_key',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_publishable_key',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_connect_secret_key',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_connect_publishable_key',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_connect_account_id',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_connect_display_name',
-        type: 'members',
+        type: 'string',
         group: 'members'
     },
     {
         key: 'stripe_connect_livemode',
-        type: 'members',
+        type: 'boolean',
         group: 'members'
     },
     {
         key: 'portal_name',
-        type: 'portal',
+        type: 'boolean',
         group: 'portal'
     },
     {
         key: 'portal_button',
-        type: 'portal',
+        type: 'boolean',
         group: 'portal'
     },
     {
         key: 'portal_plans',
-        type: 'portal',
+        type: 'array',
         group: 'portal'
     },
     {
         key: 'portal_button_style',
-        type: 'portal',
+        type: 'string',
         group: 'portal'
     },
     {
         key: 'portal_button_icon',
-        type: 'portal',
+        type: 'string',
         group: 'portal'
     },
     {
         key: 'portal_button_signup_text',
-        type: 'portal',
+        type: 'string',
         group: 'portal'
     },
     {
         key: 'mailgun_api_key',
-        type: 'bulk_email',
+        type: 'string',
         group: 'email'
     },
     {
         key: 'mailgun_domain',
-        type: 'bulk_email',
+        type: 'string',
         group: 'email'
     },
     {
         key: 'mailgun_base_url',
-        type: 'bulk_email',
+        type: 'string',
         group: 'email'
     },
     {
         key: 'email_track_opens',
-        type: 'bulk_email',
+        type: 'boolean',
         group: 'email'
     },
     {
         key: 'amp',
-        type: 'blog',
+        type: 'boolean',
         group: 'amp'
     },
     {
         key: 'amp_gtag_id',
-        type: 'blog',
+        type: 'string',
         group: 'amp'
     },
     {
         key: 'slack',
-        type: 'blog',
+        type: 'string',
         group: 'slack'
     },
     {
         key: 'slack_url',
-        type: 'blog',
+        type: 'string',
         group: 'slack'
     },
     {
         key: 'slack_username',
-        type: 'blog',
+        type: 'string',
         group: 'slack'
     },
     {
         key: 'unsplash',
-        type: 'blog',
+        type: 'boolean',
         group: 'unsplash'
     },
     {
         key: 'shared_views',
-        type: 'blog',
+        type: 'array',
         group: 'views'
     },
     {
         key: 'active_timezone',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'default_locale',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'accent_color',
-        type: 'blog',
+        type: 'string',
         group: 'site'
     },
     {
         key: 'newsletter_show_badge',
-        type: 'newsletter',
+        type: 'boolean',
         group: 'newsletter'
     },
     {
         key: 'newsletter_show_header',
-        type: 'newsletter',
+        type: 'boolean',
         group: 'newsletter'
     },
     {
@@ -382,47 +382,47 @@ const defaultSettingsKeyTypes = [
     },
     {
         key: 'newsletter_body_font_category',
-        type: 'newsletter',
+        type: 'string',
         group: 'newsletter'
     },
     {
         key: 'newsletter_footer_content',
-        type: 'newsletter',
+        type: 'string',
         group: 'newsletter'
     },
     {
         key: 'firstpromoter',
-        type: 'firstpromoter',
+        type: 'boolean',
         group: 'firstpromoter'
     },
     {
         key: 'firstpromoter_id',
-        type: 'firstpromoter',
+        type: 'string',
         group: 'firstpromoter'
     },
     {
         key: 'oauth_client_id',
-        type: 'oauth',
+        type: 'string',
         group: 'oauth'
     },
     {
         key: 'oauth_client_secret',
-        type: 'oauth',
+        type: 'string',
         group: 'oauth'
     },
     {
         key: 'editor_default_email_recipients',
-        type: 'editor',
+        type: 'string',
         group: 'editor'
     },
     {
         key: 'editor_default_email_recipients_filter',
-        type: 'editor',
+        type: 'string',
         group: 'editor'
     },
     {
         key: 'labs',
-        type: 'blog',
+        type: 'object',
         group: 'labs'
     }
 ];
@@ -522,7 +522,8 @@ describe('Settings API (canary)', function () {
                     Object.keys(settings).length.should.equal(1);
                     settings[0].key.should.equal('active_theme');
                     settings[0].value.should.equal('casper');
-                    settings[0].type.should.equal('theme');
+                    settings[0].type.should.equal('string');
+                    settings[0].group.should.equal('theme');
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });
