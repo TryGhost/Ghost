@@ -71,33 +71,18 @@ async function haxGetMembersPriceData() {
 
     try {
         const {products} = await api.canary.products.browse({
-            include: 'stripe_prices'
+            include: ['monthly_price','yearly_price']
         });
 
         const defaultProduct = products[0];
 
-        const monthlyPriceId = settingsCache.get('members_monthly_price_id');
-        const yearlyPriceId = settingsCache.get('members_yearly_price_id');
+        const monthlyPrice = makePriceObject(defaultProduct.monthly_price || defaultPrice);
 
-        const activePrices = defaultProduct.stripe_prices.filter((price) => {
-            return price.active;
-        });
-
-        const nonZeroPrices = activePrices.filter((price) => {
-            return price.amount !== 0;
-        });
-
-        const monthlyPrice = nonZeroPrices.find((price) => {
-            return price.id === monthlyPriceId;
-        });
-
-        const yearlyPrice = nonZeroPrices.find((price) => {
-            return price.id === yearlyPriceId;
-        });
+        const yearlyPrice = makePriceObject(defaultProduct.yearly_price || defaultPrice);
 
         const priceData = {
-            monthly: makePriceObject(monthlyPrice || defaultPrice),
-            yearly: makePriceObject(yearlyPrice || defaultPrice),
+            monthly: monthlyPrice,
+            yearly: yearlyPrice,
             currency: monthlyPrice ? monthlyPrice.currency : defaultPrice.currency
         };
 
