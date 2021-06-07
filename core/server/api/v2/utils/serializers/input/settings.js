@@ -2,7 +2,6 @@ const _ = require('lodash');
 const url = require('./utils/url');
 const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
 const settingsCache = require('../../../../../services/settings/cache');
-const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../services/labs');
 
 const DEPRECATED_SETTINGS = [
     'bulk_email_settings',
@@ -92,11 +91,12 @@ module.exports = {
 
         const settings = settingsCache.getAll();
 
-        // Ignore and drop all values with Read-only flag
         frame.data.settings = frame.data.settings.filter((setting) => {
             const settingFlagsStr = settings[setting.key] ? settings[setting.key].flags : '';
             const settingFlagsArr = settingFlagsStr ? settingFlagsStr.split(',') : [];
-            return !settingFlagsArr.includes('RO');
+
+            // Ignore and drop all values with Read-only flag AND 'labs' setting
+            return !settingFlagsArr.includes('RO') && (setting.key !== 'labs');
         });
 
         frame.data.settings.push(...getMappedDeprecatedSettings(frame.data.settings));
@@ -137,19 +137,6 @@ module.exports = {
 
             if (setting.key === 'unsplash') {
                 setting.value = JSON.parse(setting.value).isActive;
-            }
-
-            if (setting.key === 'labs') {
-                const inputLabsValue = JSON.parse(setting.value);
-                const filteredLabsValue = {};
-
-                for (const value in inputLabsValue) {
-                    if (WRITABLE_KEYS_ALLOWLIST.includes(value)) {
-                        filteredLabsValue[value] = inputLabsValue[value];
-                    }
-                }
-
-                setting.value = JSON.stringify(filteredLabsValue);
             }
 
             setting = url.forSetting(setting);
