@@ -11,6 +11,7 @@ export default Controller.extend({
     store: service(),
 
     showInviteUserModal: false,
+    showResetAllPasswordsModal: false,
 
     inviteOrder: null,
     userOrder: null,
@@ -52,6 +53,9 @@ export default Controller.extend({
     actions: {
         toggleInviteUserModal() {
             this.toggleProperty('showInviteUserModal');
+        },
+        toggleResetAllPasswordsModal() {
+            this.toggleProperty('showResetAllPasswordsModal');
         }
     },
 
