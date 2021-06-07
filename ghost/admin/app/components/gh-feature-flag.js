@@ -7,7 +7,7 @@ const FeatureFlagComponent = Component.extend({
     feature: service(),
 
     tagName: 'label',
-    classNames: 'checkbox',
+    classNames: 'switch',
     attributeBindings: ['for', 'disabled'],
     disabled: computed('_disabled', function () {
         if (this._disabled) {
