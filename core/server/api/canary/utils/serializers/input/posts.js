@@ -6,6 +6,7 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const imagesSchema = require('../../../../../data/schema').tables.images;
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
@@ -76,6 +77,20 @@ function handlePostsMeta(frame) {
     let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
     let meta = _.pick(frame.data.posts[0], metaAttrs);
     frame.data.posts[0].posts_meta = meta;
+}
+
+function handleFeatureImage(frame) {
+    const featureImage = {
+        url: frame.data.posts[0].feature_image
+    };
+
+    const featureImageAttrs = _.keys(_.omit(imagesSchema, ['url']));
+    featureImageAttrs.forEach((attr) => {
+        featureImage[attr] = frame.data.posts[0][`feature_image_${attr}`];
+        delete frame.data.posts[0][`feature_image_${attr}`];
+    });
+
+    frame.data.posts[0].feature_image = featureImage;
 }
 
 /**
@@ -207,6 +222,7 @@ module.exports = {
 
         transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
+        handleFeatureImage(frame);
         defaultFormat(frame);
         defaultRelations(frame);
     },
@@ -215,8 +231,6 @@ module.exports = {
         debug('edit');
         this.add(apiConfig, frame, {add: false});
 
-        transformLegacyEmailRecipientFilters(frame);
-        handlePostsMeta(frame);
         forceStatusFilter(frame);
         forcePageFilter(frame);
     },

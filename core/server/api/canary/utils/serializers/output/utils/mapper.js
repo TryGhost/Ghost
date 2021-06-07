@@ -6,6 +6,7 @@ const gating = require('./post-gating');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
+const imagesSchema = require('../../../../../../data/schema').tables.images;
 const mega = require('../../../../../../services/mega');
 
 const mapUser = (model, frame) => {
@@ -80,6 +81,17 @@ const mapPost = (model, frame) => {
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
     });
     delete jsonModel.posts_meta;
+
+    // Transforms feature_image object to flat structure
+    if (jsonModel.feature_image) {
+        let featureImageAttrs = _.keys(_.omit(imagesSchema, ['id', 'imageable_id', 'imageable_type', 'created_at', 'updated_at', 'created_by', 'updated_by']));
+        _(featureImageAttrs).filter((k) => {
+            return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
+        }).each((attr) => {
+            jsonModel[`feature_image_${attr}`] = _.get(jsonModel.feature_image, attr) || null;
+        });
+        jsonModel.feature_image = jsonModel.feature_image.url;
+    }
 
     return jsonModel;
 };
