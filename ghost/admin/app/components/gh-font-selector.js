@@ -5,7 +5,7 @@ export default class GhFontSelector extends Component {
     get options() {
         return [{
             name: 'Elegant serif',
-            description: 'All site visitors to your site, no login required',
+            description: 'Beautiful lines with great readability',
             value: 'serif'
         }, {
             name: 'Clean sans-serif',
