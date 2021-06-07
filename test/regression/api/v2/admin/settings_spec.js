@@ -521,7 +521,7 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it('Can edit only allowed labs keys', async function () {
+        it('Cannot edit labs keys', async function () {
             const settingToChange = {
                 settings: [{
                     key: 'labs',
@@ -544,13 +544,7 @@ describe('Settings API (v2)', function () {
             should.exist(jsonResponse);
             should.exist(jsonResponse.settings);
 
-            jsonResponse.settings.length.should.eql(1);
-            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-            jsonResponse.settings[0].key.should.eql('labs');
-
-            jsonResponse.settings[0].value.should.eql(JSON.stringify({
-                activitypub: true
-            }));
+            jsonResponse.settings.length.should.eql(0);
         });
 
         it('Can\'t edit non existent setting', function () {
