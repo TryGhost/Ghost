@@ -10,83 +10,391 @@ const ghost = testUtils.startGhost;
 // NOTE: in future iterations these fields should be fetched from a central module.
 //       Have put a list as is here for the lack of better place for it.
 const defaultSettingsKeyTypes = [
-    {key: 'title', type: 'blog'},
-    {key: 'description', type: 'blog'},
-    {key: 'logo', type: 'blog'},
-    {key: 'cover_image', type: 'blog'},
-    {key: 'icon', type: 'blog'},
-    {key: 'lang', type: 'blog'},
-    {key: 'locale', type: 'blog'},
-    {key: 'timezone', type: 'blog'},
-    {key: 'codeinjection_head', type: 'blog'},
-    {key: 'codeinjection_foot', type: 'blog'},
-    {key: 'facebook', type: 'blog'},
-    {key: 'twitter', type: 'blog'},
-    {key: 'navigation', type: 'blog'},
-    {key: 'secondary_navigation', type: 'blog'},
-    {key: 'meta_title', type: 'blog'},
-    {key: 'meta_description', type: 'blog'},
-    {key: 'og_image', type: 'blog'},
-    {key: 'og_title', type: 'blog'},
-    {key: 'og_description', type: 'blog'},
-    {key: 'twitter_image', type: 'blog'},
-    {key: 'twitter_title', type: 'blog'},
-    {key: 'twitter_description', type: 'blog'},
-    {key: 'active_theme', type: 'theme'},
-    {key: 'is_private', type: 'private'},
-    {key: 'password', type: 'private'},
-    {key: 'public_hash', type: 'private'},
-    {key: 'default_content_visibility', type: 'members'},
-    {key: 'members_signup_access', type: 'members'},
-    {key: 'members_from_address', type: 'members'},
-    {key: 'members_support_address', type: 'members'},
-    {key: 'members_reply_address', type: 'members'},
-    {key: 'members_paid_signup_redirect', type: 'members'},
-    {key: 'members_free_signup_redirect', type: 'members'},
-    {key: 'members_free_price_name', type: 'members'},
-    {key: 'members_free_price_description', type: 'members'},
-    {key: 'members_monthly_price_id', type: 'members'},
-    {key: 'members_yearly_price_id', type: 'members'},
-    {key: 'stripe_product_name', type: 'members'},
-    {key: 'stripe_plans', type: 'members'},
-    {key: 'stripe_secret_key', type: 'members'},
-    {key: 'stripe_publishable_key', type: 'members'},
-    {key: 'stripe_connect_secret_key', type: 'members'},
-    {key: 'stripe_connect_publishable_key', type: 'members'},
-    {key: 'stripe_connect_account_id', type: 'members'},
-    {key: 'stripe_connect_display_name', type: 'members'},
-    {key: 'stripe_connect_livemode', type: 'members'},
-    {key: 'portal_name', type: 'portal'},
-    {key: 'portal_button', type: 'portal'},
-    {key: 'portal_plans', type: 'portal'},
-    {key: 'portal_button_style', type: 'portal'},
-    {key: 'portal_button_icon', type: 'portal'},
-    {key: 'portal_button_signup_text', type: 'portal'},
-    {key: 'mailgun_api_key', type: 'bulk_email'},
-    {key: 'mailgun_domain', type: 'bulk_email'},
-    {key: 'mailgun_base_url', type: 'bulk_email'},
-    {key: 'email_track_opens', type: 'bulk_email'},
-    {key: 'amp', type: 'blog'},
-    {key: 'amp_gtag_id', type: 'blog'},
-    {key: 'slack', type: 'blog'},
-    {key: 'slack_url', type: 'blog'},
-    {key: 'slack_username', type: 'blog'},
-    {key: 'unsplash', type: 'blog'},
-    {key: 'shared_views', type: 'blog'},
-    {key: 'active_timezone', type: 'blog'},
-    {key: 'default_locale', type: 'blog'},
-    {key: 'accent_color', type: 'blog'},
-    {key: 'newsletter_show_badge', type: 'newsletter'},
-    {key: 'newsletter_show_header', type: 'newsletter'},
-    {key: 'newsletter_body_font_category', type: 'newsletter'},
-    {key: 'newsletter_footer_content', type: 'newsletter'},
-    {key: 'firstpromoter', type: 'firstpromoter'},
-    {key: 'firstpromoter_id', type: 'firstpromoter'},
-    {key: 'oauth_client_id', type: 'oauth'},
-    {key: 'oauth_client_secret', type: 'oauth'},
-    {key: 'editor_default_email_recipients', type: 'editor'},
-    {key: 'editor_default_email_recipients_filter', type: 'editor'},
-    {key: 'labs', type: 'blog'}
+    {
+        key: 'title',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'description',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'logo',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'cover_image',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'icon',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'lang',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'locale',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'timezone',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'codeinjection_head',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'codeinjection_foot',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'facebook',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'twitter',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'navigation',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'secondary_navigation',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'meta_title',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'meta_description',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'og_image',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'og_title',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'og_description',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'twitter_image',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'twitter_title',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'twitter_description',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'active_theme',
+        type: 'theme',
+        group: 'theme'
+    },
+    {
+        key: 'is_private',
+        type: 'private',
+        group: 'private'
+    },
+    {
+        key: 'password',
+        type: 'private',
+        group: 'private'
+    },
+    {
+        key: 'public_hash',
+        type: 'private',
+        group: 'private'
+    },
+    {
+        key: 'default_content_visibility',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_signup_access',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_from_address',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_support_address',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_reply_address',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_paid_signup_redirect',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_free_signup_redirect',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_free_price_name',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_free_price_description',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_monthly_price_id',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'members_yearly_price_id',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_product_name',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_plans',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_secret_key',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_publishable_key',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_connect_secret_key',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_connect_publishable_key',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_connect_account_id',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_connect_display_name',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'stripe_connect_livemode',
+        type: 'members',
+        group: 'members'
+    },
+    {
+        key: 'portal_name',
+        type: 'portal',
+        group: 'portal'
+    },
+    {
+        key: 'portal_button',
+        type: 'portal',
+        group: 'portal'
+    },
+    {
+        key: 'portal_plans',
+        type: 'portal',
+        group: 'portal'
+    },
+    {
+        key: 'portal_button_style',
+        type: 'portal',
+        group: 'portal'
+    },
+    {
+        key: 'portal_button_icon',
+        type: 'portal',
+        group: 'portal'
+    },
+    {
+        key: 'portal_button_signup_text',
+        type: 'portal',
+        group: 'portal'
+    },
+    {
+        key: 'mailgun_api_key',
+        type: 'bulk_email',
+        group: 'email'
+    },
+    {
+        key: 'mailgun_domain',
+        type: 'bulk_email',
+        group: 'email'
+    },
+    {
+        key: 'mailgun_base_url',
+        type: 'bulk_email',
+        group: 'email'
+    },
+    {
+        key: 'email_track_opens',
+        type: 'bulk_email',
+        group: 'email'
+    },
+    {
+        key: 'amp',
+        type: 'blog',
+        group: 'amp'
+    },
+    {
+        key: 'amp_gtag_id',
+        type: 'blog',
+        group: 'amp'
+    },
+    {
+        key: 'slack',
+        type: 'blog',
+        group: 'slack'
+    },
+    {
+        key: 'slack_url',
+        type: 'blog',
+        group: 'slack'
+    },
+    {
+        key: 'slack_username',
+        type: 'blog',
+        group: 'slack'
+    },
+    {
+        key: 'unsplash',
+        type: 'blog',
+        group: 'unsplash'
+    },
+    {
+        key: 'shared_views',
+        type: 'blog',
+        group: 'views'
+    },
+    {
+        key: 'active_timezone',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'default_locale',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'accent_color',
+        type: 'blog',
+        group: 'site'
+    },
+    {
+        key: 'newsletter_show_badge',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_show_header',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_body_font_category',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_footer_content',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'firstpromoter',
+        type: 'firstpromoter',
+        group: 'firstpromoter'
+    },
+    {
+        key: 'firstpromoter_id',
+        type: 'firstpromoter',
+        group: 'firstpromoter'
+    },
+    {
+        key: 'oauth_client_id',
+        type: 'oauth',
+        group: 'oauth'
+    },
+    {
+        key: 'oauth_client_secret',
+        type: 'oauth',
+        group: 'oauth'
+    },
+    {
+        key: 'editor_default_email_recipients',
+        type: 'editor',
+        group: 'editor'
+    },
+    {
+        key: 'editor_default_email_recipients_filter',
+        type: 'editor',
+        group: 'editor'
+    },
+    {
+        key: 'labs',
+        type: 'blog',
+        group: 'labs'
+    }
 ];
 
 describe('Settings API (canary)', function () {
@@ -124,8 +432,10 @@ describe('Settings API (canary)', function () {
                     should.equal(settings.length, defaultSettingsKeyTypes.length);
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
-                            return setting.key === defaultSetting.key && setting.type === defaultSetting.type;
-                        }), `Expected to find a setting with key ${defaultSetting.key} and type ${defaultSetting.type}`);
+                            return (setting.key === defaultSetting.key)
+                                && (setting.type === defaultSetting.type)
+                                && (setting.group === defaultSetting.group);
+                        }), `Expected to find a setting with key ${defaultSetting.key}, type ${defaultSetting.type}, and group ${defaultSetting.group}`);
                     }
 
                     const unsplash = settings.find(s => s.key === 'unsplash');
