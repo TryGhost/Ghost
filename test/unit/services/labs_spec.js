@@ -9,6 +9,12 @@ describe('Labs Service', function () {
         sinon.restore();
     });
 
+    it('can getAll, even if empty with enabled members', function () {
+        labs.getAll().should.eql({
+            members: true
+        });
+    });
+
     it('members flag is true when members_signup_access setting is "all"', function () {
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('members_signup_access').returns('all');
@@ -18,6 +24,22 @@ describe('Labs Service', function () {
         });
 
         labs.isSet('members').should.be.true;
+    });
+
+    it('returns other allowlisted flags along with members', function () {
+        sinon.stub(settingsCache, 'get');
+        settingsCache.get.withArgs('members_signup_access').returns('all');
+        settingsCache.get.withArgs('labs').returns({
+            activitypub: false
+        });
+
+        labs.getAll().should.eql({
+            members: true,
+            activitypub: false
+        });
+
+        labs.isSet('members').should.be.true;
+        labs.isSet('activitypub').should.be.false;
     });
 
     it('members flag is false when members_signup_access setting is "none"', function () {

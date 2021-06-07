@@ -14,9 +14,13 @@ const WRITABLE_KEYS_ALLOWLIST = [
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = WRITABLE_KEYS_ALLOWLIST;
 
-module.exports.getAll = () => ({
-    members: settingsCache.get('members_signup_access') !== 'none'
-});
+module.exports.getAll = () => {
+    const labs = _.cloneDeep(settingsCache.get('labs')) || {};
+
+    labs.members = settingsCache.get('members_signup_access') !== 'none';
+
+    return labs;
+};
 
 module.exports.isSet = function isSet(flag) {
     const labsConfig = module.exports.getAll();
