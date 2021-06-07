@@ -227,7 +227,7 @@
 }
 
 
-/* Full screen setting modal with preview. Used in e.g. Portal 
+/* Full screen setting modal with preview. Used in e.g. Portal
 /* settings, Email design settings etc.
 /* ---------------------------------------------------------- */
 .modal-fullsettings {
@@ -240,6 +240,9 @@
     display: flex;
     padding: 0;
     flex-grow: 1;
+}
+.labs-newsletter-settings .modal-fullsettings-body {
+    overflow: hidden;
 }
 
 .modal-fullsettings-body .form-group.space-l {
@@ -266,6 +269,10 @@
     padding: 0px 24px 20px;
     width: 362px;
 }
+.labs-newsletter-settings .modal-fullsettings-sidebar {
+    width: 400px;
+    overflow-y: auto;
+}
 
 .modal-fullsettings-sidebar.with-footer {
     justify-content: space-between;
@@ -275,6 +282,9 @@
     height: 66px;
     padding: 0 24px;
 }
+.labs-newsletter-settings .modal-fullsettings-topbar {
+    border-bottom: 1px solid var(--whitegrey);
+}
 
 .modal-fullsettings-heading {
     display: flex;
@@ -283,6 +293,9 @@
     font-weight: 600;
     padding: 0 24px;
     margin: 0 -24px 1px;
+}
+.labs-newsletter-settings .modal-fullsettings-heading {
+    height: 66px;
 }
 
 .modal-fullsettings-form {
@@ -294,13 +307,21 @@
     padding: 0 24px;
 }
 
+/* labs-newsletter-settings - delete all when removing flag */
 .modal-fullsettings-section.first {
     margin-top: 8px;
 }
+.labs-newsletter-settings .modal-fullsettings-section.first {
+    margin-top: 24px;
+}
+/* end delete all */
 
 .modal-fullsettings-section.divider-top {
     border-top: 1px solid var(--whitegrey);
     padding-top: 16px;
+}
+.labs-newsletter-settings .modal-fullsettings-section.divider-top {
+    padding-top: 24px;
 }
 
 .modal-fullsettings-sectionheading {
@@ -318,6 +339,9 @@
     align-items: center;
     padding: 0;
     margin-bottom: 0;
+}
+.labs-newsletter-settings .modal-fullsettings-section .form-group {
+    margin-bottom: 20px;
 }
 
 .modal-fullsettings-section .form-group > p {
@@ -365,6 +389,99 @@
     margin: 0 12px 0 0;
 }
 
+.labs-newsletter-settings .modal-fullsettings-uploader {
+    display: flex;
+    align-items: center;
+    margin: 18px 0 0;
+    padding: 3px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 3px;
+}
+
+.labs-newsletter-settings .gh-header-img-uploadicon,
+.labs-newsletter-settings .gh-header-img-uploadicon:hover,
+.labs-newsletter-settings .gh-header-img-uploadicon:focus {
+    width: 56px;
+    height: 44px;
+    margin-right: 11px;
+    border: 1px dashed var(--lightgrey);
+    background: transparent;
+    box-shadow: none;
+}
+
+.labs-newsletter-settings .gh-header-img-uploadicon span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.labs-newsletter-settings .gh-header-img-uploadicon span svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--darkgrey);
+}
+
+.labs-newsletter-settings .gh-header-img-uploadicon:hover span svg {
+    fill: var(--darkgrey);
+}
+
+.labs-newsletter-settings .gh-header-img-container {
+    height: 44px;
+}
+
+.labs-newsletter-settings .gh-header-img-thumbnail {
+    display: inline-block;
+    width: 56px;
+    height: 44px;
+    margin: 0 11px 0 0;
+    border: 1px solid var(--whitegrey);
+    cursor: pointer;
+    background-position: center;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.labs-newsletter-settings .gh-header-img-thumbnail svg path {
+    stroke: var(--midlightgrey-d1);
+}
+
+.labs-newsletter-settings .gh-header-img-deleteicon {
+    position: absolute;
+    left: 4px;
+    width: 56px;
+    height: 44px;
+    background: var(--black) !important;
+    opacity: 0;
+}
+
+.labs-newsletter-settings .gh-header-img-deleteicon:hover {
+    opacity: 1;
+}
+
+.labs-newsletter-settings .gh-header-img-deleteicon span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.labs-newsletter-settings .gh-header-img-deleteicon span svg {
+    width: 18px;
+    height: 18px;
+}
+
+.modal-fullsettings-uploader h4 {
+    margin: 0 !important;
+    padding: 0;
+    font-size: 1.3rem;
+    line-height: 1.4em;
+}
+
+.modal-fullsettings-uploader p {
+    margin: 0 !important;
+    padding: 0;
+    font-size: 1.2rem !important;
+}
+
 .modal-fullsettings-main {
     display: flex;
     flex-direction: column;
@@ -379,6 +496,9 @@
     height: calc(100vh - 126px);
     overflow-y: scroll;
 }
+.labs-newsletter-settings .modal-fullsettings-preview-container {
+    height: 100vh;
+}
 
 .modal-fullsettings-preview-hidescrollbar {
     overflow: hidden;
@@ -386,6 +506,9 @@
     background: var(--whitegrey-l1);
     border: 1px solid var(--whitegrey);
     border-radius: 5px;
+}
+.labs-newsletter-settings .modal-fullsettings-preview-hidescrollbar {
+    height: 100vh;
 }
 
 .modal-fullsettings-preview-hidescrollbar .modal-fullsettings-preview-container {

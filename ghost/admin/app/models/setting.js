@@ -77,9 +77,15 @@ export default Model.extend(ValidationEngine, {
     * Newsletter settings
     */
     newsletterShowHeader: attr('boolean'),
+    newsletterHeaderImage: attr('string'),
+    newsletterShowHeaderIcon: attr('boolean'),
+    newsletterShowHeaderTitle: attr('boolean'),
+    newsletterTitleFontCategory: attr('string'),
+    newsletterTitleAlignment: attr('string'),
+    newsletterShowFeatureImage: attr('boolean'),
     newsletterBodyFontCategory: attr('string'),
-    newsletterShowBadge: attr('boolean'),
     newsletterFooterContent: attr('string'),
+    newsletterShowBadge: attr('boolean'),
     /**
      * OAuth settings
      */
