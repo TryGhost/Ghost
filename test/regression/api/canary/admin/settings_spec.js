@@ -352,32 +352,32 @@ const defaultSettingsKeyTypes = [
     },
     {
         key: 'newsletter_header_image',
-        type: 'newsletter',
+        type: 'string',
         group: 'newsletter'
     },
     {
         key: 'newsletter_show_header_icon',
-        type: 'newsletter',
+        type: 'boolean',
         group: 'newsletter'
     },
     {
         key: 'newsletter_show_header_title',
-        type: 'newsletter',
+        type: 'boolean',
         group: 'newsletter'
     },
     {
         key: 'newsletter_title_alignment',
-        type: 'newsletter',
+        type: 'string',
         group: 'newsletter'
     },
     {
         key: 'newsletter_title_font_category',
-        type: 'newsletter',
+        type: 'string',
         group: 'newsletter'
     },
     {
         key: 'newsletter_show_feature_image',
-        type: 'newsletter',
+        type: 'boolean',
         group: 'newsletter'
     },
     {
