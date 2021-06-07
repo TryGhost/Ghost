@@ -34,7 +34,9 @@ export default class extends Component {
             return false;
         }
         let subscriptions = this.member.get('subscriptions') || [];
-        const hasZeroPriceSub = subscriptions.find((sub) => {
+        const hasZeroPriceSub = subscriptions.filter((sub) => {
+            return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.status);
+        }).find((sub) => {
             return !sub?.price?.amount;
         });
         return !hasZeroPriceSub;
