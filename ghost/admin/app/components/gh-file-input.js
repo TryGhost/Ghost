@@ -4,6 +4,10 @@ import XFileInput from 'emberx-file-input/components/x-file-input';
 // upgraded to emberx-file-input@1.2.0
 
 export default XFileInput.extend({
+    didInsertElement() {
+        this.onInsert?.(this.element.querySelector('input[type="file"]'));
+    },
+
     change(e) {
         let action = this.action;
         let files = this.files(e);

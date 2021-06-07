@@ -1,6 +1,12 @@
 import Component from '@ember/component';
 import EmberObject from '@ember/object';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import {
+    ICON_EXTENSIONS,
+    ICON_MIME_TYPES,
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES
+} from 'ghost-admin/components/gh-image-uploader';
 import {all, task} from 'ember-concurrency';
 import {get} from '@ember/object';
 import {isArray} from '@ember/array';
@@ -89,6 +95,11 @@ export default Component.extend({
         if (!this.paramsHash) {
             this.set('paramsHash', {purpose: 'image'});
         }
+
+        this.set('imageExtensions', IMAGE_EXTENSIONS);
+        this.set('imageMimeTypes', IMAGE_MIME_TYPES);
+        this.set('iconExtensions', ICON_EXTENSIONS);
+        this.set('iconMimeTypes', ICON_MIME_TYPES);
     },
 
     didReceiveAttrs() {
@@ -105,6 +116,20 @@ export default Component.extend({
     },
 
     actions: {
+        registerFileInput(input) {
+            this.fileInput = input;
+        },
+
+        triggerFileDialog() {
+            if (!this.fileInput) {
+                // eslint-disable-next-line
+                console.error('When using uploader.triggerFileDialog you must call uploader.registerFileInput first');
+                return;
+            }
+
+            this.fileInput.click();
+        },
+
         setFiles(files, resetInput) {
             this._setFiles(files);
 

@@ -58,7 +58,7 @@
 
 @media (max-width: 1100px) {
     .members-list {
-        border-bottom: none    
+        border-bottom: none
     }
 }
 
@@ -780,7 +780,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-btn-expandfeed {
-    margin: 8px 0; 
+    margin: 8px 0;
 }
 
 
@@ -1180,6 +1180,13 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
+.labs-newsletter-settings .gh-email-design-alignment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: -4px 0 0 0;
+}
+
 .gh-email-design-typography .gh-radio {
     display: flex;
     align-items: center;
@@ -1188,16 +1195,42 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 0;
     margin-bottom: 12px;
 }
+.labs-newsletter-settings .gh-email-design-typography .gh-radio {
+    margin-bottom: 2px;
+}
 
 .gh-email-design-typography .gh-radio-content {
     border: 1px solid var(--whitegrey);
-    border-radius: 3px;
+    border-radius: 3px; /* labs-newsletter-settings - delete line when removing flag */
     margin: 0 -32px 0 0;
+}
+/* labs-newsletter-settings - delete all when removing flag */
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-content {
+    border-radius: inherit;
+}
+/* end delete all */
+
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.serif {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.sans-serif {
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .active {
+    margin: 0 2px 2px;
 }
 
 .gh-email-design-typography .active .gh-radio-content {
     border: 1px solid transparent;
     box-shadow: 0px 0px 0px 2px var(--green);
+}
+
+.labs-newsletter-settings .gh-email-design-typography .active .gh-radio-label {
+    margin: 0 -2px;
 }
 
 .gh-email-design-typography .gh-radio-button {
@@ -1219,6 +1252,13 @@ p.gh-members-import-errordetail:first-of-type {
     width: 44px;
     text-align: center;
 }
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-label .sample {
+    font-weight: 400;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-label .sample.title {
+    font-weight: 600;
+}
 
 .gh-email-design-typography .gh-radio-label .description h4 {
     font-size: 1.3rem;
@@ -1227,7 +1267,8 @@ p.gh-members-import-errordetail:first-of-type {
     line-height: 1.4em;
 }
 
-.gh-email-design-typography .gh-radio-label.serif .description h4 {
+.gh-email-design-typography .gh-radio-label.serif .description h4,
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.serif .description h4 {
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 1.3rem;
 }
@@ -1238,7 +1279,8 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 0;
 }
 
-.gh-email-design-typography .gh-radio-label.serif .description p {
+.gh-email-design-typography .gh-radio-label.serif .description p,
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.serif .description p {
     font-size: 1.25rem !important;
     margin: 0;
     padding: 0;
@@ -1253,7 +1295,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-emailsettings-footer-input p {
     height: 108px;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .gh-members-emailsettings-footer-input p {
@@ -1265,6 +1307,10 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailsettings-footer {
     padding-top: 20px;
     margin-bottom: 4px;
+}
+.labs-newsletter-settings .gh-members-emailsettings-footer {
+    padding: inherit;
+    margin: 0px -24px 4px;
 }
 
 .gh-members-emailsettings-footer .form-group {
@@ -1406,6 +1452,9 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     padding: 50px 0 40px;
 }
+.labs-newsletter-settings .gh-members-emailpreview-title-left {
+    align-items: flex-start;
+}
 
 .gh-members-emailpreview-title h2 {
     font-size: 4.2rem;
@@ -1436,6 +1485,15 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-title a {
     text-decoration: none;
     color: #15212A;
+}
+
+.labs-newsletter-settings .gh-members-emailpreview-featureimage {
+    width: 100%;
+    max-width: 600px;
+    height: 300px;
+    margin-bottom: 1.7em;
+    background: #fafafa no-repeat 50%;
+    background-size: cover;
 }
 
 .gh-members-emailpreview-content {

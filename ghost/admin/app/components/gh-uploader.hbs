@@ -4,5 +4,11 @@
     files=this.files
     isUploading=this._uploadFiles.isRunning
     progressBar=(component "gh-progress-bar" percentage=this.uploadPercentage)
-    setFiles=(action 'setFiles')
+    setFiles=(action "setFiles")
+    registerFileInput=(action "registerFileInput")
+    triggerFileDialog=(action "triggerFileDialog")
+    imageExtensions=this.imageExtensions
+    imageMimeTypes=this.imageMimeTypes
+    iconExtensions=this.iconExtensions
+    iconMimeTypes=this.iconMimeTypes
 )}}
