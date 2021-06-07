@@ -421,7 +421,7 @@ Usage: CTA buttons grouped together horizontally.
     border-radius: 0;
     height: 30px;
     line-height: 30px;
-    border-radius: 2px;
+    border-radius: 3px;
     background: transparent !important;
     font-weight: 500 !important;
 }
@@ -436,6 +436,31 @@ Usage: CTA buttons grouped together horizontally.
 
 .gh-btn-group .gh-btn-group-selected svg {
     fill: var(--black);
+}
+
+.gh-btn-group.icons .gh-btn {
+    margin: 3px;
+    border-radius: 3px;
+}
+
+.gh-btn-group.icons .gh-btn span {
+    height: 28px;
+    padding: 0 10px;
+}
+
+.gh-btn-group.icons .gh-btn-icon svg {
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
+    fill: var(--midgrey);
+}
+
+.gh-btn-group.icons .gh-btn-group-selected svg {
+    fill: var(--black);
+}
+
+.gh-btn-group.icons .gh-btn-icon svg path {
+    stroke: none;
 }
 
 .gh-btn-block + .gh-btn-block {
