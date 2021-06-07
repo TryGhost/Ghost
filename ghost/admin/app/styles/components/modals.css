@@ -370,6 +370,10 @@
     margin: 18px 0 0;
 }
 
+.labs-newsletter-settings .modal-fullsettings-radiogroup {
+    margin: 0;
+}
+
 .modal-fullsettings-radiogroup .gh-radio {
     margin-bottom: 14px;
 }
@@ -393,8 +397,8 @@
     display: flex;
     align-items: center;
     margin: 18px 0 0;
-    padding: 3px;
-    border: 1px solid var(--whitegrey);
+    padding: 4px;
+    border: 1px solid var(--whitegrey-d1);
     border-radius: 3px;
 }
 
@@ -402,7 +406,7 @@
 .labs-newsletter-settings .gh-header-img-uploadicon:hover,
 .labs-newsletter-settings .gh-header-img-uploadicon:focus {
     width: 56px;
-    height: 44px;
+    height: 50px;
     margin-right: 11px;
     border: 1px dashed var(--lightgrey);
     background: transparent;
@@ -467,6 +471,10 @@
 .labs-newsletter-settings .gh-header-img-deleteicon span svg {
     width: 18px;
     height: 18px;
+}
+
+.labs-newsletter-setings .gh-header-img-desc {
+    padding: 6px 0;
 }
 
 .modal-fullsettings-uploader h4 {
