@@ -34,15 +34,10 @@ module.exports.forPost = (frame, model, attrs) => {
 
 module.exports.forSettings = (attrs, frame) => {
     const _ = require('lodash');
-    const mapGroupToType = require('./settings-type-group-mapper');
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10106
     // @NOTE: Admin & Content API return a different format, needs two mappers
     if (_.isArray(attrs)) {
-        attrs.forEach((attr) => {
-            attr.type = mapGroupToType(attr.group);
-        });
-
         // CASE: read single setting
         if (frame.original.params && frame.original.params.key) {
             if (frame.original.params.key === 'ghost_head') {
