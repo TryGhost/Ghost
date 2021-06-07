@@ -131,72 +131,22 @@
                                 </div>
                             </h4>
                             <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <div class="gh-radio {{if (eq this.titleFontCategory "serif") "active"}}"
-                                    {{on "click" (fn this.changeSetting "titleFontCategory" "serif")}}
-                                >
-                                    <div class="gh-radio-content serif">
-                                        <div class="gh-radio-label">
-                                            <span class="sample title">Aa</span>
-                                            <div class="description">
-                                                <h4>Elegant serif</h4>
-                                                <p>Beautiful lines with great readability</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="gh-radio-button"></div>
-                                </div>
-                                <div class="gh-radio {{if (eq this.titleFontCategory "sans_serif") "active"}}"
-                                    {{on "click" (fn this.changeSetting "titleFontCategory" "sans_serif")}}
-                                >
-                                    <div class="gh-radio-content sans-serif">
-                                        <div class="gh-radio-label">
-                                            <span class="sample title">Aa</span>
-                                            <div class="description">
-                                                <h4>Clean sans-serif</h4>
-                                                <p>A more minimal style with sharp lines</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="gh-radio-button"></div>
-                                </div>
+                                <GhFontSelector
+                                    @selected={{this.titleFontCategory}}
+                                    @onChange={{fn this.changeSetting "titleFontCategory"}}
+                                />
                             </div>
-                            {{!-- <p>Font style for the email title</p> --}}
                         </GhFormGroup>
                     </div>
                     <div class="modal-fullsettings-section">
                         <GhFormGroup @classNames="vertical">
                             <h4 class="modal-fullsettings-title">Body style</h4>
                             <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <div class="gh-radio {{if (eq this.bodyFontCategory "serif") "active"}}"
-                                    {{on "click" (fn this.changeSetting "bodyFontCategory" "serif")}}
-                                >
-                                    <div class="gh-radio-content serif">
-                                        <div class="gh-radio-label">
-                                            <span class="sample">Aa</span>
-                                            <div class="description">
-                                                <h4>Elegant serif</h4>
-                                                <p>Beautiful lines with great readability</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="gh-radio-button"></div>
-                                </div>
-                                <div class="gh-radio {{if (eq this.bodyFontCategory "sans_serif") "active"}}"
-                                    {{on "click" (fn this.changeSetting "bodyFontCategory" "sans_serif")}}
-                                >
-                                    <div class="gh-radio-content sans-serif">
-                                        <div class="gh-radio-label">
-                                            <span class="sample">Aa</span>
-                                            <div class="description">
-                                                <h4>Clean sans-serif</h4>
-                                                <p>A more minimal style with sharp lines</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="gh-radio-button"></div>
-                                </div>
+                                <GhFontSelector
+                                    @selected={{this.bodyFontCategory}}
+                                    @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                                />
                             </div>
-                            {{!-- <p>Font style for the email body content</p> --}}
                         </GhFormGroup>
                     </div>
                     <div class="modal-fullsettings-section divider-top">
