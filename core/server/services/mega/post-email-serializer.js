@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
+const labsTemplate = require('./template-labs');
+const config = require('../../../shared/config');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
@@ -121,6 +123,62 @@ const parseReplacements = (email) => {
     return replacements;
 };
 
+const getTemplateSettings = async () => {
+    return {
+        showSiteHeader: settingsCache.get('newsletter_show_header'),
+        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
+        showBadge: settingsCache.get('newsletter_show_badge'),
+        footerContent: settingsCache.get('newsletter_footer_content'),
+        accentColor: settingsCache.get('accent_color')
+    };
+};
+
+const getLabsTemplateSettings = async () => {
+    const templateSettings = {
+        headerImage: settingsCache.get('newsletter_header_image'),
+        showHeaderIcon: settingsCache.get('newsletter_show_header_icon'),
+        showHeaderTitle: settingsCache.get('newsletter_show_header_title'),
+        showFeatureImage: settingsCache.get('newsletter_show_feature_image'),
+        titleFontCategory: settingsCache.get('newsletter_title_font_category'),
+        titleAlignment: settingsCache.get('newsletter_title_alignment'),
+        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
+        showBadge: settingsCache.get('newsletter_show_badge'),
+        footerContent: settingsCache.get('newsletter_footer_content'),
+        accentColor: settingsCache.get('accent_color')
+    };
+
+    if (templateSettings.headerImage) {
+        if (isUnsplashImage(templateSettings.headerImage)) {
+            // Unsplash images have a minimum size so assuming 1200px is safe
+            const unsplashUrl = new URL(templateSettings.headerImage);
+            unsplashUrl.searchParams.set('w', 1200);
+
+            templateSettings.headerImage = unsplashUrl.href;
+            templateSettings.headerImageWidth = 600;
+        } else {
+            const {imageSize} = require('../../lib/image');
+            try {
+                const size = await imageSize.getImageSizeFromUrl(templateSettings.headerImage);
+
+                if (size.width >= 600) {
+                    // keep original image, just set a fixed width
+                    templateSettings.headerImageWidth = 600;
+                }
+
+                if (isLocalContentImage(templateSettings.headerImage, urlUtils.getSiteUrl())) {
+                    // we can safely request a 1200px image - Ghost will serve the original if it's smaller
+                    templateSettings.headerImage = templateSettings.headerImage.replace(/\/content\/images\//, '/content/images/size/w1200/');
+                }
+            } catch (err) {
+                // log and proceed. Using original header image without fixed width isn't fatal.
+                logging.error(err);
+            }
+        }
+    }
+
+    return templateSettings;
+};
+
 const serialize = async (postModel, options = {isBrowserPreview: false, apiVersion: 'v4'}) => {
     const post = await serializePostModel(postModel, options.apiVersion);
 
@@ -184,14 +242,12 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         }
     }
 
-    const templateSettings = {
-        showSiteHeader: settingsCache.get('newsletter_show_header'),
-        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
-        showBadge: settingsCache.get('newsletter_show_badge'),
-        footerContent: settingsCache.get('newsletter_footer_content'),
-        accentColor: settingsCache.get('accent_color')
-    };
-    let htmlTemplate = template({post, site: getSite(), templateSettings});
+    const useLabsTemplate = config.get('enableDeveloperExperiments');
+    const templateSettings = await (useLabsTemplate ? getLabsTemplateSettings() : getTemplateSettings());
+    const templateRenderer = useLabsTemplate ? labsTemplate : template;
+
+    let htmlTemplate = templateRenderer({post, site: getSite(), templateSettings});
+
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl();
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
