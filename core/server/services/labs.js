@@ -9,7 +9,8 @@ const settingsCache = require('../services/settings/cache');
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const WRITABLE_KEYS_ALLOWLIST = [
-    'activitypub'
+    'activitypub',
+    'matchHelper'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = WRITABLE_KEYS_ALLOWLIST;

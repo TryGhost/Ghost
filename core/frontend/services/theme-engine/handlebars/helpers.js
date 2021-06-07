@@ -23,6 +23,7 @@ const registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('lang', coreHelpers.lang);
     registerThemeHelper('link', coreHelpers.link);
     registerThemeHelper('link_class', coreHelpers.link_class);
+    registerThemeHelper('match', coreHelpers.match);
     registerThemeHelper('meta_description', coreHelpers.meta_description);
     registerThemeHelper('meta_title', coreHelpers.meta_title);
     registerThemeHelper('navigation', coreHelpers.navigation);
