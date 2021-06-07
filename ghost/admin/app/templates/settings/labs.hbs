@@ -179,65 +179,71 @@
                     </div>
                     </GhUploader>
                 </div>
-
-                {{#if (enable-developer-experiments)}}
-                    <div class="gh-expandable-block">
-                        <div class="gh-expandable-header">
-                            <div>
-                                <h4 class="gh-expandable-title">Google OAuth for staff users</h4>
-                                <p class="gh-expandable-description">
-                                    Allow people to sign into Ghost Admin using Google SSO, 
-                                    {{!-- TODO: create an help desk article and update the url here --}}
-                                    <a href="#" target="_blank" rel="noopener">docs here</a>
-                                </p>
-                            </div>
-                            <div class="for-switch">
-                                <label class="switch" for="settings-oauth">
-                                    <input
-                                        type="checkbox"
-                                        checked={{this.isOAuthEnabled}}
-                                        id="settings-oauth"
-                                        onclick={{action "toggleIsOAuthEnabled" value="target.checked"}}
-                                        data-test-private-checkbox
-                                    >
-                                    <span class="input-toggle-component"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="gh-expandable-content">
-                            {{#if this.isOAuthEnabled}}
-                                <div class="gh-setting-content-extended pt2 pb4">
-                                    <a href="https://console.developers.google.com/" target="_blank" rel="noopener" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
-                                    <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
-                                        <div class="form-group">
-                                            <label for="aouth-client-id">Google OAuth Client ID</label>
-                                            <GhTextInput
-                                                id="oauth-client-id"
-                                                @value={{readonly this.settings.oauthClientId}}
-                                                @name="oauth-client-id"
-                                                @focus-out={{action "saveOAuthSettings"}}
-                                                @input={{action (mut this.settings.oauthClientId) value="target.value"}}
-                                            />
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="oauth-client-secret">Google OAuth Client Secret</label>
-                                            <GhTextInput
-                                                id="oauth-client-secret"
-                                                @value={{readonly this.settings.oauthClientSecret}}
-                                                @name="oauth-client-secret"
-                                                @focus-out={{action "saveOAuthSettings"}}
-                                                @input={{action (mut this.settings.oauthClientSecret) value="target.value"}}
-                                            />
-                                        </div>
-                                    </GhFormGroup>
-                                </div>
-                            {{/if}}
-                        </div>
-                    </div>
-                {{/if}}
             </div>
         </div>
+
+
+        {{#if (enable-developer-experiments)}}
+         <div class="gh-main-section">
+            <h4 class="gh-main-section-header small bn">Alpha Features</h4>
+            <div class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Google OAuth for staff users</h4>
+                            <p class="gh-expandable-description">
+                                Allow people to sign into Ghost Admin using Google SSO,
+                                {{!-- TODO: create an help desk article and update the url here --}}
+                                <a href="#" target="_blank" rel="noopener">docs here</a>
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <label class="switch" for="settings-oauth">
+                                <input
+                                    type="checkbox"
+                                    checked={{this.isOAuthEnabled}}
+                                    id="settings-oauth"
+                                    onclick={{action "toggleIsOAuthEnabled" value="target.checked"}}
+                                    data-test-private-checkbox
+                                >
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="gh-expandable-content">
+                        {{#if this.isOAuthEnabled}}
+                            <div class="gh-setting-content-extended pt2 pb4">
+                                <a href="https://console.developers.google.com/" target="_blank" rel="noopener" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
+                                <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
+                                    <div class="form-group">
+                                        <label for="aouth-client-id">Google OAuth Client ID</label>
+                                        <GhTextInput
+                                            id="oauth-client-id"
+                                            @value={{readonly this.settings.oauthClientId}}
+                                            @name="oauth-client-id"
+                                            @focus-out={{action "saveOAuthSettings"}}
+                                            @input={{action (mut this.settings.oauthClientId) value="target.value"}}
+                                        />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="oauth-client-secret">Google OAuth Client Secret</label>
+                                        <GhTextInput
+                                            id="oauth-client-secret"
+                                            @value={{readonly this.settings.oauthClientSecret}}
+                                            @name="oauth-client-secret"
+                                            @focus-out={{action "saveOAuthSettings"}}
+                                            @input={{action (mut this.settings.oauthClientSecret) value="target.value"}}
+                                        />
+                                    </div>
+                                </GhFormGroup>
+                            </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/if}}
     </section>
 </section>
 
