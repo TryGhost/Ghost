@@ -53,6 +53,7 @@ export default Service.extend({
     emailAnalytics: feature('emailAnalytics'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
     launchComplete: feature('launchComplete', {user: true}),
+    matchHelper: feature('matchHelper'),
 
     _user: null,
 
