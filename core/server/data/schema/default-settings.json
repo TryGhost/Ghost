@@ -472,6 +472,80 @@
             },
             "type": "boolean"
         },
+        "newsletter_header_image": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 2000
+                }
+            },
+            "type": "string"
+        },
+        "newsletter_show_header_icon": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        },
+        "newsletter_show_header_title": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        },
+        "newsletter_title_alignment": {
+            "defaultValue": "center",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [
+                    [
+                        "center",
+                        "left"
+                    ]
+                ]
+            },
+            "type": "string"
+        },
+        "newsletter_title_font_category": {
+            "defaultValue": "sans_serif",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [
+                    [
+                        "serif",
+                        "sans_serif"
+                    ]
+                ]
+            },
+            "type": "string"
+        },
+        "newsletter_show_feature_image": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        },
         "newsletter_body_font_category": {
             "defaultValue": "sans_serif",
             "validations": {

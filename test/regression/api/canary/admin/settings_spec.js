@@ -351,6 +351,36 @@ const defaultSettingsKeyTypes = [
         group: 'newsletter'
     },
     {
+        key: 'newsletter_header_image',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_show_header_icon',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_show_header_title',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_title_alignment',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_title_font_category',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
+        key: 'newsletter_show_feature_image',
+        type: 'newsletter',
+        group: 'newsletter'
+    },
+    {
         key: 'newsletter_body_font_category',
         type: 'newsletter',
         group: 'newsletter'
