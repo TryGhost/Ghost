@@ -61,13 +61,14 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta', 'feature_image'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
         tags: 'tags',
         authors: 'users',
-        posts_meta: 'posts_meta'
+        posts_meta: 'posts_meta',
+        feature_image: 'images'
     },
 
     relationsMeta: {
@@ -78,6 +79,10 @@ Post = ghostBookshelf.Model.extend({
         email: {
             targetTableName: 'emails',
             foreignKey: 'post_id'
+        },
+        feature_image: {
+            targetTableName: 'images',
+            foreignKey: 'imageable_id'
         }
     },
 
@@ -683,7 +688,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     feature_image: function featureImage() {
-        return this.morphOne('Image', 'imageable', 'feature_image');
+        // return this.morphOne('Image', 'imageable', 'feature_image');
+        return this.hasOne('Image', 'imageable_id');
     },
 
     created_by: function createdBy() {

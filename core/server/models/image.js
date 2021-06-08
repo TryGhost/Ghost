@@ -5,6 +5,10 @@ const Image = ghostBookshelf.Model.extend({
 
     tableName: 'images',
 
+    defaults() {
+        return {imageable_type: 'feature_image'};
+    },
+
     formatOnWrite(attrs) {
         if (attrs.url) {
             attrs.url = urlUtils.toTransformReady(attrs.url);
@@ -23,9 +27,13 @@ const Image = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    imageable() {
-        return this.morphTo('imageable', ['Post', 'feature_image']);
+    post() {
+        return this.belongsTo('Post', 'imageable_id');
     },
+
+    // imageable() {
+    //     return this.morphTo('imageable', ['Post', 'feature_image']);
+    // },
 
     created_by: function createdBy() {
         return this.belongsTo('User', 'created_by');
