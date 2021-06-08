@@ -26,7 +26,7 @@ function paginatedProducts(page, _apiConfig, frame) {
         products: page.data.map((model) => {
             return cleanIncludes(
                 allowedIncludes,
-                requestedQueryIncludes || requestedOptionsIncludes,
+                requestedQueryIncludes.concat(requestedOptionsIncludes),
                 serializeProduct(model, frame.options, frame.apiType)
             );
         }),
@@ -48,7 +48,7 @@ function singleProduct(model, _apiConfig, frame) {
         products: [
             cleanIncludes(
                 allowedIncludes,
-                requestedQueryIncludes || requestedOptionsIncludes,
+                requestedQueryIncludes.concat(requestedOptionsIncludes),
                 serializeProduct(model, frame.options, frame.apiType)
             )
         ]
