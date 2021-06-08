@@ -1,5 +1,6 @@
 //@ts-check
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:products');
+const _ = require('lodash');
 
 const allowedIncludes = ['stripe_prices', 'monthly_price', 'yearly_price'];
 
@@ -75,8 +76,8 @@ function serializeProduct(product, options, apiType) {
         created_at: json.created_at,
         updated_at: json.updated_at,
         stripe_prices: json.stripePrices ? json.stripePrices.map(price => serializeStripePrice(price, hideStripeData)) : null,
-        monthly_price: json.monthlyPrice ? serializeStripePrice(json.monthlyPrice, hideStripeData) : null,
-        yearly_price: json.yearlyPrice ? serializeStripePrice(json.yearlyPrice, hideStripeData) : null
+        monthly_price: serializeStripePrice(json.monthlyPrice, hideStripeData),
+        yearly_price: serializeStripePrice(json.yearlyPrice, hideStripeData)
     };
 
     return serialized;
@@ -89,6 +90,9 @@ function serializeProduct(product, options, apiType) {
  * @returns {StripePrice}
  */
 function serializeStripePrice(data, hideStripeData) {
+    if (_.isEmpty(data)) {
+        return null;
+    }
     const price = {
         id: data.id,
         stripe_product_id: data.stripe_product_id,
