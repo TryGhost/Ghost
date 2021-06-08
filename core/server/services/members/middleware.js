@@ -84,12 +84,18 @@ const getPortalProductPrices = async function () {
 
     const products = page.data.map((productModel) => {
         const product = productModel.toJSON();
-
+        const productPrices = [];
+        if (product.monthlyPrice) {
+            productPrices.push(product.monthlyPrice);
+        }
+        if (product.yearlyPrice) {
+            productPrices.push(product.yearlyPrice);
+        }
         return {
             id: product.id,
             name: product.name,
             description: product.description || '',
-            prices: [product.monthlyPrice, product.yearlyPrice]
+            prices: productPrices
         };
     });
 
