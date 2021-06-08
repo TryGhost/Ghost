@@ -9,6 +9,7 @@ const {BadRequestError, NoPermissionError, NotFoundError} = require('@tryghost/e
 const settingsService = require('../../services/settings');
 const settingsCache = require('../../services/settings/cache');
 const membersService = require('../../services/members');
+const ghostBookshelf = require('../../models/base');
 
 module.exports = {
     docName: 'settings',
@@ -190,6 +191,17 @@ module.exports = {
                     message: 'Cannot disconnect Stripe whilst you have active subscriptions.'
                 });
             }
+
+            /** Delete all Stripe data from DB */
+            await ghostBookshelf.knex.raw(`
+                DELETE FROM stripe_prices
+            `);
+            await ghostBookshelf.knex.raw(`
+                DELETE FROM stripe_products
+            `);
+            await ghostBookshelf.knex.raw(`
+                DELETE FROM members_stripe_customers
+            `);
 
             return models.Settings.edit([{
                 key: 'stripe_connect_publishable_key',
