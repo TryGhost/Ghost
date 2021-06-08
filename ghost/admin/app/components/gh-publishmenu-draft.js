@@ -3,12 +3,15 @@ import moment from 'moment';
 import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 export default Component.extend({
-    feature: service(),
-    settings: service(),
     config: service(),
+    feature: service(),
     session: service(),
+    settings: service(),
+    store: service(),
+
     post: null,
     saveType: null,
 
@@ -18,8 +21,9 @@ export default Component.extend({
 
     'data-test-publishmenu-draft': true,
 
-    disableEmailOption: computed('memberCount', function () {
-        return (this.get('session.user.isOwnerOrAdmin') && this.memberCount === 0);
+    // TODO: remove owner or admin check when editors can count members
+    disableEmailOption: computed('totalMemberCount', 'countTotalMembersTask.isRunning', function () {
+        return this.get('session.user.isOwnerOrAdmin') && (this.totalMemberCount === 0 || this.countTotalMembersTask.isRunning);
     }),
 
     didInsertElement() {
@@ -74,6 +78,15 @@ export default Component.extend({
             return post.validate();
         }
     },
+
+    countTotalMembersTask: task(function*() {
+        const user = yield this.session.user;
+
+        if (user.isOwnerOrAdmin) {
+            const result = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
+            this.set('totalMemberCount', result.meta.pagination.total);
+        }
+    }),
 
     // scheduled date 5 mins in the future to avoid immediate validation errors
     _getMinDate() {

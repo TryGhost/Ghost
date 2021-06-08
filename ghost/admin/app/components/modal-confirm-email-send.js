@@ -8,8 +8,7 @@ export default ModalComponent.extend({
     store: service(),
 
     errorMessage: null,
-    paidMemberCount: null,
-    freeMemberCount: null,
+    memberCount: null,
 
     // Allowed actions
     confirm: () => {},
@@ -19,25 +18,23 @@ export default ModalComponent.extend({
             if (this.errorMessage) {
                 return this.retryEmailTask.perform();
             } else {
-                if (!this.countPaidMembersTask.isRunning) {
+                if (!this.countRecipientsTask.isRunning) {
                     return this.confirmAndCheckErrorTask.perform();
                 }
             }
         }
     },
 
-    countPaidMembers: action(function () {
+    countRecipients: action(function () {
         // TODO: remove editor conditional once editors can query member counts
-        if (['free', 'paid'].includes(this.model.sendEmailWhenPublished) && !this.session.get('user.isEditor')) {
-            this.countPaidMembersTask.perform();
+        if (this.model.sendEmailWhenPublished && !this.session.get('user.isEditor')) {
+            this.countRecipientsTask.perform();
         }
     }),
 
-    countPaidMembersTask: task(function* () {
-        const result = yield this.store.query('member', {filter: 'subscribed:true+status:-free', limit: 1, page: 1});
-        this.set('paidMemberCount', result.meta.pagination.total);
-        const freeMemberCount = this.model.memberCount - result.meta.pagination.total;
-        this.set('freeMemberCount', freeMemberCount);
+    countRecipientsTask: task(function* () {
+        const result = yield this.store.query('member', {filter: `subscribed:true+(${this.model.sendEmailWhenPublished})`, limit: 1, page: 1});
+        this.set('memberCount', result.meta.pagination.total);
     }),
 
     confirmAndCheckErrorTask: task(function* () {
