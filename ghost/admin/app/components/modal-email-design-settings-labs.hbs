@@ -75,7 +75,7 @@
                         </GhFormGroup>
 
                         <GhFormGroup>
-                            <h4 class="modal-fullsettings-title">Show publication icon</h4>
+                            <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Show publication icon</h4>
                             <div class="for-switch small {{if (not this.settings.icon) "disabled"}}">
                                 <label class="switch" for="show-header">
                                     <input

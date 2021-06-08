@@ -393,6 +393,10 @@
     margin: 0 12px 0 0;
 }
 
+.labs-newsletter-settings .modal-fullsettings-title.disabled {
+    opacity: .5;
+}
+
 .labs-newsletter-settings .modal-fullsettings-uploader {
     display: flex;
     align-items: center;
@@ -430,13 +434,13 @@
 }
 
 .labs-newsletter-settings .gh-header-img-container {
-    height: 44px;
+    height: 50px;
 }
 
 .labs-newsletter-settings .gh-header-img-thumbnail {
     display: inline-block;
     width: 56px;
-    height: 44px;
+    height: 50px;
     margin: 0 11px 0 0;
     border: 1px solid var(--whitegrey);
     cursor: pointer;
@@ -453,7 +457,7 @@
     position: absolute;
     left: 4px;
     width: 56px;
-    height: 44px;
+    height: 50px;
     background: var(--black) !important;
     opacity: 0;
 }
