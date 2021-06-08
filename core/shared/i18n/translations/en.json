@@ -160,18 +160,6 @@
             "internalError": "Something went wrong.",
             "jsonParse": "Could not parse JSON: {context}."
         },
-        "httpServer": {
-            "addressInUse": {
-                "error": "(EADDRINUSE) Cannot start Ghost.",
-                "context": "Port {port} is already in use by another program.",
-                "help": "Is another Ghost instance already running?"
-            },
-            "otherError": {
-                "error": "(Code: {errorNumber})",
-                "context": "There was an error starting your server.",
-                "help": "Please use the error code above to search for a solution."
-            }
-        },
         "mail": {
             "incompleteMessageData": {
                 "error": "Incomplete message data."
@@ -689,19 +677,6 @@
     "notices": {
         "index": {
             "welcomeToGhost": "Welcome to Ghost."
-        },
-        "httpServer": {
-            "cantTouchThis": "Can't touch this",
-            "ghostIsRunning": "Ghost is running...",
-            "yourBlogIsAvailableOn": "Your site is now available on {url}",
-            "ctrlCToShutDown": "Ctrl+C to shut down",
-            "ghostIsRunningIn": "Ghost is running in {env}...",
-            "listeningOn": "Listening on: {host}:{port}",
-            "urlConfiguredAs": "Url configured as: {url}",
-            "ghostIsShuttingDown": "Ghost is shutting down",
-            "ghostHasShutdown": "Ghost has shut down",
-            "yourBlogIsNowOffline": "Your site is now offline",
-            "ghostWasRunningFor": "Ghost was running for"
         },
         "mail": {
             "messageSent": "Message sent. Double check inbox and spam folder!"
