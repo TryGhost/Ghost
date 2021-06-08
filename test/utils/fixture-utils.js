@@ -496,6 +496,14 @@ const fixtures = {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_prices), function (stripePrice) {
                 return models.StripePrice.add(stripePrice, context.internal);
             });
+        }).then(async function () {
+            // Add monthly/yearly prices to default product for testing
+            const defaultProduct = await models.Product.findOne({slug: 'default-product'}, context.internal);
+            return models.Product.edit({
+                ...defaultProduct.toJSON(),
+                monthly_price_id: DataGenerator.forKnex.stripe_prices[1].id,
+                yearly_price_id: DataGenerator.forKnex.stripe_prices[2].id
+            }, _.merge({id: defaultProduct.id}, context.internal));
         }).then(function () {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions), function (subscription) {
                 return models.StripeCustomerSubscription.add(subscription, context.internal);

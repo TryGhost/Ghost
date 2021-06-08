@@ -49,15 +49,6 @@ describe('Front-end members behaviour', function () {
                 return 'price-data-test-theme';
             }
 
-            const stripePrices = testUtils.DataGenerator.forKnex.stripe_prices;
-            if (key === 'members_monthly_price_id') {
-                return stripePrices[1].id;
-            }
-
-            if (key === 'members_yearly_price_id') {
-                return stripePrices[2].id;
-            }
-
             return originalSettingsCacheGetFn(key, options);
         });
         await testUtils.startGhost();
