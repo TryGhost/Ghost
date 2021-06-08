@@ -136,7 +136,7 @@ const getTemplateSettings = async () => {
 const getLabsTemplateSettings = async () => {
     const templateSettings = {
         headerImage: settingsCache.get('newsletter_header_image'),
-        showHeaderIcon: settingsCache.get('newsletter_show_header_icon'),
+        showHeaderIcon: settingsCache.get('newsletter_show_header_icon') && settingsCache.get('icon'),
         showHeaderTitle: settingsCache.get('newsletter_show_header_title'),
         showFeatureImage: settingsCache.get('newsletter_show_feature_image'),
         titleFontCategory: settingsCache.get('newsletter_title_font_category'),
