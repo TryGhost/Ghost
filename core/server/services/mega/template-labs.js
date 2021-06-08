@@ -267,6 +267,10 @@ figure blockquote p {
     font-size: 1em;
 }
 
+.header-image {
+    padding-top: 16px;
+}
+
 .site-icon {
     padding-bottom: 10px;
     padding-top: 20px;
