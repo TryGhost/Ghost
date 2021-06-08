@@ -194,6 +194,9 @@ module.exports = {
 
             /** Delete all Stripe data from DB */
             await ghostBookshelf.knex.raw(`
+                UPDATE products SET monthly_price_id = null, yearly_price_id = null
+            `);
+            await ghostBookshelf.knex.raw(`
                 DELETE FROM stripe_prices
             `);
             await ghostBookshelf.knex.raw(`
