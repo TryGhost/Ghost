@@ -20,14 +20,13 @@ module.exports = {
  * @returns {{products: SerializedProduct[], meta: PageMeta}}
  */
 function paginatedProducts(page, _apiConfig, frame) {
-    const requestedIncludes = frame.original && frame.original.options && frame.original.options.include || [];
-    const defaultIncludes = ['monthly_price', 'yearly_price'];
+    const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
+    const requestedOptionsIncludes = frame.original && frame.original.options && frame.original.options.include || [];
     return {
         products: page.data.map((model) => {
             return cleanIncludes(
                 allowedIncludes,
-                requestedIncludes,
-                defaultIncludes,
+                requestedQueryIncludes || requestedOptionsIncludes,
                 serializeProduct(model, frame.options, frame.apiType)
             );
         }),
@@ -43,14 +42,13 @@ function paginatedProducts(page, _apiConfig, frame) {
  * @returns {{products: SerializedProduct[]}}
  */
 function singleProduct(model, _apiConfig, frame) {
-    const requestedIncludes = frame.original && frame.original.options && frame.original.options.include || [];
-    const defaultIncludes = ['monthly_price', 'yearly_price'];
+    const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
+    const requestedOptionsIncludes = frame.original && frame.original.options && frame.original.options.include || [];
     return {
         products: [
             cleanIncludes(
                 allowedIncludes,
-                requestedIncludes,
-                defaultIncludes,
+                requestedQueryIncludes || requestedOptionsIncludes,
                 serializeProduct(model, frame.options, frame.apiType)
             )
         ]
@@ -123,17 +121,15 @@ function serializeStripePrice(data, hideStripeData) {
  *
  * @returns {Data}
  */
-function cleanIncludes(allowed, requested, defaults, data) {
+function cleanIncludes(allowed, requested, data) {
     const cleaned = {
         ...data
     };
-
     for (const include of allowed) {
-        if (!requested.includes(include) && !defaults.includes(include)) {
+        if (!requested.includes(include)) {
             delete cleaned[include];
         }
     }
-
     return cleaned;
 }
 
