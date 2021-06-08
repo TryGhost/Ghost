@@ -1415,6 +1415,11 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0 20px;
 }
 
+.gh-members-emailpreview-header-image img {
+    display: block;
+    margin: 12px auto 0;
+}
+
 .gh-members-emailpreview-header {
     display: flex;
     flex-direction: column;
