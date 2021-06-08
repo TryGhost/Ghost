@@ -8,11 +8,35 @@ const path = require('path');
 const _ = require('lodash');
 const config = require('../shared/config');
 const errors = require('@tryghost/errors');
-const i18n = require('../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('../shared/logging');
 const notify = require('./notify');
 const moment = require('moment');
 const stoppable = require('stoppable');
+
+const messages = {
+    cantTouchThis: 'Can\'t touch this',
+    ghostIsRunning: 'Ghost is running...',
+    yourBlogIsAvailableOn: 'Your site is now available on {url}',
+    ctrlCToShutDown: 'Ctrl+C to shut down',
+    ghostIsRunningIn: 'Ghost is running in {env}...',
+    listeningOn: 'Listening on: {host}:{port}',
+    urlConfiguredAs: 'Url configured as: {url}',
+    ghostIsShuttingDown: 'Ghost is shutting down',
+    ghostHasShutdown: 'Ghost has shut down',
+    yourBlogIsNowOffline: 'Your site is now offline',
+    ghostWasRunningFor: 'Ghost was running for',
+    addressInUse: {
+        error: '(EADDRINUSE) Cannot start Ghost.',
+        context: 'Port {port} is already in use by another program.',
+        help: 'Is another Ghost instance already running?'
+    },
+    otherError: {
+        error: '(Code: {errorNumber})',
+        context: 'There was an error starting your server.',
+        help: 'Please use the error code above to search for a solution.'
+    }
+};
 
 /**
  * ## GhostServer
@@ -84,15 +108,15 @@ class GhostServer {
 
                 if (error.code === 'EADDRINUSE') {
                     ghostError = new errors.GhostError({
-                        message: i18n.t('errors.httpServer.addressInUse.error'),
-                        context: i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
-                        help: i18n.t('errors.httpServer.addressInUse.help')
+                        message: tpl(messages.addressInUse.error),
+                        context: tpl(messages.addressInUse.context, {port: config.get('server').port}),
+                        help: tpl(messages.addressInUse.help)
                     });
                 } else {
                     ghostError = new errors.GhostError({
-                        message: i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
-                        context: i18n.t('errors.httpServer.otherError.context'),
-                        help: i18n.t('errors.httpServer.otherError.help')
+                        message: tpl(messages.otherError.error, {errorNumber: error.errno}),
+                        context: tpl(messages.otherError.context),
+                        help: tpl(messages.otherError.help)
                     });
                 }
 
@@ -135,7 +159,7 @@ class GhostServer {
      */
     async shutdown(code = 0) {
         try {
-            logging.warn(i18n.t('notices.httpServer.ghostIsShuttingDown'));
+            logging.warn(tpl(messages.ghostIsShuttingDown));
             await this.stop();
             setTimeout(() => {
                 process.exit(code);
@@ -176,7 +200,7 @@ class GhostServer {
      * To be called after `stop`
      */
     async hammertime() {
-        logging.info(i18n.t('notices.httpServer.cantTouchThis'));
+        logging.info(tpl(messages.cantTouchThis));
     }
 
     /**
@@ -257,35 +281,35 @@ class GhostServer {
      * Log Start Messages
      */
     _logStartMessages() {
-        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
+        logging.info(tpl(messages.ghostIsRunningIn, {env: config.get('env')}));
 
         if (config.get('env') === 'production') {
-            logging.info(i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: this.url}));
+            logging.info(tpl(messages.yourBlogIsAvailableOn, {url: this.url}));
         } else {
-            logging.info(i18n.t('notices.httpServer.listeningOn', {
+            logging.info(tpl(messages.listeningOn, {
                 host: config.get('server').socket || config.get('server').host,
                 port: config.get('server').port
             }));
-            logging.info(i18n.t('notices.httpServer.urlConfiguredAs', {url: this.url}));
+            logging.info(tpl(messages.urlConfiguredAs, {url: this.url}));
         }
 
-        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
+        logging.info(tpl(messages.ctrlCToShutDown));
     }
 
     /**
      * Log Stop Messages
      */
     _logStopMessages() {
-        logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
+        logging.warn(tpl(messages.ghostHasShutdown));
 
         // Extra clear message for production mode
         if (config.get('env') === 'production') {
-            logging.warn(i18n.t('notices.httpServer.yourBlogIsNowOffline'));
+            logging.warn(tpl(messages.yourBlogIsNowOffline));
         }
 
         // Always output uptime
         logging.warn(
-            i18n.t('notices.httpServer.ghostWasRunningFor'),
+            tpl(messages.ghostWasRunningFor),
             moment.duration(process.uptime(), 'seconds').humanize()
         );
     }
