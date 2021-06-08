@@ -1,0 +1,29 @@
+{
+  "name": "@tryghost/tpl",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/tpl",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "9.0.0",
+    "should": "13.2.3",
+    "sinon": "11.1.1"
+  },
+  "dependencies": {
+    "lodash.template": "^4.5.0"
+  }
+}
