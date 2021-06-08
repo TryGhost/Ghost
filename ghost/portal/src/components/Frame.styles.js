@@ -693,6 +693,8 @@ const MobileStyles = `
     }
 
     .gh-portal-plan-section {
+        display: grid;
+        padding: 12px 10px;
         grid-template-columns: 32px auto auto;
         grid-template-rows: auto auto;
         justify-items: start;
@@ -711,6 +713,7 @@ const MobileStyles = `
         grid-column: 3 / 4;
         grid-row: 1 / 3;
         justify-self: end;
+        align-items: center;
         margin: 0 4px 0 12px;
     }
 
