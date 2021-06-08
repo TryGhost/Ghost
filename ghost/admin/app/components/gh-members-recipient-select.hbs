@@ -1,6 +1,6 @@
 <div class="gh-publishmenu-send-to-option">
     <p>Free members <span class="gh-publishmenu-emailcount">{{this.freeMemberCountLabel}}</span></p>
-    <div class="for-switch x-small" {{on "click" (fn this.toggleFilter "status:free")}}>
+    <div class="for-switch x-small {{if @disabled "disabled"}}" {{on "click" (fn this.toggleFilter "status:free")}}>
         <label class="switch" for="send-email-to-free">
             <input
                 id="send-email-to-free"
@@ -17,7 +17,7 @@
 {{#if this.isPaidAvailable}}
     <div class="gh-publishmenu-send-to-option">
         <p>Paid members <span class="gh-publishmenu-emailcount">{{this.paidMemberCountLabel}}</span></p>
-        <div class="for-switch x-small" {{on "click" (fn this.toggleFilter "status:-free")}}>
+        <div class="for-switch x-small {{if @disabled "disabled"}}" {{on "click" (fn this.toggleFilter "status:-free")}}>
             <label class="switch" for="send-email-to-paid">
                 <input
                     id="send-email-to-paid"
@@ -35,7 +35,7 @@
 {{#if this.specificOptions}}
     <div class="gh-publishmenu-send-to-option">
         <p>Specific people</p>
-        <div class="for-switch x-small" {{on "click" this.toggleSpecificFilter}}>
+        <div class="for-switch x-small {{if @disabled "disabled"}}" {{on "click" this.toggleSpecificFilter}}>
             <label class="switch" for="send-email-to-paid">
                 <input
                     id="send-email-to-paid"

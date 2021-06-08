@@ -30,7 +30,7 @@
     </div>
 
     {{#if this.canSendEmail}}
-        <div class="gh-publishmenu-section">
+        <div class="gh-publishmenu-section" {{did-insert (perform this.countTotalMembersTask)}}>
             <div class="gh-publishmenu-email">
                 {{#if this.isSendingEmailLimited}}
                     <p class="gh-box gh-box-alert">{{html-safe this.sendingEmailLimitError}}</p>
@@ -42,6 +42,7 @@
                             <GhMembersRecipientSelect
                                 @filter={{this.recipientsFilter}}
                                 @onChange={{this.setSendEmailWhenPublished}}
+                                @disabled={{this.disableEmailOption}}
                             />
                         </div>
                     </div>
