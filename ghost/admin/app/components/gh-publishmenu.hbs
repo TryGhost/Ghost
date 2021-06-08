@@ -62,9 +62,7 @@
         @modal="confirm-email-send"
         @model={{hash
             sendEmailWhenPublished=this.sendEmailWhenPublished
-            memberCount=this.memberCount
             isScheduled=(eq this.saveType "schedule")
-            paidOnly=(eq this.post.visibility "paid")
             retryEmailSend=this.retryEmailSend
         }}
         @confirm={{this.confirmEmailSend}}
