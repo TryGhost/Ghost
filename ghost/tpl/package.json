@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/tpl",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/Utils/tree/master/packages/tpl",
   "author": "Ghost Foundation",
   "license": "MIT",
