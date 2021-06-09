@@ -59,7 +59,7 @@ export default Mixin.create({
             }
 
             key(shortcut, scope, (event) => {
-                // stop things like ctrl+s from actually opening a save dialogue
+                // stop things like ctrl+s from actually opening a save dialog
                 event.preventDefault();
                 run(this, function () {
                     this.send(action, options);
