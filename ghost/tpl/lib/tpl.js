@@ -1,5 +1,4 @@
 const template = require('lodash.template');
-
 const interpolate = /(?<!{){([^{]+?)}/g;
 
 /**
