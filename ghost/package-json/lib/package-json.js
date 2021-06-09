@@ -9,21 +9,28 @@
  *
  */
 const _ = require('lodash');
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const join = require('path').join;
 const errors = require('@tryghost/errors');
 const parse = require('./parse');
 
+// Require bluebird with its own namespace and use it explicitly where we need additional features
+const Bluebird = require('bluebird');
+
 const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
 const packageJSONPath = 'package.json';
+
+/**
+ * @typedef {object} PackageList
+ * @typedef {object} Package
+ */
 
 /**
  * Recursively read directory and find the packages in it
  *
  * @param {string} absolutePath
  * @param {string} packageName
- * @returns {object}
+ * @returns {Promise<Package>}
  */
 async function processPackage(absolutePath, packageName) {
     const pkg = {
@@ -47,20 +54,23 @@ async function processPackage(absolutePath, packageName) {
 
 /**
  * ### Filter Packages
- * Normalizes packages read by read-packages so that the themes module can use them.
+ * Normalizes packages read by readPackages so that the themes module can use them.
  * Iterates over each package and return an array of objects which are simplified representations of the package
  * with 3 properties:
- * - `name`    - the package name
- * - `package` - contents of the package.json or false if there isn't one
- * - `active`  - set to true if this package is active
+ *
+ * @typedef {object} SimplePackage
+ * @prop {string} name    - the package name
+ * @prop {object|boolean} package - contents of the package.json or false if there isn't one
+ * @prop {boolean} active  - set to true if this package is active
+ *
  * This data structure is used for listings of packages provided over the API and as such
  * deliberately combines multiple sources of information in order to be efficient.
  *
  * TODO: simplify the package.json representation to contain only fields we use
  *
- * @param   {object}            packages    as returned by read-packages
- * @param   {array|string}      active      as read from the settings object
- * @returns {Array}                         of objects with useful info about themes
+ * @param   {PackageList}       packages    object made up of packages keyed by name as returned by readPackages
+ * @param   {array|string}      [active]    optional set of names of packages that are active
+ * @returns {Array<SimplePackage>}          array of objects with useful info about themes
  */
 function filter(packages, active) {
     // turn active into an array if it isn't one, so this function can deal with lists and one-offs
@@ -87,6 +97,7 @@ function filter(packages, active) {
 /**
  * @param {string} packagePath
  * @param {string} packageName
+ * @returns {Promise<Package>}
  */
 async function readPackage(packagePath, packageName) {
     const absolutePath = join(packagePath, packageName);
@@ -113,18 +124,20 @@ async function readPackage(packagePath, packageName) {
 
 /**
  * @param {string} packagePath
+ * @returns {Promise<PackageList>}
  */
-function readPackages(packagePath) {
-    return Promise.resolve(fs.readdir(packagePath))
+async function readPackages(packagePath) {
+    return Bluebird.resolve(fs.readdir(packagePath))
         .filter(function (packageName) {
             // Filter out things which are not packages by regex
             if (packageName.match(notAPackageRegex)) {
                 return;
             }
             // Check the remaining items to ensure they are a directory
-            return fs.stat(join(packagePath, packageName)).then(function (stat) {
-                return stat.isDirectory();
-            });
+            return fs.stat(join(packagePath, packageName))
+                .then(function (stat) {
+                    return stat.isDirectory();
+                });
         })
         .map(function readPackageJson(packageName) {
             const absolutePath = join(packagePath, packageName);
