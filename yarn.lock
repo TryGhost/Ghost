@@ -277,10 +277,10 @@
     diff "^5.0.0"
     maxmin "^3.0.0"
 
-"@metascraper/helpers@^5.22.0":
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.22.0.tgz#71d36b92c9ab488446221008bdf660effafdda93"
-  integrity sha512-lByOIjtMnefbMEF+lQ/QNhmxzQcHjEfbYe5bzwLViNKEGMOsa+nPopuwt+sUc5R3X9+SD20zIa8MZSU6cLlt+g==
+"@metascraper/helpers@^5.22.1":
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.22.1.tgz#66d96a91baf71dbe3d93a6f584333f2a2fd6315b"
+  integrity sha512-AJeuQgVysCesvi7tf9ztjUqJe2qycZ29SeHLGtyBfBXEebDPA2AWxUC0nG6acgzEAuxVEPTWPw1vY8ivfEvMlw==
   dependencies:
     audio-extensions "0.0.0"
     chrono-node "2.2.7"
@@ -297,12 +297,12 @@
     lodash "~4.17.21"
     memoize-one "~5.2.1"
     microsoft-capitalize "~1.0.5"
-    mime-types "~2.1.30"
+    mime-types "~2.1.31"
     normalize-url "~6.0.1"
     smartquotes "~2.3.2"
     truncate "~2.1.0"
     url-regex-safe "~2.0.2"
-    video-extensions "~1.1.0"
+    video-extensions "~1.2.0"
 
 "@nexes/mongo-knex@^0.4.1":
   version "0.4.1"
@@ -2052,6 +2052,17 @@ cheerio-select@^1.4.0:
     domhandler "^4.2.0"
     domutils "^2.6.0"
 
+cheerio-select@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/cheerio-select/-/cheerio-select-1.5.0.tgz#faf3daeb31b17c5e1a9dabcee288aaf8aafa5823"
+  integrity sha512-qocaHPv5ypefh6YNxvnbABM07KMxExbtbfuJoIie3iZXX1ERwYmJcIiRrr9H05ucQP1k28dav8rpdDgjQd8drg==
+  dependencies:
+    css-select "^4.1.3"
+    css-what "^5.0.1"
+    domelementtype "^2.2.0"
+    domhandler "^4.2.0"
+    domutils "^2.7.0"
+
 cheerio@0.22.0, cheerio@^0.22.0:
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-0.22.0.tgz#a9baa860a3f9b595a6b81b1a86873121ed3a269e"
@@ -2074,13 +2085,26 @@ cheerio@0.22.0, cheerio@^0.22.0:
     lodash.reject "^4.4.0"
     lodash.some "^4.4.0"
 
-cheerio@^1.0.0-rc.3, cheerio@~1.0.0-rc.9:
+cheerio@^1.0.0-rc.3:
   version "1.0.0-rc.9"
   resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-1.0.0-rc.9.tgz#a3ae6b7ce7af80675302ff836f628e7cb786a67f"
   integrity sha512-QF6XVdrLONO6DXRF5iaolY+odmhj2CLj+xzNod7INPWMi/x9X4SOylH0S/vaPpX+AUU6t04s34SQNh7DbkuCng==
   dependencies:
     cheerio-select "^1.4.0"
     dom-serializer "^1.3.1"
+    domhandler "^4.2.0"
+    htmlparser2 "^6.1.0"
+    parse5 "^6.0.1"
+    parse5-htmlparser2-tree-adapter "^6.0.1"
+    tslib "^2.2.0"
+
+cheerio@~1.0.0-rc.10:
+  version "1.0.0-rc.10"
+  resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-1.0.0-rc.10.tgz#2ba3dcdfcc26e7956fc1f440e61d51c643379f3e"
+  integrity sha512-g0J0q/O6mW8z5zxQ3A8E8J1hUgp4SMOvEoW/x84OwyHKe/Zccz83PVT4y5Crcr530FV6NgmKI1qvGTKVl9XXVw==
+  dependencies:
+    cheerio-select "^1.5.0"
+    dom-serializer "^1.3.2"
     domhandler "^4.2.0"
     htmlparser2 "^6.1.0"
     parse5 "^6.0.1"
@@ -2626,6 +2650,17 @@ css-select@^4.1.2:
     domutils "^2.6.0"
     nth-check "^2.0.0"
 
+css-select@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/css-select/-/css-select-4.1.3.tgz#a70440f70317f2669118ad74ff105e65849c7067"
+  integrity sha512-gT3wBNd9Nj49rAbmtFHj1cljIAOLYSX1nZ8CB7TBO3INYckygm5B7LISU/szY//YmdiSLbJvDLOx9VnMVpMBxA==
+  dependencies:
+    boolbase "^1.0.0"
+    css-what "^5.0.0"
+    domhandler "^4.2.0"
+    domutils "^2.6.0"
+    nth-check "^2.0.0"
+
 css-select@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/css-select/-/css-select-1.2.0.tgz#2b3a110539c5355f1cd8d314623e870b121ec858"
@@ -2654,7 +2689,7 @@ css-what@^4.0.0:
   resolved "https://registry.yarnpkg.com/css-what/-/css-what-4.0.0.tgz#35e73761cab2eeb3d3661126b23d7aa0e8432233"
   integrity sha512-teijzG7kwYfNVsUh2H/YN62xW3KK9YhXEgSlbxMlcyjPNvdKJqFx5lrwlJgoFP1ZHlB89iGDlo/JyshKeRhv5A==
 
-css-what@^5.0.0:
+css-what@^5.0.0, css-what@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/css-what/-/css-what-5.0.1.tgz#3efa820131f4669a8ac2408f9c32e7c7de9f4cad"
   integrity sha512-FYDTSHb/7KXsWICVsxdmiExPjCfRC4qRFBdVwv7Ax9hMnvMmEjP9RfxTEZ3qPZGmADDn2vAKSo9UcN1jKVYscg==
@@ -2983,7 +3018,7 @@ dom-serializer@0:
     domelementtype "^2.0.1"
     entities "^2.0.0"
 
-dom-serializer@^1.0.1, dom-serializer@^1.3.1:
+dom-serializer@^1.0.1, dom-serializer@^1.3.1, dom-serializer@^1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-1.3.2.tgz#6206437d32ceefaec7161803230c7a20bc1b4d91"
   integrity sha512-5c54Bk5Dw4qAxNOI1pFEizPSjVsx5+bpJKmL2kPn8JhBUq2q09tTCa3mjijun2NfK78NMouDYNMBkOrPZiS+ig==
@@ -3058,6 +3093,15 @@ domutils@^2.0.0, domutils@^2.4.3, domutils@^2.5.2, domutils@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/domutils/-/domutils-2.6.0.tgz#2e15c04185d43fb16ae7057cb76433c6edb938b7"
   integrity sha512-y0BezHuy4MDYxh6OvolXYsH+1EMGmFbwv5FKW7ovwMG6zTPWqNPq3WF9ayZssFq+UlKdffGLbOEaghNdaOm1WA==
+  dependencies:
+    dom-serializer "^1.0.1"
+    domelementtype "^2.2.0"
+    domhandler "^4.2.0"
+
+domutils@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/domutils/-/domutils-2.7.0.tgz#8ebaf0c41ebafcf55b0b72ec31c56323712c5442"
+  integrity sha512-8eaHa17IwJUPAiB+SoTYBo5mCdeMgdcAoXJ59m6DT1vw+5iLS3gNoqYaRowaBKtGVrOF1Jz4yDTgYKLK2kvfJg==
   dependencies:
     dom-serializer "^1.0.1"
     domelementtype "^2.2.0"
@@ -6542,71 +6586,71 @@ merge-descriptors@1.0.1, merge-descriptors@~1.0.0:
   resolved "https://registry.yarnpkg.com/merge-descriptors/-/merge-descriptors-1.0.1.tgz#b00aaa556dd8b44568150ec9d1b953f3f90cbb61"
   integrity sha1-sAqqVW3YtEVoFQ7J0blT8/kMu2E=
 
-metascraper-author@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-author/-/metascraper-author-5.22.0.tgz#0b41ef56ad5e480545fccbf3cbb15daeb1ba7603"
-  integrity sha512-vQlZSyqlA3zuFBVKWOQ540OFSM2of6v0BDBFHFWG8miPjye540DMFiopX2Pfd6bxaMBoHhu5/FRUBkKdpFQLTg==
+metascraper-author@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-author/-/metascraper-author-5.22.1.tgz#46c9480d33033650ffb11f9d6a56e57bd50c7d7b"
+  integrity sha512-25AG7hXkpTI2rtT0fPwje7dulfCSamesP42WN3v14p2hPu09Z5/k0XUBuwBDmSm0CP2BMSSvXj70c46PqoK0Iw==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper-description@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.22.0.tgz#21042463489c860f7e46772e8df1957734e4335f"
-  integrity sha512-tvw+uvt82P3VUhabKHWAoGPrAUIPZIh68szjY/DSCoZWF9RukK9JylOqJD1H8ThjmGvfNBCl7UKHodZyZuOaYA==
+metascraper-description@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.22.1.tgz#cc0e17f64d8a16212aa0ef897bd2ae3d12642f7c"
+  integrity sha512-vpY1ve9sCdJa6qgBDuw9zxLrZ1+Z6xad2UD+AWzc8bSLRsn3XQfAYLGHLyr1BN9nRXHNaKfg4Sb9YRe/ZjUv+w==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper-image@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-image/-/metascraper-image-5.22.0.tgz#5802ff15ae0ab7c067d7fd680295a529f292d289"
-  integrity sha512-aCiI2xZfkCijUoAdSvQtRvLOJKqA6GfOzpYAiFYzgxxCNAfdeXh8H5NW/VY7fs+1UGEQdEfuIfY48hat7XSPEA==
+metascraper-image@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-image/-/metascraper-image-5.22.1.tgz#d4a0c43b727967c4e50d53694de8c91eb5fffb1b"
+  integrity sha512-bGmaIUjx5577YJH2YhuzU+VMNTkzoYxMVp89rIuDOR2mJ7xrzGVQuyiwkHpoGP2z2N2gkFJQZQPCIi96WTJSgQ==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper-logo-favicon@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.22.0.tgz#042681c79773efeb2fe97091145869130a5b0e42"
-  integrity sha512-sC9psWIfAkCqbHO7UP/ecFmv9osDePIVyVswgFMKbfC8+u04GgEf9FY6QsXt4tz9eGjbZhW1VhGm+v658up/pA==
+metascraper-logo-favicon@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.22.1.tgz#c0c0d9551e5dc4fd715080826eda898df3f0859e"
+  integrity sha512-BIVtodcO9Ls94qX4vx2aOWSAjk+e1STmir1zgJuolJdjuRzsW1MHudhMjwunkVn64NRucGTNA+LVg0BPJJDYXQ==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
     got "~11.8.2"
     lodash "~4.17.21"
 
-metascraper-logo@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-logo/-/metascraper-logo-5.22.0.tgz#82b99c2f836887ce1562143e8145f03ca5044084"
-  integrity sha512-a6ECVNquveOiCRqJmX8+LOXKdzZDRR5rDL+6lfwnMHDfdhoimI9MZ95hSRe38veU4y+odT/ZdFZ5b2HtBq6Z4g==
+metascraper-logo@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-logo/-/metascraper-logo-5.22.1.tgz#28c6848edfbec7d624f155b9f89548fcf7d098d1"
+  integrity sha512-ozgtGg+Qwz33ed/cAK06g6PxoAFuAmQfXDKxdbiwBjsPsKA+Vlhbep3Dn/QcWIMflo5y/RynmE5QDwXQe8MaDQ==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper-publisher@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.22.0.tgz#c578e1fa71908a3438a7320f1f38b505631e5526"
-  integrity sha512-+fc2KrtIoAAU4vDGrq+4mCYIOXwwPvIA4xzYoSpnaKNLmSHgwYbepJDoZXZ9yPYjj309d447VRMFxJUmvb84Rg==
+metascraper-publisher@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.22.1.tgz#11028541914654ce2577d0d6670021609e3b3f70"
+  integrity sha512-X/hl80biMKZtBOnzIYqXPe8QkJg0rcASqz/OdIL7Uk8nPy8z0pd99nPRuRD9RKv9/xIELBkI9q4EpjZxsLfXZg==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper-title@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-title/-/metascraper-title-5.22.0.tgz#3a33f4a985ecb568879574c30f60a4c96b5cd8de"
-  integrity sha512-2swZZK4r5oxcVTDjvpvS4GhGGY0vrXQyBKihs9ksgAYRN6AK96FtNG6uRwnyeJj9gEjDOJN6OUvaf7mCBy2eQg==
+metascraper-title@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-title/-/metascraper-title-5.22.1.tgz#7436c7a8b7ec0d77ef162b0df0fdaa0083a836d4"
+  integrity sha512-vFuQuw8oA00kuKhzsnTRGjs9p91/fogdlohBI1LJ5ZQ6ZBPryLTFq29FrC975FrKFlxkk7tntmmu7p6VWrfKrg==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper-url@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper-url/-/metascraper-url-5.22.0.tgz#62909ed0e1abb526b12c3770f5d0574dea435096"
-  integrity sha512-6xdSTqhguBMeAH+vKXirIXHtwsHudiVDRdcixE4ex+0+lRnQt3tIuvFTSzDRzxyqiT7cs+ag9qe9GK8Ku9VsCg==
+metascraper-url@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper-url/-/metascraper-url-5.22.1.tgz#d3bc9062f23e05638a8358e59504435fb4013a5b"
+  integrity sha512-6gs83B6GkBbmtgoz5CrAAUn9FFn7UIbA4txGensifxKHrJYIz9Y1AtTYo2zBXhNeHtJq3JNYCVay3/eVfvpRrA==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
+    "@metascraper/helpers" "^5.22.1"
 
-metascraper@5.22.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.22.0.tgz#74469d87865999ea2f1584812be823a1a09a2b0e"
-  integrity sha512-JnEkhX68cM2txsY1ZMtpld5C7PCm/u5N/w8udE9iZ29IeyCR+kvvIwUglEViq0hcXwpOk8tGm4GQyzwgU4uFnw==
+metascraper@5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.22.1.tgz#979989ffc30396e3e19485241e5d684eacb7ee5b"
+  integrity sha512-uTrY6Ia40SnClcLCl20URWipqRS5zTUB4zcKyTqV0063PRBYNtuDxoSrWuOBdSWcFd8WtLTywEcwub756EkrcA==
   dependencies:
-    "@metascraper/helpers" "^5.22.0"
-    cheerio "~1.0.0-rc.9"
+    "@metascraper/helpers" "^5.22.1"
+    cheerio "~1.0.0-rc.10"
     lodash "~4.17.21"
     whoops "~4.1.0"
 
@@ -6652,7 +6696,7 @@ mime-db@1.47.0:
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.47.0.tgz#8cb313e59965d3c05cfbf898915a267af46a335c"
   integrity sha512-QBmA/G2y+IfeS4oktet3qRZ+P5kPhCKRXxXnQEudYqUaEioAU1/Lq2us3D/t1Jfo4hE9REQPrbB7K5sOczJVIw==
 
-"mime-db@>= 1.43.0 < 2":
+mime-db@1.48.0, "mime-db@>= 1.43.0 < 2":
   version "1.48.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.48.0.tgz#e35b31045dd7eada3aaad537ed88a33afbef2d1d"
   integrity sha512-FM3QwxV+TnZYQ2aRqhlKBMHxk10lTbMt3bBkMAp54ddrNeVSfcQYOOKuGuy3Ddrm38I04If834fOUSq1yzslJQ==
@@ -6669,12 +6713,19 @@ mime-types@2.1.13:
   dependencies:
     mime-db "~1.25.0"
 
-mime-types@^2.1.12, mime-types@~2.1.19, mime-types@~2.1.24, mime-types@~2.1.30:
+mime-types@^2.1.12, mime-types@~2.1.19, mime-types@~2.1.24:
   version "2.1.30"
   resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.30.tgz#6e7be8b4c479825f85ed6326695db73f9305d62d"
   integrity sha512-crmjA4bLtR8m9qLpHvgxSChT+XoSlZi8J4n/aIdn3z92e/U47Z0V/yl+Wh9W046GgFVAmoNR/fmdbZYcSSIUeg==
   dependencies:
     mime-db "1.47.0"
+
+mime-types@~2.1.31:
+  version "2.1.31"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.31.tgz#a00d76b74317c61f9c2db2218b8e9f8e9c5c9e6b"
+  integrity sha512-XGZnNzm3QvgKxa8dpzyhFTHmpP3l5YNusmne07VUOXxou9CqUqYa/HBy124RqtVh/O2pECas/MOcsDgpilPOPg==
+  dependencies:
+    mime-db "1.48.0"
 
 mime@1.6.0:
   version "1.6.0"
@@ -10267,10 +10318,10 @@ vfile@^4.0.0:
     unist-util-stringify-position "^2.0.0"
     vfile-message "^2.0.0"
 
-video-extensions@~1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/video-extensions/-/video-extensions-1.1.0.tgz#eaa86b45f29a853c2b873e9d8e23b513712997d6"
-  integrity sha1-6qhrRfKahTwrhz6djiO1E3Epl9Y=
+video-extensions@~1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/video-extensions/-/video-extensions-1.2.0.tgz#62f449f403b853f02da40964cbf34143f7d96731"
+  integrity sha512-TriMl18BHEsh2KuuSA065tbu4SNAC9fge7k8uKoTTofTq89+Xsg4K1BGbmSVETwUZhqSjd9KwRCNwXAW/buXMg==
 
 w3c-hr-time@^1.0.2:
   version "1.0.2"
