@@ -69,6 +69,7 @@
     "@tryghost/session-service": "0.1.22",
     "@tryghost/social-urls": "0.1.24",
     "@tryghost/string": "0.1.19",
+    "@tryghost/tpl": "0.1.0",
     "@tryghost/update-check-service": "0.1.0",
     "@tryghost/url-utils": "1.1.4",
     "@tryghost/vhost-middleware": "1.0.14",
@@ -150,7 +151,6 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.0.1",
-    "@tryghost/tpl": "^0.1.0",
     "coffeescript": "2.5.1",
     "cssnano": "5.0.5",
     "eslint": "7.28.0",
