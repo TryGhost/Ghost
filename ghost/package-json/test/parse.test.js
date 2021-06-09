@@ -2,11 +2,9 @@ require('./utils');
 
 const tmp = require('tmp');
 const fs = require('fs-extra');
-const PackageJSON = require('../');
+const parse = require('../lib/parse');
 
-const packageJSON = new PackageJSON();
-
-describe('lib/fs/package-json: parse', function () {
+describe('package-json parse', function () {
     it('should parse valid package.json', function (done) {
         let pkgJson;
         let tmpFile;
@@ -19,7 +17,7 @@ describe('lib/fs/package-json: parse', function () {
 
         fs.writeSync(tmpFile.fd, pkgJson);
 
-        packageJSON.parse(tmpFile.name)
+        parse(tmpFile.name)
             .then(function (pkg) {
                 pkg.should.eql({
                     name: 'test',
@@ -43,7 +41,7 @@ describe('lib/fs/package-json: parse', function () {
 
         fs.writeSync(tmpFile.fd, pkgJson);
 
-        packageJSON.parse(tmpFile.name)
+        parse(tmpFile.name)
             .then(function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
@@ -69,7 +67,7 @@ describe('lib/fs/package-json: parse', function () {
 
         fs.writeSync(tmpFile.fd, pkgJson);
 
-        packageJSON.parse(tmpFile.name)
+        parse(tmpFile.name)
             .then(function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
@@ -93,7 +91,7 @@ describe('lib/fs/package-json: parse', function () {
 
         fs.writeSync(tmpFile.fd, pkgJson);
 
-        packageJSON.parse(tmpFile.name)
+        parse(tmpFile.name)
             .then(function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
@@ -112,7 +110,7 @@ describe('lib/fs/package-json: parse', function () {
         const tmpFile = tmp.fileSync();
 
         tmpFile.removeCallback();
-        packageJSON.parse(tmpFile.name)
+        parse(tmpFile.name)
             .then(function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
