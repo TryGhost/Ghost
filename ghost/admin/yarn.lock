@@ -6426,14 +6426,14 @@ ember-compatibility-helpers@^1.1.1, ember-compatibility-helpers@^1.1.2, ember-co
     fs-extra "^9.1.0"
     semver "^5.4.1"
 
-ember-composable-helpers@4.4.1:
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-4.4.1.tgz#968f0ef72731cc300b377c552f36f20881911472"
-  integrity sha512-MVx4KGFL6JzsYfCf9OqLCCnr7DN5tG2jFW9EvosvfgCL7gRdNxLqewR4PWPYA882wetmJ9zvcIEUJhFzZ4deaw==
+ember-composable-helpers@4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-4.5.0.tgz#94febbdf4348e64f45f7a6f993f326e32540a61e"
+  integrity sha512-XjpDLyVPsLCy6kd5dIxZonOECCO6AA5sY5Hr6tYUbJg3s5ghFAiFWaNcYraYC+fL2yPJQAswwpfwGlQORUJZkw==
   dependencies:
     "@babel/core" "^7.0.0"
     broccoli-funnel "2.0.1"
-    ember-cli-babel "^7.11.1"
+    ember-cli-babel "^7.26.3"
     resolve "^1.10.0"
 
 ember-concurrency-decorators@2.0.3, ember-concurrency-decorators@^2.0.0:
