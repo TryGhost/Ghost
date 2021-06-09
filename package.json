@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/image-transform",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "repository": "https://github.com/TryGhost/Utils/tree/master/packages/image-transform",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "sinon": "11.0.0"
   },
   "dependencies": {
-    "@tryghost/errors": "^0.2.11",
+    "@tryghost/errors": "^0.2.12",
     "bluebird": "^3.7.2",
     "fs-extra": "^9.1.0"
   },
