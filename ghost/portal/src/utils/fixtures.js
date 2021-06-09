@@ -11,81 +11,74 @@ const prices = [
         interval: 'month'
     },
     {
-        id: '6086ead8070218227791fe4f',
-        stripe_price_id: 'price_1IkXLAFToJelIqAseQdK4WSU',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price 15',
-        currency: 'usd',
-        amount: 1500,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
-        id: '6086eb2a823dd7240afc8081',
-        stripe_price_id: 'price_1IkXMUFToJelIqAstq0R3Ero',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price USD',
-        currency: 'usd',
-        amount: 1100,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
-        id: '6086eb3e823dd7240afc8082',
-        stripe_price_id: 'price_1IkXMoFToJelIqAsTHKl5ELV',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price Comp',
-        currency: 'usd',
-        amount: 0,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
         id: '6086eff0823dd7240afc8083',
         stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
         stripe_product_id: 'prod_JNGGBrrogUXcoM',
         active: 1,
         nickname: 'Yearly',
         currency: 'usd',
-        amount: 12200,
+        amount: 5000,
         type: 'recurring',
         interval: 'year'
+    }
+];
+
+const products = [
+    {
+        name: 'Main Product',
+        description: 'The default product',
+        prices: [
+            {
+                id: '6086d2c776909b1a2382369a',
+                stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
+                stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'usd',
+                amount: 500,
+                type: 'recurring',
+                interval: 'month'
+            },
+            {
+                id: '6086eff0823dd7240afc8083',
+                stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                stripe_product_id: 'prod_JNGGBrrogUXcoM',
+                active: 1,
+                nickname: 'Yearly',
+                currency: 'usd',
+                amount: 5000,
+                type: 'recurring',
+                interval: 'year'
+            }
+        ]
     },
     {
-        id: '6086f4c9823dd7240afc8084',
-        stripe_price_id: 'price_1IkY0CFToJelIqAs5h7qlgP5',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price B',
-        currency: 'gbp',
-        amount: 12000,
-        type: 'recurring',
-        interval: 'year'
-    },
-    {
-        id: '6087c314d3e64b3266bf715e',
-        stripe_price_id: 'price_1IkljzFToJelIqAsPNGA2Lov',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price A',
-        currency: 'cad',
-        amount: 12200,
-        type: 'recurring',
-        interval: 'month'
-    },
-    {
-        id: '6087c36ed3e64b3266bf715f',
-        stripe_price_id: 'price_1IkllSFToJelIqAsvElnxOwF',
-        stripe_product_id: 'prod_JNGGBrrogUXcoM',
-        active: 1,
-        nickname: 'Test Price X',
-        currency: 'gbp',
-        amount: 12300,
-        type: 'recurring',
-        interval: 'month'
+        name: 'Advanced Product',
+        description: 'For extra content',
+        prices: [
+            {
+                id: '6086d2c776909b1a2382369a',
+                stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
+                stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'usd',
+                amount: 1200,
+                type: 'recurring',
+                interval: 'month'
+            },
+            {
+                id: '6086eff0823dd7240afc8083',
+                stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                stripe_product_id: 'prod_JNGGBrrogUXcoM',
+                active: 1,
+                nickname: 'Yearly',
+                currency: 'usd',
+                amount: 12000,
+                type: 'recurring',
+                interval: 'year'
+            }
+        ]
     }
 ];
 
@@ -101,10 +94,7 @@ export const site = {
         yearly: 150000,
         currency: 'USD'
     },
-    product: {
-        name: 'Main Product',
-        description: 'The default product'
-    },
+    products,
     prices: prices,
     allow_self_signup: true,
     members_signup_access: 'all',
