@@ -44,6 +44,12 @@ Session.vim
 /node_modules
 /bower_components
 
+# IDE
+.idea/*
+*.iml
+*.sublime-*
+.vscode/*
+
 # misc
 ./env*
 /connect.lock
