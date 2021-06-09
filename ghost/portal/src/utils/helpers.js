@@ -125,19 +125,6 @@ export function getQueryPrice({site = {}, priceId}) {
     return null;
 }
 
-export function getProductDetails({site}) {
-    if (site && site.product) {
-        return {
-            name: site.product.name || '',
-            description: site.product.description || ''
-        };
-    }
-    return {
-        name: '',
-        description: ''
-    };
-}
-
 export function capitalize(str) {
     if (typeof str !== 'string' || !str) {
         return '';
@@ -148,6 +135,20 @@ export function capitalize(str) {
 export function isInviteOnlySite({site = {}, pageQuery = ''}) {
     const prices = getSitePrices({site, pageQuery});
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
+}
+
+export function hasMultipleProducts({site = {}}) {
+    const {
+        products = []
+    } = site || {};
+    if (products?.length > 0) {
+        return true;
+    }
+    return false;
+}
+
+export function getProducts({site = {}}) {
+    return site?.products || [];
 }
 
 export function getAvailablePrices({site = {}, includeFree = true} = {}) {
