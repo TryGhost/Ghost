@@ -7,6 +7,7 @@ describe('Lodash Template', function () {
         require('../lib/tpl');
         let _ = require('lodash');
 
+        // @ts-ignore
         _.templateSettings.interpolate.should.eql(/<%=([\s\S]+?)%>/g);
     });
 });
