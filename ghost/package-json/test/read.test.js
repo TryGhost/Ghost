@@ -5,11 +5,7 @@ const join = require('path').join;
 const fs = require('fs-extra');
 const PackageJSON = require('../');
 
-const packageJSON = new PackageJSON({
-    i18n: {
-        t: key => key
-    }
-});
+const packageJSON = new PackageJSON();
 
 describe('lib/fs/package-json: read', function () {
     describe('all', function () {
