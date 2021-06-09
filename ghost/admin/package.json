@@ -74,7 +74,7 @@
     "ember-cli-string-helpers": "6.1.0",
     "ember-cli-terser": "4.0.2",
     "ember-cli-test-loader": "3.0.0",
-    "ember-composable-helpers": "4.4.1",
+    "ember-composable-helpers": "4.5.0",
     "ember-concurrency": "2.1.0",
     "ember-concurrency-decorators": "2.0.3",
     "ember-data": "3.21.2",
