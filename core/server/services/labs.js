@@ -10,7 +10,8 @@ const settingsCache = require('../services/settings/cache');
 //       input for the "labs" setting value
 const WRITABLE_KEYS_ALLOWLIST = [
     'activitypub',
-    'matchHelper'
+    'matchHelper',
+    'multipleProducts'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = WRITABLE_KEYS_ALLOWLIST;
