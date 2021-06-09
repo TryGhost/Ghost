@@ -165,6 +165,10 @@ jobs:
           ghost install v3 --local -d $DIR
           ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
+      - name: Print debug logs
+        if: failure()
+        run: cat ~/.ghost/logs/*.log
+
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
