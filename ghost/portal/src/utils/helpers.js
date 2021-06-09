@@ -173,7 +173,9 @@ export function getAvailablePrices({site = {}, includeFree = true} = {}) {
 
     const plansData = [];
 
-    const stripePrices = prices.map((d) => {
+    const stripePrices = prices.filter((d) => {
+        return !!(d && d.id);
+    }).map((d) => {
         return {
             ...d,
             price_id: d.id,
@@ -218,7 +220,9 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
 
     const plansData = [];
 
-    const stripePrices = prices.map((d) => {
+    const stripePrices = prices.filter((d) => {
+        return !!(d && d.id);
+    }).map((d) => {
         return {
             ...d,
             price_id: d.id,
