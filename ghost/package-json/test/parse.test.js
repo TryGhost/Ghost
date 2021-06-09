@@ -4,11 +4,7 @@ const tmp = require('tmp');
 const fs = require('fs-extra');
 const PackageJSON = require('../');
 
-const packageJSON = new PackageJSON({
-    i18n: {
-        t: key => key
-    }
-});
+const packageJSON = new PackageJSON();
 
 describe('lib/fs/package-json: parse', function () {
     it('should parse valid package.json', function (done) {
@@ -52,9 +48,9 @@ describe('lib/fs/package-json: parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('errors.utils.parsepackagejson.nameOrVersionMissing');
+                err.message.should.equal('"name" or "version" is missing from theme package.json file.');
                 err.context.should.equal(tmpFile.name);
-                err.help.should.equal('errors.utils.parsepackagejson.willBeRequired');
+                err.help.should.equal('This will be required in future. Please see https://ghost.org/docs/themes/');
 
                 done();
             })
@@ -78,9 +74,9 @@ describe('lib/fs/package-json: parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('errors.utils.parsepackagejson.nameOrVersionMissing');
+                err.message.should.equal('"name" or "version" is missing from theme package.json file.');
                 err.context.should.equal(tmpFile.name);
-                err.help.should.equal('errors.utils.parsepackagejson.willBeRequired');
+                err.help.should.equal('This will be required in future. Please see https://ghost.org/docs/themes/');
 
                 done();
             })
@@ -102,9 +98,9 @@ describe('lib/fs/package-json: parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('errors.utils.parsepackagejson.themeFileIsMalformed');
+                err.message.should.equal('Theme package.json file is malformed');
                 err.context.should.equal(tmpFile.name);
-                err.help.should.equal('errors.utils.parsepackagejson.willBeRequired');
+                err.help.should.equal('This will be required in future. Please see https://ghost.org/docs/themes/');
 
                 done();
             })
@@ -121,7 +117,7 @@ describe('lib/fs/package-json: parse', function () {
                 done(new Error('packageJSON.parse succeeded, but should\'ve failed'));
             })
             .catch(function (err) {
-                err.message.should.equal('errors.utils.parsepackagejson.couldNotReadPackage');
+                err.message.should.equal('Could not read package.json file');
                 err.context.should.equal(tmpFile.name);
 
                 done();

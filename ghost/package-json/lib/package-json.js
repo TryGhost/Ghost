@@ -3,14 +3,17 @@ const Promise = require('bluebird');
 const fs = require('fs-extra');
 const join = require('path').join;
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 
 const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
 const packageJSONPath = 'package.json';
 
-/**
- * @typedef {Object} Ii18n
- * @prop {(key: string) => string} t
- */
+const messages = {
+    couldNotReadPackage: 'Could not read package.json file',
+    nameOrVersionMissing: '"name" or "version" is missing from theme package.json file.',
+    willBeRequired: 'This will be required in future. Please see {url}',
+    themeFileIsMalformed: 'Theme package.json file is malformed'
+};
 
 /**
  * # Package Utils
@@ -23,15 +26,6 @@ const packageJSONPath = 'package.json';
  *
  */
 module.exports = class PackageJson {
-    /**
-     * Creates an instance of PackageJson, an util used to read and validate package.json files
-     * @param {Object} dependencies
-     * @param {Ii18n} dependencies.i18n
-     */
-    constructor({i18n}) {
-        this.i18n = i18n;
-    }
-
     /**
      * ### Filter Packages
      * Normalizes packages read by read-packages so that the themes module can use them.
@@ -85,7 +79,7 @@ module.exports = class PackageJson {
             source = await fs.readFile(path);
         } catch (readError) {
             const err = new errors.IncorrectUsageError();
-            err.message = this.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage');
+            err.message = tpl(messages.couldNotReadPackage);
             err.context = path;
             err.err = readError;
 
@@ -96,10 +90,10 @@ module.exports = class PackageJson {
             json = JSON.parse(source);
         } catch (parseError) {
             const err = new errors.IncorrectUsageError();
-            err.message = this.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed');
+            err.message = tpl(messages.themeFileIsMalformed);
             err.context = path;
             err.err = parseError;
-            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/themes/'});
+            err.help = tpl(messages.willBeRequired, {url: 'https://ghost.org/docs/themes/'});
 
             return Promise.reject(err);
         }
@@ -108,9 +102,9 @@ module.exports = class PackageJson {
 
         if (!hasRequiredKeys) {
             const err = new errors.IncorrectUsageError();
-            err.message = this.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing');
+            err.message = tpl(messages.nameOrVersionMissing);
             err.context = path;
-            err.help = this.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/themes/'});
+            err.help = tpl(messages.willBeRequired, {url: 'https://ghost.org/docs/themes/'});
 
             return Promise.reject(err);
         }
