@@ -11,7 +11,7 @@ const interpolate = /(?<!{){([^{]+?)}/g;
  *
  * @param {String} string - string with optional {data properties}
  * @param {Object} [data] - optional data to interpolate
- * @returns
+ * @returns {string} the interpolated string
  */
 module.exports = (string, data) => {
     if (!data) {
