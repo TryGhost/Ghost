@@ -203,7 +203,7 @@ SchedulingDefault.prototype._deleteJob = function (object) {
  *    - accuracy
  *    - setTimeout is limited to 24,3 days
  *
- * The execution of "setTimeout" is never guaranteed, therefor we've optimised the execution by using "setImmediate".
+ * The execution of "setTimeout" is never guaranteed, therefore we've optimized the execution by using "setImmediate".
  * The executor will put each job to sleep using `setTimeout` with a threshold of 70ms. And "setImmediate" is then
  * used to detect the correct moment to trigger the URL.
 

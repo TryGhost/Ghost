@@ -78,7 +78,7 @@ User = ghostBookshelf.Model.extend({
      * @TODO:
      *
      * The user model does not use bookshelf-relations yet.
-     * Therefor we have to remove the relations manually.
+     * Therefore we have to remove the relations manually.
      */
     onDestroying(model, options) {
         ghostBookshelf.Model.prototype.onDestroying.apply(this, arguments);
