@@ -150,7 +150,7 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.0.1",
-    "@tryghost/tpl": "^0.1.0",
+    "@tryghost/tpl": "0.1.0",
     "coffeescript": "2.5.1",
     "cssnano": "5.0.5",
     "eslint": "7.28.0",
