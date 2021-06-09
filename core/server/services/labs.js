@@ -5,19 +5,29 @@ const errors = require('@tryghost/errors');
 const i18n = require('../../shared/i18n');
 const logging = require('../../shared/logging');
 const settingsCache = require('../services/settings/cache');
+const config = require('../../shared/config');
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
-const WRITABLE_KEYS_ALLOWLIST = [
+const BETA_FEATURES = [
     'activitypub',
-    'matchHelper',
+    'matchHelper'
+];
+
+const ALPHA_FEATURES = [
     'multipleProducts'
 ];
 
-module.exports.WRITABLE_KEYS_ALLOWLIST = WRITABLE_KEYS_ALLOWLIST;
+module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
 
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
+
+    ALPHA_FEATURES.forEach((alphaKey) => {
+        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments'))) {
+            delete labs[alphaKey];
+        }
+    });
 
     labs.members = settingsCache.get('members_signup_access') !== 'none';
 
