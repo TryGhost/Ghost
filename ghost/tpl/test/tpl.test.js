@@ -20,9 +20,21 @@ describe('tpl', function () {
         result.should.eql('Go visit https://example.com');
     });
 
-    it('Can handle mixing with handlebars-related messages', function () {
+    it('Can mix interpolation handlebars in the same message', function () {
         const string = '{{#get}} helper took {totalMs}ms to complete';
         const data = {
+            totalMs: '500'
+        };
+
+        let result = tpl(string, data);
+        result.should.eql('{{#get}} helper took 500ms to complete');
+    });
+
+    it('Can mix interpolation with handlebars-block helpers without escaping', function () {
+        const string = '{{#{helperName}}} helper took {totalMs}ms to complete';
+
+        const data = {
+            helperName: 'get',
             totalMs: '500'
         };
 
