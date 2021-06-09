@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const themeList = require('./list');
 const bridge = require('../../../bridge');
-const packageJSON = require('../../lib/package-json');
+const packageJSON = require('@tryghost/package-json');
 const settingsCache = require('../settings/cache');
 
 /**
@@ -14,7 +14,7 @@ const settingsCache = require('../settings/cache');
  *
  * @param {string} [name] - the theme to output
  * @param {object} [checkedTheme] - a theme result from gscan
- * @return {*}
+ * @return {}
  */
 module.exports = function toJSON(name, checkedTheme) {
     let themeResult;
