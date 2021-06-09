@@ -1,18 +1,51 @@
 const should = require('should');
 const sinon = require('sinon');
 
+const configUtils = require('../../utils/configUtils');
 const labs = require('../../../core/server/services/labs');
 const settingsCache = require('../../../core/server/services/settings/cache');
 
 describe('Labs Service', function () {
     afterEach(function () {
         sinon.restore();
+        configUtils.restore();
     });
 
     it('can getAll, even if empty with enabled members', function () {
         labs.getAll().should.eql({
             members: true
         });
+    });
+
+    it('returns an alpha flag when dev experiments in toggled', function () {
+        configUtils.set('enableDeveloperExperiments', true);
+        sinon.stub(settingsCache, 'get');
+        settingsCache.get.withArgs('labs').returns({
+            multipleProducts: true
+        });
+
+        labs.getAll().should.eql({
+            multipleProducts: true,
+            members: true
+        });
+
+        labs.isSet('members').should.be.true;
+        labs.isSet('multipleProducts').should.be.true;
+    });
+
+    it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
+        configUtils.set('enableDeveloperExperiments', false);
+        sinon.stub(settingsCache, 'get');
+        settingsCache.get.withArgs('labs').returns({
+            multipleProducts: true
+        });
+
+        labs.getAll().should.eql({
+            members: true
+        });
+
+        labs.isSet('members').should.be.true;
+        labs.isSet('multipleProducts').should.be.false;
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
