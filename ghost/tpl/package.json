@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 --check-coverage mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
@@ -24,6 +24,7 @@
     "sinon": "11.1.1"
   },
   "dependencies": {
+    "c8": "^7.7.2",
     "lodash.template": "^4.5.0"
   }
 }
