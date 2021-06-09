@@ -139,7 +139,7 @@
                             {{#if this.fetchDefaultProduct.isRunning}}
                                 Loading...
                             {{else}}
-                                {{#if (enable-developer-experiments)}}
+                                {{#if (feature "multipleProducts")}}
                                     <GhMembershipProductsAlpha
                                         @products={{this.products}}
                                         @confirmProductSave={{this.confirmProductSave}}
