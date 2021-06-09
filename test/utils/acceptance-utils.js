@@ -36,7 +36,7 @@ let existingData = {};
 /**
  * Because we use ObjectID we don't know the ID of fixtures ahead of time
  * This function fetches all of our fixtures and exposes them so that tests can use them
- * @TODO: Optimise this by making it optional / selective
+ * @TODO: Optimize this by making it optional / selective
  */
 const exposeFixtures = async () => {
     const fixturePromises = {

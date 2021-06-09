@@ -5,7 +5,7 @@ const testUtils = require('../../../utils');
 const models = require('../../../../core/server/models');
 const validation = require('../../../../core/server/data/validation');
 
-// Validate our customisations
+// Validate our customizations
 describe('Validation', function () {
     before(function () {
         models.init();

@@ -20,7 +20,7 @@ class Bridge {
     constructor() {
         /**
          * When locale changes, we reload theme translations
-         * @deprecated: the term "lang" was deprecated in favour of "locale" publicly in 4.0
+         * @deprecated: the term "lang" was deprecated in favor of "locale" publicly in 4.0
          */
         events.on('settings.lang.edited', (model) => {
             this.getActiveTheme().initI18n({locale: model.get('value')});

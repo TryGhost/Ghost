@@ -25,7 +25,7 @@ module.exports = function normalize(req, res, next) {
         .then(() => {
             req.files = [];
 
-            // CASE: push the processed/optimised image
+            // CASE: push the processed/optimized image
             req.files.push(Object.assign(req.file, {path: out}));
 
             // CASE: push original image, we keep a copy of it

@@ -116,7 +116,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
      *   - getMetaData(dataRoot, dataRoot) -> yes that looks confusing!
      *   - there is a very mixed usage of `data.context` vs. `root.context` vs `root._locals.context` vs. `this.context`
      *   - NOTE: getMetaData won't live here anymore soon, see https://github.com/TryGhost/Ghost/issues/8995
-     *   - therefor we get rid of using `getMetaData(this, dataRoot)`
+     *   - therefore we get rid of using `getMetaData(this, dataRoot)`
      *   - dataRoot has access to *ALL* locals, see function description
      *   - it should not break anything
      */
