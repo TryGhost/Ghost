@@ -1,9 +1,7 @@
 require('./utils');
-const PackageJSON = require('../');
+const packageJSON = require('../');
 
-const packageJSON = new PackageJSON();
-
-describe('lib/fs/package-json', function () {
+describe('package-json filter', function () {
     // @TODO: introduce some non-theme package examples
     const casper = {
         name: 'casper',
