@@ -3,12 +3,10 @@ require('./utils');
 const tmp = require('tmp');
 const join = require('path').join;
 const fs = require('fs-extra');
-const PackageJSON = require('../');
+const packageJSON = require('../');
 
-const packageJSON = new PackageJSON();
-
-describe('lib/fs/package-json: read', function () {
-    describe('all', function () {
+describe('package-json read', function () {
+    describe('readPackages', function () {
         it('should read directory and ignore unneeded items', function (done) {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
@@ -103,7 +101,7 @@ describe('lib/fs/package-json: read', function () {
         });
     });
 
-    describe('one', function () {
+    describe('readPackage', function () {
         it('should read directory and ignore unneeded items', function (done) {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
