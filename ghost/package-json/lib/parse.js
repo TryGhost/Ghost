@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -15,13 +14,14 @@ const messages = {
  * all the required fields
  *
  * @param {string} path
+ * @returns {Promise<object>}
  */
 async function parse(path) {
     let source;
     let json;
 
     try {
-        source = await fs.readFile(path);
+        source = await fs.readFile(path, {encoding: 'utf8'});
     } catch (readError) {
         const err = new errors.IncorrectUsageError();
         err.message = tpl(messages.couldNotReadPackage);
