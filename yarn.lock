@@ -645,6 +645,14 @@
     ghost-ignition "^4.6.1"
     lodash "^4.17.21"
 
+"@tryghost/errors@^0.2.12":
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.12.tgz#b88c5e09c62f97db97d6f1ebdbbd5dc37829a572"
+  integrity sha512-Ru/f66+PgnBGBvLtY74a/8iHkGjn/LOUM9u4nbHBHil3vB5FK4mGvPcD53Z7Ay6AeZkmt6bSGEnZHwhexJVdgg==
+  dependencies:
+    ghost-ignition "^4.6.1"
+    lodash "^4.17.21"
+
 "@tryghost/helpers@1.1.45":
   version "1.1.45"
   resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.45.tgz#811c1d4c5a8a4f3e513b26dd893fa061d3c9afb1"
@@ -806,12 +814,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.20.tgz#82e72c5b1015438dc474dd85632736ce53623ae2"
   integrity sha512-w3yjYYwEMchkEZG/YE00b2dcJtf3WWJr2i9xVHQIr9ZnARHwrkVcDmbvGMunvbugVgfA00+u6MtEmZUl+r+brw==
 
-"@tryghost/package-json@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-0.1.1.tgz#fdb12be61e9bf51fb076694c2f868e07e40b15ac"
-  integrity sha512-04wOfvxrIqf0eJ4jx8hPtpFLFhsWGv9VdlMzwuNlsdMCAOMy+4eU1qUe4skLuatPNo/MAWTGM4jzcgyWFNGzMg==
+"@tryghost/package-json@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-0.1.2.tgz#81dedaaabaf11c682c41ed31bdaccf0b937844dc"
+  integrity sha512-q95w42/CXsFTVRSPcL7FEZQC+RicD8WJnmrkYgA5fuC/4DAemAtJS6ZB3Gtm9y0qyq8ZLs+mrmOEDjKDLA8vUA==
   dependencies:
-    "@tryghost/errors" "^0.2.11"
+    "@tryghost/errors" "^0.2.12"
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
     lodash "^4.17.21"
