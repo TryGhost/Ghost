@@ -6,6 +6,7 @@ const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const labs = require('../../../../../services/labs');
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
@@ -102,6 +103,13 @@ const forceStatusFilter = (frame) => {
     }
 };
 
+const cleanLabsProperties = (frame) => {
+    if (!labs.isSet('featureImageMeta') && frame.data.pages[0]) {
+        delete frame.data.pages[0].feature_image_alt;
+        delete frame.data.pages[0].feature_image_caption;
+    }
+};
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -180,6 +188,7 @@ module.exports = {
             });
         }
 
+        cleanLabsProperties(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);
@@ -189,7 +198,6 @@ module.exports = {
         debug('edit');
         this.add(...arguments, {add: false});
 
-        handlePostsMeta(frame);
         forceStatusFilter(frame);
         forcePageFilter(frame);
     },

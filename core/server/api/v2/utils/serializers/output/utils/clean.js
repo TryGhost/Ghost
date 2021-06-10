@@ -136,6 +136,8 @@ const post = (attrs, frame) => {
     delete attrs.send_email_when_published;
     delete attrs.email_recipient_filter;
     delete attrs.email_subject;
+    delete attrs.feature_image_alt;
+    delete attrs.feature_image_caption;
 
     return attrs;
 };
