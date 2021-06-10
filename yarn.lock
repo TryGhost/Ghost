@@ -3371,10 +3371,10 @@ eslint-plugin-es@^3.0.0:
     eslint-utils "^2.0.0"
     regexpp "^3.0.0"
 
-eslint-plugin-ghost@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.2.0.tgz#3b0f279f89cb57e17e98f664624cb8221a1591c0"
-  integrity sha512-BASnZGz1qYn6TvyEpIA4Z4QnHmAXWA5WjdkMQOPeXX1wVhyI4Fobm/rqp+YhMm3XC6JE0g5aO/A76et09ulMPg==
+eslint-plugin-ghost@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.3.0.tgz#def9e6dc8cc54c81bdfc1cdec2865a9d46710a27"
+  integrity sha512-qODEp6Jz2t8QgdpRMifvVnzvcJ6t9hFy3VnawmP/o191oYE/E6HElgCzqoMGEI3BcUhF93nzA5E7fcSqrpn4GQ==
   dependencies:
     eslint-plugin-ember "9.3.0"
     eslint-plugin-mocha "7.0.1"
