@@ -180,7 +180,7 @@ module.exports = class MemberRepository {
                 member_id: member.id,
                 subscribed: member.get('subscribed'),
                 source
-            }, options);
+            }, sharedOptions);
         }
 
         if (member.attributes.email !== member._previousAttributes.email) {
@@ -188,7 +188,7 @@ module.exports = class MemberRepository {
                 member_id: member.id,
                 from_email: member._previousAttributes.email,
                 to_email: member.get('email')
-            });
+            }, sharedOptions);
         }
 
         if (this._stripeAPIService.configured && member._changed.email) {
