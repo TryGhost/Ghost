@@ -19,7 +19,8 @@ export default BaseValidator.create({
         'twitterDescription',
         'publishedAtBlogTime',
         'publishedAtBlogDate',
-        'emailSubject'
+        'emailSubject',
+        'featureImageAlt'
     ],
 
     title(model) {
@@ -186,6 +187,13 @@ export default BaseValidator.create({
                 model.errors.add('publishedAtBlogDate', 'Must be at least 2 mins in the future');
                 this.invalidate();
             }
+        }
+    },
+
+    featureImageAlt(model) {
+        if (!validator.isLength(model.featureImageAlt || '', 0, 125)) {
+            model.errors.add('featureImageAlt', 'Feature image alt text cannot be longer than 125 characters.');
+            this.invalidate();
         }
     }
 });

@@ -84,6 +84,12 @@
             @snippets={{this.snippets}}
             @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
             @deleteSnippet={{if this.canManageSnippets this.toggleDeleteSnippetModal}}
+            @featureImage={{this.post.featureImage}}
+            @featureImageAlt={{this.post.featureImageAlt}}
+            @featureImageCaption={{this.post.featureImageCaption}}
+            @setFeatureImage={{action "setFeatureImage"}}
+            @setFeatureImageAlt={{action "setFeatureImageAlt"}}
+            @setFeatureImageCaption={{action "setFeatureImageCaption"}}
         />
 
         <div class="gh-editor-wordcount-container {{if editor.headerClass "small"}}">
