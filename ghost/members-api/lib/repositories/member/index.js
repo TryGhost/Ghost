@@ -409,35 +409,34 @@ module.exports = class MemberRepository {
         }
 
         let status = 'free';
-        let memberProducts = [];
+        let memberProducts = (await member.related('products').fetch(options)).toJSON();
         if (this.isActiveSubscriptionStatus(subscription.status)) {
             status = 'paid';
-            try {
-                if (ghostProduct) {
-                    memberProducts.push(ghostProduct.toJSON());
-                }
-                const existingProducts = await member.related('products').fetch(options);
-                for (const productModel of existingProducts.models) {
-                    memberProducts.push(productModel.toJSON());
-                }
-            } catch (e) {
-                this._logging.error(`Failed to attach products to member - ${data.id}`);
+            if (ghostProduct) {
+                memberProducts.push(ghostProduct.toJSON());
             }
         } else {
             const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+            let activeSubscriptionForGhostProduct = false;
             for (const subscription of subscriptions.models) {
                 if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                    status = 'paid';
                     try {
                         const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')});
-                        if (subscriptionProduct) {
-                            memberProducts.push(subscriptionProduct.toJSON());
+                        if (subscriptionProduct && ghostProduct && subscriptionProduct.id === ghostProduct.id) {
+                            activeSubscriptionForGhostProduct = true;
                         }
                     } catch (e) {
                         this._logging.error(`Failed to attach products to member - ${data.id}`);
                         this._logging.error(e);
                     }
-                    status = 'paid';
                 }
+            }
+
+            if (!activeSubscriptionForGhostProduct) {
+                memberProducts = memberProducts.filter((product) => {
+                    return product.id !== ghostProduct.id;
+                });
             }
         }
         let updatedMember;
