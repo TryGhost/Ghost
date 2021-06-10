@@ -437,9 +437,18 @@ module.exports = class MemberRepository {
             throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
         }
 
-        const member = await this._Member.findOne({
-            email: data.email
-        });
+        let findQuery = null;
+        if (data.id) {
+            findQuery = {id: data.id};
+        } else if (data.email) {
+            findQuery = {email: data.email};
+        }
+
+        if (!findQuery) {
+            throw new Error('Cannot update Subscription without an id or email for the Member');
+        }
+
+        const member = await this._Member.findOne(findQuery);
 
         const subscription = await member.related('stripeSubscriptions').query({
             where: {
