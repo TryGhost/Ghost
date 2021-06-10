@@ -68,7 +68,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products']);
 
         const member = await this._Member.add({
             ...memberData,
@@ -110,7 +110,8 @@ module.exports = class MemberRepository {
             'note',
             'subscribed',
             'labels',
-            'geolocation'
+            'geolocation',
+            'products'
         ]), options);
 
         // member._changed.subscribed has a value if the `subscribed` attribute is passed in the update call, regardless of the previous value
