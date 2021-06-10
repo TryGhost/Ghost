@@ -104,6 +104,57 @@ module.exports = class MemberRepository {
     }
 
     async update(data, options) {
+        const sharedOptions = {
+            transacting: options.transacting
+        };
+
+        if (this._stripeAPIService.configured && data.products) {
+            const member = await this._Member.findOne({
+                id: options.id
+            }, sharedOptions);
+
+            const existingProducts = await member.related('products').fetch(sharedOptions);
+
+            const existingProductIds = existingProducts.map(product => product.id);
+            const incomingProductIds = data.products.map(product => product.id);
+
+            const productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
+            const productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
+            const productsToModify = productsToAdd.concat(productsToRemove);
+
+            if (productsToModify.length > 0) {
+                const exisitingSubscriptions = await member.related('stripeSubscriptions').fetch(sharedOptions);
+                const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
+                    return this.isActiveSubscriptionStatus(subscription.get('status'));
+                });
+
+                if (existingActiveSubscriptions.length) {
+                    const memberWithSubscriptions = await this._Member.findOne({
+                        id: options.id
+                    }, {
+                        ...sharedOptions,
+                        withRelated: ['stripeSubscriptions', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']
+                    });
+
+                    const productsDueToSubscriptions = memberWithSubscriptions.related('stripeSubscriptions').reduce((products, subscription) => {
+                        if (!this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                            return products;
+                        }
+
+                        return products.concat(subscription.related('stripePrice').related('stripeProduct').get('product_id'));
+                    }, []);
+
+                    const productsToModify = productsToAdd.concat(productsToRemove);
+
+                    const attemptingToModifyASubscriptionsProduct = productsDueToSubscriptions.some((id) => productsToModify.includes(id));
+
+                    if (attemptingToModifyASubscriptionsProduct) {
+                        throw new Error('Cannot edit products for which a Member has a subscription');
+                    }
+                }
+            }
+        }
+
         const member = await this._Member.edit(_.pick(data, [
             'email',
             'name',
