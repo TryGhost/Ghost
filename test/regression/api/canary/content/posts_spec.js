@@ -264,11 +264,6 @@ describe('api/canary/content/posts', function () {
         let paidPost;
         let membersPostWithPaywallCard;
 
-        before(function () {
-            // NOTE: ideally this would be set through Admin API request not a stub
-            sinon.stub(labs, 'isSet').withArgs('members').returns(true);
-        });
-
         before (function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',

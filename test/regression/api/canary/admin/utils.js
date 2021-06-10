@@ -34,6 +34,8 @@ const expectedProperties = {
         'mobiledoc',
         'comment_id',
         'feature_image',
+        'feature_image_alt',
+        'feature_image_caption',
         'featured',
         'status',
         'visibility',
