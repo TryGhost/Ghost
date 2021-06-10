@@ -36,11 +36,12 @@ function setup() {
 }
 
 function init() {
-    const siteUrl = getSiteUrl() || window.location.origin;
+    const customSiteUrl = getSiteUrl();
+    const siteUrl = customSiteUrl || window.location.origin;
     setup();
     ReactDOM.render(
         <React.StrictMode>
-            <App siteUrl={siteUrl} />
+            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );

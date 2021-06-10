@@ -37,7 +37,8 @@ export default class App extends React.Component {
             showPopup: false,
             action: 'init:running',
             initStatus: 'running',
-            lastPage: null
+            lastPage: null,
+            customSiteUrl: props.customSiteUrl
         };
     }
 
@@ -193,7 +194,7 @@ export default class App extends React.Component {
     /** Fetch state for Dev mode */
     fetchDevData() {
         // Setup custom dev mode data from fixtures
-        if (hasMode(['dev'])) {
+        if (hasMode(['dev']) && !this.state.customSiteUrl) {
             return DEV_MODE_DATA;
         }
         return {};
@@ -565,7 +566,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification, customSiteUrl} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member});
         return {
@@ -578,6 +579,7 @@ export default class App extends React.Component {
             lastPage,
             showPopup,
             popupNotification,
+            customSiteUrl,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
