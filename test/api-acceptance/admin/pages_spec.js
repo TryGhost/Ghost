@@ -41,7 +41,9 @@ describe('Pages API', function () {
         const page = {
             title: 'My Page',
             page: false,
-            status: 'published'
+            status: 'published',
+            feature_image_alt: 'Testing feature image alt',
+            feature_image_caption: 'Testing <b>feature image caption</b>'
         };
 
         const res = await request.post(localUtils.API.getApiQuery('pages/'))
@@ -63,9 +65,14 @@ describe('Pages API', function () {
             id: res.body.pages[0].id
         }, testUtils.context.internal);
 
-        model.get('title').should.eql(page.title);
-        model.get('status').should.eql(page.status);
-        model.get('type').should.eql('page');
+        const modelJson = model.toJSON();
+
+        modelJson.title.should.eql(page.title);
+        modelJson.status.should.eql(page.status);
+        modelJson.type.should.eql('page');
+
+        modelJson.posts_meta.feature_image_alt.should.eql(page.feature_image_alt);
+        modelJson.posts_meta.feature_image_caption.should.eql(page.feature_image_caption);
     });
 
     it('Can update a page', async function () {

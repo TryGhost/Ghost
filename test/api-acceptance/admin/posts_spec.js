@@ -204,6 +204,8 @@ describe('Posts API', function () {
         const post = {
             title: 'My post',
             status: 'draft',
+            feature_image_alt: 'Testing feature image alt',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
             published_at: '2016-05-30T07:00:00.000Z',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
@@ -232,13 +234,18 @@ describe('Posts API', function () {
             status: 'draft'
         }, testUtils.context.internal);
 
-        model.get('title').should.eql(post.title);
-        model.get('status').should.eql(post.status);
-        model.get('published_at').toISOString().should.eql('2016-05-30T07:00:00.000Z');
-        model.get('created_at').toISOString().should.not.eql(post.created_at.toISOString());
-        model.get('updated_at').toISOString().should.not.eql(post.updated_at.toISOString());
-        model.get('updated_by').should.not.eql(post.updated_by);
-        model.get('created_by').should.not.eql(post.created_by);
+        const modelJson = model.toJSON();
+
+        modelJson.title.should.eql(post.title);
+        modelJson.status.should.eql(post.status);
+        modelJson.published_at.toISOString().should.eql('2016-05-30T07:00:00.000Z');
+        modelJson.created_at.toISOString().should.not.eql(post.created_at.toISOString());
+        modelJson.updated_at.toISOString().should.not.eql(post.updated_at.toISOString());
+        modelJson.updated_by.should.not.eql(post.updated_by);
+        modelJson.created_by.should.not.eql(post.created_by);
+
+        modelJson.posts_meta.feature_image_alt.should.eql(post.feature_image_alt);
+        modelJson.posts_meta.feature_image_caption.should.eql(post.feature_image_caption);
     });
 
     it('Can update draft', async function () {

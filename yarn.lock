@@ -586,10 +586,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.11"
 
-"@tryghost/admin-api-schema@2.2.2":
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.2.2.tgz#d02c811f10bee5c3f62d3349ed220afd318f43cc"
-  integrity sha512-H2L8DkGloUT+1i8/0qdNYEeZNCrocFIqa8kE89EfjcyxTPkMsI6whpdI1CFQNHxuz9TazbC2M2TeTzCgALrQLg==
+"@tryghost/admin-api-schema@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.3.0.tgz#3ec7dd98576e26166ff4c8082e6cd7542c3322d0"
+  integrity sha512-f69N5TE4Wzff0xr13Pa+HyfqCVktiIg+5L3we2TWYUO8XSrZcLKo5ionj/ybMHUY1M3DMVL2yVFjOfRWnV2TpA==
   dependencies:
     "@tryghost/errors" "^0.2.10"
     bluebird "^3.5.3"

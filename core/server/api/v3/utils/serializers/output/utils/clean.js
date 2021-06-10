@@ -123,6 +123,8 @@ const post = (attrs, frame) => {
     delete attrs.locale;
     delete attrs.author;
     delete attrs.type;
+    delete attrs.feature_image_alt;
+    delete attrs.feature_image_caption;
 
     return attrs;
 };
