@@ -267,6 +267,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Feature image redesign with caption support</h4>
+                            <p class="gh-expandable-description">
+                               Moves feature image uploader to top of editor screen and adds alt/caption input.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="featureImageMeta" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}

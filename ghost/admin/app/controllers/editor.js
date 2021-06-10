@@ -305,6 +305,22 @@ export default Controller.extend({
 
         updateWordCount(counts) {
             this.set('wordCount', counts);
+        },
+
+        setFeatureImage(url) {
+            this.post.set('featureImage', url);
+        },
+
+        clearFeatureImage() {
+            this.post.set('featureImage', null);
+        },
+
+        setFeatureImageAlt(text) {
+            this.post.set('featureImageAlt', text);
+        },
+
+        setFeatureImageCaption(html) {
+            this.post.set('featureImageCaption', html);
         }
     },
 
