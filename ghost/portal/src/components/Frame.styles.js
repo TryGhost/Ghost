@@ -12,6 +12,7 @@ import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
 import {PlanSectionStyles} from './common/PlansSection';
+import {ProductsSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {LinkPageStyles} from './pages/LinkPage';
@@ -233,6 +234,10 @@ const FrameStyles = `
         height: 100%;
     }
 
+    .gh-portal-popup-wrapper.fullscreen {
+        padding: 0;
+    }
+
     .gh-portal-popup-container {
         outline: none;
         position: relative;
@@ -252,6 +257,16 @@ const FrameStyles = `
         box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
         animation: popup 0.25s ease-in-out;
         z-index: 9999;
+    }
+
+    .gh-portal-popup-container.fullscreen {
+        align-items: center;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0px;
+        box-shadow: none !important;
+        overflow-y: scroll;
+        padding-bottom: 6vmin;
     }
 
     @keyframes popup {
@@ -303,6 +318,10 @@ const FrameStyles = `
         margin: 0 6px 0 0;
     }
 
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-powered {
+        z-index: 10000;
+    }
+
     .gh-portal-container-wide {
         width: 440px;
     }
@@ -348,7 +367,12 @@ const FrameStyles = `
     .gh-portal-content {
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
-    } 
+    }
+
+    .gh-portal-popup-container.fullscreen .gh-portal-content {
+        overflow-y: visible;
+        max-height: unset !important;
+    }
     
     .gh-portal-popup-container footer {
         padding: 0 32px 32px;
@@ -369,6 +393,11 @@ const FrameStyles = `
         height: 16px;
         padding: 12px;
         transition: all 0.2s ease-in-out;
+    }
+
+    .gh-portal-popup-container.fullscreen .gh-portal-closeicon {
+        width: 24px;
+        height: 24px;
     }
 
     .gh-portal-closeicon:hover {
@@ -675,6 +704,10 @@ const MobileStyles = `
     .gh-portal-popup-wrapper.account-home .gh-portal-powered a {
         box-shadow: none;
     }
+    
+    .gh-portal-popup-container.fullscreen {
+        padding: 0;
+    }
 }
 
 @media (max-width: 414px) {
@@ -703,7 +736,7 @@ const MobileStyles = `
         border-bottom: 1px solid var(--grey10);
     }
 
-    .gh-portal-plan-checkbox {
+    div:not(.gh-portal-product-card-header) > .gh-portal-plan-checkbox {
         grid-column: 1 / 2;
         grid-row: 1 / 3;
         margin: 0 12px;
@@ -801,6 +834,7 @@ const FrameStyle =
     AccountPlanPageStyles +
     InputFieldStyles +
     PlanSectionStyles +
+    ProductsSectionStyles +
     SwitchStyles +
     ActionButtonStyles +
     BackButtonStyles +

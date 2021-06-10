@@ -85,8 +85,8 @@ const products = [
 export const site = {
     title: 'A Ghost site',
     description: 'Thoughts, stories and ideas.',
-    logo: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
-    icon: 'https://pbs.twimg.com/profile_images/1111773508231667713/mf2N0uqc_400x400.png',
+    logo: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
+    icon: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
     accent_color: '#45C32E',
     url: 'http://localhost:2368/',
     plans: {
@@ -96,7 +96,7 @@ export const site = {
     },
     products,
     prices: prices,
-    allow_self_signup: true,
+    allow_self_signup: false,
     members_signup_access: 'all',
     free_price_name: 'Free',
     free_price_description: 'Free preview',

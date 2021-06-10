@@ -454,7 +454,7 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, chan
     }
     const className = getPlanClassNames({cookiesDisabled, changePlan, plans});
     return (
-        <section>
+        <section className="gh-portal-plans">
             <PlanLabel showLabel={showLabel} />
             <div className={className}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />

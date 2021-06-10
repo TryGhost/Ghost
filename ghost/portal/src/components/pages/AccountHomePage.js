@@ -93,10 +93,6 @@ export const AccountHomePageStyles = `
         opacity: 0.6;
     }
 
-    .gh-portal-products:hover {
-        cursor: pointer;
-    }
-
     .gh-portal-product-icon {
         width: 52px;
         margin-right: 12px;
