@@ -380,6 +380,16 @@
     margin: 0 auto;
 }
 
+.gh-editor-feature-image {
+    display: block;
+    width: 100%;
+    max-width: 740px;
+    min-height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.6rem;
+}
+
 .gh-editor-title {
     display: block;
     width: 100%;

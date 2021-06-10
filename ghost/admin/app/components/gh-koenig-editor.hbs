@@ -5,6 +5,24 @@
         {{on "mousedown" this.trackMousedown}}
         {{on "mouseup" this.focusEditor}}
     >
+        {{#if (feature "featureImageMeta")}}
+            <div class="gh-editor-feature-image">
+                <GhImageUploaderWithPreview
+                    @image={{@featureImage}}
+                    @text="Upload feature image"
+                    @allowUnsplash={{true}}
+                    @includeMetadata={{true}}
+                    @update={{@setFeatureImage}}
+                    @remove={{fn @setFeatureImage null}}
+                    @alt={{@featureImageAlt}}
+                    @caption={{@featureImageCaption}}
+                    @updateAlt={{@setFeatureImageAlt}}
+                    @updateCaption={{@setFeatureImageCaption}}
+                    @captionPlaceholder="Add a caption to the feature image"
+                />
+            </div>
+        {{/if}}
+
         <GhTextarea
             @class="gh-editor-title"
             @placeholder={{@titlePlaceholder}}

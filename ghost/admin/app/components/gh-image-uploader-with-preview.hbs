@@ -1,18 +1,33 @@
-{{#if this.image}}
+{{#if @image}}
     <div class="gh-image-uploader -with-image">
-        <div><img src={{this.image}}></div>
-        <a class="image-cancel" title="Delete" {{action "remove"}}>
+        <div><img src={{@image}}></div>
+        <a class="image-cancel" title="Delete" {{on "click" @remove}}>
             {{svg-jar "trash"}}
             <span class="hidden">Delete</span>
         </a>
     </div>
 {{else}}
     <GhImageUploader
-        @text={{this.text}}
-        @altText={{this.altText}}
-        @allowUnsplash={{this.allowUnsplash}}
-        @update={{action "update"}}
-        @uploadStarted={{action "uploadStarted"}}
-        @uploadFinished={{action "uploadFinished"}}
+        @text={{@text}}
+        @altText={{@altText}}
+        @allowUnsplash={{@allowUnsplash}}
+        @update={{@update}}
+        @uploadStarted={{optional @uploadStarted}}
+        @uploadFinished={{optional @uploadFinished}}
     />
+{{/if}}
+
+{{#if @includeMetadata}}
+    {{#if this.isEditingAlt}}
+    {{else}}
+        <KoenigBasicHtmlInput
+            @html={{@caption}}
+            @placeholder={{if this.captionInputFocused "" @captionPlaceholder}}
+            @class="miw-100 tc bn form-text bg-transparent pr8 pl8"
+            @name="caption"
+            @onChange={{@updateCaption}}
+            @onFocus={{fn (mut this.captionInputFocused) true}}
+            @onBlur={{fn (mut this.captionInputFocused) false}}
+        />
+    {{/if}}
 {{/if}}
