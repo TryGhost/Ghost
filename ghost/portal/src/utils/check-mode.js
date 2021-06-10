@@ -3,7 +3,10 @@ export const isPreviewMode = function () {
     return (path === '/portal/preview') || (path === '/portal' && qs);
 };
 
-export const isDevMode = function () {
+export const isDevMode = function ({customSiteUrl = ''} = {}) {
+    if (customSiteUrl && process.env.NODE_ENV === 'development') {
+        return false;
+    }
     return (process.env.NODE_ENV === 'development');
 };
 
@@ -17,9 +20,9 @@ const modeFns = {
     test: isTestMode
 };
 
-export const hasMode = (modes = []) => {
+export const hasMode = (modes = [], options = {}) => {
     return modes.some((mode) => {
         const modeFn = modeFns[mode];
-        return !!(modeFn && modeFn());
+        return !!(modeFn && modeFn(options));
     });
 };
