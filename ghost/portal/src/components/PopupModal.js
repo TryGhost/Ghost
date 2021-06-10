@@ -4,7 +4,7 @@ import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
-import {isCookiesDisabled, getSitePrices, isInviteOnlySite} from '../utils/helpers';
+import {hasMultipleProducts, isCookiesDisabled, getSitePrices, isInviteOnlySite} from '../utils/helpers';
 
 const React = require('react');
 
@@ -165,6 +165,11 @@ class PopupContent extends React.Component {
             pageClass = page;
             break;
         }
+        
+        if (hasMultipleProducts({site}) && (page === 'signup' || page === 'signin')) {
+            pageClass += ' fullscreen';
+        }
+        
         const className = (hasMode(['preview', 'dev'], {customSiteUrl}) && !site.disableBackground) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container';
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
         return (
