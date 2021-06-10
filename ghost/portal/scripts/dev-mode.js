@@ -97,11 +97,11 @@ function printConfigInstruction() {
     const stringifedData = JSON.stringify(data, null, 2);
     const splitData = stringifedData.split('\n');
     log();
-    splitData.forEach((data, idx, arr) => {
+    splitData.forEach((_data, idx, arr) => {
         if (idx === 0 || idx === arr.length - 1) {
-            log(chalk.grey(data));
+            log(chalk.grey(_data));
         } else {
-            log(chalk.bold.whiteBright(data));
+            log(chalk.bold.whiteBright(_data));
         }
     });
     log();
