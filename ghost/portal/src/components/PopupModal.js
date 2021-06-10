@@ -122,7 +122,7 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page, site, pageQuery} = this.context;
+        const {page, site, pageQuery, customSiteUrl} = this.context;
         const {is_stripe_configured: isStripeConfigured} = site;
 
         getActivePage({page});
@@ -165,7 +165,7 @@ class PopupContent extends React.Component {
             pageClass = page;
             break;
         }
-        const className = (hasMode(['preview', 'dev']) && !site.disableBackground) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container';
+        const className = (hasMode(['preview', 'dev'], {customSiteUrl}) && !site.disableBackground) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container';
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
         return (
             <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
@@ -227,7 +227,7 @@ export default class PopupModal extends React.Component {
     }
 
     renderFrameContainer() {
-        const {member, site} = this.context;
+        const {member, site, customSiteUrl} = this.context;
         const Styles = StylesWrapper({member});
 
         const frameStyle = {
@@ -236,7 +236,7 @@ export default class PopupModal extends React.Component {
         if (hasMode(['preview'])) {
             Styles.modalContainer.zIndex = '3999997';
         }
-        const className = (hasMode(['preview', 'dev']) && !site.disableBackground) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background';
+        const className = (hasMode(['preview', 'dev'], {customSiteUrl}) && !site.disableBackground) ? 'gh-portal-popup-background preview' : 'gh-portal-popup-background';
 
         return (
             <div style={Styles.modalContainer}>
