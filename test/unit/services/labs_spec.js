@@ -19,6 +19,7 @@ describe('Labs Service', function () {
 
     it('returns an alpha flag when dev experiments in toggled', function () {
         configUtils.set('enableDeveloperExperiments', true);
+        sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
             multipleProducts: true
@@ -35,6 +36,7 @@ describe('Labs Service', function () {
 
     it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
         configUtils.set('enableDeveloperExperiments', false);
+        sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
             multipleProducts: true
