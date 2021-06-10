@@ -187,7 +187,8 @@ module.exports = {
                     'array',
                     'string',
                     'number',
-                    'boolean'
+                    'boolean',
+                    'object'
                 ]]
             }
         },
