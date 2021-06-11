@@ -926,10 +926,10 @@
     extract-zip "2.0.0"
     fs-extra "9.1.0"
 
-"@tryghost/zip@1.1.13":
-  version "1.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.13.tgz#151e460350336584d5111cac8b90dbaf2f18bfa5"
-  integrity sha512-YrX9KAmHbQ3O79js6/xvRhizigxYDc7XTNf3FtekG/9HeiA4M2D6cVGMrv6BG9r+OO7ksjut1TI3LQPLzC3joA==
+"@tryghost/zip@1.1.14":
+  version "1.1.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.14.tgz#44a0fce4b06a03a73e33197572d3e4d88a1217a3"
+  integrity sha512-FUIaBJbtYVNtNLXgzlaZWqsEMHPiJliJWbVlJE6ZCkodyydzrtEsFM52mcu2a1KmDm0qzFHupPDN6hWWcUDodA==
   dependencies:
     archiver "^4.0.2"
     bluebird "^3.7.2"
