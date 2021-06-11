@@ -104,7 +104,7 @@ export const ProductsSectionStyles = `
     .gh-portal-product-name {
         font-size: 1.2rem;
         font-weight: 500;
-        line-height: 1.0em;
+        line-height: 1.45em;
         letter-spacing: 0.5px;
         text-transform: uppercase;
         margin-top: 7px;
@@ -296,9 +296,10 @@ function ProductCardFooter({product}) {
 
 function ProductCard({product}) {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+    const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
 
     return (
-        <div className="gh-portal-product-card" key={product.id} onClick={(e) => {
+        <div className={cardClass} key={product.id} onClick={(e) => {
             e.stopPropagation();
             setSelectedProduct(product.id);
         }}>
@@ -324,8 +325,10 @@ function ProductCards({products}) {
 
 function FreeProductCard() {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+    const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
+
     return (
-        <div className="gh-portal-product-card" onClick={(e) => {
+        <div className={cardClass} onClick={(e) => {
             e.stopPropagation();
             setSelectedProduct('free');
         }}>
