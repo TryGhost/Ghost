@@ -141,7 +141,7 @@ export function hasMultipleProducts({site = {}}) {
     const {
         products = []
     } = site || {};
-    if (products?.length > 0) {
+    if (products?.length > 1) {
         return true;
     }
     return false;
