@@ -38,28 +38,18 @@ export default Component.extend({
 
     disableUpdateFromAddressButton: computed('fromAddress', function () {
         const savedFromAddress = this.get('settings.membersFromAddress') || '';
-        if (!savedFromAddress.includes('@') && this.blogDomain) {
-            return !this.fromAddress || (this.fromAddress === `${savedFromAddress}@${this.blogDomain}`);
+        if (!savedFromAddress.includes('@') && this.config.emailDomain) {
+            return !this.fromAddress || (this.fromAddress === `${savedFromAddress}@${this.config.emailDomain}`);
         }
         return !this.fromAddress || (this.fromAddress === savedFromAddress);
     }),
 
     disableUpdateSupportAddressButton: computed('supportAddress', function () {
         const savedSupportAddress = this.get('settings.membersSupportAddress') || '';
-        if (!savedSupportAddress.includes('@') && this.blogDomain) {
-            return !this.supportAddress || (this.supportAddress === `${savedSupportAddress}@${this.blogDomain}`);
+        if (!savedSupportAddress.includes('@') && this.config.emailDomain) {
+            return !this.supportAddress || (this.supportAddress === `${savedSupportAddress}@${this.config.emailDomain}`);
         }
         return !this.supportAddress || (this.supportAddress === savedSupportAddress);
-    }),
-
-    blogDomain: computed('config.blogDomain', function () {
-        let blogDomain = this.config.blogDomain || '';
-        const domainExp = blogDomain.replace('https://', '').replace('http://', '').match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        const domain = (domainExp && domainExp[1]) || '';
-        if (domain.startsWith('www.')) {
-            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
-        }
-        return domain;
     }),
 
     mailgunRegion: computed('settings.mailgunBaseUrl', function () {
