@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    membersCountCache: service(),
     session: service(),
     store: service(),
 
@@ -26,15 +27,14 @@ export default ModalComponent.extend({
     },
 
     countRecipients: action(function () {
-        // TODO: remove editor conditional once editors can query member counts
-        if (this.model.sendEmailWhenPublished && !this.session.get('user.isEditor')) {
-            this.countRecipientsTask.perform();
-        }
+        this.countRecipientsTask.perform();
     }),
 
     countRecipientsTask: task(function* () {
-        const result = yield this.store.query('member', {filter: `subscribed:true+(${this.model.sendEmailWhenPublished})`, limit: 1, page: 1});
-        this.set('memberCount', result.meta.pagination.total);
+        const {sendEmailWhenPublished} = this.model;
+        const filter = `subscribed:true+(${sendEmailWhenPublished})`;
+        const result = sendEmailWhenPublished ? yield this.membersCountCache.countString(filter) : 'no members';
+        this.set('memberCount', result);
     }),
 
     confirmAndCheckErrorTask: task(function* () {
