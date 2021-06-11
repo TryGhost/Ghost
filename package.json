@@ -66,7 +66,7 @@
     "@tryghost/package-json": "1.0.0",
     "@tryghost/promise": "0.1.9",
     "@tryghost/security": "0.2.9",
-    "@tryghost/session-service": "0.1.22",
+    "@tryghost/session-service": "0.1.23",
     "@tryghost/social-urls": "0.1.24",
     "@tryghost/string": "0.1.19",
     "@tryghost/tpl": "0.1.0",
