@@ -141,7 +141,7 @@ export const site = {
         currency: 'USD'
     },
     products,
-    prices: prices,
+    prices,
     allow_self_signup: false,
     members_signup_access: 'all',
     free_price_name: 'Free',
@@ -299,6 +299,7 @@ export const member = {
 
 export const testSite = {
     ...site,
+    products: products?.[0] ? [products[0]] : [],
     allow_self_signup: true,
     portal_plans: ['free', 'monthly', 'yearly']
 };
