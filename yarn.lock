@@ -596,10 +596,10 @@
     ghost-ignition "^4.6.2"
     lodash "^4.17.11"
 
-"@tryghost/bootstrap-socket@0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.8.tgz#081aa0d7fcdaa5cc9412a8fb6941c02a2e2b5a28"
-  integrity sha512-8VnTxckbLEzeQJVq8aXDNy1hEwWc1FwWIktPB04n986fYQTGDOZHvhHl4yle3LDmv9au3DzIEPhmWzapTKfycg==
+"@tryghost/bootstrap-socket@0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.9.tgz#441e9287c4293fc344fc363a4ea8579144393ea6"
+  integrity sha512-unOiro5Wo9gjOgya6vQAA3pkOlwxr54//Md+nBrKNopd5n9mBvLC076tNIKCisUECCvkJPMYRtFmGJz9U5rb5w==
 
 "@tryghost/bunyan-rotating-filestream@0.0.7":
   version "0.0.7"
