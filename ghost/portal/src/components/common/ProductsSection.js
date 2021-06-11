@@ -264,6 +264,7 @@ function Checkbox({name, id, onProductSelect, isChecked, disabled = false}) {
                 disabled={disabled}
             />
             <span className='checkmark' onClick={(e) => {
+                e.stopPropagation();
                 if (!disabled) {
                     onProductSelect(e, id);
                 }
@@ -297,7 +298,10 @@ function ProductCard({product}) {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
     return (
-        <div className="gh-portal-product-card" key={product.id}>
+        <div className="gh-portal-product-card" key={product.id} onClick={(e) => {
+            e.stopPropagation();
+            setSelectedProduct(product.id);
+        }}>
             <div className="gh-portal-product-card-header">
                 <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
                     setSelectedProduct(product.id);
@@ -318,65 +322,13 @@ function ProductCards({products}) {
     });
 }
 
-/** Dummy static products for UI development */
-/*
-function DummyProductCards({products}) {
-    return (
-        <>
-            <div className="gh-portal-product-card checked">
-                <div className="gh-portal-product-card-header">
-                    <Checkbox name='x' id='x' isChecked={true} onPlanSelect='' />
-                    <h4 className="gh-portal-product-name">Bronze</h4>
-                    <div className="gh-portal-product-description">Access to all members articles</div>
-                </div>
-                <div className="gh-portal-product-card-footer">
-                    <div className="gh-portal-product-price">
-                        <span className="currency-sign">$</span>
-                        <span className="amount">70</span>
-                        <span className="billing-period">/year</span>
-                    </div>
-                    <div className="gh-portal-product-alternative-price">$7/month</div>
-                </div>
-            </div>
-            <div className="gh-portal-product-card">
-                <div className="gh-portal-product-card-header">
-                    <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
-                    <h4 className="gh-portal-product-name">Silver</h4>
-                    <div className="gh-portal-product-description">Access to all members articles and weekly podcast</div>
-                </div>
-                <div className="gh-portal-product-card-footer">
-                    <div className="gh-portal-product-price">
-                        <span className="currency-sign">$</span>
-                        <span className="amount">120</span>
-                        <span className="billing-period">/year</span>
-                    </div>
-                    <div className="gh-portal-product-alternative-price">$12/month</div>
-                </div>
-            </div>
-            <div className="gh-portal-product-card">
-                <div className="gh-portal-product-card-header">
-                    <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
-                    <h4 className="gh-portal-product-name">Gold</h4>
-                    <div className="gh-portal-product-description">Access to all members articles, weekly podcast and exclusive interviews</div>
-                </div>
-                <div className="gh-portal-product-card-footer">
-                    <div className="gh-portal-product-price">
-                        <span className="currency-sign">$</span>
-                        <span className="amount">1000</span>
-                        <span className="billing-period">/year</span>
-                    </div>
-                    <div className="gh-portal-product-alternative-price">$12/month</div>
-                </div>
-            </div>
-        </>
-    );
-}
-*/
-
 function FreeProductCard() {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
     return (
-        <div className="gh-portal-product-card">
+        <div className="gh-portal-product-card" onClick={(e) => {
+            e.stopPropagation();
+            setSelectedProduct('free');
+        }}>
             <div className="gh-portal-product-card-header">
                 <Checkbox name='x' id='x' isChecked={selectedProduct === 'free'} onProductSelect={() => {
                     setSelectedProduct('free');
