@@ -608,10 +608,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/constants@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.7.tgz#410fa77a569443f7919378d2e8c770f32f972584"
-  integrity sha512-5X2C6thZvjR7bGeGVJv7/hlkExDwoP+szhrfnJ7Yc+Dr0iKtGyrXufcwzC8c9gt0AC8/g8lv9A1RGSkUn160TQ==
+"@tryghost/constants@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.8.tgz#b08074cdc6f8a379209750e60c2ab62c8ba895cf"
+  integrity sha512-3/w0k2JlpYjG/3tU3zjvVlrNH+kK9bjZvp7xaCkvmbsLGxQFMtlKU4fFY+rcpDVWOkywIHmKbLGmAqADgZeakA==
 
 "@tryghost/elasticsearch-bunyan@0.1.1":
   version "0.1.1"
