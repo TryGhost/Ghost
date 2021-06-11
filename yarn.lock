@@ -873,15 +873,7 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.0.tgz#85eb583b593d3925ea894eda330d5de551b911cd"
-  integrity sha512-zfsUCgyD62pkW01AzB0bksF8jzvk+Bt6RuYa46jUfAhD+LnDfkAPvaNqaYK8TV+dinnRPmwh0j20PJTeTayAqg==
-  dependencies:
-    c8 "^7.7.2"
-    lodash.template "^4.5.0"
-
-"@tryghost/tpl@^0.1.1":
+"@tryghost/tpl@0.1.1", "@tryghost/tpl@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.1.tgz#41435d29cfd1cb3addd0edcd05083815a20b2ac2"
   integrity sha512-R9tFhUAsqhdTZFaaQLfJb/eUDTp6TJpOPVKg5FarXxDmBdff1FlM/NpFI5MnHZlB/ojjNRvnTRau0yydH4U6zA==
