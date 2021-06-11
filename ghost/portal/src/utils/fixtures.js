@@ -25,8 +25,31 @@ const prices = [
 
 const products = [
     {
+        id: 'product_1',
         name: 'Main Product',
         description: 'The default product',
+        monthlyPrice: {
+            id: '6086d2c776909b1a2382369a',
+            stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: 1,
+            nickname: 'Monthly',
+            currency: 'usd',
+            amount: 500,
+            type: 'recurring',
+            interval: 'month'
+        },
+        yearlyPrice: {
+            id: '6086eff0823dd7240afc8083',
+            stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+            stripe_product_id: 'prod_JNGGBrrogUXcoM',
+            active: 1,
+            nickname: 'Yearly',
+            currency: 'usd',
+            amount: 5000,
+            type: 'recurring',
+            interval: 'year'
+        },
         prices: [
             {
                 id: '6086d2c776909b1a2382369a',
@@ -53,8 +76,31 @@ const products = [
         ]
     },
     {
+        id: 'product_2',
         name: 'Advanced Product',
         description: 'For extra content',
+        monthlyPrice: {
+            id: '6086d2c776909b1a2382369a',
+            stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
+            stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
+            active: 1,
+            nickname: 'Monthly',
+            currency: 'usd',
+            amount: 1200,
+            type: 'recurring',
+            interval: 'month'
+        },
+        yearlyPrice: {
+            id: '6086eff0823dd7240afc8083',
+            stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+            stripe_product_id: 'prod_JNGGBrrogUXcoM',
+            active: 1,
+            nickname: 'Yearly',
+            currency: 'usd',
+            amount: 12000,
+            type: 'recurring',
+            interval: 'year'
+        },
         prices: [
             {
                 id: '6086d2c776909b1a2382369a',
