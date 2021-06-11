@@ -66,5 +66,15 @@ export default Service.extend(_ProxyMixin, {
             .replace(/\/?$/, '');
 
         return blogDomain;
+    }),
+
+    emailDomain: computed('blogDomain', function () {
+        let blogDomain = this.blogDomain || '';
+        const domainExp = blogDomain.match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const domain = (domainExp && domainExp[1]) || '';
+        if (domain.startsWith('www.')) {
+            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
+        }
+        return domain;
     })
 });
