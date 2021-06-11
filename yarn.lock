@@ -782,12 +782,12 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.0.0.tgz#fc062ed56d29f4b60803970bba0f6cef5eb7e244"
-  integrity sha512-/kUn9inC3nDNK9sBZ+eaWsJgX5+M28NGkw6QHLOBtbv7zgomjSjjNVSJUJEuw02/ZOKqyVwSU3E+i9m6M270zQ==
+"@tryghost/members-csv@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.0.1.tgz#88b3b52742c1273f9661af9ab10e61a1a790327b"
+  integrity sha512-dPLQN6obke5jSm4o65P7P6WgYxUXf1Du/Tf/yt2PilH4mXYzOqeFZwXJi84OyJycsofshWoPk1QvEmFVqYnwgQ==
   dependencies:
-    papaparse "5.3.0"
+    papaparse "5.3.1"
 
 "@tryghost/members-ssr@1.0.3":
   version "1.0.3"
@@ -7668,11 +7668,6 @@ pako@^1.0.11:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
-
-papaparse@5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.0.tgz#ab1702feb96e79ab4309652f36db9536563ad05a"
-  integrity sha512-Lb7jN/4bTpiuGPrYy4tkKoUS8sTki8zacB5ke1p5zolhcSE4TlWgrlsxjrDTbG/dFVh07ck7X36hUf/b5V68pg==
 
 papaparse@5.3.1:
   version "5.3.1"
