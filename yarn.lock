@@ -833,10 +833,10 @@
     chalk "4.1.0"
     sywac "1.3.0"
 
-"@tryghost/promise@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.8.tgz#6bf665271fb4b55e27396bde478f0ee08adbec19"
-  integrity sha512-qRyI3tiB5X+y4xhBtKPzcr1CVjzu1+0JWe1RW+kwI6ODDMOr48D1aJZjjXbRDzvZ/UlpAIObyd0JShLkNGZH9Q==
+"@tryghost/promise@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.9.tgz#50c4f9e411d3f5258308aafc9ea911f953696787"
+  integrity sha512-uBi3pjQr+2+2lIluTKCcgdy6Q1rSAA4Eb964kPCfB25ZSFVUO+Lt7nBkO3f6IphBIJEiHJ0lxFhUzuhXwGK2eA==
   dependencies:
     bluebird "^3.7.2"
 
