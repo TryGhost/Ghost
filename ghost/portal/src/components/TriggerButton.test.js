@@ -1,5 +1,5 @@
 import React from 'react';
-import {render} from 'test-utils';
+import {render} from '../utils/test-utils';
 import TriggerButton from './TriggerButton';
 
 const setup = (overrides) => {
