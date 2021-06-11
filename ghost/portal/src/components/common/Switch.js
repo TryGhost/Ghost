@@ -74,7 +74,7 @@ export const SwitchStyles = `
     }
 `;
 
-function Switch({id, label, onToggle, checked = false}) {
+function Switch({id, label='', onToggle, checked = false}) {
     const {action} = useContext(AppContext);
     const [isChecked, setIsChecked] = useState(checked);
     const isActionChanged = ['updateNewsletter:failed', 'updateNewsletter:success'].includes(action);
