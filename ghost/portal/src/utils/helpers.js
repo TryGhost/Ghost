@@ -148,7 +148,10 @@ export function hasMultipleProducts({site = {}}) {
 }
 
 export function getProducts({site = {}}) {
-    return site?.products || [];
+    const products = site?.products || [];
+    return products.filter(product => !!product).sort((productA, productB) => {
+        return productA?.monthlyPrice?.amount - productB?.monthlyPrice.amount;
+    });
 }
 
 export function getAvailablePrices({site = {}, includeFree = true} = {}) {
