@@ -25,6 +25,7 @@ export default class ModalEmailDesignSettings extends ModalComponent {
     @tracked showBadge = this.settings.get('newsletterShowBadge');
 
     currentDate = moment().format('D MMM YYYY');
+    copyrightYear = new Date().getFullYear();
     imageExtensions = IMAGE_EXTENSIONS;
 
     get showHeader() {
