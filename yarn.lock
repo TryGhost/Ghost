@@ -809,10 +809,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-session-from-token@0.1.20":
-  version "0.1.20"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.20.tgz#82e72c5b1015438dc474dd85632736ce53623ae2"
-  integrity sha512-w3yjYYwEMchkEZG/YE00b2dcJtf3WWJr2i9xVHQIr9ZnARHwrkVcDmbvGMunvbugVgfA00+u6MtEmZUl+r+brw==
+"@tryghost/mw-session-from-token@0.1.21":
+  version "0.1.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.21.tgz#a3a2687a555b512ab94d499ed8478b4423009c8a"
+  integrity sha512-nfHs73HjUvd1ZSymSICQ28e4D3+Vgrh0KxtNJQxU4XYx+x6BVNzUAkCoCLsp+/QUdMtCFMq8+ZpspYGFiPkZsg==
 
 "@tryghost/package-json@1.0.0":
   version "1.0.0"
