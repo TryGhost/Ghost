@@ -25,23 +25,14 @@ export default class GhEditorPostStatusComponent extends Component {
         return this._isSaving;
     }
 
-    get scheduledText() {
+    get scheduledTime() {
         // force a recompute every second
         get(this.clock, 'second');
 
-        let text = [];
-        const sendEmailWhenPublished = this.args.post.emailRecipientFilter;
-        if (sendEmailWhenPublished && sendEmailWhenPublished !== 'none') {
-            text.push(`and sent to ${sendEmailWhenPublished} members`);
-        }
-
-        let formattedTime = formatPostTime(
+        return formatPostTime(
             this.args.post.publishedAtUTC,
             {timezone: this.settings.get('timezone'), scheduled: true}
         );
-        text.push(formattedTime);
-
-        return text.join(' ');
     }
 
     @task({drop: true})
