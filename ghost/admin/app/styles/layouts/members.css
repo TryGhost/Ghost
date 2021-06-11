@@ -1259,6 +1259,10 @@ p.gh-members-import-errordetail:first-of-type {
     text-align: center;
 }
 
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-label .sample {
+    margin-right: 14px;
+}
+
 .gh-email-design-typography .gh-radio-label .description h4 {
     font-size: 1.3rem;
     margin: 0;

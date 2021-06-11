@@ -38,11 +38,11 @@
                             >
                                 <div class="modal-fullsettings-uploader">
                                     {{#if uploader.isUploading}}
-                                        <div class="gh-portal-button-icon">
+                                        <div class="gh-header-img-container">
                                             <div class="gh-loading-spinner"></div>
                                         </div>
                                     {{else if this.headerImage}}
-                                        <div class="gh-header-img-container">
+                                        <div class="gh-header-img">
                                             <img
                                                 class="gh-header-img-thumbnail"
                                                 src={{this.headerImage}}
@@ -54,7 +54,7 @@
                                             </button>
                                         </div>
                                     {{else}}
-                                        <button type="button" class="gh-btn gh-header-img-uploadicon" data-tooltip="Upload image" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
+                                        <button type="button" class="gh-btn gh-header-img-uploadicon" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
                                             <span>{{svg-jar "upload-fill" class="w5 h5"}}</span>
                                         </button>
                                         <div style="display:none">
@@ -74,7 +74,7 @@
                             </GhUploader>
                         </GhFormGroup>
 
-                        <GhFormGroup>
+                        <GhFormGroup data-tooltip={{if (not this.settings.icon) "A publication icon must be set in Branding settings."}}>
                             <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Show publication icon</h4>
                             <div class="for-switch small {{if (not this.settings.icon) "disabled"}}">
                                 <label class="switch" for="show-header">
@@ -124,7 +124,7 @@
                         </GhFormGroup>
                         <GhFormGroup @classNames="vertical">
                             <h4 class="modal-fullsettings-title gh-email-design-alignment">
-                                <span>Post title style</span>
+                                <span>Header style</span>
                                 <div class="gh-btn-group icons">
                                     <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
                                     <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
@@ -236,7 +236,7 @@
                                 {{{this.footerContent}}}
                             </div>
                             <div class="gh-members-emailpreview-footersite">
-                                <span>{{this.config.blogTitle}} &copy; – </span> <a href="javascript:">Unsubscribe</a>
+                                <span>{{this.config.blogTitle}} &copy; {{this.copyrightYear}} – </span> <a href="javascript:">Unsubscribe</a>
                             </div>
                         </div>
                         <div class="gh-members-emailpreview-badge {{if (not this.showBadge) "hide"}}">

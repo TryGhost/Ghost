@@ -406,10 +406,24 @@
     border-radius: 3px;
 }
 
+.labs-newsletter-settings .gh-header-img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 50px;
+    margin-right: 11px;
+}
+
+.labs-newsletter-settings .gh-header-img-container .gh-loading-spinner {
+    width: 20px;
+    height: 20px;
+}
+
 .labs-newsletter-settings .gh-header-img-uploadicon,
 .labs-newsletter-settings .gh-header-img-uploadicon:hover,
 .labs-newsletter-settings .gh-header-img-uploadicon:focus {
-    width: 56px;
+    width: 60px;
     height: 50px;
     margin-right: 11px;
     border: 1px dashed var(--lightgrey);
@@ -433,13 +447,13 @@
     fill: var(--darkgrey);
 }
 
-.labs-newsletter-settings .gh-header-img-container {
+.labs-newsletter-settings .gh-header-img {
     height: 50px;
 }
 
 .labs-newsletter-settings .gh-header-img-thumbnail {
     display: inline-block;
-    width: 56px;
+    width: 60px;
     height: 50px;
     margin: 0 11px 0 0;
     border: 1px solid var(--whitegrey);
@@ -456,7 +470,7 @@
 .labs-newsletter-settings .gh-header-img-deleteicon {
     position: absolute;
     left: 4px;
-    width: 56px;
+    width: 60px;
     height: 50px;
     background: var(--black) !important;
     opacity: 0;
@@ -477,7 +491,7 @@
     height: 18px;
 }
 
-.labs-newsletter-setings .gh-header-img-desc {
+.labs-newsletter-settings .gh-header-img-desc {
     padding: 6px 0;
 }
 
