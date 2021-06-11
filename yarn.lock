@@ -911,10 +911,10 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/vhost-middleware@1.0.14":
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.14.tgz#e161409cc85db9a7677703f464b433417d357dc0"
-  integrity sha512-st9dX9wSHInPOBt+kibZ1cln7+d3ZAD0PvLrIPQv8EdgHdOnbrp99XWOvETcdIVPt2eCCKM6IbbiJuJv2vnfYA==
+"@tryghost/vhost-middleware@1.0.15":
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.15.tgz#6f5e7e018fe6d9b09b0f2b7f5294f8133398cbd1"
+  integrity sha512-8ViwnbMg4kjahTri4nXojACTJtRpjJZmi6XTSjR0DHbFDbWIurLkcfWApRGtVOEumVT7jEnyzDG6wAeIvoNFzQ==
 
 "@tryghost/zip@1.1.11":
   version "1.1.11"
