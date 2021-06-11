@@ -299,7 +299,7 @@ const FrameStyles = `
 
     @media (max-width: 480px) {
         .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container.preview {
-            max-height: 620px;
+            max-height: 640px;
         }
     }
 
