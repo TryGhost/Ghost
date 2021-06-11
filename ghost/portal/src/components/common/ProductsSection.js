@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import Switch from '../common/Switch';
-import {isCookiesDisabled} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getProducts, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
+import AppContext from '../../AppContext';
 
 export const ProductsSectionStyles = `
     .gh-portal-products {
@@ -28,7 +29,7 @@ export const ProductsSectionStyles = `
     }
 
     .gh-portal-products-priceswitch .gh-portal-for-switch .input-toggle-component,
-    .gh-portal-products-priceswitch .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component, 
+    .gh-portal-products-priceswitch .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component,
     .gh-portal-products-priceswitch .gh-portal-for-switch .container:hover input:not(:checked) + .input-toggle-component {
         background: var(--grey1);
         border-color: var(--grey1);
@@ -60,7 +61,7 @@ export const ProductsSectionStyles = `
         padding: 32px 5vw;
     }
 
-    
+
     .gh-portal-product-card {
         position: relative;
         display: flex;
@@ -222,7 +223,7 @@ export const ProductsSectionStyles = `
             grid-row: 1;
         }
 
-        .gh-portal-popup-container.fullscreen footer.gh-portal-signup-footer, 
+        .gh-portal-popup-container.fullscreen footer.gh-portal-signup-footer,
         .gh-portal-popup-container.fullscreen footer.gh-portal-signin-footer {
             padding: 0 32px !important;
             margin-top: 32px;
@@ -234,12 +235,18 @@ export const ProductsSectionStyles = `
     }
 `;
 
+const ProductsContext = React.createContext({
+    selectedInterval: 'month',
+    selectedProduct: 'free',
+    setSelectedProduct: null
+});
+
 function productColumns() {
     const noOfProducts = 4;
     return noOfProducts > 5 ? 5 : noOfProducts;
 }
 
-function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
+function Checkbox({name, id, onProductSelect, isChecked, disabled = false}) {
     if (isCookiesDisabled()) {
         disabled = true;
     }
@@ -250,87 +257,169 @@ function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
                 key={id}
                 type="checkbox"
                 checked={isChecked}
+                onChange={(e) => {
+                    onProductSelect(e, id);
+                }}
                 aria-label={name}
-                onChange={e => onPlanSelect(e, id)}
                 disabled={disabled}
             />
-            <span className='checkmark'></span>
+            <span className='checkmark' onClick={(e) => {
+                if (!disabled) {
+                    onProductSelect(e, id);
+                }
+            }}></span>
+        </div>
+    );
+}
+
+function ProductCardFooter({product}) {
+    const {selectedInterval} = useContext(ProductsContext);
+    const monthlyPrice = product.monthlyPrice;
+    const yearlyPrice = product.yearlyPrice;
+    const activePrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
+    const alternatePrice = selectedInterval === 'month' ? yearlyPrice : monthlyPrice;
+    if (!monthlyPrice || !yearlyPrice) {
+        return null;
+    }
+    return (
+        <div className="gh-portal-product-card-footer">
+            <div className="gh-portal-product-price">
+                <span className="currency-sign">{getCurrencySymbol(activePrice.currency)}</span>
+                <span className="amount">{getStripeAmount(activePrice.amount)}</span>
+                <span className="billing-period">/{activePrice.interval}</span>
+            </div>
+            <div className="gh-portal-product-alternative-price">{getPriceString(alternatePrice)}</div>
+        </div>
+    );
+}
+
+function ProductCard({product}) {
+    const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+
+    return (
+        <div className="gh-portal-product-card" key={product.id}>
+            <div className="gh-portal-product-card-header">
+                <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
+                    setSelectedProduct(product.id);
+                }} />
+                <h4 className="gh-portal-product-name">{product.name}</h4>
+                <div className="gh-portal-product-description">{product.description}</div>
+            </div>
+            <ProductCardFooter product={product} />
+        </div>
+    );
+}
+
+function ProductCards({products}) {
+    return products.map((product) => {
+        return (
+            <ProductCard product={product} key={product.id} />
+        );
+    });
+}
+
+function DummyProductCards({products}) {
+    return (
+        <>
+            <div className="gh-portal-product-card checked">
+                <div className="gh-portal-product-card-header">
+                    <Checkbox name='x' id='x' isChecked={true} onPlanSelect='' />
+                    <h4 className="gh-portal-product-name">Bronze</h4>
+                    <div className="gh-portal-product-description">Access to all members articles</div>
+                </div>
+                <div className="gh-portal-product-card-footer">
+                    <div className="gh-portal-product-price">
+                        <span className="currency-sign">$</span>
+                        <span className="amount">70</span>
+                        <span className="billing-period">/year</span>
+                    </div>
+                    <div className="gh-portal-product-alternative-price">$7/month</div>
+                </div>
+            </div>
+            <div className="gh-portal-product-card">
+                <div className="gh-portal-product-card-header">
+                    <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
+                    <h4 className="gh-portal-product-name">Silver</h4>
+                    <div className="gh-portal-product-description">Access to all members articles and weekly podcast</div>
+                </div>
+                <div className="gh-portal-product-card-footer">
+                    <div className="gh-portal-product-price">
+                        <span className="currency-sign">$</span>
+                        <span className="amount">120</span>
+                        <span className="billing-period">/year</span>
+                    </div>
+                    <div className="gh-portal-product-alternative-price">$12/month</div>
+                </div>
+            </div>
+            <div className="gh-portal-product-card">
+                <div className="gh-portal-product-card-header">
+                    <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
+                    <h4 className="gh-portal-product-name">Gold</h4>
+                    <div className="gh-portal-product-description">Access to all members articles, weekly podcast and exclusive interviews</div>
+                </div>
+                <div className="gh-portal-product-card-footer">
+                    <div className="gh-portal-product-price">
+                        <span className="currency-sign">$</span>
+                        <span className="amount">1000</span>
+                        <span className="billing-period">/year</span>
+                    </div>
+                    <div className="gh-portal-product-alternative-price">$12/month</div>
+                </div>
+            </div>
+        </>
+    );
+}
+
+function FreeProductCard() {
+    const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+    return (
+        <div className="gh-portal-product-card">
+            <div className="gh-portal-product-card-header">
+                <Checkbox name='x' id='x' isChecked={selectedProduct === 'free'} onProductSelect={() => {
+                    setSelectedProduct('free');
+                }} />
+                <h4 className="gh-portal-product-name">Free</h4>
+                <div className="gh-portal-product-description">Free preview</div>
+            </div>
+            <div className="gh-portal-product-card-footer">
+                <div className="gh-portal-product-price">
+                    <span className="currency-sign">$</span>
+                    <span className="amount">0</span>
+                </div>
+                <div className="gh-portal-product-alternative-price"></div>
+            </div>
         </div>
     );
 }
 
 function ProductsSection() {
+    const {site} = useContext(AppContext);
+    const products = getProducts({site});
+    const [selectedInterval, setSelectedInterval] = useState('month');
+    const [selectedProduct, setSelectedProduct] = useState('free');
+    const checked = selectedInterval === 'year';
     return (
-        <section className="gh-portal-products">
+        <ProductsContext.Provider value={{
+            selectedInterval,
+            selectedProduct,
+            setSelectedProduct
+        }}>
+            <section className="gh-portal-products">
+                <div className="gh-portal-products-priceswitch">
+                    <span className="gh-portal-priceoption-label">Monthly</span>
+                    <Switch id='product-interval' onToggle={(e) => {
+                        const interval = selectedInterval === 'month' ? 'year' : 'month';
+                        setSelectedInterval(interval);
+                    }} checked={checked} />
+                    <span className="gh-portal-priceoption-label">Yearly</span>
+                </div>
 
-            <div className="gh-portal-products-priceswitch">
-                <span className="gh-portal-priceoption-label">Monthly</span>
-                <Switch onToggle='' checked={false} />
-                <span className="gh-portal-priceoption-label">Yearly</span>
-            </div>
-
-            <div className="gh-portal-products-grid">
-                <div className="gh-portal-product-card">
-                    <div className="gh-portal-product-card-header">
-                        <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
-                        <h4 className="gh-portal-product-name">Free</h4>
-                        <div className="gh-portal-product-description">Free preview</div>
-                    </div>
-                    <div className="gh-portal-product-card-footer">
-                        <div className="gh-portal-product-price">
-                            <span className="currency-sign">$</span>
-                            <span className="amount">0</span>
-                        </div>
-                        <div className="gh-portal-product-alternative-price"></div>
-                    </div>
+                <div className="gh-portal-products-grid">
+                    <FreeProductCard />
+                    <ProductCards products={products} />
                 </div>
-                <div className="gh-portal-product-card checked">
-                    <div className="gh-portal-product-card-header">
-                        <Checkbox name='x' id='x' isChecked={true} onPlanSelect='' />
-                        <h4 className="gh-portal-product-name">Bronze</h4>
-                        <div className="gh-portal-product-description">Access to all members articles</div>
-                    </div>
-                    <div className="gh-portal-product-card-footer">
-                        <div className="gh-portal-product-price">
-                            <span className="currency-sign">$</span>
-                            <span className="amount">70</span>
-                            <span className="billing-period">/year</span>
-                        </div>
-                        <div className="gh-portal-product-alternative-price">$7/month</div>
-                    </div>
-                </div>
-                <div className="gh-portal-product-card">
-                    <div className="gh-portal-product-card-header">
-                        <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
-                        <h4 className="gh-portal-product-name">Silver</h4>
-                        <div className="gh-portal-product-description">Access to all members articles and weekly podcast</div>
-                    </div>
-                    <div className="gh-portal-product-card-footer">
-                        <div className="gh-portal-product-price">
-                            <span className="currency-sign">$</span>
-                            <span className="amount">120</span>
-                            <span className="billing-period">/year</span>
-                        </div>
-                        <div className="gh-portal-product-alternative-price">$12/month</div>
-                    </div>
-                </div>
-                <div className="gh-portal-product-card">
-                    <div className="gh-portal-product-card-header">
-                        <Checkbox name='x' id='x' isChecked={false} onPlanSelect='' />
-                        <h4 className="gh-portal-product-name">Gold</h4>
-                        <div className="gh-portal-product-description">Access to all members articles, weekly podcast and exclusive interviews</div>
-                    </div>
-                    <div className="gh-portal-product-card-footer">
-                        <div className="gh-portal-product-price">
-                            <span className="currency-sign">$</span>
-                            <span className="amount">1000</span>
-                            <span className="billing-period">/year</span>
-                        </div>
-                        <div className="gh-portal-product-alternative-price">$12/month</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </section>
+        </ProductsContext.Provider>
     );
 }
 
