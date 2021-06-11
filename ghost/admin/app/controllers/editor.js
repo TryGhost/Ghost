@@ -86,6 +86,7 @@ const messageMap = {
 export default Controller.extend({
     application: controller(),
     feature: service(),
+    membersCountCache: service(),
     notifications: service(),
     router: service(),
     slugGenerator: service(),
@@ -895,7 +896,7 @@ export default Controller.extend({
         notifications.showNotification(message, {type: 'success', actions: (actions && actions.htmlSafe()), delayed});
     },
 
-    _showScheduledNotification(delayed) {
+    async _showScheduledNotification(delayed) {
         let {
             publishedAtUTC,
             emailRecipientFilter,
@@ -907,8 +908,8 @@ export default Controller.extend({
         let description = ['Will be published'];
 
         if (emailRecipientFilter && emailRecipientFilter !== 'none') {
-            description.push('and delivered to');
-            description.push(`<span><strong>${emailRecipientFilter} members</strong></span>`);
+            const recipientCount = await this.membersCountCache.countString(`subscribed:true+(${emailRecipientFilter})`);
+            description.push(`and delivered to <span><strong>${recipientCount}</strong></span>`);
         }
 
         description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Do')}</strong></span>`);
