@@ -318,6 +318,8 @@ function ProductCards({products}) {
     });
 }
 
+/** Dummy static products for UI development */
+/*
 function DummyProductCards({products}) {
     return (
         <>
@@ -369,6 +371,7 @@ function DummyProductCards({products}) {
         </>
     );
 }
+*/
 
 function FreeProductCard() {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
