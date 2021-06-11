@@ -177,7 +177,7 @@ export const ProductsSectionStyles = `
             grid-gap: 12px;
             align-items: start;
             min-height: unset;
-            padding: 20px;
+            padding: 12px 20px;
         }
 
         .gh-portal-product-card-header {
@@ -187,7 +187,7 @@ export const ProductsSectionStyles = `
         }
 
         .gh-portal-product-name {
-            margin: 0;
+            margin: 4px 0;
             padding: 0;
             text-align: left;
             border-bottom: none;
@@ -221,12 +221,6 @@ export const ProductsSectionStyles = `
 
         .gh-portal-product-card-footer {
             grid-row: 1;
-        }
-
-        .gh-portal-popup-container.fullscreen footer.gh-portal-signup-footer,
-        .gh-portal-popup-container.fullscreen footer.gh-portal-signin-footer {
-            padding: 0 32px !important;
-            margin-top: 32px;
         }
 
         .gh-portal-product-alternative-price {

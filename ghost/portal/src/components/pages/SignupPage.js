@@ -114,10 +114,18 @@ export const SignupPageStyles = `
 
     .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signup-footer,
     .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
-        padding: 0;
         width: 100%;
         max-width: 420px;
-        height: 120px;
+        height: unset;
+        padding: 0 !important;
+        margin: 24px 32px 32px;
+    }
+
+    @media (max-width: 480px) {
+        .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signup-footer,
+        .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
+            padding: 0 24px !important;
+        }
     }
 
     .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {

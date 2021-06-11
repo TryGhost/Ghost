@@ -235,12 +235,35 @@ const FrameStyles = `
     }
 
     .gh-portal-popup-wrapper.fullscreen {
-        position: absolute;
-        background: #fff;
-        height: 100vh !important;
-        width: 100% !important;
+        margin: 32px;
+        height: calc(100vh - 64px) !important;
         overflow-y: scroll;
+        background: #fff;
+        box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
         padding: 0;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 960px) {
+        .gh-portal-popup-wrapper.fullscreen {
+            margin: 20px;
+            height: calc(100vh - 40px) !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .gh-portal-popup-wrapper.fullscreen {
+            margin: 0;
+            height: 100vh !important;
+            border-radius: 0px;
+            box-shadow: none;
+        }
+    }
+    
+    @media (min-width: 480px) {
+        .gh-portal-popup-wrapper.fullscreen.preview {
+            height: calc(100vh - 150px) !important;
+        }
     }
 
     .gh-portal-popup-container {
@@ -264,24 +287,20 @@ const FrameStyles = `
         z-index: 9999;
     }
 
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container:not(.preview) {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container {
         position: unset;
         align-items: center;
         width: 100% !important;
-        padding-top: 3vmin;
         box-shadow: none !important;
         border-radius: 0px;
         animation: fadein 0.35s ease-in-out;
+        padding: 3vmin 0;
     }
 
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container.preview {
-        align-items: center;
-        justify-content: center;
-        width: 100% !important;
-        min-height: 100%;
-        overflow-y: scroll;
-        padding: 3vmin 0;
-        border-radius: 0px;
+    @media (max-width: 480px) {
+        .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container.preview {
+            max-height: 620px;
+        }
     }
 
     @keyframes popup {
@@ -342,6 +361,11 @@ const FrameStyles = `
         width: 100%;
         z-index: 10000;
         padding-bottom: 32px;
+    }
+
+    .gh-portal-popup-wrapper.fullscreen.signin .gh-portal-powered {
+        position: absolute;
+        bottom: 0;
     }
 
     .gh-portal-container-wide {
@@ -409,8 +433,17 @@ const FrameStyles = `
         z-index: 999;
     }
 
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon-container {
-        position: fixed;
+    @media (min-width: 480px) {
+        .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon-container {
+            top: 48px;
+            right: 48px;
+            position: fixed;
+        }
     }
 
     .gh-portal-closeicon {
@@ -420,11 +453,6 @@ const FrameStyles = `
         height: 16px;
         padding: 12px;
         transition: all 0.2s ease-in-out;
-    }
-
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon {
-        width: 24px;
-        height: 24px;
     }
 
     .gh-portal-closeicon:hover {
@@ -693,9 +721,18 @@ const MobileStyles = `
         height: unset;
     }
 
+    .gh-portal-popup-wrapper {
+        overflow-y: unset;
+    }
+
     .gh-portal-content {
+        position: relative !important;
         overflow-y: auto !important;
         max-height: unset !important;
+    }
+
+    .gh-portal-popup-wrapper.fullscreen:not(.preview) .gh-portal-content {
+        max-height: calc(100vh - 190px) !important;
     }
 
     .gh-portal-powered {
@@ -734,6 +771,10 @@ const MobileStyles = `
     
     .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container {
         padding: 0;
+    }
+
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-powered {
+        padding-bottom: 0;
     }
 }
 
