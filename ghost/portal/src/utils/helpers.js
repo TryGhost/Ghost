@@ -316,6 +316,19 @@ export const getCurrencySymbol = (currency) => {
     return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 };
 
+export const getStripeAmount = (amount) => {
+    if (isNaN(amount)) {
+        return 0;
+    }
+    return (amount / 100);
+};
+
+export const getPriceString = (price = {}) => {
+    const symbol = getCurrencySymbol(price.currency);
+    const amount = getStripeAmount(price.amount);
+    return `${symbol}${amount}/${price.interval}`;
+};
+
 export const formatNumber = (amount) => {
     if (amount === undefined || amount === null) {
         return '';
