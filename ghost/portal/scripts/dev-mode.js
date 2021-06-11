@@ -189,7 +189,20 @@ function watchFiles() {
 
 function startDevServer() {
     const server = http.createServer((request, response) => {
-        return handler(request, response);
+        return handler(request, response, {
+            rewrites: [
+                {source: '/portal', destination: 'umd/portal.min.js'}
+            ],
+            headers: [
+                {
+                    source: '**',
+                    headers: [{
+                        key: 'Cache-Control',
+                        value: 'no-cache'
+                    }]
+                }
+            ]
+        });
     });
 
     server.listen(port, () => {
