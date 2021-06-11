@@ -235,6 +235,11 @@ const FrameStyles = `
     }
 
     .gh-portal-popup-wrapper.fullscreen {
+        position: absolute;
+        background: #fff;
+        height: 100vh !important;
+        width: 100% !important;
+        overflow-y: scroll;
         padding: 0;
     }
 
@@ -259,14 +264,24 @@ const FrameStyles = `
         z-index: 9999;
     }
 
-    .gh-portal-popup-container.fullscreen {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container:not(.preview) {
+        position: unset;
         align-items: center;
         width: 100% !important;
-        height: 100% !important;
-        border-radius: 0px;
+        padding-top: 3vmin;
         box-shadow: none !important;
+        border-radius: 0px;
+        animation: fadein 0.35s ease-in-out;
+    }
+
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container.preview {
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        min-height: 100%;
         overflow-y: scroll;
-        padding-bottom: 6vmin;
+        padding: 3vmin 0;
+        border-radius: 0px;
     }
 
     @keyframes popup {
@@ -319,7 +334,14 @@ const FrameStyles = `
     }
 
     .gh-portal-popup-wrapper.fullscreen .gh-portal-powered {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        bottom: unset;
+        left: unset;
+        width: 100%;
         z-index: 10000;
+        padding-bottom: 32px;
     }
 
     .gh-portal-container-wide {
@@ -369,7 +391,8 @@ const FrameStyles = `
         scrollbar-width: none;  /* Firefox */
     }
 
-    .gh-portal-popup-container.fullscreen .gh-portal-content {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-content {
+        position: unset;
         overflow-y: visible;
         max-height: unset !important;
     }
@@ -386,6 +409,10 @@ const FrameStyles = `
         z-index: 999;
     }
 
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon-container {
+        position: fixed;
+    }
+
     .gh-portal-closeicon {
         color: var(--grey9);
         cursor: pointer;
@@ -395,7 +422,7 @@ const FrameStyles = `
         transition: all 0.2s ease-in-out;
     }
 
-    .gh-portal-popup-container.fullscreen .gh-portal-closeicon {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon {
         width: 24px;
         height: 24px;
     }
@@ -705,7 +732,7 @@ const MobileStyles = `
         box-shadow: none;
     }
     
-    .gh-portal-popup-container.fullscreen {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container {
         padding: 0;
     }
 }

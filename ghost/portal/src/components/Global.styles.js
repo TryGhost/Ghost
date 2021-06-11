@@ -40,6 +40,7 @@ export const GlobalStyles = `
         font-style: normal;
         color: var(--grey4);
         box-sizing: border-box;
+        overflow: hidden;
     }
 
     button,

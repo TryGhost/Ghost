@@ -169,7 +169,11 @@ class PopupContent extends React.Component {
         if (hasMultipleProducts({site}) && (page === 'signup' || page === 'signin')) {
             pageClass += ' fullscreen';
         }
-        
+
+        if (hasMode(['preview'])) {
+            pageClass += ' preview';
+        }
+
         const className = (hasMode(['preview', 'dev'], {customSiteUrl}) && !site.disableBackground) ? 'gh-portal-popup-container preview' : 'gh-portal-popup-container';
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
         return (

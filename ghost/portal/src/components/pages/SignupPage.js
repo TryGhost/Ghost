@@ -35,6 +35,10 @@ export const SignupPageStyles = `
         margin-top: 12px;
     }
 
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-signin-header {
+        padding-top: 18vmin;
+    }
+
     .gh-portal-signup-logo + .gh-portal-main-title {
         margin: 4px 0 0;
     }
@@ -52,12 +56,8 @@ export const SignupPageStyles = `
         margin-bottom: 0;
     }
 
-    .gh-portal-popup-container.fullscreen .gh-portal-signup-header {
-        margin-top: 6vmin;
-    }
-
-    .gh-portal-popup-container.fullscreen .gh-portal-signin-header {
-        margin-top: 22vmin;
+    .gh-portal-popup-wrapper.signin.fullscreen .gh-portal-popup-container {
+        padding-bottom: 3vmin;
     }
 
     .gh-portal-signup-message {
@@ -92,12 +92,12 @@ export const SignupPageStyles = `
         background-attachment: local,local,scroll,scroll;
     }
 
-    .gh-portal-popup-container.fullscreen .gh-portal-content.signup,
-    .gh-portal-popup-container.fullscreen .gh-portal-content.signin {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-content.signup,
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-content.signin {
         width: 100%;
     }
 
-    .gh-portal-popup-container.fullscreen .gh-portal-input-section {
+    .gh-portal-popup-wrapper.fullscreen .gh-portal-input-section {
         max-width: 420px;
         margin: 0 auto;
     }
@@ -112,14 +112,15 @@ export const SignupPageStyles = `
         height: 132px;
     }
 
-    .gh-portal-popup-container.fullscreen footer.gh-portal-signup-footer,
-    .gh-portal-popup-container.fullscreen footer.gh-portal-signin-footer {
+    .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signup-footer,
+    .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
         padding: 0;
         width: 100%;
         max-width: 420px;
+        height: 120px;
     }
 
-    .gh-portal-popup-container.fullscreen footer.gh-portal-signin-footer {
+    .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
         padding-top: 24px;
     }
 
