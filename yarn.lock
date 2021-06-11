@@ -744,10 +744,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^1.0.18"
 
-"@tryghost/limit-service@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.6.0.tgz#f7167ad9e69bd8935369057f1639fa079252f0b6"
-  integrity sha512-v7MnEMWGcFbllcmpYSbyAk3xNoqszFHAWm4SsN5CDMLju/ZNVvH9mL9Yzyv+5e4r1f8E/BZkd6gE0j7C1vijtQ==
+"@tryghost/limit-service@0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.6.1.tgz#192a5cfcb2e9d6c335e3340ef4fcb3a1ecc23a4b"
+  integrity sha512-EQyhAPXczcqpuSMpXCC9YQZ5z3aCfO4N4fT8GbZnECausf4lWH64mbUQxptlj40iDyguX4YbrJvTmCfbpCA/lA==
   dependencies:
     lodash "^4.17.21"
     luxon "^1.26.0"
