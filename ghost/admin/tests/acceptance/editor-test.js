@@ -351,7 +351,7 @@ describe('Acceptance: Editor', function () {
 
             // expect countdown to show warning that post is scheduled to be published
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/Will be published in (4|5) minutes/);
+                .to.match(/Will be published\s+in (4|5) minutes/);
 
             expect(
                 find('[data-test-publishmenu-trigger]').textContent.trim(),
@@ -361,7 +361,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled post status'
-            ).to.match(/Will be published in (4|5) minutes/);
+            ).to.match(/Will be published\s+in (4|5) minutes/);
 
             // Re-schedule
             await click('[data-test-publishmenu-trigger]');
@@ -388,7 +388,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled status text'
-            ).to.match(/Will be published in (4|5) minutes/);
+            ).to.match(/Will be published\s+in (4|5) minutes/);
 
             // unschedule
             await click('[data-test-publishmenu-trigger]');
@@ -543,7 +543,7 @@ describe('Acceptance: Editor', function () {
                 .to.equal('Scheduled');
             // expect countdown to show warning, that post is scheduled to be published
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/Will be published in (4|5) minutes/);
+                .to.match(/Will be published\s+in (4|5) minutes/);
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
