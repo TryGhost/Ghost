@@ -121,9 +121,9 @@ async function dropUnique(tableName, columns, transaction) {
  * Checks if a foreign key exists in a table over the given columns.
  *
  * @param {Object} configuration - contains all configuration for this function
- * @param {string} configuration.fromTableName - name of the table to add the foreign key to
+ * @param {string} configuration.fromTable - name of the table to add the foreign key to
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
- * @param {string} configuration.toTableName - name of the table to point the foreign key to
+ * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
@@ -146,9 +146,9 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * Adds a foreign key to a table.
  *
  * @param {Object} configuration - contains all configuration for this function
- * @param {string} configuration.fromTableName - name of the table to add the foreign key to
+ * @param {string} configuration.fromTable - name of the table to add the foreign key to
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
- * @param {string} configuration.toTableName - name of the table to point the foreign key to
+ * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {Boolean} configuration.cascadeDelete - adds the "on delete cascade" option if true
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
@@ -200,9 +200,9 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
  * Drops a foreign key from a table.
  *
  * @param {Object} configuration - contains all configuration for this function
- * @param {string} configuration.fromTableName - name of the table to add the foreign key to
+ * @param {string} configuration.fromTable - name of the table to add the foreign key to
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
- * @param {string} configuration.toTableName - name of the table to point the foreign key to
+ * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
