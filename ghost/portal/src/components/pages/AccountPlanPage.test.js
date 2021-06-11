@@ -31,12 +31,12 @@ describe('Account Plan Page', () => {
     test('can choose plan and continue', async () => {
         const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, continueBtn} = setup();
         fireEvent.click(monthlyCheckboxEl);
-        expect(monthlyCheckboxEl.checked).toEqual(true);
+        expect(monthlyCheckboxEl.checked).toEqual(false);
         fireEvent.click(yearlyCheckboxEl);
         expect(yearlyCheckboxEl.checked).toEqual(true);
         expect(continueBtn).toBeEnabled();
 
         fireEvent.click(continueBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: '6087c314d3e64b3266bf715e'});
+        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: '6086d2c776909b1a2382369a'});
     });
 });
