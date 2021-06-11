@@ -163,12 +163,17 @@ export const ProductsSectionStyles = `
     @media (max-width: 480px) {
         .gh-portal-products {
             margin: 0 -32px;
+            background: none;
         }
 
         .gh-portal-products-grid {
             grid-template-columns: unset;
             grid-gap: 20px;
             padding: 32px 0;
+        }
+        
+        .gh-portal-products-priceswitch {
+            padding-top: 18px;
         }
 
         .gh-portal-product-card {
@@ -178,6 +183,9 @@ export const ProductsSectionStyles = `
             align-items: start;
             min-height: unset;
             padding: 12px 20px;
+            background: none;
+            border: 1px solid var(--grey12);
+            box-shadow: none;
         }
 
         .gh-portal-product-card-header {
