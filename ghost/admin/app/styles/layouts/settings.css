@@ -119,9 +119,9 @@
 
 .gh-settings-main-grid .gh-setting-group p {
     color: var(--midgrey);
-    margin: 0;
+    margin: 4px 0 0;
     padding: 0;
-    line-height: 1.5em;
+    line-height: 1.4em;
 }
 
 @media (max-width: 1100px) {
