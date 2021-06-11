@@ -732,7 +732,7 @@ const MobileStyles = `
     }
 
     .gh-portal-popup-wrapper.fullscreen:not(.preview) .gh-portal-content {
-        max-height: calc(100vh - 190px) !important;
+        max-height: calc(100vh - 180px) !important;
     }
 
     .gh-portal-powered {
@@ -775,6 +775,8 @@ const MobileStyles = `
 
     .gh-portal-popup-wrapper.fullscreen .gh-portal-powered {
         padding-bottom: 0;
+        padding-top: 0;
+        margin-top: -8px;
     }
 }
 
