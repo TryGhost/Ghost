@@ -118,7 +118,7 @@ export const SignupPageStyles = `
         max-width: 420px;
         height: unset;
         padding: 0 !important;
-        margin: 24px 32px 32px;
+        margin: 24px 32px;
     }
 
     @media (max-width: 480px) {
