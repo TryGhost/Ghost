@@ -637,18 +637,18 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@0.2.11", "@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.9":
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.11.tgz#db42d49c6e703b46efa2097cfafcf3d401789c07"
-  integrity sha512-OKVaefe6YxNZkhsJzqvzBs4wFA4XCkqcguzJikK6qGaJ+w1hjqGLOab9d1AJ8bLCVFTzptv24jjT/CHY9g5Ojg==
+"@tryghost/errors@0.2.12", "@tryghost/errors@^0.2.12":
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.12.tgz#b88c5e09c62f97db97d6f1ebdbbd5dc37829a572"
+  integrity sha512-Ru/f66+PgnBGBvLtY74a/8iHkGjn/LOUM9u4nbHBHil3vB5FK4mGvPcD53Z7Ay6AeZkmt6bSGEnZHwhexJVdgg==
   dependencies:
     ghost-ignition "^4.6.1"
     lodash "^4.17.21"
 
-"@tryghost/errors@^0.2.12":
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.12.tgz#b88c5e09c62f97db97d6f1ebdbbd5dc37829a572"
-  integrity sha512-Ru/f66+PgnBGBvLtY74a/8iHkGjn/LOUM9u4nbHBHil3vB5FK4mGvPcD53Z7Ay6AeZkmt6bSGEnZHwhexJVdgg==
+"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.9":
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.11.tgz#db42d49c6e703b46efa2097cfafcf3d401789c07"
+  integrity sha512-OKVaefe6YxNZkhsJzqvzBs4wFA4XCkqcguzJikK6qGaJ+w1hjqGLOab9d1AJ8bLCVFTzptv24jjT/CHY9g5Ojg==
   dependencies:
     ghost-ignition "^4.6.1"
     lodash "^4.17.21"
