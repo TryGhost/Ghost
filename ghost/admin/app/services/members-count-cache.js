@@ -24,14 +24,14 @@ export default class MembersCountCacheService extends Service {
         return count;
     }
 
-    async countString(filter, {knownCount} = {}) {
+    async countString(filter = '', {knownCount} = {}) {
         const user = await this.session.user;
 
         const basicFilter = filter.replace(/^subscribed:true\+\((.*)\)$/, '$1');
         const filterParts = basicFilter.split(',');
         const isFree = filterParts.length === 1 && filterParts[0] === 'status:free';
         const isPaid = filterParts.length === 1 && filterParts[0] === 'status:-free';
-        const isAll = filterParts.includes('status:free') && filterParts.includes('status:-free');
+        const isAll = !filter || (filterParts.includes('status:free') && filterParts.includes('status:-free');)
 
         // editors don't have permission to browse members so can't retrieve a count
         // TODO: remove when editors have relevant permissions or we have a different way of fetching counts
