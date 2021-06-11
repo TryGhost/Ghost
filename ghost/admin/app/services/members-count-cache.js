@@ -31,7 +31,7 @@ export default class MembersCountCacheService extends Service {
         const filterParts = basicFilter.split(',');
         const isFree = filterParts.length === 1 && filterParts[0] === 'status:free';
         const isPaid = filterParts.length === 1 && filterParts[0] === 'status:-free';
-        const isAll = !filter || (filterParts.includes('status:free') && filterParts.includes('status:-free');)
+        const isAll = !filter || (filterParts.includes('status:free') && filterParts.includes('status:-free'));
 
         // editors don't have permission to browse members so can't retrieve a count
         // TODO: remove when editors have relevant permissions or we have a different way of fetching counts
