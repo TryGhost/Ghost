@@ -171,7 +171,7 @@ export const ProductsSectionStyles = `
             grid-gap: 20px;
             padding: 32px 0;
         }
-        
+
         .gh-portal-products-priceswitch {
             padding-top: 18px;
         }
@@ -240,7 +240,8 @@ export const ProductsSectionStyles = `
 const ProductsContext = React.createContext({
     selectedInterval: 'month',
     selectedProduct: 'free',
-    setSelectedProduct: null
+    setSelectedProduct: null,
+    onPlanSelect: null
 });
 
 function productColumns() {
@@ -297,13 +298,14 @@ function ProductCardFooter({product}) {
 }
 
 function ProductCard({product}) {
-    const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+    const {selectedProduct, setSelectedProduct, selectedInterval, onPlanSelect} = useContext(ProductsContext);
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
-
+    const selectedPrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
     return (
         <div className={cardClass} key={product.id} onClick={(e) => {
             e.stopPropagation();
             setSelectedProduct(product.id);
+            onPlanSelect(e, selectedPrice?.id);
         }}>
             <div className="gh-portal-product-card-header">
                 <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
@@ -352,7 +354,7 @@ function FreeProductCard() {
     );
 }
 
-function ProductsSection() {
+function ProductsSection({onPlanSelect}) {
     const {site} = useContext(AppContext);
     const products = getProducts({site});
     const [selectedInterval, setSelectedInterval] = useState('month');
@@ -362,7 +364,8 @@ function ProductsSection() {
         <ProductsContext.Provider value={{
             selectedInterval,
             selectedProduct,
-            setSelectedProduct
+            setSelectedProduct,
+            onPlanSelect
         }}>
             <section className="gh-portal-products">
                 <div className="gh-portal-products-priceswitch">
