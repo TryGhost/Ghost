@@ -5,7 +5,7 @@ import PlansSection from '../common/PlansSection';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getProducts, getSitePrices, hasFreeProduct, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -262,8 +262,8 @@ class SignupPage extends React.Component {
         });
     }
 
-    handleSelectPlan(e, priceId) {
-        e.preventDefault();
+    handleSelectPlan = (e, priceId) => {
+        e && e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
         this.timeoutId = setTimeout(() => {
             this.setState((prevState) => {
@@ -390,12 +390,18 @@ class SignupPage extends React.Component {
     }
 
     renderProducts() {
+        const {site} = this.context;
+        const products = getProducts({site});
+        if (hasFreeProduct({site})) {
+            products.unshift({
+                id: 'free'
+            });
+        }
         return (
             <>
                 <ProductsSection
-                    onPlanSelect={(e, id) => {
-                        this.handleSelectPlan(e, id);
-                    }}
+                    products={products}
+                    onPlanSelect={this.handleSelectPlan}
                 />
             </>
         );
@@ -446,7 +452,7 @@ class SignupPage extends React.Component {
                     <InputForm
                         fields={fields}
                         onChange={(e, field) => this.handleInputChange(e, field)}
-                        onKeyDown={(e) => this.onKeyDown(e)}
+                        onKeyDown={e => this.onKeyDown(e)}
                     />
                     {this.renderProductsOrPlans()}
                 </div>

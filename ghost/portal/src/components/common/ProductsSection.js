@@ -1,7 +1,6 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
-import {getCurrencySymbol, getPriceString, getProducts, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
-import AppContext from '../../AppContext';
+import {getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
 
 let noOfProducts = 4;
 
@@ -261,8 +260,7 @@ export const ProductsSectionStyles = `
 const ProductsContext = React.createContext({
     selectedInterval: 'month',
     selectedProduct: 'free',
-    setSelectedProduct: null,
-    onPlanSelect: null
+    setSelectedProduct: null
 });
 
 function productColumns() {
@@ -319,14 +317,13 @@ function ProductCardFooter({product}) {
 }
 
 function ProductCard({product}) {
-    const {selectedProduct, setSelectedProduct, selectedInterval, onPlanSelect} = useContext(ProductsContext);
+    const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
-    const selectedPrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+
     return (
         <div className={cardClass} key={product.id} onClick={(e) => {
             e.stopPropagation();
             setSelectedProduct(product.id);
-            onPlanSelect(e, selectedPrice?.id);
         }}>
             <div className="gh-portal-product-card-header">
                 <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
@@ -342,6 +339,11 @@ function ProductCard({product}) {
 
 function ProductCards({products}) {
     return products.map((product) => {
+        if (product.id === 'free') {
+            return (
+                <FreeProductCard key={product.id} />
+            );
+        }
         return (
             <ProductCard product={product} key={product.id} />
         );
@@ -350,6 +352,7 @@ function ProductCards({products}) {
 
 function FreeProductCard() {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+
     const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
 
     return (
@@ -375,19 +378,29 @@ function FreeProductCard() {
     );
 }
 
-function ProductsSection({onPlanSelect}) {
-    const {site} = useContext(AppContext);
-    const products = getProducts({site});
+function ProductsSection({onPlanSelect, products}) {
+    const defaultProductId = products.length > 0 ? products[0].id : 'free';
     const [selectedInterval, setSelectedInterval] = useState('month');
-    const [selectedProduct, setSelectedProduct] = useState('free');
-    const checked = selectedInterval === 'year';
+    const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
     noOfProducts = products.length;
+
+    let price = null;
+    if (selectedProduct === 'free') {
+        price = {id: 'free'};
+    } else {
+        const product = products.find(prod => prod.id === selectedProduct);
+        price = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+    }
+
+    useEffect(() => {
+        onPlanSelect(null, price.id);
+    }, [price.id, onPlanSelect]);
+
     return (
         <ProductsContext.Provider value={{
             selectedInterval,
             selectedProduct,
-            setSelectedProduct,
-            onPlanSelect
+            setSelectedProduct
         }}>
             <section className="gh-portal-products">
                 <div className="gh-portal-products-priceswitch">
@@ -395,12 +408,11 @@ function ProductsSection({onPlanSelect}) {
                     <Switch id='product-interval' onToggle={(e) => {
                         const interval = selectedInterval === 'month' ? 'year' : 'month';
                         setSelectedInterval(interval);
-                    }} checked={checked} />
+                    }} checked={selectedInterval === 'year'} />
                     <span className="gh-portal-priceoption-label">Yearly</span>
                 </div>
 
                 <div className="gh-portal-products-grid">
-                    <FreeProductCard />
                     <ProductCards products={products} />
                 </div>
             </section>

@@ -220,6 +220,14 @@ export function getAvailablePrices({site = {}, includeFree = true} = {}) {
     return plansData;
 }
 
+export function hasFreeProduct({site}) {
+    const {
+        allow_self_signup: allowSelfSignup,
+        portal_plans: portalPlans
+    } = site || {};
+    return allowSelfSignup && portalPlans.includes('free');
+}
+
 export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = {}) {
     const {
         prices = [],
