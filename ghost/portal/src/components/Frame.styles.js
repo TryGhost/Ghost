@@ -259,7 +259,7 @@ const FrameStyles = `
             box-shadow: none;
         }
     }
-    
+
     @media (min-width: 480px) {
         .gh-portal-popup-wrapper.fullscreen.preview {
             height: calc(100vh - 150px) !important;
@@ -321,7 +321,7 @@ const FrameStyles = `
         bottom: 24px;
         left: 24px;
     }
-    
+
     .gh-portal-powered a {
         border: none;
         display: block;
@@ -335,8 +335,8 @@ const FrameStyles = `
 
     @keyframes powered-fade-in {
         0% {
-            transform: scale(0.98); 
-            opacity: 0; 
+            transform: scale(0.98);
+            opacity: 0;
         }
         75% {
             opacity: 1.0;
@@ -388,8 +388,8 @@ const FrameStyles = `
         animation: none;
     }
 
-    /* Sets the main content area of the popup scrollable. 
-    /* 12vw is the sum horizontal padding of the popup container 
+    /* Sets the main content area of the popup scrollable.
+    /* 12vw is the sum horizontal padding of the popup container
     */
     .gh-portal-content {
         position: relative;
@@ -420,7 +420,7 @@ const FrameStyles = `
         overflow-y: visible;
         max-height: unset !important;
     }
-    
+
     .gh-portal-popup-container footer {
         padding: 0 32px 32px;
         height: 72px;
@@ -438,7 +438,7 @@ const FrameStyles = `
             width: 24px;
             height: 24px;
         }
-        
+
         .gh-portal-popup-wrapper.fullscreen .gh-portal-closeicon-container {
             top: 48px;
             right: 48px;
@@ -653,7 +653,7 @@ const FrameStyles = `
     .pt8 { padding-top: 32px; }
     .pt9 { padding-top: 36px; }
     .pt10 { padding-top: 40px; }
-    
+
     .pr1 { padding-right: 4px; }
     .pr2 { padding-right: 8px; }
     .pr3 { padding-right: 12px; }
@@ -664,7 +664,7 @@ const FrameStyles = `
     .pr8 { padding-right: 32px; }
     .pr9 { padding-right: 36px; }
     .pr10 { padding-right: 40px; }
-    
+
     .pb1 { padding-bottom: 4px; }
     .pb2 { padding-bottom: 8px; }
     .pb3 { padding-bottom: 12px; }
@@ -675,7 +675,7 @@ const FrameStyles = `
     .pb8 { padding-bottom: 32px; }
     .pb9 { padding-bottom: 36px; }
     .pb10 { padding-bottom: 40px; }
-    
+
     .pl1 { padding-left: 4px; }
     .pl2 { padding-left: 8px; }
     .pl3 { padding-left: 12px; }
@@ -701,7 +701,7 @@ const MobileStyles = `
         justify-content: space-between;
         background: var(--white);
     }
-    
+
     .gh-portal-popup-container {
         width: 100%;
         border-radius: 0;
@@ -768,7 +768,7 @@ const MobileStyles = `
     .gh-portal-popup-wrapper.account-home .gh-portal-powered a {
         box-shadow: none;
     }
-    
+
     .gh-portal-popup-wrapper.fullscreen .gh-portal-popup-container {
         padding: 0;
     }
@@ -896,23 +896,23 @@ const MobileStyles = `
 }
 `;
 
-// Append all styles as string which we want to pass to iframe
-const FrameStyle =
-    GlobalStyles +
-    FrameStyles +
-    AccountHomePageStyles +
-    AccountPlanPageStyles +
-    InputFieldStyles +
-    PlanSectionStyles +
-    ProductsSectionStyles +
-    SwitchStyles +
-    ActionButtonStyles +
-    BackButtonStyles +
-    AvatarStyles +
-    MagicLinkStyles +
-    LinkPageStyles +
-    SignupPageStyles +
-    PopupNotificationStyles +
-    MobileStyles;
-
-export default FrameStyle;
+export function getFrameStyles({site}) {
+    const FrameStyle =
+        GlobalStyles +
+        FrameStyles +
+        AccountHomePageStyles +
+        AccountPlanPageStyles +
+        InputFieldStyles +
+        PlanSectionStyles +
+        ProductsSectionStyles({site}) +
+        SwitchStyles +
+        ActionButtonStyles +
+        BackButtonStyles +
+        AvatarStyles +
+        MagicLinkStyles +
+        LinkPageStyles +
+        SignupPageStyles +
+        PopupNotificationStyles +
+        MobileStyles;
+    return FrameStyle;
+}
