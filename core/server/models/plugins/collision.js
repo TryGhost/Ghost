@@ -3,6 +3,9 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 module.exports = function (Bookshelf) {
     const ParentModel = Bookshelf.Model;
 

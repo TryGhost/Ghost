@@ -99,7 +99,7 @@ paginationUtils = {
 
     /**
      *
-     * @param {Bookshelf.Model} model instance of Bookshelf model
+     * @param {Bookshelf['Model']} model instance of Bookshelf model
      * @param {string} propertyName property to be inspected and included in the relation
      */
     handleRelation: function handleRelation(model, propertyName) {
@@ -267,6 +267,10 @@ const pagination = function pagination(bookshelf) {
         }
     });
 };
+
+/**
+ * @typedef {import('bookshelf')} Bookshelf
+ */
 
 /**
  * ## Export pagination plugin
