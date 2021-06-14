@@ -5,7 +5,7 @@ import PlansSection from '../common/PlansSection';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getProducts, getSitePrices, hasFreeProduct, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getAllProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -391,12 +391,7 @@ class SignupPage extends React.Component {
 
     renderProducts() {
         const {site} = this.context;
-        const products = getProducts({site});
-        if (hasFreeProduct({site})) {
-            products.unshift({
-                id: 'free'
-            });
-        }
+        const products = getAllProducts({site});
         return (
             <>
                 <ProductsSection
