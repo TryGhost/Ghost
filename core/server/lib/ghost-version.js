@@ -1,5 +1,7 @@
+const path = require('path');
 const semver = require('semver');
-const packageInfo = require('../../../package.json');
+const rootUtils = require('@tryghost/root-utils');
+const packageInfo = require(path.join(rootUtils.getProcessRoot(), 'package.json'));
 const version = packageInfo.version;
 const plainVersion = version.match(/^(\d+\.)?(\d+\.)?(\d+)/)[0];
 
