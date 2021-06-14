@@ -5,7 +5,7 @@ const debug = _debug('ghost-query');
 /**
  * Enchances knex query builder with a join to relation configured in
  *
- * @param {Bookshelf.Model} model instance of Bookshelf model
+ * @param {Bookshelf['Model']} model instance of Bookshelf model
  * @param {String[]} relationsToLoad relations to be included in joins
  */
 function withEager(model, relationsToLoad) {
@@ -46,8 +46,6 @@ function load(options) {
  * Extends `bookshelf.Model` native `fetch` and `fetchAll` methods with
  * a join to "eager loaded" relation. An exaple of such loading is when
  * there is a need to order by fields in the related table.
- *
- * @param {import('bookshelf')} Bookshelf
  */
 module.exports = function eagerLoadPlugin(Bookshelf) {
     const modelPrototype = Bookshelf.Model.prototype;
@@ -78,3 +76,7 @@ module.exports = function eagerLoadPlugin(Bookshelf) {
         }
     });
 };
+
+/**
+ * @typedef {import('bookshelf')} Bookshelf
+ */
