@@ -16,7 +16,6 @@ const debug = require('ghost-ignition').debug('models:base');
 const config = require('../../../shared/config');
 const db = require('../../data/db');
 const events = require('../../lib/common/events');
-const i18n = require('../../../shared/i18n');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
@@ -25,6 +24,13 @@ const urlUtils = require('../../../shared/url-utils');
 const validation = require('../../data/validation');
 const bulkOperations = require('./bulk-operations');
 const plugins = require('../plugins');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    missingContext: 'missing context',
+    invalidDate: 'Date format for `{key}` is invalid.'
+};
+
 let ghostBookshelf;
 let proto;
 
@@ -607,7 +613,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             return ghostBookshelf.Model.externalUser;
         } else {
             throw new errors.NotFoundError({
-                message: i18n.t('errors.models.base.index.missingContext'),
+                message: tpl(messages.missingContext),
                 level: 'critical'
             });
         }
@@ -799,7 +805,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 // CASE: client sends `0000-00-00 00:00:00`
                 if (isNaN(date)) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.models.base.invalidDate', {key: property}),
+                        message: tpl(messages.invalidDate, {key: property}),
                         code: 'DATE_INVALID'
                     });
                 }
@@ -826,7 +832,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                             // CASE: client sends `0000-00-00 00:00:00`
                             if (isNaN(date)) {
                                 throw new errors.ValidationError({
-                                    message: i18n.t('errors.models.base.invalidDate', {key: relationProperty}),
+                                    message: tpl(messages.invalidDate, {key: relationProperty}),
                                     code: 'DATE_INVALID'
                                 });
                             }
