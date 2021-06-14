@@ -1,5 +1,4 @@
 const moment = require('moment-timezone');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
@@ -47,34 +46,32 @@ module.exports = function (Bookshelf) {
              *
              * HTML is always auto generated, ignore.
              */
-            parentSync.update = function update() {
-                return originalUpdateSync.apply(this, arguments)
-                    .then((response) => {
-                        const changed = _.omit(self._changed, [
-                            'created_at', 'updated_at', 'author_id', 'id',
-                            'published_by', 'updated_by', 'html', 'plaintext'
-                        ]);
+            parentSync.update = async function update() {
+                const response = await originalUpdateSync.apply(this, arguments);
+                const changed = _.omit(self._changed, [
+                    'created_at', 'updated_at', 'author_id', 'id',
+                    'published_by', 'updated_by', 'html', 'plaintext'
+                ]);
 
-                        const clientUpdatedAt = moment(self.clientData.updated_at || self.serverData.updated_at || new Date());
-                        const serverUpdatedAt = moment(self.serverData.updated_at || clientUpdatedAt);
+                const clientUpdatedAt = moment(self.clientData.updated_at || self.serverData.updated_at || new Date());
+                const serverUpdatedAt = moment(self.serverData.updated_at || clientUpdatedAt);
 
-                        if (Object.keys(changed).length) {
-                            if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
-                                // @NOTE: This will rollback the update. We cannot know if relations were updated before doing the update.
-                                return Promise.reject(new errors.UpdateCollisionError({
-                                    message: 'Saving failed! Someone else is editing this post.',
-                                    code: 'UPDATE_COLLISION',
-                                    level: 'critical',
-                                    errorDetails: {
-                                        clientUpdatedAt: self.clientData.updated_at,
-                                        serverUpdatedAt: self.serverData.updated_at
-                                    }
-                                }));
+                if (Object.keys(changed).length) {
+                    if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
+                        // @NOTE: This will rollback the update. We cannot know if relations were updated before doing the update.
+                        throw new errors.UpdateCollisionError({
+                            message: 'Saving failed! Someone else is editing this post.',
+                            code: 'UPDATE_COLLISION',
+                            level: 'critical',
+                            errorDetails: {
+                                clientUpdatedAt: self.clientData.updated_at,
+                                serverUpdatedAt: self.serverData.updated_at
                             }
-                        }
+                        });
+                    }
+                }
 
-                        return response;
-                    });
+                return response;
             };
 
             return parentSync;
