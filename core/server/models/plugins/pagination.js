@@ -30,7 +30,6 @@ defaults = {
 /**
  * ## Pagination Utils
  * @api private
- * @type {{parseOptions: Function, query: Function, formatResponse: Function}}
  */
 paginationUtils = {
     /**
@@ -164,7 +163,7 @@ const pagination = function pagination(bookshelf) {
          * 2. the actualy fetch query with limit and page property
          *
          * @param {options} options
-         * @returns {paginatedResult} set of results + pagination metadata
+         * @returns {Promise<paginatedResult>} set of results + pagination metadata
          */
         fetchPage: function fetchPage(options) {
             // Setup pagination options
