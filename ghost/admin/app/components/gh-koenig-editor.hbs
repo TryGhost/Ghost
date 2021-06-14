@@ -26,6 +26,7 @@
         <GhTextarea
             @class="gh-editor-title"
             @placeholder={{@titlePlaceholder}}
+            @shouldFocus={{or @titleAutofocus false}}
             @tabindex="1"
             @autoExpand=".gh-koenig-editor"
             @value={{readonly this.title}}
@@ -39,7 +40,6 @@
         <KoenigEditor
             @mobiledoc={{@body}}
             @placeholder={{@bodyPlaceholder}}
-            @autofocus={{or @bodyAutofocus false}}
             @spellcheck={{true}}
             @onChange={{@onBodyChange}}
             @didCreateEditor={{this.onEditorCreated}}
