@@ -3,8 +3,14 @@
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
 const _ = require('lodash');
 
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    pageNotFound: 'Page not found'
+    couldNotUnderstandRequest: 'Could not understand request.'
+};
+
 let defaults;
 let paginationUtils;
 
@@ -242,7 +248,7 @@ const pagination = function pagination(bookshelf) {
                     .catch(function (err) {
                         // e.g. offset/limit reached max allowed integer value
                         if (err.errno === 20 || err.errno === 1064) {
-                            throw new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')});
+                            throw new errors.NotFoundError({message: tpl(messages.pageNotFound)});
                         }
 
                         throw err;
@@ -251,8 +257,8 @@ const pagination = function pagination(bookshelf) {
                 // CASE: SQL syntax is incorrect
                 if (err.errno === 1054 || err.errno === 1) {
                     throw new errors.BadRequestError({
-                        message: i18n.t('errors.models.general.sql'),
-                        err: err
+                        message: tpl(messages.couldNotUnderstandRequest),
+                        err
                     });
                 }
 
