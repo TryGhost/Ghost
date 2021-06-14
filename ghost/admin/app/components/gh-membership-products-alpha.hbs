@@ -17,13 +17,22 @@
             {{/if}}
         </div>
         <div class="gh-product-card-block">
-            <span class="gh-product-card-heading">Pricing</span>
-            <p class="gh-product-card-price">
-                <span class="amount">{{gh-price-amount product.monthlyPrice.amount}} </span><span class="currency">{{product.monthlyPrice.currency}}</span><span class="period">/month</span>
-            </p>
-            <p class="gh-product-card-price">
-                <span class="amount">{{gh-price-amount product.yearlyPrice.amount}} </span><span class="currency">{{product.monthlyPrice.currency}}</span><span class="period">/year</span>
-            </p>
+            <div class="gh-product-price-container">
+                <div class="gh-product-card-price">
+                    <div class="flex items-baseline">
+                        <span class="amount">{{gh-price-amount product.monthlyPrice.amount}}</span>
+                        <span class="currency">{{product.monthlyPrice.currency}}</span>
+                    </div>
+                    <div class="period">Monthly</div>
+                </div>
+                <div class="gh-product-card-price">
+                    <div class="flex items-baseline">
+                        <span class="amount">{{gh-price-amount product.yearlyPrice.amount}}</span>
+                        <span class="currency">{{product.monthlyPrice.currency}}</span>
+                    </div>
+                    <div class="period">Yearly</div>
+                </div>
+            </div>
         </div>
     </div>
 {{/each}}
