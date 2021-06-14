@@ -154,6 +154,16 @@ export function getProducts({site = {}}) {
     });
 }
 
+export function getProductPrices({site}) {
+    const products = getProducts({site}) || [];
+    const prices = products.reduce((accumPrices, product) => {
+        accumPrices.push(product.monthlyPrice);
+        accumPrices.push(product.yearlyPrice);
+        return accumPrices;
+    }, []);
+    return prices;
+}
+
 export function getAvailablePrices({site = {}, includeFree = true} = {}) {
     let {
         prices,
@@ -221,10 +231,14 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
     if (!prices) {
         return [];
     }
+    let availablePrices = prices;
+    if (hasMultipleProducts({site})) {
+        availablePrices = getProductPrices({site});
+    }
 
     const plansData = [];
 
-    const stripePrices = prices.filter((d) => {
+    const stripePrices = availablePrices.filter((d) => {
         return !!(d && d.id);
     }).map((d) => {
         return {

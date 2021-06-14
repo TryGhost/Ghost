@@ -392,7 +392,11 @@ class SignupPage extends React.Component {
     renderProducts() {
         return (
             <>
-                <ProductsSection />
+                <ProductsSection
+                    onPlanSelect={(e, id) => {
+                        this.handleSelectPlan(e, id);
+                    }}
+                />
             </>
         );
     }
@@ -413,6 +417,15 @@ class SignupPage extends React.Component {
         );
     }
 
+    renderProductsOrPlans() {
+        const {site} = this.context;
+        if (hasMultipleProducts({site})) {
+            return this.renderProducts();
+        } else {
+            return this.renderPlans();
+        }
+    }
+
     renderForm() {
         const fields = this.getInputFields({state: this.state});
         const {site, pageQuery} = this.context;
@@ -427,33 +440,18 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (hasMultipleProducts({site})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <InputForm
-                            fields={fields}
-                            onChange={(e, field) => this.handleInputChange(e, field)}
-                            onKeyDown={(e, field) => this.onKeyDown(e, field)}
-                        />
-                        {this.renderProducts()}
-                    </div>
-                </section>
-            );
-        } else {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <InputForm
-                            fields={fields}
-                            onChange={(e, field) => this.handleInputChange(e, field)}
-                            onKeyDown={(e, field) => this.onKeyDown(e, field)}
-                        />
-                        {this.renderPlans()}
-                    </div>
-                </section>
-            );
-        }
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <InputForm
+                        fields={fields}
+                        onChange={(e, field) => this.handleInputChange(e, field)}
+                        onKeyDown={(e) => this.onKeyDown(e)}
+                    />
+                    {this.renderProductsOrPlans()}
+                </div>
+            </section>
+        );
     }
 
     renderSiteLogo() {
