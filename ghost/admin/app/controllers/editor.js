@@ -97,7 +97,7 @@ export default Controller.extend({
     /* public properties -----------------------------------------------------*/
 
     leaveEditorTransition: null,
-    shouldFocusEditor: false,
+    shouldFocusTitle: false,
     showDeletePostModal: false,
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
@@ -436,7 +436,7 @@ export default Controller.extend({
         this.set('post.emailSubject', this.get('post.emailSubjectScratch'));
 
         if (!this.get('post.slug')) {
-            this.saveTitle.cancelAll();
+            this.saveTitleTask.cancelAll();
 
             yield this.generateSlug.perform();
         }
@@ -595,12 +595,12 @@ export default Controller.extend({
         return post;
     }),
 
-    saveTitle: task(function* () {
+    saveTitleTask: task(function* () {
         let post = this.post;
         let currentTitle = post.get('title');
         let newTitle = post.get('titleScratch').trim();
 
-        if (currentTitle && newTitle && newTitle === currentTitle) {
+        if ((currentTitle && newTitle && newTitle === currentTitle) || (!currentTitle && !newTitle)) {
             return;
         }
 
@@ -662,8 +662,7 @@ export default Controller.extend({
     setPost(post) {
         // don't do anything else if we're setting the same post
         if (post === this.post) {
-            // set autofocus as change signal to the persistent editor on new->edit
-            this.set('shouldFocusEditor', post.get('isNew'));
+            this.set('shouldFocusTitle', post.get('isNew'));
             return;
         }
 
@@ -673,8 +672,8 @@ export default Controller.extend({
         this.set('post', post);
         this.backgroundLoader.perform();
 
-        // autofocus the editor if we have a new post
-        this.set('shouldFocusEditor', post.get('isNew'));
+        // autofocus the title if we have a new post
+        this.set('shouldFocusTitle', post.get('isNew'));
 
         // need to set scratch values because they won't be present on first
         // edit of the post
@@ -770,7 +769,7 @@ export default Controller.extend({
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
-        this.set('shouldFocusEditor', false);
+        this.set('shouldFocusTitle', false);
         this.set('leaveEditorTransition', null);
         this.set('showLeaveEditorModal', false);
         this.set('showPostPreviewModal', false);

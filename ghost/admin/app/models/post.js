@@ -5,6 +5,7 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {compare} from '@ember/utils';
 // eslint-disable-next-line ghost/ember/no-observers
+import {BLANK_DOC} from 'koenig-editor/components/koenig-editor';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy, reads} from '@ember/object/computed';
 import {isBlank} from '@ember/utils';
@@ -94,7 +95,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string'),
+    mobiledoc: attr('json-string', {defaultValue: () => JSON.parse(JSON.stringify(BLANK_DOC))}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
     slug: attr('string'),

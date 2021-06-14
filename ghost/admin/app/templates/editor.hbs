@@ -68,12 +68,12 @@
         --}}
         <GhKoenigEditor
             @title={{readonly this.post.titleScratch}}
+            @titleAutofocus={{this.shouldFocusTitle}}
             @titlePlaceholder={{concat (capitalize this.post.displayName) " Title"}}
             @onTitleChange={{action "updateTitleScratch"}}
-            @onTitleBlur={{action (perform this.saveTitle)}}
+            @onTitleBlur={{action (perform this.saveTitleTask)}}
             @body={{readonly this.post.scratch}}
             @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
-            @bodyAutofocus={{this.shouldFocusEditor}}
             @onBodyChange={{action "updateScratch"}}
             @headerOffset={{editor.headerHeight}}
             @scrollContainerSelector=".gh-koenig-editor"

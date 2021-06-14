@@ -50,7 +50,7 @@ describe('Unit: Controller: editor', function () {
         });
     });
 
-    describe('saveTitle', function () {
+    describe('saveTitleTask', function () {
         beforeEach(function () {
             this.controller = this.owner.lookup('controller:editor');
             this.controller.set('target', {send() {}});
@@ -70,7 +70,7 @@ describe('Unit: Controller: editor', function () {
             expect(controller.get('post.titleScratch')).to.not.be.ok;
 
             controller.set('post.titleScratch', 'test');
-            await controller.get('saveTitle').perform();
+            await controller.get('saveTitleTask').perform();
 
             expect(controller.get('post.titleScratch')).to.equal('test');
             expect(controller.get('post.slug')).to.equal('test-slug');
@@ -91,7 +91,7 @@ describe('Unit: Controller: editor', function () {
 
             controller.set('post.titleScratch', 'New Title');
 
-            await controller.get('saveTitle').perform();
+            await controller.get('saveTitleTask').perform();
 
             expect(controller.get('post.titleScratch')).to.equal('New Title');
             expect(controller.get('post.slug')).to.equal('test-slug');
@@ -115,7 +115,7 @@ describe('Unit: Controller: editor', function () {
             expect(controller.get('post.titleScratch')).to.not.be.ok;
 
             controller.set('post.titleScratch', 'test');
-            await controller.get('saveTitle').perform();
+            await controller.get('saveTitleTask').perform();
 
             expect(controller.get('post.titleScratch')).to.equal('test');
             expect(controller.get('post.slug')).to.not.be.ok;
@@ -135,7 +135,7 @@ describe('Unit: Controller: editor', function () {
             expect(controller.get('post.title')).to.not.be.ok;
 
             controller.set('post.titleScratch', 'title');
-            await controller.get('saveTitle').perform();
+            await controller.get('saveTitleTask').perform();
 
             expect(controller.get('post.titleScratch')).to.equal('title');
             expect(controller.get('post.slug')).to.not.be.ok;

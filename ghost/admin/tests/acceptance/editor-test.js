@@ -574,35 +574,6 @@ describe('Acceptance: Editor', function () {
             expect(savedAuthors[1].name).to.equal('Waldo');
         });
 
-        it('autosaves when title loses focus', async function () {
-            let role = this.server.create('role', {name: 'Administrator'});
-            this.server.create('user', {name: 'Admin', roles: [role]});
-
-            await visit('/editor');
-
-            // NOTE: there were checks here for the title element having focus
-            // but they were very temperamental whilst running tests in the
-            // browser so they've been left out for now
-
-            expect(
-                currentURL(),
-                'url on initial visit'
-            ).to.equal('/editor/post');
-
-            await click('[data-test-editor-title-input]');
-            await blur('[data-test-editor-title-input]');
-
-            expect(
-                find('[data-test-editor-title-input]').value,
-                'title value after autosave'
-            ).to.equal('');
-
-            expect(
-                currentURL(),
-                'url after autosave'
-            ).to.equal('/editor/post/1');
-        });
-
         it('saves post settings fields', async function () {
             let post = this.server.create('post', {authors: [author]});
 
