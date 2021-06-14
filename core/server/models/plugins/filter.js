@@ -1,6 +1,10 @@
 const debug = require('ghost-ignition').debug('models:plugins:filter');
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    errorParsing: 'Error parsing filter'
+};
 
 const RELATIONS = {
     tags: {
@@ -133,8 +137,8 @@ const filter = function filter(Bookshelf) {
                 });
             } catch (err) {
                 throw new errors.BadRequestError({
-                    message: i18n.t('errors.models.plugins.filter.errorParsing'),
-                    err: err
+                    message: tpl(messages.errorParsing),
+                    err
                 });
             }
         }
