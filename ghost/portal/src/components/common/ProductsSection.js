@@ -3,8 +3,13 @@ import Switch from '../common/Switch';
 import {getCurrencySymbol, getPriceString, getProducts, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 
+let noOfProducts = 4;
+
 export const ProductsSectionStyles = `
     .gh-portal-products {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         background: var(--grey13);
         margin: 40px -32px;
         padding: 0 32px;
@@ -53,12 +58,28 @@ export const ProductsSectionStyles = `
 
     .gh-portal-products-grid {
         display: grid;
-        grid-template-columns: repeat(${productColumns()}, minmax(0, 1fr));
+        grid-template-columns: repeat(${productColumns()}, minmax(0, 280px));
         grid-gap: 32px;
-        width: 100%;
-        max-width: 1280px;
         margin: 0 auto;
-        padding: 32px 5vw;
+        padding: 32px 2vw;
+    }
+
+    @media (max-width: 1080px) {
+        .gh-portal-products-grid {
+            grid-template-columns: repeat(${((productColumns() >= 3) ? 3 : productColumns())}, minmax(0, 300px));
+        }
+    }
+
+    @media (max-width: 800px) {
+        .gh-portal-products-grid {
+            grid-template-columns: repeat(${((productColumns() >= 2) ? 2 : productColumns())}, minmax(0, 300px));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .gh-portal-products-grid {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
     }
 
 
@@ -245,8 +266,8 @@ const ProductsContext = React.createContext({
 });
 
 function productColumns() {
-    const noOfProducts = 4;
-    return noOfProducts > 5 ? 5 : noOfProducts;
+    // TODO: has to take Free on/off setting into account
+    return (noOfProducts + 1) >= 5 ? 5 : (noOfProducts + 1);
 }
 
 function Checkbox({name, id, onProductSelect, isChecked, disabled = false}) {
@@ -360,6 +381,7 @@ function ProductsSection({onPlanSelect}) {
     const [selectedInterval, setSelectedInterval] = useState('month');
     const [selectedProduct, setSelectedProduct] = useState('free');
     const checked = selectedInterval === 'year';
+    noOfProducts = products.length;
     return (
         <ProductsContext.Provider value={{
             selectedInterval,
