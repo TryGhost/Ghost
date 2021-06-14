@@ -44,7 +44,6 @@
 }
 
 .gh-product-card-block:not(:first-of-type) {
-    border-left: 1px solid var(--whitegrey);
     padding-left: 16px;
 }
 
@@ -62,14 +61,26 @@
 }
 
 .gh-product-card-description {
-    margin: 2px 0 0;
+    line-height: 1.45em;
+    margin: 4px 20px 4px 0;
     color: var(--midgrey);
 }
 
+.gh-product-price-container {
+    display: flex;
+}
+
 .gh-product-card-price {
-    margin: 0 0 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 12px 2px 0;
     font-size: 1.3rem;
     color: var(--midgrey);
+    padding: 12px 8px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 3px;
+    min-width: 90px;
 }
 
 .gh-product-card-price .amount,
@@ -78,8 +89,23 @@
     color: var(--darkgrey);
 }
 
+.gh-product-card-price .amount {
+    font-size: 2.1rem;
+    letter-spacing: -0.2px;
+    line-height: 1;
+    margin-right: 2px;
+}
+
 .gh-product-card-price .currency {
+    font-size: 1.25rem;
+    letter-spacing: -0.2px;
     text-transform: uppercase;
+}
+
+.gh-product-card-price .period {
+    font-size: 1.25rem;
+    text-transform: lowercase;
+    line-height: 1.2em;
 }
 
 .gh-product-cards-footer {
