@@ -1,5 +1,8 @@
 const _ = require('lodash');
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 const orderPlugin = function orderPlugin(Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         orderAttributes() {},
