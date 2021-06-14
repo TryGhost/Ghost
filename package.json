@@ -96,7 +96,7 @@
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.2",
     "fs-extra": "10.0.0",
-    "ghost-ignition": "4.6.2",
+    "ghost-ignition": "4.6.3",
     "ghost-storage-base": "0.0.4",
     "glob": "7.1.7",
     "got": "9.6.0",
