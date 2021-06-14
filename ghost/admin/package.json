@@ -25,7 +25,7 @@
     "node": "^12.22.1 || ^14.16.1"
   },
   "devDependencies": {
-    "@ember/jquery": "1.1.0",
+    "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "1.0.2",
     "@glimmer/component": "1.0.4",
