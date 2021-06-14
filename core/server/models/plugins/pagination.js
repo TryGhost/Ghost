@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    pageNotFound: 'Page not found'
+    pageNotFound: 'Page not found',
     couldNotUnderstandRequest: 'Could not understand request.'
 };
 
