@@ -47,6 +47,7 @@ function load(options) {
  * a join to "eager loaded" relation. An exaple of such loading is when
  * there is a need to order by fields in the related table.
  *
+ * @param {import('bookshelf')} Bookshelf
  */
 module.exports = function eagerLoadPlugin(Bookshelf) {
     const modelPrototype = Bookshelf.Model.prototype;

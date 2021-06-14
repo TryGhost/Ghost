@@ -22,6 +22,9 @@ const addHasPostsWhere = (tableName, config) => {
     };
 };
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 const hasPosts = function hasPosts(Bookshelf) {
     const modelPrototype = Bookshelf.Model.prototype;
 

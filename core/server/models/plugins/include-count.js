@@ -2,6 +2,9 @@ const _debug = require('ghost-ignition').debug._base;
 const debug = _debug('ghost-query');
 const _ = require('lodash');
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 module.exports = function (Bookshelf) {
     const modelProto = Bookshelf.Model.prototype;
     const countQueryBuilder = {

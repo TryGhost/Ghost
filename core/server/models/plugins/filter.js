@@ -80,6 +80,9 @@ const EXPANSIONS = {
     }]
 };
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 const filter = function filter(Bookshelf) {
     const Model = Bookshelf.Model.extend({
         // Cached copy of the filters setup for this model instance
