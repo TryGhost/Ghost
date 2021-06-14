@@ -147,18 +147,30 @@ export function hasMultipleProducts({site = {}}) {
     return false;
 }
 
-export function getProducts({site = {}}) {
+export function getSiteProducts({site = {}}) {
     const products = site?.products || [];
     return products.filter(product => !!product).sort((productA, productB) => {
         return productA?.monthlyPrice?.amount - productB?.monthlyPrice.amount;
     });
 }
 
+export function getAllProducts({site}) {
+    const products = getSiteProducts({site});
+    if (hasFreeProduct({site})) {
+        products.unshift({
+            id: 'free'
+        });
+    }
+    return products;
+}
+
 export function getProductPrices({site}) {
-    const products = getProducts({site}) || [];
+    const products = getSiteProducts({site}) || [];
     const prices = products.reduce((accumPrices, product) => {
-        accumPrices.push(product.monthlyPrice);
-        accumPrices.push(product.yearlyPrice);
+        if (product.monthlyPrice && product.yearlyPrice) {
+            accumPrices.push(product.monthlyPrice);
+            accumPrices.push(product.yearlyPrice);
+        }
         return accumPrices;
     }, []);
     return prices;
