@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:static-routes-router');
+const debug = require('@tryghost/debug')('services:routing:static-routes-router');
 const events = require('../../../server/lib/common/events');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');

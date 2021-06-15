@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:controllers:unsubscribe');
+const debug = require('@tryghost/debug')('services:routing:controllers:unsubscribe');
 const path = require('path');
 const megaService = require('../../../../server/services/mega');
 const helpers = require('../../../services/routing/helpers');

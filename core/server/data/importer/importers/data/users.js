@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('importer:users');
+const debug = require('@tryghost/debug')('importer:users');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');

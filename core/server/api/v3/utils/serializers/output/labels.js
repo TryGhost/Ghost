@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:labels');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:labels');
 const mapper = require('./utils/mapper');
 
 module.exports = {

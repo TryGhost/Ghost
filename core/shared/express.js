@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('shared:express');
+const debug = require('@tryghost/debug')('shared:express');
 const express = require('express');
 const sentry = require('./sentry');
 

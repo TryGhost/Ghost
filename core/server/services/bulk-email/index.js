@@ -7,7 +7,7 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 const mailgunProvider = require('./mailgun');
 const sentry = require('../../../shared/sentry');
-const debug = require('ghost-ignition').debug('mega');
+const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
 
 const BATCH_SIZE = mailgunProvider.BATCH_SIZE;

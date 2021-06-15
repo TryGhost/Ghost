@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:permissions');
+const debug = require('@tryghost/debug')('api:v3:utils:permissions');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const permissions = require('../../../services/permissions');

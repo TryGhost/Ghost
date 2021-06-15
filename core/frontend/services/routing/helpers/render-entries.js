@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:helpers:render-entries');
+const debug = require('@tryghost/debug')('services:routing:helpers:render-entries');
 const formatResponse = require('./format-response');
 const renderer = require('./renderer');
 

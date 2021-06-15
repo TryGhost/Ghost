@@ -7,7 +7,7 @@
 
 // IMPORTANT: The only global requires here should be overrides + debug so we can monitor timings with DEBUG=ghost:boot* node ghost
 require('./server/overrides');
-const debug = require('ghost-ignition').debug('boot');
+const debug = require('@tryghost/debug')('boot');
 // END OF GLOBAL REQUIRES
 
 /**

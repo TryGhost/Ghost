@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:webhooks');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:webhooks');
 
 module.exports = {
     all(models, apiConfig, frame) {

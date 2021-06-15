@@ -1,5 +1,5 @@
 //@ts-check
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:products');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:products');
 const _ = require('lodash');
 
 const allowedIncludes = ['stripe_prices', 'monthly_price', 'yearly_price'];

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:site');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:site');
 
 module.exports = {
     read(data, apiConfig, frame) {
