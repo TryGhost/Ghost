@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 // type mapping for settings. object types are ignored for now
 const typeMapping = [

@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const commands = require('../../schema').commands;
 const schema = require('../../schema').tables;
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema);
 
 module.exports.up = function createTables(options) {

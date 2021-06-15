@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const table = 'posts';
 const columnNameOld = 'amp';
 const columnNameNew = 'comment_id';

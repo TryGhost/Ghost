@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const hbs = require('../../theme-engine/engine');
 const config = require('../../../../shared/config');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 // Register an async handlebars helper for a given handlebars instance
 function asyncHelperWrapper(hbsInstance, name, fn) {

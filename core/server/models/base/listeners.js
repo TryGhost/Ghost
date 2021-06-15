@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const _ = require('lodash');
 const models = require('../../models');
 const events = require('../../lib/common/events');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
 

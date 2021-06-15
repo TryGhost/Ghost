@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const ObjectId = require('bson-objectid').default;
 
 module.exports = {

@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const Promise = require('bluebird');
 const config = require('../../../shared/config');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
 const exporter = require('../exporter');
 

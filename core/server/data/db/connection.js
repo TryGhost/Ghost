@@ -33,7 +33,7 @@ function configure(dbConfig) {
         // requiring logging and causing file desriptor leaks.
         // See https://github.com/TryGhost/Ghost/issues/12496
         //
-        // const logging = require('../../../shared/logging');
+        // const logging = require('@tryghost/logging');
         // const errors = require('@tryghost/errors');
         // dbConfig.connection.loggingHook = function loggingHook(err) {
         //     logging.error(new errors.InternalServerError({

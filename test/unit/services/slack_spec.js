@@ -8,7 +8,7 @@ const configUtils = require('../../utils/configUtils');
 const slack = rewire('../../../core/server/services/slack');
 
 const events = require('../../../core/server/lib/common/events');
-const logging = require('../../../core/shared/logging');
+const logging = require('@tryghost/logging');
 const imageLib = require('../../../core/server/lib/image');
 const urlService = require('../../../core/frontend/services/url');
 const schema = require('../../../core/server/data/schema').checks;

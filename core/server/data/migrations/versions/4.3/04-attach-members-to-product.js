@@ -1,7 +1,7 @@
 const {createTransactionalMigration} = require('../../utils');
 const ObjectID = require('bson-objectid');
 const {chunk} = require('lodash');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {

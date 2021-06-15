@@ -10,7 +10,7 @@
  */
 const errors = require('@tryghost/errors');
 const config = require('./shared/config');
-const logging = require('./shared/logging');
+const logging = require('@tryghost/logging');
 const events = require('./server/lib/common/events');
 const i18n = require('./shared/i18n');
 const themeEngine = require('./frontend/services/theme-engine');

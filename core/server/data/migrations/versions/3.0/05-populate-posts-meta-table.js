@@ -3,7 +3,7 @@ const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
 const models = require('../../../../models');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 module.exports.config = {
     transaction: true

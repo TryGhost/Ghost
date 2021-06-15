@@ -1,5 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
 /**

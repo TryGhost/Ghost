@@ -1,5 +1,5 @@
 const {createIrreversibleMigration} = require('../../utils');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid');
 const crypto = require('crypto');
 

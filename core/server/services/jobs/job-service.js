@@ -4,7 +4,7 @@
  */
 
 const JobManager = require('@tryghost/job-manager');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const sentry = require('../../../shared/sentry');
 
 const errorHandler = (error, workerMeta) => {

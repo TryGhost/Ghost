@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const helpers = require('../../../core/frontend/helpers');
-const logging = require('../../../core/shared/logging');
+const logging = require('@tryghost/logging');
 
 describe('{{#is}} helper', function () {
     afterEach(function () {

@@ -1,6 +1,6 @@
 const {createTransactionalMigration} = require('../../utils');
 const config = require('../../../../../shared/config');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 module.exports = createTransactionalMigration(
     async function up(connection) {

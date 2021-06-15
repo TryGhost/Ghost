@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
 const imageTransform = require('@tryghost/image-transform');
-const logging = require('../../../../../core/shared/logging');
+const logging = require('@tryghost/logging');
 const normalize = require('../../../../../core/server/web/api/middleware/normalize-image');
 
 describe('normalize', function () {

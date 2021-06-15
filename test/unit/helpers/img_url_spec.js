@@ -5,7 +5,7 @@ const urlUtils = require('../../utils/urlUtils');
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
-const logging = require('../../../core/shared/logging');
+const logging = require('@tryghost/logging');
 
 describe('{{image}} helper', function () {
     let logWarnStub;

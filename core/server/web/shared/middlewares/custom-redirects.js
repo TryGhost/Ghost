@@ -6,7 +6,7 @@ const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const errors = require('@tryghost/errors');
 const i18n = require('../../../../shared/i18n');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const redirectsService = require('../../../../frontend/services/redirects');
 
 const _private = {};

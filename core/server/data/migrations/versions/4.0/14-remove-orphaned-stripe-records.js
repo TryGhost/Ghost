@@ -1,5 +1,5 @@
 const {createIrreversibleMigration} = require('../../utils');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 module.exports = createIrreversibleMigration(async function up(connection) {
     if (connection.client.config.client === 'mysql') {

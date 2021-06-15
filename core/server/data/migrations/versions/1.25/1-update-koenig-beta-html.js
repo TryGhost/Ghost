@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const models = require('../../../../models');
 const message1 = 'Migrating Koenig beta post\'s mobiledoc/HTML to 2.0 format';

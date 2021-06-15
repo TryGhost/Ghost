@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const message1 = 'Removing demo post.';
 const message2 = 'Removed demo post.';
 const message3 = 'Rollback: Bring back demo post.';

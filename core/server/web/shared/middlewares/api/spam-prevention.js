@@ -4,7 +4,7 @@ const pick = require('lodash/pick');
 const errors = require('@tryghost/errors');
 const config = require('../../../../../shared/config');
 const i18n = require('../../../../../shared/i18n');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const spam = config.get('spam') || {};
 
 const spamPrivateBlock = spam.private_block || {};

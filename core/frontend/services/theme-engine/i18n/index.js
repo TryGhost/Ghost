@@ -1,5 +1,5 @@
 const config = require('../../../../shared/config');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 const ThemeI18n = require('./i18n');
 
