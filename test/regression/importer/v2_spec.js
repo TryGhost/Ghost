@@ -6,7 +6,7 @@ const moment = require('moment-timezone');
 const ObjectId = require('bson-objectid');
 const assert = require('assert');
 const _ = require('lodash');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 
 // Stuff we are testing
 const db = require('../../../core/server/data/db');

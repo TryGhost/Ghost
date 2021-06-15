@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid');
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');

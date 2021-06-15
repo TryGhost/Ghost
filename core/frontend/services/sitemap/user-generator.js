@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 const BaseMapGenerator = require('./base-generator');
 
 class UserMapGenerator extends BaseMapGenerator {

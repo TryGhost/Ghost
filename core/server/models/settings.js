@@ -7,7 +7,7 @@ const ObjectID = require('bson-objectid');
 const ghostBookshelf = require('./base');
 const i18n = require('../../shared/i18n');
 const errors = require('@tryghost/errors');
-const validator = require('../data/validator');
+const validator = require('@tryghost/validator');
 const urlUtils = require('../../shared/url-utils');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../services/labs');
 

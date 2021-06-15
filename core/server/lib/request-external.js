@@ -2,7 +2,7 @@ const got = require('got');
 const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
-const validator = require('../data/validator');
+const validator = require('@tryghost/validator');
 
 function isPrivateIp(addr) {
     return /^(::f{4}:)?10\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/i.test(addr) ||
