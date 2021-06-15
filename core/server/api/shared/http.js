@@ -1,5 +1,5 @@
 const url = require('url');
-const debug = require('ghost-ignition').debug('api:shared:http');
+const debug = require('@tryghost/debug')('api:shared:http');
 const shared = require('../shared');
 const models = require('../../models');
 

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:input:members');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:input:members');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {

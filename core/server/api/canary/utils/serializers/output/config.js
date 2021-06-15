@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:config');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:config');
 
 module.exports = {
     all(data, apiConfig, frame) {

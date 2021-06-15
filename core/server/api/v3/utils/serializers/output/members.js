@@ -1,5 +1,5 @@
 //@ts-check
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:members');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
 
 module.exports = {

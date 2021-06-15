@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
-const debug = require('ghost-ignition').debug('frontend:services:settings:settings-loader');
+const debug = require('@tryghost/debug')('frontend:services:settings:settings-loader');
 const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');

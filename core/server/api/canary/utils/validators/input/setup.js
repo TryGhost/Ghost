@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:canary:utils:validators:input:updateSetup');
+const debug = require('@tryghost/debug')('api:canary:utils:validators:input:updateSetup');
 const i18n = require('../../../../../../shared/i18n');
 const errors = require('@tryghost/errors');
 

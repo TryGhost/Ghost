@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const debug = require('ghost-ignition').debug('mega');
+const debug = require('@tryghost/debug')('mega');
 const url = require('url');
 const moment = require('moment');
 const ObjectID = require('bson-objectid');

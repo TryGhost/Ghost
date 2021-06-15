@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:admin:app');
+const debug = require('@tryghost/debug')('web:admin:app');
 const express = require('../../../shared/express');
 const serveStatic = express.static;
 const config = require('../../../shared/config');

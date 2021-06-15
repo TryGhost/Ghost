@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('importer:roles');
+const debug = require('@tryghost/debug')('importer:roles');
 const BaseImporter = require('./base');
 
 class RolesImporter extends BaseImporter {

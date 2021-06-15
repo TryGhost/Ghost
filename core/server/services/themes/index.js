@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('themes');
+const debug = require('@tryghost/debug')('themes');
 const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

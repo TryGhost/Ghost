@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:db');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:db');
 const optionsUtil = require('../../../../shared/utils/options');
 
 const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];

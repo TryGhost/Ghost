@@ -7,7 +7,7 @@
  * Only allows for .use and .get at the moment - we don't have clear use-cases for anything else yet.
  */
 
-const debug = require('ghost-ignition').debug('services:routing:ParentRouter');
+const debug = require('@tryghost/debug')('services:routing:ParentRouter');
 
 const EventEmitter = require('events').EventEmitter;
 const express = require('../../../shared/express');

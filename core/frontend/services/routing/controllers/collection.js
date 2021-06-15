@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('services:routing:controllers:collection');
+const debug = require('@tryghost/debug')('services:routing:controllers:collection');
 const {i18n} = require('../../proxy');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');

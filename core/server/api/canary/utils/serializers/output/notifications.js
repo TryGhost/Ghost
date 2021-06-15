@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:notifications');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:notifications');
 
 module.exports = {
     all(response, apiConfig, frame) {

@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:users');
+const debug = require('@tryghost/debug')('api:v2:utils:serializers:input:users');
 const url = require('./utils/url');
 
 module.exports = {

@@ -1,6 +1,6 @@
 const i18n = require('../../../../../../shared/i18n');
 const mapper = require('./utils/mapper');
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:authentication');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:authentication');
 
 module.exports = {
     setup(user, apiConfig, frame) {

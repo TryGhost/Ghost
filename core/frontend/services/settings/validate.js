@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('frontend:services:settings:validate');
+const debug = require('@tryghost/debug')('frontend:services:settings:validate');
 const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
 const bridge = require('../../../bridge');

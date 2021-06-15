@@ -1,4 +1,4 @@
-const _debug = require('ghost-ignition').debug._base;
+const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:services:url:service');
 const _ = require('lodash');
 const events = require('../../../server/lib/common/events');

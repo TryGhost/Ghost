@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:input:posts');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:input:posts');
 const mapNQLKeyValues = require('@nexes/nql').utils.mapKeyValues;
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');

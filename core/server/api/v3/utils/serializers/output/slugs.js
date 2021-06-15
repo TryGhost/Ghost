@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:slugs');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:slugs');
 
 module.exports = {
     all(slug, apiConfig, frame) {

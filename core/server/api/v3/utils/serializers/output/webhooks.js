@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:webhooks');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:webhooks');
 
 module.exports = {
     all(models, apiConfig, frame) {

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('services:routing:controllers:rss');
+const debug = require('@tryghost/debug')('services:routing:controllers:rss');
 const url = require('url');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../server/services/settings/cache');

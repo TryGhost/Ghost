@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:themes');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:themes');
 
 module.exports = {
     browse(themes, apiConfig, frame) {

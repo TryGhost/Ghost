@@ -1,7 +1,7 @@
 // It's important to keep the requires absolutely minimal here,
 // As this cache is used in SO many other areas, we may open ourselves to
 // circular dependency bugs.
-const debug = require('ghost-ignition').debug('settings:cache');
+const debug = require('@tryghost/debug')('settings:cache');
 const _ = require('lodash');
 const events = require('../../lib/common/events');
 const publicSettings = require('./public');

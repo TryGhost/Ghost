@@ -1,5 +1,5 @@
 const {parentPort} = require('bthreads');
-const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-latest');
+const debug = require('@tryghost/debug')('jobs:email-analytics:fetch-latest');
 
 // recurring job to fetch analytics since the most recently seen event timestamp
 

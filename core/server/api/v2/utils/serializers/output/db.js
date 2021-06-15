@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:db');
+const debug = require('@tryghost/debug')('api:v2:utils:serializers:output:db');
 
 module.exports = {
     backupContent(filename, apiConfig, frame) {

@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('importer:posts');
+const debug = require('@tryghost/debug')('importer:posts');
 const _ = require('lodash');
 const uuid = require('uuid');
 const BaseImporter = require('./base');

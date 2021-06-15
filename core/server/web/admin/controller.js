@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:admin:controller');
+const debug = require('@tryghost/debug')('web:admin:controller');
 const path = require('path');
 const config = require('../../../shared/config');
 const updateCheck = require('../../update-check');

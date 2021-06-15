@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:oauth:app');
+const debug = require('@tryghost/debug')('web:oauth:app');
 const {URL} = require('url');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;

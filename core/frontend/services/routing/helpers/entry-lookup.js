@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const url = require('url');
-const debug = require('ghost-ignition').debug('services:routing:helpers:entry-lookup');
+const debug = require('@tryghost/debug')('services:routing:helpers:entry-lookup');
 const routeMatch = require('path-match')();
 
 /**

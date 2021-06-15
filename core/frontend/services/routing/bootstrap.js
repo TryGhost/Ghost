@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:bootstrap');
+const debug = require('@tryghost/debug')('services:routing:bootstrap');
 const _ = require('lodash');
 const events = require('../../../server/lib/common/events');
 const settingsService = require('../settings');

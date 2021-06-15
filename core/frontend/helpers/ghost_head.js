@@ -4,7 +4,7 @@
 // Outputs scripts and other assets at the top of a Ghost theme
 const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, urlUtils} = require('../services/proxy');
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('ghost_head');
+const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 
 const getMetaData = metaData.get;

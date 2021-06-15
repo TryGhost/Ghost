@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:input:webhooks');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:input:webhooks');
 
 module.exports = {
     add(apiConfig, frame) {

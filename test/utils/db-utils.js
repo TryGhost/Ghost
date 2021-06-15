@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('test:dbUtils');
+const debug = require('@tryghost/debug')('test:dbUtils');
 
 // Utility Packages
 const Promise = require('bluebird');

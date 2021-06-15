@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:canary:admin:app');
+const debug = require('@tryghost/debug')('web:canary:admin:app');
 const boolParser = require('express-query-boolean');
 const express = require('../../../../../shared/express');
 const bodyParser = require('body-parser');

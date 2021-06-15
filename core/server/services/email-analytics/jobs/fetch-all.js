@@ -1,5 +1,5 @@
 const {parentPort} = require('bthreads');
-const debug = require('ghost-ignition').debug('jobs:email-analytics:fetch-all');
+const debug = require('@tryghost/debug')('jobs:email-analytics:fetch-all');
 
 // one-off job to fetch all available events and re-process them idempotently
 // NB. can be a _very_ long job for sites with many members and frequent emails

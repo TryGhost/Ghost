@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../../../shared/url-utils');
-const debug = require('ghost-ignition').debug('migrations');
+const debug = require('@tryghost/debug')('migrations');
 
 module.exports.config = {
     transaction: true

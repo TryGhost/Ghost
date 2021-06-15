@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:notifications');
+const debug = require('@tryghost/debug')('api:v2:utils:serializers:output:notifications');
 
 module.exports = {
     all(response, apiConfig, frame) {

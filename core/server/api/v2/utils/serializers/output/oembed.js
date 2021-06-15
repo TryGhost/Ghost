@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:oembed');
+const debug = require('@tryghost/debug')('api:v2:utils:serializers:output:oembed');
 
 module.exports = {
     all(res, apiConfig, frame) {

@@ -11,7 +11,7 @@ const settingsCache = require('../settings/cache');
 const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const debug = require('ghost-ignition').debug('api:themes');
+const debug = require('@tryghost/debug')('api:themes');
 const ObjectID = require('bson-objectid');
 
 let themeStorage;

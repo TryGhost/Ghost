@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:members');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:members');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
