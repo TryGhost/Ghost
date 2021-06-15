@@ -7,7 +7,7 @@ const debug = require('ghost-ignition').debug('importer:members');
 const membersService = require('../index');
 const models = require('../../../models');
 const i18n = require('../../../../shared/i18n');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 const handleUnrecognizedError = (error) => {
     if (!errors.utils.isIgnitionError(error)) {
