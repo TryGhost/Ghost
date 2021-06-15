@@ -3,7 +3,8 @@ const _ = require('lodash');
 const ObjectId = require('bson-objectid');
 const testUtils = require('../../../utils');
 const models = require('../../../../core/server/models');
-const validation = require('../../../../core/server/data/validation');
+
+const validateSchema = require('../../../../core/server/data/schema/validator');
 
 describe('Validate Schema', function () {
     before(function () {
@@ -13,7 +14,7 @@ describe('Validate Schema', function () {
     describe('models.add', function () {
         it('blank model', function () {
             // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
-            return validation.validateSchema('posts', models.Post.forge(), {method: 'insert'})
+            return validateSchema('posts', models.Post.forge(), {method: 'insert'})
                 .then(function () {
                     throw new Error('Expected ValidationError.');
                 })
@@ -41,7 +42,7 @@ describe('Validate Schema', function () {
                 slug: 'test'
             }));
 
-            return validation.validateSchema('posts', postModel, {method: 'insert'})
+            return validateSchema('posts', postModel, {method: 'insert'})
                 .then(function () {
                     throw new Error('Expected ValidationError.');
                 })
@@ -56,7 +57,7 @@ describe('Validate Schema', function () {
         });
 
         it('should pass', function () {
-            return validation.validateSchema(
+            return validateSchema(
                 'posts',
                 models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'title'})),
                 {method: 'insert'}
@@ -67,7 +68,7 @@ describe('Validate Schema', function () {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: 0}));
             post.get('featured').should.eql(0);
 
-            return validation.validateSchema('posts', post, {method: 'insert'})
+            return validateSchema('posts', post, {method: 'insert'})
                 .then(function () {
                     post.get('featured').should.eql(false);
                 });
@@ -77,7 +78,7 @@ describe('Validate Schema', function () {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: true}));
             post.get('featured').should.eql(true);
 
-            return validation.validateSchema('posts', post, {method: 'insert'})
+            return validateSchema('posts', post, {method: 'insert'})
                 .then(function () {
                     post.get('featured').should.eql(true);
                 });
@@ -92,7 +93,7 @@ describe('Validate Schema', function () {
             }));
 
             // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.
-            return validation.validateSchema('webhooks', webhook, {method: 'insert'})
+            return validateSchema('webhooks', webhook, {method: 'insert'})
                 .then(function () {
                     throw new Error('Expected ValidationError.');
                 })
@@ -114,7 +115,7 @@ describe('Validate Schema', function () {
 
             postModel.changed = {uuid: postModel.get('uuid')};
 
-            return validation.validateSchema('posts', postModel)
+            return validateSchema('posts', postModel)
                 .then(function () {
                     throw new Error('Expected ValidationError.');
                 })
@@ -133,7 +134,7 @@ describe('Validate Schema', function () {
 
             postModel.changed = {created_at: postModel.get('updated_at')};
 
-            return validation.validateSchema('posts', postModel)
+            return validateSchema('posts', postModel)
                 .then(function () {
                     throw new Error('Expected ValidationError.');
                 })
