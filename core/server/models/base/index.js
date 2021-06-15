@@ -22,7 +22,7 @@ const security = require('@tryghost/security');
 const schema = require('../../data/schema');
 const urlUtils = require('../../../shared/url-utils');
 const bulkOperations = require('./bulk-operations');
-const plugins = require('../plugins');
+const plugins = require('@tryghost/bookshelf-plugins');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -1307,7 +1307,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             nql(filter).querySQL(query);
 
             if (shouldHavePosts) {
-                require('../plugins/has-posts').addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
+                plugins.hasPosts.addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
             }
 
             if (options.id) {
