@@ -191,6 +191,7 @@ export const ProductsSectionStyles = ({site}) => {
                 grid-template-columns: unset;
                 grid-gap: 20px;
                 padding: 32px 0;
+                width: 100%;
             }
 
             .gh-portal-products-priceswitch {
