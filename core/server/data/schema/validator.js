@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {validator, validate} = require('../validation');
+const validator = require('../validator');
 
 const schema = require('./schema');
 
@@ -99,7 +99,7 @@ function validateSchema(tableName, model, options) {
 
             // check validations objects
             if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'validations')) {
-                validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations, tableName));
+                validationErrors = validationErrors.concat(validator.validate(strVal, columnKey, schema[tableName][columnKey].validations, tableName));
             }
 
             // check type

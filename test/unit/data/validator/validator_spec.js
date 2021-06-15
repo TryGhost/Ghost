@@ -1,6 +1,6 @@
 const should = require('should');
 
-const {validator} = require('../../../../core/server/data/validation');
+const validator = require('../../../../core/server/data/validator');
 
 const validators = ['isLength',
     'isEmpty',
@@ -21,10 +21,9 @@ describe('Validator', function () {
     it('should export our required functions', function () {
         should.exist(validator);
 
-        validator.should.have.properties(validators);
-        validator.should.have.properties(custom);
+        const allMethods = validators.concat(custom).concat('validate');
 
-        Object.keys(validator).should.eql(validators.concat(custom));
+        Object.keys(validator).should.eql(allMethods);
     });
 
     describe('Custom Validators', function () {

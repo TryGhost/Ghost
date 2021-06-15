@@ -1,6 +1,6 @@
 const got = require('got');
 const _ = require('lodash');
-const validator = require('../data/validation').validator;
+const validator = require('../data/validator');
 const errors = require('@tryghost/errors');
 const ghostVersion = require('./ghost-version');
 

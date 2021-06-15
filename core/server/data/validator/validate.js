@@ -29,7 +29,7 @@ const messages = {
  * @param {String} value the value to validate.
  * @param {String} key the db column key of the value to validate.
  * @param {Object} validations the validations object as described above.
- * @param {String} tableName (optional) the db table of the value to validate, used for error message.
+ * @param {String} [tableName] (optional) the db table of the value to validate, used for error message.
  * @return {Array} returns an Array including the found validation errors (empty if none found);
  */
 function validate(value, key, validations, tableName) {

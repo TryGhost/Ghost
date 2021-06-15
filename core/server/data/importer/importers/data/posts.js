@@ -3,7 +3,7 @@ const _ = require('lodash');
 const uuid = require('uuid');
 const BaseImporter = require('./base');
 const mobiledocLib = require('../../../../lib/mobiledoc');
-const validation = require('../../../validation');
+const validator = require('../../../validator');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
 
@@ -20,7 +20,7 @@ class PostsImporter extends BaseImporter {
 
     sanitizeAttributes() {
         _.each(this.dataToImport, (obj) => {
-            if (!validation.validator.isUUID(obj.uuid || '')) {
+            if (!validator.isUUID(obj.uuid || '')) {
                 obj.uuid = uuid.v4();
             }
 
