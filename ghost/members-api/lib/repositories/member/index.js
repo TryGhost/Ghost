@@ -129,28 +129,7 @@ module.exports = class MemberRepository {
                 });
 
                 if (existingActiveSubscriptions.length) {
-                    const memberWithSubscriptions = await this._Member.findOne({
-                        id: options.id
-                    }, {
-                        ...sharedOptions,
-                        withRelated: ['stripeSubscriptions', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']
-                    });
-
-                    const productsDueToSubscriptions = memberWithSubscriptions.related('stripeSubscriptions').reduce((products, subscription) => {
-                        if (!this.isActiveSubscriptionStatus(subscription.get('status'))) {
-                            return products;
-                        }
-
-                        return products.concat(subscription.related('stripePrice').related('stripeProduct').get('product_id'));
-                    }, []);
-
-                    const productsToModify = productsToAdd.concat(productsToRemove);
-
-                    const attemptingToModifyASubscriptionsProduct = productsDueToSubscriptions.some((id) => productsToModify.includes(id));
-
-                    if (attemptingToModifyASubscriptionsProduct) {
-                        throw new Error('Cannot edit products for which a Member has a subscription');
-                    }
+                    throw new Error('Cannot edit products for a Member who has a subscription');
                 }
             }
         }
