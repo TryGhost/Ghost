@@ -1674,6 +1674,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-memberproduct-created {
     margin-top: 1px;
+    color: var(--midgrey);
 }
 
 .gh-memberproduct-archived .gh-memberproduct-name {
@@ -1695,6 +1696,12 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-memberproduct-list-footer .gh-loading-content {
     padding-bottom: unset;
     padding-top: 12px;
+}
+
+.gh-memberproduct-cancelreason {
+    line-height: 1.45em;
+    margin: 3px 0 5px;
+    max-width: 700px;
 }
 
 .gh-btn-addproduct svg path {

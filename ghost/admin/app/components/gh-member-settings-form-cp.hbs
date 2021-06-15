@@ -158,6 +158,9 @@
                                     <span class="gh-badge active">Active</span>
                                 {{/if}}
                             </div>
+                            {{#if sub.cancellationReason}}
+                                <div class="gh-memberproduct-cancelreason"><span class="fw6">Cancellation reason:</span> {{sub.cancellationReason}}</div>
+                            {{/if}}
                             <div class="gh-memberproduct-created">Created on {{sub.startDate}}</div>
 
                             <span class="action-menu">

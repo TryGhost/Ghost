@@ -52,6 +52,7 @@ export default class extends Component {
                 ...sub,
                 startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
                 validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
+                cancellationReason: sub.cancellation_reason,
                 price: {
                     ...sub.price,
                     currencySymbol: getSymbol(sub.price.currency),
