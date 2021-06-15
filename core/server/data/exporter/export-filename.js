@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const models = require('../../models');

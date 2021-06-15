@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const urlUtils = require('../../../../../shared/url-utils');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const {createIrreversibleMigration} = require('../../utils');

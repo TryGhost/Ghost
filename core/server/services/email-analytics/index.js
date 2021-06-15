@@ -1,5 +1,5 @@
 const config = require('../../../shared/config');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const db = require('../../data/db');
 const settings = require('../settings/cache');
 const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');

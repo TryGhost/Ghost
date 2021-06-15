@@ -1,6 +1,6 @@
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
-const logging = require('../../shared/logging');
+const logging = require('@tryghost/logging');
 
 const SingleUseToken = ghostBookshelf.Model.extend({
     tableName: 'tokens',

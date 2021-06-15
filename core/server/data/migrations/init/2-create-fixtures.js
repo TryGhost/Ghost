@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const fixtures = require('../../schema/fixtures');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 module.exports.config = {
     transaction: true

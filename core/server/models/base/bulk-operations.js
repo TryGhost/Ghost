@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const db = require('../../data/db');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 const CHUNK_SIZE = 100;
 

@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const {createNonTransactionalMigration} = require('../../utils');
 
 module.exports = createNonTransactionalMigration(

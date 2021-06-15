@@ -1,6 +1,6 @@
 const {chunk} = require('lodash');
 const ObjectID = require('bson-objectid');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(

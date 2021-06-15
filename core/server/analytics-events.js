@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Analytics = require('analytics-node');
 const config = require('../shared/config');
-const logging = require('../shared/logging');
+const logging = require('@tryghost/logging');
 const sentry = require('../shared/sentry');
 const events = require('./lib/common/events');
 

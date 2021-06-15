@@ -1,7 +1,7 @@
 const debug = require('ghost-ignition').debug('services:url:queue');
 const EventEmitter = require('events').EventEmitter;
 const _ = require('lodash');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
 /**
