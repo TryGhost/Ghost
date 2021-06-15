@@ -1015,6 +1015,13 @@
     c8 "^7.7.2"
     lodash.template "^4.5.0"
 
+"@tryghost/tpl@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.2.tgz#4b6acc97a6ac517baf40585216c8adf888d620f1"
+  integrity sha512-VZyD4v8rNJrJEWUjrAT7YCpEmr+8rXWhQbfmWE199F29pbEpvMPK0MKwF1hTc3b0JkvGOo3lgULJ7KB6TrxvkA==
+  dependencies:
+    lodash.template "^4.5.0"
+
 "@tryghost/update-check-service@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.1.0.tgz#ca1277989989968f2b2603a7d3b86e1124025be5"
@@ -1036,6 +1043,17 @@
     remark "^11.0.2"
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
+
+"@tryghost/validator@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.0.tgz#f089fed04998a4ceb4957350117f8d9bb626daf0"
+  integrity sha512-Np9EN3RayTOd81GjVna6Zv12LsTz98JlqeXbOnUVzrRphARRJHvNwcKi7Kh4EDqA2MWpYQDiU0+QwP7zyA0Gkg==
+  dependencies:
+    "@tryghost/errors" "^0.2.12"
+    "@tryghost/tpl" "^0.1.2"
+    lodash "^4.17.21"
+    moment-timezone "0.5.23"
+    validator "7.2.0"
 
 "@tryghost/vhost-middleware@1.0.15":
   version "1.0.15"

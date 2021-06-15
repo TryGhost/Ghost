@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 const debug = require('@tryghost/debug')('api:canary:utils:validators:input:invitation');
 const i18n = require('../../../../../../shared/i18n');
 const errors = require('@tryghost/errors');

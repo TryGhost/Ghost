@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 const models = require('../../models');
 const frontendRouting = require('../../../frontend/services/routing');
 const frontendSettings = require('../../../frontend/services/settings');

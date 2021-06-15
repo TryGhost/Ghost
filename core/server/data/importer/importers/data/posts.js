@@ -3,7 +3,7 @@ const _ = require('lodash');
 const uuid = require('uuid');
 const BaseImporter = require('./base');
 const mobiledocLib = require('../../../../lib/mobiledoc');
-const validator = require('../../../validator');
+const validator = require('@tryghost/validator');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
 
