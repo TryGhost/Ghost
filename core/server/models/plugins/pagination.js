@@ -35,8 +35,8 @@ paginationUtils = {
     /**
      * ### Parse Options
      * Take the given options and ensure they are valid pagination options, else use the defaults
-     * @param {options} options
-     * @returns {options} options sanitised for pagination
+     * @param {Object} options
+     * @returns {Object} options sanitised for pagination
      */
     parseOptions: function parseOptions(options) {
         options = _.defaults(options || {}, defaults);
@@ -52,8 +52,8 @@ paginationUtils = {
     /**
      * ### Query
      * Apply the necessary parameters to paginate the query
-     * @param {bookshelf.Model} model
-     * @param {options} options
+     * @param {Bookshelf['Model']} model
+     * @param {Object} options
      */
     addLimitAndOffset: function addLimitAndOffset(model, options) {
         if (_.isNumber(options.limit)) {
@@ -67,7 +67,7 @@ paginationUtils = {
      * ### Format Response
      * Takes the no. items returned and original options and calculates all of the pagination meta data
      * @param {Number} totalItems
-     * @param {options} options
+     * @param {Object} options
      * @returns {pagination} pagination metadata
      */
     formatResponse: function formatResponse(totalItems, options) {
@@ -162,7 +162,7 @@ const pagination = function pagination(bookshelf) {
          * 1. count query to know how many pages left (important: we don't attach any group/order statements!)
          * 2. the actualy fetch query with limit and page property
          *
-         * @param {options} options
+         * @param {Object} options
          * @returns {Promise<paginatedResult>} set of results + pagination metadata
          */
         fetchPage: function fetchPage(options) {
