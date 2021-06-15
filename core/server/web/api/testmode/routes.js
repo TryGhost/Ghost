@@ -1,5 +1,5 @@
 const path = require('path');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const express = require('../../../../shared/express');
 const jobsService = require('../../../services/jobs');
 

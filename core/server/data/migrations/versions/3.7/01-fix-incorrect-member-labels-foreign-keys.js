@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const commands = require('../../../schema').commands;
 
 const table = 'members_labels';

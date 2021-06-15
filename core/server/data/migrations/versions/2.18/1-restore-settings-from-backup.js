@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const settingsCache = require('../../../../services/settings/cache');
 const config = require('../../../../../shared/config');
 const moment = require('moment');

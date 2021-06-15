@@ -1,5 +1,5 @@
 const ObjectId = require('bson-objectid').default;
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const commands = require('../schema').commands;
 const Promise = require('bluebird');
 

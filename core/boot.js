@@ -252,7 +252,7 @@ async function bootGhost() {
 
         // Logging is used absolutely everywhere
         debug('Begin: Load logging');
-        logging = require('./shared/logging');
+        logging = require('@tryghost/logging');
         bootLogger = new BootLogger(logging, startTime);
         debug('End: Load logging');
 

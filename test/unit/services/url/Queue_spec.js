@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
-const logging = require('../../../../core/shared/logging');
+const logging = require('@tryghost/logging');
 const Queue = require('../../../../core/frontend/services/url/Queue');
 
 describe('Unit: services/url/Queue', function () {
