@@ -912,7 +912,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * ### Find All
      * Fetches all the data for a particular model
      * @param {Object} unfilteredOptions (optional)
-     * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
+     * @return {Promise<ghostBookshelf.Collection>} Collection of all Models
      */
     findAll: function findAll(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findAll');
@@ -1015,7 +1015,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Naive find one where data determines what to match on
      * @param {Object} data
      * @param {Object} unfilteredOptions (optional)
-     * @return {Promise(ghostBookshelf.Model)} Single Model
+     * @return {Promise<ghostBookshelf.Model>} Single Model
      */
     findOne: function findOne(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findOne');
@@ -1044,7 +1044,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *
      * @param {Object} data
      * @param {Object} unfilteredOptions (optional)
-     * @return {Promise(ghostBookshelf.Model)} Edited Model
+     * @return {Promise<ghostBookshelf.Model>} Edited Model
      */
     edit: function edit(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'edit');
@@ -1080,7 +1080,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Naive add
      * @param {Object} data
      * @param {Object} unfilteredOptions (optional)
-     * @return {Promise(ghostBookshelf.Model)} Newly Added Model
+     * @return {Promise<ghostBookshelf.Model>} Newly Added Model
      */
     add: function add(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'add');
@@ -1111,7 +1111,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * ### Destroy
      * Naive destroy
      * @param {Object} unfilteredOptions (optional)
-     * @return {Promise(ghostBookshelf.Model)} Empty Model
+     * @return {Promise<ghostBookshelf.Model>} Empty Model
      */
     destroy: function destroy(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'destroy');
@@ -1142,7 +1142,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {ghostBookshelf.Model} Model Model type to generate a slug for
      * @param {String} base The string for which to generate a slug, usually a title or name
      * @param {Object} options Options to pass to findOne
-     * @return {Promise(String)} Resolves to a unique slug string
+     * @return {Promise<String>} Resolves to a unique slug string
      */
     generateSlug: function generateSlug(Model, base, options) {
         let slug;
