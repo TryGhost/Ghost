@@ -1,10 +1,10 @@
 const _ = require('lodash');
 
-const validator = require('./validator');
+const {validator} = require('../data/validation');
 
 const tpl = require('@tryghost/tpl');
-const settingsCache = require('../../services/settings/cache');
-const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../services/settings/cache');
+const urlUtils = require('../../shared/url-utils');
 
 const messages = {
     passwordDoesNotComplyLength: 'Your password must be at least {minLength} characters long.',
@@ -50,7 +50,7 @@ function characterOccurance(stringToTest) {
  * Returns false when validation fails and true for a valid password
  * @param {String} password The password string to check.
  * @param {String} email The users email address to validate agains password.
- * @param {String} blogTitle Optional blogTitle value, when blog title is not set yet, e. g. in setup process.
+ * @param {String} [blogTitle] Optional blogTitle value, when blog title is not set yet, e. g. in setup process.
  * @return {Object} example for returned validation Object:
  * invalid password: `validationResult: {isValid: false, message: 'Sorry, you cannot use an insecure password.'}`
  * valid password: `validationResult: {isValid: true}`
