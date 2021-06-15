@@ -3,10 +3,9 @@ const Promise = require('bluebird');
 
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const {validator, validate} = require('../validation');
 
-const schema = require('../schema').tables;
-const validator = require('./validator');
-const validate = require('./validate');
+const schema = require('./schema');
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',

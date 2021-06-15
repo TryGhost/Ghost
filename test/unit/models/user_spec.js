@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const models = require('../../../core/server/models');
 const permissions = require('../../../core/server/services/permissions');
-const validation = require('../../../core/server/data/validation');
+const schema = require('../../../core/server/data/schema');
 const security = require('@tryghost/security');
 const testUtils = require('../../utils');
 
@@ -86,7 +86,7 @@ describe('Unit: models/user', function () {
             sinon.stub(security.password, 'compare').resolves(true);
 
             // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
-            sinon.stub(validation, 'validateSchema').resolves();
+            sinon.stub(schema, 'validate').resolves();
 
             const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
                 status: 'warn-1',
