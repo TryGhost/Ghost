@@ -145,7 +145,7 @@
     "stoppable": "1.1.0",
     "tough-cookie": "4.0.0",
     "uuid": "8.3.2",
-    "validator": "6.3.0",
+    "validator": "7.2.0",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
