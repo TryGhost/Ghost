@@ -1,42 +1,48 @@
 const _ = require('lodash');
 
-const validator = require('validator');
+const baseValidator = require('validator');
 const moment = require('moment-timezone');
 const assert = require('assert');
 
+const allowedValidators = [
+    'isLength',
+    'isEmpty',
+    'isURL',
+    'isEmail',
+    'isIn',
+    'isUUID',
+    'isBoolean',
+    'isInt',
+    'isLowercase',
+    'equals',
+    'matches'
+];
+
 function assertString(input) {
-    assert(typeof input === 'string', 'Validator js validates strings only');
+    assert(typeof input === 'string', 'Validator validates strings only');
 }
 
-// extends has been removed in validator >= 5.0.0, need to monkey-patch it back in
-// @TODO: We modify the global validator dependency here! https://github.com/chriso/validator.js/issues/525#issuecomment-213149570
-validator.extend = function (name, fn) {
-    validator[name] = function () {
-        const args = Array.prototype.slice.call(arguments);
-        assertString(args[0]);
-        return fn.apply(validator, args);
-    };
+const validators = {};
+
+allowedValidators.forEach((name) => {
+    if (_.has(baseValidator, name)) {
+        validators[name] = baseValidator[name];
+    }
+});
+
+validators.isTimezone = function isTimezone(str) {
+    assertString(str);
+    return moment.tz.zone(str) ? true : false;
 };
 
-// Provide a few custom validators
-validator.extend('empty', function empty(str) {
-    return _.isEmpty(str);
-});
+validators.isEmptyOrURL = function isEmptyOrURL(str) {
+    assertString(str);
+    return (validators.isEmpty(str) || validators.isURL(str, {require_protocol: false}));
+};
 
-validator.extend('notContains', function notContains(str, badString) {
-    return !_.includes(str, badString);
-});
+validators.isSlug = function isSlug(str) {
+    assertString(str);
+    return validators.matches(str, /^[a-z0-9\-_]+$/);
+};
 
-validator.extend('isTimezone', function isTimezone(str) {
-    return moment.tz.zone(str) ? true : false;
-});
-
-validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
-    return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
-});
-
-validator.extend('isSlug', function isSlug(str) {
-    return validator.matches(str, /^[a-z0-9\-_]+$/);
-});
-
-module.exports = validator;
+module.exports = validators;

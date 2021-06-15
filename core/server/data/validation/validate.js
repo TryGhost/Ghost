@@ -37,7 +37,7 @@ function validate(value, key, validations, tableName) {
     let message;
     value = _.toString(value);
 
-    _.each(validations, function each(validationOptions, validationName) {
+    _.each(validations, (validationOptions, validationName) => {
         let goodResult = true;
 
         if (_.isBoolean(validationOptions)) {
@@ -72,7 +72,7 @@ function validate(value, key, validations, tableName) {
         }
 
         validationOptions.shift();
-    }, this);
+    });
 
     return validationErrors;
 }
