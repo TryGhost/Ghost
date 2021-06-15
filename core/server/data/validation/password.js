@@ -2,9 +2,14 @@ const _ = require('lodash');
 
 const validator = require('./validator');
 
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../../shared/url-utils');
+
+const messages = {
+    passwordDoesNotComplyLength: 'Your password must be at least {minLength} characters long.',
+    passwordDoesNotComplySecurity: 'Sorry, you cannot use an insecure password.'
+};
 
 /**
  * Counts repeated characters in a string. When 50% or more characters are the same,
@@ -72,7 +77,7 @@ function validatePassword(password, email, blogTitle) {
     // password must be longer than 10 characters
     if (!validator.isLength(password, 10)) {
         validationResult.isValid = false;
-        validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
+        validationResult.message = tpl(messages.passwordDoesNotComplyLength, {minLength: 10});
 
         return validationResult;
     }
@@ -113,7 +118,7 @@ function validatePassword(password, email, blogTitle) {
 
     // Generic error message for the rules where no dedicated error massage is set
     if (!validationResult.isValid && !validationResult.message) {
-        validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplySecurity');
+        validationResult.message = tpl(messages.passwordDoesNotComplySecurity);
     }
 
     return validationResult;

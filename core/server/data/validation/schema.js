@@ -1,13 +1,19 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const schema = require('../schema').tables;
 const validator = require('./validator');
 const validate = require('./validate');
 
+const messages = {
+    valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
+    valueMustBeBoolean: 'Value in [{tableName}.{columnKey}] must be one of true, false, 0 or 1.',
+    valueExceedsMaxLength: 'Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.',
+    valueIsNotInteger: 'Value in [{tableName}.{columnKey}] is not an integer.'
+};
 /**
  * Validate model against schema.
  *
@@ -43,7 +49,7 @@ function validateSchema(tableName, model, options) {
             !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
         ) {
             if (validator.empty(strVal)) {
-                message = i18n.t('notices.data.validation.index.valueCannotBeBlank', {
+                message = tpl(messages.valueCannotBeBlank, {
                     tableName: tableName,
                     columnKey: columnKey
                 });
@@ -58,7 +64,7 @@ function validateSchema(tableName, model, options) {
         if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')
             && schema[tableName][columnKey].type === 'bool') {
             if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
-                message = i18n.t('notices.data.validation.index.valueMustBeBoolean', {
+                message = tpl(messages.valueMustBeBoolean, {
                     tableName: tableName,
                     columnKey: columnKey
                 });
@@ -79,7 +85,7 @@ function validateSchema(tableName, model, options) {
             // check length
             if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
-                    message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
+                    message = tpl(messages.valueExceedsMaxLength,
                         {
                             tableName: tableName,
                             columnKey: columnKey,
@@ -100,7 +106,7 @@ function validateSchema(tableName, model, options) {
             // check type
             if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
-                    message = i18n.t('notices.data.validation.index.valueIsNotInteger', {
+                    message = tpl(messages.valueIsNotInteger, {
                         tableName: tableName,
                         columnKey: columnKey
                     });
