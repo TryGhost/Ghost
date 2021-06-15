@@ -10,7 +10,7 @@ const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const {gravatar} = require('../lib/image');
 const {pipeline} = require('@tryghost/promise');
-const validation = require('../data/validation');
+const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
@@ -225,8 +225,8 @@ User = ghostBookshelf.Model.extend({
                     this.set('status', 'locked');
                 }
             } else {
-                // CASE: we're not importing data, run the validations
-                passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
+                // CASE: we're not importing data, validate the data
+                passwordValidation = validatePassword(this.get('password'), this.get('email'));
 
                 if (!passwordValidation.isValid) {
                     return Promise.reject(new errors.ValidationError({
@@ -634,7 +634,7 @@ User = ghostBookshelf.Model.extend({
         const userData = this.filterData(data);
         let passwordValidation = {};
 
-        passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);
+        passwordValidation = validatePassword(userData.password, userData.email, data.blogTitle);
 
         if (!passwordValidation.isValid) {
             return Promise.reject(new errors.ValidationError({
