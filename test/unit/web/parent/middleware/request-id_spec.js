@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const validator = require('validator');
+const validator = require('@tryghost/validator');
 
 const requestId = require('../../../../../core/server/web/parent/middleware/request-id');
 
