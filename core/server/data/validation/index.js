@@ -3,6 +3,5 @@ module.exports = {
     validator: require('./validator'),
 
     // These two things are dependent on validator, not related
-    validatePassword: require('./password'),
-    validateSchema: require('./schema')
+    validatePassword: require('./password')
 };

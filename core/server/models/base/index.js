@@ -21,7 +21,6 @@ const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const schema = require('../../data/schema');
 const urlUtils = require('../../../shared/url-utils');
-const validation = require('../../data/validation');
 const bulkOperations = require('./bulk-operations');
 const plugins = require('../plugins');
 const tpl = require('@tryghost/tpl');
@@ -312,7 +311,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     onValidate: function onValidate(model, columns, options) {
         this.setEmptyValuesToNull();
-        return validation.validateSchema(this.tableName, this, options);
+        return schema.validate(this.tableName, this, options);
     },
 
     onFetched() {},
