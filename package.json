@@ -66,6 +66,7 @@
     "@tryghost/mw-session-from-token": "0.1.21",
     "@tryghost/package-json": "1.0.0",
     "@tryghost/promise": "0.1.9",
+    "@tryghost/root-utils": "0.3.0",
     "@tryghost/security": "0.2.9",
     "@tryghost/session-service": "0.1.23",
     "@tryghost/social-urls": "0.1.24",
