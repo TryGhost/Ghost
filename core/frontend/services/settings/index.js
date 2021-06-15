@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const crypto = require('crypto');
-const debug = require('ghost-ignition').debug('frontend:services:settings:index');
+const debug = require('@tryghost/debug')('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
 const ensureSettingsFiles = require('./ensure-settings');
 

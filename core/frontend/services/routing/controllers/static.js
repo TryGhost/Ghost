@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const debug = require('ghost-ignition').debug('services:routing:controllers:static');
+const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const helpers = require('../helpers');
 
 function processQuery(query, locals) {

@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:url:queue');
+const debug = require('@tryghost/debug')('services:url:queue');
 const EventEmitter = require('events').EventEmitter;
 const _ = require('lodash');
 const logging = require('@tryghost/logging');

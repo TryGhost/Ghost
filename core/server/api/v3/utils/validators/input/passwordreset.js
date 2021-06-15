@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const validator = require('validator');
-const debug = require('ghost-ignition').debug('api:v3:utils:validators:input:passwordreset');
+const debug = require('@tryghost/debug')('api:v3:utils:validators:input:passwordreset');
 const i18n = require('../../../../../../shared/i18n');
 const errors = require('@tryghost/errors');
 

@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('utils:image-size-cache');
+const debug = require('@tryghost/debug')('utils:image-size-cache');
 const errors = require('@tryghost/errors');
 
 class CachedImageSizeFromUrl {

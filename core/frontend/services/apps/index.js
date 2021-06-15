@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:apps');
+const debug = require('@tryghost/debug')('services:apps');
 const Promise = require('bluebird');
 const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');

@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:static-pages-router');
+const debug = require('@tryghost/debug')('services:routing:static-pages-router');
 const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');

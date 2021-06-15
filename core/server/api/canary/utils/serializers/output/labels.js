@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:labels');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:labels');
 const mapper = require('./utils/mapper');
 
 module.exports = {

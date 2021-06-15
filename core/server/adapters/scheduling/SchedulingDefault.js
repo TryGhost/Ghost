@@ -1,6 +1,6 @@
 const util = require('util');
 const moment = require('moment');
-const debug = require('ghost-ignition').debug('scheduling-default');
+const debug = require('@tryghost/debug')('scheduling-default');
 const SchedulingBase = require('./SchedulingBase');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

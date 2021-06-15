@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const debug = require('ghost-ignition').debug('services:url:resources');
+const debug = require('@tryghost/debug')('services:url:resources');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../../server/models');

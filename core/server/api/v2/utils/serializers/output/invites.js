@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:invites');
+const debug = require('@tryghost/debug')('api:v2:utils:serializers:output:invites');
 
 module.exports = {
     all(models, apiConfig, frame) {

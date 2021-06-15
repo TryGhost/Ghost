@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:shared:validators:input:all');
+const debug = require('@tryghost/debug')('api:shared:validators:input:all');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const i18n = require('../../../../../shared/i18n');

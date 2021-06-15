@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:integrations');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:integrations');
 
 function setDefaultFilter(frame) {
     if (frame.options.filter) {

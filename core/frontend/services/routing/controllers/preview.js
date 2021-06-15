@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services:routing:controllers:preview');
+const debug = require('@tryghost/debug')('services:routing:controllers:preview');
 const config = require('../../../../shared/config');
 const urlService = require('../../url');
 const urlUtils = require('../../../../shared/url-utils');

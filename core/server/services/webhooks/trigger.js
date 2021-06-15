@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('services:webhooks:trigger');
+const debug = require('@tryghost/debug')('services:webhooks:trigger');
 const logging = require('@tryghost/logging');
 const request = require('../../lib/request');
 const models = require('../../models');

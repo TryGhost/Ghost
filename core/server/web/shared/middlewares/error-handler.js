@@ -1,6 +1,6 @@
 const hbs = require('express-hbs');
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('error-handler');
+const debug = require('@tryghost/debug')('error-handler');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const i18n = require('../../../../shared/i18n');

@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('utils:image-size');
+const debug = require('@tryghost/debug')('utils:image-size');
 const sizeOf = require('image-size');
 const probeSizeOf = require('probe-image-size');
 const url = require('url');
