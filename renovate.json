@@ -13,7 +13,6 @@
       "moment",
       "moment-timezone",
       "nodemailer",
-      "validator",
       "simple-dom"
     ],
   "ignorePaths": ["test"],

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const validator = require('../data/validator');
+const validator = require('@tryghost/validator');
 
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../services/settings/cache');
