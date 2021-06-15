@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:parent');
+const debug = require('@tryghost/debug')('web:parent');
 const express = require('../../../shared/express');
 const vhost = require('@tryghost/vhost-middleware');
 const config = require('../../../shared/config');

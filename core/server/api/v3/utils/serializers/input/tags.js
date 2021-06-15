@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:input:tags');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:input:tags');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const utils = require('../../index');

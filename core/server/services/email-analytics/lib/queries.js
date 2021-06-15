@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('services:email-analytics');
+const debug = require('@tryghost/debug')('services:email-analytics');
 const db = require('../../../data/db');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;

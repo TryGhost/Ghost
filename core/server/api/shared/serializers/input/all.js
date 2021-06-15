@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:shared:serializers:input:all');
+const debug = require('@tryghost/debug')('api:shared:serializers:input:all');
 const _ = require('lodash');
 const utils = require('../../utils');
 

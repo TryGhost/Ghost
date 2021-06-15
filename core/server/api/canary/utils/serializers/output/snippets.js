@@ -1,5 +1,5 @@
 //@ts-check
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:snippets');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:snippets');
 
 module.exports = {
     browse: createSerializer('browse', paginatedSnippets),

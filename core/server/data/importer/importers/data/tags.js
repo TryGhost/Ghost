@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('importer:tags');
+const debug = require('@tryghost/debug')('importer:tags');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const BaseImporter = require('./base');

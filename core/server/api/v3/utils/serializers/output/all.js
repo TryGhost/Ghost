@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:all');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:all');
 const _ = require('lodash');
 
 const removeXBY = (object) => {

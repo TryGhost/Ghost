@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:authors');
+const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:authors');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const utils = require('../../index');
 

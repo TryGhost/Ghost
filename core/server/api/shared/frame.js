@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:shared:frame');
+const debug = require('@tryghost/debug')('api:shared:frame');
 const _ = require('lodash');
 
 /**

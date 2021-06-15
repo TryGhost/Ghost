@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('api:v3:utils:serializers:output:users');
+const debug = require('@tryghost/debug')('api:v3:utils:serializers:output:users');
 const i18n = require('../../../../../../shared/i18n');
 const mapper = require('./utils/mapper');
 

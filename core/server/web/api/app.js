@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:api:default:app');
+const debug = require('@tryghost/debug')('web:api:default:app');
 const config = require('../../../shared/config');
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');

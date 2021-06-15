@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('importer:settings');
+const debug = require('@tryghost/debug')('importer:settings');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');

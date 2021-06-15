@@ -699,6 +699,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.8.tgz#b08074cdc6f8a379209750e60c2ab62c8ba895cf"
   integrity sha512-3/w0k2JlpYjG/3tU3zjvVlrNH+kK9bjZvp7xaCkvmbsLGxQFMtlKU4fFY+rcpDVWOkywIHmKbLGmAqADgZeakA==
 
+"@tryghost/debug@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.1.tgz#65d267b2d8cd4f9f863efdeb151912ad99587843"
+  integrity sha512-To3TPu4Aqyj1PbzNdWdG5rGEJBjEYWD8Ju2RjSgZSK+5PaUtaGbEOGirTf4OelIHMaSeKPzTG2KkVEJVGhBDNQ==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.0"
+    debug "^4.3.1"
+
 "@tryghost/debug@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.0.tgz#f55dc680b07fe49556c436d43e93e726e6ecbfc3"
@@ -954,14 +962,6 @@
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.0.tgz#94565b5063c296b7493e3a635f9b77a8f917076b"
   integrity sha512-4OaSksIjR5RVAYXXfhTlNbt/gbj9mG/qxW0Kn6uoq8RWSBaV/Hjh7wdw+ptCJ7WPT87bFO7A6uZz29AjDeNGow==
-  dependencies:
-    caller "^1.0.1"
-    find-root "^1.1.0"
-
-"@tryghost/root-utils@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
-  integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -4483,28 +4483,6 @@ ghost-ignition@4.6.2, ghost-ignition@^4.2.4, ghost-ignition@^4.6.1, ghost-igniti
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "0.0.7"
     "@tryghost/elasticsearch-bunyan" "0.1.1"
-    bunyan "1.8.15"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.3.1"
-    find-root "1.1.0"
-    fs-extra "9.1.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.21"
-    moment "2.27.0"
-    nconf "0.11.2"
-    prettyjson "1.2.1"
-    uuid "8.3.2"
-
-ghost-ignition@4.6.3:
-  version "4.6.3"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
-  integrity sha512-F9Kms91NG7miRH8FdmvHvWGt9crVHaKYap3gFrGekCi0TTpssN6duGi0NERSqAcf+7gC7QXT3BP/yCWwBr3fqw==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.7"
-    "@tryghost/elasticsearch-bunyan" "0.1.1"
-    "@tryghost/root-utils" "^0.1.0"
     bunyan "1.8.15"
     bunyan-loggly "1.4.2"
     caller "1.0.1"

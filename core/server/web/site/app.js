@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('web:site:app');
+const debug = require('@tryghost/debug')('web:site:app');
 const path = require('path');
 const express = require('../../../shared/express');
 const cors = require('cors');
