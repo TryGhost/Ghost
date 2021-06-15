@@ -1,7 +1,15 @@
 const _ = require('lodash');
 const validator = require('./validator');
-const i18n = require('../../../shared/i18n');
+
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    validationFailed: 'Validation ({validationName}) failed for {key}',
+    validationFailedTypes: {
+        isLength: 'Value in [{tableName}.{key}] exceeds maximum length of {max} characters.'
+    }
+};
 
 /**
  * Validate keys using the validator module.
@@ -26,7 +34,7 @@ const errors = require('@tryghost/errors');
  */
 function validate(value, key, validations, tableName) {
     const validationErrors = [];
-    let translation;
+    let message;
     value = _.toString(value);
 
     _.each(validations, function each(validationOptions, validationName) {
@@ -43,22 +51,22 @@ function validate(value, key, validations, tableName) {
 
         // equivalent of validator.isSomething(option1, option2)
         if (validator[validationName].apply(validator, validationOptions) !== goodResult) {
-            // CASE: You can define specific translations for validators e.g. isLength
-            if (i18n.doesTranslationKeyExist('notices.data.validation.index.validationFailedTypes.' + validationName)) {
-                translation = i18n.t('notices.data.validation.index.validationFailedTypes.' + validationName, _.merge({
+            // CASE: You can define specific messages for validators e.g. isLength
+            if (_.has(messages.validationFailedTypes, validationName)) {
+                message = tpl(messages.validationFailedTypes[validationName], _.merge({
                     validationName: validationName,
                     key: key,
                     tableName: tableName
                 }, validationOptions[1]));
             } else {
-                translation = i18n.t('notices.data.validation.index.validationFailed', {
+                message = tpl(messages.validationFailed, {
                     validationName: validationName,
                     key: key
                 });
             }
 
             validationErrors.push(new errors.ValidationError({
-                message: translation,
+                message: message,
                 context: `${tableName}.${key}`
             }));
         }
