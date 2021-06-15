@@ -68,7 +68,7 @@ ghostBookshelf.plugin(plugins.collision);
 // Load hasPosts plugin for authors models
 ghostBookshelf.plugin(plugins.hasPosts);
 
-ghostBookshelf.plugin(require('./bookshelf-crud'));
+ghostBookshelf.plugin(require('./crud'));
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
