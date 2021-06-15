@@ -47,7 +47,7 @@ function validateSchema(tableName, model, options) {
             schema[tableName][columnKey].nullable !== true &&
             !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
         ) {
-            if (validator.empty(strVal)) {
+            if (validator.isEmpty(strVal)) {
                 message = tpl(messages.valueCannotBeBlank, {
                     tableName: tableName,
                     columnKey: columnKey
@@ -62,7 +62,7 @@ function validateSchema(tableName, model, options) {
         // validate boolean columns
         if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')
             && schema[tableName][columnKey].type === 'bool') {
-            if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
+            if (!(validator.isBoolean(strVal) || validator.isEmpty(strVal))) {
                 message = tpl(messages.valueMustBeBoolean, {
                     tableName: tableName,
                     columnKey: columnKey
@@ -74,7 +74,7 @@ function validateSchema(tableName, model, options) {
             }
 
             // CASE: ensure we transform 0|1 to false|true
-            if (!validator.empty(strVal)) {
+            if (!validator.isEmpty(strVal)) {
                 model.set(columnKey, !!model.get(columnKey));
             }
         }
