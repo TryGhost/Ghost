@@ -4,7 +4,7 @@ const models = require('../../models');
 const events = require('../../lib/common/events');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const {sequence} = require('@tryghost/promise');
+const Promise = require('bluebird');
 
 /**
  * WHEN timezone changes, we will:
@@ -34,21 +34,20 @@ events.on('settings.timezone.edited', function (settingModel, options) {
      * We lock the target row on fetch by using the `forUpdate` option.
      * Read more in models/post.js - `onFetching`
      */
-    return models.Base.transaction(function (transacting) {
+    return models.Base.transaction(async function (transacting) {
         options.transacting = transacting;
         options.forUpdate = true;
 
-        return models.Post.findAll(_.merge({filter: 'status:scheduled'}, options))
-            .then(function (results) {
-                if (!results.length) {
-                    return;
-                }
+        try {
+            const results = await models.Post.findAll(_.merge({filter: 'status:scheduled'}, options));
+            if (!results.length) {
+                return;
+            }
 
-                return sequence(results.map(function (post) {
-                    return function reschedulePostIfPossible() {
-                        const newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffsetDiff, 'minutes');
+            await Promise.mapSeries(results, async (post) => {
+                const newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffsetDiff, 'minutes');
 
-                        /**
+                /**
                          * CASE:
                          *   - your configured TZ is GMT+01:00
                          *   - now is 10AM +01:00 (9AM UTC)
@@ -59,28 +58,26 @@ events.on('settings.timezone.edited', function (settingModel, options) {
                          *   - so we update published_at to 7PM - 480minutes === 11AM UTC
                          *   - 11AM UTC === 7PM +08:00
                          */
-                        if (newPublishedAtMoment.isBefore(moment().add(5, 'minutes'))) {
-                            post.set('status', 'draft');
-                        } else {
-                            post.set('published_at', newPublishedAtMoment.toDate());
-                        }
+                if (newPublishedAtMoment.isBefore(moment().add(5, 'minutes'))) {
+                    post.set('status', 'draft');
+                } else {
+                    post.set('published_at', newPublishedAtMoment.toDate());
+                }
 
-                        return models.Post.edit(post.toJSON(), _.merge({id: post.id}, options)).reflect();
-                    };
-                })).each(function (result) {
-                    if (!result.isFulfilled()) {
-                        logging.error(new errors.GhostError({
-                            err: result.reason()
-                        }));
-                    }
-                });
-            })
-            .catch(function (err) {
-                logging.error(new errors.GhostError({
-                    err: err,
-                    level: 'critical'
-                }));
+                try {
+                    await models.Post.edit(post.toJSON(), _.merge({id: post.id}, options));
+                } catch (err) {
+                    logging.error(new errors.GhostError({
+                        err
+                    }));
+                }
             });
+        } catch (err) {
+            logging.error(new errors.GhostError({
+                err: err,
+                level: 'critical'
+            }));
+        }
     });
 });
 
