@@ -3,7 +3,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const i18n = require('../../../../../shared/i18n');
 const {BadRequestError, ValidationError} = require('@tryghost/errors');
-const validation = require('../../../../data/validation');
+const validator = require('../../../../data/validator');
 
 const GLOBAL_VALIDATORS = {
     id: {matches: /^[a-f\d]{24}$|^1$|me/i},
@@ -44,7 +44,7 @@ const validate = (config, attrs) => {
 
         if (GLOBAL_VALIDATORS[key]) {
             debug('global validation');
-            errors = errors.concat(validation.validate(value, key, GLOBAL_VALIDATORS[key]));
+            errors = errors.concat(validator.validate(value, key, GLOBAL_VALIDATORS[key]));
         }
 
         if (config && config[key]) {
