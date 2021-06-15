@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const membersService = require('./service');
 const urlUtils = require('../../../shared/url-utils');
 const ghostVersion = require('../../lib/ghost-version');

@@ -1,5 +1,5 @@
 const {createTransactionalMigration} = require('../../utils');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 module.exports = createTransactionalMigration(
     async function up(knex){

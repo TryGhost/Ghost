@@ -1,7 +1,6 @@
-const config = require('./config');
-const {logging} = require('ghost-ignition');
+const config = require('./core/shared/config');
 
-module.exports = logging({
+module.exports = {
     name: config.get('logging:name'),
     env: config.get('env'),
     path: config.get('logging:path') || config.getContentPath('logs'),
@@ -13,4 +12,4 @@ module.exports = logging({
     loggly: config.get('logging:loggly'),
     elasticsearch: config.get('logging:elasticsearch'),
     rotation: config.get('logging:rotation')
-});
+};

@@ -1,6 +1,6 @@
 const {i18n} = require('../../services/proxy');
 const urlUtils = require('../../../shared/url-utils');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const middleware = require('./lib/middleware');
 const router = require('./lib/router');

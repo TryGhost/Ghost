@@ -2,7 +2,7 @@ const _ = require('lodash');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const i18n = require('../../../shared/i18n');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 const models = require('../../models');
 const mail = require('../mail');
 

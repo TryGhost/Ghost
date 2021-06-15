@@ -1,6 +1,6 @@
 const path = require('path');
 const errors = require('@tryghost/errors');
-const logging = require('../../shared/logging');
+const logging = require('@tryghost/logging');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
 const imageTransform = require('@tryghost/image-transform');

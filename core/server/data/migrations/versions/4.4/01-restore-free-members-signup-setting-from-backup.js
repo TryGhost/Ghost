@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 const config = require('../../../../../shared/config');
 const fs = require('fs-extra');

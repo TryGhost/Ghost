@@ -12,7 +12,7 @@ const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToText = require('html-to-text');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
-const logging = require('../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 const ALLOWED_REPLACEMENTS = ['first_name'];
 

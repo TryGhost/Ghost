@@ -1,5 +1,5 @@
 const omit = require('lodash/omit');
-const logging = require('../../shared/logging');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const crypto = require('crypto');

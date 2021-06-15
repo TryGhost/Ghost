@@ -1,4 +1,4 @@
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 
 (async () => {
     let sum = 0;

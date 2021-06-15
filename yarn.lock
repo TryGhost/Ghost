@@ -687,7 +687,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.9.tgz#441e9287c4293fc344fc363a4ea8579144393ea6"
   integrity sha512-unOiro5Wo9gjOgya6vQAA3pkOlwxr54//Md+nBrKNopd5n9mBvLC076tNIKCisUECCvkJPMYRtFmGJz9U5rb5w==
 
-"@tryghost/bunyan-rotating-filestream@0.0.7":
+"@tryghost/bunyan-rotating-filestream@0.0.7", "@tryghost/bunyan-rotating-filestream@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@tryghost/bunyan-rotating-filestream/-/bunyan-rotating-filestream-0.0.7.tgz#3957de91e4e9b58999f0bbe19242080543dcfc4a"
   integrity sha512-dswM+dxG8J7WpVoSjzAdoWXqqB5Dg0C2T7Zh6eoUvl5hkA8yWWJi/fS4jNXlHF700lWQ0g8/t+leJ7SGSWd+aw==
@@ -706,7 +706,7 @@
   dependencies:
     "@tryghost/root-utils" "^0.2.2"
 
-"@tryghost/elasticsearch-bunyan@0.1.1":
+"@tryghost/elasticsearch-bunyan@0.1.1", "@tryghost/elasticsearch-bunyan@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch-bunyan/-/elasticsearch-bunyan-0.1.1.tgz#5a36d81dd020825dd563b1357ae6c249580c46f5"
   integrity sha512-ILhumzdwJNoRG44S0FkgzZQlkCYioTKWEiY+FFFQpTFWwZ3Jd5a6us5k8tEsd+Wf2rZOvul/ehV45j2c2l1BMw==
@@ -845,6 +845,23 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
+"@tryghost/logging@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.0.tgz#1806c7204aef40f0e03ceed42f47e7665dad6d8a"
+  integrity sha512-f5GSwcyPspSXYnIdXq4U1xdaYOTFuGeaHUU3IFa5ahLiVYP2V9eijZkI/9h/DwnhPzyJRZuNKcjluG1dBzG4tQ==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
+    "@tryghost/elasticsearch-bunyan" "^0.1.1"
+    "@tryghost/root-utils" "^0.3.0"
+    bunyan "^1.8.15"
+    bunyan-loggly "^1.4.2"
+    fs-extra "^10.0.0"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "^1.2.1"
+
 "@tryghost/magic-link@1.0.3", "@tryghost/magic-link@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.3.tgz#d64cdfeae8bda9d7a43002c0afb16ea15c1f28e7"
@@ -933,7 +950,7 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/root-utils@0.3.0":
+"@tryghost/root-utils@0.3.0", "@tryghost/root-utils@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.0.tgz#94565b5063c296b7493e3a635f9b77a8f917076b"
   integrity sha512-4OaSksIjR5RVAYXXfhTlNbt/gbj9mG/qxW0Kn6uoq8RWSBaV/Hjh7wdw+ptCJ7WPT87bFO7A6uZz29AjDeNGow==
@@ -1893,7 +1910,7 @@ builtin-modules@^3.0.0:
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-3.2.0.tgz#45d5db99e7ee5e6bc4f362e008bf917ab5049887"
   integrity sha512-lGzLKcioL90C7wMczpkY0n/oART3MbBa8R9OFGE1rJxoVI86u4WAGfEk8Wjv10eKSyTHVGkSo3bvBylCEtk7LA==
 
-bunyan-loggly@1.4.2, bunyan-loggly@^1.3.1:
+bunyan-loggly@1.4.2, bunyan-loggly@^1.3.1, bunyan-loggly@^1.4.2:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/bunyan-loggly/-/bunyan-loggly-1.4.2.tgz#dda0fb18f487fa150a79728e906d83e871d235e9"
   integrity sha512-/fwAO+NPogiPziEk4bQKZhwYo+POrbdAlatpW5r+BQSTHqYyxGFHMtLMp4uSjIdPetXDxvG5qffAePB3hc/6NA==
@@ -1911,7 +1928,7 @@ bunyan@1.8.12:
     mv "~2"
     safe-json-stringify "~1"
 
-bunyan@1.8.15:
+bunyan@1.8.15, bunyan@^1.8.15:
   version "1.8.15"
   resolved "https://registry.yarnpkg.com/bunyan/-/bunyan-1.8.15.tgz#8ce34ca908a17d0776576ca1b2f6cbd916e93b46"
   integrity sha512-0tECWShh6wUysgucJcBAoYegf3JJoZWibxdqhTm7OHPeT42qdjkZ29QCMcKwbgU1kiH+auSIasNRXMLWXafXig==
@@ -8357,7 +8374,7 @@ pretty-bytes@^5.3.0, pretty-bytes@^5.4.1:
   resolved "https://registry.yarnpkg.com/pretty-bytes/-/pretty-bytes-5.6.0.tgz#356256f643804773c82f64723fe78c92c62beaeb"
   integrity sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==
 
-prettyjson@1.2.1, prettyjson@^1.1.3:
+prettyjson@1.2.1, prettyjson@^1.1.3, prettyjson@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/prettyjson/-/prettyjson-1.2.1.tgz#fcffab41d19cab4dfae5e575e64246619b12d289"
   integrity sha1-/P+rQdGcq0365eV15kJGYZsS0ok=

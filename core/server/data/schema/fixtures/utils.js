@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const Promise = require('bluebird');
-const logging = require('../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const models = require('../../../models');
 const baseUtils = require('../../../models/base/utils');
 const {sequence} = require('@tryghost/promise');

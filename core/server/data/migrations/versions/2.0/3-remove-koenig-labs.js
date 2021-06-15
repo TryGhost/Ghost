@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const logging = require('../../../../../shared/logging');
+const logging = require('@tryghost/logging');
 const models = require('../../../../models');
 const message1 = 'Removing `koenigEditor` from labs.';
 const message2 = 'Removed `koenigEditor` from labs.';
