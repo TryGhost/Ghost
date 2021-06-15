@@ -13,6 +13,7 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
 const debug = require('ghost-ignition').debug('models:base');
+const config = require('../../../shared/config');
 const db = require('../../data/db');
 const events = require('../../lib/common/events');
 const logging = require('@tryghost/logging');
@@ -67,8 +68,6 @@ ghostBookshelf.plugin(plugins.collision);
 
 // Load hasPosts plugin for authors models
 ghostBookshelf.plugin(plugins.hasPosts);
-
-ghostBookshelf.plugin(require('./crud'));
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
@@ -909,10 +908,226 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return filteredCollectionQuery;
     },
 
+    /**
+     * ### Find All
+     * Fetches all the data for a particular model
+     * @param {Object} unfilteredOptions (optional)
+     * @return {Promise<ghostBookshelf.Collection>} Collection of all Models
+     */
+    findAll: function findAll(unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'findAll');
+        const itemCollection = this.getFilteredCollection(options);
+
+        // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
+        if (this.orderDefaultRaw && !options.migrating) {
+            itemCollection.query((qb) => {
+                qb.orderByRaw(this.orderDefaultRaw(options));
+            });
+        }
+
+        return itemCollection.fetchAll(options).then(function then(result) {
+            if (options.withRelated) {
+                _.each(result.models, function each(item) {
+                    item.withRelated = options.withRelated;
+                });
+            }
+
+            return result;
+        });
+    },
+
+    /**
+     * ### Find Page
+     * Find results by page - returns an object containing the
+     * information about the request (page, limit), along with the
+     * info needed for pagination (pages, total).
+     *
+     * **response:**
+     *
+     *     {
+     *         data: [
+     *             {...}, ...
+     *         ],
+     *         meta: {
+     *             pagination: {
+     *                 page: __,
+     *                 limit: __,
+     *                 pages: __,
+     *                 total: __
+     *             }
+     *         }
+     *     }
+     *
+     * @param {Object} unfilteredOptions
+     */
+    findPage: function findPage(unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'findPage');
+        const itemCollection = this.getFilteredCollection(options);
+        const requestedColumns = options.columns;
+
+        // Set this to true or pass ?debug=true as an API option to get output
+        itemCollection.debug = unfilteredOptions.debug && config.get('env') !== 'production';
+
+        // Ensure only valid fields/columns are added to query
+        // and append default columns to fetch
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+            options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
+        }
+
+        if (options.order) {
+            const {order, orderRaw, eagerLoad} = itemCollection.parseOrderOption(options.order, options.withRelated);
+            options.orderRaw = orderRaw;
+            options.order = order;
+            options.eagerLoad = eagerLoad;
+        } else if (options.autoOrder) {
+            options.orderRaw = options.autoOrder;
+        } else if (this.orderDefaultRaw) {
+            options.orderRaw = this.orderDefaultRaw(options);
+        } else if (this.orderDefaultOptions) {
+            options.order = this.orderDefaultOptions();
+        }
+
+        return itemCollection.fetchPage(options).then(function formatResponse(response) {
+            // Attributes are being filtered here, so they are not leaked into calling layer
+            // where models are serialized to json and do not do more filtering.
+            // Re-add and pick any computed properties that were stripped before fetchPage call.
+            const data = response.collection.models.map((model) => {
+                if (requestedColumns) {
+                    model.attributes = _.pick(model.attributes, requestedColumns);
+                    model._previousAttributes = _.pick(model._previousAttributes, requestedColumns);
+                }
+
+                return model;
+            });
+
+            return {
+                data: data,
+                meta: {pagination: response.pagination}
+            };
+        }).catch((err) => {
+            throw err;
+        });
+    },
+
+    /**
+     * ### Find One
+     * Naive find one where data determines what to match on
+     * @param {Object} data
+     * @param {Object} unfilteredOptions (optional)
+     * @return {Promise<ghostBookshelf.Model>} Single Model
+     */
+    findOne: function findOne(data, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'findOne');
+        data = this.filterData(data);
+        const model = this.forge(data);
+
+        // @NOTE: The API layer decides if this option is allowed
+        if (options.filter) {
+            model.applyDefaultAndCustomFilters(options);
+        }
+
+        // Ensure only valid fields/columns are added to query
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+        }
+
+        return model.fetch(options);
+    },
+
+    /**
+     * ### Edit
+     * Naive edit
+     *
+     * We always forward the `method` option to Bookshelf, see http://bookshelfjs.org/#Model-instance-save.
+     * Based on the `method` option Bookshelf and Ghost can determine if a query is an insert or an update.
+     *
+     * @param {Object} data
+     * @param {Object} unfilteredOptions (optional)
+     * @return {Promise<ghostBookshelf.Model>} Edited Model
+     */
+    edit: function edit(data, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'edit');
+        const id = options.id;
+        const model = this.forge({id: id});
+
+        data = this.filterData(data);
+
+        // @NOTE: The API layer decides if this option is allowed
+        if (options.filter) {
+            model.applyDefaultAndCustomFilters(options);
+        }
+
+        // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same
+        if (options.importing) {
+            model.hasTimestamps = false;
+        }
+
+        return model
+            .fetch(options)
+            .then((object) => {
+                if (object) {
+                    options.method = 'update';
+                    return object.save(data, options);
+                }
+
+                throw new errors.NotFoundError();
+            });
+    },
+
+    /**
+     * ### Add
+     * Naive add
+     * @param {Object} data
+     * @param {Object} unfilteredOptions (optional)
+     * @return {Promise<ghostBookshelf.Model>} Newly Added Model
+     */
+    add: function add(data, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'add');
+        let model;
+
+        data = this.filterData(data);
+        model = this.forge(data);
+
+        // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
+        // as the import json blob. More details refer to https://github.com/TryGhost/Ghost/issues/1696
+        if (options.importing) {
+            model.hasTimestamps = false;
+        }
+
+        // Bookshelf determines whether an operation is an update or an insert based on the id
+        // Ghost auto-generates Object id's, so we need to tell Bookshelf here that we are inserting data
+        options.method = 'insert';
+        return model.save(null, options);
+    },
+
     bulkAdd: function bulkAdd(data, tableName) {
         tableName = tableName || this.prototype.tableName;
 
         return bulkOperations.insert(tableName, data);
+    },
+
+    /**
+     * ### Destroy
+     * Naive destroy
+     * @param {Object} unfilteredOptions (optional)
+     * @return {Promise<ghostBookshelf.Model>} Empty Model
+     */
+    destroy: function destroy(unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'destroy');
+
+        if (!options.destroyBy) {
+            options.destroyBy = {
+                id: options.id
+            };
+        }
+
+        // Fetch the object before destroying it, so that the changed data is available to events
+        return this.forge(options.destroyBy)
+            .fetch(options)
+            .then(function then(obj) {
+                return obj.destroy(options);
+            });
     },
 
     bulkDestroy: function bulkDestroy(data, tableName) {
