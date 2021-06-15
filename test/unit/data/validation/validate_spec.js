@@ -12,7 +12,5 @@ describe('Validation', function () {
         );
 
         validation.validate.should.be.a.Function();
-
-        validation.validator.should.have.properties(['empty', 'notContains', 'isTimezone', 'isEmptyOrURL', 'isSlug']);
     });
 });
