@@ -13,7 +13,6 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
 const debug = require('ghost-ignition').debug('models:base');
-const config = require('../../../shared/config');
 const db = require('../../data/db');
 const events = require('../../lib/common/events');
 const logging = require('../../../shared/logging');
