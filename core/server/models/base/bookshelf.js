@@ -50,6 +50,8 @@ ghostBookshelf.plugin(require('./events'));
 
 ghostBookshelf.plugin(require('./raw-knex'));
 
+ghostBookshelf.plugin(require('./sanitize'));
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
