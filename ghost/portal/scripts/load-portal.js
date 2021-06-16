@@ -1,4 +1,4 @@
-/** Script to load live Portal script chunks for local development */
+/** Script to load Portal bundle for local development */
 function loadScript(src) {
     var script = document.createElement('script');
     script.src = src;
@@ -6,6 +6,3 @@ function loadScript(src) {
 }
 
 loadScript('http://localhost:3000/static/js/bundle.js');
-loadScript('http://localhost:3000/static/js/1.chunk.js');
-loadScript('http://localhost:3000/static/js/0.chunk.js');
-loadScript('http://localhost:3000/static/js/main.chunk.js');
