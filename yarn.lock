@@ -355,17 +355,6 @@
     component-type "^1.2.1"
     join-component "^1.1.0"
 
-"@sentry/core@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.2.5.tgz#e75093f8598becc0a4a0be927f32f7ac49e8588f"
-  integrity sha512-I+AkgIFO6sDUoHQticP6I27TT3L+i6TUS03in3IEtpBcSeP2jyhlxI8l/wdA7gsBqUPdQ4GHOOaNgtFIcr8qag==
-  dependencies:
-    "@sentry/hub" "6.2.5"
-    "@sentry/minimal" "6.2.5"
-    "@sentry/types" "6.2.5"
-    "@sentry/utils" "6.2.5"
-    tslib "^1.9.3"
-
 "@sentry/core@6.7.1":
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.7.1.tgz#c3aaa6415d06bec65ac446b13b84f073805633e3"
@@ -377,15 +366,6 @@
     "@sentry/utils" "6.7.1"
     tslib "^1.9.3"
 
-"@sentry/hub@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.2.5.tgz#324cae0c90d736cd1032e94104bf3f18becec4d6"
-  integrity sha512-YlEFdEhcfqpl2HC+/dWXBsBJEljyMzFS7LRRjCk8QANcOdp9PhwQjwebUB4/ulOBjHPP2WZk7fBBd/IKDasTUg==
-  dependencies:
-    "@sentry/types" "6.2.5"
-    "@sentry/utils" "6.2.5"
-    tslib "^1.9.3"
-
 "@sentry/hub@6.7.1":
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.7.1.tgz#d46d24deec67f0731a808ca16796e6765b371bc1"
@@ -395,15 +375,6 @@
     "@sentry/utils" "6.7.1"
     tslib "^1.9.3"
 
-"@sentry/minimal@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.2.5.tgz#3e963e868bfa68e97581403521fd4e09a8965b02"
-  integrity sha512-RKP4Qx3p7Cv0oX1cPKAkNVFYM7p2k1t32cNk1+rrVQS4hwlJ7Eg6m6fsqsO+85jd6Ne/FnyYsfo9cDD3ImTlWQ==
-  dependencies:
-    "@sentry/hub" "6.2.5"
-    "@sentry/types" "6.2.5"
-    tslib "^1.9.3"
-
 "@sentry/minimal@6.7.1":
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.7.1.tgz#babf85ee2f167e9dcf150d750d7a0b250c98449c"
@@ -411,21 +382,6 @@
   dependencies:
     "@sentry/hub" "6.7.1"
     "@sentry/types" "6.7.1"
-    tslib "^1.9.3"
-
-"@sentry/node@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-6.2.5.tgz#6e6694c0c3ce6ca231710f40da0cac7fd5c645ef"
-  integrity sha512-/iM3khzGnUH713VFhZBAEYJhb/saEQSVz7Udogml+O7mFQ4rutnwJhgoGcB9YYrwMv2m7qOSszkdZbemDV6k2g==
-  dependencies:
-    "@sentry/core" "6.2.5"
-    "@sentry/hub" "6.2.5"
-    "@sentry/tracing" "6.2.5"
-    "@sentry/types" "6.2.5"
-    "@sentry/utils" "6.2.5"
-    cookie "^0.4.1"
-    https-proxy-agent "^5.0.0"
-    lru_map "^0.3.3"
     tslib "^1.9.3"
 
 "@sentry/node@6.7.1":
@@ -443,17 +399,6 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/tracing@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.2.5.tgz#3f5dadfdccdb5c1fb2eef68458c7c34329b0a34a"
-  integrity sha512-j/hM0BoHxfrNLxPeEJ5Vq4R34hO/TOHMEpLR3FdnunBXbsmjoKMMygIkPxnpML5XWtvukAehbwpDXldwMYz83w==
-  dependencies:
-    "@sentry/hub" "6.2.5"
-    "@sentry/minimal" "6.2.5"
-    "@sentry/types" "6.2.5"
-    "@sentry/utils" "6.2.5"
-    tslib "^1.9.3"
-
 "@sentry/tracing@6.7.1":
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.7.1.tgz#b11f0c17a6c5dc14ef44733e5436afb686683268"
@@ -465,23 +410,10 @@
     "@sentry/utils" "6.7.1"
     tslib "^1.9.3"
 
-"@sentry/types@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.2.5.tgz#34b75285b149e0b9bc5fd54fcc2c445d978c7f2e"
-  integrity sha512-1Sux6CLYrV9bETMsGP/HuLFLouwKoX93CWzG8BjMueW+Di0OGxZphYjXrGuDs8xO8bAKEVGCHgVQdcB2jevS0w==
-
 "@sentry/types@6.7.1":
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.7.1.tgz#c8263e1886df5e815570c4668eb40a1cfaa1c88b"
   integrity sha512-9AO7HKoip2MBMNQJEd6+AKtjj2+q9Ze4ooWUdEvdOVSt5drg7BGpK221/p9JEOyJAZwEPEXdcMd3VAIMiOb4MA==
-
-"@sentry/utils@6.2.5":
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.2.5.tgz#be90d056b09ed1216097d7a29e3e81ba39238e1b"
-  integrity sha512-fJoLUZHrd5MPylV1dT4qL74yNFDl1Ur/dab+pKNSyvnHPnbZ/LRM7aJ8VaRY/A7ZdpRowU+E14e/Yeem2c6gtQ==
-  dependencies:
-    "@sentry/types" "6.2.5"
-    tslib "^1.9.3"
 
 "@sentry/utils@6.7.1":
   version "6.7.1"
@@ -936,13 +868,13 @@
     fs-extra "^10.0.0"
     lodash "^4.17.21"
 
-"@tryghost/pretty-cli@1.2.16":
-  version "1.2.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.16.tgz#9f47d4e341326690d3816fec9fd5bf0c946805f3"
-  integrity sha512-jSlExfLyW6cYoA3UVvNr5v4nh3YNdoha7N6h7r/66BNIZ4vClqNjk6KFAUHLii0rzjV8zXdrqHrixonYs2ArEQ==
+"@tryghost/pretty-cli@1.2.18":
+  version "1.2.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.18.tgz#16a2b00750cc6a0ae040832e5d5cadcabdef1acf"
+  integrity sha512-m/FPKXJx9ttxFzQUXv0ft3YVTxj7R8wi7kcQReiw56tGA0Lo5NHFv8Bu/KRn6cYkcM8lea00fao64R/npdBeFA==
   dependencies:
-    chalk "4.1.0"
-    sywac "1.3.0"
+    chalk "^4.1.0"
+    sywac "^1.3.0"
 
 "@tryghost/promise@0.1.9":
   version "0.1.9"
@@ -966,6 +898,14 @@
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.0.tgz#94565b5063c296b7493e3a635f9b77a8f917076b"
   integrity sha512-4OaSksIjR5RVAYXXfhTlNbt/gbj9mG/qxW0Kn6uoq8RWSBaV/Hjh7wdw+ptCJ7WPT87bFO7A6uZz29AjDeNGow==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
+  integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -1064,15 +1004,15 @@
   resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.15.tgz#6f5e7e018fe6d9b09b0f2b7f5294f8133398cbd1"
   integrity sha512-8ViwnbMg4kjahTri4nXojACTJtRpjJZmi6XTSjR0DHbFDbWIurLkcfWApRGtVOEumVT7jEnyzDG6wAeIvoNFzQ==
 
-"@tryghost/zip@1.1.11":
-  version "1.1.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.11.tgz#4042c44fd47cac91a91c6bc8344d1d810158d9f8"
-  integrity sha512-+2TxbZ6NxQRGiehpP/RoDbW+zT/z3RbHZJRnm1XOUJ/xRpctIDmWeMx0XFuCy+w6im9MrxIkY+aylgQtweNYKQ==
+"@tryghost/zip@1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.12.tgz#49e70168d062d81be4a73923e3585c43f35272b7"
+  integrity sha512-PAuQ0RtG/IlKa2fYKS8jktm5AL7Sf62NIwNRJb1QezMTTZIVdQJmIzHvo0C6sCLcxw67Q+4+GM6jdCP31PCiuw==
   dependencies:
-    archiver "4.0.2"
-    bluebird "3.7.2"
+    archiver "^4.0.2"
+    bluebird "^3.7.2"
     extract-zip "2.0.0"
-    fs-extra "9.1.0"
+    fs-extra "^9.1.0"
 
 "@tryghost/zip@1.1.14":
   version "1.1.14"
@@ -1479,7 +1419,7 @@ archiver-utils@^2.1.0:
     normalize-path "^3.0.0"
     readable-stream "^2.0.0"
 
-archiver@4.0.2, archiver@^4.0.2:
+archiver@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/archiver/-/archiver-4.0.2.tgz#43c72865eadb4ddaaa2fb74852527b6a450d927c"
   integrity sha512-B9IZjlGwaxF33UN4oPbfBkyA4V1SxNLeIhR1qY8sRXSsbdUkEHrrOvwlYFPx+8uQeCe9M+FG6KgO+imDmQ79CQ==
@@ -2123,10 +2063,10 @@ ccount@^1.0.0:
   resolved "https://registry.yarnpkg.com/ccount/-/ccount-1.1.0.tgz#246687debb6014735131be8abab2d93898f8d043"
   integrity sha512-vlNK021QdI7PNeiUh/lKkC/mNHHfV0m/Ad5JoI0TYtlBnJAslM/JIkm/tGC88bkLIwO6OQ5uV6ztS6kVAtCDlg==
 
-chalk@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.0.tgz#4e14870a618d9e2edd97dd8345fd9d9dc315646a"
-  integrity sha512-qwx12AxXe2Q5xQ43Ac//I6v5aXTipYrSESdOgzrN+9XjgEpyjpKuvSGaN4qE93f7TQTlerQQ8S+EQ0EyDoVL1A==
+chalk@4.1.1, chalk@^4.0.0, chalk@^4.1.0, chalk@~4.1.0:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.1.tgz#c80b3fab28bf6371e6863325eee67e618b77e6ad"
+  integrity sha512-diHzdDKxcU+bAsUboHLPEDQiw0qEe0qd7SYUn3HgcFlWgbDcfLGswOHYeGrHKzG9z6UYf01d9VFMfZxPM1xZSg==
   dependencies:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
@@ -2150,14 +2090,6 @@ chalk@^2.0.0, chalk@^2.1.0, chalk@^2.4.1:
     ansi-styles "^3.2.1"
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
-
-chalk@^4.0.0, chalk@^4.1.0, chalk@~4.1.0:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.1.tgz#c80b3fab28bf6371e6863325eee67e618b77e6ad"
-  integrity sha512-diHzdDKxcU+bAsUboHLPEDQiw0qEe0qd7SYUn3HgcFlWgbDcfLGswOHYeGrHKzG9z6UYf01d9VFMfZxPM1xZSg==
-  dependencies:
-    ansi-styles "^4.1.0"
-    supports-color "^7.1.0"
 
 character-entities-html4@^1.0.0:
   version "1.1.4"
@@ -3828,18 +3760,6 @@ express-brute@1.0.1, express-brute@^1.0.1:
     long-timeout "~0.1.1"
     underscore "~1.8.3"
 
-express-hbs@2.3.5:
-  version "2.3.5"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.3.5.tgz#020d37815c958b2cd33558bef4e12e3b4d7fbf75"
-  integrity sha512-5D3mr28ZCy47mposP3lYAy9nBH8+kkVb9mHJgqy6v79shF16RTuTXd9pnyXwgdMqm7FYjXtFK9dfQ+SH+SujOg==
-  dependencies:
-    bluebird "^3.5.3"
-    handlebars "^4.7.7"
-    lodash "^4.17.21"
-    readdirp "^3.6.0"
-  optionalDependencies:
-    js-beautify "^1.13.11"
-
 express-hbs@2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.4.0.tgz#b91ad28a35319ec08be9350db65169904bc69490"
@@ -4519,6 +4439,28 @@ ghost-ignition@4.6.2, ghost-ignition@^4.2.4, ghost-ignition@^4.6.1, ghost-igniti
     prettyjson "1.2.1"
     uuid "8.3.2"
 
+ghost-ignition@4.6.3:
+  version "4.6.3"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
+  integrity sha512-F9Kms91NG7miRH8FdmvHvWGt9crVHaKYap3gFrGekCi0TTpssN6duGi0NERSqAcf+7gC7QXT3BP/yCWwBr3fqw==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "0.0.7"
+    "@tryghost/elasticsearch-bunyan" "0.1.1"
+    "@tryghost/root-utils" "^0.1.0"
+    bunyan "1.8.15"
+    bunyan-loggly "1.4.2"
+    caller "1.0.1"
+    debug "4.3.1"
+    find-root "1.1.0"
+    fs-extra "9.1.0"
+    gelf-stream "1.1.1"
+    json-stringify-safe "5.0.1"
+    lodash "4.17.21"
+    moment "2.27.0"
+    nconf "0.11.2"
+    prettyjson "1.2.1"
+    uuid "8.3.2"
+
 ghost-storage-base@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.4.tgz#c5badcab13d1763febc8eb3b293e1eb3a5e511e1"
@@ -4826,22 +4768,22 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.0.2.tgz#7bf47bbd6d55a625d3df4533bb56fa00d4cd230f"
-  integrity sha512-3wa2VH4GYmfarfsmTqECtj8sLSyPaoyWN6WUwtHXiT7iNtE90fmXopJAgkXkMisT50sxL9PThqK+5ql8CsbMkQ==
+gscan@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.1.0.tgz#d4cca61e57642e3927b778dfe343dcdc8f4b5d88"
+  integrity sha512-nUGEZCvo/DNKG7ENXxhN/X9VdMWvATTrXUZmtSRgcaLgf+dr30ZDAt7i+R1Zq60NKffnuuGCCP56mhf0TXY3Iw==
   dependencies:
-    "@sentry/node" "6.2.5"
-    "@tryghost/pretty-cli" "1.2.16"
-    "@tryghost/zip" "1.1.11"
+    "@sentry/node" "6.7.1"
+    "@tryghost/pretty-cli" "1.2.18"
+    "@tryghost/zip" "1.1.12"
     bluebird "3.7.2"
-    chalk "4.1.0"
+    chalk "4.1.1"
     common-tags "1.8.0"
     express "4.17.1"
-    express-hbs "2.3.5"
+    express-hbs "2.4.0"
     fs-extra "9.1.0"
-    ghost-ignition "4.6.2"
-    glob "7.1.6"
+    ghost-ignition "4.6.3"
+    glob "7.1.7"
     lodash "4.17.21"
     multer "1.4.2"
     pluralize "8.0.0"
@@ -9808,7 +9750,7 @@ symbol-tree@^3.2.4:
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
 
-sywac@1.3.0:
+sywac@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/sywac/-/sywac-1.3.0.tgz#324789bdb8bd7d0d66625c9144fce81ab5ba6f99"
   integrity sha512-LDt2stNTp4bVPMgd70Jj9PWrSa4batl+bv+Ea5NLNGT7ufc4oQPtRfQ73wbddNV6RilaPqnEt6y1Wkm5FVTNEg==
