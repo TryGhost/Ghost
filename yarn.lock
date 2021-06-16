@@ -1018,19 +1018,19 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.1", "@tryghost/tpl@^0.1.1":
+"@tryghost/tpl@0.1.2", "@tryghost/tpl@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.2.tgz#4b6acc97a6ac517baf40585216c8adf888d620f1"
+  integrity sha512-VZyD4v8rNJrJEWUjrAT7YCpEmr+8rXWhQbfmWE199F29pbEpvMPK0MKwF1hTc3b0JkvGOo3lgULJ7KB6TrxvkA==
+  dependencies:
+    lodash.template "^4.5.0"
+
+"@tryghost/tpl@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.1.tgz#41435d29cfd1cb3addd0edcd05083815a20b2ac2"
   integrity sha512-R9tFhUAsqhdTZFaaQLfJb/eUDTp6TJpOPVKg5FarXxDmBdff1FlM/NpFI5MnHZlB/ojjNRvnTRau0yydH4U6zA==
   dependencies:
     c8 "^7.7.2"
-    lodash.template "^4.5.0"
-
-"@tryghost/tpl@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.2.tgz#4b6acc97a6ac517baf40585216c8adf888d620f1"
-  integrity sha512-VZyD4v8rNJrJEWUjrAT7YCpEmr+8rXWhQbfmWE199F29pbEpvMPK0MKwF1hTc3b0JkvGOo3lgULJ7KB6TrxvkA==
-  dependencies:
     lodash.template "^4.5.0"
 
 "@tryghost/update-check-service@0.1.0":
