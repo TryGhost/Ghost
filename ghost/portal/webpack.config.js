@@ -1,5 +1,6 @@
 const path = require('path');
 const glob = require('glob');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'production',
@@ -18,7 +19,13 @@ module.exports = {
             }
         ]
     },
-    plugins: [],
+    plugins: [
+        new CopyPlugin({
+            patterns: [
+                {from: './build/static/js/main.js.map', to: './umd/portal.min.js.map'}
+            ]
+        })
+    ],
     performance: {
         hints: false,
         maxEntrypointSize: 560,
