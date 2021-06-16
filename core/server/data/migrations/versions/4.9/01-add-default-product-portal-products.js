@@ -19,17 +19,8 @@ module.exports = createTransactionalMigration(
             .select('value')
             .first();
 
-        if (!portalProductsSetting) {
-            logging.info('Skipping adding default product to portal_products, setting does not exist');
-            return;
-        }
-
         const portalProducts = JSON.parse(portalProductsSetting.value);
 
-        if (portalProducts.length > 0) {
-            logging.info('Skipping adding default product to portal_products, already contains products');
-            return;
-        }
         logging.info(`Adding default product - ${defaultProduct.id} - to portal_products setting`);
 
         portalProducts.push(defaultProduct.id);
