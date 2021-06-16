@@ -26,7 +26,8 @@
     "react-scripts": "4.0.3"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "BROWSER=none react-scripts start",
+    "start:combined": "BROWSER=none node ./scripts/start-combined.js",
     "start:dev": "node ./scripts/start-mode.js",
     "dev": "node ./scripts/dev-mode.js",
     "build": "npm run build:combined",
