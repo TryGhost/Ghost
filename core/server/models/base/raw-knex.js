@@ -5,6 +5,9 @@ const Promise = require('bluebird');
 
 const schema = require('../../data/schema');
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({}, {
         /**

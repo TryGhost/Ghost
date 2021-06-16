@@ -2,6 +2,9 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         /**
