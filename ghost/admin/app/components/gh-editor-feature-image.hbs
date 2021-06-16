@@ -14,7 +14,10 @@
         {{else if uploader.errors}}
             {{!-- upload failed --}}
             {{#each uploader.errors as |error|}}
-                <div class="gh-setting-error" data-test-error="feature-image">{{or error.context error.message}}</div>
+                <div class="gh-setting-error" data-test-error="feature-image">
+                    {{or error.context error.message}}
+                    <button type="button" class="b" {{on "click" uploader.cancel}}>Retry</button>
+                </div>
             {{/each}}
         {{else if @image}}
             {{!-- image is present --}}
