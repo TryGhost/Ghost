@@ -8,7 +8,6 @@
 // All other parts of Ghost, including the frontend & admin UI are only allowed to access data via the API.
 const _ = require('lodash');
 
-const bookshelf = require('bookshelf');
 const moment = require('moment');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
@@ -24,87 +23,14 @@ const bulkOperations = require('./bulk-operations');
 const plugins = require('@tryghost/bookshelf-plugins');
 const tpl = require('@tryghost/tpl');
 
+const ghostBookshelf = require('./bookshelf');
+
 const messages = {
     missingContext: 'missing context',
     invalidDate: 'Date format for `{key}` is invalid.'
 };
 
-let ghostBookshelf;
 let proto;
-
-// ### ghostBookshelf
-// Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
-ghostBookshelf = bookshelf(db.knex);
-
-// Load the Bookshelf registry plugin, which helps us avoid circular dependencies
-ghostBookshelf.plugin('registry');
-
-ghostBookshelf.plugin(plugins.eagerLoad);
-
-// Add committed/rollback events.
-ghostBookshelf.plugin(plugins.transactionEvents);
-
-// Load the Ghost custom-query plugin, which applying a custom query to findPage requests
-ghostBookshelf.plugin(plugins.customQuery);
-
-// Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
-ghostBookshelf.plugin(plugins.filter);
-
-// Load the Ghost filter plugin, which handles applying a 'order' to findPage requests
-ghostBookshelf.plugin(plugins.order);
-
-// Load the Ghost search plugin, which handles applying a search query to findPage requests
-ghostBookshelf.plugin(plugins.search);
-
-// Load the Ghost include count plugin, which allows for the inclusion of cross-table counts
-ghostBookshelf.plugin(plugins.includeCount);
-
-// Load the Ghost pagination plugin, which gives us the `fetchPage` method on Models
-ghostBookshelf.plugin(plugins.pagination);
-
-// Update collision plugin
-ghostBookshelf.plugin(plugins.collision);
-
-// Load hasPosts plugin for authors models
-ghostBookshelf.plugin(plugins.hasPosts);
-
-ghostBookshelf.plugin(require('./crud'));
-
-// Manages nested updates (relationships)
-ghostBookshelf.plugin('bookshelf-relations', {
-    allowedOptions: ['context', 'importing', 'migrating'],
-    unsetRelations: true,
-    extendChanged: '_changed',
-    attachPreviousRelations: true,
-    hooks: {
-        belongsToMany: {
-            after: function (existing, targets, options) {
-                // reorder tags/authors
-                const queryOptions = {
-                    query: {
-                        where: {}
-                    }
-                };
-
-                // CASE: disable after hook for specific relations
-                if (['permissions_roles'].indexOf(existing.relatedData.joinTableName) !== -1) {
-                    return Promise.resolve();
-                }
-
-                return Promise.each(targets.models, function (target, index) {
-                    queryOptions.query.where[existing.relatedData.otherKey] = target.id;
-
-                    return existing.updatePivot({
-                        sort_order: index
-                    }, _.extend({}, options, queryOptions));
-                });
-            },
-            beforeRelationCreation: function onCreatingRelation(model, data) {
-                data.id = ObjectId().toHexString();
-            }
-        }
-    }
-});
 
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
