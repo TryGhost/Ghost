@@ -6,7 +6,7 @@ const events = require('../../lib/common/events');
 const themeService = require('../../services/themes');
 const limitService = require('../../services/limits');
 const models = require('../../models');
-const request = require('../../lib/request');
+const request = require('@tryghost/request');
 const errors = require('@tryghost/errors/lib/errors');
 const i18n = require('../../../shared/i18n');
 
