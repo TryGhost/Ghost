@@ -77,7 +77,7 @@ function doYarnStart() {
         return;
     }
     const options = getBuildOptions();
-    yarnStartProcess = spawn('BROWSER=none yarn start', options);
+    yarnStartProcess = spawn('yarn start:combined', options);
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {
         yarnStartProcess.on(sig, function () {
