@@ -51,7 +51,7 @@ function printBuildSuccessDetails() {
         return;
     }
     if ((stdOutChunks && stdOutChunks.length > 0)) {
-        const detail = Buffer.from(stdOutChunks[stdOutChunks.length - 1]).toString();
+        const detail = Buffer.concat(stdOutChunks.slice(4,7)).toString();
         log();
         log(chalk.dim(detail));
     }
@@ -192,6 +192,7 @@ function startDevServer() {
         return handler(request, response, {
             rewrites: [
                 {source: '/portal', destination: 'umd/portal.min.js'},
+                {source: '/portal.min.js.map', destination: 'umd/portal.min.js.map'}
             ],
             headers: [
                 {
