@@ -5,6 +5,7 @@ const path = require('path');
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
 const localUtils = require('./utils');
+const helpers = require('./helpers');
 const env = process.env.NODE_ENV || 'development';
 
 function loadNconf(options) {
@@ -36,15 +37,16 @@ function loadNconf(options) {
 
     // ## Config Methods
 
-    // Bind internal-only methods, not sure this is needed
+    // Bind internal-only methods
+    // @TODO change how we use these so we don't expose them
     nconf.makePathsAbsolute = localUtils.makePathsAbsolute.bind(nconf);
     nconf.sanitizeDatabaseProperties = localUtils.sanitizeDatabaseProperties.bind(nconf);
     nconf.doesContentPathExist = localUtils.doesContentPathExist.bind(nconf);
     nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
 
     // Expose dynamic utility methods
-    nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
-    nconf.getContentPath = localUtils.getContentPath.bind(nconf);
+    nconf.isPrivacyDisabled = helpers.isPrivacyDisabled.bind(nconf);
+    nconf.getContentPath = helpers.getContentPath.bind(nconf);
 
     // ## Sanitization
 

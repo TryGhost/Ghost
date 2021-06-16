@@ -2,50 +2,6 @@ const path = require('path');
 const fs = require('fs-extra');
 const _ = require('lodash');
 
-// Dynamic, public utilities
-
-exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
-    if (!this.get('privacy')) {
-        return false;
-    }
-
-    // CASE: disable all privacy features
-    if (this.get('privacy').useTinfoil === true) {
-        // CASE: you can still enable single features
-        if (this.get('privacy')[privacyFlag] === true) {
-            return false;
-        }
-
-        return true;
-    }
-
-    return this.get('privacy')[privacyFlag] === false;
-};
-
-/**
- * we can later support setting folder names via custom config values
- */
-exports.getContentPath = function getContentPath(type) {
-    switch (type) {
-    case 'images':
-        return path.join(this.get('paths:contentPath'), 'images/');
-    case 'themes':
-        return path.join(this.get('paths:contentPath'), 'themes/');
-    case 'adapters':
-        return path.join(this.get('paths:contentPath'), 'adapters/');
-    case 'logs':
-        return path.join(this.get('paths:contentPath'), 'logs/');
-    case 'data':
-        return path.join(this.get('paths:contentPath'), 'data/');
-    case 'settings':
-        return path.join(this.get('paths:contentPath'), 'settings/');
-    default:
-        throw new Error('getContentPath was called with: ' + type);
-    }
-};
-
-// Internal-only utilties
-
 /**
  * transform all relative paths to absolute paths
  * @TODO: re-write this function a little bit so we don't have to add the parent path - that is hard to understand
@@ -54,7 +10,7 @@ exports.getContentPath = function getContentPath(type) {
  * Path must match minimum one / or \
  * Path can be a "." to re-present current folder
  */
-exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
+const makePathsAbsolute = function makePathsAbsolute(obj, parent) {
     const self = this;
 
     _.each(obj, function (configValue, pathsKey) {
@@ -70,12 +26,11 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
     });
 };
 
-/**
- * @TODO:
- *   - content/logs folder is required right now, otherwise Ghost want start
- */
-exports.doesContentPathExist = function doesContentPathExist() {
+const doesContentPathExist = function doesContentPathExist() {
     if (!fs.pathExistsSync(this.get('paths:contentPath'))) {
+        // new Error is allowed here, as we do not want config to depend on @tryghost/error
+        // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
+        // eslint-disable-next-line no-restricted-syntax
         throw new Error('Your content path does not exist! Please double check `paths.contentPath` in your custom config file e.g. config.production.json.');
     }
 };
@@ -83,10 +38,13 @@ exports.doesContentPathExist = function doesContentPathExist() {
 /**
 * Check if the URL in config has a protocol and sanitise it if not including a warning that it should be changed
 */
-exports.checkUrlProtocol = function checkUrlProtocol() {
+const checkUrlProtocol = function checkUrlProtocol() {
     const url = this.get('url');
 
     if (!url.match(/^https?:\/\//i)) {
+        // new Error is allowed here, as we do not want config to depend on @tryghost/error
+        // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
+        // eslint-disable-next-line no-restricted-syntax
         throw new Error('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"');
     }
 };
@@ -98,7 +56,7 @@ exports.checkUrlProtocol = function checkUrlProtocol() {
  * this.clear('key') does not work
  * https://github.com/indexzero/nconf/issues/235#issuecomment-257606507
  */
-exports.sanitizeDatabaseProperties = function sanitizeDatabaseProperties() {
+const sanitizeDatabaseProperties = function sanitizeDatabaseProperties() {
     const database = this.get('database');
 
     if (this.get('database:client') === 'mysql') {
@@ -111,4 +69,11 @@ exports.sanitizeDatabaseProperties = function sanitizeDatabaseProperties() {
     }
 
     this.set('database', database);
+};
+
+module.exports = {
+    makePathsAbsolute,
+    doesContentPathExist,
+    checkUrlProtocol,
+    sanitizeDatabaseProperties
 };
