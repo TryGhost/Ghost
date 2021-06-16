@@ -48,6 +48,8 @@ ghostBookshelf.plugin(require('./actions'));
 
 ghostBookshelf.plugin(require('./events'));
 
+ghostBookshelf.plugin(require('./raw-knex'));
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
