@@ -1055,6 +1055,14 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
+"@tryghost/version@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.0.tgz#2d1ec5dd19206a5f7ec0f283588fa716980c666c"
+  integrity sha512-7IvYLn0IFRFNK61IeHLMHb1cPDbD/zfRMlJqUe9kLTFRlLG6D29390VnkXWHC/W+K4frXdP1kfAglXXfOsunmg==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.0"
+    semver "^7.3.5"
+
 "@tryghost/vhost-middleware@1.0.15":
   version "1.0.15"
   resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.15.tgz#6f5e7e018fe6d9b09b0f2b7f5294f8133398cbd1"

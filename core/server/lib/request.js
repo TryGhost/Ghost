@@ -2,7 +2,7 @@ const got = require('got');
 const _ = require('lodash');
 const validator = require('@tryghost/validator');
 const errors = require('@tryghost/errors');
-const ghostVersion = require('./ghost-version');
+const ghostVersion = require('@tryghost/version');
 
 const defaultOptions = {
     headers: {

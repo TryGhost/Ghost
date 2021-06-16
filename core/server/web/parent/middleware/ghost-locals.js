@@ -1,4 +1,4 @@
-const ghostVersion = require('../../../lib/ghost-version');
+const ghostVersion = require('@tryghost/version');
 const bridge = require('../../../../bridge');
 
 // ### GhostLocals Middleware

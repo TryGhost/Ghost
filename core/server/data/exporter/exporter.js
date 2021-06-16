@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const db = require('../../data/db');
 const commands = require('../schema').commands;
-const ghostVersion = require('../../lib/ghost-version');
+const ghostVersion = require('@tryghost/version');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 
