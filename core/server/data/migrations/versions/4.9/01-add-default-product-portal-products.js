@@ -14,27 +14,29 @@ module.exports = createTransactionalMigration(
 
         const defaultProduct = products[0];
 
-        const portalProductSetting = await knex('settings')
+        const portalProductsSetting = await knex('settings')
             .where('key', 'portal_products')
             .select('value')
             .first();
 
-        if (!portalProductSetting) {
+        if (!portalProductsSetting) {
             logging.info('Skipping adding default product to portal_products, setting does not exist');
             return;
         }
 
-        if (portalProductSetting.length > 0) {
+        const portalProducts = JSON.parse(portalProductsSetting.value);
+
+        if (portalProducts.length > 0) {
             logging.info('Skipping adding default product to portal_products, already contains products');
             return;
         }
         logging.info(`Adding default product - ${defaultProduct.id} - to portal_products setting`);
 
-        let currentProducts = [defaultProduct.id];
+        portalProducts.push(defaultProduct.id);
 
         await knex('settings')
             .where('key', 'portal_products')
-            .update({value: JSON.stringify(currentProducts)});
+            .update({value: JSON.stringify(portalProducts)});
     },
     async function down(knex) {
         const portalProductSetting = await knex('settings')
