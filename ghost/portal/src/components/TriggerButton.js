@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import Frame from './Frame';
 import MemberGravatar from './common/MemberGravatar';
 import AppContext from '../AppContext';
@@ -258,7 +257,3 @@ export default class TriggerButton extends React.Component {
         );
     }
 }
-
-TriggerButton.propTypes = {
-    isPopupOpen: PropTypes.bool
-};
