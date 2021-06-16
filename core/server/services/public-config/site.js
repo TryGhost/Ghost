@@ -1,4 +1,4 @@
-const ghostVersion = require('../../lib/ghost-version');
+const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../settings/cache');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
