@@ -28,17 +28,18 @@
   "scripts": {
     "start": "react-scripts start",
     "start:dev": "node ./scripts/start-mode.js",
-    "build": "npm run build:combined && npm run build:bundle",
+    "dev": "node ./scripts/dev-mode.js",
+    "build": "npm run build:combined",
+    "build:original": "react-scripts build",
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
-    "dev": "node ./scripts/dev-mode.js",
     "test": "react-scripts test --env=jsdom-fourteen",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push ${GHOST_UPSTREAM:-upstream} main --follow-tags; fi",
     "posttest": "yarn lint",
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "analyze": "source-map-explorer 'umd/*.js'",
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
@@ -65,6 +66,7 @@
   "devDependencies": {
     "chalk": "^4.1.1",
     "chokidar": "^3.5.1",
+    "copy-webpack-plugin": "^6.3.2",
     "eslint-plugin-ghost": "2.2.0",
     "minimist": "^1.2.5",
     "ora": "^5.4.0",
