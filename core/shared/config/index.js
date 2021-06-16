@@ -16,43 +16,45 @@ _private.loadNconf = function loadNconf(options) {
     const customConfigPath = options.customConfigPath || process.cwd();
     const nconf = new Nconf.Provider();
 
-    /**
-  * no channel can override the overrides
-  */
+    // ## Load Config
+
+    // no channel can override the overrides
     nconf.file('overrides', path.join(baseConfigPath, 'overrides.json'));
 
-    /**
-  * command line arguments
-  */
+    // command line arguments take precedence, then environment variables
     nconf.argv();
+    nconf.env({separator: '__', parseValues: true});
 
-    /**
-  * env arguments
-  */
-    nconf.env({
-        separator: '__',
-        parseValues: true
-    });
-
+    // Now load various config json files
     nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
     if (env !== 'testing') {
         nconf.file('local-env', path.join(customConfigPath, 'config.local.json'));
     }
     nconf.file('default-env', path.join(baseConfigPath, 'env', 'config.' + env + '.json'));
+
+    // Finally, we load defaults, if nothing else has a value this will
     nconf.file('defaults', path.join(baseConfigPath, 'defaults.json'));
 
-    /**
-  * transform all relative paths to absolute paths
-  * transform sqlite filename path for Ghost-CLI
-  */
+    // ## Config Methods
+
+    // Bind internal-only methods, not sure this is needed
     nconf.makePathsAbsolute = localUtils.makePathsAbsolute.bind(nconf);
-    nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
-    nconf.getContentPath = localUtils.getContentPath.bind(nconf);
     nconf.sanitizeDatabaseProperties = localUtils.sanitizeDatabaseProperties.bind(nconf);
     nconf.doesContentPathExist = localUtils.doesContentPathExist.bind(nconf);
+    nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
 
-    nconf.sanitizeDatabaseProperties();
+    // Expose dynamic utility methods
+    nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
+    nconf.getContentPath = localUtils.getContentPath.bind(nconf);
+
+    // ## Sanitization
+
+    // transform all relative paths to absolute paths
     nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
+
+    // transform sqlite filename path for Ghost-CLI
+    nconf.sanitizeDatabaseProperties();
+
     if (nconf.get('database:client') === 'sqlite3') {
         nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
 
@@ -64,20 +66,16 @@ _private.loadNconf = function loadNconf(options) {
             nconf.set('database:connection:filename', filename.replace(/^\/tmp/, os.tmpdir()));
         }
     }
-    /**
-  * Check if the URL in config has a protocol
-  */
-    nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
+
+    // Check if the URL in config has a protocol
     nconf.checkUrlProtocol();
 
-    /**
-  * Ensure that the content path exists
-  */
+    // Ensure that the content path exists
     nconf.doesContentPathExist();
 
-    /**
-  * values we have to set manual
-  */
+    // ## Other Stuff!
+
+    // Manually set values
     nconf.set('env', env);
 
     // Wrap this in a check, because else nconf.get() is executed unnecessarily
