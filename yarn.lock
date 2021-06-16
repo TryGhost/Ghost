@@ -958,6 +958,17 @@
   dependencies:
     bluebird "^3.7.2"
 
+"@tryghost/request@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.0.tgz#8d72b58b94bfa2ac75a2dfd2240efd1742e7d1f7"
+  integrity sha512-fhXxKWXKaRChGhJ+L7LETsBPUxMCKDKmnBPPsj4pZOdmTthPdbQIMkvsKEQBnqibiv6rwf2GUqL/U1BTnHWGdg==
+  dependencies:
+    "@tryghost/errors" "^0.2.12"
+    "@tryghost/validator" "^0.1.0"
+    "@tryghost/version" "^0.1.0"
+    got "9.6.0"
+    lodash "^4.17.21"
+
 "@tryghost/root-utils@0.3.0", "@tryghost/root-utils@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.0.tgz#94565b5063c296b7493e3a635f9b77a8f917076b"
@@ -1044,7 +1055,7 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.0":
+"@tryghost/validator@0.1.0", "@tryghost/validator@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.0.tgz#f089fed04998a4ceb4957350117f8d9bb626daf0"
   integrity sha512-Np9EN3RayTOd81GjVna6Zv12LsTz98JlqeXbOnUVzrRphARRJHvNwcKi7Kh4EDqA2MWpYQDiU0+QwP7zyA0Gkg==
@@ -1055,7 +1066,7 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/version@0.1.0":
+"@tryghost/version@0.1.0", "@tryghost/version@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.0.tgz#2d1ec5dd19206a5f7ec0f283588fa716980c666c"
   integrity sha512-7IvYLn0IFRFNK61IeHLMHb1cPDbD/zfRMlJqUe9kLTFRlLG6D29390VnkXWHC/W+K4frXdP1kfAglXXfOsunmg==

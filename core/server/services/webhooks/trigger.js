@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:webhooks:trigger');
 const logging = require('@tryghost/logging');
-const request = require('../../lib/request');
+const request = require('@tryghost/request');
 const models = require('../../models');
 const payload = require('./payload');
 
