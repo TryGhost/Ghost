@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const security = require('@tryghost/security');
 
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 
 /**
  * @type {Bookshelf} Bookshelf

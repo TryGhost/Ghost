@@ -42,25 +42,25 @@ ghostBookshelf.plugin(plugins.collision);
 // Load hasPosts plugin for authors models
 ghostBookshelf.plugin(plugins.hasPosts);
 
-ghostBookshelf.plugin(require('./crud'));
+ghostBookshelf.plugin(require('./plugins/crud'));
 
-ghostBookshelf.plugin(require('./actions'));
+ghostBookshelf.plugin(require('./plugins/actions'));
 
-ghostBookshelf.plugin(require('./events'));
+ghostBookshelf.plugin(require('./plugins/events'));
 
-ghostBookshelf.plugin(require('./raw-knex'));
+ghostBookshelf.plugin(require('./plugins/raw-knex'));
 
-ghostBookshelf.plugin(require('./sanitize'));
+ghostBookshelf.plugin(require('./plugins/sanitize'));
 
-ghostBookshelf.plugin(require('./generate-slug'));
+ghostBookshelf.plugin(require('./plugins/generate-slug'));
 
-ghostBookshelf.plugin(require('./bulk-operations'));
+ghostBookshelf.plugin(require('./plugins/bulk-operations'));
 
-ghostBookshelf.plugin(require('./filtered-collection'));
+ghostBookshelf.plugin(require('./plugins/filtered-collection'));
 
-ghostBookshelf.plugin(require('./user-type'));
+ghostBookshelf.plugin(require('./plugins/user-type'));
 
-ghostBookshelf.plugin(require('./data-manipulation'));
+ghostBookshelf.plugin(require('./plugins/data-manipulation'));
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
