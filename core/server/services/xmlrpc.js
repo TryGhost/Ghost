@@ -6,7 +6,7 @@ const errors = require('@tryghost/errors');
 const events = require('../lib/common/events');
 const i18n = require('../../shared/i18n');
 const logging = require('@tryghost/logging');
-const request = require('../lib/request');
+const request = require('@tryghost/request');
 const settingsCache = require('./settings/cache');
 const sentry = require('../../shared/sentry');
 

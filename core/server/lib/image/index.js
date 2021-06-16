@@ -1,4 +1,4 @@
-const request = require('../request');
+const request = require('@tryghost/request');
 const urlUtils = require('../../../shared/url-utils');
 const storage = require('../../adapters/storage');
 const storageUtils = require('../../adapters/storage/utils');
