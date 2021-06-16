@@ -80,6 +80,10 @@ module.exports = class MemberRepository {
 
         const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products']);
 
+        if (memberData.products && memberData.products.length > 1) {
+            throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
+        }
+
         const member = await this._Member.add({
             ...memberData,
             labels
@@ -127,6 +131,10 @@ module.exports = class MemberRepository {
 
             const existingProductIds = existingProducts.map(product => product.id);
             const incomingProductIds = data.products.map(product => product.id);
+
+            if (incomingProductIds.length > 1 && incomingProductIds.length > existingProductIds.length) {
+                throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
+            }
 
             const productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
             const productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
