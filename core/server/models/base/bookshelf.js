@@ -54,7 +54,9 @@ ghostBookshelf.plugin(require('./sanitize'));
 
 ghostBookshelf.plugin(require('./generate-slug'));
 
-ghostBookshelf.plugin(require('./plugins/bulk-operations'));
+ghostBookshelf.plugin(require('./bulk-operations'));
+
+ghostBookshelf.plugin(require('./filtered-collection'));
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {

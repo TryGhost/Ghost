@@ -327,37 +327,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     isExternalUser: function isExternalUser(id) {
         return id === ghostBookshelf.Model.externalUser || id === ghostBookshelf.Model.externalUser.toString();
-    },
-
-    // ## Model Data Functions
-
-    getFilteredCollection: function getFilteredCollection(options) {
-        const filteredCollection = this.forge();
-
-        // Apply model-specific query behaviour
-        filteredCollection.applyCustomQuery(options);
-
-        // Add Filter behaviour
-        filteredCollection.applyDefaultAndCustomFilters(options);
-
-        // Apply model-specific search behaviour
-        filteredCollection.applySearchQuery(options);
-
-        return filteredCollection;
-    },
-
-    getFilteredCollectionQuery: function getFilteredCollectionQuery(options) {
-        const filteredCollection = this.getFilteredCollection(options);
-        const filteredCollectionQuery = filteredCollection.query();
-
-        if (options.transacting) {
-            filteredCollectionQuery.transacting(options.transacting);
-            if (options.forUpdate) {
-                filteredCollectionQuery.forUpdate();
-            }
-        }
-
-        return filteredCollectionQuery;
     }
 });
 
