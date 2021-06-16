@@ -4,7 +4,7 @@ const rewire = require('rewire');
 const _ = require('lodash');
 const configUtils = require('../../../utils/configUtils');
 
-describe('Config', function () {
+describe('Config Loader', function () {
     before(function () {
         configUtils.restore();
     });
@@ -17,12 +17,12 @@ describe('Config', function () {
         let originalEnv;
         let originalArgv;
         let customConfig;
-        let config;
+        let loader;
 
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
-            config = rewire('../../../../core/shared/config');
+            loader = rewire('../../../../core/shared/config/loader');
 
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
@@ -37,7 +37,7 @@ describe('Config', function () {
         it('env parameter is stronger than file', function () {
             process.env.database__client = 'test';
 
-            customConfig = config.loadNconf({
+            customConfig = loader.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
@@ -49,7 +49,7 @@ describe('Config', function () {
             process.env.database__client = 'test';
             process.argv[2] = '--database:client=stronger';
 
-            customConfig = config.loadNconf({
+            customConfig = loader.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
@@ -61,7 +61,7 @@ describe('Config', function () {
             process.env.paths__corePath = 'try-to-override';
             process.argv[2] = '--paths:corePath=try-to-override';
 
-            customConfig = config.loadNconf({
+            customConfig = loader.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
@@ -70,7 +70,7 @@ describe('Config', function () {
         });
 
         it('overrides is stronger than every other config file', function () {
-            customConfig = config.loadNconf({
+            customConfig = loader.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
@@ -122,58 +122,6 @@ describe('Config', function () {
             configUtils.set('paths:contentPath', contentPath);
             configUtils.config.get('paths').should.have.property('contentPath', contentPath);
             configUtils.config.getContentPath('images').should.eql(contentPath + 'images/');
-        });
-    });
-
-    describe('Storage', function () {
-        it('should default to local-file-store', function () {
-            configUtils.config.get('paths').should.have.property('internalAdaptersPath', path.join(configUtils.config.get('paths').corePath, '/server/adapters/'));
-
-            configUtils.config.get('storage').should.have.property('active', 'LocalFileStorage');
-        });
-
-        it('no effect: setting a custom active storage as string', function () {
-            configUtils.set({
-                storage: {
-                    active: 's3',
-                    s3: {}
-                }
-            });
-
-            configUtils.config.get('storage').should.have.property('active', 's3');
-            configUtils.config.get('storage').should.have.property('s3', {});
-        });
-
-        it('able to set storage for themes (but not officially supported!)', function () {
-            configUtils.set({
-                storage: {
-                    active: {
-                        images: 'local-file-store',
-                        themes: 's3'
-                    }
-                }
-            });
-
-            configUtils.config.get('storage').should.have.property('active', {
-                images: 'local-file-store',
-                themes: 's3'
-            });
-        });
-
-        it('should allow setting a custom active storage as object', function () {
-            configUtils.set({
-                storage: {
-                    active: {
-                        images: 's2',
-                        themes: 'local-file-store'
-                    }
-                }
-            });
-
-            configUtils.config.get('storage').should.have.property('active', {
-                images: 's2',
-                themes: 'local-file-store'
-            });
         });
     });
 });
