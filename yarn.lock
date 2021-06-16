@@ -846,10 +846,10 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.0.tgz#1806c7204aef40f0e03ceed42f47e7665dad6d8a"
-  integrity sha512-f5GSwcyPspSXYnIdXq4U1xdaYOTFuGeaHUU3IFa5ahLiVYP2V9eijZkI/9h/DwnhPzyJRZuNKcjluG1dBzG4tQ==
+"@tryghost/logging@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.1.tgz#26ebd63ac0586db8b4c8962450ae84709fb52d1f"
+  integrity sha512-XWg7BMuMR15uqPppx4hpfU4pquKSRfehtbVOyeWmj30+3YNSAI/9QKfe2rfyFaC26tml1Gyc9HNBtl2EVjrWSw==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch-bunyan" "^0.1.1"
