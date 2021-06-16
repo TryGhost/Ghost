@@ -34,7 +34,7 @@
     "build:original": "react-scripts build",
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
-    "test": "react-scripts test --env=jsdom-fourteen",
+    "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
