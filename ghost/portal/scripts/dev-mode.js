@@ -91,7 +91,7 @@ function printBuildComplete(code) {
 function printConfigInstruction() {
     const data = {
         portal: {
-            url: `http://localhost:${port}/umd/portal.min.js`
+            url: `http://localhost:${port}/portal`
         }
     };
     const stringifedData = JSON.stringify(data, null, 2);
@@ -191,7 +191,7 @@ function startDevServer() {
     const server = http.createServer((request, response) => {
         return handler(request, response, {
             rewrites: [
-                {source: '/portal', destination: 'umd/portal.min.js'}
+                {source: '/portal', destination: 'umd/portal.min.js'},
             ],
             headers: [
                 {
