@@ -1,4 +1,14 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    noStripeConnection: 'Cannot {action} without a Stripe Connection',
+    moreThanOneProduct: 'A member cannot have more than one Product',
+    existingSubscriptions: 'Cannot modify Products for a Member with active Subscriptions',
+    subscriptionNotFound: 'Could not find Subscription {id}',
+    productNotFound: 'Could not find Product {id}'
+};
 
 module.exports = class MemberRepository {
     /**
@@ -129,7 +139,7 @@ module.exports = class MemberRepository {
                 });
 
                 if (existingActiveSubscriptions.length) {
-                    throw new Error('Cannot edit products for a Member who has a subscription');
+                    throw new errors.BadRequestError(tpl(messages.existingSubscriptions));
                 }
             }
         }
@@ -242,7 +252,7 @@ module.exports = class MemberRepository {
 
     async linkStripeCustomer(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot link Stripe Customer with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'link Stripe Customer'}));
         }
         const customer = await this._stripeAPIService.getCustomer(data.customer_id);
 
@@ -268,7 +278,7 @@ module.exports = class MemberRepository {
 
     async linkSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot link Stripe Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'}));
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -282,7 +292,7 @@ module.exports = class MemberRepository {
 
         if (!customer) {
             // Maybe just link the customer?
-            throw new Error('Subscription is not associated with a customer for the member');
+            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound));
         }
 
         const subscription = await this._stripeAPIService.getSubscription(data.subscription.id);
@@ -442,7 +452,7 @@ module.exports = class MemberRepository {
 
     async getSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot get Stripe Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'get Stripe Subscription'}));
         }
 
         const member = await this._Member.findOne({
@@ -456,7 +466,7 @@ module.exports = class MemberRepository {
         }).fetchOne(options);
 
         if (!subscription) {
-            throw new Error('Subscription not found');
+            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id}));
         }
 
         return subscription.toJSON();
@@ -464,7 +474,7 @@ module.exports = class MemberRepository {
 
     async cancelSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'}));
         }
 
         let findQuery = null;
@@ -475,7 +485,7 @@ module.exports = class MemberRepository {
         }
 
         if (!findQuery) {
-            throw new Error('Cannot update Subscription without an id or email for the Member');
+            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound));
         }
 
         const member = await this._Member.findOne(findQuery);
@@ -487,7 +497,7 @@ module.exports = class MemberRepository {
         }).fetchOne(options);
 
         if (!subscription) {
-            throw new Error('Subscription not found');
+            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id}));
         }
 
         const updatedSubscription = await this._stripeAPIService.cancelSubscription(data.subscription.subscription_id);
@@ -500,7 +510,7 @@ module.exports = class MemberRepository {
 
     async updateSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'}));
         }
 
         let findQuery = null;
@@ -511,7 +521,7 @@ module.exports = class MemberRepository {
         }
 
         if (!findQuery) {
-            throw new Error('Cannot update Subscription without an id or email for the Member');
+            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound));
         }
 
         const member = await this._Member.findOne(findQuery);
@@ -523,7 +533,7 @@ module.exports = class MemberRepository {
         }).fetchOne(options);
 
         if (!subscriptionModel) {
-            throw new Error('Subscription not found');
+            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id}));
         }
 
         let updatedSubscription;
@@ -564,7 +574,7 @@ module.exports = class MemberRepository {
 
     async createSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot create Stripe Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'create Stripe Subscription'}));
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -606,7 +616,7 @@ module.exports = class MemberRepository {
 
     async setComplimentarySubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot update Stripe Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'create Complimentary Subscription'}));
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -623,7 +633,7 @@ module.exports = class MemberRepository {
         const defaultProduct = productPage && productPage.data && productPage.data[0] && productPage.data[0].toJSON();
 
         if (!defaultProduct) {
-            throw new Error('Could not find default product');
+            throw new errors.NotFoundError(tpl(messages.productNotFound));
         }
 
         const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
@@ -721,7 +731,7 @@ module.exports = class MemberRepository {
 
     async cancelComplimentarySubscription(data) {
         if (!this._stripeAPIService.configured) {
-            throw new Error('Cannot cancel Complimentary Subscription with no Stripe Connection');
+            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'}));
         }
 
         const member = await this._Member.findOne({

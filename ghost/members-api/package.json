@@ -26,6 +26,7 @@
   "dependencies": {
     "@tryghost/errors": "^0.2.9",
     "@tryghost/magic-link": "^1.0.3",
+    "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
     "bluebird": "^3.5.4",
     "body-parser": "^1.19.0",
