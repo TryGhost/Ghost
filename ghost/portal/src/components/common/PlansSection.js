@@ -398,6 +398,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             planDetails.feature = freePriceDescription || 'Free preview';
             break;
         default:
+            displayName = interval === 'month' ? 'Monthly' : 'Yearly';
             planDetails.feature = description || 'Full access';
             break;
         }
