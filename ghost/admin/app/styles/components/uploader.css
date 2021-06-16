@@ -32,7 +32,7 @@
     line-height: 0;
 }
 
-.gh-image-uploader .image-cancel {
+.image-delete {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -50,10 +50,16 @@
     box-shadow: rgba(255, 255, 255, 0.2) 0 0 0 1px;
 }
 
-.gh-image-uploader .image-cancel svg {
+.image-delete svg {
     width: 13px;
     height: 13px;
     fill: #fff;
+}
+
+.image-delete:hover {
+    color: #fff;
+    cursor: pointer;
+    background: var(--red);
 }
 
 .gh-image-uploader .upload-form {
@@ -80,12 +86,6 @@
     width: 100%;
     font-size: 1.6rem;
     text-align: center;
-}
-
-.gh-image-uploader .image-cancel:hover {
-    color: #fff;
-    cursor: pointer;
-    background: var(--red);
 }
 
 .gh-image-uploader .failed {

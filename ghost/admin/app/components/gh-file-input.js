@@ -41,6 +41,10 @@ export default XFileInput.extend({
         let input = this.element.querySelector('.x-file--input');
         input.removeAttribute('value');
         input.value = null;
-        input.parentNode.replaceChild(input.cloneNode(true), input);
+
+        const clone = input.cloneNode(true);
+        input.parentNode.replaceChild(clone, input);
+
+        return clone;
     }
 });

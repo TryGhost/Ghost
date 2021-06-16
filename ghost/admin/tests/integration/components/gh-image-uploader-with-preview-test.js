@@ -29,7 +29,7 @@ describe('Integration: Component: gh-image-uploader-with-preview', function () {
         this.set('image', 'http://example.com/test.png');
 
         await render(hbs`{{gh-image-uploader-with-preview image=image remove=(action remove)}}`);
-        await click('.image-cancel');
+        await click('.image-delete');
 
         expect(remove.calledOnce).to.be.true;
     });

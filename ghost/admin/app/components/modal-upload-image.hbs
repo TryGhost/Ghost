@@ -2,7 +2,7 @@
     {{#if this.url}}
         <div class="gh-image-uploader -with-image">
             <div><img src={{this.url}}></div>
-            <a class="image-cancel" title="Delete" {{action 'removeImage'}}>
+            <a class="image-delete" title="Delete" {{action 'removeImage'}}>
                 {{svg-jar "trash"}}
                 <span class="hidden">Delete</span>
             </a>

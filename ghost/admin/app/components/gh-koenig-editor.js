@@ -1,11 +1,15 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {tracked} from '@glimmer/tracking';
 
 export default class GhKoenigEditorComponent extends Component {
     containerElement = null;
     titleElement = null;
     koenigEditor = null;
     mousedownY = 0;
+
+    @tracked titleIsHovered = false;
+    @tracked titleIsFocused = false;
 
     get title() {
         return this.args.title === '(Untitled)' ? '' : this.args.title;
@@ -27,6 +31,11 @@ export default class GhKoenigEditorComponent extends Component {
     @action
     registerTitleElement(element) {
         this.titleElement = element;
+
+        // this is needed because focus event handler won't be fired if input has focus when rendering
+        if (this.titleElement === document.activeElement) {
+            this.titleIsFocused = true;
+        }
     }
 
     @action

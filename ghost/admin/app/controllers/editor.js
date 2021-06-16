@@ -310,18 +310,36 @@ export default Controller.extend({
 
         setFeatureImage(url) {
             this.post.set('featureImage', url);
+
+            if (this.post.isDraft) {
+                this.autosave.perform();
+            }
         },
 
         clearFeatureImage() {
             this.post.set('featureImage', null);
+            this.post.set('featureImageAlt', null);
+            this.post.set('featureImageCaption', null);
+
+            if (this.post.isDraft) {
+                this.autosave.perform();
+            }
         },
 
         setFeatureImageAlt(text) {
             this.post.set('featureImageAlt', text);
+
+            if (this.post.isDraft) {
+                this.autosave.perform();
+            }
         },
 
         setFeatureImageCaption(html) {
             this.post.set('featureImageCaption', html);
+
+            if (this.post.isDraft) {
+                this.autosave.perform();
+            }
         }
     },
 
