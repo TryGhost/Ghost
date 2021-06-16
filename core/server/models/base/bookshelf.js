@@ -46,6 +46,8 @@ ghostBookshelf.plugin(require('./crud'));
 
 ghostBookshelf.plugin(require('./actions'));
 
+ghostBookshelf.plugin(require('./events'));
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
