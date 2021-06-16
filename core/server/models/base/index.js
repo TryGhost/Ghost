@@ -14,7 +14,6 @@ const ObjectId = require('bson-objectid');
 const debug = require('@tryghost/debug')('models:base');
 const db = require('../../data/db');
 const events = require('../../lib/common/events');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const schema = require('../../data/schema');
@@ -34,62 +33,6 @@ let proto;
 
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
-
-/**
- * @NOTE:
- *
- * We add actions step by step and define how they should look like.
- * Each post update triggers a couple of events, which we don't want to add actions for.
- *
- * e.g. transform post to page triggers a handful of events including `post.deleted` and `page.added`
- *
- * We protect adding too many and uncontrolled events.
- *
- * We could embedd adding actions more nicely in the future e.g. plugin.
- */
-const addAction = (model, event, options) => {
-    if (!model.wasChanged()) {
-        return;
-    }
-
-    // CASE: model does not support actions at all
-    if (!model.getAction) {
-        return;
-    }
-
-    const existingAction = model.getAction(event, options);
-
-    // CASE: model does not support action for target event
-    if (!existingAction) {
-        return;
-    }
-
-    const insert = (action) => {
-        ghostBookshelf.model('Action')
-            .add(action)
-            .catch((err) => {
-                if (_.isArray(err)) {
-                    err = err[0];
-                }
-
-                logging.error(new errors.InternalServerError({
-                    err
-                }));
-            });
-    };
-
-    if (options.transacting) {
-        options.transacting.once('committed', (committed) => {
-            if (!committed) {
-                return;
-            }
-
-            insert(existingAction);
-        });
-    } else {
-        insert(existingAction);
-    }
-};
 
 // ## ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
@@ -265,7 +208,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     onCreated(model, attrs, options) {
-        addAction(model, 'added', options);
+        this.addAction(model, 'added', options);
     },
 
     /**
@@ -326,7 +269,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     onUpdated(model, attrs, options) {
-        addAction(model, 'edited', options);
+        this.addAction(model, 'edited', options);
     },
 
     /**
@@ -402,7 +345,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // @NOTE: Bookshelf returns ".changed = {empty...}" on destroying (https://github.com/bookshelf/bookshelf/issues/1943)
         Object.assign(model._changed, _.cloneDeep(model.changed));
 
-        addAction(model, 'deleted', options);
+        this.addAction(model, 'deleted', options);
     },
 
     /**
