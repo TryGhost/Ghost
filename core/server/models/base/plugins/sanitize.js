@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const moment = require('moment');
 const tpl = require('@tryghost/tpl');
 
-const schema = require('../../data/schema');
+const schema = require('../../../data/schema');
 
 const messages = {
     missingContext: 'missing context',

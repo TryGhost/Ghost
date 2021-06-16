@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const schema = require('../../data/schema');
+const schema = require('../../../data/schema');
 
 /**
  * @param {import('bookshelf')} Bookshelf

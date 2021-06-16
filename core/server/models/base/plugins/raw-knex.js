@@ -3,7 +3,7 @@ const debug = require('@tryghost/debug')('models:base:raw-knex');
 const plugins = require('@tryghost/bookshelf-plugins');
 const Promise = require('bluebird');
 
-const schema = require('../../data/schema');
+const schema = require('../../../data/schema');
 
 /**
  * @param {import('bookshelf')} Bookshelf
