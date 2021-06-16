@@ -58,6 +58,8 @@ ghostBookshelf.plugin(require('./bulk-operations'));
 
 ghostBookshelf.plugin(require('./filtered-collection'));
 
+ghostBookshelf.plugin(require('./user-type'));
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
