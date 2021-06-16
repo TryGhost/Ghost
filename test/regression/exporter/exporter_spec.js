@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
 
-const ghostVersion = require('../../../core/server/lib/ghost-version');
+const ghostVersion = require('@tryghost/version');
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 
 // Stuff we are testing

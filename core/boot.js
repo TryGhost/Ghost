@@ -267,7 +267,7 @@ async function bootGhost() {
         // Version is required by sentry & Migration config & so is fundamental to booting
         // However, it involves reading package.json so its slow & it's here for visibility on that slowness
         debug('Begin: Load version info');
-        require('./server/lib/ghost-version');
+        require('@tryghost/version');
         debug('End: Load version info');
 
         // Sentry must be initialised early, but requires config
