@@ -87,5 +87,21 @@ async function del(table, ids) {
     return result;
 }
 
-module.exports.insert = insert;
-module.exports.del = del;
+/**
+ * @param {import('bookshelf')} Bookshelf
+ */
+module.exports = function (Bookshelf) {
+    Bookshelf.Model = Bookshelf.Model.extend({}, {
+        bulkAdd: function bulkAdd(data, tableName) {
+            tableName = tableName || this.prototype.tableName;
+
+            return insert(tableName, data);
+        },
+
+        bulkDestroy: function bulkDestroy(data, tableName) {
+            tableName = tableName || this.prototype.tableName;
+
+            return del(tableName, data);
+        }
+    });
+};

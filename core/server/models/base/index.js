@@ -358,18 +358,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return filteredCollectionQuery;
-    },
-
-    bulkAdd: function bulkAdd(data, tableName) {
-        tableName = tableName || this.prototype.tableName;
-
-        return bulkOperations.insert(tableName, data);
-    },
-
-    bulkDestroy: function bulkDestroy(data, tableName) {
-        tableName = tableName || this.prototype.tableName;
-
-        return bulkOperations.del(tableName, data);
     }
 });
 
