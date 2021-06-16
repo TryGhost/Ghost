@@ -229,7 +229,8 @@ module.exports = {
             'subscription_id'
         ],
         data: [
-            'cancel_at_period_end'
+            'cancel_at_period_end',
+            'status'
         ],
         validation: {
             options: {
@@ -243,6 +244,9 @@ module.exports = {
             data: {
                 cancel_at_period_end: {
                     required: true
+                },
+                status: {
+                    values: ['canceled']
                 }
             }
         },
@@ -250,13 +254,22 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            await membersService.api.members.updateSubscription({
-                id: frame.options.id,
-                subscription: {
-                    subscription_id: frame.options.subscription_id,
-                    cancel_at_period_end: frame.data.cancel_at_period_end
-                }
-            });
+            if (frame.data.status === 'canceled') {
+                await membersService.api.members.cancelSubscription({
+                    id: frame.options.id,
+                    subscription: {
+                        subscription_id: frame.options.subscription_id
+                    }
+                });
+            } else {
+                await membersService.api.members.updateSubscription({
+                    id: frame.options.id,
+                    subscription: {
+                        subscription_id: frame.options.subscription_id,
+                        cancel_at_period_end: frame.data.cancel_at_period_end
+                    }
+                });
+            }
             let model = await membersService.api.members.get({id: frame.options.id}, {
                 withRelated: ['labels', 'products', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']
             });

@@ -880,10 +880,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.13.1":
-  version "1.13.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.13.1.tgz#534478c89bcfa8bc75c7f8726651164ba9d7ea4b"
-  integrity sha512-qUjfMXotdRAiHPorx0omt3wUIv/cUl21z1Wy0SMJimBLRpaencruU7mBuicwA53P4uoV6vzbQFgy8Ce9hLm6Ig==
+"@tryghost/members-api@1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.14.0.tgz#83fa4d3a10194f8980bc3d187d97bf13bf37d94f"
+  integrity sha512-10tQMkkdXkVECKN7ruoCKUn9Z+DhjKXNiamDs66ltSAuLgumwci8OX3gcSN5JB9v8mdCA54N8KtcZqmLkg+QYA==
   dependencies:
     "@tryghost/errors" "^0.2.9"
     "@tryghost/magic-link" "^1.0.3"
