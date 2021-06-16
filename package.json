@@ -66,7 +66,7 @@
     "@tryghost/members-csv": "1.0.1",
     "@tryghost/members-ssr": "1.0.3",
     "@tryghost/mw-session-from-token": "0.1.21",
-    "@tryghost/package-json": "1.0.0",
+    "@tryghost/package-json": "1.0.1",
     "@tryghost/promise": "0.1.9",
     "@tryghost/request": "0.1.0",
     "@tryghost/root-utils": "0.3.0",
