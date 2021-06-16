@@ -2,6 +2,8 @@ const path = require('path');
 const fs = require('fs-extra');
 const _ = require('lodash');
 
+// Dynamic, public utilities
+
 exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     if (!this.get('privacy')) {
         return false;
@@ -19,6 +21,30 @@ exports.isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 
     return this.get('privacy')[privacyFlag] === false;
 };
+
+/**
+ * we can later support setting folder names via custom config values
+ */
+exports.getContentPath = function getContentPath(type) {
+    switch (type) {
+    case 'images':
+        return path.join(this.get('paths:contentPath'), 'images/');
+    case 'themes':
+        return path.join(this.get('paths:contentPath'), 'themes/');
+    case 'adapters':
+        return path.join(this.get('paths:contentPath'), 'adapters/');
+    case 'logs':
+        return path.join(this.get('paths:contentPath'), 'logs/');
+    case 'data':
+        return path.join(this.get('paths:contentPath'), 'data/');
+    case 'settings':
+        return path.join(this.get('paths:contentPath'), 'settings/');
+    default:
+        throw new Error('getContentPath was called with: ' + type);
+    }
+};
+
+// Internal-only utilties
 
 /**
  * transform all relative paths to absolute paths
@@ -42,28 +68,6 @@ exports.makePathsAbsolute = function makePathsAbsolute(obj, parent) {
             self.set(parent + ':' + pathsKey, path.normalize(path.join(__dirname, '../../..', configValue)));
         }
     });
-};
-
-/**
- * we can later support setting folder names via custom config values
- */
-exports.getContentPath = function getContentPath(type) {
-    switch (type) {
-    case 'images':
-        return path.join(this.get('paths:contentPath'), 'images/');
-    case 'themes':
-        return path.join(this.get('paths:contentPath'), 'themes/');
-    case 'adapters':
-        return path.join(this.get('paths:contentPath'), 'adapters/');
-    case 'logs':
-        return path.join(this.get('paths:contentPath'), 'logs/');
-    case 'data':
-        return path.join(this.get('paths:contentPath'), 'data/');
-    case 'settings':
-        return path.join(this.get('paths:contentPath'), 'settings/');
-    default:
-        throw new Error('getContentPath was called with: ' + type);
-    }
 };
 
 /**
