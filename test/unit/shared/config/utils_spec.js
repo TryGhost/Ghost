@@ -1,7 +1,7 @@
 const should = require('should');
 const configUtils = require('../../../../core/shared/config/utils');
 
-describe('UNIT: Config utils', function () {
+describe('Config Utils', function () {
     describe('makePathsAbsolute', function () {
         it('ensure we change paths only', function () {
             const changedKey = [];
