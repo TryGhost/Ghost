@@ -6,21 +6,16 @@
         {{on "mouseup" this.focusEditor}}
     >
         {{#if (feature "featureImageMeta")}}
-            <div class="gh-editor-feature-image">
-                <GhImageUploaderWithPreview
-                    @image={{@featureImage}}
-                    @text="Upload feature image"
-                    @allowUnsplash={{true}}
-                    @includeMetadata={{true}}
-                    @update={{@setFeatureImage}}
-                    @remove={{fn @setFeatureImage null}}
-                    @alt={{@featureImageAlt}}
-                    @caption={{@featureImageCaption}}
-                    @updateAlt={{@setFeatureImageAlt}}
-                    @updateCaption={{@setFeatureImageCaption}}
-                    @captionPlaceholder="Add a caption to the feature image"
-                />
-            </div>
+            <GhEditorFeatureImage
+                @image={{@featureImage}}
+                @updateImage={{@setFeatureImage}}
+                @clearImage={{@clearFeatureImage}}
+                @alt={{@featureImageAlt}}
+                @updateAlt={{@setFeatureImageAlt}}
+                @caption={{@featureImageCaption}}
+                @updateCaption={{@setFeatureImageCaption}}
+                @forceButtonDisplay={{or this.titleIsHovered this.titleIsFocused}}
+            />
         {{/if}}
 
         <GhTextarea
@@ -34,6 +29,10 @@
             @focus-out={{optional @onTitleBlur}}
             @keyDown={{this.onTitleKeydown}}
             @didCreateTextarea={{this.registerTitleElement}}
+            {{on "focus" (fn (mut this.titleIsFocused) true)}}
+            {{on "blur" (fn (mut this.titleIsFocused) false)}}
+            {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
+            {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
             data-test-editor-title-input={{true}}
         />
 

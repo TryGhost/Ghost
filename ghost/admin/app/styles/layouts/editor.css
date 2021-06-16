@@ -381,13 +381,28 @@
 }
 
 .gh-editor-feature-image {
+    position: relative;
     display: block;
     width: 100%;
     max-width: 740px;
     min-height: auto;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 1.6rem;
+    padding-bottom: 1.6rem;
+}
+
+.gh-editor-feature-image-add-button {
+    color: var(--midgrey);
+}
+
+.gh-editor-feature-image:hover .gh-editor-feature-image-add-button {
+    color: var(--green);
+}
+
+.gh-editor-feature-image-unsplash {
+    width: 1em;
+    height: 1em;
+    margin-left: 30px;
 }
 
 .gh-editor-title {
