@@ -105,6 +105,7 @@ export default Controller.extend({
     showPostPreviewModal: false,
     showUpgradeModal: false,
     showDeleteSnippetModal: false,
+    showSettingsMenu: false,
     hostLimitError: null,
     // koenig related properties
     wordcount: null,
@@ -342,6 +343,14 @@ export default Controller.extend({
             }
         }
     },
+
+    toggleSettingsMenu: action(function () {
+        this.set('showSettingsMenu', !this.showSettingsMenu);
+    }),
+
+    closeSettingsMenu: action(function () {
+        this.set('showSettingsMenu', false);
+    }),
 
     saveSnippet: action(function (snippet) {
         let snippetRecord = this.store.createRecord('snippet', snippet);
@@ -791,6 +800,7 @@ export default Controller.extend({
         this.set('leaveEditorTransition', null);
         this.set('showLeaveEditorModal', false);
         this.set('showPostPreviewModal', false);
+        this.set('showSettingsMenu', false);
         this.set('wordCount', null);
 
         // remove the onbeforeunload handler as it's only relevant whilst on

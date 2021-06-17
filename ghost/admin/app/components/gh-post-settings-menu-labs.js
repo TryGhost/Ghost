@@ -17,6 +17,8 @@ export default Component.extend({
     settings: service(),
     ui: service(),
 
+    tagName: '',
+
     post: null,
 
     showSettingsMenu: false,
