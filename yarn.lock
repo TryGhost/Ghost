@@ -663,18 +663,26 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@0.2.12", "@tryghost/errors@^0.2.12":
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.12.tgz#b88c5e09c62f97db97d6f1ebdbbd5dc37829a572"
-  integrity sha512-Ru/f66+PgnBGBvLtY74a/8iHkGjn/LOUM9u4nbHBHil3vB5FK4mGvPcD53Z7Ay6AeZkmt6bSGEnZHwhexJVdgg==
+"@tryghost/errors@0.2.13":
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.13.tgz#819550c347f5634706b5a4834dd2db0e7cb0a6f2"
+  integrity sha512-RXREWxDy69LC5t8sW6UuSnUNED1ZT9wKTNCJ2VDdrdS1CTaxmZroaWoKOrGjrQDx/M2IBHJSNZHbnRtkHoJ4hw==
   dependencies:
-    ghost-ignition "^4.6.1"
+    "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
 "@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.9":
   version "0.2.11"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.11.tgz#db42d49c6e703b46efa2097cfafcf3d401789c07"
   integrity sha512-OKVaefe6YxNZkhsJzqvzBs4wFA4XCkqcguzJikK6qGaJ+w1hjqGLOab9d1AJ8bLCVFTzptv24jjT/CHY9g5Ojg==
+  dependencies:
+    ghost-ignition "^4.6.1"
+    lodash "^4.17.21"
+
+"@tryghost/errors@^0.2.12":
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.12.tgz#b88c5e09c62f97db97d6f1ebdbbd5dc37829a572"
+  integrity sha512-Ru/f66+PgnBGBvLtY74a/8iHkGjn/LOUM9u4nbHBHil3vB5FK4mGvPcD53Z7Ay6AeZkmt6bSGEnZHwhexJVdgg==
   dependencies:
     ghost-ignition "^4.6.1"
     lodash "^4.17.21"
@@ -694,6 +702,13 @@
     "@tryghost/kg-parser-plugins" "^1.1.7"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^16.5.3"
+
+"@tryghost/ignition-errors@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/ignition-errors/-/ignition-errors-0.1.0.tgz#90f619bfbbf2e349c42d485501f560c2e9ae0a07"
+  integrity sha512-WY3gOusnv/C1cHxFte2pPW/tZKyetMUnuN3kDdj7FlClzhVOsszoEjXHSr+VU36d6a9NCFG/pQ4d3KLWfH0DXQ==
+  dependencies:
+    lodash "^4.17.21"
 
 "@tryghost/image-transform@1.0.12":
   version "1.0.12"
