@@ -69,7 +69,7 @@
         <GhKoenigEditor
             @title={{readonly this.post.titleScratch}}
             @titleAutofocus={{this.shouldFocusTitle}}
-            @titlePlaceholder={{concat (capitalize this.post.displayName) " Title"}}
+            @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
             @onTitleChange={{action "updateTitleScratch"}}
             @onTitleBlur={{action (perform this.saveTitleTask)}}
             @body={{readonly this.post.scratch}}
