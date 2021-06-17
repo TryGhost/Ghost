@@ -167,7 +167,7 @@
 }
 
 .settings-menu-content .gh-radio {
-    margin: 20px 0; 
+    margin: 20px 0;
 }
 
 .settings-menu-content .no-selection {
@@ -325,7 +325,7 @@
 /* Background
 /* ---------------------------------------------------------- */
 @keyframes coverFadeIn {
-    0% { 
+    0% {
         opacity: 0;
     }
     100% {
@@ -375,4 +375,57 @@
 .settings-menu-email .disabled button,
 .settings-menu-email .disabled input {
     opacity: 0.5;
+}
+
+
+/* LABS ----------------------------------------------------------------------*/
+
+.settings-menu-container-labs {
+    min-width: 380px;
+    height: 100vh;
+    padding-top: 21px;
+    border-left: 1px solid var(--lightgrey);
+    overflow-x: visible;
+    overflow-y: auto;
+    z-index: 999;
+}
+
+.settings-menu-container-labs-wide {
+    width: 501px;
+    min-width: 501px;
+}
+
+.settings-menu-toggle-labs {
+    position: absolute;
+    top: 31px;
+    right: 0;
+    z-index: 9999;
+}
+
+.settings-menu-toggle-spacer-labs {
+    width: 40px;
+}
+
+.settings-menu-container-labs .settings-menu-pane {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+    opacity: 1;
+    width: 380px;
+    min-width: 380px;
+    background-color: white;
+}
+
+.settings-menu-container-labs-wide .settings-menu-pane {
+    width: 500px;
+    min-width: 500px;
+}
+
+.settings-menu-container-labs .settings-menu-pane-main {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
 }

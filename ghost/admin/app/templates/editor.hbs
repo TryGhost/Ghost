@@ -1,106 +1,141 @@
 {{#if this.post}}
-    <GhEditor
-        @tagName="section"
-        @class="gh-editor gh-view"
-        as |editor|
-    >
-        <header class="gh-editor-header br2 pe-none {{editor.headerClass}}">
-            <div class="flex items-center pe-auto">
-                {{#if this.ui.isFullScreen}}
-                    <div class="ml3 flex items-center">
-                        <LinkTo @route={{pluralize this.post.displayName }} @classNames="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
-                            <span>
-                                {{svg-jar "arrow-left"}}
-                                {{capitalize (pluralize this.post.displayName)}}
-                            </span>
-                        </LinkTo>
-                    </div>
-                {{/if}}
-                <div class="gh-editor-post-status">
-                    <span>
-                        <GhEditorPostStatus
-                            @post={{this.post}}
-                            @isSaving={{or this.autosave.isRunning this.saveTasks.isRunning}}
-                        />
-                    </span>
-                </div>
-            </div>
-
-            <section class="flex" style="pointer-events: auto">
-                {{#unless this.post.isNew}}
-                    {{#if this.post.isDraft}}
-                        <div>
-                            <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" (action "togglePostPreviewModal")}}>
-                                <span>Preview</span>
-                            </button>
+    <div class="flex flex-row">
+        <GhEditor
+            @tagName="section"
+            @class="gh-editor gh-view relative"
+            as |editor|
+        >
+            <header class="gh-editor-header br2 pe-none {{editor.headerClass}}">
+                <div class="flex items-center pe-auto">
+                    {{#if this.ui.isFullScreen}}
+                        <div class="ml3 flex items-center">
+                            <LinkTo @route={{pluralize this.post.displayName }} @classNames="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                                <span>
+                                    {{svg-jar "arrow-left"}}
+                                    {{capitalize (pluralize this.post.displayName)}}
+                                </span>
+                            </LinkTo>
                         </div>
                     {{/if}}
-
-                    {{#if this.session.user.isContributor}}
-                        <GhTaskButton @buttonText="Save"
-                            @task={{this.save}}
-                            @runningText="Saving"
-                            @class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
-                            data-test-contributor-save=true />
-                    {{else}}
-                        <div>
-                            <GhPublishmenu
+                    <div class="gh-editor-post-status">
+                        <span>
+                            <GhEditorPostStatus
                                 @post={{this.post}}
-                                @postStatus={{this.post.status}}
-                                @saveTask={{this.save}}
-                                @setSaveType={{action "setSaveType"}}
-                                @onOpen={{action "cancelAutosave"}} />
-                        </div>
-                    {{/if}}
-                {{/unless}}
-
-                <div>
-                    <button type="button" class="gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog ml3" title="Settings" data-test-button="psm-toggle" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
-                        <span>{{svg-jar "settings"}}</span>
-                    </button>
+                                @isSaving={{or this.autosave.isRunning this.saveTasks.isRunning}}
+                            />
+                        </span>
+                    </div>
                 </div>
-            </section>
-        </header>
 
-        {{!--
-            gh-koenig-editor acts as a wrapper around the title input and
-            koenig editor canvas to support Ghost-specific editor behaviour
-        --}}
-        <GhKoenigEditor
-            @title={{readonly this.post.titleScratch}}
-            @titleAutofocus={{this.shouldFocusTitle}}
-            @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
-            @onTitleChange={{action "updateTitleScratch"}}
-            @onTitleBlur={{action (perform this.saveTitleTask)}}
-            @body={{readonly this.post.scratch}}
-            @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
-            @onBodyChange={{action "updateScratch"}}
-            @headerOffset={{editor.headerHeight}}
-            @scrollContainerSelector=".gh-koenig-editor"
-            @scrollOffsetTopSelector=".gh-editor-header-small"
-            @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
-            @onEditorCreated={{action "setKoenigEditor"}}
-            @onWordCountChange={{action "updateWordCount"}}
-            @snippets={{this.snippets}}
-            @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
-            @deleteSnippet={{if this.canManageSnippets this.toggleDeleteSnippetModal}}
-            @featureImage={{this.post.featureImage}}
-            @featureImageAlt={{this.post.featureImageAlt}}
-            @featureImageCaption={{this.post.featureImageCaption}}
-            @setFeatureImage={{action "setFeatureImage"}}
-            @setFeatureImageAlt={{action "setFeatureImageAlt"}}
-            @setFeatureImageCaption={{action "setFeatureImageCaption"}}
-            @clearFeatureImage={{action "clearFeatureImage"}}
-        />
+                <section class="flex" style="pointer-events: auto">
+                    {{#unless this.post.isNew}}
+                        {{#if this.post.isDraft}}
+                            <div>
+                                <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" (action "togglePostPreviewModal")}}>
+                                    <span>Preview</span>
+                                </button>
+                            </div>
+                        {{/if}}
 
-        <div class="gh-editor-wordcount-container {{if editor.headerClass "small"}}">
-            <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw4">
-                {{gh-pluralize this.wordCount.wordCount "word"}}
+                        {{#if this.session.user.isContributor}}
+                            <GhTaskButton @buttonText="Save"
+                                @task={{this.save}}
+                                @runningText="Saving"
+                                @class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
+                                data-test-contributor-save=true />
+                        {{else}}
+                            <div>
+                                <GhPublishmenu
+                                    @post={{this.post}}
+                                    @postStatus={{this.post.status}}
+                                    @saveTask={{this.save}}
+                                    @setSaveType={{action "setSaveType"}}
+                                    @onOpen={{action "cancelAutosave"}} />
+                            </div>
+                        {{/if}}
+
+                        {{#if (feature "psmRedesign")}}
+                            {{#unless this.showSettingsMenu}}
+                                <div class="settings-menu-toggle-spacer-labs"></div>
+                            {{/unless}}
+                        {{/if}}
+                    {{/unless}}
+
+                    <div>
+                        {{#unless (feature "psmRedesign")}}
+                            {{!-- TODO: clean up everything related to ui.showSettingsMenu when flag is removed --}}
+                            <button type="button" class="gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog ml3" title="Settings" data-test-button="psm-toggle" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
+                                <span>{{svg-jar "settings"}}</span>
+                            </button>
+                        {{/unless}}
+                    </div>
+                </section>
+            </header>
+
+            {{!--
+                gh-koenig-editor acts as a wrapper around the title input and
+                koenig editor canvas to support Ghost-specific editor behaviour
+            --}}
+            <GhKoenigEditor
+                @title={{readonly this.post.titleScratch}}
+                @titleAutofocus={{this.shouldFocusTitle}}
+                @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
+                @onTitleChange={{action "updateTitleScratch"}}
+                @onTitleBlur={{action (perform this.saveTitleTask)}}
+                @body={{readonly this.post.scratch}}
+                @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
+                @onBodyChange={{action "updateScratch"}}
+                @headerOffset={{editor.headerHeight}}
+                @scrollContainerSelector=".gh-koenig-editor"
+                @scrollOffsetTopSelector=".gh-editor-header-small"
+                @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
+                @onEditorCreated={{action "setKoenigEditor"}}
+                @onWordCountChange={{action "updateWordCount"}}
+                @snippets={{this.snippets}}
+                @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
+                @deleteSnippet={{if this.canManageSnippets this.toggleDeleteSnippetModal}}
+                @featureImage={{this.post.featureImage}}
+                @featureImageAlt={{this.post.featureImageAlt}}
+                @featureImageCaption={{this.post.featureImageCaption}}
+                @setFeatureImage={{action "setFeatureImage"}}
+                @setFeatureImageAlt={{action "setFeatureImageAlt"}}
+                @setFeatureImageCaption={{action "setFeatureImageCaption"}}
+                @clearFeatureImage={{action "clearFeatureImage"}}
+            />
+
+            <div class="gh-editor-wordcount-container {{if editor.headerClass "small"}}">
+                <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw4">
+                    {{gh-pluralize this.wordCount.wordCount "word"}}
+                </div>
+                <a href="https://ghost.org/help/using-the-editor/" class="flex {{if editor.headerClass "pa2" "pa3"}}" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
             </div>
-            <a href="https://ghost.org/help/using-the-editor/" class="flex {{if editor.headerClass "pa2" "pa3"}}" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
-        </div>
 
-    </GhEditor>
+        </GhEditor>
+
+        {{#if (feature "psmRedesign")}}
+            {{#if this.showSettingsMenu}}
+                <GhPostSettingsMenuLabs
+                    @post={{this.post}}
+                    @showSettingsMenu={{this.showSettingsMenu}}
+                    @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
+                    @deletePost={{action "toggleDeletePostModal"}}
+                    @updateSlug={{this.updateSlug}}
+                    @savePost={{this.savePost}}
+                />
+            {{/if}}
+        {{/if}}
+    </div>
+
+    {{#if (feature "psmRedesign")}}
+        <button type="button" class="settings-menu-toggle-labs gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog" title="Settings" data-test-button="psm-toggle" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
+            {{#if this.showSettingsMenu}}
+                {{!-- TODO: switch to close state --}}
+                <span>{{svg-jar "settings"}}</span>
+            {{else}}
+                <span>{{svg-jar "settings"}}</span>
+            {{/if}}
+        </button>
+    {{/if}}
 
     {{#if this.showDeletePostModal}}
         <GhFullscreenModal @modal="delete-post"
@@ -163,18 +198,7 @@
         />
     {{/if}}
 
-    {{#if (feature "psmRedesign")}}
-        <LiquidWormhole>
-            <GhPostSettingsMenuLabs
-                @post={{this.post}}
-                @showSettingsMenu={{this.ui.showSettingsMenu}}
-                @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
-                @deletePost={{action "toggleDeletePostModal"}}
-                @updateSlug={{this.updateSlug}}
-                @savePost={{this.savePost}}
-            />
-        </LiquidWormhole>
-    {{else}}
+    {{#unless (feature "psmRedesign")}}
         <LiquidWormhole>
             <GhPostSettingsMenu
                 @post={{this.post}}
@@ -185,7 +209,7 @@
                 @savePost={{this.savePost}}
             />
         </LiquidWormhole>
-    {{/if}}
+    {{/unless}}
 {{/if}}
 
 {{outlet}}
