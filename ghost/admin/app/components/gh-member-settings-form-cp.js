@@ -15,6 +15,8 @@ export default class extends Component {
     ajax
     @service
     store
+    @service
+    feature
 
     constructor(...args) {
         super(...args);
@@ -32,6 +34,9 @@ export default class extends Component {
     get isAddComplimentaryAllowed() {
         if (!this.membersUtils.isStripeEnabled) {
             return false;
+        }
+        if (this.feature.get('multipleProducts')) {
+            return true;
         }
         let subscriptions = this.member.get('subscriptions') || [];
         const hasZeroPriceSub = subscriptions.filter((sub) => {

@@ -1787,3 +1787,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-member-product-form-block .form-group:last-of-type {
     margin: 0;
 }
+
+.gh-member-addcomp-warning {
+    margin-top: -16px;
+}
