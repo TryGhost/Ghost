@@ -33,6 +33,13 @@ module.exports = function (Bookshelf) {
             return parentSync;
         },
 
+        // overridable function for models to format attrs only when saving to db
+        // this function doesn't override anything in Bookshelf but we use this in
+        // this plugin and sub-models may override it, so it's easier to keep it in here
+        formatOnWrite: function formatOnWrite(attrs) {
+            return attrs;
+        },
+
         // format date before writing to DB, bools work
         format: function format(attrs) {
             return this.fixDatesWhenSave(attrs);
