@@ -6,8 +6,13 @@ const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
 const localUtils = require('./utils');
 const helpers = require('./helpers');
+const urlHelpers = require('@tryghost/config-url-helpers');
 const env = process.env.NODE_ENV || 'development';
 
+/**
+ * @param {object} options
+ * @returns {Nconf.Provider & urlHelpers.BoundHelpers}
+ */
 function loadNconf(options) {
     debug('config start');
     options = options || {};
@@ -47,6 +52,7 @@ function loadNconf(options) {
     // Expose dynamic utility methods
     nconf.isPrivacyDisabled = helpers.isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = helpers.getContentPath.bind(nconf);
+    urlHelpers.bindAll(nconf);
 
     // ## Sanitization
 
