@@ -47,11 +47,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         proto.initialize.call(this);
     },
 
-    // overridable function for models to format attrs only when saving to db
-    formatOnWrite: function formatOnWrite(attrs) {
-        return attrs;
-    },
-
     hasDateChanged: function (attr) {
         return moment(this.get(attr)).diff(moment(this.previous(attr))) !== 0;
     },
