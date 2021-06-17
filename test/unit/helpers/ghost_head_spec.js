@@ -316,6 +316,7 @@ describe('{{ghost_head}} helper', function () {
 
         afterEach(function () {
             sandbox.restore();
+            testUrlUtils.restore();
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
@@ -1299,6 +1300,7 @@ describe('{{ghost_head}} helper', function () {
 
         afterEach(function () {
             sandbox.restore();
+            testUrlUtils.restore();
             routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
         });
 
@@ -1338,6 +1340,7 @@ describe('{{ghost_head}} helper', function () {
 
         afterEach(function () {
             sandbox.restore();
+            testUrlUtils.restore();
         });
 
         it('contains the changed origin', function (done) {
@@ -1375,6 +1378,7 @@ describe('{{ghost_head}} helper', function () {
 
         afterEach(function () {
             sandbox.restore();
+            testUrlUtils.restore();
         });
 
         it('does not return structured data', function (done) {
@@ -1418,6 +1422,7 @@ describe('{{ghost_head}} helper', function () {
 
         afterEach(function () {
             sandbox.restore();
+            testUrlUtils.restore();
         });
 
         it('returns meta tag plus injected code', function (done) {
