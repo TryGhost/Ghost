@@ -30,6 +30,36 @@ describe('Config URL Helpers', function () {
         configUrlHelpers.bindAll(nconf);
     });
 
+    describe('getSubdir', function () {
+        it('url has no subdir', function () {
+            fakeConfig.url = 'http://my-ghost-blog.com/';
+
+            nconf.getSubdir().should.eql('');
+        });
+
+        it('url has subdir', function () {
+            fakeConfig.url = 'http://my-ghost-blog.com/blog';
+            nconf.getSubdir().should.eql('/blog');
+
+            fakeConfig.url = 'http://my-ghost-blog.com/blog/';
+            nconf.getSubdir().should.eql('/blog');
+
+            fakeConfig.url = 'http://my-ghost-blog.com/my/blog';
+            nconf.getSubdir().should.eql('/my/blog');
+
+            fakeConfig.url = 'http://my-ghost-blog.com/my/blog/';
+            nconf.getSubdir().should.eql('/my/blog');
+        });
+
+        it('should not return a slash for subdir', function () {
+            fakeConfig.url = 'http://my-ghost-blog.com';
+            nconf.getSubdir().should.eql('');
+
+            fakeConfig.url = 'http://my-ghost-blog.com/';
+            nconf.getSubdir().should.eql('');
+        });
+    });
+
     describe('getSiteUrl', function () {
         it('returns config url', function () {
             fakeConfig.url = 'http://example.com/';
@@ -86,36 +116,6 @@ describe('Config URL Helpers', function () {
             fakeConfig.adminUrl = 'http://admin.example.com/blog';
 
             nconf.getAdminUrl().should.eql('http://admin.example.com/blog/');
-        });
-    });
-
-    describe('getSubdir', function () {
-        it('url has no subdir', function () {
-            fakeConfig.url = 'http://my-ghost-blog.com/';
-
-            nconf.getSubdir().should.eql('');
-        });
-
-        it('url has subdir', function () {
-            fakeConfig.url = 'http://my-ghost-blog.com/blog';
-            nconf.getSubdir().should.eql('/blog');
-
-            fakeConfig.url = 'http://my-ghost-blog.com/blog/';
-            nconf.getSubdir().should.eql('/blog');
-
-            fakeConfig.url = 'http://my-ghost-blog.com/my/blog';
-            nconf.getSubdir().should.eql('/my/blog');
-
-            fakeConfig.url = 'http://my-ghost-blog.com/my/blog/';
-            nconf.getSubdir().should.eql('/my/blog');
-        });
-
-        it('should not return a slash for subdir', function () {
-            fakeConfig.url = 'http://my-ghost-blog.com';
-            nconf.getSubdir().should.eql('');
-
-            fakeConfig.url = 'http://my-ghost-blog.com/';
-            nconf.getSubdir().should.eql('');
         });
     });
 });
