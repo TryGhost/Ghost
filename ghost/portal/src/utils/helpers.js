@@ -141,6 +141,12 @@ export function hasMultipleProducts({site = {}}) {
     const {
         products = []
     } = site || {};
+    if (site.portal_plans && !site.portal_plans.includes('monthly') && !site.portal_plans.includes('yearly')) {
+        return false;
+    }
+    if (site.portal_products && site.portal_products.length < 2) {
+        return false;
+    }
     if (products?.length > 1) {
         return true;
     }
