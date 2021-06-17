@@ -33,11 +33,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             .filter(key => key.indexOf('@@') === -1);
     },
 
-    // When loading an instance, subclasses can specify default to fetch
-    defaultColumnsToFetch: function defaultColumnsToFetch() {
-        return [];
-    },
-
     // Bookshelf `initialize` - declare a constructor-like method for model creation
     initialize: function initialize() {
         this.initializeEvents();
