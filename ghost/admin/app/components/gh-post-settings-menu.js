@@ -1,12 +1,11 @@
 import Component from '@ember/component';
-import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default Component.extend(SettingsMenuMixin, {
+export default Component.extend({
     feature: service(),
     store: service(),
     config: service(),
@@ -20,6 +19,7 @@ export default Component.extend(SettingsMenuMixin, {
 
     post: null,
 
+    showSettingsMenu: false,
     _showSettingsMenu: false,
 
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
@@ -66,6 +66,19 @@ export default Component.extend(SettingsMenuMixin, {
         return urlParts.join(' > ');
     }),
 
+    isViewingSubview: computed('showSettingsMenu', {
+        get() {
+            return false;
+        },
+        set(key, value) {
+            // Not viewing a subview if we can't even see the PSM
+            if (!this.showSettingsMenu) {
+                return false;
+            }
+            return value;
+        }
+    }),
+
     didReceiveAttrs() {
         this._super(...arguments);
 
@@ -86,12 +99,12 @@ export default Component.extend(SettingsMenuMixin, {
 
     actions: {
         showSubview(subview) {
-            this._super(...arguments);
+            this.set('isViewingSubview', true);
             this.set('subview', subview);
         },
 
         closeSubview() {
-            this._super(...arguments);
+            this.set('isViewingSubview', false);
             this.set('subview', null);
         },
 
