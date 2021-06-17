@@ -412,42 +412,62 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval}) {
     );
 }
 
+function getSelectedPrice({products, selectedProduct, selectedInterval}) {
+    let selectedPrice = null;
+    if (selectedProduct === 'free') {
+        selectedPrice = {id: 'free'};
+    } else {
+        const product = products.find(prod => prod.id === selectedProduct);
+        selectedPrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+    }
+    return selectedPrice;
+}
+
+function getActiveInterval({portalPlans, selectedInterval = 'month'}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+}
+
 function ProductsSection({onPlanSelect, products}) {
     const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
-    let defaultInterval = 'month';
-    if (!portalPlans.includes('monthly') && portalPlans.includes('yearly')) {
-        defaultInterval = 'year';
-    }
+    const defaultInterval = getActiveInterval({portalPlans});
+
     const defaultProductId = products.length > 0 ? products[0].id : 'free';
     const [selectedInterval, setSelectedInterval] = useState(defaultInterval);
     const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
 
-    let price = null;
-    if (selectedProduct === 'free') {
-        price = {id: 'free'};
-    } else {
-        const product = products.find(prod => prod.id === selectedProduct);
-        price = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+    const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
+    const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+    useEffect(() => {
+        onPlanSelect(null, selectedPrice.id);
+    }, [selectedPrice.id, onPlanSelect]);
+
+    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
+        return null;
     }
-
-    useEffect(() => {
-        onPlanSelect(null, price.id);
-    }, [price.id, onPlanSelect]);
-
-    useEffect(() => {
-        setSelectedInterval(defaultInterval);
-    }, [portalPlans.length, setSelectedInterval, defaultInterval]);
-
     return (
         <ProductsContext.Provider value={{
-            selectedInterval,
+            selectedInterval: activeInterval,
             selectedProduct,
             setSelectedProduct
         }}>
             <section className="gh-portal-products">
                 <ProductPriceSwitch
-                    selectedInterval={selectedInterval}
+                    selectedInterval={activeInterval}
                     setSelectedInterval={setSelectedInterval}
                 />
 
