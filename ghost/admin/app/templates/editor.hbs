@@ -163,16 +163,29 @@
         />
     {{/if}}
 
-    <LiquidWormhole>
-        <GhPostSettingsMenu
-            @post={{this.post}}
-            @showSettingsMenu={{this.ui.showSettingsMenu}}
-            @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
-            @deletePost={{action "toggleDeletePostModal"}}
-            @updateSlug={{this.updateSlug}}
-            @savePost={{this.savePost}}
-        />
-    </LiquidWormhole>
+    {{#if (feature "psmRedesign")}}
+        <LiquidWormhole>
+            <GhPostSettingsMenuLabs
+                @post={{this.post}}
+                @showSettingsMenu={{this.ui.showSettingsMenu}}
+                @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
+                @deletePost={{action "toggleDeletePostModal"}}
+                @updateSlug={{this.updateSlug}}
+                @savePost={{this.savePost}}
+            />
+        </LiquidWormhole>
+    {{else}}
+        <LiquidWormhole>
+            <GhPostSettingsMenu
+                @post={{this.post}}
+                @showSettingsMenu={{this.ui.showSettingsMenu}}
+                @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
+                @deletePost={{action "toggleDeletePostModal"}}
+                @updateSlug={{this.updateSlug}}
+                @savePost={{this.savePost}}
+            />
+        </LiquidWormhole>
+    {{/if}}
 {{/if}}
 
 {{outlet}}
