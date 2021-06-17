@@ -60,10 +60,6 @@ class Users {
                 }, frameOptions);
             }
 
-            // Delete all sessions
-            const sessions = await this.models.Session.findAll(frameOptions);
-            await Promise.all(sessions.map(session => session.destroy(frameOptions)));
-
             //Send all password resets
             for (const user of users) {
                 const token = await this.auth.passwordreset.generateToken(user.get('email'), this.apiSettings, t);
