@@ -810,7 +810,7 @@
     moment "^2.29.1"
     prettyjson "^1.2.1"
 
-"@tryghost/magic-link@1.0.3", "@tryghost/magic-link@^1.0.3":
+"@tryghost/magic-link@1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.3.tgz#d64cdfeae8bda9d7a43002c0afb16ea15c1f28e7"
   integrity sha512-erSWNlpJ65tqjCfOyjEmK7zBm/a+scTHJ4eIIxny7me5Mj3BSl1yCmI6vLZyf9j4/oHKXGjxZVy7GroDxRWGBA==
@@ -820,19 +820,30 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.14.0":
-  version "1.14.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.14.0.tgz#83fa4d3a10194f8980bc3d187d97bf13bf37d94f"
-  integrity sha512-10tQMkkdXkVECKN7ruoCKUn9Z+DhjKXNiamDs66ltSAuLgumwci8OX3gcSN5JB9v8mdCA54N8KtcZqmLkg+QYA==
+"@tryghost/magic-link@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.4.tgz#4368176ffe559fd165f978bf297ac696aa87adc4"
+  integrity sha512-jEdKZCNzV8ckbG7UGS2L+FLHDtCCh3hal/UAbV9DWQPqDopJ8Eb+09jXWv4+NVU90VrltxCIVWYMplaVvjviCg==
+  dependencies:
+    bluebird "^3.5.5"
+    ghost-ignition "4.6.3"
+    jsonwebtoken "^8.5.1"
+    lodash "^4.17.15"
+
+"@tryghost/members-api@1.15.0":
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.15.0.tgz#f5367ab208a9658f116ece9fa30fc87fd6bc4ab7"
+  integrity sha512-UwXmMIZhAiCatbIKfFzeNQUPrIJg3yPbPYGg8Yp5TfIRIjeBEOXyauNc5XR8616Wc2mktkvTs/BBs5er6QBvoQ==
   dependencies:
     "@tryghost/errors" "^0.2.9"
-    "@tryghost/magic-link" "^1.0.3"
+    "@tryghost/magic-link" "^1.0.4"
+    "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
     express "^4.16.4"
-    ghost-ignition "4.6.2"
+    ghost-ignition "4.6.3"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
     leaky-bucket "2.2.0"

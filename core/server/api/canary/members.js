@@ -5,6 +5,7 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const membersService = require('../../services/members');
+const labsService = require('../../services/labs');
 
 const settingsCache = require('../../services/settings/cache');
 const i18n = require('../../../shared/i18n');
@@ -110,6 +111,9 @@ module.exports = {
         async query(frame) {
             let member;
             frame.options.withRelated = ['stripeSubscriptions', 'products', 'labels', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct'];
+            if (!labsService.isSet('multipleProducts')) {
+                delete frame.data.products;
+            }
             try {
                 if (!membersService.config.isStripeConnected()
                     && (frame.data.members[0].stripe_customer_id || frame.data.members[0].comped)) {
@@ -187,6 +191,9 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
+            if (!labsService.isSet('multipleProducts')) {
+                delete frame.data.products;
+            }
             try {
                 frame.options.withRelated = ['stripeSubscriptions', 'products', 'labels', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct'];
                 const member = await membersService.api.members.update(frame.data.members[0], frame.options);
