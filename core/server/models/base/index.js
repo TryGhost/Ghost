@@ -7,7 +7,6 @@
 
 // All other parts of Ghost, including the frontend & admin UI are only allowed to access data via the API.
 const moment = require('moment');
-const ObjectId = require('bson-objectid');
 const schema = require('../../data/schema');
 
 const ghostBookshelf = require('./bookshelf');
@@ -49,14 +48,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     hasDateChanged: function (attr) {
         return moment(this.get(attr)).diff(moment(this.previous(attr))) !== 0;
-    },
-
-    /**
-     * we auto generate a GUID for each resource
-     * no auto increment
-     */
-    setId: function setId() {
-        this.set('id', ObjectId().toHexString());
     },
 
     wasChanged() {
