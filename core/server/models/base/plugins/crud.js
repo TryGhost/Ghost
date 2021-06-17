@@ -9,7 +9,7 @@ module.exports = function (Bookshelf) {
         /**
          * ### Find All
          * Fetches all the data for a particular model
-         * @param {Object} unfilteredOptions (optional)
+         * @param {Object} [unfilteredOptions]
          * @return {Promise<Bookshelf['Collection']>} Collection of all Models
          */
         findAll: async function findAll(unfilteredOptions) {
@@ -108,7 +108,7 @@ module.exports = function (Bookshelf) {
          * ### Find One
          * Naive find one where data determines what to match on
          * @param {Object} data
-         * @param {Object} unfilteredOptions (optional)
+         * @param {Object} [unfilteredOptions]
          * @return {Promise<Bookshelf['Model']>} Single Model
          */
         findOne: function findOne(data, unfilteredOptions) {
@@ -137,7 +137,7 @@ module.exports = function (Bookshelf) {
          * Based on the `method` option Bookshelf and Ghost can determine if a query is an insert or an update.
          *
          * @param {Object} data
-         * @param {Object} unfilteredOptions (optional)
+         * @param {Object} [unfilteredOptions]
          * @return {Promise<Bookshelf['Model']>} Edited Model
          */
         edit: async function edit(data, unfilteredOptions) {
@@ -170,7 +170,7 @@ module.exports = function (Bookshelf) {
          * ### Add
          * Naive add
          * @param {Object} data
-         * @param {Object} unfilteredOptions (optional)
+         * @param {Object} [unfilteredOptions]
          * @return {Promise<Bookshelf['Model']>} Newly Added Model
          */
         add: function add(data, unfilteredOptions) {
@@ -195,7 +195,7 @@ module.exports = function (Bookshelf) {
         /**
          * ### Destroy
          * Naive destroy
-         * @param {Object} unfilteredOptions (optional)
+         * @param {Object} [unfilteredOptions]
          * @return {Promise<Bookshelf['Model']>} Empty Model
          */
         destroy: async function destroy(unfilteredOptions) {
