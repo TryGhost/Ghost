@@ -1675,10 +1675,10 @@
     lz-string "^1.4.4"
     pretty-format "^26.6.2"
 
-"@testing-library/jest-dom@5.13.0":
-  version "5.13.0"
-  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.13.0.tgz#0a365684e2c1159f857f5915be50089fc5657df0"
-  integrity sha512-+jXXTn8GjRnZkJfzG/tqK/2Q7dGlBInR412WE7Aml7CT3wdSpx5dMQC0HOwVQoZ3cNTmQUy8fCVGUV/Zhoyvcw==
+"@testing-library/jest-dom@5.14.1":
+  version "5.14.1"
+  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.14.1.tgz#8501e16f1e55a55d675fe73eecee32cdaddb9766"
+  integrity sha512-dfB7HVIgTNCxH22M1+KU6viG5of2ldoA5ly8Ar8xkezKHKXjRvznCdbMbqjYGgO2xjRbwnR+rR8MLUIqF3kKbQ==
   dependencies:
     "@babel/runtime" "^7.9.2"
     "@types/testing-library__jest-dom" "^5.9.1"
@@ -1686,6 +1686,7 @@
     chalk "^3.0.0"
     css "^3.0.0"
     css.escape "^1.5.1"
+    dom-accessibility-api "^0.5.6"
     lodash "^4.17.15"
     redent "^3.0.0"
 
@@ -4625,10 +4626,10 @@ eslint-plugin-flowtype@^5.2.0:
     lodash "^4.17.15"
     string-natural-compare "^3.0.1"
 
-eslint-plugin-ghost@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.2.0.tgz#3b0f279f89cb57e17e98f664624cb8221a1591c0"
-  integrity sha512-BASnZGz1qYn6TvyEpIA4Z4QnHmAXWA5WjdkMQOPeXX1wVhyI4Fobm/rqp+YhMm3XC6JE0g5aO/A76et09ulMPg==
+eslint-plugin-ghost@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.3.0.tgz#def9e6dc8cc54c81bdfc1cdec2865a9d46710a27"
+  integrity sha512-qODEp6Jz2t8QgdpRMifvVnzvcJ6t9hFy3VnawmP/o191oYE/E6HElgCzqoMGEI3BcUhF93nzA5E7fcSqrpn4GQ==
   dependencies:
     eslint-plugin-ember "9.3.0"
     eslint-plugin-mocha "7.0.1"

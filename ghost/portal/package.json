@@ -18,7 +18,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@testing-library/jest-dom": "5.13.0",
+    "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.7",
     "@testing-library/user-event": "12.8.3",
     "react": "17.0.2",
@@ -68,7 +68,7 @@
     "chalk": "^4.1.1",
     "chokidar": "^3.5.1",
     "copy-webpack-plugin": "^6.3.2",
-    "eslint-plugin-ghost": "2.2.0",
+    "eslint-plugin-ghost": "2.3.0",
     "minimist": "^1.2.5",
     "ora": "^5.4.0",
     "rewire": "5.0.0",
