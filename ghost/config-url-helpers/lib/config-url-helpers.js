@@ -2,7 +2,8 @@ const deduplicateSubdirectory = require('./utils/deduplicate-subdirectory');
 
 /**
  * Returns a subdirectory URL, if defined so in the config.
- * @return {string} URL a subdirectory if configured.
+ * @callback getSubdirFn
+ * @return {string} a subdirectory if configured.
  */
 function getSubdir() {
     // Parse local path location
@@ -25,7 +26,8 @@ function getSubdir() {
  * If the request is secure, we want to force returning the site url as https.
  * Imagine Ghost runs with http, but nginx allows SSL connections.
  *
- * @param {boolean} secure
+ * @callback getSiteUrlFn
+ * @param {boolean} [secure] optionally force the url to be secure
  * @return {string} returns the url as defined in config, but always with a trailing `/`
  */
 function getSiteUrl(secure = false) {
@@ -44,7 +46,8 @@ function getSiteUrl(secure = false) {
 
 /**
  *
- * @returns {string}
+ * @callback getAdminUrlFn
+ * @returns {string} returns the url as defined in config, but always with a trailing `/`
  */
 function getAdminUrl() {
     let adminUrl = this.get('admin:url');
