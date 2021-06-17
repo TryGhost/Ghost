@@ -1,14 +1,13 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const db = require('../../../data/db');
 const logging = require('@tryghost/logging');
 
 const CHUNK_SIZE = 100;
 
-async function insertChunkSequential(table, chunk, result) {
+async function insertChunkSequential(knex, table, chunk, result) {
     for (const record of chunk) {
         try {
-            await db.knex(table).insert(record);
+            await knex(table).insert(record);
             result.successful += 1;
         } catch (err) {
             err.errorDetails = record;
@@ -19,16 +18,16 @@ async function insertChunkSequential(table, chunk, result) {
     }
 }
 
-async function insertChunk(table, chunk, result) {
+async function insertChunk(knex, table, chunk, result) {
     try {
-        await db.knex(table).insert(chunk);
+        await knex(table).insert(chunk);
         result.successful += chunk.length;
     } catch (err) {
         await insertChunkSequential(table, chunk, result);
     }
 }
 
-async function insert(table, data) {
+async function insert(knex, table, data) {
     const result = {
         successful: 0,
         unsuccessful: 0,
@@ -37,16 +36,16 @@ async function insert(table, data) {
     };
 
     for (const chunk of _.chunk(data, CHUNK_SIZE)) {
-        await insertChunk(table, chunk, result);
+        await insertChunk(knex, table, chunk, result);
     }
 
     return result;
 }
 
-async function delChunkSequential(table, chunk, result) {
+async function delChunkSequential(knex, table, chunk, result) {
     for (const id of chunk) {
         try {
-            await db.knex(table).where('id', id).del();
+            await knex(table).where('id', id).del();
             result.successful += 1;
         } catch (err) {
             const importError = new errors.DataImportError({
@@ -63,16 +62,16 @@ async function delChunkSequential(table, chunk, result) {
     }
 }
 
-async function delChunk(table, chunk, result) {
+async function delChunk(knex, table, chunk, result) {
     try {
-        await db.knex(table).whereIn('id', chunk).del();
+        await knex(table).whereIn('id', chunk).del();
         result.successful += chunk.length;
     } catch (err) {
         await delChunkSequential(table, chunk, result);
     }
 }
 
-async function del(table, ids) {
+async function del(knex, table, ids) {
     const result = {
         successful: 0,
         unsuccessful: 0,
@@ -81,7 +80,7 @@ async function del(table, ids) {
     };
 
     for (const chunk of _.chunk(ids, CHUNK_SIZE)) {
-        await delChunk(table, chunk, result);
+        await delChunk(knex, table, chunk, result);
     }
 
     return result;
@@ -95,13 +94,13 @@ module.exports = function (Bookshelf) {
         bulkAdd: function bulkAdd(data, tableName) {
             tableName = tableName || this.prototype.tableName;
 
-            return insert(tableName, data);
+            return insert(Bookshelf.knex, tableName, data);
         },
 
         bulkDestroy: function bulkDestroy(data, tableName) {
             tableName = tableName || this.prototype.tableName;
 
-            return del(tableName, data);
+            return del(Bookshelf.knex, tableName, data);
         }
     });
 };
