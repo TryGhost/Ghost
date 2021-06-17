@@ -34,6 +34,7 @@ describe('{{url}} helper', function () {
 
         after(function () {
             sandbox.restore();
+            urlUtils.restore();
         });
 
         it('should return the slug with a prefix slash if the context is a post', function () {
@@ -278,6 +279,7 @@ describe('{{url}} helper', function () {
 
         after(function () {
             sandbox.restore();
+            urlUtils.restore();
         });
 
         it('external urls should be retained in a nav context with subdir', function () {

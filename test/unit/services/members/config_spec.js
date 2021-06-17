@@ -1,18 +1,9 @@
 const should = require('should');
 const UrlUtils = require('@tryghost/url-utils');
 const MembersConfigProvider = require('../../../../core/server/services/members/config');
-const sinon = require('sinon');
 
-/**
- * @param {object} options
- * @param {boolean} options.stripeDirectValue - The value the stripeDirect config property should have
- */
-function createConfigMock({stripeDirectValue}) {
-    return {
-        get: sinon.stub()
-            .withArgs('stripeDirect').returns(stripeDirectValue)
-    };
-}
+const configUtils = require('../../../utils/configUtils');
+const sinon = require('sinon');
 
 /**
  * @param {object} options
@@ -50,10 +41,11 @@ function createSettingsMock({setDirect, setConnect}) {
     };
 }
 
-function createUrlUtilsMock({url = 'http://domain.tld/subdir', adminUrl = 'http://sub.domain.tld'} = {}) {
+function createUrlUtilsMock() {
     return new UrlUtils({
-        url,
-        adminUrl,
+        getSubdir: configUtils.config.getSubdir,
+        getSiteUrl: configUtils.config.getSiteUrl,
+        getAdminUrl: configUtils.config.getAdminUrl,
         apiVersions: {
             all: ['v3'],
             v3: {
@@ -69,13 +61,24 @@ function createUrlUtilsMock({url = 'http://domain.tld/subdir', adminUrl = 'http:
 }
 
 describe('Members - config', function () {
+    beforeEach(function () {
+        configUtils.set({
+            url: 'http://domain.tld/subdir',
+            admin: {url: 'http://sub.domain.tld'}
+        });
+    });
+
+    afterEach(function () {
+        configUtils.restore();
+    });
     it('Uses direct keys when stripeDirect is true, regardles of which keys exist', function () {
-        const config = createConfigMock({stripeDirectValue: true});
+        configUtils.set({stripeDirect: true});
+
         const settingsCache = createSettingsMock({setDirect: true, setConnect: Math.random() < 0.5});
         const urlUtils = createUrlUtilsMock();
 
         const membersConfig = new MembersConfigProvider({
-            config,
+            config: configUtils.config,
             settingsCache,
             urlUtils,
             ghostVersion: {original: 'v7357'},
@@ -89,12 +92,12 @@ describe('Members - config', function () {
     });
 
     it('Does not use connect keys if stripeDirect is true, and the direct keys do not exist', function () {
-        const config = createConfigMock({stripeDirectValue: true});
+        configUtils.set({stripeDirect: true});
         const settingsCache = createSettingsMock({setDirect: false, setConnect: true});
         const urlUtils = createUrlUtilsMock();
 
         const membersConfig = new MembersConfigProvider({
-            config,
+            config: configUtils.config,
             settingsCache,
             urlUtils,
             ghostVersion: {original: 'v7357'},
@@ -107,12 +110,12 @@ describe('Members - config', function () {
     });
 
     it('Uses connect keys when stripeDirect is false, and the connect keys exist', function () {
-        const config = createConfigMock({stripeDirectValue: false});
+        configUtils.set({stripeDirect: false});
         const settingsCache = createSettingsMock({setDirect: true, setConnect: true});
         const urlUtils = createUrlUtilsMock();
 
         const membersConfig = new MembersConfigProvider({
-            config,
+            config: configUtils.config,
             settingsCache,
             urlUtils,
             ghostVersion: {original: 'v7357'},
@@ -126,12 +129,12 @@ describe('Members - config', function () {
     });
 
     it('Uses direct keys when stripeDirect is false, but the connect keys do not exist', function () {
-        const config = createConfigMock({stripeDirectValue: false});
+        configUtils.set({stripeDirect: false});
         const settingsCache = createSettingsMock({setDirect: true, setConnect: false});
         const urlUtils = createUrlUtilsMock();
 
         const membersConfig = new MembersConfigProvider({
-            config,
+            config: configUtils.config,
             settingsCache,
             urlUtils,
             ghostVersion: {original: 'v7357'},
@@ -145,14 +148,15 @@ describe('Members - config', function () {
     });
 
     it('Includes the subdirectory in the webhookHandlerUrl', function () {
-        const config = createConfigMock({stripeDirectValue: false});
-        const settingsCache = createSettingsMock({setDirect: true, setConnect: false});
-        const urlUtils = createUrlUtilsMock({
+        configUtils.set({
+            stripeDirect: false,
             url: 'http://site.com/subdir'
         });
+        const settingsCache = createSettingsMock({setDirect: true, setConnect: false});
+        const urlUtils = createUrlUtilsMock();
 
         const membersConfig = new MembersConfigProvider({
-            config,
+            config: configUtils.config,
             settingsCache,
             urlUtils,
             ghostVersion: {original: 'v7357'},

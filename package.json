@@ -77,7 +77,7 @@
     "@tryghost/string": "0.1.19",
     "@tryghost/tpl": "0.1.2",
     "@tryghost/update-check-service": "0.1.0",
-    "@tryghost/url-utils": "1.1.4",
+    "@tryghost/url-utils": "2.0.0",
     "@tryghost/validator": "0.1.1",
     "@tryghost/version": "0.1.0",
     "@tryghost/vhost-middleware": "1.0.15",
