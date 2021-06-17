@@ -136,4 +136,50 @@ describe('utils: deduplicateSubdirectory()', function () {
                 .should.equal('/blog/', 'with root trailing-slash');
         });
     });
+
+    describe('with multiple slashes', function () {
+        it('handles double slash between root and subdir', function () {
+            deduplicateSubdirectory('http://admin.example.com//blog/blog/', 'http://example.com/blog')
+                .should.equal('http://admin.example.com/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com//blog/blog/', 'http://example.com/blog/')
+                .should.equal('http://admin.example.com/blog/', 'with root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com//blog/', 'http://example.com/blog')
+                .should.equal('http://admin.example.com/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com//blog/', 'http://example.com/blog/')
+                .should.equal('http://admin.example.com/blog/', 'with root trailing-slash');
+        });
+
+        it('handles double slash between duplicates', function () {
+            deduplicateSubdirectory('http://admin.example.com/blog//blog/', 'http://example.com/blog')
+                .should.equal('http://admin.example.com/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com/blog//blog/', 'http://example.com/blog/')
+                .should.equal('http://admin.example.com/blog/', 'with root trailing-slash');
+        });
+
+        it('handles double slash after subdirs', function () {
+            deduplicateSubdirectory('http://admin.example.com/blog/blog//', 'http://example.com/blog')
+                .should.equal('http://admin.example.com/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com/blog/blog//', 'http://example.com/blog/')
+                .should.equal('http://admin.example.com/blog/', 'with root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com/blog//', 'http://example.com/blog')
+                .should.equal('http://admin.example.com/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com/blog//', 'http://example.com/blog/')
+                .should.equal('http://admin.example.com/blog/', 'with root trailing-slash');
+        });
+
+        it('handles double slashes everywhere', function () {
+            deduplicateSubdirectory('http://admin.example.com//blog//blog//', 'http://example.com/blog')
+                .should.equal('http://admin.example.com/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('http://admin.example.com//blog//blog//', 'http://example.com/blog/')
+                .should.equal('http://admin.example.com/blog/', 'with root trailing-slash');
+        });
+    });
 });
