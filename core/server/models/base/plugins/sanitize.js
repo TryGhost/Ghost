@@ -52,12 +52,12 @@ module.exports = function (Bookshelf) {
         },
 
         /**
-     * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
-     * This filter should be called before each insert/update operation.
-     *
-     * @param {Object} data Has keys representing the model's attributes/fields in the database.
-     * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
-     */
+         * Filters potentially unsafe model attributes, so you can pass them to Bookshelf / Knex.
+         * This filter should be called before each insert/update operation.
+         *
+         * @param {Object} data Has keys representing the model's attributes/fields in the database.
+         * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
+         */
         filterData: function filterData(data) {
             const permittedAttributes = this.prototype.permittedAttributes();
             const filteredData = _.pick(data, permittedAttributes);
@@ -67,26 +67,26 @@ module.exports = function (Bookshelf) {
         },
 
         /**
-     * `sanitizeData` ensures that client data is in the correct format for further operations.
-     *
-     * Dates:
-     * - client dates are sent as ISO 8601 format (moment(..).format())
-     * - server dates are in JS Date format
-     *   >> when bookshelf fetches data from the database, all dates are in JS Dates
-     *   >> see `parse`
-     * - Bookshelf updates the model with the new client data via the `set` function
-     * - Bookshelf uses a simple `isEqual` function from lodash to detect real changes
-     * - .previous(attr) and .get(attr) returns false obviously
-     * - internally we use our `hasDateChanged` if we have to compare previous dates
-     * - but Bookshelf is not in our control for this case
-     *
-     * @IMPORTANT
-     * Before the new client data get's inserted again, the dates get's re-transformed into
-     * proper strings, see `format`.
-     *
-     * @IMPORTANT
-     * Sanitize relations.
-     */
+         * `sanitizeData` ensures that client data is in the correct format for further operations.
+         *
+         * Dates:
+         * - client dates are sent as ISO 8601 format (moment(..).format())
+         * - server dates are in JS Date format
+         *   >> when bookshelf fetches data from the database, all dates are in JS Dates
+         *   >> see `parse`
+         * - Bookshelf updates the model with the new client data via the `set` function
+         * - Bookshelf uses a simple `isEqual` function from lodash to detect real changes
+         * - .previous(attr) and .get(attr) returns false obviously
+         * - internally we use our `hasDateChanged` if we have to compare previous dates
+         * - but Bookshelf is not in our control for this case
+         *
+         * @IMPORTANT
+         * Before the new client data get's inserted again, the dates get's re-transformed into
+         * proper strings, see `format`.
+         *
+         * @IMPORTANT
+         * Sanitize relations.
+         */
         sanitizeData: function sanitizeData(data) {
             const tableName = _.result(this.prototype, 'tableName');
             let date;
@@ -145,11 +145,11 @@ module.exports = function (Bookshelf) {
         },
 
         /**
-     * Filters potentially unsafe `options` in a model method's arguments, so you can pass them to Bookshelf / Knex.
-     * @param {Object} unfilteredOptions Represents options to filter in order to be passed to the Bookshelf query.
-     * @param {String} methodName The name of the method to check valid options for.
-     * @return {Object} The filtered results of `options`.
-     */
+         * Filters potentially unsafe `options` in a model method's arguments, so you can pass them to Bookshelf / Knex.
+         * @param {Object} unfilteredOptions Represents options to filter in order to be passed to the Bookshelf query.
+         * @param {String} methodName The name of the method to check valid options for.
+         * @return {Object} The filtered results of `options`.
+         */
         filterOptions: function filterOptions(unfilteredOptions, methodName, filterConfig) {
             unfilteredOptions = unfilteredOptions || {};
             filterConfig = filterConfig || {};
