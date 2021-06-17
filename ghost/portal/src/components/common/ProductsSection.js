@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {getAllProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
+import AppContext from '../../AppContext';
 
 export const ProductsSectionStyles = ({site}) => {
     const products = getAllProducts({site});
@@ -298,6 +299,18 @@ function Checkbox({name, id, onProductSelect, isChecked, disabled = false}) {
     );
 }
 
+function ProductCardFooterAlternatePrice({price}) {
+    const {site} = useContext(AppContext);
+    const {portal_plans: portalPlans} = site;
+    if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
+        return null;
+    }
+
+    return (
+        <div className="gh-portal-product-alternative-price">{getPriceString(price)}</div>
+    );
+}
+
 function ProductCardFooter({product}) {
     const {selectedInterval} = useContext(ProductsContext);
     const monthlyPrice = product.monthlyPrice;
@@ -314,7 +327,7 @@ function ProductCardFooter({product}) {
                 <span className="amount">{getStripeAmount(activePrice.amount)}</span>
                 <span className="billing-period">/{activePrice.interval}</span>
             </div>
-            <div className="gh-portal-product-alternative-price">{getPriceString(alternatePrice)}</div>
+            <ProductCardFooterAlternatePrice price={alternatePrice} />
         </div>
     );
 }
@@ -381,9 +394,33 @@ function FreeProductCard() {
     );
 }
 
+function ProductPriceSwitch({selectedInterval, setSelectedInterval}) {
+    const {site} = useContext(AppContext);
+    const {portal_plans: portalPlans} = site;
+    if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
+        return null;
+    }
+    return (
+        <div className="gh-portal-products-priceswitch">
+            <span className="gh-portal-priceoption-label">Monthly</span>
+            <Switch id='product-interval' onToggle={(e) => {
+                const interval = selectedInterval === 'month' ? 'year' : 'month';
+                setSelectedInterval(interval);
+            }} checked={selectedInterval === 'year'} />
+            <span className="gh-portal-priceoption-label">Yearly</span>
+        </div>
+    );
+}
+
 function ProductsSection({onPlanSelect, products}) {
+    const {site} = useContext(AppContext);
+    const {portal_plans: portalPlans} = site;
+    let defaultInterval = 'month';
+    if (!portalPlans.includes('monthly') && portalPlans.includes('yearly')) {
+        defaultInterval = 'year';
+    }
     const defaultProductId = products.length > 0 ? products[0].id : 'free';
-    const [selectedInterval, setSelectedInterval] = useState('month');
+    const [selectedInterval, setSelectedInterval] = useState(defaultInterval);
     const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
 
     let price = null;
@@ -398,6 +435,10 @@ function ProductsSection({onPlanSelect, products}) {
         onPlanSelect(null, price.id);
     }, [price.id, onPlanSelect]);
 
+    useEffect(() => {
+        setSelectedInterval(defaultInterval);
+    }, [portalPlans.length, setSelectedInterval, defaultInterval]);
+
     return (
         <ProductsContext.Provider value={{
             selectedInterval,
@@ -405,14 +446,10 @@ function ProductsSection({onPlanSelect, products}) {
             setSelectedProduct
         }}>
             <section className="gh-portal-products">
-                <div className="gh-portal-products-priceswitch">
-                    <span className="gh-portal-priceoption-label">Monthly</span>
-                    <Switch id='product-interval' onToggle={(e) => {
-                        const interval = selectedInterval === 'month' ? 'year' : 'month';
-                        setSelectedInterval(interval);
-                    }} checked={selectedInterval === 'year'} />
-                    <span className="gh-portal-priceoption-label">Yearly</span>
-                </div>
+                <ProductPriceSwitch
+                    selectedInterval={selectedInterval}
+                    setSelectedInterval={setSelectedInterval}
+                />
 
                 <div className="gh-portal-products-grid">
                     <ProductCards products={products} />
