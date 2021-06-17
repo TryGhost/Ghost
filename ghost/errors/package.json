@@ -24,7 +24,7 @@
     "sinon": "11.0.0"
   },
   "dependencies": {
-    "ghost-ignition": "^4.6.1",
+    "@tryghost/ignition-errors": "^0.1.0",
     "lodash": "^4.17.21"
   }
 }

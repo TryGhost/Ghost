@@ -1,86 +1,102 @@
-const merge = require('lodash/merge'),
-    each = require('lodash/each'),
-    util = require('util'),
-    errors = require('ghost-ignition').errors;
+const merge = require('lodash/merge');
+const each = require('lodash/each');
+const util = require('util');
+const errors = require('@tryghost/ignition-errors');
 
-function GhostError(options) {
-    options = options || {};
-    this.value = options.value;
-
-    errors.IgnitionError.call(this, options);
+class GhostError extends errors.IgnitionError {
+    constructor(options) {
+        options = options || {};
+        super(options);
+        this.value = options.value;
+    }
 }
 
 const ghostErrors = {
-    DataExportError: function DataExportError(options) {
-        GhostError.call(this, merge({
-            statusCode: 500,
-            errorType: 'DataExportError'
-        }, options));
+    DataExportError: class DataExportError extends GhostError {
+        constructor(options) {
+            super(merge({
+                statusCode: 500,
+                errorType: 'DataExportError'
+            }, options));
+        }
     },
-    DataImportError: function DataImportError(options) {
-        GhostError.call(this, merge({
-            statusCode: 500,
-            errorType: 'DataImportError'
-        }, options));
+    DataImportError: class DataImportError extends GhostError {
+        constructor(options) {
+            super(merge({
+                statusCode: 500,
+                errorType: 'DataImportError'
+            }, options));
+        }
     },
-    DatabaseVersionError: function DatabaseVersionError(options) {
-        GhostError.call(this, merge({
-            hideStack: true,
-            statusCode: 500,
-            errorType: 'DatabaseVersionError'
-        }, options));
+    DatabaseVersionError: class DatabaseVersionError extends GhostError {
+        constructor(options) {
+            super(merge({
+                hideStack: true,
+                statusCode: 500,
+                errorType: 'DatabaseVersionError'
+            }, options));
+        }
     },
-    EmailError: function EmailError(options) {
-        GhostError.call(this, merge({
-            statusCode: 500,
-            errorType: 'EmailError'
-        }, options));
+    EmailError: class EmailError extends GhostError {
+        constructor(options) {
+            super(merge({
+                statusCode: 500,
+                errorType: 'EmailError'
+            }, options));
+        }
     },
-    ThemeValidationError: function ThemeValidationError(options) {
-        GhostError.call(this, merge({
-            statusCode: 422,
-            errorType: 'ThemeValidationError',
-            errorDetails: {}
-        }, options));
+    ThemeValidationError: class ThemeValidationError extends GhostError {
+        constructor(options) {
+            super(merge({
+                statusCode: 422,
+                errorType: 'ThemeValidationError',
+                errorDetails: {}
+            }, options));
+        }
     },
-    DisabledFeatureError: function DisabledFeatureError(options) {
-        GhostError.call(this, merge({
-            statusCode: 409,
-            errorType: 'DisabledFeatureError'
-        }, options));
+    DisabledFeatureError: class DisabledFeatureError extends GhostError {
+        constructor(options) {
+            super(merge({
+                statusCode: 409,
+                errorType: 'DisabledFeatureError'
+            }, options));
+        }
     },
-    UpdateCollisionError: function UpdateCollisionError(options) {
-        GhostError.call(this, merge({
-            statusCode: 409,
-            errorType: 'UpdateCollisionError'
-        }, options));
+    UpdateCollisionError: class UpdateCollisionError extends GhostError {
+        constructor(options) {
+            super(merge({
+                statusCode: 409,
+                errorType: 'UpdateCollisionError'
+            }, options));
+        }
     },
-    HostLimitError: function HostLimitError(options) {
-        GhostError.call(this, merge({
-            errorType: 'HostLimitError',
-            hideStack: true,
-            statusCode: 403
-        }, options));
+    HostLimitError: class HostLimitError extends GhostError {
+        constructor(options) {
+            super(merge({
+                errorType: 'HostLimitError',
+                hideStack: true,
+                statusCode: 403
+            }, options));
+        }
     },
-    HelperWarning: function HelperWarning(options) {
-        GhostError.call(this, merge({
-            errorType: 'HelperWarning',
-            hideStack: true
-        }, options));
+    HelperWarning: class HelperWarning extends GhostError {
+        constructor(options) {
+            super(merge({
+                errorType: 'HelperWarning',
+                hideStack: true
+            }, options));
+        }
     },
-    PasswordResetRequiredError: function PasswordResetRequiredError(options) {
-        GhostError.call(this, merge({
-            errorType: 'PasswordResetRequiredError',
-            statusCode: 401,
-            message: 'For security, you need to create a new password. An email has been sent to you with instructions!'
-        }, options));
+    PasswordResetRequiredError: class PasswordResetRequiredError extends GhostError {
+        constructor(options) {
+            super(merge({
+                errorType: 'PasswordResetRequiredError',
+                statusCode: 401,
+                message: 'For security, you need to create a new password. An email has been sent to you with instructions!'
+            }, options));
+        }
     }
 };
-
-util.inherits(GhostError, errors.IgnitionError);
-each(ghostErrors, function (error) {
-    util.inherits(error, GhostError);
-});
 
 // we need to inherit all general errors from GhostError, otherwise we have to check instanceof IgnitionError
 each(errors, function (error) {
