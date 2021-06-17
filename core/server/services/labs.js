@@ -16,7 +16,8 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'multipleProducts',
-    'featureImageMeta'
+    'featureImageMeta',
+    'psmRedesign'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
