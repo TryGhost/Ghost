@@ -210,6 +210,11 @@ module.exports = function (Bookshelf) {
             // Fetch the object before destroying it, so that the changed data is available to events
             const obj = await this.forge(options.destroyBy).fetch(options);
             return obj.destroy(options);
+        },
+
+        // When loading an instance, subclasses can specify default to fetch
+        defaultColumnsToFetch: function defaultColumnsToFetch() {
+            return [];
         }
     });
 };
