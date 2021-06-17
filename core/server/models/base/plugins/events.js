@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:model-events');
+const ObjectId = require('bson-objectid');
 
 const events = require('../../../lib/common/events');
 const schema = require('../../../data/schema');
@@ -29,6 +30,14 @@ module.exports = function (Bookshelf) {
             this.on('destroyed', this.onDestroyed);
             this.on('saving', this.onSaving);
             this.on('saved', this.onSaved);
+        },
+
+        /**
+         * we auto generate a GUID for each resource
+         * no auto increment
+         */
+        setId: function setId() {
+            this.set('id', ObjectId().toHexString());
         },
 
         /**
