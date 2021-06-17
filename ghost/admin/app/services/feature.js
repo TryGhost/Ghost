@@ -56,6 +56,7 @@ export default Service.extend({
     matchHelper: feature('matchHelper'),
     multipleProducts: feature('multipleProducts', {developer: true}),
     featureImageMeta: feature('featureImageMeta', {developer: true}),
+    psmRedesign: feature('psmRedesign', {developer: true}),
 
     _user: null,
 
