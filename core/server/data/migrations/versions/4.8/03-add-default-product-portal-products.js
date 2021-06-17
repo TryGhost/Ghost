@@ -1,6 +1,8 @@
 const {createTransactionalMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
 
+const MIGRATION_USER = 1;
+
 module.exports = createTransactionalMigration(
     async function up(knex) {
         const products = await knex
@@ -13,26 +15,38 @@ module.exports = createTransactionalMigration(
         }
 
         const defaultProduct = products[0];
+        const portalProductsValue = [defaultProduct.id];
 
         const portalProductsSetting = await knex('settings')
             .where('key', 'portal_products')
             .select('value')
             .first();
 
-        const portalProducts = JSON.parse(portalProductsSetting.value);
+        if (!portalProductsSetting) {
+            logging.info(`Adding "portal_products" record to "settings" table with product - ${defaultProduct.id}`);
 
-        if (portalProducts.length > 0) {
-            logging.warn('Skipping adding default product to portal_products, already contains products');
+            const now = knex.raw('CURRENT_TIMESTAMP');
+
+            await knex('settings')
+                .insert({
+                    id: ObjectID().toHexString(),
+                    key: 'portal_products',
+                    value: JSON.stringify(portalProductsValue),
+                    group: 'portal',
+                    type: 'array',
+                    created_at: now,
+                    created_by: MIGRATION_USER,
+                    updated_at: now,
+                    updated_by: MIGRATION_USER
+                });
             return;
         }
 
-        logging.info(`Adding default product - ${defaultProduct.id} - to portal_products setting`);
-
-        portalProducts.push(defaultProduct.id);
+        logging.info(`Setting portal_products setting to have product - ${defaultProduct.id}`);
 
         await knex('settings')
             .where('key', 'portal_products')
-            .update({value: JSON.stringify(portalProducts)});
+            .update({value: JSON.stringify(portalProductsValue)});
     },
     async function down(knex) {
         const portalProductSetting = await knex('settings')
