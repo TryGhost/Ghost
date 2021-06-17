@@ -88,9 +88,13 @@
     flex-basis: 18px;
     width: 14px;
     height: 14px;
-    min-width: 14px;
+    min-width: 18px;
     margin-top: 3px;
     color: var(--black);
+}
+
+.gh-product-card-block ul.benefits li span {
+    flex-grow: 1;
 }
 
 .gh-product-price-container {
