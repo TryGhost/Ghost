@@ -13,6 +13,9 @@ const deduplicateSubdirectory = function deduplicateSubdirectory(url, rootUrl) {
         rootUrl = `${rootUrl}/`;
     }
 
+    // Cleanup any extraneous slashes in url for consistent behaviour
+    url = url.replace(/(^|[^:])\/\/+/g, '$1/');
+
     const parsedRoot = new URL(rootUrl);
 
     // do nothing if rootUrl does not have a subdirectory
