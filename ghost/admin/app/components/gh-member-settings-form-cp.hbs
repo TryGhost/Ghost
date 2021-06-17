@@ -197,20 +197,39 @@
                             </span>
                         </div>
                         {{/each}}
-                        {{#if this.isAddComplimentaryAllowed}}
-                            <div class="gh-memberproduct-list-footer {{if this.isCreatingComplimentary "min-height" ""}}">
-                                {{#if this.isCreatingComplimentary}}
-                                    <GhLoadingSpinner />
-                                {{else}}
-                                    <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
-                                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
-                                    </button>
-                                {{/if}}
-                            </div>
+                        {{#if (not (feature "multipleProducts"))}}
+                            {{#if this.isAddComplimentaryAllowed}}
+                                <div class="gh-memberproduct-list-footer {{if this.isCreatingComplimentary "min-height" ""}}">
+                                    {{#if this.isCreatingComplimentary}}
+                                        <GhLoadingSpinner />
+                                    {{else}}
+                                        <button type="button" class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct" {{action "addCompedSubscription"}}>
+                                            <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                        </button>
+                                    {{/if}}
+                                </div>
+                            {{/if}}
                         {{/if}}
                     </div>
                 </div>
             {{/each}}
+            {{#if (feature "multipleProducts")}}
+                {{#if (and this.products this.isAddComplimentaryAllowed)}}
+                    <div class="gh-memberproduct-list-footer {{if this.isCreatingComplimentary "min-height" ""}}">
+                        {{#if this.isCreatingComplimentary}}
+                            <GhLoadingSpinner />
+                        {{else}}
+                                <button
+                                type="button"
+                                class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct"
+                                {{action (toggle "showMemberProductModal" this)}}
+                            >
+                                <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                            </button>
+                        {{/if}}
+                    </div>
+                {{/if}}
+            {{/if}}
         </div>
         <div class="gh-main-section-block">
             <div class="gh-main-section-content bordered">

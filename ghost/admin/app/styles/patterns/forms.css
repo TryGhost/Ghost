@@ -795,6 +795,7 @@ textarea {
     padding: 12px 12px 12px 14px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .form-rich-radio .gh-radio-label .description h4 {
@@ -806,11 +807,27 @@ textarea {
 }
 
 .form-rich-radio .gh-radio-label .description p {
-    font-size: 1.25rem !important;
+    font-size: 1.3rem !important;
     font-weight: 400;
     line-height: 1.45em;
-    margin: 2px 0 0;
+    margin: 0;
     padding: 0;
+}
+
+.form-rich-radio .check {
+    color: var(--darkgrey);
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    overflow: visible;
+}
+
+.form-rich-radio .check path {
+    stroke-width: 2px;
+}
+
+.form-rich-radio .gh-radio:not(.active) .check {
+    display: none;
 }
 
 
