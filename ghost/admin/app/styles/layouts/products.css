@@ -47,27 +47,55 @@
     padding-left: 16px;
 }
 
+.gh-product-card-block h4 {
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.gh-product-card-block h4 .counter {
+    font-weight: 400;
+    color: var(--midgrey);
+}
+
 .gh-product-card-name {
     font-size: 1.8rem;
     font-weight: 600;
     margin: 0;
 }
 
-.gh-product-card-heading {
-    display: inline-block;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-
 .gh-product-card-description {
+    font-size: 1.3rem;
     line-height: 1.45em;
     margin: 4px 20px 4px 0;
     color: var(--midgrey);
 }
 
+.gh-product-card-block ul.benefits {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+}
+
+.gh-product-card-block ul.benefits li {
+    display: flex;
+    align-items: flex-start;
+    font-size: 1.3rem;
+    line-height: 1.45em;
+    color: var(--middarkgrey);
+}
+
+.gh-product-card-block ul.benefits li svg {
+    flex-basis: 18px;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    margin-top: 3px;
+    color: var(--black);
+}
+
 .gh-product-price-container {
     display: flex;
+    margin-left: 20px;
 }
 
 .gh-product-card-price {
