@@ -4,7 +4,6 @@ const rewire = require('rewire');
 const imageLib = require('../../../../core/server/lib/image');
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const configUtils = require('../../../utils/configUtils');
-const urlUtils = require('../../../utils/urlUtils');
 const config = configUtils.config;
 
 const getAssetUrl = rewire('../../../../core/frontend/meta/asset_url');
@@ -81,7 +80,11 @@ describe('getAssetUrl', function () {
 
     describe('with /blog subdirectory', function () {
         beforeEach(function () {
-            getAssetUrl.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:65535/blog'}));
+            configUtils.set({url: 'http://localhost:65535/blog'});
+        });
+
+        afterEach(function () {
+            configUtils.restore();
         });
 
         it('should return asset url with just context', function () {

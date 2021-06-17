@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const urlUtils = require('../../../../utils/urlUtils');
+const configUtils = require('../../../../utils/configUtils');
 
 let cors = rewire('../../../../../core/server/web/api/middleware/cors');
 
@@ -32,6 +32,7 @@ describe('cors', function () {
 
     afterEach(function () {
         sinon.restore();
+        configUtils.restore();
         cors = rewire('../../../../../core/server/web/api/middleware/cors');
     });
 
@@ -94,7 +95,7 @@ describe('cors', function () {
     it('should be enabled if the origin matches config.url', function (done) {
         const origin = 'http://my.blog';
 
-        cors.__set__('urlUtils', urlUtils.getInstance({url: origin}));
+        configUtils.set({url: origin});
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
         res.get = sinon.stub().withArgs('origin').returns(origin);
@@ -111,10 +112,12 @@ describe('cors', function () {
     it('should be enabled if the origin matches config.url', function (done) {
         const origin = 'http://admin:2222';
 
-        cors.__set__('urlUtils', urlUtils.getInstance({
+        configUtils.set({
             url: 'https://blog',
-            adminUrl: origin
-        }));
+            admin: {
+                url: origin
+            }
+        });
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
         res.get = sinon.stub().withArgs('origin').returns(origin);

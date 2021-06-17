@@ -17,12 +17,13 @@ const MarkdownHandler = require('../../../../core/server/data/importer/handlers/
 const DataImporter = require('../../../../core/server/data/importer/importers/data');
 const ImageImporter = require('../../../../core/server/data/importer/importers/image');
 const storage = require('../../../../core/server/adapters/storage');
-const urlUtils = require('../../../utils/urlUtils');
+const configUtils = require('../../../utils/configUtils');
 
 describe('Importer', function () {
     afterEach(function () {
         sinon.restore();
         ImageHandler = rewire('../../../../core/server/data/importer/handlers/image');
+        configUtils.restore();
     });
 
     describe('ImportManager', function () {
@@ -450,7 +451,7 @@ describe('Importer', function () {
         });
 
         it('can load a file (subdirectory)', function (done) {
-            ImageHandler.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:65535/subdir'}));
+            configUtils.set({url: 'http://localhost:65535/subdir'});
 
             const filename = 'test-image.jpeg';
 

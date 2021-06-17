@@ -28,6 +28,7 @@ describe('{{image}} helper', function () {
 
         after(function () {
             sandbox.restore();
+            urlUtils.restore();
         });
 
         it('should output relative url of image', function () {
@@ -93,6 +94,7 @@ describe('{{image}} helper', function () {
 
         after(function () {
             sandbox.restore();
+            urlUtils.restore();
         });
 
         it('should output relative url of image', function () {
@@ -124,6 +126,7 @@ describe('{{image}} helper', function () {
 
         after(function () {
             sandbox.restore();
+            urlUtils.restore();
         });
 
         it('should output correct url for absolute paths which are internal', function () {

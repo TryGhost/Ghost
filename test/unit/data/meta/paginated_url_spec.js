@@ -133,6 +133,7 @@ describe('getPaginatedUrl', function () {
         });
 
         after(function () {
+            urlUtils.restore();
             sandbox.restore();
         });
 

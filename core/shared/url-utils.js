@@ -2,8 +2,9 @@ const UrlUtils = require('@tryghost/url-utils');
 const config = require('./config');
 
 const urlUtils = new UrlUtils({
-    url: config.get('url'),
-    adminUrl: config.get('admin:url'),
+    getSubdir: config.getSubdir,
+    getSiteUrl: config.getSiteUrl,
+    getAdminUrl: config.getAdminUrl,
     apiVersions: config.get('api:versions'),
     defaultApiVersion: config.get('api:versions:default'),
     slugs: config.get('slugs').protected,

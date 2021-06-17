@@ -62,6 +62,7 @@ describe('RSS: Generate Feed', function () {
 
         afterEach(function () {
             sandbox.restore();
+            urlUtils.restore();
         });
 
         it('should get the RSS tags correct', function (done) {
