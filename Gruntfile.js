@@ -6,7 +6,6 @@
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
 const config = require('./core/shared/config');
-const urlService = require('./core/frontend/services/url');
 const _ = require('lodash');
 const fs = require('fs-extra');
 const KnexMigrator = require('knex-migrator');
@@ -333,7 +332,7 @@ const configureGrunt = function (grunt) {
 
             watch: {
                 projects: {
-                    'core/client': ['shell:ember:watch', '--live-reload-base-url="' + urlService.utils.getSubdir() + '/ghost/"']
+                    'core/client': ['shell:ember:watch', '--live-reload-base-url="' + config.getSubdir() + '/ghost/"']
                 }
             }
         },
