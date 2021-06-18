@@ -951,12 +951,12 @@
     bluebird "^3.7.2"
     lodash "^4.17.21"
 
-"@tryghost/session-service@0.1.23":
-  version "0.1.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.23.tgz#208027504afc65d1230e928725382bcfc04f0a06"
-  integrity sha512-u/WaVcBTzcsNri5ohEAN6piYeRkeEt6WabjL3vqCCjYn3ccY8Gweeqfgc8OKg2hkpFwOhSxQu00harJaXSCcYQ==
+"@tryghost/session-service@0.1.24":
+  version "0.1.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.24.tgz#8c085df86b1d889d6aafe1e251df87e91aef36b0"
+  integrity sha512-v6ob1lUOWgVVbdK14tJav7bx+6ETgYr+Ith/Yk3lMyAZUHbfujYsE2EEHthXBLfU0hB/kRdvKhCIwDg2ziDX1A==
   dependencies:
-    "@tryghost/errors" "^0.2.12"
+    "@tryghost/errors" "^0.2.13"
 
 "@tryghost/social-urls@0.1.24":
   version "0.1.24"
