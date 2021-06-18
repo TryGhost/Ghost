@@ -1558,74 +1558,6 @@ p.theme-validation-details {
     margin-top: 20px;
 }
 
-.gh-settings-members-pricelabelcont {
-    display: flex;
-    align-items: baseline;
-}
-
-.gh-settings-members-pricelabelcont span {
-    margin: 0 4px;
-}
-
-.gh-settings-members-pricelabelcont span,
-.gh-settings-members-pricelabelcont div {
-    display: inline-block;
-    margin-bottom: 4px;
-}
-
-.gh-setting-members-currency {
-    position: relative;
-}
-
-.gh-setting-members-currencylabel {
-    position: absolute;
-    display: flex !important;
-    align-items: center;
-    top: 1px;
-    left: 0px;
-    background: var(--main-color-content-greybg);
-    height: 20px;
-    font-weight: 500;
-    font-size: 1.4rem;
-    color: var(--middarkgrey);
-    text-transform: uppercase;
-    pointer-events: none;
-}
-
-.gh-setting-members-currencylabel span {
-    margin-right: 0;
-}
-
-.gh-settings-members-pricelabelcont .gh-select svg {
-    position: unset;
-    margin-top: -3px;
-}
-
-.gh-settings-members-pricelabelcont .gh-select {
-    padding: 0;
-    width: 60px;
-    height: 16px;
-    background: transparent;
-    border: none;
-    margin-left: -4px;
-}
-
-.gh-settings-members-pricelabelcont .gh-select select {
-    background: transparent;
-    font-size: 1.4rem;
-    font-weight: 500;
-    border: none;
-    height: 16px;
-    width: 46px;
-    padding: 0;
-}
-
-.gh-setting-members-prices {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 20px;
-}
-
 .gh-setting-members-portal-mock {
     display: flex;
     position: relative;
@@ -1679,6 +1611,75 @@ p.theme-validation-details {
 .gh-setting-members-portal-mock .site-frame {
     border-radius: 5px;
 }
+
+.gh-settings-members-pricelabelcont {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-settings-members-pricelabelcont span {
+    margin: 0 4px;
+}
+
+.gh-settings-members-pricelabelcont span,
+.gh-settings-members-pricelabelcont div {
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.gh-settings-members-pricelabelcont .gh-select svg {
+    position: unset;
+    margin-top: -3px;
+}
+
+.gh-settings-members-pricelabelcont .gh-select {
+    padding: 0;
+    width: 60px;
+    height: 16px;
+    background: transparent;
+    border: none;
+    margin-left: -4px;
+}
+
+.gh-settings-members-pricelabelcont .gh-select select {
+    background: transparent;
+    font-size: 1.4rem;
+    font-weight: 500;
+    border: none;
+    height: 16px;
+    width: 46px;
+    padding: 0;
+}
+
+.gh-setting-members-prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+}
+
+.gh-setting-members-currency {
+    position: relative;
+}
+
+.gh-setting-members-currencylabel {
+    position: absolute;
+    display: flex !important;
+    align-items: center;
+    top: 1px;
+    left: 0px;
+    background: var(--main-color-content-greybg);
+    height: 20px;
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--middarkgrey);
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+.gh-setting-members-currencylabel span {
+    margin-right: 0;
+}
+
 
 /* Stripe Connect modal */
 .fullscreen-modal-stripe-connect {
