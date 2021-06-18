@@ -792,10 +792,8 @@ textarea {
 }
 
 .form-rich-radio .gh-radio-label {
-    padding: 12px 12px 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    position: relative;
+    padding: 12px 40px 12px 14px;
 }
 
 .form-rich-radio .gh-radio-label .description h4 {
@@ -815,6 +813,9 @@ textarea {
 }
 
 .form-rich-radio .check {
+    position: absolute;
+    top: calc(50% - 7px);
+    right: 12px;
     color: var(--darkgrey);
     width: 14px;
     height: 14px;
