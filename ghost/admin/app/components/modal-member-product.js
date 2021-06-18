@@ -60,6 +60,12 @@ export default class ModalMemberProduct extends ModalComponent {
         return this.addProduct.perform();
     }
 
+    @action
+    close(event) {
+        event?.preventDefault?.();
+        this.closeModal();
+    }
+
     @task({drop: true})
     *addProduct() {
         let url = this.ghostPaths.url.api(`members/${this.member.get('id')}`);
@@ -93,6 +99,10 @@ export default class ModalMemberProduct extends ModalComponent {
     actions = {
         confirm() {
             this.confirmAction(...arguments);
+        },
+        // needed because ModalBase uses .send() for keyboard events
+        closeModal() {
+            this.close();
         }
     }
 }
