@@ -626,7 +626,7 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/config-url-helpers@^0.1.0":
+"@tryghost/config-url-helpers@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.0.tgz#10cb3930c19a72e4967b52c6d6450a05449a3f9d"
   integrity sha512-zZU4+sKlK7L7wz7X7s6XEPrhWYJuMSaR65FaktZsdUQNneTHcmSQXJyLhWKLMFeayP51Os6tPYlLitBvHFLUOA==
