@@ -24,8 +24,13 @@ export default ModalComponent.extend({
             this.label.rollbackAttributes();
             this.set('showDeleteLabelModal', true);
         },
+
         validate(property) {
             return this.label.validate({property});
+        },
+
+        confirm() {
+            return this.saveTask.perform();
         }
     },
 

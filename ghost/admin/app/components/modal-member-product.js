@@ -5,29 +5,15 @@ import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class ModalMemberProduct extends ModalComponent {
-    @service
-    store
+    @service store;
+    @service ghostPaths;
+    @service ajax;
 
-    @service
-    ghostPaths
-
-    @service
-    ajax
-
-    @tracked
-    price
-
-    @tracked
-    product
-
-    @tracked
-    products = []
-
-    @tracked
-    selectedProduct = null;
-
-    @tracked
-    loadingProducts = false;
+    @tracked price;
+    @tracked product;
+    @tracked products = [];
+    @tracked selectedProduct = null;
+    @tracked loadingProducts = false;
 
     @task({drop: true})
     *fetchProducts() {
@@ -69,9 +55,12 @@ export default class ModalMemberProduct extends ModalComponent {
         this.price = price;
     }
 
-    @task({
-        drop: true
-    })
+    @action
+    confirm() {
+        return this.addProduct.perform();
+    }
+
+    @task({drop: true})
     *addProduct() {
         let url = this.ghostPaths.url.api(`members/${this.member.get('id')}`);
         // Cancel existing active subscriptions for member

@@ -4,5 +4,10 @@ import {inject as service} from '@ember/service';
 export default ModalComponent.extend({
     whatsNew: service(),
 
-    confirm() {}
+    confirm() {},
+
+    actions: {
+        // noop - enter key shouldn't do anything
+        confirm() {}
+    }
 });

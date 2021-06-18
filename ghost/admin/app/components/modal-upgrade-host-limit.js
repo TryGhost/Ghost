@@ -11,9 +11,14 @@ export default ModalComponent.extend({
 
         return {limit, total, message};
     }),
+
     actions: {
-        upgrade: function () {
+        upgrade() {
             this.router.transitionTo('pro');
+        },
+
+        confirm() {
+            this.send('upgrade');
         }
     }
 });

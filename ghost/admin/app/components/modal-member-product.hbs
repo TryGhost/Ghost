@@ -1,14 +1,16 @@
 <header class="modal-header" data-test-modal="delete-user" {{did-insert this.setup}}>
     <h1>Add subscription</h1>
 </header>
-<a class="close" href="" role="button" title="Close" {{action "closeModal" }}>{{svg-jar
-    "close"}}<span class="hidden">Close</span></a>
+<a class="close" href="" role="button" title="Close" {{action "closeModal" }}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</a>
 
 <form>
     <div class="modal-body">
-        <p class="gh-member-addcomp-subhed">Select a product for <strong>{{or
-                this.member.name this.member.email}}</strong>'s complimentary
-            subscription.</p>
+        <p class="gh-member-addcomp-subhed">
+            Select a product for <strong>{{or this.member.name this.member.email}}</strong>'s
+            complimentary subscription.
+        </p>
         {{#if this.activeSubscriptions.length}}
             <p class="gh-member-addcomp-warning">
                 Adding a complimentary subscription cancels all existing subscriptions of this member.
@@ -43,8 +45,7 @@
     <button
         class="gh-btn"
         {{action "closeModal" }}
-        {{!-- disable mouseDown so it does not trigger focus-out validations
-        --}}
+        {{!-- disable mouseDown so it does not trigger focus-out validations --}}
         {{action (optional this.noop) on="mouseDown" }}
         data-test-button="cancel-webhook">
         <span>Cancel</span>
