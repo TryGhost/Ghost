@@ -1187,6 +1187,43 @@ p.gh-members-import-errordetail:first-of-type {
     margin: -4px 0 0 0;
 }
 
+.labs-newsletter-settings .gh-email-design-typography-wrapper {
+    display: flex;
+    width: 250px;
+}
+
+.labs-newsletter-settings .gh-email-design-typography {
+    width: 100%;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-setting-dropdown {
+    margin: 0;
+    padding: 0 40px 0 8px; 
+}
+
+.labs-newsletter-settings .gh-email-design-typography-wrapper.header .gh-setting-dropdown {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.labs-newsletter-settings .gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
+    right: 16px !important;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-setting-dropdown-list .ember-power-select-option {
+    padding: 2px 8px;
+}
+
+.labs-newsletter-settings .gh-email-design-typography-wrapper.header .gh-btn-group {
+    background: var(--whitegrey);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-btn-group.icons .gh-btn {
+    margin: 4px;
+}
+
 .gh-email-design-typography .gh-radio {
     display: flex;
     align-items: center;
@@ -1195,42 +1232,16 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 0;
     margin-bottom: 12px;
 }
-.labs-newsletter-settings .gh-email-design-typography .gh-radio {
-    margin-bottom: 2px;
-}
 
 .gh-email-design-typography .gh-radio-content {
     border: 1px solid var(--whitegrey);
     border-radius: 3px; /* labs-newsletter-settings - delete line when removing flag */
     margin: 0 -32px 0 0;
 }
-/* labs-newsletter-settings - delete all when removing flag */
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-content {
-    border-radius: inherit;
-}
-/* end delete all */
-
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.serif {
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-}
-
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.sans-serif {
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
-}
-
-.labs-newsletter-settings .gh-email-design-typography .active {
-    margin: 0 2px 2px;
-}
 
 .gh-email-design-typography .active .gh-radio-content {
     border: 1px solid transparent;
     box-shadow: 0px 0px 0px 2px var(--green);
-}
-
-.labs-newsletter-settings .gh-email-design-typography .active .gh-radio-label {
-    margin: 0 -2px;
 }
 
 .gh-email-design-typography .gh-radio-button {
@@ -1245,7 +1256,7 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .labs-newsletter-settings .gh-email-design-typography .gh-radio-label {
-    padding: 12px 8px;
+    padding: 8px 4px;
     display: flex;
     align-items: center;
 }
@@ -1259,15 +1270,20 @@ p.gh-members-import-errordetail:first-of-type {
     text-align: center;
 }
 
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-label .sample {
-    margin-right: 14px;
-}
-
 .gh-email-design-typography .gh-radio-label .description h4 {
     font-size: 1.3rem;
     margin: 0;
     padding: 0;
     line-height: 1.4em;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-label .description h4 {
+    font-weight: 400;
+}
+
+.labs-newsletter-settings .gh-email-design-typography .gh-radio-label.serif .description h4 {
+    font-size: 1.32rem;
+    letter-spacing: .4px;
 }
 
 .gh-email-design-typography .gh-radio-label.serif .description h4,
@@ -1282,8 +1298,7 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 0;
 }
 
-.gh-email-design-typography .gh-radio-label.serif .description p,
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.serif .description p {
+.gh-email-design-typography .gh-radio-label.serif .description p {
     font-size: 1.25rem !important;
     margin: 0;
     padding: 0;
@@ -1312,8 +1327,8 @@ p.gh-members-import-errordetail:first-of-type {
     margin-bottom: 4px;
 }
 .labs-newsletter-settings .gh-members-emailsettings-footer {
-    padding: inherit;
-    margin: 0px -24px 4px;
+    padding: 0;
+    margin: 0;
 }
 
 .gh-members-emailsettings-footer .form-group {
