@@ -218,7 +218,7 @@ module.exports = function apiRoutes() {
     router.post('/authentication/setup', http(apiCanary.authentication.setup));
     router.put('/authentication/setup', mw.authAdminApi, http(apiCanary.authentication.updateSetup));
     router.get('/authentication/setup', http(apiCanary.authentication.isSetup));
-    router.put('/authentication/reset_all_passwords', mw.authAdminApi, http(apiCanary.authentication.resetAllPasswords));
+    router.post('/authentication/reset_all_passwords', mw.authAdminApi, http(apiCanary.authentication.resetAllPasswords));
 
     // ## Images
     router.post('/images/upload',
