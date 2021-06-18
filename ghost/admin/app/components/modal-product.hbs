@@ -88,7 +88,26 @@
             <h4 class="gh-main-section-header small bn">Benefits</h4>
             <div class="gh-main-section-content grey gh-product-form-benefits">
                 <div class="gh-product-benefit">
-                    
+                    <form id="product-benefits" class="gh-blognav" novalidate="novalidate">
+                        <SortableObjects @sortableObjectList={{this.benefits}} @useSwap={{false}}>
+                            {{#each this.benefits as |benefitItem index|}}
+                                <DraggableObject @content={{benefitItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                                    <GhBenefitItem
+                                        @benefitItem={{benefitItem}}
+                                        @addItem={{action "addBenefit"}}
+                                        @deleteItem={{action "deleteBenefit"}}
+                                        @updateLabel={{action "updateLabel"}}
+                                        data-test-navitem={{index}} />
+                                </DraggableObject>
+                            {{/each}}
+                        </SortableObjects>
+                        <GhBenefitItem
+                            @benefitItem={{this.newBenefit}}
+                            @addItem={{action "addBenefit"}}
+                            @deleteItem={{action "deleteBenefit"}}
+                            @updateLabel={{action "updateLabel"}}
+                            data-test-navitem="new" />
+                    </form>
                 </div>
             </div>
         </div>
