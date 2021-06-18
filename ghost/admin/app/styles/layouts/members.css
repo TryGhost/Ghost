@@ -1634,12 +1634,19 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 /* Member's product list */
+.gh-member-product-container {
+    border: 1px solid var(--whitegrey);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    padding: 24px;
+}
+
 .gh-memberproduct-name {
     display: flex;
     justify-content: space-between;
     font-size: 1.65rem !important;
     font-weight: 600;
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
 }
 
 .gh-cp-memberproduct.multiple-subs .gh-memberproduct-name {
@@ -1673,7 +1680,6 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-memberproduct-created {
-    margin-top: 1px;
     color: var(--midgrey);
 }
 
@@ -1685,8 +1691,6 @@ p.gh-members-import-errordetail:first-of-type {
     position:relative;
     margin-top: 12px;
     margin-bottom: -8px;
-    padding-top: 12px;
-    border-top: 1px solid var(--whitegrey);
 }
 
 .gh-memberproduct-list-footer.min-height {
@@ -1755,25 +1759,46 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-memberproduct-subscription {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.gh-memberproduct-subscription .action-menu {
-    position: absolute;
-    top: -4px;
-    right: 0;
+.gh-cp-memberproduct .gh-product-card-price {
+    padding: 10px 18px;
 }
 
-.gh-memberproduct-subscription .action-menu .gh-btn-subscription-action {
-    opacity: 0;
+.gh-cp-memberproduct:not(.multiple-subs) .gh-product-card-price {
+    margin-top: -19px;
+    padding: 15px 18px;
 }
 
-.gh-memberproduct-subscription:hover .action-menu .gh-btn-subscription-action,
+.product-actions-menu {
+    top: calc(100% - 16px);
+    right: 0px;
+    left: auto;
+}
+
+.gh-cp-memberproduct.multiple-subs .product-actions-menu {
+    top: calc(100% + 6px);
+}
+
+.gh-cp-memberproduct .gh-memberproduct-subscription .action-menu {
+    margin-left: 3vw;
+}
+
+.gh-cp-memberproduct:not(.multiple-subs) .gh-memberproduct-subscription .action-menu {
+    margin-top: -28px;
+}
+
+.gh-memberproduct-subscription .action-menu .gh-btn-subscription-action:not(:hover) {
+    border-color: var(--main-bg-color);
+    box-shadow: none;
+}
+
 .gh-memberproduct-subscription .action-menu .gh-btn-subscription-action.open {
-    opacity: 1;
-}
-
-.gh-cp-memberproduct.multiple-subs .gh-memberproduct-subscription .action-menu {
-    top: 20px;
+    border: 1px solid var(--lightgrey-l1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .gh-memberproduct-subscription .action-menu > .gh-btn span {

@@ -115,10 +115,15 @@
     min-width: 90px;
 }
 
+.gh-product-card-price .currency-symbol,
 .gh-product-card-price .amount,
 .gh-product-card-price .currency {
     font-weight: 600;
     color: var(--darkgrey);
+}
+
+.gh-product-card-price .currency-symbol {
+    margin-top: -3px;
 }
 
 .gh-product-card-price .amount {
@@ -344,12 +349,6 @@
     text-align: center;
     padding: 48px 0;
     color: var(--midgrey);
-}
-
-.product-actions-menu {
-    top: calc(100% + 6px);
-    right: 10px;
-    left: auto;
 }
 
 .gh-btn-archive-toggle {
