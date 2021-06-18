@@ -47,7 +47,6 @@
                     <p>Access, subscription, and pricing options</p>
                 </div>
             </LinkTo>
-            {{#if this.session.user.isOwner}}
             <LinkTo class="gh-setting-group" @route="settings.members-email" data-test-nav="members-email">
                 <span class="yellow">{{svg-jar "email-stroke"}}</span>
                 <div>
@@ -55,7 +54,6 @@
                     <p>Customize emails and set email addresses</p>
                 </div>
             </LinkTo>
-            {{/if}}
         </div>
 
         <div class="gh-setting-header">Advanced</div>
