@@ -37,10 +37,17 @@ export default class GhSiteIframeComponent extends Component {
                 if (this.args.invisibleUntilLoaded) {
                     this.isInvisible = true;
                 }
-                if (iframe.contentWindow.location.href !== this.srcUrl) {
-                    iframe.contentWindow.location = this.srcUrl;
-                } else {
-                    iframe.contentWindow.location.reload();
+
+                try {
+                    if (iframe.contentWindow.location.href !== this.srcUrl) {
+                        iframe.contentWindow.location = this.srcUrl;
+                    } else {
+                        iframe.contentWindow.location.reload();
+                    }
+                } catch (e) {
+                    if (e.name === 'SecurityError') {
+                        iframe.src = this.srcUrl;
+                    }
                 }
             }
         }
