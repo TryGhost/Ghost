@@ -5,8 +5,12 @@ export default ModalComponent.extend({
     router: service(),
 
     actions: {
-        upgrade: function () {
+        upgrade() {
             this.router.transitionTo('pro');
+        },
+
+        confirm() {
+            this.send('upgrade');
         }
     }
 });
