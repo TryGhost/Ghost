@@ -151,7 +151,7 @@ const getLabsTemplateSettings = async () => {
         if (isUnsplashImage(templateSettings.headerImage)) {
             // Unsplash images have a minimum size so assuming 1200px is safe
             const unsplashUrl = new URL(templateSettings.headerImage);
-            unsplashUrl.searchParams.set('w', 1200);
+            unsplashUrl.searchParams.set('w', '1200');
 
             templateSettings.headerImage = unsplashUrl.href;
             templateSettings.headerImageWidth = 600;
@@ -217,7 +217,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         if (isUnsplashImage(post.feature_image)) {
             // Unsplash images have a minimum size so assuming 1200px is safe
             const unsplashUrl = new URL(post.feature_image);
-            unsplashUrl.searchParams.set('w', 1200);
+            unsplashUrl.searchParams.set('w', '1200');
 
             post.feature_image = unsplashUrl.href;
             post.feature_image_width = 600;
@@ -249,7 +249,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
     let htmlTemplate = templateRenderer({post, site: getSite(), templateSettings});
 
     if (options.isBrowserPreview) {
-        const previewUnsubscribeUrl = createUnsubscribeUrl();
+        const previewUnsubscribeUrl = createUnsubscribeUrl(null);
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
     }
 
@@ -263,7 +263,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
     // force all links to open in new tab
     _cheerio('a').attr('target','_blank');
     // convert figure and figcaption to div so that Outlook applies margins
-    _cheerio('figure, figcaption').each((i, elem) => (elem.tagName = 'div'));
+    _cheerio('figure, figcaption').each((i, elem) => !!(elem.tagName = 'div'));
     juicedHtml = _cheerio.html();
 
     // Fix any unsupported chars in Outlook
