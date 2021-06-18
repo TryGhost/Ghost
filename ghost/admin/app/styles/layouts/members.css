@@ -1514,9 +1514,18 @@ p.gh-members-import-errordetail:first-of-type {
     width: 100%;
     max-width: 600px;
     height: 300px;
-    margin-bottom: 1.7em;
+    margin-bottom: 8px;
     background: #fafafa no-repeat 50%;
     background-size: cover;
+}
+
+.labs-newsletter-settings .gh-members-emailpreview-featureimage-caption {
+    width: 100%;
+    max-width: 600px;
+    padding-bottom: 30px;
+    text-align: center;
+    color: var(--midgrey);
+    font-size: 1.3rem;
 }
 
 .gh-members-emailpreview-content {
