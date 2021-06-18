@@ -2,6 +2,7 @@
 const iff = (cond, yes, no) => (cond ? yes : no);
 module.exports = ({post, site, templateSettings}) => {
     const date = new Date();
+    const hasFeatureImageCaption = templateSettings.labsFeatureImageMeta && templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
     return `<!doctype html>
 <html>
 
@@ -350,6 +351,18 @@ figure blockquote p {
 .feature-image {
     padding-bottom: 30px;
     width: 100%;
+}
+
+.feature-image-with-caption {
+    padding-bottom: 10px;
+}
+
+.feature-image-caption {
+    width: 100%;
+    padding-bottom: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: #738a94;
 }
 
 .post-content {
@@ -940,7 +953,12 @@ ${ templateSettings.showBadge ? `
                                     </tr>
                                     ${ templateSettings.showFeatureImage && post.feature_image ? `
                                     <tr>
-                                        <td class="feature-image"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''}></td>
+                                        <td class="feature-image ${hasFeatureImageCaption ? 'feature-image-with-caption' : ''}"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''} alt="${post.feature_image_alt}"></td>
+                                    </tr>
+                                    ` : ``}
+                                    ${ hasFeatureImageCaption ? `
+                                    <tr>
+                                        <td class="feature-image-caption" align="center">${post.feature_image_caption}</td>
                                     </tr>
                                     ` : ``}
                                     <tr>

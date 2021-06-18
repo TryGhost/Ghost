@@ -4,6 +4,7 @@ const template = require('./template');
 const labsTemplate = require('./template-labs');
 const config = require('../../../shared/config');
 const settingsCache = require('../../services/settings/cache');
+const labs = require('../../services/labs');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
 const cheerio = require('cheerio');
@@ -144,7 +145,8 @@ const getLabsTemplateSettings = async () => {
         bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
         showBadge: settingsCache.get('newsletter_show_badge'),
         footerContent: settingsCache.get('newsletter_footer_content'),
-        accentColor: settingsCache.get('accent_color')
+        accentColor: settingsCache.get('accent_color'),
+        labsFeatureImageMeta: labs.isSet('featureImageMeta')
     };
 
     if (templateSettings.headerImage) {
