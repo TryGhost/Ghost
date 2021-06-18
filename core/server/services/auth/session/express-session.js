@@ -1,3 +1,4 @@
+const util = require('util');
 const session = require('express-session');
 const constants = require('@tryghost/constants');
 const config = require('../../../../shared/config');
@@ -23,7 +24,6 @@ const expressSessionMiddleware = session({
     }
 });
 
-module.exports = {};
 module.exports.getSession = async function getSession(req, res) {
     if (req.session) {
         return req.session;
@@ -38,4 +38,4 @@ module.exports.getSession = async function getSession(req, res) {
     });
 };
 
-module.exports.sessionStore = sessionStore;
+module.exports.deleteAllSessions = util.promisify(sessionStore.clear.bind(sessionStore));

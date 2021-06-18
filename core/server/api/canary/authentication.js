@@ -12,7 +12,7 @@ const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
-const {sessionStore} = require('../../services/auth/session');
+const {deleteAllSessions} = require('../../services/auth/session');
 
 module.exports = {
     docName: 'authentication',
@@ -200,11 +200,10 @@ module.exports = {
     },
 
     resetAllPasswords: {
-        // validation: false,
         permissions: true,
         async query(frame) {
             await userService.resetAllPasswords(frame.options);
-            await sessionStore.clear();
+            await deleteAllSessions();
         }
     }
 };
