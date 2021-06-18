@@ -445,7 +445,7 @@ Usage: CTA buttons grouped together horizontally.
 
 .gh-btn-group.icons .gh-btn span {
     height: 28px;
-    padding: 0 10px;
+    padding: 0 8px;
 }
 
 .gh-btn-group.icons .gh-btn-icon svg {
