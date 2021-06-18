@@ -914,13 +914,13 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/request@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.0.tgz#8d72b58b94bfa2ac75a2dfd2240efd1742e7d1f7"
-  integrity sha512-fhXxKWXKaRChGhJ+L7LETsBPUxMCKDKmnBPPsj4pZOdmTthPdbQIMkvsKEQBnqibiv6rwf2GUqL/U1BTnHWGdg==
+"@tryghost/request@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.1.tgz#972877e9add9507b83c2a7f6403f24c286467845"
+  integrity sha512-v33AGB/DdGLzGCLLtg9dCyjZ9tnrUarlrQpQvrBKhLJaBvRnZ07dHQthN9NbvxQG0moMYPaBUV8uKkESRXMA6A==
   dependencies:
     "@tryghost/errors" "^0.2.12"
-    "@tryghost/validator" "^0.1.0"
+    "@tryghost/validator" "^0.1.1"
     "@tryghost/version" "^0.1.0"
     got "9.6.0"
     lodash "^4.17.21"
@@ -1023,23 +1023,12 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.1":
+"@tryghost/validator@0.1.1", "@tryghost/validator@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.1.tgz#29176e24672368a2231ddb7d1425d799f8b56fdd"
   integrity sha512-lDvnaIo0yuJy7aedpdpqlkiEz2thEZ3lp5NRmXNMA3Cv0JOkpEX8K0CRTtczC2hYu8cQla9zZJ5I/40xTlEsUQ==
   dependencies:
     "@tryghost/errors" "^0.2.13"
-    "@tryghost/tpl" "^0.1.2"
-    lodash "^4.17.21"
-    moment-timezone "0.5.23"
-    validator "7.2.0"
-
-"@tryghost/validator@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.0.tgz#f089fed04998a4ceb4957350117f8d9bb626daf0"
-  integrity sha512-Np9EN3RayTOd81GjVna6Zv12LsTz98JlqeXbOnUVzrRphARRJHvNwcKi7Kh4EDqA2MWpYQDiU0+QwP7zyA0Gkg==
-  dependencies:
-    "@tryghost/errors" "^0.2.12"
     "@tryghost/tpl" "^0.1.2"
     lodash "^4.17.21"
     moment-timezone "0.5.23"
