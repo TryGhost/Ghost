@@ -15,6 +15,21 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
+let BENEFITSDATA = [
+    EmberObject.create({
+        id: '1',
+        label: 'Benefit 1'
+    }),
+    EmberObject.create({
+        id: '2',
+        label: 'Benefit 2'
+    }),
+    EmberObject.create({
+        id: '3',
+        label: 'Benefit 3'
+    })
+];
+
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalProductPrice extends ModalBase {
@@ -27,6 +42,7 @@ export default class ModalProductPrice extends ModalBase {
     @tracked currency = 'usd';
     @tracked errors = EmberObject.create();
     @tracked stripePlanError = '';
+    @tracked benefits = BENEFITSDATA;
 
     confirm() {}
 
@@ -50,6 +66,13 @@ export default class ModalProductPrice extends ModalBase {
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
+        this.benefits = BENEFITSDATA;
+        this.newBenefit = EmberObject.create({
+            isNew: true,
+            id: '3',
+            label: ''
+        });
+        this.benefitId = 4;
     }
 
     get title() {
@@ -128,6 +151,24 @@ export default class ModalProductPrice extends ModalBase {
     }
 
     actions = {
+        addBenefit() {
+            this.benefits = [
+                ...this.benefits,
+                EmberObject.create({
+                    label: 'New benefit',
+                    id: this.benefitId
+                })
+            ];
+            this.benefitId = this.benefitId + 1;
+        },
+        deleteBenefit(benefitItem) {
+            this.benefits = this.benefits.filter((d) => {
+                return !(d.id === benefitItem.id);
+            });
+        },
+        updateLabel() {
+            // Update label here
+        },
         confirm() {
             this.confirmAction(...arguments);
         },

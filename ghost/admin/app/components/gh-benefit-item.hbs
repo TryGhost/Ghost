@@ -1,0 +1,37 @@
+{{#unless this.benefitItem.isNew}}
+    <span class="gh-blognav-grab">
+        {{svg-jar "grab"}}
+        <span class="sr-only">Reorder</span>
+    </span>
+{{/unless}}
+
+<div class="gh-blognav-line">
+    <GhValidationStatusContainer
+        @tagName="span"
+        @class="gh-blognav-label"
+        @errors={{this.benefitItem.errors}}
+        @property="label"
+        @hasValidated={{this.benefitItem.hasValidated}}
+    >
+        <GhTrimFocusInput
+            @shouldFocus={{this.benefitItem.last}}
+            @placeholder="Label"
+            @value={{readonly this.label}}
+            @input={{action "updateLabel" value="target.value"}}
+            @keyPress={{action "clearLabelErrors"}}
+            @focus-out={{action "updateLabel" this.label}} data-test-input="label" />
+        <GhErrorMessage
+            @errors={{this.benefitItem.errors}}
+            @property="label" data-test-error="label" />
+    </GhValidationStatusContainer>
+</div>
+
+{{#if this.benefitItem.isNew}}
+    <button type="button" class="gh-blognav-add" {{action "addItem" this.benefitItem}}>
+        {{svg-jar "add"}}<span class="sr-only">Add</span>
+    </button>
+{{else}}
+    <button type="button" class="gh-blognav-delete" {{action "deleteItem" this.benefitItem}}>
+        {{svg-jar "trash"}}<span class="sr-only">Delete</span>
+    </button>
+{{/if}}
