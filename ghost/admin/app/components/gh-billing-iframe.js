@@ -23,6 +23,13 @@ export default Component.extend({
                         request: 'token',
                         response: token
                     }, '*');
+                }).catch((error) => {
+                    if (error.payload?.errors && error.payload.errors[0]?.type === 'NoPermissionError') {
+                        // noop - user doesn't have permission to access billing
+                        return;
+                    }
+
+                    throw error;
                 });
 
                 // NOTE: the handler is placed here to avoid additional logic to check if iframe has loaded
