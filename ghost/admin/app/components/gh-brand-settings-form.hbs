@@ -29,6 +29,7 @@
                         class="gh-input"
                         {{on "input" (perform this.debounceUpdateAccentColor)}}
                         {{on "blur" this.updateAccentColor}}
+                        {{on-key "Enter" this.blurElement}}
                         data-test-input="accentColor"
                     />
                     <div class="color-picker-horizontal-divider"></div>
