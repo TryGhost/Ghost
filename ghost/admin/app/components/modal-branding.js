@@ -13,6 +13,12 @@ export default ModalComponent.extend({
         this.settings.rollbackAttributes();
     },
 
+    actions: {
+        confirm() {
+            // noop
+        }
+    },
+
     registerPreviewIframe: action(function (element) {
         this.previewIframe = element;
     }),
