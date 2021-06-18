@@ -11,7 +11,7 @@ const env = process.env.NODE_ENV || 'development';
 
 /**
  * @param {object} options
- * @returns {Nconf.Provider & urlHelpers.BoundHelpers}
+ * @returns {Nconf.Provider & urlHelpers.BoundHelpers & helpers.ConfigHelpers}
  */
 function loadNconf(options) {
     debug('config start');
@@ -50,8 +50,7 @@ function loadNconf(options) {
     nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
 
     // Expose dynamic utility methods
-    nconf.isPrivacyDisabled = helpers.isPrivacyDisabled.bind(nconf);
-    nconf.getContentPath = helpers.getContentPath.bind(nconf);
+    helpers.bindAll(nconf);
     urlHelpers.bindAll(nconf);
 
     // ## Sanitization

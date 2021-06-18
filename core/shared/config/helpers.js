@@ -1,5 +1,10 @@
 const path = require('path');
 
+/**
+ * @callback isPrivacyDisabledFn
+ * @param {string} privacyFlag - the flag to be looked up
+ * @returns {boolean}
+ */
 const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     if (!this.get('privacy')) {
         return false;
@@ -19,7 +24,9 @@ const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 };
 
 /**
- * we can later support setting folder names via custom config values
+ * @callback getContentPathFn
+ * @param {string} type - the type of context you want the path for
+ * @returns {string}
  */
 const getContentPath = function getContentPath(type) {
     switch (type) {
@@ -43,7 +50,12 @@ const getContentPath = function getContentPath(type) {
     }
 };
 
-module.exports = {
-    isPrivacyDisabled,
-    getContentPath
+/**
+ * @typedef ConfigHelpers
+ * @property {isPrivacyDisabledFn} isPrivacyDisabled
+ * @property {getContentPathFn} getContentPath
+ */
+module.exports.bindAll = (nconf) => {
+    nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
+    nconf.getContentPath = getContentPath.bind(nconf);
 };
