@@ -21,6 +21,18 @@ export default class ModalStripeConnect extends ModalBase {
     }
 
     @action
+    close(event) {
+        event?.preventDefault?.();
+        this.closeModal();
+    }
+
+    @action
+    confirmAction() {
+        this.confirm();
+        this.close();
+    }
+
+    @action
     updateSuccessModifier() {
         if (this.settings.get('stripeConnectAccountId')) {
             if (this.modifier?.indexOf('stripe-connected') === -1) {
@@ -36,9 +48,8 @@ export default class ModalStripeConnect extends ModalBase {
     actions = {
         confirm() {
             if (this.settings.get('stripeConnectAccountId')) {
-                return this.send('closeModal');
+                return this.confirmAction();
             }
-
             // noop - enter key shouldn't do anything
         }
     }
