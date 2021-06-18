@@ -72,7 +72,7 @@
     "@tryghost/request": "0.1.1",
     "@tryghost/root-utils": "0.3.0",
     "@tryghost/security": "0.2.9",
-    "@tryghost/session-service": "0.1.23",
+    "@tryghost/session-service": "0.1.24",
     "@tryghost/social-urls": "0.1.24",
     "@tryghost/string": "0.1.19",
     "@tryghost/tpl": "0.1.3",
