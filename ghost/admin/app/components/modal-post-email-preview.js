@@ -30,7 +30,10 @@ export default ModalComponent.extend({
     actions: {
         changeType(type) {
             this.set('type', type);
-        }
+        },
+
+        // noop - we don't want the enter key to do anything here
+        confirm() {}
     },
 
     renderEmailPreview: action(async function renderEmailPreview(iframe) {

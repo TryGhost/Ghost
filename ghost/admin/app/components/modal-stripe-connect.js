@@ -32,4 +32,14 @@ export default class ModalStripeConnect extends ModalBase {
             }
         }
     }
+
+    actions = {
+        confirm() {
+            if (this.settings.get('stripeConnectAccountId')) {
+                return this.send('closeModal');
+            }
+
+            // noop - enter key shouldn't do anything
+        }
+    }
 }

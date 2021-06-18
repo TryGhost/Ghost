@@ -8,17 +8,22 @@ export default ModalComponent.extend({
     ajax: service(),
     store: service(),
     ghostPaths: service(),
+
     errorMessage: null,
+
     // Allowed actions
     confirm: () => {},
+
     apiKey: alias('model.apiKey'),
     integration: alias('model.integration'),
     internalIntegration: alias('model.internalIntegration'),
+
     actions: {
         confirm() {
             this.regenerateApiKey.perform();
         }
     },
+
     regenerateKey: task(function* () {
         let url = this.get('ghostPaths.url').api('/integrations/', this.integration.id, 'api_key', this.apiKey.id, 'refresh');
         try {

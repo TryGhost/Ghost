@@ -9,5 +9,11 @@ export default ModalComponent.extend({
     warnings: reads('model.warnings'),
     errors: reads('model.errors'),
     fatalErrors: reads('model.fatalErrors'),
-    canActivate: reads('model.canActivate')
+    canActivate: reads('model.canActivate'),
+
+    actions: {
+        confirm() {
+            this.send('closeModal');
+        }
+    }
 });
