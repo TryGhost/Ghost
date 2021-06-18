@@ -28,8 +28,6 @@
                 <fieldset class="modal-fullsettings-form">
                     <div class="modal-fullsettings-section first">
                         <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title">Header image</h4>
-
                             <GhUploader
                                 @extensions={{this.imageExtensions}}
                                 @paramsHash={{hash purpose="image"}}
@@ -37,6 +35,10 @@
                                 as |uploader|
                             >
                                 <div class="modal-fullsettings-uploader">
+                                    <div class="gh-header-img-desc">
+                                        <h4 class="modal-fullsettings-title">Header image</h4>
+                                        <p>Optional, recommended size 1200x600</p>
+                                    </div>
                                     {{#if uploader.isUploading}}
                                         <div class="gh-header-img-container">
                                             <div class="gh-loading-spinner"></div>
@@ -66,16 +68,12 @@
                                                 data-test-file-input="icon" />
                                         </div>
                                     {{/if}}
-                                    <div class="gh-header-img-desc">
-                                        <h4>An optional branded image</h4>
-                                        <p>For best result use 1200x600 PNG image</p>
-                                    </div>
                                 </div>
                             </GhUploader>
                         </GhFormGroup>
 
                         <GhFormGroup data-tooltip={{if (not this.settings.icon) "A publication icon must be set in Branding settings."}}>
-                            <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Show publication icon</h4>
+                            <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Publication icon</h4>
                             <div class="for-switch small {{if (not this.settings.icon) "disabled"}}">
                                 <label class="switch" for="show-header">
                                     <input
@@ -91,7 +89,7 @@
                             </div>
                         </GhFormGroup>
                         <GhFormGroup>
-                            <h4 class="modal-fullsettings-title">Show publication title</h4>
+                            <h4 class="modal-fullsettings-title">Publication title</h4>
                             <div class="for-switch small">
                                 <label class="switch" for="show-title">
                                     <input
@@ -108,7 +106,22 @@
                     </div>
                     <div class="modal-fullsettings-section divider-top">
                         <GhFormGroup>
-                            <h4 class="modal-fullsettings-title">Show post feature image</h4>
+                            <h4 class="modal-fullsettings-title gh-email-design-alignment">Header style</h4>
+                            <div class="gh-email-design-typography-wrapper header">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.titleFontCategory}}
+                                        @onChange={{fn this.changeSetting "titleFontCategory"}}
+                                    />
+                                </div>
+                                <div class="gh-btn-group icons">
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Feature image</h4>
                             <div class="for-switch small">
                                 <label class="switch" for="show-feature-image">
                                     <input
@@ -122,30 +135,17 @@
                                 </label>
                             </div>
                         </GhFormGroup>
-                        <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title gh-email-design-alignment">
-                                <span>Header style</span>
-                                <div class="gh-btn-group icons">
-                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
-                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
-                                </div>
-                            </h4>
-                            <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <GhFontSelector
-                                    @selected={{this.titleFontCategory}}
-                                    @onChange={{fn this.changeSetting "titleFontCategory"}}
-                                />
-                            </div>
-                        </GhFormGroup>
                     </div>
                     <div class="modal-fullsettings-section">
-                        <GhFormGroup @classNames="vertical">
+                        <GhFormGroup>
                             <h4 class="modal-fullsettings-title">Body style</h4>
-                            <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <GhFontSelector
-                                    @selected={{this.bodyFontCategory}}
-                                    @onChange={{fn this.changeSetting "bodyFontCategory"}}
-                                />
+                            <div class="gh-email-design-typography-wrapper">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.bodyFontCategory}}
+                                        @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                                    />
+                                </div>
                             </div>
                         </GhFormGroup>
                     </div>

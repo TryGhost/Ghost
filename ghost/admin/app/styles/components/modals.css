@@ -271,7 +271,7 @@
     width: 362px;
 }
 .labs-newsletter-settings .modal-fullsettings-sidebar {
-    width: 400px;
+    width: 420px;
     overflow-y: auto;
 }
 
@@ -400,10 +400,9 @@
 
 .labs-newsletter-settings .modal-fullsettings-uploader {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     margin: 18px 0 0;
-    padding: 4px;
-    border: 1px solid var(--whitegrey-d1);
     border-radius: 3px;
 }
 
@@ -411,9 +410,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 60px;
-    height: 50px;
-    margin-right: 11px;
+    width: 64px;
+    height: 44px;
 }
 
 .labs-newsletter-settings .gh-header-img-container .gh-loading-spinner {
@@ -424,9 +422,8 @@
 .labs-newsletter-settings .gh-header-img-uploadicon,
 .labs-newsletter-settings .gh-header-img-uploadicon:hover,
 .labs-newsletter-settings .gh-header-img-uploadicon:focus {
-    width: 60px;
-    height: 50px;
-    margin-right: 11px;
+    width: 64px;
+    height: 44px;
     border: 1px dashed var(--lightgrey);
     background: transparent;
     box-shadow: none;
@@ -441,22 +438,21 @@
 .labs-newsletter-settings .gh-header-img-uploadicon span svg {
     width: 18px;
     height: 18px;
-    fill: var(--darkgrey);
+    fill: var(--black);
 }
 
 .labs-newsletter-settings .gh-header-img-uploadicon:hover span svg {
-    fill: var(--darkgrey);
+    fill: var(--green-d1);
 }
 
 .labs-newsletter-settings .gh-header-img {
-    height: 50px;
+    height: 44px;
 }
 
 .labs-newsletter-settings .gh-header-img-thumbnail {
     display: inline-block;
-    width: 60px;
-    height: 50px;
-    margin: 0 11px 0 0;
+    width: 64px;
+    height: 44px;
     border: 1px solid var(--whitegrey);
     cursor: pointer;
     background-position: center;
@@ -470,9 +466,9 @@
 
 .labs-newsletter-settings .gh-header-img-deleteicon {
     position: absolute;
-    left: 4px;
-    width: 60px;
-    height: 50px;
+    right: 0;
+    width:64px;
+    height: 44px;
     background: var(--black) !important;
     opacity: 0;
 }
@@ -500,7 +496,7 @@
     margin: 0 !important;
     padding: 0;
     font-size: 1.3rem;
-    line-height: 1.4em;
+    line-height: 1.65em;
 }
 
 .modal-fullsettings-uploader p {
