@@ -99,7 +99,7 @@
 
 .gh-product-price-container {
     display: flex;
-    margin-left: 20px;
+    margin: 0 40px 0 20px;
 }
 
 .gh-product-card-price {
@@ -361,7 +361,22 @@
     pointer-events: none;
 }
 
-/* Price details */
+/* Add/edit product modal */
+.fullscreen-modal-edit-product {
+    max-width: 900px;
+}
+
+.gh-form-edit-product .gh-main-section-block {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+.gh-form-edit-product .gh-main-section-content {
+    padding-top: 16px;
+    margin-bottom: 0;
+}
+
 .gh-product-priceform-block {
     margin-bottom: 32px;
 }
@@ -374,4 +389,8 @@
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-gap: 20px;
+}
+
+.gh-product-form-benefits {
+    flex-grow: 1;
 }
