@@ -1,6 +1,4 @@
 const Nconf = require('nconf');
-const _ = require('lodash');
-const os = require('os');
 const path = require('path');
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
@@ -42,13 +40,6 @@ function loadNconf(options) {
 
     // ## Config Methods
 
-    // Bind internal-only methods
-    // @TODO change how we use these so we don't expose them
-    nconf.makePathsAbsolute = localUtils.makePathsAbsolute.bind(nconf);
-    nconf.sanitizeDatabaseProperties = localUtils.sanitizeDatabaseProperties.bind(nconf);
-    nconf.doesContentPathExist = localUtils.doesContentPathExist.bind(nconf);
-    nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
-
     // Expose dynamic utility methods
     helpers.bindAll(nconf);
     urlHelpers.bindAll(nconf);
@@ -56,28 +47,16 @@ function loadNconf(options) {
     // ## Sanitization
 
     // transform all relative paths to absolute paths
-    nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
+    localUtils.makePathsAbsolute(nconf, nconf.get('paths'), 'paths');
 
     // transform sqlite filename path for Ghost-CLI
-    nconf.sanitizeDatabaseProperties();
-
-    if (nconf.get('database:client') === 'sqlite3') {
-        nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
-
-        // In the default SQLite test config we set the path to /tmp/ghost-test.db,
-        // but this won't work on Windows, so we need to replace the /tmp bit with
-        // the Windows temp folder
-        const filename = nconf.get('database:connection:filename');
-        if (_.isString(filename) && filename.match(/^\/tmp/)) {
-            nconf.set('database:connection:filename', filename.replace(/^\/tmp/, os.tmpdir()));
-        }
-    }
+    localUtils.sanitizeDatabaseProperties(nconf);
 
     // Check if the URL in config has a protocol
-    nconf.checkUrlProtocol();
+    localUtils.checkUrlProtocol(nconf.get('url'));
 
     // Ensure that the content path exists
-    nconf.doesContentPathExist();
+    localUtils.doesContentPathExist(nconf.get('paths:contentPath'));
 
     // ## Other Stuff!
 
