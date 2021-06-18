@@ -395,4 +395,61 @@ describe('Authentication API v3', function () {
                 });
         });
     });
+
+    describe('Reset all passwords', function () {
+        let sendEmail;
+        before(function () {
+            return ghost({forceStart: true})
+                .then(() => {
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(() => {
+                    return localUtils.doAuth(request);
+                });
+        });
+
+        beforeEach(function () {
+            sendEmail = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('reset all passwords returns 200', function (done) {
+            request.post(localUtils.API.getApiQuery('authentication/reset_all_passwords'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(async function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        should(res.body).be.an.empty().Object();
+
+                        // All users locked
+                        const users = await models.User.fetchAll();
+                        for (const user of users) {
+                            user.get('status').should.be.eql('locked');
+                        }
+
+                        // No session left
+                        const sessions = await models.Session.fetchAll();
+                        sessions.length.should.be.eql(0);
+
+                        sendEmail.callCount.should.be.eql(2);
+                        sendEmail.firstCall.args[0].subject.should.be.eql('Reset Password');
+                        sendEmail.secondCall.args[0].subject.should.be.eql('Reset Password');
+
+                        done();
+                    } catch (error) {
+                        done(error);
+                    }
+                });
+        });
+    });
 });
