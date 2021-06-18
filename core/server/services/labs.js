@@ -36,6 +36,10 @@ module.exports.getAll = () => {
     return labs;
 };
 
+/**
+ * @param {string} flag
+ * @returns {boolean}
+ */
 module.exports.isSet = function isSet(flag) {
     const labsConfig = module.exports.getAll();
 
