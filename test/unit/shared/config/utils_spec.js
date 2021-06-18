@@ -1,25 +1,34 @@
 const should = require('should');
+const _ = require('lodash');
 const configUtils = require('../../../../core/shared/config/utils');
+
+let fakeConfig = {};
+let fakeNconf = {};
+let changedKey = [];
 
 describe('Config Utils', function () {
     describe('makePathsAbsolute', function () {
-        it('ensure we change paths only', function () {
-            const changedKey = [];
+        beforeEach(function () {
+            changedKey = [];
 
-            const obj = {
-                database: {
-                    client: 'mysql',
-                    connection: {
-                        filename: 'content/data/ghost.db'
-                    }
+            fakeNconf.get = (key) => {
+                key = key.replace(':', '');
+                return _.get(fakeConfig, key);
+            };
+            fakeNconf.set = function (key, value) {
+                changedKey.push([key, value]);
+            };
+        });
+
+        it('ensure we change paths only', function () {
+            fakeConfig.database = {
+                client: 'mysql',
+                connection: {
+                    filename: 'content/data/ghost.db'
                 }
             };
 
-            this.set = function (key, value) {
-                changedKey.push([key, value]);
-            };
-
-            configUtils.makePathsAbsolute.bind(this)(obj.database, 'database');
+            configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
 
             changedKey.length.should.eql(1);
             changedKey[0][0].should.eql('database:connection:filename');
@@ -27,56 +36,33 @@ describe('Config Utils', function () {
         });
 
         it('ensure it skips non strings', function () {
-            const changedKey = [];
-
-            const obj = {
-                database: {
-                    test: 10
-                }
+            fakeConfig.database = {
+                test: 10
             };
 
-            this.set = function (key, value) {
-                changedKey.push([key, value]);
-            };
-
-            configUtils.makePathsAbsolute.bind(this)(obj.database, 'database');
+            configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
             changedKey.length.should.eql(0);
         });
 
         it('ensure we don\'t change absolute paths', function () {
-            const changedKey = [];
-
-            const obj = {
-                database: {
-                    client: 'mysql',
-                    connection: {
-                        filename: '/content/data/ghost.db'
-                    }
+            fakeConfig.database = {
+                client: 'mysql',
+                connection: {
+                    filename: '/content/data/ghost.db'
                 }
             };
 
-            this.set = function (key, value) {
-                changedKey.push([key, value]);
-            };
-
-            configUtils.makePathsAbsolute.bind(this)(obj.database, 'database');
+            configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
             changedKey.length.should.eql(0);
         });
 
         it('match paths on windows', function () {
-            const changedKey = [];
+            fakeConfig.database = {
+                filename: 'content\\data\\ghost.db'
 
-            const obj = {
-                database: {
-                    filename: 'content\\data\\ghost.db'
-                }
             };
 
-            this.set = function (key, value) {
-                changedKey.push([key, value]);
-            };
-
-            configUtils.makePathsAbsolute.bind(this)(obj.database, 'database');
+            configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
             changedKey.length.should.eql(1);
             changedKey[0][0].should.eql('database:filename');
             changedKey[0][1].should.not.eql('content\\data\\ghost.db');
