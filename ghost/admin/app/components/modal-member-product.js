@@ -56,7 +56,7 @@ export default class ModalMemberProduct extends ModalComponent {
     }
 
     @action
-    confirm() {
+    confirmAction() {
         return this.addProduct.perform();
     }
 
@@ -88,5 +88,11 @@ export default class ModalMemberProduct extends ModalComponent {
         this.store.pushPayload('member', response);
         this.closeModal();
         return response;
+    }
+
+    actions = {
+        confirm() {
+            this.confirmAction(...arguments);
+        }
     }
 }
