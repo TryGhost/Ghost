@@ -1,7 +1,5 @@
 export const getDateString = (isoDate) => {
-    const date = new Date(isoDate);
-    const month = date.toDateString().substring(4, 7);
-    const day = date.toDateString().substring(8, 10).replace(/^0+/g, '');
-    const year = date.toDateString().substring(11, 15);
-    return `${day} ${month} ${year}`;
+    const event = new Date(isoDate);
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return event.toLocaleDateString('en-GB', options);
 };
