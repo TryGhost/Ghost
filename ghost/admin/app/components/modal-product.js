@@ -1,7 +1,9 @@
 import EmberObject, {action} from '@ember/object';
 import ModalBase from 'ghost-admin/components/modal-base';
+import ProductBenefitItem from '../models/product-benefit-item';
 import classic from 'ember-classic-decorator';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
+import {A as emberA} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -15,20 +17,17 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
-let BENEFITSDATA = [
-    EmberObject.create({
-        id: '1',
+let BENEFITSDATA = emberA([
+    ProductBenefitItem.create({
         label: 'Benefit 1'
     }),
-    EmberObject.create({
-        id: '2',
+    ProductBenefitItem.create({
         label: 'Benefit 2'
     }),
-    EmberObject.create({
-        id: '3',
+    ProductBenefitItem.create({
         label: 'Benefit 3'
     })
-];
+]);
 
 // TODO: update modals to work fully with Glimmer components
 @classic
@@ -42,7 +41,8 @@ export default class ModalProductPrice extends ModalBase {
     @tracked currency = 'usd';
     @tracked errors = EmberObject.create();
     @tracked stripePlanError = '';
-    @tracked benefits = BENEFITSDATA;
+    @tracked benefits = [];
+    @tracked newBenefit = null;
 
     confirm() {}
 
@@ -66,13 +66,11 @@ export default class ModalProductPrice extends ModalBase {
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
-        this.benefits = BENEFITSDATA;
-        this.newBenefit = EmberObject.create({
+        this.benefits = this.product.get('benefits') || BENEFITSDATA;
+        this.newBenefit = ProductBenefitItem.create({
             isNew: true,
-            id: '3',
             label: ''
         });
-        this.benefitId = 4;
     }
 
     get title() {
@@ -130,8 +128,10 @@ export default class ModalProductPrice extends ModalBase {
             interval: 'year',
             type: 'recurring'
         });
-        const savedProduct = yield this.product.save();
-        yield this.confirm(savedProduct);
+
+        yield this.product.save();
+
+        yield this.confirm();
         this.send('closeModal');
     }
 
@@ -150,24 +150,33 @@ export default class ModalProductPrice extends ModalBase {
         }
     }
 
+    addNewBenefitItem(item) {
+        item.set('isNew', false);
+        this.benefits.pushObject(item);
+
+        this.newBenefit = ProductBenefitItem.create({isNew: true, label: ''});
+    }
+
     actions = {
-        addBenefit() {
-            this.benefits = [
-                ...this.benefits,
-                EmberObject.create({
-                    label: 'New benefit',
-                    id: this.benefitId
-                })
-            ];
-            this.benefitId = this.benefitId + 1;
-        },
-        deleteBenefit(benefitItem) {
-            this.benefits = this.benefits.filter((d) => {
-                return !(d.id === benefitItem.id);
+        addBenefit(item) {
+            return item.validate().then(() => {
+                this.addNewBenefitItem(item);
             });
         },
-        updateLabel() {
-            // Update label here
+        deleteBenefit(item) {
+            if (!item) {
+                return;
+            }
+            this.benefits.removeObject(item);
+        },
+        updateLabel(label, benefitItem) {
+            if (!benefitItem) {
+                return;
+            }
+
+            if (benefitItem.get('label') !== label) {
+                benefitItem.set('label', label);
+            }
         },
         confirm() {
             this.confirmAction(...arguments);
