@@ -636,15 +636,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.8.tgz#b08074cdc6f8a379209750e60c2ab62c8ba895cf"
   integrity sha512-3/w0k2JlpYjG/3tU3zjvVlrNH+kK9bjZvp7xaCkvmbsLGxQFMtlKU4fFY+rcpDVWOkywIHmKbLGmAqADgZeakA==
 
-"@tryghost/debug@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.1.tgz#65d267b2d8cd4f9f863efdeb151912ad99587843"
-  integrity sha512-To3TPu4Aqyj1PbzNdWdG5rGEJBjEYWD8Ju2RjSgZSK+5PaUtaGbEOGirTf4OelIHMaSeKPzTG2KkVEJVGhBDNQ==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.0"
-    debug "^4.3.1"
-
-"@tryghost/debug@^0.1.2":
+"@tryghost/debug@0.1.2", "@tryghost/debug@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.2.tgz#a486dc976d0738169ee4900dddad84aab65696e8"
   integrity sha512-mVlO+TL5bNT78KoR2c5mIRpQLX77Y8UTkMItJpabPg9LOfx5cMo9GrWF3xTF38k3Fs5QJDwiMT+Y+QjkcOGGYA==
