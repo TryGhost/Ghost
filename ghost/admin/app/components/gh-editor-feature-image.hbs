@@ -60,7 +60,7 @@
         {{else}}
             {{!-- no-image state --}}
             <div class="flex flex-row items-center {{if this.hideButton "invisible"}}">
-                <button type="button" class="gh-editor-feature-image-add-button" {{on "click" uploader.triggerFileDialog}}>+ Add feature image</button>
+                <button type="button" class="gh-editor-feature-image-add-button" {{on "click" uploader.triggerFileDialog}}>{{svg-jar "plus"}}<span>Add feature image</span></button>
                 {{#if this.isHovered}}
                     <button type="button" class="gh-editor-feature-image-unsplash" {{on "click" this.toggleUnsplashSelector}}>{{svg-jar "unsplash"}}</button>
                 {{/if}}
