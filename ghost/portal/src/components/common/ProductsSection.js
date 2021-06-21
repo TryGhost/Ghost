@@ -459,6 +459,11 @@ function ProductsSection({onPlanSelect, products}) {
     if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
         return null;
     }
+
+    if (products.length === 0) {
+        return null;
+    }
+
     return (
         <ProductsContext.Provider value={{
             selectedInterval: activeInterval,

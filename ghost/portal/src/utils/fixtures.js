@@ -191,6 +191,7 @@ export const site = {
         yearly: 150000,
         currency: 'USD'
     },
+    portal_products: ['product_1', 'product_2', 'product_3'],
     products,
     prices,
     allow_self_signup: false,
