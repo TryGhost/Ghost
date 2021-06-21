@@ -10,6 +10,7 @@ import Mixin from '@ember/object/mixin';
 import Model from '@ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
 import PostValidator from 'ghost-admin/validators/post';
+import ProductBenefitItemValidator from 'ghost-admin/validators/product-benefit-item';
 import ProductValidator from 'ghost-admin/validators/product';
 import RSVP from 'rsvp';
 import ResetValidator from 'ghost-admin/validators/reset';
@@ -42,6 +43,7 @@ export default Mixin.create({
         customView: CustomViewValidator,
         inviteUser: InviteUserValidator,
         navItem: NavItemValidator,
+        productBenefitItem: ProductBenefitItemValidator,
         post: PostValidator,
         reset: ResetValidator,
         setting: SettingValidator,
