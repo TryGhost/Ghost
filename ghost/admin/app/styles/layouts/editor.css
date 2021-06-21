@@ -421,6 +421,17 @@
     fill: var(--black);
 }
 
+.gh-editor-feature-image-alttext {
+    width: 100%;
+    margin: 0 0 1.7em;
+    padding: 0;
+    border-width: 0; 
+    border-style: none;
+    font-size: 1.4rem;
+    line-height: 1.65;  
+    letter-spacing: .04rem; 
+}
+
 .gh-editor-title {
     display: block;
     width: 100%;
@@ -539,8 +550,8 @@
 }
 
 .gh-editor-title::placeholder {
-    font-weight: 700;
     color: var(--lightgrey-d1);
+    font-weight: 700;
     opacity: 1;
 }
 
