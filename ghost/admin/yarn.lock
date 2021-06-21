@@ -6583,10 +6583,10 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@8.0.5:
-  version "8.0.5"
-  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.5.tgz#0ed6257b3158473f662e72831cab223010c5ec50"
-  integrity sha512-tKwSWZ2l4jKynqUuF8qgwiCfzmnRWDDO2j5l0Lrn4TgZo8YXbdM3DfgheLSZd+aybBFEAtXBgKH0qaTox28LFg==
+ember-fetch@8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.1.0.tgz#6228f49baaf6f435af1e5c767e19ef638ff28883"
+  integrity sha512-797IPPuXrWGAecsAuCPH6+2pJCcawy7+CiRrtoe1qLhXJ6Ue0Lxu4loXxHHQNCxRvvUvx8tTDuP63sOKfi3xug==
   dependencies:
     abortcontroller-polyfill "^1.7.1"
     broccoli-concat "^4.2.5"
