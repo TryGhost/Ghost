@@ -388,21 +388,37 @@
     min-height: auto;
     margin-left: auto;
     margin-right: auto;
-    padding-bottom: 1.6rem;
+    padding-bottom: 3.6rem;
+}
+
+.gh-editor-feature-image .gh-progress-container-progress {
+    width: 100%;
 }
 
 .gh-editor-feature-image-add-button {
-    color: var(--midgrey);
+    color: var(--midgrey-d1);
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: .2px;
 }
 
-.gh-editor-feature-image:hover .gh-editor-feature-image-add-button {
-    color: var(--green);
+.gh-editor-feature-image-add-button:hover {
+    color: var(--green-d1);
 }
 
 .gh-editor-feature-image-unsplash {
     width: 1em;
     height: 1em;
-    margin-left: 30px;
+    margin-left: 24px;
+    line-height: 1.2;
+}
+
+.gh-editor-feature-image-unsplash svg {
+    fill: var(--lightgrey-d2);
+}
+
+.gh-editor-feature-image-unsplash:hover svg {
+    fill: var(--black);
 }
 
 .gh-editor-title {
@@ -414,7 +430,7 @@
     color: var(--black);
     font-size: 4.8rem;
     line-height: 1.15em;
-    font-weight: 600;
+    font-weight: 700;
     overflow: hidden;
     box-shadow: none;
 }
@@ -523,7 +539,9 @@
 }
 
 .gh-editor-title::placeholder {
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--lightgrey-d1);
+    opacity: 1;
 }
 
 .gh-markdown-editor {
