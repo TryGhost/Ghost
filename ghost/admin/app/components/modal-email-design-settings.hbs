@@ -1,23 +1,135 @@
 <div class="modal-body modal-fullsettings">
+    <div class="flex items-center justify-between w-100 modal-fullsettings-topbar">
+        <h2 class="modal-fullsettings-heading">Email newsletter design</h2>
+        <div class="flex items-center">
+            <button
+                class="gh-btn mr3"
+                {{on "click" (action "closeModal")}}
+                {{!-- disable mouseDown so it does not trigger focus-out validations --}}
+                {{on "mousedown" (optional this.noop)}}
+                data-test-button="cancel-custom-view-form"
+            >
+                <span>Cancel</span>
+            </button>
+
+            <GhTaskButton
+                @buttonText="Save and close"
+                @successText="Saved"
+                @task={{this.saveSettings}}
+                @idleClass="gh-btn-primary"
+                @class="gh-btn gh-btn-icon"
+                data-test-button="save-members-modal-setting"
+            />
+        </div>
+    </div>
     <div class="modal-fullsettings-body">
         <div class="modal-fullsettings-sidebar with-footer">
             <div>
-                <h2 class="modal-fullsettings-topbar modal-fullsettings-heading">Email newsletter design</h2>
                 <fieldset class="modal-fullsettings-form">
                     <div class="modal-fullsettings-section first">
-                        <GhFormGroup>
-                            <h4 class="modal-fullsettings-title">Show publication icon and title</h4>
-                            <div class="for-switch small">
-                                <label
-                                    class="switch"
-                                    for="show-header"
-                                >
+                        <GhFormGroup @classNames="vertical">
+                            <GhUploader
+                                @extensions={{this.imageExtensions}}
+                                @paramsHash={{hash purpose="image"}}
+                                @onComplete={{fn this.imageUploaded "headerImage"}}
+                                as |uploader|
+                            >
+                                <div class="modal-fullsettings-uploader">
+                                    <div class="gh-header-img-desc">
+                                        <h4 class="modal-fullsettings-title">Header image</h4>
+                                        <p>Optional, recommended size 1200x600</p>
+                                    </div>
+                                    {{#if uploader.isUploading}}
+                                        <div class="gh-header-img-container">
+                                            <div class="gh-loading-spinner"></div>
+                                        </div>
+                                    {{else if this.headerImage}}
+                                        <div class="gh-header-img">
+                                            <img
+                                                class="gh-header-img-thumbnail"
+                                                src={{this.headerImage}}
+                                                alt="header image"
+                                                data-test-img="header"
+                                            >
+                                            <button type="button" class="gh-btn gh-header-img-deleteicon" {{on "click" (fn this.changeSetting "headerImage" null)}}>
+                                                <span> {{svg-jar "trash" class="w5 h5"}} </span>
+                                            </button>
+                                        </div>
+                                    {{else}}
+                                        <button type="button" class="gh-btn gh-header-img-uploadicon" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
+                                            <span>{{svg-jar "upload-fill" class="w5 h5"}}</span>
+                                        </button>
+                                        <div style="display:none">
+                                            <GhFileInput
+                                                @multiple={{false}}
+                                                @action={{uploader.setFiles}}
+                                                @accept={{uploader.imageMimeTypes}}
+                                                @onInsert={{uploader.registerFileInput}}
+                                                data-test-file-input="icon" />
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            </GhUploader>
+                        </GhFormGroup>
+
+                        <GhFormGroup data-tooltip={{if (not this.settings.icon) "A publication icon must be set in Branding settings."}}>
+                            <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Publication icon</h4>
+                            <div class="for-switch small {{if (not this.settings.icon) "disabled"}}">
+                                <label class="switch" for="show-header">
                                     <input
                                         type="checkbox"
-                                        checked={{this.showHeader}}
+                                        checked={{and this.showHeaderIcon this.settings.icon}}
                                         id="show-header"
                                         name="show-header"
-                                        {{on "click" this.setShowHeader}}
+                                        disabled={{not this.settings.icon}}
+                                        {{on "click" (fn this.toggleSetting "showHeaderIcon")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Publication title</h4>
+                            <div class="for-switch small">
+                                <label class="switch" for="show-title">
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.showHeaderTitle}}
+                                        id="show-title"
+                                        name="show-title"
+                                        {{on "click" (fn this.toggleSetting "showHeaderTitle")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+                    <div class="modal-fullsettings-section divider-top">
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title gh-email-design-alignment">Header style</h4>
+                            <div class="gh-email-design-typography-wrapper header">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.titleFontCategory}}
+                                        @onChange={{fn this.changeSetting "titleFontCategory"}}
+                                    />
+                                </div>
+                                <div class="gh-btn-group icons">
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Feature image</h4>
+                            <div class="for-switch small">
+                                <label class="switch" for="show-feature-image">
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.showFeatureImage}}
+                                        id="show-feature-image"
+                                        name="show-feature-image"
+                                        {{on "click" (fn this.toggleSetting "showFeatureImage")}}
                                     >
                                     <span class="input-toggle-component"></span>
                                 </label>
@@ -25,53 +137,30 @@
                         </GhFormGroup>
                     </div>
                     <div class="modal-fullsettings-section">
-                        <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title">Body font</h4>
-                            <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <div class="gh-radio {{if (eq this.bodyFontCategory "serif") "active"}}"
-                                    {{on "click" (fn this.setBodyFontCategory "serif")}}
-                                    >
-                                    <div class="gh-radio-content">
-                                        <div class="gh-radio-label serif">
-                                            <span class="sample">Aa</span>
-                                            <div class="description">
-                                                <h4>Elegant serif</h4>
-                                                <p>Beautiful lines with great readability</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="gh-radio-button"></div>
-                                </div>
-                                <div class="gh-radio {{if (eq this.bodyFontCategory "sans_serif") "active"}}"
-                                    {{on "click" (fn this.setBodyFontCategory "sans_serif")}}
-                                    >
-                                    <div class="gh-radio-content">
-                                        <div class="gh-radio-label sans-serif">
-                                            <span class="sample">Aa</span>
-                                            <div class="description">
-                                                <h4>Clean sans-serif</h4>
-                                                <p>A more minimal style with sharp lines</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="gh-radio-button"></div>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Body style</h4>
+                            <div class="gh-email-design-typography-wrapper">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.bodyFontCategory}}
+                                        @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                                    />
                                 </div>
                             </div>
-                            {{!-- <p>Font style for the email body content</p> --}}
                         </GhFormGroup>
                     </div>
-                    <div class="modal-fullsettings-section">
+                    <div class="modal-fullsettings-section divider-top">
                         <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title pt4">Email footer</h4>
+                            <h4 class="modal-fullsettings-title">Email footer</h4>
                             <KoenigBasicHtmlInput
                                 @name="footer"
                                 @html={{this.footerContent}}
                                 @class="miw-100 form-text gh-members-emailsettings-footer-input"
-                                @onChange={{this.setFooterContent}}
+                                @placeholder="Any extra information or legal text"
+                                @onChange={{fn this.changeSetting "footerContent"}}
                                 @onFocus={{this.handleInputFocus}}
                                 @onBlur={{this.handleInputBlur}}
                             />
-                            <p>Any extra information or legal text</p>
                         </GhFormGroup>
                     </div>
                 </fieldset>
@@ -95,7 +184,7 @@
                                 checked={{this.showBadge}}
                                 id="promote-ghost"
                                 name="promote-ghost"
-                                {{on "click" this.setShowBadge}}
+                                {{on "click" (fn this.toggleSetting "showBadge")}}
                             >
                             <span class="input-toggle-component"></span>
                         </label>
@@ -104,50 +193,40 @@
             </div>
         </div>
         <div class="modal-fullsettings-main">
-            <div class="flex items-center justify-end w-100 modal-fullsettings-topbar">
-                <div class="flex items-center">
-                    <button
-                        class="gh-btn mr3"
-                        {{action "closeModal"}}
-                        {{!-- disable mouseDown so it does not trigger focus-out validations --}}
-                        {{on "mousedown" (optional this.noop)}}
-                        data-test-button="cancel-custom-view-form"
-                    >
-                        <span>Cancel</span>
-                    </button>
-
-                    <GhTaskButton
-                        @buttonText="Save and close"
-                        @successText="Saved"
-                        @task={{this.saveSettings}}
-                        @idleClass="gh-btn-primary"
-                        @class="gh-btn gh-btn-icon"
-                        data-test-button="save-members-modal-setting"
-                    />
-                </div>
-            </div>
-
             <div class="modal-fullsettings-preview-container gh-members-emailpreview">
                 <div class="gh-members-emailpreview-container">
                     <div class="gh-members-emailpreview-faux">
                         <p>
-                            <span class="strong">{{this.config.blogTitle}}</span> &lt;{{this.settings.membersFromAddress}}&gt;
+                            <span class="strong">{{this.config.blogTitle}}</span> &lt;{{full-email-address this.settings.membersFromAddress}}&gt;
                         </p>
                         <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
                     </div>
                     <div class="gh-members-emailpreview-contents">
-                        <div class="gh-members-emailpreview-header {{if (not this.showHeader) "hide"}}">
-                            {{#if this.settings.icon}}
-                                <img src={{this.settings.icon}} />
-                            {{/if}}
-                            <h4>{{this.config.blogTitle}}</h4>
-                        </div>
-                        <div class="gh-members-emailpreview-title">
-                            <h2>Your email newsletter</h2>
+                        {{#if this.headerImage}}
+                            <div class="gh-members-emailpreview-header-image">
+                                <img src={{this.headerImage}}>
+                            </div>
+                        {{/if}}
+                        {{#if this.showHeader}}
+                            <div class="gh-members-emailpreview-header">
+                                {{#if (and this.settings.icon this.showHeaderIcon)}}
+                                    <img src={{this.settings.icon}} />
+                                {{/if}}
+                                {{#if this.showHeaderTitle}}
+                                    <h4>{{this.config.blogTitle}}</h4>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                        <div class="gh-members-emailpreview-title {{if (eq this.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
+                            <h2 class="{{if (eq this.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
                             <p>
                                 <span>By {{if this.session.user.name this.session.user.name this.session.user.email}} – {{this.currentDate}} – </span> <a href="javascript:">View online →</a>
                             </p>
                         </div>
+                        {{#if this.showFeatureImage}}
+                            <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
+                            <div class="gh-members-emailpreview-featureimage-caption">Feature image caption</div>
+                        {{/if}}
                         <div class="gh-members-emailpreview-content {{if (eq this.bodyFontCategory "sans_serif") "sans-serif"}}">
                             <p>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
                             <p>Over there on the left you’ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
@@ -158,7 +237,7 @@
                                 {{{this.footerContent}}}
                             </div>
                             <div class="gh-members-emailpreview-footersite">
-                                <span>{{this.config.blogTitle}} &copy; – </span> <a href="javascript:">Unsubscribe</a>
+                                <span>{{this.config.blogTitle}} &copy; {{this.copyrightYear}} – </span> <a href="javascript:">Unsubscribe</a>
                             </div>
                         </div>
                         <div class="gh-members-emailpreview-badge {{if (not this.showBadge) "hide"}}">

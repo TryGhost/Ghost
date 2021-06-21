@@ -41,14 +41,8 @@
 
 {{#if this.showEmailDesignSettings}}
     <GhFullscreenModal @modifier="full-overlay portal-settings">
-        {{#if (enable-developer-experiments)}}
-            <ModalEmailDesignSettingsLabs
-                @closeModal={{this.toggleEmailDesignSettings}}
-            />
-        {{else}}
-            <ModalEmailDesignSettings
-                @closeModal={{this.toggleEmailDesignSettings}}
-            />
-        {{/if}}
+        <ModalEmailDesignSettings
+            @closeModal={{this.toggleEmailDesignSettings}}
+        />
     </GhFullscreenModal>
 {{/if}}
