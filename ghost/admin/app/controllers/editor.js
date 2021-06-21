@@ -7,12 +7,13 @@ import moment from 'moment';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
+import {captureException, captureMessage} from '@sentry/browser';
 import {inject as controller} from '@ember/controller';
 import {get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
-import {isHostLimitError} from 'ghost-admin/services/ajax';
+import {isHostLimitError, isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -85,6 +86,8 @@ const messageMap = {
 
 export default Controller.extend({
     application: controller(),
+
+    config: service(),
     feature: service(),
     membersCountCache: service(),
     notifications: service(),
@@ -595,7 +598,44 @@ export default Controller.extend({
     _savePostTask: task(function* (options) {
         let {post} = this;
 
-        yield post.save(options);
+        // retry save every 5 seconds for a total of 30secs
+        // only retry if we get a ServerUnreachable error (code 0) from the browser
+        let attempts = 0;
+        let maxAttempts = 2;
+        let startTime = moment();
+        let success = false;
+        while (attempts < maxAttempts && !success) {
+            try {
+                yield post.save(options);
+                success = true;
+                this.notifications.closeAlerts('post.save');
+
+                if (attempts !== 0 && this.config.get('sentry_dsn')) {
+                    let totalSeconds = moment().diff(startTime, 'seconds');
+                    captureMessage('Saving post required multiple attempts', {attempts, totalSeconds});
+                }
+            } catch (error) {
+                console.log('caught error', {error});
+                attempts += 1;
+
+                if (isServerUnreachableError(error) && attempts < maxAttempts) {
+                    yield timeout(5 * 1000);
+                } else if (isServerUnreachableError(error)) {
+                    const status = this.post.status;
+                    this._showErrorAlert(status, status, error);
+                    if (this.config.get('sentry_dsn')) {
+                        captureException(error);
+                    }
+
+                    // simulate a validation error so we don't end up on a 500 screen
+                    console.log('throwing undefined');
+                    throw undefined;
+                } else {
+                    console.log('throwing error', isServerUnreachableError(error), error);
+                    throw error;
+                }
+            }
+        }
 
         // remove any unsaved tags
         // NOTE: `updateTags` changes `hasDirtyAttributes => true`.
@@ -964,7 +1004,9 @@ export default Controller.extend({
             return toString.call(str) === '[object String]';
         }
 
-        if (error && isString(error)) {
+        if (isServerUnreachableError(error)) {
+            errorMessage = 'Unable to connect, please check your connection and press Ctrl/Cmd+S to retry.';
+        } else if (error && isString(error)) {
             errorMessage = error;
         } else if (error && isEmberArray(error)) {
             // This is here because validation errors are returned as an array
