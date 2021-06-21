@@ -6,6 +6,7 @@ const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../settings/cache');
 const {formattedMemberResponse} = require('./utils');
 const labsService = require('../labs');
+const config = require('../../../shared/config');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -124,6 +125,8 @@ const getMemberSiteData = async function (req, res) {
         supportAddress = `${supportAddress}@${blogDomain}`;
     }
     const {products = [], prices = []} = await getPortalProductPrices() || {};
+    const portalVersion = config.get('portal:version');
+
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
@@ -132,6 +135,7 @@ const getMemberSiteData = async function (req, res) {
         accent_color: settingsCache.get('accent_color'),
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
+        portal_version: portalVersion,
         free_price_name: settingsCache.get('members_free_price_name'),
         free_price_description: settingsCache.get('members_free_price_description'),
         allow_self_signup: membersService.config.getAllowSelfSignup(),
@@ -150,6 +154,12 @@ const getMemberSiteData = async function (req, res) {
     };
     if (labsService.isSet('multipleProducts')) {
         response.portal_products = settingsCache.get('portal_products');
+    }
+    if (config.get('portal_sentry') && !config.get('portal_sentry').disabled) {
+        response.portal_sentry = {
+            sentry_dsn: config.get('portal_sentry').dsn,
+            sentry_env: config.get('env')
+        };
     }
     res.json({site: response});
 };
