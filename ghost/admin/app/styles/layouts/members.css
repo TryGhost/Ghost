@@ -1180,47 +1180,47 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Email newsletter design settings
 /* -------------------------------------------------------- */
-.labs-newsletter-settings .gh-email-design-alignment {
+.gh-email-design-alignment {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: -4px 0 0 0;
 }
 
-.labs-newsletter-settings .gh-email-design-typography-wrapper {
+.gh-email-design-typography-wrapper {
     display: flex;
     width: 250px;
 }
 
-.labs-newsletter-settings .gh-email-design-typography {
+.gh-email-design-typography {
     width: 100%;
 }
 
-.labs-newsletter-settings .gh-email-design-typography .gh-setting-dropdown {
+.gh-email-design-typography .gh-setting-dropdown {
     margin: 0;
-    padding: 0 40px 0 8px; 
+    padding: 0 40px 0 8px;
 }
 
-.labs-newsletter-settings .gh-email-design-typography-wrapper.header .gh-setting-dropdown {
+.gh-email-design-typography-wrapper.header .gh-setting-dropdown {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
 
-.labs-newsletter-settings .gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
+.gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
     right: 16px !important;
 }
 
-.labs-newsletter-settings .gh-email-design-typography .gh-setting-dropdown-list .ember-power-select-option {
+.gh-email-design-typography .gh-setting-dropdown-list .ember-power-select-option {
     padding: 2px 8px;
 }
 
-.labs-newsletter-settings .gh-email-design-typography-wrapper.header .gh-btn-group {
+.gh-email-design-typography-wrapper.header .gh-btn-group {
     background: var(--whitegrey);
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
 
-.labs-newsletter-settings .gh-email-design-typography .gh-btn-group.icons .gh-btn {
+.gh-email-design-typography .gh-btn-group.icons .gh-btn {
     margin: 4px;
 }
 
@@ -1303,7 +1303,6 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0;
     padding: 0;
 }
-
 .gh-members-emailsettings-footer-input {
     border: 1px solid var(--whitegrey-d1);
     padding: 0 12px 6px 12px;
@@ -1323,10 +1322,6 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-emailsettings-footer {
-    padding-top: 20px;
-    margin-bottom: 4px;
-}
-.labs-newsletter-settings .gh-members-emailsettings-footer {
     padding: 0;
     margin: 0;
 }
@@ -1475,7 +1470,7 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     padding: 50px 0 40px;
 }
-.labs-newsletter-settings .gh-members-emailpreview-title-left {
+.gh-members-emailpreview-title-left {
     align-items: flex-start;
 }
 
@@ -1510,7 +1505,7 @@ p.gh-members-import-errordetail:first-of-type {
     color: #15212A;
 }
 
-.labs-newsletter-settings .gh-members-emailpreview-featureimage {
+.gh-members-emailpreview-featureimage {
     width: 100%;
     max-width: 600px;
     height: 300px;
@@ -1519,7 +1514,7 @@ p.gh-members-import-errordetail:first-of-type {
     background-size: cover;
 }
 
-.labs-newsletter-settings .gh-members-emailpreview-featureimage-caption {
+.gh-members-emailpreview-featureimage-caption {
     width: 100%;
     max-width: 600px;
     padding-bottom: 30px;
