@@ -161,8 +161,15 @@ export function getSiteProducts({site = {}}) {
 }
 
 export function getAllProducts({site}) {
-    const products = getSiteProducts({site});
-    if (hasFreeProduct({site})) {
+    const {portal_products: portalProducts} = site;
+    const siteProducts = getSiteProducts({site});
+    const products = getSiteProducts({site}).filter((product) => {
+        if (portalProducts && siteProducts.length > 1) {
+            return portalProducts.includes(product.id);
+        }
+        return true;
+    });
+    if (hasFreeProduct({site}) && products.length > 0) {
         products.unshift({
             id: 'free'
         });

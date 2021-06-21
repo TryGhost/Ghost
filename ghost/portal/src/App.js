@@ -211,6 +211,7 @@ export default class App extends React.Component {
 
         const allowedPlans = [];
         let portalPrices;
+        let portalProducts = [];
         let monthlyPrice, yearlyPrice, currency;
         // Handle the query params key/value pairs
         for (let pair of qsParams.entries()) {
@@ -228,6 +229,8 @@ export default class App extends React.Component {
                 allowedPlans.push('yearly');
             } else if (key === 'portalPrices') {
                 portalPrices = value ? value.split(',') : [];
+            } else if (key === 'portalProducts') {
+                portalProducts = value ? value.split(',') : [];
             } else if (key === 'page' && value) {
                 data.page = value;
             } else if (key === 'accentColor' && (value === '' || value)) {
@@ -258,6 +261,7 @@ export default class App extends React.Component {
             }
         }
         data.site.portal_plans = allowedPlans;
+        data.site.portal_products = portalProducts;
         if (portalPrices) {
             data.site.portal_plans = portalPrices;
         } else if (monthlyPrice && yearlyPrice && currency) {
