@@ -396,14 +396,31 @@
 }
 
 .gh-editor-feature-image-add-button {
+    display: flex;
+    align-items: center;
     color: var(--midgrey-d1);
     font-size: 1.4rem;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: .2px;
 }
 
 .gh-editor-feature-image-add-button:hover {
-    color: var(--green-d1);
+    color: var(--darkgrey-l2);
+}
+
+.gh-editor-feature-image-add-button svg {
+    width: 12px;
+    height: auto;
+    margin-right: 6px;
+}
+
+.gh-editor-feature-image-add-button svg path {
+    stroke: var(--midgrey-d1);
+    stroke-width: 2;
+}
+
+.gh-editor-feature-image-add-button:hover svg path {
+    stroke: var(--darkgrey-l2);
 }
 
 .gh-editor-feature-image-unsplash {
