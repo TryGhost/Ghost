@@ -34,6 +34,34 @@
                         </GhFormGroup>
                         {{#if this.membersUtils.isStripeEnabled}}
                             <div {{did-insert this.refreshAfterStripeConnected}}>
+                                {{#if (feature "multipleProducts")}}
+                                    <div class="mb3">
+                                        <h4 class="gh-portal-setting-title">Products available at signup</h4>
+                                    </div>
+                                    {{#each this.products as |product|}}
+                                        <div class="form-group mb0 for-checkbox">
+                                            <label
+                                                class="checkbox"
+                                                for={{product.id}}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id={{product.id}}
+                                                    name={{product.id}}
+                                                    checked={{product.checked}}
+                                                    disabled={{or
+                                                        (not this.membersUtils.isStripeEnabled)
+                                                        (not-eq this.settings.membersSignupAccess "all")
+                                                    }}
+                                                    class="gh-input post-settings-featured"
+                                                    {{on "click" (action "toggleProduct" product.id)}}
+                                                >
+                                                <span class="input-toggle-component"></span>
+                                                <p>{{product.name}}</p>
+                                            </label>
+                                        </div>
+                                    {{/each}}
+                                {{/if}}
                                 <div class="mb3">
                                     <h4 class="gh-portal-setting-title">Prices available at signup</h4>
                                 </div>
