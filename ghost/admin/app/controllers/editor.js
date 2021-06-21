@@ -124,7 +124,7 @@ export default Controller.extend({
     willPublish: boundOneWay('post.isPublished'),
     willSchedule: boundOneWay('post.isScheduled'),
 
-    // updateSlug and save should always be enqueued so that we don't run into
+    // updateSlugTask and saveTask should always be enqueued so that we don't run into
     // problems with concurrency, for example when Cmd-S is pressed whilst the
     // cursor is in the slug field - that would previously trigger a simultaneous
     // slug update and save resulting in ember data errors and inconsistent save
@@ -160,9 +160,9 @@ export default Controller.extend({
         return false;
     }),
 
-    _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
-        let autosave = this.get('_autosave.isRunning');
-        let timedsave = this.get('_timedSave.isRunning');
+    _autosaveRunning: computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning', function () {
+        let autosave = this.get('_autosaveTask.isRunning');
+        let timedsave = this.get('_timedSaveTask.isRunning');
 
         return autosave || timedsave;
     }),
@@ -178,9 +178,9 @@ export default Controller.extend({
             this.set('post.scratch', mobiledoc);
 
             // save 3 seconds after last edit
-            this._autosave.perform();
+            this._autosaveTask.perform();
             // force save at 60 seconds
-            this._timedSave.perform();
+            this._timedSaveTask.perform();
         },
         updateTitleScratch(title) {
             this.set('post.titleScratch', title);
@@ -202,14 +202,14 @@ export default Controller.extend({
         },
 
         save(options) {
-            return this.save.perform(options);
+            return this.saveTask.perform(options);
         },
 
         // used to prevent unexpected background saves. Triggered when opening
         // publish menu, starting a manual save, and when leaving the editor
         cancelAutosave() {
-            this._autosave.cancelAll();
-            this._timedSave.cancelAll();
+            this._autosaveTask.cancelAll();
+            this._timedSaveTask.cancelAll();
         },
 
         toggleLeaveEditorModal(transition) {
@@ -236,9 +236,9 @@ export default Controller.extend({
                 // if an autosave is scheduled, cancel it, save then transition
                 if (this._autosaveRunning) {
                     this.send('cancelAutosave');
-                    this.autosave.cancelAll();
+                    this.autosaveTask.cancelAll();
 
-                    return this.autosave.perform().then(() => {
+                    return this.autosaveTask.perform().then(() => {
                         transition.retry();
                     });
                 }
@@ -313,7 +313,7 @@ export default Controller.extend({
             this.post.set('featureImage', url);
 
             if (this.post.isDraft) {
-                this.autosave.perform();
+                this.autosaveTask.perform();
             }
         },
 
@@ -323,7 +323,7 @@ export default Controller.extend({
             this.post.set('featureImageCaption', null);
 
             if (this.post.isDraft) {
-                this.autosave.perform();
+                this.autosaveTask.perform();
             }
         },
 
@@ -331,7 +331,7 @@ export default Controller.extend({
             this.post.set('featureImageAlt', text);
 
             if (this.post.isDraft) {
-                this.autosave.perform();
+                this.autosaveTask.perform();
             }
         },
 
@@ -339,7 +339,7 @@ export default Controller.extend({
             this.post.set('featureImageCaption', html);
 
             if (this.post.isDraft) {
-                this.autosave.perform();
+                this.autosaveTask.perform();
             }
         }
     },
@@ -384,9 +384,9 @@ export default Controller.extend({
     /* Public tasks ----------------------------------------------------------*/
 
     // separate task for autosave so that it doesn't override a manual save
-    autosave: task(function* () {
-        if (!this.get('save.isRunning')) {
-            return yield this.save.perform({
+    autosaveTask: task(function* () {
+        if (!this.get('saveTask.isRunning')) {
+            return yield this.saveTask.perform({
                 silent: true,
                 backgroundSave: true
             });
@@ -395,7 +395,7 @@ export default Controller.extend({
 
     // save tasks cancels autosave before running, although this cancels the
     // _xSave tasks  that will also cancel the autosave task
-    save: task(function* (options = {}) {
+    saveTask: task(function* (options = {}) {
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
         let status;
@@ -465,11 +465,11 @@ export default Controller.extend({
         if (!this.get('post.slug')) {
             this.saveTitleTask.cancelAll();
 
-            yield this.generateSlug.perform();
+            yield this.generateSlugTask.perform();
         }
 
         try {
-            let post = yield this._savePost.perform(options);
+            let post = yield this._savePostTask.perform(options);
 
             post.set('statusScratch', null);
 
@@ -518,7 +518,7 @@ export default Controller.extend({
     /*
      * triggered by a user manually changing slug
      */
-    updateSlug: task(function* (_newSlug) {
+    updateSlugTask: task(function* (_newSlug) {
         let slug = this.get('post.slug');
         let newSlug, serverSlug;
 
@@ -568,14 +568,14 @@ export default Controller.extend({
             return;
         }
 
-        return yield this._savePost.perform();
+        return yield this._savePostTask.perform();
     }).group('saveTasks'),
 
     // used in the PSM so that saves are sequential and don't trigger collision
     // detection errors
-    savePost: task(function* () {
+    savePostTask: task(function* () {
         try {
-            return yield this._savePost.perform();
+            return yield this._savePostTask.perform();
         } catch (error) {
             if (error === undefined) {
                 // validation error
@@ -592,7 +592,7 @@ export default Controller.extend({
     }).group('saveTasks'),
 
     // convenience method for saving the post and performing post-save cleanup
-    _savePost: task(function* (options) {
+    _savePostTask: task(function* (options) {
         let {post} = this;
 
         yield post.save(options);
@@ -637,17 +637,17 @@ export default Controller.extend({
         // generate a slug if a post is new and doesn't have a title yet or
         // if the title is still '(Untitled)'
         if ((post.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
-            yield this.generateSlug.perform();
+            yield this.generateSlugTask.perform();
         }
 
         if (this.get('post.isDraft')) {
-            yield this.autosave.perform();
+            yield this.autosaveTask.perform();
         }
 
         this.ui.updateDocumentTitle();
     }),
 
-    generateSlug: task(function* () {
+    generateSlugTask: task(function* () {
         let title = this.get('post.titleScratch');
 
         // Only set an "untitled" slug once per post
@@ -656,7 +656,7 @@ export default Controller.extend({
         }
 
         try {
-            let slug = yield this.slugGenerator.generateSlug('post', title);
+            let slug = yield this.slugGenerator.generateSlugTask('post', title);
 
             if (!isBlank(slug)) {
                 this.set('post.slug', slug);
@@ -672,7 +672,7 @@ export default Controller.extend({
     }).enqueue(),
 
     // load supplementel data such as the members count in the background
-    backgroundLoader: task(function* () {
+    backgroundLoaderTask: task(function* () {
         try {
             let membersResponse = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
             this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
@@ -697,7 +697,7 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
-        this.backgroundLoader.perform();
+        this.backgroundLoaderTask.perform();
 
         // autofocus the title if we have a new post
         this.set('shouldFocusTitle', post.get('isNew'));
@@ -811,29 +811,29 @@ export default Controller.extend({
     /* Private tasks ---------------------------------------------------------*/
 
     // save 3 seconds after the last edit
-    _autosave: task(function* () {
+    _autosaveTask: task(function* () {
         if (!this._canAutosave) {
             return;
         }
 
         // force an instant save on first body edit for new posts
         if (this.get('post.isNew')) {
-            return this.autosave.perform();
+            return this.autosaveTask.perform();
         }
 
         yield timeout(AUTOSAVE_TIMEOUT);
-        this.autosave.perform();
+        this.autosaveTask.perform();
     }).restartable(),
 
     // save at 60 seconds even if the user doesn't stop typing
-    _timedSave: task(function* () {
+    _timedSaveTask: task(function* () {
         if (!this._canAutosave) {
             return;
         }
 
         while (config.environment !== 'test' && true) {
             yield timeout(TIMEDSAVE_TIMEOUT);
-            this.autosave.perform();
+            this.autosaveTask.perform();
         }
     }).drop(),
 
