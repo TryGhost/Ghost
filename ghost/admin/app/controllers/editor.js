@@ -656,7 +656,7 @@ export default Controller.extend({
         }
 
         try {
-            let slug = yield this.slugGenerator.generateSlugTask('post', title);
+            let slug = yield this.slugGenerator.generateSlug('post', title);
 
             if (!isBlank(slug)) {
                 this.set('post.slug', slug);
