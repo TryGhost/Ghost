@@ -615,7 +615,6 @@ export default Controller.extend({
                     captureMessage('Saving post required multiple attempts', {attempts, totalSeconds});
                 }
             } catch (error) {
-                console.log('caught error', {error});
                 attempts += 1;
 
                 if (isServerUnreachableError(error) && attempts < maxAttempts) {
@@ -628,10 +627,8 @@ export default Controller.extend({
                     }
 
                     // simulate a validation error so we don't end up on a 500 screen
-                    console.log('throwing undefined');
                     throw undefined;
                 } else {
-                    console.log('throwing error', isServerUnreachableError(error), error);
                     throw error;
                 }
             }
