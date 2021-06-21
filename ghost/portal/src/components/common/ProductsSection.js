@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {getAllProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 
@@ -140,8 +141,8 @@ export const ProductsSectionStyles = ({site}) => {
         }
 
         .gh-portal-product-description {
-            font-size: 1.4rem;
-            line-height: 1.5em;
+            font-size: 1.3rem;
+            line-height: 1.45em;
             text-align: center;
             color: var(--grey5);
             margin-bottom: 24px;
@@ -168,7 +169,7 @@ export const ProductsSectionStyles = ({site}) => {
             align-self: flex-end;
             font-size: 1.3rem;
             line-height: 1.6em;
-            color: var(--grey7);
+            color: var(--grey4);
             letter-spacing: 0.3px;
             margin-left: 2px;
         }
@@ -181,6 +182,37 @@ export const ProductsSectionStyles = ({site}) => {
             margin-top: 4px;
             letter-spacing: 0.3px;
             height: 18px;
+        }
+
+        .gh-portal-product-benefits {
+            font-size: 1.3rem;
+            line-height: 1.45em;
+            margin: -8px 0 0;
+            padding: 20px 8px;
+            border-top: 1px solid var(--grey12);
+            color: var(--grey3);
+        }
+
+        .gh-portal-product-benefit {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .gh-portal-benefit-checkmark {
+            width: 12px;
+            height: 12px;
+            min-width: 12px;
+            margin: 3px 6px 0 0;
+            overflow: visible;
+        }
+
+        .gh-portal-benefit-checkmark path {
+            stroke-width: 2.5px;
+        }
+
+        .gh-portal-benefit-title {
+            flex-grow: 1;
         }
 
         @media (max-width: 480px) {
@@ -300,6 +332,21 @@ function Checkbox({name, id, onProductSelect, isChecked, disabled = false}) {
     );
 }
 
+function ProductBenefits({product}) {
+    if (!product.benefits || !product.benefits.length) {
+        return null;
+    }
+
+    return product.benefits.map((benefit) => {
+        return (
+            <div className="gh-portal-product-benefit">
+                <CheckmarkIcon className='gh-portal-benefit-checkmark' alt=''/>
+                <div className="gh-portal-benefit-title">{benefit.title}</div>
+            </div>
+        );
+    });
+}
+
 function ProductCardFooterAlternatePrice({price}) {
     const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
@@ -350,6 +397,7 @@ function ProductCard({product}) {
                 }} />
                 <h4 className="gh-portal-product-name">{product.name}</h4>
                 <div className="gh-portal-product-description">{product.description}</div>
+                <div className="gh-portal-product-benefits"><ProductBenefits product={product} /></div>
             </div>
             <ProductCardFooter product={product} />
         </div>
