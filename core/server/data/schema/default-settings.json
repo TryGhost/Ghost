@@ -463,19 +463,6 @@
             },
             "type": "boolean"
         },
-        "newsletter_show_header": {
-            "defaultValue": "true",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [
-                    [
-                        "true",
-                        "false"
-                    ]
-                ]
-            },
-            "type": "boolean"
-        },
         "newsletter_header_image": {
             "defaultValue": null,
             "validations": {

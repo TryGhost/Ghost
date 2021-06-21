@@ -1,8 +1,6 @@
 const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
-const labsTemplate = require('./template-labs');
-const config = require('../../../shared/config');
 const settingsCache = require('../../services/settings/cache');
 const labs = require('../../services/labs');
 const urlUtils = require('../../../shared/url-utils');
@@ -125,16 +123,6 @@ const parseReplacements = (email) => {
 };
 
 const getTemplateSettings = async () => {
-    return {
-        showSiteHeader: settingsCache.get('newsletter_show_header'),
-        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
-        showBadge: settingsCache.get('newsletter_show_badge'),
-        footerContent: settingsCache.get('newsletter_footer_content'),
-        accentColor: settingsCache.get('accent_color')
-    };
-};
-
-const getLabsTemplateSettings = async () => {
     const templateSettings = {
         headerImage: settingsCache.get('newsletter_header_image'),
         showHeaderIcon: settingsCache.get('newsletter_show_header_icon') && settingsCache.get('icon'),
@@ -244,11 +232,9 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         }
     }
 
-    const useLabsTemplate = config.get('enableDeveloperExperiments');
-    const templateSettings = await (useLabsTemplate ? getLabsTemplateSettings() : getTemplateSettings());
-    const templateRenderer = useLabsTemplate ? labsTemplate : template;
+    const templateSettings = await getTemplateSettings();
 
-    let htmlTemplate = templateRenderer({post, site: getSite(), templateSettings});
+    let htmlTemplate = template({post, site: getSite(), templateSettings});
 
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl(null);
