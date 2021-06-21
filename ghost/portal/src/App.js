@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import TriggerButton from './components/TriggerButton';
 import Notification from './components/Notification';
 import PopupModal from './components/PopupModal';
@@ -365,12 +366,25 @@ export default class App extends React.Component {
             }
 
             this.setupFirstPromoter({site, member});
+            this.setupSentry({site});
             return {site, member};
         } catch (e) {
             if (hasMode(['dev', 'test'])) {
                 return {};
             }
             throw e;
+        }
+    }
+
+    /** Setup Sentry */
+    setupSentry({site}) {
+        const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
+        if (portalSentry && portalSentry.dsn) {
+            Sentry.init({
+                dsn: portalSentry.dsn,
+                environment: portalSentry.env || 'development',
+                release: `portal@${portalVersion}|ghost@${ghostVersion}`
+            });
         }
     }
 
@@ -591,11 +605,13 @@ export default class App extends React.Component {
     render() {
         if (this.state.initStatus === 'success') {
             return (
-                <AppContext.Provider value={this.getContextFromState()}>
-                    <PopupModal />
-                    <TriggerButton />
-                    <Notification />
-                </AppContext.Provider>
+                <Sentry.ErrorBoundary>
+                    <AppContext.Provider value={this.getContextFromState()}>
+                        <PopupModal />
+                        <TriggerButton />
+                        <Notification />
+                    </AppContext.Provider>
+                </Sentry.ErrorBoundary>
             );
         }
         return null;
