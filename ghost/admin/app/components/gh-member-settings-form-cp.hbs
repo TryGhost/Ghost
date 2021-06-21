@@ -235,7 +235,7 @@
                                     </GhDropdownButton>
                                     <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
                                         <li>
-                                            <button>
+                                            <button {{action "removeComplimentary" product.id}}>
                                                 <span class="red">Remove complimentary subscription</span>
                                             </button>
                                         </li>
