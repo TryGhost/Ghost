@@ -2,6 +2,7 @@
 const iff = (cond, yes, no) => (cond ? yes : no);
 module.exports = ({post, site, templateSettings}) => {
     const date = new Date();
+    const hasFeatureImageCaption = templateSettings.labsFeatureImageMeta && templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
     return `<!doctype html>
 <html>
 
@@ -267,6 +268,10 @@ figure blockquote p {
     font-size: 1em;
 }
 
+.header-image {
+    padding-top: 16px;
+}
+
 .site-icon {
     padding-bottom: 10px;
     padding-top: 20px;
@@ -302,12 +307,21 @@ figure blockquote p {
     font-weight: 600;
     text-align: center;
 }
+.post-title-serif {
+    font-family: Georgia, serif;
+}
+.post-title-left {
+    text-align: left;
+}
 
 .post-title-link {
     color: #15212A;
     display: block;
     text-align: center;
     margin-top: 50px;
+}
+.post-title-link-left {
+    text-align: left;
 }
 
 .post-meta,
@@ -319,6 +333,9 @@ figure blockquote p {
     letter-spacing: 0.2px;
     text-transform: uppercase;
     text-align: center;
+}
+.post-meta-left {
+    text-align: left;
 }
 
 .view-online {
@@ -334,6 +351,18 @@ figure blockquote p {
 .feature-image {
     padding-bottom: 30px;
     width: 100%;
+}
+
+.feature-image-with-caption {
+    padding-bottom: 10px;
+}
+
+.feature-image-caption {
+    width: 100%;
+    padding-bottom: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: #738a94;
 }
 
 .post-content {
@@ -877,19 +906,27 @@ ${ templateSettings.showBadge ? `
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
 
+                                    ${ templateSettings.headerImage ? `
+                                    <tr>
+                                        <td class="header-image" width="100%" align="center"><img src="${templateSettings.headerImage}"${templateSettings.headerImageWidth ? ` width="${templateSettings.headerImageWidth}"` : ''}></td>
+                                    </tr>
+                                    ` : ''}
 
-                                    ${ templateSettings.showSiteHeader ? `
+
+                                    ${ templateSettings.showHeaderIcon || templateSettings.showHeaderTitle ? `
                                     <tr>
                                         <td class="site-info" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                ${ site.iconUrl ? `
+                                                ${ templateSettings.showHeaderIcon && site.iconUrl ? `
                                                 <tr>
                                                     <td class="site-icon"><a href="${site.url}"><img src="${site.iconUrl}" border="0"></a></td>
                                                 </tr>
                                                 ` : ``}
+                                                ${ templateSettings.showHeaderTitle ? `
                                                 <tr>
                                                     <td class="site-url"><div style="width: 100% !important;"><a href="${site.url}">${site.title}</a></div></td>
                                                 </tr>
+                                                ` : ``}
                                             </table>
                                         </td>
                                     </tr>
@@ -897,13 +934,15 @@ ${ templateSettings.showBadge ? `
 
 
                                     <tr>
-                                        <td class="post-title"><a href="${post.url}" class="post-title-link">${post.title}</a></td>
+                                        <td class="post-title ${templateSettings.titleFontCategory === 'serif' ? `post-title-serif` : `` } ${templateSettings.titleAlignment === 'left' ? `post-title-left` : ``}">
+                                            <a href="${post.url}" class="post-title-link ${templateSettings.titleAlignment === 'left' ? `post-title-link-left` : ``}">${post.title}</a>
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td align="center">
+                                        <td>
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                 <tr>
-                                                    <td class="post-meta">
+                                                    <td class="post-meta ${templateSettings.titleAlignment === 'left' ? `post-meta-left` : ``}">
                                                         By ${post.authors} –
                                                         ${post.published_at} –
                                                         <a href="${post.url}" class="view-online-link">View online →</a>
@@ -912,9 +951,14 @@ ${ templateSettings.showBadge ? `
                                             </table>
                                         </td>
                                     </tr>
-                                    ${post.feature_image ? `
+                                    ${ templateSettings.showFeatureImage && post.feature_image ? `
                                     <tr>
-                                        <td class="feature-image"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''}></td>
+                                        <td class="feature-image ${hasFeatureImageCaption ? 'feature-image-with-caption' : ''}"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''} alt="${post.feature_image_alt}"></td>
+                                    </tr>
+                                    ` : ``}
+                                    ${ hasFeatureImageCaption ? `
+                                    <tr>
+                                        <td class="feature-image-caption" align="center">${post.feature_image_caption}</td>
                                     </tr>
                                     ` : ``}
                                     <tr>

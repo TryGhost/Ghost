@@ -72,7 +72,6 @@ const defaultSettingsKeyTypes = [
     {key: 'active_timezone', type: 'blog'},
     {key: 'default_locale', type: 'blog'},
     {key: 'newsletter_show_badge', type: 'newsletter'},
-    {key: 'newsletter_show_header', type: 'newsletter'},
     {key: 'newsletter_header_image', type: 'newsletter'},
     {key: 'newsletter_show_header_icon', type: 'newsletter'},
     {key: 'newsletter_show_header_title', type: 'newsletter'},

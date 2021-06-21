@@ -351,11 +351,6 @@ const defaultSettingsKeyTypes = [
         group: 'newsletter'
     },
     {
-        key: 'newsletter_show_header',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
         key: 'newsletter_header_image',
         type: 'string',
         group: 'newsletter'
