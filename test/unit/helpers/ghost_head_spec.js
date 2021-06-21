@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const moment = require('moment');
 const testUtils = require('../../utils');
-const testUrlUtils = require('../../utils/urlUtils');
 const configUtils = require('../../utils/configUtils');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 const models = require('../../../core/server/models');
@@ -306,17 +305,8 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('without Code Injection', function () {
-        let sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.createSandbox();
-
-            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-            testUrlUtils.restore();
+            configUtils.set({url: 'http://localhost:65530/'});
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
@@ -1286,21 +1276,15 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with /site subdirectory', function () {
-        let sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.createSandbox();
-
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
-            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/site'}, sandbox);
+            configUtils.set({url: 'http://localhost:65530/site'});
 
             routing.registry.getRssUrl.returns('http://localhost:65530/site/rss/');
         });
 
         afterEach(function () {
-            sandbox.restore();
-            testUrlUtils.restore();
             routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
         });
 
@@ -1324,23 +1308,13 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with changed origin in config file', function () {
-        let sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.createSandbox();
-
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
+                url: 'http://localhost:65530/site',
                 referrerPolicy: 'origin'
             });
-
-            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/site'}, sandbox);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-            testUrlUtils.restore();
         });
 
         it('contains the changed origin', function (done) {
@@ -1361,24 +1335,15 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with useStructuredData is set to false in config file', function () {
-        let sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.createSandbox();
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
+                url: 'http://localhost:65530/',
                 privacy: {
                     useStructuredData: false
                 }
             });
-
-            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-            testUrlUtils.restore();
         });
 
         it('does not return structured data', function (done) {
@@ -1410,19 +1375,11 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Code Injection', function () {
-        let sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.createSandbox();
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
             settingsCache.get.withArgs('codeinjection_head').returns('<style>body {background: red;}</style>');
 
-            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-            testUrlUtils.restore();
+            configUtils.set({url: 'http://localhost:65530/'});
         });
 
         it('returns meta tag plus injected code', function (done) {

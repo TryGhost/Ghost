@@ -1,7 +1,6 @@
 const should = require('should');
-const sinon = require('sinon');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated_url');
-const urlUtils = require('../../../utils/urlUtils');
+const configUtils = require('../../../utils/configUtils');
 
 describe('getPaginatedUrl', function () {
     let data;
@@ -125,16 +124,12 @@ describe('getPaginatedUrl', function () {
     });
 
     describe('with /blog subdirectory', function () {
-        let sandbox;
-
         before(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:65535/blog'}, sandbox);
+            configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
         after(function () {
-            urlUtils.restore();
-            sandbox.restore();
+            configUtils.restore();
         });
 
         it('should calculate correct urls for index', function () {

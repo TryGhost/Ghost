@@ -1,13 +1,13 @@
 const should = require('should');
 const sinon = require('sinon');
-const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/configUtils');
 
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
 const logging = require('@tryghost/logging');
 
-describe('{{image}} helper', function () {
+describe('{{img_url}} helper', function () {
     let logWarnStub;
 
     beforeEach(function () {
@@ -19,16 +19,12 @@ describe('{{image}} helper', function () {
     });
 
     describe('without sub-directory', function () {
-        let sandbox;
-
         before(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:65535/'}, sandbox);
+            configUtils.set({url: 'http://localhost:65535/'});
         });
 
         after(function () {
-            sandbox.restore();
-            urlUtils.restore();
+            configUtils.restore();
         });
 
         it('should output relative url of image', function () {
@@ -65,7 +61,7 @@ describe('{{image}} helper', function () {
             logWarnStub.called.should.be.false();
         });
 
-        it('should have no output if the image attributeis not provided (with warning)', function () {
+        it('should have no output if the image attribute is not provided (with warning)', function () {
             const rendered = helpers.img_url({hash: {absolute: 'true'}});
             should.not.exist(rendered);
             logWarnStub.calledOnce.should.be.true();
@@ -85,16 +81,12 @@ describe('{{image}} helper', function () {
     });
 
     describe('with sub-directory', function () {
-        let sandbox;
-
         before(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:65535/blog'}, sandbox);
+            configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
         after(function () {
-            sandbox.restore();
-            urlUtils.restore();
+            configUtils.restore();
         });
 
         it('should output relative url of image', function () {
@@ -117,16 +109,12 @@ describe('{{image}} helper', function () {
     });
 
     describe('image_sizes', function () {
-        let sandbox;
-
         before(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:65535/'}, sandbox);
+            configUtils.set({url: 'http://localhost:65535/'});
         });
 
         after(function () {
-            sandbox.restore();
-            urlUtils.restore();
+            configUtils.restore();
         });
 
         it('should output correct url for absolute paths which are internal', function () {
