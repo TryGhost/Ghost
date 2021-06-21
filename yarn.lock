@@ -1028,18 +1028,7 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.1.tgz#29176e24672368a2231ddb7d1425d799f8b56fdd"
-  integrity sha512-lDvnaIo0yuJy7aedpdpqlkiEz2thEZ3lp5NRmXNMA3Cv0JOkpEX8K0CRTtczC2hYu8cQla9zZJ5I/40xTlEsUQ==
-  dependencies:
-    "@tryghost/errors" "^0.2.13"
-    "@tryghost/tpl" "^0.1.2"
-    lodash "^4.17.21"
-    moment-timezone "0.5.23"
-    validator "7.2.0"
-
-"@tryghost/validator@^0.1.2":
+"@tryghost/validator@0.1.2", "@tryghost/validator@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.2.tgz#6be0bdd2d5f550be901f81c308ff98088232fe3f"
   integrity sha512-Kcj9rwR3byHjJ19z7zBvxE6GDbZ7PfZyr6x7WkSy5YRZYmd0qFxCYcxFlOZ+P2C/WYtTF0gzKOh1IySsAgBuRw==
