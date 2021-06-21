@@ -16,7 +16,7 @@
             {{#each uploader.errors as |error|}}
                 <div class="gh-setting-error" data-test-error="feature-image">
                     {{or error.context error.message}}
-                    <button type="button" class="b" {{on "click" uploader.cancel}}>Retry</button>
+                    <button type="button" class="ml2 b" {{on "click" uploader.cancel}}>Retry</button>
                 </div>
             {{/each}}
         {{else if @image}}
@@ -27,12 +27,12 @@
                     {{svg-jar "trash"}}
                 </button>
             </div>
-            <div class="relative">
+            <div class="flex justify-between align-center">
                 {{#if this.isEditingAlt}}
                     <input
                         type="text"
                         placeholder={{@altPlaceholder}}
-                        class="miw-100 tc bn form-text bg-transparent tracked-2 pr8 pl8"
+                        class="w-100 bn form-text bg-transparent tracked-2"
                         name="alt"
                         value={{@alt}}
                         {{autofocus}}
@@ -42,7 +42,7 @@
                     <KoenigBasicHtmlInput
                         @html={{@caption}}
                         @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
-                        @class="miw-100 tc bn form-text bg-transparent pr8 pl8"
+                        @class="w-100 mb2 bn form-text bg-transparent tracked-2"
                         @name="caption"
                         @onChange={{@updateCaption}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
@@ -51,7 +51,7 @@
                 {{/if}}
                 <button
                     title="Toggle between editing alt text and caption"
-                    class="absolute right-0 bottom-0 ma2 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-blue b--blue white" "bg-white b--midlightgrey midlightgrey"}}"
+                    class="h-100 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-white b--midlightgrey midlightgrey"}}"
                     {{on "click" this.toggleAltEditing passive=true}}
                 >
                     Alt

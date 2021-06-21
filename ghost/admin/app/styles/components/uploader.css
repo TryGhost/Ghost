@@ -111,13 +111,12 @@
     margin: 0 auto;
     background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
     border-radius: 12px;
-    box-shadow: rgba(0, 0, 0, 0.1) 0 1px 2px inset;
 }
 
 .gh-image-uploader .bar,
 .gh-progress-bar {
-    height: 12px;
-    background: var(--blue);
+    height: 8px;
+    background: var(--green);
 }
 
 .gh-image-uploader .bar.fail,
