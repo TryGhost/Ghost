@@ -45,6 +45,7 @@ export default Model.extend(ValidationEngine, {
     portalButton: attr('boolean'),
     portalName: attr('boolean'),
     portalPlans: attr('json-string'),
+    portalProducts: attr('json-string'),
     portalButtonStyle: attr('string'),
     portalButtonIcon: attr('string'),
     portalButtonSignupText: attr('string'),
