@@ -256,6 +256,11 @@ const defaultSettingsKeyTypes = [
         group: 'portal'
     },
     {
+        key: 'portal_products',
+        type: 'array',
+        group: 'portal'
+    },
+    {
         key: 'portal_button_style',
         type: 'string',
         group: 'portal'

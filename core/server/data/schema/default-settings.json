@@ -343,6 +343,10 @@
             "defaultValue": "[\"free\"]",
             "type": "array"
         },
+        "portal_products": {
+            "defaultValue": "[]",
+            "type": "array"
+        },
         "portal_button_style": {
             "defaultValue": "icon-and-text",
             "validations": {
