@@ -73,6 +73,28 @@ const products = [
                 type: 'recurring',
                 interval: 'year'
             }
+        ],
+        benefits: [
+            {
+                id: 'a1',
+                title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+            },
+            {
+                id: 'a2',
+                title: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+            },
+            {
+                id: 'a3',
+                title: 'Nullam hendrerit accumsan facilisis'
+            },
+            {
+                id: 'a4',
+                title: 'Vivamus vel elit lectus'
+            },
+            {
+                id: 'a5',
+                title: 'Maecenas tempus cursus metus'
+            }
         ]
     },
     {
@@ -123,6 +145,24 @@ const products = [
                 amount: 12000,
                 type: 'recurring',
                 interval: 'year'
+            }
+        ],
+        benefits: [
+            {
+                id: 'b1',
+                title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+            },
+            {
+                id: 'b2',
+                title: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+            },
+            {
+                id: 'b3',
+                title: 'Nullam hendrerit accumsan facilisis'
+            },
+            {
+                id: 'b4',
+                title: 'Vivamus vel elit lectus'
             }
         ]
     },
@@ -175,6 +215,20 @@ const products = [
                 type: 'recurring',
                 interval: 'year'
             }
+        ],
+        benefits: [
+            {
+                id: 'c1',
+                title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+            },
+            {
+                id: 'c2',
+                title: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+            },
+            {
+                id: 'c3',
+                title: 'Nullam hendrerit accumsan facilisis'
+            }
         ]
     }
 ];
@@ -194,7 +248,7 @@ export const site = {
     portal_products: ['product_1', 'product_2', 'product_3'],
     products,
     prices,
-    allow_self_signup: false,
+    allow_self_signup: true,
     members_signup_access: 'all',
     free_price_name: 'Free',
     free_price_description: 'Free preview',
