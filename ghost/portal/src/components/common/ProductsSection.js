@@ -509,7 +509,6 @@ function ProductsSection({onPlanSelect, products}) {
     }, [selectedPrice.id, onPlanSelect]);
 
     useEffect(() => {
-        console.log('here');
         setSelectedProduct(defaultProductId);
     }, [defaultProductId]);
 
