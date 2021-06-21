@@ -169,7 +169,8 @@ export const ProductsSectionStyles = ({site}) => {
             font-size: 1.3rem;
             line-height: 1.6em;
             color: var(--grey7);
-            letter-spacing: 0.2px;
+            letter-spacing: 0.3px;
+            margin-left: 2px;
         }
 
         .gh-portal-product-alternative-price {
@@ -178,7 +179,7 @@ export const ProductsSectionStyles = ({site}) => {
             color: var(--grey7);
             text-align: center;
             margin-top: 4px;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.3px;
             height: 18px;
         }
 
@@ -303,7 +304,9 @@ function ProductCardFooterAlternatePrice({price}) {
     const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
-        return null;
+        return (
+            <div className="gh-portal-product-alternative-price"></div>
+        );
     }
 
     return (
