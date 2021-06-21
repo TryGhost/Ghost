@@ -117,6 +117,11 @@ export default class extends Component {
     }
 
     @action
+    removeComplimentary(productId) {
+        this.removeComplimentaryTask.perform(productId);
+    }
+
+    @action
     continueSubscription(subscriptionId) {
         this.continueSubscriptionTask.perform(subscriptionId);
     }
@@ -134,6 +139,26 @@ export default class extends Component {
         let response = yield this.ajax.put(url, {
             data: {
                 cancel_at_period_end: true
+            }
+        });
+
+        this.store.pushPayload('member', response);
+        return response;
+    }
+
+    @task({drop: true})
+    *removeComplimentaryTask(productId) {
+        let url = this.ghostPaths.url.api(`members/${this.member.get('id')}`);
+        let products = this.member.get('products') || [];
+        const updatedProducts = products.filter(product => product.id !== productId).map(product => ({id: product.id}));
+
+        let response = yield this.ajax.put(url, {
+            data: {
+                members: [{
+                    id: this.member.get('id'),
+                    email: this.member.get('email'),
+                    products: updatedProducts
+                }]
             }
         });
 
