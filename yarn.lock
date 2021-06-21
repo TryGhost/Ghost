@@ -888,13 +888,13 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.22.tgz#eb060cca7c80e87b96a6b6f2e6e68a2660f2b36e"
   integrity sha512-9emJs6b+3/YLE2jlZ8+gZRmtTohUMS6d4lX9Gw/u3eABbGcoYOsaxc2/kqD6+xdizsFHQ93Qp7Jkw5knfI7XLA==
 
-"@tryghost/package-json@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.1.tgz#d9e7026c4545fae90da8200086397852d28619e5"
-  integrity sha512-wmhFgRiiuHlpBIM9veI394Lm149qstzUBNEilGmvkPmFZmh34qSqVkxCyrCgOjKmKV5qq3U3TiaaxlxB+iz38w==
+"@tryghost/package-json@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.2.tgz#03da61987709863a5070e0e46a7f24464528f78a"
+  integrity sha512-1QOj8I1slOeCllP1vtGg0lfUAe4ToqzY5buehcfd0Hg4GoE7ZaVfI+Ds8HL4zMfPlN1TNH7bei4QJ7ZtSziZpA==
   dependencies:
-    "@tryghost/errors" "^0.2.12"
-    "@tryghost/tpl" "^0.1.2"
+    "@tryghost/errors" "^0.2.13"
+    "@tryghost/tpl" "^0.1.3"
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
     lodash "^4.17.21"
@@ -974,7 +974,7 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.3":
+"@tryghost/tpl@0.1.3", "@tryghost/tpl@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.3.tgz#719e1161f7af1f9cfed055aeb8e1ba8058103d3f"
   integrity sha512-RLuhgPIGhEO/eSYJ7VjjcLy18a4QMOqBb+e6ThKQloWgIZKjSuo2Z15zcqCu3pnFWyGEOyMBGTL/CFnSEhN74Q==
