@@ -39,14 +39,6 @@ const stubUrlUtils = (options, sandbox) => {
         }
     });
 
-    if (options.url) {
-        configUtils.set('url', options.url);
-    }
-
-    if (options.adminUrl) {
-        configUtils.set('admin:url', options.adminUrl);
-    }
-
     return stubInstance;
 };
 
@@ -68,7 +60,6 @@ const restore = () => {
     configUtils.restore();
 };
 
-module.exports.stubUrlUtils = stubUrlUtils;
 module.exports.stubUrlUtilsFromConfig = stubUrlUtilsFromConfig;
 module.exports.restore = restore;
 module.exports.getInstance = getInstance;

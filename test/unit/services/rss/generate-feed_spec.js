@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../../utils');
-const urlUtils = require('../../../utils/urlUtils');
+const configUtils = require('../../../utils/configUtils');
 const urlService = require('../../../../core/frontend/services/url');
 const generateFeed = require('../../../../core/frontend/services/rss/generate-feed');
 
@@ -39,6 +39,7 @@ describe('RSS: Generate Feed', function () {
 
     afterEach(function () {
         sinon.restore();
+        configUtils.restore();
     });
 
     beforeEach(function () {
@@ -53,16 +54,8 @@ describe('RSS: Generate Feed', function () {
     });
 
     describe('without subdirectory', function () {
-        let sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://my-ghost-blog.com'}, sandbox);
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-            urlUtils.restore();
+            configUtils.set({url: 'http://my-ghost-blog.com'});
         });
 
         it('should get the RSS tags correct', function (done) {

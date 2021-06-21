@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const Promise = require('bluebird');
 const testUtils = require('../../utils');
 const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/configUtils');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 const helpers = require('../../../core/frontend/helpers');
 const urlService = require('../../../core/frontend/services/url');
@@ -10,7 +11,6 @@ const api = require('../../../core/server/api');
 
 describe('{{url}} helper', function () {
     let rendered;
-    let sandbox;
 
     beforeEach(function () {
         rendered = null;
@@ -28,13 +28,11 @@ describe('{{url}} helper', function () {
 
     describe('no subdir', function () {
         before(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:65535/'}, sandbox);
+            configUtils.set({url: 'http://localhost:65535/'});
         });
 
         after(function () {
-            sandbox.restore();
-            urlUtils.restore();
+            configUtils.restore();
         });
 
         it('should return the slug with a prefix slash if the context is a post', function () {
@@ -273,13 +271,11 @@ describe('{{url}} helper', function () {
 
     describe('with subdir', function () {
         before(function () {
-            sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:65535/blog'}, sandbox);
+            configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
         after(function () {
-            sandbox.restore();
-            urlUtils.restore();
+            configUtils.restore();
         });
 
         it('external urls should be retained in a nav context with subdir', function () {
