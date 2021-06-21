@@ -36,7 +36,7 @@ export default ModalComponent.extend({
         return `data-portal`;
     }),
 
-    portalPreviewUrl: computed('page', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[]}', function () {
+    portalPreviewUrl: computed('page', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[],portalProducts.[]}', function () {
         const options = this.getProperties(['page']);
         return this.membersUtils.getPortalPreviewUrl(options);
     }),
@@ -69,6 +69,20 @@ export default ModalComponent.extend({
         const allowedPlans = this.settings.get('portalPlans') || [];
         return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
     }),
+    products: computed('model.products.[]', 'settings.portalProducts.[]', 'isPreloading', function () {
+        if (this.isPreloading || !this.model.products) {
+            return [];
+        }
+        const portalProducts = this.settings.get('portalProducts') || [];
+        const products = this.model.products.map((product) => {
+            return {
+                id: product.id,
+                name: product.name,
+                checked: portalProducts.includes(product.id)
+            };
+        });
+        return products;
+    }),
 
     init() {
         this._super(...arguments);
@@ -91,6 +105,9 @@ export default ModalComponent.extend({
         },
         togglePlan(plan, event) {
             this.updateAllowedPlan(plan, event.target.checked);
+        },
+        toggleProduct(productId, event) {
+            this.updateAllowedProduct(productId, event.target.checked);
         },
         togglePortalButton(showButton) {
             this.settings.set('portalButton', showButton);
@@ -199,6 +216,18 @@ export default ModalComponent.extend({
         } else {
             allowedPlans.push(plan);
             this.settings.set('portalPlans', allowedPlans);
+        }
+    },
+
+    updateAllowedProduct(productId, isChecked) {
+        const portalProducts = this.settings.get('portalProducts') || [];
+        const allowedProducts = [...portalProducts];
+
+        if (!isChecked) {
+            this.settings.set('portalProducts', allowedProducts.filter(p => p !== productId));
+        } else {
+            allowedProducts.push(productId);
+            this.settings.set('portalProducts', allowedProducts);
         }
     },
 

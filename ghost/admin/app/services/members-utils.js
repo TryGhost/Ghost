@@ -87,6 +87,7 @@ export default class MembersUtilsService extends Service {
             monthlyPrice,
             yearlyPrice,
             portalPlans = this.settings.get('portalPlans'),
+            portalProducts = this.settings.get('portalProducts'),
             currency,
             membersSignupAccess = this.settings.get('membersSignupAccess')
         } = overrides;
@@ -110,6 +111,10 @@ export default class MembersUtilsService extends Service {
 
         if (portalPlans) {
             settingsParam.append('portalPrices', encodeURIComponent(portalPlans));
+        }
+
+        if (portalProducts) {
+            settingsParam.append('portalProducts', encodeURIComponent(portalProducts));
         }
 
         if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
