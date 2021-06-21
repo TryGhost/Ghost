@@ -160,15 +160,20 @@ export function getSiteProducts({site = {}}) {
     });
 }
 
-export function getAllProducts({site}) {
+export function getAvailableProducts({site}) {
     const {portal_products: portalProducts} = site;
-    const siteProducts = getSiteProducts({site});
     const products = getSiteProducts({site}).filter((product) => {
-        if (portalProducts && siteProducts.length > 1) {
+        if (portalProducts) {
             return portalProducts.includes(product.id);
         }
         return true;
     });
+
+    return products;
+}
+
+export function getAllProducts({site}) {
+    const products = getAvailableProducts({site});
     if (hasFreeProduct({site}) && products.length > 0) {
         products.unshift({
             id: 'free'
@@ -178,7 +183,7 @@ export function getAllProducts({site}) {
 }
 
 export function getProductPrices({site}) {
-    const products = getSiteProducts({site}) || [];
+    const products = getAvailableProducts({site}) || [];
     const prices = products.reduce((accumPrices, product) => {
         if (product.monthlyPrice && product.yearlyPrice) {
             accumPrices.push(product.monthlyPrice);
@@ -264,10 +269,7 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
     if (!prices) {
         return [];
     }
-    let availablePrices = prices;
-    if (hasMultipleProducts({site})) {
-        availablePrices = getProductPrices({site});
-    }
+    const availablePrices = getProductPrices({site});
 
     const plansData = [];
 
