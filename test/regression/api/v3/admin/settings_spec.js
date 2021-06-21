@@ -57,6 +57,7 @@ const defaultSettingsKeyTypes = [
     {key: 'portal_name', type: 'portal'},
     {key: 'portal_button', type: 'portal'},
     {key: 'portal_plans', type: 'portal'},
+    {key: 'portal_products', type: 'portal'},
     {key: 'portal_button_style', type: 'portal'},
     {key: 'portal_button_icon', type: 'portal'},
     {key: 'portal_button_signup_text', type: 'portal'},
