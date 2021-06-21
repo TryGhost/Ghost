@@ -148,7 +148,9 @@ const getMemberSiteData = async function (req, res) {
         prices,
         products
     };
-
+    if (labsService.isSet('multipleProducts')) {
+        response.portal_products = settingsCache.get('portal_products');
+    }
     res.json({site: response});
 };
 
