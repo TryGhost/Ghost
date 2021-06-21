@@ -79,7 +79,7 @@
     "@tryghost/update-check-service": "0.1.0",
     "@tryghost/url-utils": "2.0.0",
     "@tryghost/validator": "0.1.2",
-    "@tryghost/version": "0.1.0",
+    "@tryghost/version": "0.1.1",
     "@tryghost/vhost-middleware": "1.0.15",
     "@tryghost/zip": "1.1.14",
     "amperize": "0.6.1",
