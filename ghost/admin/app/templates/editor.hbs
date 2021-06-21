@@ -21,7 +21,7 @@
                         <span>
                             <GhEditorPostStatus
                                 @post={{this.post}}
-                                @isSaving={{or this.autosave.isRunning this.saveTasks.isRunning}}
+                                @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
                             />
                         </span>
                     </div>
@@ -48,7 +48,7 @@
                                 <GhPublishmenu
                                     @post={{this.post}}
                                     @postStatus={{this.post.status}}
-                                    @saveTask={{this.save}}
+                                    @saveTask={{this.saveTask}}
                                     @setSaveType={{action "setSaveType"}}
                                     @onOpen={{action "cancelAutosave"}} />
                             </div>
@@ -119,8 +119,8 @@
                     @showSettingsMenu={{this.showSettingsMenu}}
                     @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
                     @deletePost={{action "toggleDeletePostModal"}}
-                    @updateSlug={{this.updateSlug}}
-                    @savePost={{this.savePost}}
+                    @updateSlugTask={{this.updateSlugTask}}
+                    @savePostTask={{this.savePostTask}}
                 />
             {{/if}}
         {{/if}}
@@ -161,7 +161,7 @@
         <GhFullscreenModal @modal="post-preview"
             @model={{hash
                 post=this.post
-                saveTask=this.save
+                saveTask=this.saveTask
                 setEditorSaveType=(action "setSaveType")
                 memberCount=this.memberCount
             }}
@@ -205,8 +205,8 @@
                 @showSettingsMenu={{this.ui.showSettingsMenu}}
                 @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
                 @deletePost={{action "toggleDeletePostModal"}}
-                @updateSlug={{this.updateSlug}}
-                @savePost={{this.savePost}}
+                @updateSlugTask={{this.updateSlugTask}}
+                @savePostTask={{this.savePostTask}}
             />
         </LiquidWormhole>
     {{/unless}}

@@ -123,7 +123,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -133,7 +133,7 @@ export default Component.extend({
          * triggered by user manually changing slug
          */
         updateSlug(newSlug) {
-            return this.updateSlug
+            return this.updateSlugTask
                 .perform(newSlug)
                 .catch((error) => {
                     this.showError(error);
@@ -151,7 +151,7 @@ export default Component.extend({
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogDate', dateString);
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             }
         },
 
@@ -164,7 +164,7 @@ export default Component.extend({
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogTime', time);
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             }
         },
 
@@ -178,7 +178,7 @@ export default Component.extend({
 
             post.set('customExcerpt', excerpt);
 
-            return post.validate({property: 'customExcerpt'}).then(() => this.savePost.perform());
+            return post.validate({property: 'customExcerpt'}).then(() => this.savePostTask.perform());
         },
 
         setHeaderInjection(code) {
@@ -191,7 +191,7 @@ export default Component.extend({
 
             post.set('codeinjectionHead', code);
 
-            return post.validate({property: 'codeinjectionHead'}).then(() => this.savePost.perform());
+            return post.validate({property: 'codeinjectionHead'}).then(() => this.savePostTask.perform());
         },
 
         setFooterInjection(code) {
@@ -204,7 +204,7 @@ export default Component.extend({
 
             post.set('codeinjectionFoot', code);
 
-            return post.validate({property: 'codeinjectionFoot'}).then(() => this.savePost.perform());
+            return post.validate({property: 'codeinjectionFoot'}).then(() => this.savePostTask.perform());
         },
 
         setMetaTitle(metaTitle) {
@@ -226,7 +226,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -249,7 +249,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -272,7 +272,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -295,7 +295,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -318,7 +318,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -341,7 +341,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -364,7 +364,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -375,7 +375,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -388,7 +388,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -401,7 +401,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -414,7 +414,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -427,7 +427,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -440,7 +440,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -462,7 +462,7 @@ export default Component.extend({
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 post.rollbackAttributes();
             });
