@@ -26,7 +26,7 @@ describe('Unit: Controller: editor', function () {
 
             expect(controller.get('post.slug')).to.equal('');
 
-            await controller.get('generateSlug').perform();
+            await controller.get('generateSlugTask').perform();
 
             expect(controller.get('post.slug')).to.equal('title-slug');
         });
@@ -44,7 +44,7 @@ describe('Unit: Controller: editor', function () {
             expect(controller.get('post.slug')).to.equal('whatever');
 
             controller.set('post.titleScratch', '(Untitled)');
-            await controller.get('generateSlug').perform();
+            await controller.get('generateSlugTask').perform();
 
             expect(controller.get('post.slug')).to.equal('whatever');
         });
@@ -60,7 +60,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlugTask', task(function * () {
                 this.set('post.slug', 'test-slug');
                 yield RSVP.resolve();
             }));
@@ -80,7 +80,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlugTask', task(function * () {
                 this.set('post.slug', 'test-slug');
                 yield RSVP.resolve();
             }));
@@ -101,7 +101,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlugTask', task(function * () {
                 expect(false, 'generateSlug should not be called').to.equal(true);
                 yield RSVP.resolve();
             }));
@@ -125,7 +125,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            defineProperty(controller, 'generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlugTask', task(function * () {
                 expect(false, 'generateSlug should not be called').to.equal(true);
                 yield RSVP.resolve();
             }));
