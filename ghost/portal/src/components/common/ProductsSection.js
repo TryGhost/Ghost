@@ -455,9 +455,15 @@ function ProductsSection({onPlanSelect, products}) {
 
     const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
     const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+
     useEffect(() => {
         onPlanSelect(null, selectedPrice.id);
     }, [selectedPrice.id, onPlanSelect]);
+
+    useEffect(() => {
+        console.log('here');
+        setSelectedProduct(defaultProductId);
+    }, [defaultProductId]);
 
     if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
         return null;
