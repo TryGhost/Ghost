@@ -601,7 +601,7 @@ export default Controller.extend({
         // retry save every 5 seconds for a total of 30secs
         // only retry if we get a ServerUnreachable error (code 0) from the browser
         let attempts = 0;
-        let maxAttempts = 2;
+        let maxAttempts = 6;
         let startTime = moment();
         let success = false;
         while (attempts < maxAttempts && !success) {
