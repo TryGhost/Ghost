@@ -7,7 +7,6 @@
     "@tryghost:groupBuildTools"
   ],
   "ignoreDeps": [
-      "gscan",
       "got",
       "ghost-storage-base",
       "intl-messageformat",
