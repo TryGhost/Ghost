@@ -866,14 +866,14 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.1.tgz#26ebd63ac0586db8b4c8962450ae84709fb52d1f"
-  integrity sha512-XWg7BMuMR15uqPppx4hpfU4pquKSRfehtbVOyeWmj30+3YNSAI/9QKfe2rfyFaC26tml1Gyc9HNBtl2EVjrWSw==
+"@tryghost/logging@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.2.tgz#f3d4f18c70d87b3ff5ee0d62d231aa2286255b9a"
+  integrity sha512-Zr6hAB1fpERLxpXvnz8jyPPcEVKdz1bEVc21UWRHj/8edq1PLKHNY+g7sK6EtD4EaxWrEI2qhb5Bz8l9AfOj6g==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch-bunyan" "^0.1.1"
-    "@tryghost/root-utils" "^0.3.0"
+    "@tryghost/root-utils" "^0.3.1"
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^10.0.0"
@@ -995,14 +995,6 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
   integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
-  dependencies:
-    caller "^1.0.1"
-    find-root "^1.1.0"
-
-"@tryghost/root-utils@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.0.tgz#94565b5063c296b7493e3a635f9b77a8f917076b"
-  integrity sha512-4OaSksIjR5RVAYXXfhTlNbt/gbj9mG/qxW0Kn6uoq8RWSBaV/Hjh7wdw+ptCJ7WPT87bFO7A6uZz29AjDeNGow==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
