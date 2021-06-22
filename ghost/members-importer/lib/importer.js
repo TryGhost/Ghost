@@ -109,6 +109,12 @@ module.exports = class MembersCSVImporter {
 
         const membersApi = await this._getMembersApi();
 
+        const defaultProductPage = await membersApi.productRepository.list({
+            limit: 1
+        });
+
+        const defaultProduct = defaultProductPage.data[0];
+
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
 
@@ -142,7 +148,16 @@ module.exports = class MembersCSVImporter {
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
-                    await membersApi.members.setComplimentarySubscription(member, options);
+                    if (!labsService.isSet('multipleProducts')) {
+                        await membersApi.members.setComplimentarySubscription(member, options);
+                    } else {
+                        await membersApi.members.update({
+                            products: [{id: defaultProduct.id}]
+                        }, {
+                            ...options,
+                            id: member.id
+                        });
+                    }
                 }
 
                 await trx.commit();
