@@ -1,16 +1,16 @@
-<div class="settings-menu-header subview">
+<div class="settings-menu-header subview {{if (feature "psmRedesign") "labs"}}">
     <button {{on "click" this.close}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
     <h4>Email newsletter</h4>
     <div style="width:23px;"></div>
 </div>
 
-<div class="settings-menu-content settings-menu-email">
+<div class="settings-menu-content settings-menu-email {{if (feature "psmRedesign") "labs"}}">
     {{#if this.post.email.isSuccess}}
         {{!-- Mail has already been sent --}}
         <div class="ba b--whitegrey bg-white br3">
             <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
                 <div class="w16 flex flex-column items-center">
-                    <span class="db mr4 mt3">{{svg-jar "send-email" class="w7 h7 stroke-darkgrey"}}</span>
+                    <span class="db mr4 mt2">{{svg-jar "send-email" class="w6 h6 stroke-midlightgrey"}}</span>
                 </div>
                 <div class="flex flex-column justify-center">
                     <p class="ma0 pa0 midgrey">Post was sent by email to</p>
@@ -32,7 +32,7 @@
                 </table>
             </div>
             <div class="pa5 pt3 pb3">
-                <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="blue">View sent email</button></p>
+                <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="green">View sent email</button></p>
             </div>
         </div>
     {{else if (or this.retryEmail.isRunning this.post.email.isFailure)}}

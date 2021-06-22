@@ -43,6 +43,15 @@
                                 @runningText="Saving"
                                 @class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
                                 data-test-contributor-save=true />
+                        {{else if (feature "psmRedesign")}}
+                            <div class="gh-publishmenu-labs">
+                                <GhPublishmenu
+                                    @post={{this.post}}
+                                    @postStatus={{this.post.status}}
+                                    @saveTask={{this.saveTask}}
+                                    @setSaveType={{action "setSaveType"}}
+                                    @onOpen={{action "cancelAutosave"}} />
+                            </div>
                         {{else}}
                             <div>
                                 <GhPublishmenu

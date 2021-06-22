@@ -99,7 +99,11 @@
     top: -1px;
     right: 0;
     font-size: 1.3rem;
-    color: var(--green);
+    color: var(--midgrey);
+}
+
+.post-view-link:hover {
+    color: var(--darkgrey);
 }
 
 .post-view-link svg {
@@ -108,7 +112,11 @@
     height: 12px;
     vertical-align: middle;
     margin-bottom: 2px;
-    fill: var(--green);
+    fill: var(--midgrey);
+}
+
+.post-view-link:hover svg {
+    fill: var(--darkgrey);
 }
 
 

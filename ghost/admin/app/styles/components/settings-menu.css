@@ -381,13 +381,12 @@
 /* LABS ----------------------------------------------------------------------*/
 
 .settings-menu-container-labs {
-    min-width: 380px;
+    z-index: 999;
     height: 100vh;
-    padding-top: 21px;
-    border-left: 1px solid var(--lightgrey);
+    min-width: 380px;
     overflow-x: visible;
     overflow-y: auto;
-    z-index: 999;
+    border-left: 1px solid var(--whitegrey-d1);
 }
 
 .settings-menu-container-labs-wide {
@@ -398,8 +397,9 @@
 .settings-menu-toggle-labs {
     position: absolute;
     top: 31px;
-    right: 0;
+    right: 24px;
     z-index: 9999;
+    margin-right: 0 !important;
 }
 
 .settings-menu-toggle-spacer-labs {
@@ -411,11 +411,11 @@
     top: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    max-width: 380px;
     overflow: auto;
-    opacity: 1;
-    width: 380px;
-    min-width: 380px;
     background-color: white;
+    opacity: 1;
 }
 
 .settings-menu-container-labs-wide .settings-menu-pane {
@@ -428,4 +428,41 @@
     top: auto;
     right: auto;
     bottom: auto;
+}
+
+.settings-menu-header.labs {
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+    max-width: 364px;
+    padding: 36px 24px 24px;
+    background: var(--white);
+}
+
+.settings-menu-content.labs {
+    padding: 104px 24px 24px;
+}
+
+.settings-menu-header.subview.labs {
+    z-index: 2;
+    width: 100%;
+    max-width: 484px;
+}
+
+.settings-menu-header.subview.labs .back {
+    padding: 2px 15px 0 !important;
+}
+
+.settings-menu-header.subview.labs .back svg {
+    width: 12px;
+    height: 12px;
+}
+
+.settings-menu-header.subview.labs h4 {
+    width: 100%;
+    text-align: left;
+}
+
+.gh-publishmenu-labs {
+    margin-right: 8px;
 }

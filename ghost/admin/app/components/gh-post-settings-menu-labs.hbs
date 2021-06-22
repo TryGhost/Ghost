@@ -1,10 +1,10 @@
 <div class="settings-menu-container-labs {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-labs-wide"}}">
     <div id="entry-controls">
         <div class="settings-menu settings-menu-pane settings-menu-pane-main">
-            <div class="settings-menu-header">
+            <div class="settings-menu-header labs">
                 <h4>{{capitalize this.post.displayName}} settings</h4>
             </div>
-            <div class="settings-menu-content">
+            <div class="settings-menu-content labs">
                 {{#unless (feature "featureImageMeta")}}
                     <GhImageUploaderWithPreview
                         @image={{this.post.featureImage}}
@@ -23,7 +23,7 @@
                         <a class="post-view-link" target="_blank" href="{{this.post.url}}">
                             View {{this.post.displayName}} {{svg-jar "external"}}
                         </a>
-                        {{else}}
+                        {{else if this.post.isScheduled}}
                         <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}">
                             Preview {{svg-jar "external"}}
                         </a>
@@ -178,13 +178,13 @@
         <div class="settings-menu settings-menu-pane {{unless (eq this.subview "email-settings") "settings-menu-pane-wide"}}">
             <div class="active">
                     {{#if (eq this.subview "meta-data")}}
-                        <div class="settings-menu-header subview">
+                        <div class="settings-menu-header subview labs">
                             <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Meta data</h4>
                             <div style="width:23px;"></div>
                         </div>
 
-                        <div class="settings-menu-content">
+                        <div class="settings-menu-content labs">
                             <form {{action "discardEnter" on="submit"}}>
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
                                     <label for="meta-title">Meta title</label>
@@ -250,13 +250,13 @@
                     {{/if}}
 
                     {{#if (eq this.subview "twitter-data")}}
-                        <div class="settings-menu-header subview">
+                        <div class="settings-menu-header subview labs">
                             <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Twitter card</h4>
                             <div style="width:23px;"></div>
                         </div>
 
-                        <div class="settings-menu-content">
+                        <div class="settings-menu-content labs">
 
                             <form {{action "discardEnter" on="submit"}}>
                                 <GhImageUploaderWithPreview
@@ -327,13 +327,13 @@
                     {{/if}}
 
                     {{#if (eq this.subview "facebook-data")}}
-                        <div class="settings-menu-header subview">
+                        <div class="settings-menu-header subview labs">
                             <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Facebook card</h4>
                             <div style="width:23px;"></div>
                         </div>
 
-                        <div class="settings-menu-content">
+                        <div class="settings-menu-content labs">
                             <form {{action "discardEnter" on="submit"}}>
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.ogImage}}
@@ -395,13 +395,13 @@
                     {{/if}}
 
                     {{#if (eq this.subview "codeinjection")}}
-                        <div class="settings-menu-header subview">
+                        <div class="settings-menu-header subview labs">
                             <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Code injection</h4>
                             <div style="width:23px;"></div>
                         </div>
 
-                        <div class="settings-menu-content settings-menu-content-codeinjection">
+                        <div class="settings-menu-content labs settings-menu-content-codeinjection">
                             <form {{action "discardEnter" on="submit"}}>
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionHead">
                                     <label for="codeinjection-head">{{capitalize this.post.displayName}} header <code>\{{ghost_head}}</code></label>
