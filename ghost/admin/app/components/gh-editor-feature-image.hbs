@@ -1,5 +1,5 @@
 <div
-    class="gh-editor-feature-image"
+    class="gh-editor-feature-image-container"
     {{on "mouseover" (fn (mut this.isHovered) true)}}
     {{on "mouseleave" (fn (mut this.isHovered) false)}}
 >
@@ -21,7 +21,10 @@
             {{/each}}
         {{else if @image}}
             {{!-- image is present --}}
-            <div>
+            <div class="gh-editor-feature-image">
+                <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
+                    {{svg-jar "feature-image"}}
+                </span>
                 <img src={{@image}}>
                 <button type="button" class="image-delete" title="Delete image" {{on "click" @clearImage}}>
                     {{svg-jar "trash"}}
@@ -31,8 +34,8 @@
                 {{#if this.isEditingAlt}}
                     <input
                         type="text"
-                        placeholder={{@altPlaceholder}}
-                        class="gh-editor-feature-image-alttext form-text bg-transparent"
+                        placeholder="Add alt text to the feature image"
+                        class="gh-editor-feature-image-alttext"
                         name="alt"
                         value={{@alt}}
                         {{autofocus}}
@@ -42,7 +45,7 @@
                     <KoenigBasicHtmlInput
                         @html={{@caption}}
                         @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
-                        @class="w-100 bn form-text bg-transparent tracked-2"
+                        @class="gh-editor-feature-image-caption"
                         @name="caption"
                         @onChange={{@updateCaption}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
