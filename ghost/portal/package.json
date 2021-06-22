@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@sentry/react": "^6.7.2",
-    "@sentry/tracing": "^6.7.2",
+    "@sentry/react": "6.7.2",
+    "@sentry/tracing": "6.7.2",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.7",
     "@testing-library/user-event": "13.1.9",
@@ -67,15 +67,15 @@
     ]
   },
   "devDependencies": {
-    "chalk": "^4.1.1",
+    "chalk": "4.1.1",
     "chokidar": "3.5.2",
-    "copy-webpack-plugin": "^6.3.2",
+    "copy-webpack-plugin": "6.4.1",
     "eslint-plugin-ghost": "2.3.0",
-    "minimist": "^1.2.5",
-    "ora": "^5.4.0",
+    "minimist": "1.2.5",
+    "ora": "5.4.1",
     "rewire": "5.0.0",
-    "serve-handler": "^6.1.3",
-    "source-map-explorer": "^2.5.2",
+    "serve-handler": "6.1.3",
+    "source-map-explorer": "2.5.2",
     "webpack-cli": "3.3.12"
   }
 }
