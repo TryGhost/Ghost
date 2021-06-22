@@ -367,6 +367,7 @@
 
 .gh-form-edit-product .gh-main-section {
     margin-bottom: 32px;
+    grid-template-columns: 1fr 0.9fr 1.1fr;
 }
 
 .gh-form-edit-product .gh-main-section-block {
