@@ -446,9 +446,8 @@
 
 .gh-editor-feature-image-indicator {
     position: absolute;
-    top: 0;
+    top: -1px;
     height: 2.4rem;
-    margin-top: .4rem;
     margin-left: -6rem;
 }
 
