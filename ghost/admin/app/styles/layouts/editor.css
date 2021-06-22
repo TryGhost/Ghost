@@ -380,7 +380,7 @@
     margin: 0 auto;
 }
 
-.gh-editor-feature-image {
+.gh-editor-feature-image-container {
     position: relative;
     display: block;
     width: 100%;
@@ -391,7 +391,13 @@
     padding-bottom: 3.6rem;
 }
 
-.gh-editor-feature-image .gh-progress-container-progress {
+.gh-editor-feature-image {
+    margin-left: -1.2rem;
+    padding-left: 1.2rem;
+    border-left: 1px solid var(--whitegrey);
+}
+
+.gh-editor-feature-image-container .gh-progress-container-progress {
     width: 100%;
 }
 
@@ -438,15 +444,47 @@
     fill: var(--black);
 }
 
-.gh-editor-feature-image-alttext {
+.gh-editor-feature-image-indicator {
+    position: absolute;
+    top: 0;
+    height: 2.4rem;
+    margin-top: .4rem;
+    margin-left: -6rem;
+}
+
+.gh-editor-feature-image-indicator svg {
+    height: 2.4rem;
+}
+
+.gh-editor-feature-image-indicator svg path {
+    stroke: var(--midgrey-l2);
+}
+
+.gh-editor-feature-image-alttext,
+.gh-editor-feature-image-caption {
     width: 100%;
-    margin: 0 0 1.7em;
-    padding: 0;
+    margin: 0 0 1.7em -1.2rem;
+    padding: 0 0 0 1.2rem;
+    outline: none;
     border-width: 0; 
     border-style: none;
+    border-left: 1px solid var(--whitegrey);
     font-size: 1.4rem;
     line-height: 1.65;  
     letter-spacing: .04rem; 
+    background-color: transparent !important;
+    transition: border-color .15s linear;
+    -webkit-appearance: none;
+}
+
+.gh-editor-feature-image-alttext::placeholder,
+.gh-editor-feature-image-caption p::placeholder {
+    color: var(--midlightgrey);
+    opacity: 1 !important;
+}
+
+.gh-editor-feature-image-caption p {
+    margin: 0;
 }
 
 .gh-editor-title {
