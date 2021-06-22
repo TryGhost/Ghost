@@ -157,8 +157,8 @@ const getMemberSiteData = async function (req, res) {
     }
     if (config.get('portal_sentry') && !config.get('portal_sentry').disabled) {
         response.portal_sentry = {
-            sentry_dsn: config.get('portal_sentry').dsn,
-            sentry_env: config.get('env')
+            dsn: config.get('portal_sentry').dsn,
+            env: config.get('env')
         };
     }
     res.json({site: response});
