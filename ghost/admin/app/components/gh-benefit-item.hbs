@@ -15,7 +15,7 @@
     >
         <GhTrimFocusInput
             @shouldFocus={{this.benefitItem.last}}
-            @placeholder="Label"
+            @placeholder="Add benefit"
             @value={{readonly this.label}}
             @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
