@@ -365,6 +365,10 @@
     max-width: 900px;
 }
 
+.gh-form-edit-product .gh-main-section {
+    margin-bottom: 32px;
+}
+
 .gh-form-edit-product .gh-main-section-block {
     display: flex;
     flex-direction: column;
@@ -390,6 +394,43 @@
     grid-gap: 20px;
 }
 
-.gh-product-form-benefits {
+.gh-form-edit-product .gh-main-section-content.gh-product-form-benefits {
     flex-grow: 1;
+    padding: 12px 16px 0 0;
+    margin-bottom: 0;
+}
+
+.gh-product-benefits .gh-input {
+    font-size: 1.3rem;
+    height: 32px;
+    padding: 6px 28px 6px 8px;
+}
+
+.gh-product-benefits .gh-blognav-item {
+    position: relative;
+}
+
+.gh-product-benefits .gh-blognav-label {
+    margin-right: 0;
+}
+
+.gh-product-benefits .gh-blognav-delete {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    opacity: 0;
+}
+
+.gh-product-benefits .gh-blognav-add {
+    display: none;
+}
+
+.gh-product-benefits .gh-blognav-grab {
+    text-indent: 0px;
+    opacity: 0;
+}
+
+.gh-product-benefits .gh-blognav-item:hover .gh-blognav-delete,
+.gh-product-benefits .gh-blognav-item:hover .gh-blognav-grab {
+    opacity: 1;
 }
