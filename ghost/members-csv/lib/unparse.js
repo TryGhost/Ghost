@@ -12,7 +12,8 @@ const unparse = (members) => {
         'stripe_customer_id',
         'created_at',
         'deleted_at',
-        'labels'
+        'labels',
+        'products'
     ]);
     const mappedMembers = members.map((member) => {
         if (member.error) {
@@ -28,6 +29,14 @@ const unparse = (members) => {
             }).join(',');
         }
 
+        let products = '';
+
+        if (Array.isArray(member.products)) {
+            products = member.products.map((product) => {
+                return product.name;
+            }).join(',');
+        }
+
         return {
             id: member.id,
             email: member.email,
@@ -39,6 +48,7 @@ const unparse = (members) => {
             created_at: member.created_at,
             deleted_at: member.deleted_at,
             labels: labels,
+            products: products,
             error: member.error || null
         };
     });
