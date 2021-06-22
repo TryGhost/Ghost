@@ -144,7 +144,6 @@ input {
     position: absolute;
     top: 50%;
     left: 10px;
-    z-index: 2;
     width: 14px;
     height: 14px;
     fill: color-mod(var(--lightgrey) l(-15%) s(-10%));
