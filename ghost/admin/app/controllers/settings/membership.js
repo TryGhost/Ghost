@@ -16,6 +16,7 @@ const CURRENCIES = currencies.map((currency) => {
 
 export default class MembersAccessController extends Controller {
     @service config;
+    @service feature;
     @service membersUtils;
     @service settings;
     @service store;
@@ -315,23 +316,31 @@ export default class MembersAccessController extends Controller {
 
     @task({drop: true})
     *saveSettingsTask(options) {
-        yield this.validateStripePlans({updatePortalPreview: false});
+        if (!this.feature.get('multipleProducts')) {
+            yield this.validateStripePlans({updatePortalPreview: false});
 
-        if (this.stripePlanError && !this.config.get('enableDeveloperExperiments')) {
-            return;
-        }
+            if (this.stripePlanError) {
+                return;
+            }
 
-        if (this.settings.get('errors').length !== 0) {
-            return;
-        }
-        if (!this.config.get('enableDeveloperExperiments')) {
+            if (this.settings.get('errors').length !== 0) {
+                return;
+            }
+
             yield this.saveProduct();
+            const result = yield this.settings.save();
+
+            this.updatePortalPreview(options);
+
+            return result;
+        } else {
+            if (this.settings.get('errors').length !== 0) {
+                return;
+            }
+            const result = yield this.settings.save();
+            this.updatePortalPreview(options);
+            return result;
         }
-        const result = yield this.settings.save();
-
-        this.updatePortalPreview(options);
-
-        return result;
     }
 
     async saveProduct() {
