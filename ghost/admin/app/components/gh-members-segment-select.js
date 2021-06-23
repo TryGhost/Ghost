@@ -90,6 +90,28 @@ export default class GhMembersSegmentSelect extends Component {
             options.push(labelsGroup);
         }
 
+        // fetch all products w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+        // TODO: add `include: 'count.members` to query once API supports
+        const products = yield this.store.query('product', {limit: 'all'});
+
+        if (products.length > 0) {
+            const productsGroup = {
+                groupName: 'Products',
+                options: []
+            };
+
+            products.forEach((product) => {
+                productsGroup.options.push({
+                    name: product.name,
+                    segment: `product:${product.slug}`,
+                    count: product.count?.members,
+                    class: 'segment-product'
+                });
+            });
+
+            options.push(productsGroup);
+        }
+
         this._options = options;
     }
 }
