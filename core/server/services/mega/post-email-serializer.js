@@ -88,7 +88,15 @@ const normalizeReplacementStrings = (email) => {
     return emailContent;
 };
 
-// parses email content and extracts an array of replacements with desired fallbacks
+/**
+ * Parses email content and extracts an array of replacements with desired fallbacks
+ *
+ * @param {Object} email
+ * @param {string} email.html
+ * @param {string} email.plaintext
+ *
+ * @returns {Object[]} replacements
+ */
 const parseReplacements = (email) => {
     const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
     const REPLACEMENT_STRING_REGEX = /\{(?<recipientProperty>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
