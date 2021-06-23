@@ -5,6 +5,8 @@
 // - As we manage to break the codebase down into distinct components for e.g. the frontend, their boot logic can be offloaded to them
 // - app.js is separate as the first example of each component having it's own app.js file colocated with it, instead of inside of server/web
 
+const updateCheck = require('./server/update-check');
+
 // IMPORTANT: The only global requires here should be overrides + debug so we can monitor timings with DEBUG=ghost:boot* node ghost
 require('./server/overrides');
 const debug = require('@tryghost/debug')('boot');
@@ -207,18 +209,7 @@ async function initBackgroundServices({config}) {
     const themeService = require('./server/services/themes');
     themeService.loadInactiveThemes();
 
-    const jobsService = require('./server/services/jobs');
-
-    // use a random seconds/minutes/hours value to avoid spikes to the update service API
-    const s = Math.floor(Math.random() * 60); // 0-59
-    const m = Math.floor(Math.random() * 60); // 0-59
-    const h = Math.floor(Math.random() * 24); // 0-23
-
-    jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`, // Every day
-        job: require('path').resolve(__dirname, 'server', 'run-update-check.js'),
-        name: 'update-check'
-    });
+    updateCheck.scheduleRecurringJobs();
 
     debug('End: initBackgroundServices');
 }
