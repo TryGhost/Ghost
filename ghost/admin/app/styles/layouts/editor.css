@@ -293,6 +293,10 @@
     background-color: white;
 }
 
+.gh-editor {
+    max-width: calc(100vw - var(--editor-sidebar-width))
+}
+
 .gh-editor-header {
     position: absolute;
     top: 0;
@@ -473,12 +477,12 @@
     margin: 0 0 1.7em -1.2rem;
     padding: 0 0 0 1.2rem;
     outline: none;
-    border-width: 0; 
+    border-width: 0;
     border-style: none;
     border-left: 1px solid var(--whitegrey);
     font-size: 1.4rem;
-    line-height: 1.65;  
-    letter-spacing: .04rem; 
+    line-height: 1.65;
+    letter-spacing: .04rem;
     background-color: transparent !important;
     transition: border-color .15s linear;
     -webkit-appearance: none;
