@@ -284,9 +284,11 @@ class UpdateCheckService {
      */
     async createCustomNotification(notification) {
         if (!notification) {
+            debug(`Skipping notification creation as there are no messages to process`);
             return;
         }
 
+        debug(`creating custom notifications for ${notification.messages.length} notifications`);
         const {users} = await this.api.users.browse(Object.assign({
             limit: 'all',
             include: ['roles']
