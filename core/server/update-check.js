@@ -4,6 +4,7 @@ const api = require('./api').v2;
 const GhostMailer = require('./services/mail').GhostMailer;
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
+const jobsService = require('./services/jobs');
 
 const i18n = require('../shared/i18n');
 const logging = require('@tryghost/logging');
@@ -58,4 +59,17 @@ module.exports = () => {
     }
 
     updateChecker.check();
+};
+
+module.exports.scheduleRecurringJobs = () => {
+    // use a random seconds/minutes/hours value to avoid spikes to the update service API
+    const s = Math.floor(Math.random() * 60); // 0-59
+    const m = Math.floor(Math.random() * 60); // 0-59
+    const h = Math.floor(Math.random() * 24); // 0-23
+
+    jobsService.addJob({
+        at: `${s} ${m} ${h} * * *`, // Every day
+        job: require('path').resolve(__dirname, 'run-update-check.js'),
+        name: 'update-check'
+    });
 };
