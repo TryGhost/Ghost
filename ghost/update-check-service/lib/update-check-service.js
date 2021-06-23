@@ -283,7 +283,7 @@ class UpdateCheckService {
      * @return {Promise}
      */
     async createCustomNotification(notification) {
-        if (!notification) {
+        if (!notification || !notification.messages || notification.messages.length === 0) {
             debug(`Skipping notification creation as there are no messages to process`);
             return;
         }

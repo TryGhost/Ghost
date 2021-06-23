@@ -326,5 +326,47 @@ describe('Update Check', function () {
             notificationsAPIAddStub.calledOnce.should.equal(true);
             notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
         });
+
+        it('not create a notification if the check response has no messages', async function () {
+            const notificationsAPIAddStub = sinon.stub().resolves();
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        read: settingsStub,
+                        edit: settingsStub
+                    },
+                    users: {
+                        browse: sinon.stub().resolves({
+                            users: [{
+                                roles: [{
+                                    name: 'Owner'
+                                }]
+                            }]
+                        })
+                    },
+                    posts: {
+                        browse: sinon.stub().resolves()
+                    },
+                    notifications: {
+                        add: notificationsAPIAddStub
+                    }
+                },
+                config: {
+                    siteUrl: 'https://localhost:2368/test'
+                },
+                i18n: i18nStub,
+                logging: loggingStub,
+                request: sinon.stub().resolves({
+                    body: {
+                        notifications: []
+                    }
+                })
+            });
+
+            await updateCheckService.check();
+
+            notificationsAPIAddStub.calledOnce.should.equal(false);
+        });
     });
 });
