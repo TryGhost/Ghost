@@ -1,4 +1,8 @@
-<div class="settings-menu-container-labs {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-labs-wide"}}">
+<div
+    class="settings-menu-container-labs {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-labs-wide"}}"
+    {{did-insert this.setSidebarWidthFromElement}}
+    {{did-update this.setSidebarWidthFromElement this.isViewingSubview}}
+>
     <div id="entry-controls">
         <div class="settings-menu settings-menu-pane settings-menu-pane-main">
             <div class="settings-menu-header labs">

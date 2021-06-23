@@ -608,10 +608,10 @@
 /* --------------------------------------------------------------- */
 
 .koenig-breakout-wide {
-    margin: auto calc(50% - 50vw - .8rem);
-    width: calc(65vw + 2px);
+    margin: auto calc(50% - (50vw - var(--editor-sidebar-width)) - .8rem);
+    width: calc(65vw + 2px - var(--editor-sidebar-width));
     min-width: calc(100% + 18rem);
-    transform: translateX(calc(50vw - 50% + .8rem));
+    transform: translateX(calc(50vw - 50% + .8rem - var(--editor-sidebar-width)));
 }
 
 @media (min-width: 500px) and (max-width: 1080px) {
@@ -627,8 +627,12 @@
 }
 
 .koenig-breakout-full {
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
+    margin-left: calc(50% - 50vw + (var(--editor-sidebar-width) / 2));
+    margin-right: calc(50% - 50vw + (var(--editor-sidebar-width) / 2));
+}
+
+.koenig-breakout-full .mw-100vw {
+    max-width: calc(100vw - var(--editor-sidebar-width));
 }
 
 .mw-100vw.kg-image-full--sidebar {

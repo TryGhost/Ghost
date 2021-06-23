@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
+import {action} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -97,6 +98,10 @@ export default Component.extend({
         }
 
         this._showSettingsMenu = this.showSettingsMenu;
+    },
+
+    willDestroyElement() {
+        this.setSidebarWidthVariable(0);
     },
 
     actions: {
@@ -480,5 +485,14 @@ export default Component.extend({
         if (error) {
             this.notifications.showAPIError(error);
         }
+    },
+
+    setSidebarWidthFromElement: action(function (element) {
+        const width = element.getBoundingClientRect().width;
+        this.setSidebarWidthVariable(width);
+    }),
+
+    setSidebarWidthVariable(width) {
+        document.documentElement.style.setProperty('--editor-sidebar-width', `${width}px`);
     }
 });
