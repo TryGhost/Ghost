@@ -33,7 +33,9 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
     "posttest": "yarn lint",
-    "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
+    "fix:client": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../",
+    "fix:server": "yarn cache clean && rm -rf node_modules && yarn",
+    "fix": "yarn fix:client && yarn fix:server"
   },
   "engines": {
     "node": "^12.22.1 || ^14.16.1",
