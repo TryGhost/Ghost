@@ -1,3 +1,4 @@
+const util = require('util');
 const session = require('express-session');
 const constants = require('@tryghost/constants');
 const config = require('../../../../shared/config');
@@ -6,9 +7,10 @@ const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
 
 const SessionStore = require('./store');
+const sessionStore = new SessionStore(models.Session);
 
 const expressSessionMiddleware = session({
-    store: new SessionStore(models.Session),
+    store: sessionStore,
     secret: settingsCache.get('session_secret'),
     resave: false,
     saveUninitialized: false,
@@ -22,7 +24,7 @@ const expressSessionMiddleware = session({
     }
 });
 
-exports.getSession = async function getSession(req, res) {
+module.exports.getSession = async function getSession(req, res) {
     if (req.session) {
         return req.session;
     }
@@ -35,3 +37,5 @@ exports.getSession = async function getSession(req, res) {
         });
     });
 };
+
+module.exports.deleteAllSessions = util.promisify(sessionStore.clear.bind(sessionStore));

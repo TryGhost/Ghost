@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const api = require('./index');
 const config = require('../../../shared/config');
 const i18n = require('../../../shared/i18n');
@@ -6,6 +7,12 @@ const web = require('../../web');
 const models = require('../../models');
 const auth = require('../../services/auth');
 const invitations = require('../../services/invitations');
+const dbBackup = require('../../data/db/backup');
+const apiMail = require('./index').mail;
+const apiSettings = require('./index').settings;
+const UsersService = require('../../services/users');
+const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
+const {deleteAllSessions} = require('../../services/auth/session');
 
 module.exports = {
     docName: 'authentication',
@@ -189,6 +196,14 @@ module.exports = {
 
                     return models.Invite.findOne({email: email, status: 'sent'}, frame.options);
                 });
+        }
+    },
+
+    resetAllPasswords: {
+        permissions: true,
+        async query(frame) {
+            await userService.resetAllPasswords(frame.options);
+            await deleteAllSessions();
         }
     }
 };

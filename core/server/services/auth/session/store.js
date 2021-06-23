@@ -41,4 +41,13 @@ module.exports = class SessionStore extends Store {
             })
             .catch(callback);
     }
+
+    clear(callback) {
+        this.SessionModel
+            .destroyAll()
+            .then(() => {
+                callback(null);
+            })
+            .catch(callback);
+    }
 };
