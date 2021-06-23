@@ -9,8 +9,8 @@ const mail = require('../mail');
 
 const tokenSecurity = {};
 
-function generateToken(email, settingsAPI) {
-    const options = {context: {internal: true}};
+function generateToken(email, settingsAPI, transaction) {
+    const options = {context: {internal: true}, transacting: transaction};
     let dbHash;
     let token;
 

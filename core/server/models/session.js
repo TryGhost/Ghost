@@ -48,6 +48,12 @@ const Session = ghostBookshelf.Model.extend({
             });
     },
 
+    destroyAll() {
+        // As of 2021, it's the recommended way to truncate a table
+        // https://github.com/bookshelf/bookshelf/issues/1740
+        return ghostBookshelf.knex('sessions').truncate();
+    },
+
     upsert(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'upsert');
         const sessionId = options.session_id;

@@ -486,6 +486,11 @@
                     "name": "Delete snippets",
                     "action_type": "destroy",
                     "object_type": "snippet"
+                },
+                {
+                    "name": "Reset all passwords",
+                    "action_type": "resetAllPasswords",
+                    "object_type": "authentication"
                 }
             ]
         },
@@ -732,7 +737,8 @@
                     "email_preview": "all",
                     "email": "all",
                     "member_signin_url": "read",
-                    "snippet": "all"
+                    "snippet": "all",
+                    "authentication": "resetAllPasswords"
                 },
                 "DB Backup Integration": {
                     "db": "all"
