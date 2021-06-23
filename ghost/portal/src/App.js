@@ -93,13 +93,12 @@ export default class App extends React.Component {
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
-
             if (this.state.initStatus === 'success') {
-                this.handleSignupQuery({site: this.state.site, pageQuery});
-            }
-
-            if (page) {
-                this.dispatchAction('openPopup', {page, pageQuery});
+                if (pageQuery && pageQuery !== 'free') {
+                    this.handleSignupQuery({site: this.state.site, pageQuery});
+                } else {
+                    this.dispatchAction('openPopup', {page, pageQuery});
+                }
             }
         };
         const customTriggerSelector = '[data-portal]';
@@ -485,11 +484,11 @@ export default class App extends React.Component {
     handleSignupQuery({site, pageQuery}) {
         const queryPrice = getQueryPrice({site: site, priceId: pageQuery});
         if (!this.state.member
+            && pageQuery
             && pageQuery !== 'free'
-            && queryPrice
         ) {
             removePortalLinkFromUrl();
-            this.dispatchAction('signup', {plan: queryPrice.id});
+            this.dispatchAction('signup', {plan: queryPrice?.id || pageQuery});
         }
     }
 

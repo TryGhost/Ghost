@@ -8,12 +8,8 @@ export function removePortalLinkFromUrl() {
 
 export function getPortalLinkPath({page}) {
     const Links = {
-        default: '#/portal',
         signin: '#/portal/signin',
-        signup: '#/portal/signup',
-        account: '#/portal/account',
-        'account-plans': '#/portal/account/plans',
-        'account-profile': '#/portal/account/profile'
+        signup: '#/portal/signup'
     };
     if (Object.keys(Links).includes(page)) {
         return Links[page];
@@ -55,6 +51,34 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
+export function getUpgradePrices({site, member}) {
+    const activePrice = getMemberActivePrice({member});
+
+    if (activePrice) {
+        return getFilteredPrices({prices: this.prices, currency: activePrice.currency});
+    }
+    return getAvailablePrices({site});
+}
+
+export function getProductCurrency({product}) {
+    if (!product?.monthlyPrice) {
+        return null;
+    }
+    return product.monthlyPrice.currency;
+}
+
+export function getUpgradeProducts({site, member}) {
+    const activePrice = getMemberActivePrice({member});
+    const activePriceCurrency = activePrice?.currency;
+    const availableProducts = getAvailableProducts({site});
+    if (!activePrice) {
+        return availableProducts;
+    }
+    return availableProducts.filter((product) => {
+        return (getProductCurrency({product}) === activePriceCurrency);
+    });
+}
+
 export function getFilteredPrices({prices, currency}) {
     return prices.filter((d) => {
         return (d.currency || '').toLowerCase() === (currency || '').toLowerCase();
@@ -69,6 +93,7 @@ export function getPriceFromSubscription({subscription}) {
             id: subscription.price.price_id,
             price: subscription.price.amount / 100,
             name: subscription.price.nickname,
+            currency: subscription.price.currency.toLowerCase(),
             currency_symbol: getCurrencySymbol(subscription.price.currency)
         };
     }
@@ -138,43 +163,44 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
 }
 
 export function hasMultipleProducts({site = {}}) {
-    const {
-        products = []
-    } = site || {};
-    if (site.portal_plans && !site.portal_plans.includes('monthly') && !site.portal_plans.includes('yearly')) {
-        return false;
-    }
-    if (site.portal_products && site.portal_products.length < 2) {
-        return false;
-    }
+    const products = getAvailableProducts({site});
+
     if (products?.length > 1) {
         return true;
     }
     return false;
 }
 
-export function getSiteProducts({site = {}}) {
-    const products = site?.products || [];
-    return products.filter(product => !!product).sort((productA, productB) => {
-        return productA?.monthlyPrice?.amount - productB?.monthlyPrice.amount;
-    });
-}
-
 export function getAvailableProducts({site}) {
-    const {portal_products: portalProducts} = site;
-    const products = getSiteProducts({site}).filter((product) => {
+    const {portal_products: portalProducts, products = [], portal_plans: portalPlans = []} = site || {};
+
+    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
+        return [];
+    }
+
+    return products.filter(product => !!product).filter((product) => {
         if (portalProducts) {
             return portalProducts.includes(product.id);
         }
         return true;
+    }).sort((productA, productB) => {
+        return productA?.monthlyPrice?.amount - productB?.monthlyPrice.amount;
+    }).map((product) => {
+        product.monthlyPrice = {
+            ...product.monthlyPrice,
+            currency_symbol: getCurrencySymbol(product.monthlyPrice.currency)
+        };
+        product.yearlyPrice = {
+            ...product.yearlyPrice,
+            currency_symbol: getCurrencySymbol(product.yearlyPrice.currency)
+        };
+        return product;
     });
-
-    return products;
 }
 
-export function getAllProducts({site}) {
+export function getSiteProducts({site}) {
     const products = getAvailableProducts({site});
-    if (hasFreeProduct({site}) && products.length > 0) {
+    if (hasFreeProductPrice({site}) && products.length > 0) {
         products.unshift({
             id: 'free'
         });
@@ -182,7 +208,7 @@ export function getAllProducts({site}) {
     return products;
 }
 
-export function getProductPrices({site}) {
+export function getPricesFromProducts({site}) {
     const products = getAvailableProducts({site}) || [];
     const prices = products.reduce((accumPrices, product) => {
         if (product.monthlyPrice && product.yearlyPrice) {
@@ -194,63 +220,7 @@ export function getProductPrices({site}) {
     return prices;
 }
 
-export function getAvailablePrices({site = {}, includeFree = true} = {}) {
-    let {
-        prices,
-        products,
-        allow_self_signup: allowSelfSignup,
-        is_stripe_configured: isStripeConfigured
-    } = site || {};
-
-    if (!prices) {
-        prices = [];
-    }
-
-    if (products) {
-        prices = [];
-        products.forEach((product) => {
-            if (product.prices) {
-                prices = prices.concat(product.prices);
-            }
-        });
-    }
-
-    const plansData = [];
-
-    const stripePrices = prices.filter((d) => {
-        return !!(d && d.id);
-    }).map((d) => {
-        return {
-            ...d,
-            price_id: d.id,
-            price: d.amount / 100,
-            name: d.nickname,
-            currency_symbol: getCurrencySymbol(d.currency)
-        };
-    }).filter((price) => {
-        return price.amount !== 0 && price.type === 'recurring';
-    });
-
-    if (allowSelfSignup && includeFree) {
-        plansData.push({
-            id: 'free',
-            type: 'free',
-            price: 0,
-            currency: 'usd',
-            currency_symbol: '$',
-            name: 'Free'
-        });
-    }
-
-    if (isStripeConfigured) {
-        stripePrices.forEach((price) => {
-            plansData.push(price);
-        });
-    }
-    return plansData;
-}
-
-export function hasFreeProduct({site}) {
+export function hasFreeProductPrice({site}) {
     const {
         allow_self_signup: allowSelfSignup,
         portal_plans: portalPlans
@@ -258,22 +228,19 @@ export function hasFreeProduct({site}) {
     return allowSelfSignup && portalPlans.includes('free');
 }
 
-export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = {}) {
+export function getAvailablePrices({site}) {
     const {
-        prices = [],
-        allow_self_signup: allowSelfSignup,
-        is_stripe_configured: isStripeConfigured,
-        portal_plans: portalPlans
+        portal_plans: portalPlans = [],
+        is_stripe_configured: isStripeConfigured
     } = site || {};
 
-    if (!prices) {
+    if (!isStripeConfigured) {
         return [];
     }
-    const availablePrices = getProductPrices({site});
 
-    const plansData = [];
+    const productPrices = getPricesFromProducts({site});
 
-    const stripePrices = availablePrices.filter((d) => {
+    return productPrices.filter((d) => {
         return !!(d && d.id);
     }).map((d) => {
         return {
@@ -287,10 +254,10 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
         return price.amount !== 0 && price.type === 'recurring';
     }).filter((price) => {
         if (price.interval === 'month') {
-            return (portalPlans || []).includes('monthly');
+            return portalPlans.includes('monthly');
         }
         if (price.interval === 'year') {
-            return (portalPlans || []).includes('yearly');
+            return portalPlans.includes('yearly');
         }
         return false;
     }).sort((a, b) => {
@@ -300,19 +267,33 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
             return 0;
         }
         return a.currency.localeCompare(b.currency, undefined, {ignorePunctuation: true});
-    }).sort((a, b) => {
-        return (a.active === b.active) ? 0 : (a.active ? -1 : 1);
     });
+}
+
+export function getFreePriceCurrency({site}) {
+    const stripePrices = getAvailablePrices({site});
+
     let freePriceCurrencyDetail = {
         currency: 'usd',
         currency_symbol: '$'
     };
-    if (stripePrices && stripePrices.length > 0) {
+    if (stripePrices?.length > 0) {
         freePriceCurrencyDetail.currency = stripePrices[0].currency;
         freePriceCurrencyDetail.currency_symbol = stripePrices[0].currency_symbol;
     }
+    return freePriceCurrencyDetail;
+}
 
-    if (allowSelfSignup && portalPlans.includes('free') && includeFree) {
+export function getSitePrices({site = {}, pageQuery = ''} = {}) {
+    const {
+        allow_self_signup: allowSelfSignup,
+        portal_plans: portalPlans
+    } = site || {};
+
+    const plansData = [];
+
+    if (allowSelfSignup && portalPlans.includes('free')) {
+        const freePriceCurrencyDetail = getFreePriceCurrency({site});
         plansData.push({
             id: 'free',
             type: 'free',
@@ -323,9 +304,10 @@ export function getSitePrices({site = {}, includeFree = true, pageQuery = ''} = 
 
         });
     }
-    const showOnlyFree = pageQuery === 'free' && hasPrice({site, plan: 'free'});
+    const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
 
-    if (isStripeConfigured && !showOnlyFree) {
+    if (!showOnlyFree) {
+        const stripePrices = getAvailablePrices({site});
         stripePrices.forEach((price) => {
             plansData.push(price);
         });

@@ -1,11 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getAllProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
+import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 
 export const ProductsSectionStyles = ({site}) => {
-    const products = getAllProducts({site});
+    const products = getSiteProducts({site});
     const noOfProducts = products.length;
     return `
         .gh-portal-products {

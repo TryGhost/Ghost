@@ -3,9 +3,9 @@ import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
-import PlansSection from '../common/PlansSection';
+import PlansSection, {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getSitePrices, getSubscriptionFromId, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getSubscriptionFromId, getUpgradeProducts, hasMultipleProducts, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -188,7 +188,7 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
     return (
         <section>
             <div className='gh-portal-section gh-portal-accountplans-main'>
-                <PlansSection
+                <PlansOrProductSection
                     showLabel={false}
                     plans={plans}
                     selectedPlan={selectedPlan}
@@ -264,6 +264,7 @@ const PlansContainer = ({
         />
     );
 };
+
 export default class AccountPlanPage extends React.Component {
     static contextType = AppContext;
 
@@ -286,15 +287,19 @@ export default class AccountPlanPage extends React.Component {
     }
 
     getInitialState() {
-        const {member, site, pageQuery} = this.context;
-        this.prices = getSitePrices({site, pageQuery, includeFree: false});
+        const {member, site} = this.context;
+
+        this.prices = getAvailablePrices({site});
         let activePrice = getMemberActivePrice({member});
+
+        if (activePrice) {
+            this.prices = getFilteredPrices({prices: this.prices, currency: activePrice.currency});
+        }
+
         let selectedPrice = activePrice ? this.prices.find((d) => {
             return (d.id === activePrice.id);
         }) : null;
-        if (selectedPrice) {
-            this.prices = getFilteredPrices({prices: this.prices, currency: selectedPrice.currency});
-        }
+
         // Select first plan as default for free member
         if (!isPaidMember({member}) && this.prices.length > 0) {
             selectedPrice = this.prices[0];
