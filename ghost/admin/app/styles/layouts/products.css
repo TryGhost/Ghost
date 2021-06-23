@@ -396,6 +396,8 @@
 }
 
 .gh-form-edit-product .gh-main-section-content.gh-product-form-benefits {
+    max-height: 276px;
+    overflow: scroll;
     flex-grow: 1;
     padding: 12px 16px 0 0;
     margin-bottom: 0;
@@ -434,4 +436,8 @@
 .gh-product-benefits .gh-blognav-item:hover .gh-blognav-delete,
 .gh-product-benefits .gh-blognav-item:hover .gh-blognav-grab {
     opacity: 1;
+}
+
+.gh-product-benefits .gh-blognav-item:not(.gh-blognav-item--sortable) {
+    margin-bottom: 16px;
 }
