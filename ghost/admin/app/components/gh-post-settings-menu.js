@@ -153,6 +153,23 @@ export default Component.extend({
             }
         },
 
+        async setVisibility(segment) {
+            this.post.set('visibility', segment);
+            try {
+                await this.post.validate({property: 'visibility'});
+                if (this.post.changedAttributes().visibility) {
+                    await this.savePostTask.perform();
+                }
+            } catch (e) {
+                if (!e) {
+                    // validation error
+                    return;
+                }
+
+                throw e;
+            }
+        },
+
         setPublishedAtBlogTime(time) {
             let post = this.post;
 

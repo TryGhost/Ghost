@@ -67,6 +67,13 @@ export default BaseValidator.create({
         }
     },
 
+    visibility(model) {
+        if (isBlank(model.visibility) && !model.isNew) {
+            model.errors.add('visibility', 'A members group must be selected for members-only posts');
+            this.invalidate();
+        }
+    },
+
     codeinjectionFoot(model) {
         if (!validator.isLength(model.codeinjectionFoot || '', 0, 65535)) {
             model.errors.add('codeinjectionFoot', 'Footer code cannot be longer than 65535 characters.');
