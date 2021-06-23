@@ -171,6 +171,24 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.get('ghostPaths.url').join(blogUrl, previewKeyword, uuid);
     }),
 
+    isPublic: computed('visibility', function () {
+        return this.visibility === 'public' ? true : false;
+    }),
+
+    visibilitySegment: computed('visibility', 'isPublic', function () {
+        if (this.isPublic) {
+            return this.settings.get('defaultContentVisibility') === 'paid' ? 'status:-free' : 'status:free,status:-free';
+        } else {
+            if (this.visibility === 'members') {
+                return 'status:free,status:-free';
+            }
+            if (this.visibility === 'paid') {
+                return 'status:-free';
+            }
+            return this.visibility;
+        }
+    }),
+
     // check every second to see if we're past the scheduled time
     // will only re-compute if this property is being observed elsewhere
     pastScheduledTime: computed('isScheduled', 'publishedAtUTC', 'clock.second', function () {
