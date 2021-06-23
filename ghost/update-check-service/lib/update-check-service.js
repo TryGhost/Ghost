@@ -339,17 +339,17 @@ class UpdateCheckService {
      * @returns {Promise}
      */
     async check() {
-        const result = await this.api.settings.read(_.extend({key: 'next_update_check'}, internal));
-
-        const nextUpdateCheck = result.settings[0];
-
-        // CASE: Next update check should happen now?
-        // @NOTE: You can skip this check by adding a config value. This is helpful for developing.
-        if (!this.config.forceUpdate && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
-            return;
-        }
-
         try {
+            const result = await this.api.settings.read(_.extend({key: 'next_update_check'}, internal));
+
+            const nextUpdateCheck = result.settings[0];
+
+            // CASE: Next update check should happen now?
+            // @NOTE: You can skip this check by adding a config value. This is helpful for developing.
+            if (!this.config.forceUpdate && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
+                return;
+            }
+
             const response = await this.updateCheckRequest();
 
             return await this.updateCheckResponse(response);
