@@ -49,7 +49,7 @@ class Resources {
      */
     _initResourceConfig() {
         if (!_.isEmpty(this.resourcesConfig)) {
-            return this.resourceConfig;
+            return;
         }
 
         const bridge = require('../../../bridge');
