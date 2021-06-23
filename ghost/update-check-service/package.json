@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/update-check-service",
   "version": "0.1.0",
-  "repository": "https://github.com/TryGhost/Core/tree/master/packages/update-check-service",
+  "repository": "https://github.com/TryGhost/Core/tree/main/packages/update-check-service",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "./lib/update-check-service.js",
