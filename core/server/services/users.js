@@ -17,6 +17,18 @@ const path = require('path');
  * @prop {Object} ApiKey.NotFoundError
  * @prop {Object} User
  * @prop {(Object) => Promise} User.destroy
+ * @prop {(Object) => Promise} User.findAll
+ * @prop {Object} Session
+ * @prop {(Object) => Promise} Session.findAll
+ */
+
+/**
+ * @typedef {Object} IAuth
+ * @prop {Object} setup
+ * @prop {(isComplete: boolean) => () => Promise} setup.assertSetupCompleted
+ * @prop {Object} passwordreset
+ * @prop {(email: string, apiSettings: Object, transcation?: Object) => Promise<string>} passwordreset.generateToken
+ * @prop {(token: string, apiMail: Object) => Promise} passwordreset.sendResetNotification
  */
 
 class Users {
@@ -24,10 +36,36 @@ class Users {
      * @param {Object} dependencies
      * @param {IdbBackup} dependencies.dbBackup
      * @param {IModels} dependencies.models
+     * @param {IAuth} dependencies.auth
+     * @param {Object} dependencies.apiMail
+     * @param {Object} dependencies.apiSettings
      */
-    constructor({dbBackup, models}) {
+    constructor({dbBackup, models, auth, apiMail, apiSettings}) {
         this.dbBackup = dbBackup;
         this.models = models;
+        this.auth = auth;
+        this.apiMail = apiMail;
+        this.apiSettings = apiSettings;
+    }
+
+    async resetAllPasswords(frameOptions) {
+        return this.models.Base.transaction(async (t) => {
+            frameOptions.transacting = t;
+
+            // Reset all passwords
+            const users = await this.models.User.findAll(frameOptions);
+            for (const user of users) {
+                await user.save({
+                    status: 'locked' // Prevent signins before password reset
+                }, frameOptions);
+            }
+
+            //Send all password resets
+            for (const user of users) {
+                const token = await this.auth.passwordreset.generateToken(user.get('email'), this.apiSettings, t);
+                await this.auth.passwordreset.sendResetNotification(token, this.apiMail);
+            }
+        });
     }
 
     async destroyUser(frameOptions) {

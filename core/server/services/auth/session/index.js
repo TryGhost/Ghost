@@ -49,3 +49,4 @@ module.exports.createSessionFromToken = sessionFromToken({
 });
 
 module.exports.sessionService = sessionService;
+module.exports.deleteAllSessions = expressSession.deleteAllSessions;
