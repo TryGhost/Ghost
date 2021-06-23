@@ -448,6 +448,9 @@ module.exports = {
         validation: {},
         async query(frame) {
             frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
+            if (labsService.isSet('multipleProducts')) {
+                frame.options.withRelated.push('products');
+            }
             const page = await membersService.api.members.list(frame.options);
 
             return page;
