@@ -150,9 +150,20 @@ module.exports = class MembersCSVImporter {
                 } else if (row.complimentary_plan) {
                     if (!labsService.isSet('multipleProducts')) {
                         await membersApi.members.setComplimentarySubscription(member, options);
-                    } else {
+                    } else if (!row.products) {
                         await membersApi.members.update({
                             products: [{id: defaultProduct.id}]
+                        }, {
+                            ...options,
+                            id: member.id
+                        });
+                    }
+                }
+
+                if (labsService.isSet('multipleProducts')) {
+                    if (row.products) {
+                        await membersApi.members.update({
+                            products: row.products
                         }, {
                             ...options,
                             id: member.id
