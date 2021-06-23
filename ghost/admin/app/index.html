@@ -31,6 +31,13 @@
     <meta name="msapplication-square150x150logo" content="assets/img/medium.png" />
     <meta name="msapplication-square310x310logo" content="assets/img/large.png" />
 
+    <!-- variables that we don't want postcss-custom-properties to remove -->
+    <style>
+        :root {
+            --editor-sidebar-width: 0px;
+        }
+    </style>
+
     {{content-for "minifiedInProductionCss"}}
 
     {{content-for "head-footer"}}
