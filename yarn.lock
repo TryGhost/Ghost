@@ -914,10 +914,10 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.0.1.tgz#88b3b52742c1273f9661af9ab10e61a1a790327b"
-  integrity sha512-dPLQN6obke5jSm4o65P7P6WgYxUXf1Du/Tf/yt2PilH4mXYzOqeFZwXJi84OyJycsofshWoPk1QvEmFVqYnwgQ==
+"@tryghost/members-csv@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.0.tgz#883f8b1f6af15134c89a4e406ea9b236c57546d4"
+  integrity sha512-/cgfSW6rcxgA440Nt1/KE/OZR8t8n3SOenST/BhweHS48QqLN0FU7Ku0t8adZPtCzZLvcKfPIfc13hG/SiRtUA==
   dependencies:
     papaparse "5.3.1"
 
