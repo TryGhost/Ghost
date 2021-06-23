@@ -7,15 +7,20 @@ const urlUtils = require('./../shared/url-utils');
 const jobsService = require('./services/jobs');
 
 const i18n = require('../shared/i18n');
-const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('@tryghost/update-check-service');
 
 const ghostMailer = new GhostMailer();
-let updateChecker;
 
-module.exports = () => {
+/**
+ *
+ * @param {Object} options
+ * @param {Object} [options.logging] - logging object instance or defaults to Ghost's default logger otherwise
+ *
+ * @returns {Promise<any>}
+ */
+module.exports = async ({logging = require('@tryghost/logging')} = {}) => {
     const allowedCheckEnvironments = ['development', 'production'];
 
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
@@ -23,42 +28,40 @@ module.exports = () => {
         return;
     }
 
-    if (updateChecker === undefined) {
-        updateChecker = new UpdateCheckService({
-            api: {
-                settings: {
-                    read: api.settings.read,
-                    edit: api.settings.edit
-                },
-                posts: {
-                    browse: api.posts.browse
-                },
-                users: {
-                    browse: api.users.browse
-                },
-                notifications: {
-                    add: api.notifications.add
-                }
+    const updateChecker = new UpdateCheckService({
+        api: {
+            settings: {
+                read: api.settings.read,
+                edit: api.settings.edit
             },
-            config: {
-                mail: config.get('mail'),
-                env: config.get('env'),
-                databaseType: config.get('database').client,
-                checkEndpoint: config.get('updateCheck:url'),
-                isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
-                notificationGroups: config.get('notificationGroups'),
-                siteUrl: urlUtils.urlFor('home', true),
-                forceUpdate: config.get('updateCheck:forceUpdate'),
-                ghostVersion: ghostVersion.original
+            posts: {
+                browse: api.posts.browse
             },
-            i18n,
-            logging,
-            request,
-            sendEmail: ghostMailer.send
-        });
-    }
+            users: {
+                browse: api.users.browse
+            },
+            notifications: {
+                add: api.notifications.add
+            }
+        },
+        config: {
+            mail: config.get('mail'),
+            env: config.get('env'),
+            databaseType: config.get('database').client,
+            checkEndpoint: config.get('updateCheck:url'),
+            isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
+            notificationGroups: config.get('notificationGroups'),
+            siteUrl: urlUtils.urlFor('home', true),
+            forceUpdate: config.get('updateCheck:forceUpdate'),
+            ghostVersion: ghostVersion.original
+        },
+        i18n,
+        logging,
+        request,
+        sendEmail: ghostMailer.send
+    });
 
-    updateChecker.check();
+    await updateChecker.check();
 };
 
 module.exports.scheduleRecurringJobs = () => {
