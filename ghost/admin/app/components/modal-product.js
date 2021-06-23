@@ -26,6 +26,18 @@ let BENEFITSDATA = emberA([
     }),
     ProductBenefitItem.create({
         label: 'Benefit 3'
+    }),
+    ProductBenefitItem.create({
+        label: 'Benefit 4'
+    }),
+    ProductBenefitItem.create({
+        label: 'Benefit 5'
+    }),
+    ProductBenefitItem.create({
+        label: 'Benefit 6'
+    }),
+    ProductBenefitItem.create({
+        label: 'Benefit 7'
     })
 ]);
 
