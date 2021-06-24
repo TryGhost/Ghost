@@ -201,6 +201,30 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
     );
 };
 
+function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, changePlan}) {
+    const {site, member} = useContext(AppContext);
+    const products = getUpgradeProducts({site, member});
+    if (hasMultipleProducts({site})) {
+        return (
+            <MultipleProductsPlansSection
+                products={products}
+                selectedPlan={selectedPlan}
+                changePlan={changePlan}
+                onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+            />
+        );
+    }
+    return (
+        <PlansSection
+            showLabel={showLabel}
+            plans={plans}
+            selectedPlan={selectedPlan}
+            changePlan={changePlan}
+            onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+        />
+    );
+}
+
 // For free members
 const UpgradePlanSection = ({
     plans, selectedPlan, onPlanSelect, onPlanCheckout
@@ -214,7 +238,7 @@ const UpgradePlanSection = ({
     return (
         <section>
             <div className={`gh-portal-section gh-portal-accountplans-main ${singlePlanClass}`}>
-                <PlansSection
+                <PlansOrProductSection
                     showLabel={false}
                     plans={plans}
                     selectedPlan={selectedPlan}
