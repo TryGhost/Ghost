@@ -382,6 +382,29 @@ function addDiscountToPlans(plans) {
     }
 }
 
+function ProductOptions({products, selectedPlan, onPlanSelect, changePlan}) {
+    return products.map(({id, monthlyPrice, yearlyPrice, name}) => {
+        return (
+            <div key={id}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                    padding: '6px 0',
+                    borderBottom: '1px solid black'
+                }}> {name} </div>
+                <PlanOptions
+                    plans={[monthlyPrice, yearlyPrice]}
+                    selectedPlan={selectedPlan}
+                    onPlanSelect={onPlanSelect}
+                    changePlan={changePlan}
+                />
+            </div>
+        );
+    });
+}
+
 function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site} = useContext(AppContext);
     const {free_price_name: freePriceName, free_price_description: freePriceDescription} = site;
@@ -430,7 +453,7 @@ function PlanLabel({showLabel}) {
     );
 }
 
-function getPlanClassNames({changePlan, cookiesDisabled, plans}) {
+function getPlanClassNames({changePlan, cookiesDisabled, plans = [], showVertical = false}) {
     let className = 'gh-portal-plans-container';
     if (changePlan) {
         className += ' hide-checkbox';
@@ -438,10 +461,27 @@ function getPlanClassNames({changePlan, cookiesDisabled, plans}) {
     if (cookiesDisabled) {
         className += ' disabled';
     }
-    if (changePlan || plans.length > 3) {
+    if (changePlan || plans.length > 3 || showVertical) {
         className += ' vertical';
     }
     return className;
+}
+
+export function MultipleProductsPlansSection({products, selectedPlan, onPlanSelect, changePlan = false}) {
+    const cookiesDisabled = isCookiesDisabled();
+    /**Don't allow plans selection if cookies are disabled */
+    if (cookiesDisabled) {
+        onPlanSelect = () => {};
+    }
+
+    const className = getPlanClassNames({cookiesDisabled, changePlan, showVertical: true});
+    return (
+        <section className="gh-portal-plans">
+            <div className={className}>
+                <ProductOptions products={products} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
+            </div>
+        </section>
+    );
 }
 
 function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, changePlan = false}) {
