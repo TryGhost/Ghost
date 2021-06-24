@@ -59,7 +59,7 @@ class UpdateCheckService {
     }
 
     /**
-     * @description Centralised error handler for the update check unit.
+     * @description Centralized error handler for the update check unit.
      *
      * CASES:
      *   - the update check service returns an error
