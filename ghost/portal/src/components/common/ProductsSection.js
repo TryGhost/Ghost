@@ -234,7 +234,7 @@ export const ProductsSectionStyles = ({site}) => {
 
             .gh-portal-product-card {
                 display: grid;
-                grid-template-columns: 1fr auto;
+                grid-template-columns: 1fr minmax(60px, auto);
                 grid-gap: 12px;
                 align-items: start;
                 min-height: unset;
@@ -266,6 +266,8 @@ export const ProductsSectionStyles = ({site}) => {
 
             .gh-portal-product-price {
                 position: relative;
+                justify-content: flex-end;
+                width: 100%;
             }
 
             .gh-portal-product-price .currency-sign {
@@ -289,6 +291,12 @@ export const ProductsSectionStyles = ({site}) => {
 
             .gh-portal-product-alternative-price {
                 display: none;
+            }
+
+            .gh-portal-product-benefits {
+                grid-column: 2;
+                margin-top: 12px;
+                padding: 12px 0 0;
             }
         }
     `;
