@@ -42,7 +42,7 @@ export function isComplimentaryMember({member = {}}) {
     const subscription = getMemberSubscription({member});
     if (subscription) {
         const {price} = subscription;
-        return (price.amount === 0);
+        return (price && price.amount === 0);
     }
     return false;
 }
