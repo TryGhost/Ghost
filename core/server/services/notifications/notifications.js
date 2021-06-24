@@ -13,21 +13,51 @@ class Notifications {
      * @param {Object} options.i18n - i18n instance
      * @param {Object} options.ghostVersion
      * @param {String} options.ghostVersion.full - Ghost instance version in "full" format - major.minor.patch
+     * @param {Object} options.SettingsModel - Ghost's Setting model instance
      */
-    constructor({settingsCache, i18n, ghostVersion}) {
+    constructor({settingsCache, i18n, ghostVersion, SettingsModel}) {
         this.settingsCache = settingsCache;
         this.i18n = i18n;
         this.ghostVersion = ghostVersion;
+        this.SettingsModel = SettingsModel;
     }
 
+    /**
+     * @returns {Object[]} - all notifications
+     */
     fetchAllNotifications() {
         let allNotifications = this.settingsCache.get('notifications');
+
+        // @TODO: this check can be removed to improve read operation perf. It's here only because
+        //        reads are done often and this gives a possibility to self-heal any broken records.
+        //        The check can be removed/moved to write operations once we have the guardrails on that
+        //        level long enough and are confident there's no broken data in the DB (e.g few minors after Ghost v5?)
+        if (!this.areNotificationsValid(allNotifications)) {
+            // Not using "await" here and doing the "fire-and-forget" because the result is know beforehand
+            // We only care for the notifications to ge into "correct" state eventually and work properly with next request
+            this.dangerousDestroyAll();
+            return [];
+        }
 
         allNotifications.forEach((notification) => {
             notification.addedAt = moment(notification.addedAt).toDate();
         });
 
         return allNotifications;
+    }
+
+    /**
+     *
+     * @param {Object[]} notifications - objects to check if they have valid notifications array format
+     *
+     * @returns {boolean}
+     */
+    areNotificationsValid(notifications) {
+        if (!(_.isArray(notifications))) {
+            return false;
+        }
+
+        return true;
     }
 
     wasSeen(notification, user) {
@@ -182,6 +212,22 @@ class Notifications {
         });
 
         return allNotifications;
+    }
+
+    /**
+     * Comparing to destroyAll method this one wipes out the notifications data!
+     * It is only to be used in a situation when notifications data has been corrupted and
+     * there's a need to self-heal. Wiping out notifications will fetch some of the notifications
+     * again and repopulate the array with correct data.
+     */
+    async dangerousDestroyAll() {
+        // Same default as defined in "default-settings.json"
+        const defaultValue = '[]';
+
+        return this.SettingsModel.edit([{
+            key: 'notifications',
+            value: defaultValue
+        }], {context: {internal: true}});
     }
 }
 
