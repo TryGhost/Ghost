@@ -4,6 +4,12 @@ const _ = require('lodash');
 const Product = ghostBookshelf.Model.extend({
     tableName: 'products',
 
+    relationships: ['benefits'],
+
+    relationshipBelongsTo: {
+        benefits: 'benefits'
+    },
+
     async onSaving(model, _attr, options) {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
@@ -76,6 +82,17 @@ const Product = ghostBookshelf.Model.extend({
         });
 
         return filteredKeys;
+    },
+
+    benefits() {
+        return this.belongsToMany('Benefit', 'products_benefits', 'product_id', 'benefit_id')
+            .withPivot('sort_order')
+            .query('orderBy', 'sort_order', 'ASC')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('benefits.*');
+            });
     },
 
     monthlyPrice() {
