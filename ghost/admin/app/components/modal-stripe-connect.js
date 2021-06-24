@@ -51,6 +51,10 @@ export default class ModalStripeConnect extends ModalBase {
                 return this.confirmAction();
             }
             // noop - enter key shouldn't do anything
+        },
+        // needed because ModalBase uses .send() for keyboard events
+        closeModal() {
+            this.close();
         }
     }
 }
