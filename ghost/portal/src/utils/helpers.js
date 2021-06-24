@@ -179,12 +179,14 @@ export function getAvailableProducts({site}) {
     }
 
     return products.filter(product => !!product).filter((product) => {
+        return !!(product.monthlyPrice && product.yearlyPrice);
+    }).filter((product) => {
         if (portalProducts) {
             return portalProducts.includes(product.id);
         }
         return true;
     }).sort((productA, productB) => {
-        return productA?.monthlyPrice?.amount - productB?.monthlyPrice.amount;
+        return productA?.monthlyPrice?.amount - productB?.monthlyPrice?.amount;
     }).map((product) => {
         product.monthlyPrice = {
             ...product.monthlyPrice,
