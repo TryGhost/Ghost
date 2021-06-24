@@ -15,10 +15,12 @@ export default class Frame extends Component {
     }
 
     setupFrameBaseStyle() {
-        this.iframeHtml = this.node.contentDocument.documentElement;
-        this.iframeHead = this.node.contentDocument.head;
-        this.iframeRoot = this.node.contentDocument.body;
-        this.forceUpdate();
+        if (this.node.contentDocument) {
+            this.iframeHtml = this.node.contentDocument.documentElement;
+            this.iframeHead = this.node.contentDocument.head;
+            this.iframeRoot = this.node.contentDocument.body;
+            this.forceUpdate();
+        }
     }
 
     render() {
