@@ -405,7 +405,7 @@ function ProductCard({product}) {
                 }} />
                 <h4 className="gh-portal-product-name">{product.name}</h4>
                 <div className="gh-portal-product-description">{product.description}</div>
-                <div className="gh-portal-product-benefits"><ProductBenefits product={product} /></div>
+                {(product.benefits && product.benefits.length ? <div className="gh-portal-product-benefits"><ProductBenefits product={product} /></div> : '')}
             </div>
             <ProductCardFooter product={product} />
         </div>
