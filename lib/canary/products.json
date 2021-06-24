@@ -28,6 +28,12 @@
           "items": {
             "type": "producs.canary#/definitions/stripe_price"
           }
+        },
+        "benefits": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "producs.canary#/definitions/product-benefit"
+          }
         }
       }
     },
@@ -77,6 +83,35 @@
           "strip": true
         }
       }
+    },
+    "product-benefit": {
+      "description": "A Benefit associated with a Product",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        }
+      },
+      "anyOf": [
+        { "required": ["id"] },
+        { "required": ["name"] },
+        { "required": ["slug"] }
+      ]
     }
   }
 }
