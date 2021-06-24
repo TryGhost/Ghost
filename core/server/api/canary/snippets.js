@@ -97,6 +97,8 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
+            frame.options.require = true;
+
             return models.Snippet.destroy(frame.options)
                 .then(() => null)
                 .catch(models.Snippet.NotFoundError, () => {
