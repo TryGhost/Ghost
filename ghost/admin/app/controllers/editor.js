@@ -612,7 +612,7 @@ export default Controller.extend({
 
                 if (attempts !== 0 && this.config.get('sentry_dsn')) {
                     let totalSeconds = moment().diff(startTime, 'seconds');
-                    captureMessage('Saving post required multiple attempts', {attempts, totalSeconds});
+                    captureMessage('Saving post required multiple attempts', {extra: {attempts, totalSeconds}});
                 }
             } catch (error) {
                 attempts += 1;
