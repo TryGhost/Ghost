@@ -164,6 +164,15 @@ class Notifications {
         return {allNotifications, notificationsToAdd};
     }
 
+    /**
+     *
+     * @param {Object} options
+     * @param {string} options.notificationId - UUID of the notification
+     * @param {Object} options.user
+     * @param {string} options.user.id
+     *
+     * @returns {Promise<Object[]>}
+     */
     destroy({notificationId, user}) {
         const allNotifications = this.fetchAllNotifications();
 
