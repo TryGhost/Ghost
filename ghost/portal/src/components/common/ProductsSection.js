@@ -370,6 +370,22 @@ function ProductBenefits({product}) {
     });
 }
 
+function ProductBenefitsContainer({product, showVertical = false}) {
+    if (!product.benefits || !product.benefits.length) {
+        return null;
+    }
+
+    let className = 'gh-portal-product-benefits';
+    if (showVertical) {
+        className += ' vertical';
+    }
+    return (
+        <div className={className}>
+            <ProductBenefits product={product} />
+        </div>
+    );
+}
+
 function ProductCardFooterAlternatePrice({price}) {
     const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
@@ -420,10 +436,10 @@ function ProductCard({product}) {
                 }} />
                 <h4 className="gh-portal-product-name">{product.name}</h4>
                 <div className="gh-portal-product-description">{product.description}</div>
-                {(product.benefits && product.benefits.length ? <div className="gh-portal-product-benefits"><ProductBenefits product={product} /></div> : '')}
+                <ProductBenefitsContainer product={product} />
             </div>
             <ProductCardFooter product={product} />
-            {(product.benefits && product.benefits.length ? <div className="gh-portal-product-benefits vertical"><ProductBenefits product={product} /></div> : '')}
+            <ProductBenefitsContainer product={product} showVertical={true} />
         </div>
     );
 }
