@@ -153,4 +153,62 @@ describe('Notifications Service', function () {
         should.exist(notifications);
         notifications.length.should.equal(0);
     });
+
+    describe('Stored notifications data corruption recovery', function () {
+        it('should correct broken notifications data on browse', function() {
+            const settingsCache = {
+                get: sinon.fake.returns({
+                    message: 'this object should be an array!'
+                })
+            };
+            const settingsModelStub = sinon.stub().resolves();
+
+            const notificationSvc = new Notifications({
+                settingsCache,
+                ghostVersion: {
+                    full: '5.0.0'
+                },
+                SettingsModel: {
+                    edit: settingsModelStub
+                }
+            });
+
+            const notifications = notificationSvc.browse({user: owner});
+
+            should.exist(notifications);
+            notifications.length.should.equal(0);
+
+            settingsModelStub.called.should.equal(true);
+            settingsModelStub.args[0][0].should.eql([{
+                key: 'notifications',
+                value: '[]'
+            }]);
+        });
+
+        it('does not trigger correction when the data is in valid format', function() {
+            const settingsCache = {
+                get: sinon.fake.returns([{
+                    message: 'this works! 5.1.0'
+                }])
+            };
+            const settingsModelStub = sinon.stub().resolves();
+
+            const notificationSvc = new Notifications({
+                settingsCache,
+                ghostVersion: {
+                    full: '5.0.0'
+                },
+                SettingsModel: {
+                    edit: settingsModelStub
+                }
+            });
+
+            const notifications = notificationSvc.browse({user: owner});
+
+            should.exist(notifications);
+            notifications.length.should.equal(1);
+
+            settingsModelStub.called.should.equal(false);
+        });
+    });
 });
