@@ -53,12 +53,15 @@ export default class DashboardController extends Controller {
         this.loadWhatsNew();
     }
 
-    loadMRRStats() {
+    async loadMRRStats() {
+        const products = await this.store.query('product', {include: 'monthly_price,yearly_price', limit: 'all'});
+        const defaultProduct = products?.firstObject;
+
         this.mrrStatsLoading = true;
         this.membersStats.fetchMRR().then((stats) => {
             this.mrrStatsLoading = false;
             const statsData = stats.data || [];
-            const defaultCurrency = this.getDefaultCurrency() || 'usd';
+            const defaultCurrency = defaultProduct?.monthlyPrice?.currency || 'usd';
             let currencyStats = statsData.find((stat) => {
                 return stat.currency === defaultCurrency;
             });
@@ -228,12 +231,6 @@ export default class DashboardController extends Controller {
             this.whatsNewEntriesError = error;
             this.whatsNewEntriesLoading = false;
         });
-    }
-
-    getDefaultCurrency() {
-        const plans = this.settings.get('stripePlans') || [];
-        const monthly = plans.find(plan => plan.interval === 'month');
-        return monthly && monthly.currency;
     }
 
     @action
