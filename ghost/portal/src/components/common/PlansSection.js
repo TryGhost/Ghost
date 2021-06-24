@@ -7,7 +7,7 @@ export const PlanSectionStyles = `
     .gh-portal-plans-container {
         display: flex;
         align-items: stretch;
-        border: 1px solid var(--grey10);
+        border: 1px solid var(--grey11);
         border-radius: 5px;
     }
 
@@ -20,7 +20,7 @@ export const PlanSectionStyles = `
         justify-items: center;
         font-size: 1.4rem;
         line-height: 1.35em;
-        border-right: 1px solid var(--grey10);
+        border-right: 1px solid var(--grey11);
         padding: 16px 10px;
         cursor: pointer;
         user-select: none;
@@ -244,7 +244,7 @@ export const PlanSectionStyles = `
         letter-spacing: 0.2px;
         line-height: 1.25em;
         color: var(--brandcolor);
-        margin: 4px 0 -2px;
+        margin: 3px 0 -2px;
     }
 
     .gh-portal-plans-container.vertical {
@@ -259,7 +259,7 @@ export const PlanSectionStyles = `
         justify-items: start;
         min-height: 60px;
         border-right: none;
-        border-bottom: 1px solid var(--grey10);
+        border-bottom: 1px solid var(--grey11);
         padding: 10px;
     }
 
@@ -294,7 +294,7 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plans-container.vertical .gh-portal-plan-featurewrapper {
-        margin: 0;
+        margin: 4px 0 0;
         padding: 0;
         border: none;
         align-items: flex-start;
@@ -331,6 +331,37 @@ export const PlanSectionStyles = `
 
     .gh-portal-plans-container.vertical .gh-portal-plan-name.no-description {
         grid-row: 1 / 3;
+    }
+
+    .gh-portal-plans-container.multiple-products {
+        border: none;
+    }
+
+    .gh-portal-plan-product {
+        border: 1px solid var(--grey11);
+        border-radius: 5px;
+    }
+
+    .gh-portal-plan-product:not(:last-of-type) {
+        margin-bottom: 20px;
+    }
+
+    .gh-portal-plan-productname {
+        border-radius: 5px 5px 0 0;
+        padding: 2px 10px;
+        font-size: 1.25rem;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        font-weight: 600;
+        border-bottom: 1px solid var(--grey12);
+    }
+
+    .gh-portal-accountplans-main .gh-portal-plan-section:hover {
+        background: var(--grey14);
+    }
+
+    .gh-portal-accountplans-main .gh-portal-plan-section:last-of-type {
+        border-radius: 0 0 5px 5px;
     }
 `;
 
@@ -385,15 +416,8 @@ function addDiscountToPlans(plans) {
 function ProductOptions({products, selectedPlan, onPlanSelect, changePlan}) {
     return products.map(({id, monthlyPrice, yearlyPrice, name}) => {
         return (
-            <div key={id}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    fontWeight: 'bold',
-                    fontSize: '16px',
-                    padding: '6px 0',
-                    borderBottom: '1px solid black'
-                }}> {name} </div>
+            <div className="gh-portal-plan-product" key={id}>
+                <div className="gh-portal-plan-productname">{name}</div>
                 <PlanOptions
                     plans={[monthlyPrice, yearlyPrice]}
                     selectedPlan={selectedPlan}
@@ -474,7 +498,7 @@ export function MultipleProductsPlansSection({products, selectedPlan, onPlanSele
         onPlanSelect = () => {};
     }
 
-    const className = getPlanClassNames({cookiesDisabled, changePlan, showVertical: true});
+    const className = getPlanClassNames({cookiesDisabled, changePlan, showVertical: true}) + ' multiple-products';
     return (
         <section className="gh-portal-plans">
             <div className={className}>
