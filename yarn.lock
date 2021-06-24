@@ -586,10 +586,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.13"
 
-"@tryghost/admin-api-schema@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.3.0.tgz#3ec7dd98576e26166ff4c8082e6cd7542c3322d0"
-  integrity sha512-f69N5TE4Wzff0xr13Pa+HyfqCVktiIg+5L3we2TWYUO8XSrZcLKo5ionj/ybMHUY1M3DMVL2yVFjOfRWnV2TpA==
+"@tryghost/admin-api-schema@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.4.0.tgz#d84885ba138d7da709f8934f18abe3a4635e6f09"
+  integrity sha512-A1b/lohwKmR2u26ycQvvSzC9MrRwk3ZLvHPPbHeFxH4g2yH2N3JX420WHvi4Vk0e2E5gFzir2e7itG9BJ9SaoQ==
   dependencies:
     "@tryghost/errors" "^0.2.10"
     bluebird "^3.5.3"
@@ -893,10 +893,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.15.0":
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.15.0.tgz#f5367ab208a9658f116ece9fa30fc87fd6bc4ab7"
-  integrity sha512-UwXmMIZhAiCatbIKfFzeNQUPrIJg3yPbPYGg8Yp5TfIRIjeBEOXyauNc5XR8616Wc2mktkvTs/BBs5er6QBvoQ==
+"@tryghost/members-api@1.17.0":
+  version "1.17.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.17.0.tgz#375217d3e2aacaaaca2a6556b940e2961991a8f4"
+  integrity sha512-H2gsg3EhRZxYIdr8eOVSgkNRYoHjEQrYdGqGqnnhe5y38xm/IZHPazHwm7Vj3za9ayZzLN1MJISNA8a0qovVlQ==
   dependencies:
     "@tryghost/errors" "^0.2.9"
     "@tryghost/magic-link" "^1.0.4"

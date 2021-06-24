@@ -77,7 +77,8 @@ function serializeProduct(product, options, apiType) {
         updated_at: json.updated_at,
         stripe_prices: json.stripePrices ? json.stripePrices.map(price => serializeStripePrice(price, hideStripeData)) : null,
         monthly_price: serializeStripePrice(json.monthlyPrice, hideStripeData),
-        yearly_price: serializeStripePrice(json.yearlyPrice, hideStripeData)
+        yearly_price: serializeStripePrice(json.yearlyPrice, hideStripeData),
+        benefits: json.benefits || null
     };
 
     return serialized;
@@ -164,6 +165,16 @@ function createSerializer(debugString, serialize) {
  * @prop {StripePrice[]} [stripe_prices]
  * @prop {StripePrice} [monthly_price]
  * @prop {StripePrice} [yearly_price]
+ * @prop {Benefit[]} [benefits]
+ */
+
+/**
+ * @typedef {object} Benefit
+ * @prop {string} id
+ * @prop {string} name
+ * @prop {string} slug
+ * @prop {Date} created_at
+ * @prop {Date} updated_at
  */
 
 /**
