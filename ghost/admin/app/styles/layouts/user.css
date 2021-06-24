@@ -17,7 +17,7 @@
 }
 
 .user-actions-cog svg path {
-    stroke: currentColor;
+    stroke: var(--darkgrey);
 }
 
 .user-actions-menu {
