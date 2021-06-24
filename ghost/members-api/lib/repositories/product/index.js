@@ -15,6 +15,11 @@ const {UpdateCollisionError} = require('@tryghost/errors');
  * @param {string?} stripe_price_id
  */
 
+/**
+ * @typedef {object} BenefitInput
+ * @param {string} name
+ */
+
 class ProductRepository {
     /**
      * @param {object} deps
@@ -91,6 +96,7 @@ class ProductRepository {
      * @param {object} data
      * @param {string} data.name
      * @param {string} data.description
+     * @param {BenefitInput[]} data.benefits
      * @param {StripePriceInput[]} data.stripe_prices
      * @param {StripePriceInput|null} data.monthly_price
      * @param {StripePriceInput|null} data.yearly_price
@@ -111,7 +117,8 @@ class ProductRepository {
 
         const productData = {
             name: data.name,
-            description: data.description
+            description: data.description,
+            benefits: data.benefits
         };
 
         const product = await this._Product.add(productData, options);
@@ -216,6 +223,7 @@ class ProductRepository {
      * @param {string} data.id
      * @param {string} data.name
      * @param {string} data.description
+     * @param {BenefitInput[]} data.benefits
      *
      * @param {StripePriceInput[]=} data.stripe_prices
      * @param {StripePriceInput|null} data.monthly_price
@@ -235,7 +243,8 @@ class ProductRepository {
 
         const productData = {
             name: data.name,
-            description: data.description
+            description: data.description,
+            benefits: data.benefits
         };
 
         let product = await this._Product.edit(productData, {
