@@ -402,6 +402,14 @@
     margin-right: 0 !important;
 }
 
+.settings-menu-toggle-labs svg {
+    fill: none !important;
+}
+
+.settings-menu-toggle-labs .settings-menu-open svg path {
+    stroke: var(--black);
+}
+
 .settings-menu-toggle-spacer-labs {
     width: 40px;
 }

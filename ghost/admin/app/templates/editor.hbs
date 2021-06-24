@@ -139,9 +139,9 @@
         <button type="button" class="settings-menu-toggle-labs gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog" title="Settings" data-test-button="psm-toggle" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
             {{#if this.showSettingsMenu}}
                 {{!-- TODO: switch to close state --}}
-                <span>{{svg-jar "settings"}}</span>
+                <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
             {{else}}
-                <span>{{svg-jar "settings"}}</span>
+                <span>{{svg-jar "sidemenu"}}</span>
             {{/if}}
         </button>
     {{/if}}
