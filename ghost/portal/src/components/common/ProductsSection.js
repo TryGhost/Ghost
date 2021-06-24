@@ -215,6 +215,10 @@ export const ProductsSectionStyles = ({site}) => {
             flex-grow: 1;
         }
 
+        .gh-portal-product-benefits.vertical {
+            display: none !important;
+        }
+
         @media (max-width: 480px) {
             .gh-portal-products {
                 margin: 0 -32px;
@@ -237,7 +241,7 @@ export const ProductsSectionStyles = ({site}) => {
                 grid-template-columns: 1fr minmax(60px, auto);
                 grid-gap: 12px;
                 align-items: start;
-                min-height: unset;
+                min-height: 68px;
                 padding: 12px 20px;
                 background: none;
                 border: 1px solid var(--grey12);
@@ -294,9 +298,20 @@ export const ProductsSectionStyles = ({site}) => {
             }
 
             .gh-portal-product-benefits {
+                display: none;
+            }
+
+            .gh-portal-product-benefits.vertical {
                 grid-column: 2;
-                margin-top: 12px;
-                padding: 12px 0 0;
+                padding: 12px 20px;
+                margin-top: 0px;
+                display: block !important;
+                grid-row: 2;
+                grid-column: 1 / 3;
+            }
+
+            .gh-portal-product-benefit:last-of-type {
+                margin-bottom: 0;
             }
         }
     `;
@@ -408,6 +423,7 @@ function ProductCard({product}) {
                 {(product.benefits && product.benefits.length ? <div className="gh-portal-product-benefits"><ProductBenefits product={product} /></div> : '')}
             </div>
             <ProductCardFooter product={product} />
+            {(product.benefits && product.benefits.length ? <div className="gh-portal-product-benefits vertical"><ProductBenefits product={product} /></div> : '')}
         </div>
     );
 }
