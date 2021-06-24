@@ -155,7 +155,7 @@ describe('Notifications Service', function () {
     });
 
     describe('Stored notifications data corruption recovery', function () {
-        it('should correct broken notifications data on browse', function() {
+        it('should correct broken notifications data on browse', function () {
             const settingsCache = {
                 get: sinon.fake.returns({
                     message: 'this object should be an array!'
@@ -185,7 +185,7 @@ describe('Notifications Service', function () {
             }]);
         });
 
-        it('does not trigger correction when the data is in valid format', function() {
+        it('does not trigger correction when the data is in valid format', function () {
             const settingsCache = {
                 get: sinon.fake.returns([{
                     message: 'this works! 5.1.0'
