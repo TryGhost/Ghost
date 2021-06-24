@@ -5,7 +5,12 @@ const errors = require('@tryghost/errors');
  * @param {Bookshelf} Bookshelf
  */
 module.exports = function (Bookshelf) {
-    Bookshelf.Model = Bookshelf.Model.extend({}, {
+    Bookshelf.Model = Bookshelf.Model.extend({
+        // When loading an instance, subclasses can specify default to fetch
+        defaultColumnsToFetch: function defaultColumnsToFetch() {
+            return [];
+        }
+    }, {
         /**
          * ### Find All
          * Fetches all the data for a particular model
@@ -69,7 +74,7 @@ module.exports = function (Bookshelf) {
             // and append default columns to fetch
             if (options.columns) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
-                options.columns = _.union(options.columns, this.defaultColumnsToFetch());
+                options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
             }
 
             if (options.order) {
@@ -213,11 +218,6 @@ module.exports = function (Bookshelf) {
                 .then(function then(obj) {
                     return obj.destroy(options);
                 });
-        },
-
-        // When loading an instance, subclasses can specify default to fetch
-        defaultColumnsToFetch: function defaultColumnsToFetch() {
-            return [];
         }
     });
 };
