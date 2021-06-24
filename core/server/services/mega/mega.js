@@ -72,7 +72,7 @@ const sendTestEmail = async (postModel, toEmails, apiVersion) => {
         const member = await membersService.api.members.get({email});
         if (member) {
             return {
-                member_uuid: member.get('id'),
+                member_uuid: member.get('uuid'),
                 member_email: member.get('email'),
                 member_name: member.get('name')
             };
