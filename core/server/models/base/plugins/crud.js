@@ -69,7 +69,7 @@ module.exports = function (Bookshelf) {
             // and append default columns to fetch
             if (options.columns) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
-                options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
+                options.columns = _.union(options.columns, this.defaultColumnsToFetch());
             }
 
             if (options.order) {
