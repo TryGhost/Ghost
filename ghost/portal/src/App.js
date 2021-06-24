@@ -382,7 +382,10 @@ export default class App extends React.Component {
             Sentry.init({
                 dsn: portalSentry.dsn,
                 environment: portalSentry.env || 'development',
-                release: `portal@${portalVersion}|ghost@${ghostVersion}`
+                release: `portal@${portalVersion}|ghost@${ghostVersion}`,
+                allowUrls: [
+                    /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/portal/
+                ]
             });
         }
     }
