@@ -1,7 +1,7 @@
 <header class="modal-header" data-test-modal="webhook-form" {{will-destroy this.reset}}>
     <h1 data-test-text="title">Connect with Stripe</h1>
 </header>
-<button class="close" href title="Close" {{action "confirm"}} {{action (optional this.noop) on="mouseDown"}}>
+<button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}
 </button>
 
