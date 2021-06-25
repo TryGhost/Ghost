@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -21,6 +21,23 @@ const DEV_MODE_DATA = {
     member: Fixtures.member.paid,
     page: 'signup'
 };
+
+function SentryErrorBoundary({site, children}) {
+    const {portal_sentry: portalSentry} = site || {};
+    if (portalSentry && portalSentry.dsn) {
+        return (
+            <Sentry.ErrorBoundary>
+                {children}
+            </Sentry.ErrorBoundary>
+        );
+    }
+    return (
+        <>
+            {children}
+        </>
+    );
+}
+
 export default class App extends React.Component {
     constructor(props) {
         super(props);
@@ -385,6 +402,12 @@ export default class App extends React.Component {
                 dsn: portalSentry.dsn,
                 environment: portalSentry.env || 'development',
                 release: releaseTag,
+                beforeSend: (event) => {
+                    if (isSentryEventAllowed({event})) {
+                        return event;
+                    }
+                    return null;
+                },
                 allowUrls: [
                     /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/portal/
                 ]
@@ -609,13 +632,13 @@ export default class App extends React.Component {
     render() {
         if (this.state.initStatus === 'success') {
             return (
-                <Sentry.ErrorBoundary>
+                <SentryErrorBoundary site={this.state.site}>
                     <AppContext.Provider value={this.getContextFromState()}>
                         <PopupModal />
                         <TriggerButton />
                         <Notification />
                     </AppContext.Provider>
-                </Sentry.ErrorBoundary>
+                </SentryErrorBoundary>
             );
         }
         return null;
