@@ -378,11 +378,13 @@ export default class App extends React.Component {
     /** Setup Sentry */
     setupSentry({site}) {
         const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
+        const appVersion = process.env.REACT_APP_VERSION || portalVersion;
+        const releaseTag = `portal@${appVersion}|ghost@${ghostVersion}`;
         if (portalSentry && portalSentry.dsn) {
             Sentry.init({
                 dsn: portalSentry.dsn,
                 environment: portalSentry.env || 'development',
-                release: `portal@${portalVersion}|ghost@${ghostVersion}`,
+                release: releaseTag,
                 allowUrls: [
                     /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/portal/
                 ]
