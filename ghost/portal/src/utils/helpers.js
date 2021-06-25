@@ -27,6 +27,13 @@ export function isCookiesDisabled() {
     return !(navigator && navigator.cookieEnabled);
 }
 
+export function isSentryEventAllowed({event: sentryEvent}) {
+    const frames = sentryEvent?.exception?.values?.[0]?.stacktrace?.frames || [];
+    const fileNames = frames.map(frame => frame.filename).filter(filename => !!filename);
+    const lastFileName = fileNames[fileNames.length - 1] || '';
+    return lastFileName.includes('@tryghost/portal');
+}
+
 export function getMemberSubscription({member = {}}) {
     if (isPaidMember({member})) {
         const subscriptions = member.subscriptions || [];
