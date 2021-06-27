@@ -6,7 +6,6 @@ const {URL} = require('url');
 const errors = require('@tryghost/errors');
 
 // App requires
-const bridge = require('../../../bridge');
 const config = require('../../../shared/config');
 const constants = require('@tryghost/constants');
 const storage = require('../../adapters/storage');
@@ -190,9 +189,9 @@ module.exports = function setupSiteApp(options = {}) {
     return siteApp;
 };
 
-module.exports.reload = () => {
+module.exports.reload = ({apiVersion}) => {
     // https://github.com/expressjs/express/issues/2596
-    router = siteRoutes({start: bridge.getFrontendApiVersion()});
+    router = siteRoutes({start: apiVersion});
     Object.setPrototypeOf(SiteRouter, router);
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)

@@ -6,6 +6,7 @@ const urlService = require('../url');
 
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
+const bridge = require('../../../bridge');
 
 /**
  * The `routes.yaml` file offers a way to configure your Ghost blog. It's currently a setting feature
@@ -18,6 +19,7 @@ const config = require('../../../shared/config');
  *   - we don't destroy the resources, we only release them (this avoids reloading all resources from the db again)
  * - then we reload the whole site app, which will reset all routers and re-create the url generators
  */
+
 const setFromFilePath = (filePath) => {
     const settingsPath = config.getContentPath('settings');
     const backupRoutesPath = path.join(settingsPath, `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
@@ -30,19 +32,17 @@ const setFromFilePath = (filePath) => {
             urlService.resetGenerators({releaseResourcesOnly: true});
         })
         .then(() => {
-            const siteApp = require('../../../server/web/site/app');
-
             const bringBackValidRoutes = () => {
                 urlService.resetGenerators({releaseResourcesOnly: true});
 
                 return fs.copy(backupRoutesPath, `${settingsPath}/routes.yaml`)
                     .then(() => {
-                        return siteApp.reload();
+                        return bridge.reloadFrontend();
                     });
             };
 
             try {
-                siteApp.reload();
+                bridge.reloadFrontend();
             } catch (err) {
                 return bringBackValidRoutes()
                     .finally(() => {
