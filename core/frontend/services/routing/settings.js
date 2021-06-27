@@ -4,9 +4,15 @@ const fs = require('fs-extra');
 const path = require('path');
 const urlService = require('../url');
 
+const debug = require('@tryghost/debug')('services:frontend:routing:settings');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
+
+const messages = {
+    loadError: 'Could not load {filename} file.'
+};
 
 /**
  * The `routes.yaml` file offers a way to configure your Ghost blog. It's currently a setting feature
@@ -20,68 +26,37 @@ const bridge = require('../../../bridge');
  * - then we reload the whole site app, which will reset all routers and re-create the url generators
  */
 
-const setFromFilePath = (filePath) => {
-    const settingsPath = config.getContentPath('settings');
-    const backupRoutesPath = path.join(settingsPath, `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
+const filename = 'routes';
+const ext = 'yaml';
 
-    return fs.copy(`${settingsPath}/routes.yaml`, backupRoutesPath)
-        .then(() => {
-            return fs.copy(filePath, `${settingsPath}/routes.yaml`);
-        })
-        .then(() => {
-            urlService.resetGenerators({releaseResourcesOnly: true});
-        })
-        .then(() => {
-            const bringBackValidRoutes = () => {
-                urlService.resetGenerators({releaseResourcesOnly: true});
-
-                return fs.copy(backupRoutesPath, `${settingsPath}/routes.yaml`)
-                    .then(() => {
-                        return bridge.reloadFrontend();
-                    });
-            };
-
-            try {
-                bridge.reloadFrontend();
-            } catch (err) {
-                return bringBackValidRoutes()
-                    .finally(() => {
-                        throw err;
-                    });
-            }
-
-            let tries = 0;
-
-            function isBlogRunning() {
-                return Promise.delay(1000)
-                    .then(() => {
-                        if (!urlService.hasFinished()) {
-                            if (tries > 5) {
-                                throw new errors.InternalServerError({
-                                    message: 'Could not load routes.yaml file.'
-                                });
-                            }
-
-                            tries = tries + 1;
-                            return isBlogRunning();
-                        }
-                    });
-            }
-
-            return isBlogRunning()
-                .catch((err) => {
-                    return bringBackValidRoutes()
-                        .finally(() => {
-                            throw err;
-                        });
-                });
-        });
+const getSettingsFolder = async () => {
+    return config.getContentPath('settings');
 };
 
-const get = () => {
-    const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
+const getSettingsFilePath = async () => {
+    const settingsFolder = await getSettingsFolder();
+    return path.join(settingsFolder, `${filename}.${ext}`);
+};
 
-    return fs.readFile(routesPath, 'utf-8')
+const getBackupFilePath = async () => {
+    const settingsFolder = await getSettingsFolder();
+    return path.join(settingsFolder, `${filename}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.${ext}`);
+};
+
+const createBackupFile = async (settingsPath, backupPath) => {
+    return await fs.copy(settingsPath, backupPath);
+};
+
+const restoreBackupFile = async (settingsPath, backupPath) => {
+    return await fs.copy(backupPath, settingsPath);
+};
+
+const saveFile = async (filePath, settingsPath) => {
+    return await fs.copy(filePath, settingsPath);
+};
+
+const readFile = (settingsFilePath) => {
+    return fs.readFile(settingsFilePath, 'utf-8')
         .catch((err) => {
             if (err.code === 'ENOENT') {
                 return Promise.resolve([]);
@@ -95,6 +70,68 @@ const get = () => {
                 err: err
             });
         });
+};
+
+const setFromFilePath = async (filePath) => {
+    const settingsPath = await getSettingsFilePath();
+    const backupPath = await getBackupFilePath();
+
+    await createBackupFile(settingsPath, backupPath);
+    await saveFile(filePath, settingsPath);
+
+    urlService.resetGenerators({releaseResourcesOnly: true});
+
+    const bringBackValidRoutes = async () => {
+        urlService.resetGenerators({releaseResourcesOnly: true});
+
+        await restoreBackupFile(settingsPath, backupPath);
+
+        return bridge.reloadFrontend();
+    };
+
+    try {
+        bridge.reloadFrontend();
+    } catch (err) {
+        return bringBackValidRoutes()
+            .finally(() => {
+                throw err;
+            });
+    }
+
+    // @TODO: how can we get rid of this from here?
+    let tries = 0;
+
+    function isBlogRunning() {
+        debug('waiting for blog running');
+        return Promise.delay(1000)
+            .then(() => {
+                debug('waited for blog running');
+                if (!urlService.hasFinished()) {
+                    if (tries > 5) {
+                        throw new errors.InternalServerError({
+                            message: tpl(messages.loadError, {filename: `${filename}.${ext}`})
+                        });
+                    }
+
+                    tries = tries + 1;
+                    return isBlogRunning();
+                }
+            });
+    }
+
+    return isBlogRunning()
+        .catch((err) => {
+            return bringBackValidRoutes()
+                .finally(() => {
+                    throw err;
+                });
+        });
+};
+
+const get = async () => {
+    const settingsFilePath = await getSettingsFilePath();
+
+    return readFile(settingsFilePath);
 };
 
 module.exports.setFromFilePath = setFromFilePath;
