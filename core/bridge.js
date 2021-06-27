@@ -53,8 +53,7 @@ class Bridge {
 
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
                 events.emit('services.themes.api.changed');
-                const siteApp = require('./server/web/site/app');
-                siteApp.reload();
+                this.reloadFrontend();
             }
         } catch (err) {
             logging.error(new errors.InternalServerError({
@@ -70,6 +69,12 @@ class Bridge {
         } else {
             return config.get('api:versions:default');
         }
+    }
+
+    reloadFrontend() {
+        const apiVersion = this.getFrontendApiVersion();
+        const siteApp = require('./server/web/site/app');
+        siteApp.reload({apiVersion});
     }
 }
 
