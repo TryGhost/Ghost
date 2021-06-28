@@ -1,3 +1,5 @@
+import calculateDiscount from './discount';
+
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)?))?\/?$/;
@@ -223,8 +225,22 @@ export function getPricesFromProducts({site}) {
     const products = getAvailableProducts({site}) || [];
     const prices = products.reduce((accumPrices, product) => {
         if (product.monthlyPrice && product.yearlyPrice) {
-            accumPrices.push(product.monthlyPrice);
-            accumPrices.push(product.yearlyPrice);
+            const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
+            const showBenefits = product.benefits?.length > 0;
+            const yearlyBenefits = showBenefits ? [...product.benefits] : null;
+            if (showBenefits && yearlyDiscount > 0) {
+                yearlyBenefits.push({
+                    name: `${yearlyDiscount}% discount`
+                });
+            }
+            accumPrices.push({
+                ...product.monthlyPrice,
+                ...(showBenefits ? {benefits: product.benefits} : {})
+            });
+            accumPrices.push({
+                ...product.yearlyPrice,
+                ...(showBenefits ? {benefits: yearlyBenefits} : {})
+            });
         }
         return accumPrices;
     }, []);

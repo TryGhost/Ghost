@@ -46,7 +46,7 @@ const products = [
             active: 1,
             nickname: 'Yearly',
             currency: 'usd',
-            amount: 100000,
+            amount: 20000,
             type: 'recurring',
             interval: 'year'
         },
@@ -246,7 +246,7 @@ export const site = {
         currency: 'USD'
     },
     portal_products: ['product_1', 'product_2', 'product_3'],
-    products,
+    products: [products[0]],
     prices,
     allow_self_signup: true,
     members_signup_access: 'all',
