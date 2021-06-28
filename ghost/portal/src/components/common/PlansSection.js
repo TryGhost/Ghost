@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
-import {isCookiesDisabled, formatNumber, hasOnlyFreePlan} from '../../utils/helpers';
+import {isCookiesDisabled, formatNumber, hasOnlyFreePlan, hasBenefits} from '../../utils/helpers';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
@@ -433,6 +433,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site} = useContext(AppContext);
     const {free_price_name: freePriceName, free_price_description: freePriceDescription} = site;
     addDiscountToPlans(plans);
+    const _hasBenefits = hasBenefits({prices: plans});
     return plans.map(({name, currency_symbol: currencySymbol, amount, description, interval, id}) => {
         const price = amount / 100;
         const isChecked = selectedPlan === id;
@@ -458,14 +459,23 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
                 <h4 className={planNameClass}>{displayName}</h4>
                 <PriceLabel currencySymbol={currencySymbol} price={price} interval={interval} />
                 <div className='gh-portal-plan-featurewrapper'>
-                    <div className='gh-portal-plan-feature'>
-                        {planDetails.feature}
-                    </div>
+                    <PlanFeature feature={planDetails.feature} hide={_hasBenefits} />
                     {(changePlan && selectedPlan === id ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
                 </div>
             </div>
         );
     });
+}
+
+function PlanFeature({feature, hide}) {
+    if (hide) {
+        return null;
+    }
+    return (
+        <div className='gh-portal-plan-feature'>
+            {feature}
+        </div>
+    );
 }
 
 function PlanBenefit({benefit}) {
