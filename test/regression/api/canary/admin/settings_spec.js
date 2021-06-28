@@ -1226,6 +1226,21 @@ describe('Settings API (canary)', function () {
             dbSettings.should.have.property('og_image', '__GHOST_URL__/content/images/og_image.png');
             dbSettings.should.have.property('twitter_image', '__GHOST_URL__/content/images/twitter_image.png');
         });
+
+        it('Cannot edit notifications key through API', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'notifications', value: `anything`}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
+        });
     });
 
     describe('As Admin', function () {
