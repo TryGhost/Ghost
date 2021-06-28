@@ -708,6 +708,21 @@ describe('Settings API (v2)', function () {
 
             localUtils.API.checkResponse(putBody, 'settings');
         });
+
+        it('Can only send array values for keys defined with array type', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'navigation', value: 'not an array'}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
     });
 
     describe('As Admin', function () {

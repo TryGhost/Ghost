@@ -1227,10 +1227,25 @@ describe('Settings API (canary)', function () {
             dbSettings.should.have.property('twitter_image', '__GHOST_URL__/content/images/twitter_image.png');
         });
 
+        it('Can only send array values for keys defined with array type', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'navigation', value: 'not an array'}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
+
         it('Cannot edit notifications key through API', async function () {
             const settingsToChange = {
                 settings: [
-                    {key: 'notifications', value: `anything`}
+                    {key: 'notifications', value: JSON.stringify(['do not touch me'])}
                 ]
             };
 
