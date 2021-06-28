@@ -24,7 +24,9 @@
     "sinon": "7.5.0"
   },
   "dependencies": {
+    "@tryghost/debug": "^0.1.2",
     "@tryghost/errors": "^0.2.9",
+    "@tryghost/ignition-errors": "^0.1.2",
     "@tryghost/magic-link": "^1.0.4",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
@@ -32,7 +34,6 @@
     "body-parser": "^1.19.0",
     "cookies": "^0.8.0",
     "express": "^4.16.4",
-    "ghost-ignition": "4.6.3",
     "got": "^9.6.0",
     "jsonwebtoken": "^8.5.1",
     "leaky-bucket": "2.2.0",

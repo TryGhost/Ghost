@@ -1,4 +1,4 @@
-const debug = require('ghost-ignition').debug('services/stripe');
+const debug = require('@tryghost/debug')('services/stripe');
 const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
 const EXPECTED_API_EFFICIENCY = 0.95;
