@@ -1,11 +1,10 @@
 const {parse: parseUrl} = require('url');
 const createCookies = require('cookies');
-const ignition = require('ghost-ignition');
-const debug = require('ghost-ignition').debug('members-ssr');
+const debug = require('@tryghost/debug')('members-ssr');
 
 const {
     BadRequestError
-} = ignition.errors;
+} = require('@tryghost/ignition-errors');
 
 /**
  * @typedef {import('http').IncomingMessage} Request
