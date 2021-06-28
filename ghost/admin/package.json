@@ -52,7 +52,7 @@
     "codemirror": "5.48.2",
     "csscomb": "4.3.0",
     "cssnano": "4.1.10",
-    "element-resize-detector": "1.2.2",
+    "element-resize-detector": "1.2.3",
     "ember-ajax": "5.0.0",
     "ember-assign-helper": "0.3.0",
     "ember-auto-import": "1.11.3",
