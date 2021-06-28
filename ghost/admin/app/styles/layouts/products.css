@@ -70,6 +70,10 @@
     color: var(--midgrey);
 }
 
+.gh-product-card-block.benefits-block .gh-product-card-description {
+    margin-top: 9px;
+}
+
 .gh-product-card-block ul.benefits {
     list-style: none;
     margin: 10px 0 0;
@@ -415,6 +419,11 @@
 
 .gh-product-benefits .gh-blognav-label {
     margin-right: 0;
+}
+
+.gh-product-benefits .gh-blognav-label .response {
+    font-size: 1.3rem;
+    margin: 2px 0 6px;
 }
 
 .gh-product-benefits .gh-blognav-delete {
