@@ -10,19 +10,19 @@
         @tagName="span"
         @class="gh-blognav-label"
         @errors={{this.benefitItem.errors}}
-        @property="label"
+        @property="name"
         @hasValidated={{this.benefitItem.hasValidated}}
     >
         <GhTrimFocusInput
             @shouldFocus={{this.benefitItem.last}}
             @placeholder="Add benefit"
-            @value={{readonly this.label}}
+            @value={{readonly this.name}}
             @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
-            @focus-out={{action "updateLabel" this.label}} data-test-input="label" />
+            @focus-out={{action "updateLabel" this.name}} data-test-input="name" />
         <GhErrorMessage
             @errors={{this.benefitItem.errors}}
-            @property="label" data-test-error="label" />
+            @property="name" data-test-error="name" />
     </GhValidationStatusContainer>
 </div>
 

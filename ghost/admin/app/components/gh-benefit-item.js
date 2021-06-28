@@ -15,7 +15,7 @@ export default Component.extend(ValidationState, {
     addItem() {},
     deleteItem() {},
     updateLabel() {},
-    label: boundOneWay('benefitItem.label'),
+    name: boundOneWay('benefitItem.name'),
 
     errors: readOnly('benefitItem.errors'),
 
@@ -33,13 +33,19 @@ export default Component.extend(ValidationState, {
         },
 
         updateLabel(value) {
-            this.set('label', value);
+            this.set('name', value);
             return this.updateLabel(value, this.benefitItem);
         },
 
-        clearLabelErrors() {
-            if (this.get('benefitItem.errors')) {
-                this.get('benefitItem.errors').remove('label');
+        clearLabelErrors(event) {
+            // enter key
+            if (event.keyCode === 13 && this.get('benefitItem.isNew')) {
+                event.preventDefault();
+                run.scheduleOnce('actions', this, this.send, 'addItem', this.benefitItem);
+            } else {
+                if (this.get('benefitItem.errors')) {
+                    this.get('benefitItem.errors').remove('name');
+                }
             }
         }
     },
