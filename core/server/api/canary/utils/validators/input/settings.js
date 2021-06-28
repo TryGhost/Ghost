@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const i18n = require('../../../../../../shared/i18n');
-const {NotFoundError} = require('@tryghost/errors');
+const {NotFoundError, ValidationError} = require('@tryghost/errors');
 
 module.exports = {
     read(apiConfig, frame) {
@@ -26,6 +26,30 @@ module.exports = {
                         key: setting.key
                     })
                 }));
+            }
+
+            // TODO: the below array is INCOMPLETE
+            //       it should include all setting values that have array as a type
+            const arrayTypeSettings = [
+                'notifications',
+                'navigation',
+                'secondary_navigation'
+            ];
+
+            if (arrayTypeSettings.includes(setting.key)) {
+                const typeError = new ValidationError({
+                    message: `Value in ${setting.key} should be an array.`,
+                    property: 'value'
+                });
+
+                try {
+                    const value = JSON.parse(setting.value);
+                    if (!_.isArray(value)) {
+                        errors.push(typeError);
+                    }
+                } catch (err) {
+                    errors.push(typeError);
+                }
             }
         });
 
