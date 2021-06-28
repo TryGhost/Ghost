@@ -493,8 +493,8 @@ export default Controller.extend({
         } catch (error) {
             this.set('post.status', prevStatus);
 
-            if (error === undefined) {
-                // validation error or "handled" error from _saveTask
+            if (error === undefined && this.post.errors.length === 0) {
+                // "handled" error from _saveTask
                 return;
             }
 
