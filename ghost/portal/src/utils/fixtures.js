@@ -77,23 +77,23 @@ const products = [
         benefits: [
             {
                 id: 'a1',
-                title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+                name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
             },
             {
                 id: 'a2',
-                title: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+                name: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
             },
             {
                 id: 'a3',
-                title: 'Nullam hendrerit accumsan facilisis'
+                name: 'Nullam hendrerit accumsan facilisis'
             },
             {
                 id: 'a4',
-                title: 'Vivamus vel elit lectus'
+                name: 'Vivamus vel elit lectus'
             },
             {
                 id: 'a5',
-                title: 'Maecenas tempus cursus metus'
+                name: 'Maecenas tempus cursus metus'
             }
         ]
     },
@@ -150,19 +150,19 @@ const products = [
         benefits: [
             {
                 id: 'b1',
-                title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+                name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
             },
             {
                 id: 'b2',
-                title: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+                name: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
             },
             {
                 id: 'b3',
-                title: 'Nullam hendrerit accumsan facilisis'
+                name: 'Nullam hendrerit accumsan facilisis'
             },
             {
                 id: 'b4',
-                title: 'Vivamus vel elit lectus'
+                name: 'Vivamus vel elit lectus'
             }
         ]
     },
@@ -219,15 +219,15 @@ const products = [
         benefits: [
             {
                 id: 'c1',
-                title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+                name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
             },
             {
                 id: 'c2',
-                title: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+                name: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
             },
             {
                 id: 'c3',
-                title: 'Nullam hendrerit accumsan facilisis'
+                name: 'Nullam hendrerit accumsan facilisis'
             }
         ]
     }
