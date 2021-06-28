@@ -146,6 +146,23 @@ export default Component.extend({
                 });
         },
 
+        async setVisibility(segment) {
+            this.post.set('visibility', segment);
+            try {
+                await this.post.validate({property: 'visibility'});
+                if (this.post.changedAttributes().visibility) {
+                    await this.savePostTask.perform();
+                }
+            } catch (e) {
+                if (!e) {
+                    // validation error
+                    return;
+                }
+
+                throw e;
+            }
+        },
+
         setPublishedAtBlogDate(date) {
             let post = this.post;
             let dateString = moment(date).format('YYYY-MM-DD');
