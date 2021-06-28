@@ -211,6 +211,15 @@ export function getAvailableProducts({site}) {
     });
 }
 
+export function hasBenefits({prices}) {
+    if (!prices?.length) {
+        return false;
+    }
+    return prices.some((price) => {
+        return price?.benefits?.length;
+    });
+}
+
 export function getSiteProducts({site}) {
     const products = getAvailableProducts({site});
     if (hasFreeProductPrice({site}) && products.length > 0) {
