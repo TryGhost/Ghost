@@ -78,10 +78,19 @@ class Notifications {
             //       is done (https://github.com/TryGhost/Ghost/issues/10236) and notifications are
             //       be removed permanently on upgrade event.
             const ghostMajorRegEx = /Ghost (?<major>\d).0 is now available/gi;
+            const ghostSec43 = /GHSA-9fgx-q25h-jxrg/gi;
 
             // CASE: do not return old release notification
-            if (notification.message && (!notification.custom || notification.message.match(ghostMajorRegEx))) {
+            if (notification.message
+                && (!notification.custom || notification.message.match(ghostMajorRegEx) || notification.message.match(ghostSec43))) {
                 let notificationVersion = notification.message.match(/(\d+\.)(\d+\.)(\d+)/);
+
+                if (!notificationVersion && notification.message.match(ghostSec43)) {
+                    // Treating "GHSA-9fgx-q25h-jxrg" notification as 4.3.3 because there's no way to detect version
+                    // from it's message. In the future we should consider having a separate field with version
+                    // coming with each notification
+                    notificationVersion = ['4.3.3'];
+                }
 
                 const ghostMajorMatch = ghostMajorRegEx.exec(notification.message);
                 if (ghostMajorMatch && ghostMajorMatch.groups && ghostMajorMatch.groups.major) {
