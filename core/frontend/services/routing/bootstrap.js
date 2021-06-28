@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('services:routing:bootstrap');
 const _ = require('lodash');
 const events = require('../../../server/lib/common/events');
-const settingsService = require('../settings');
+const frontendSettings = require('../settings');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
@@ -22,8 +22,7 @@ let siteRouter;
  * CASES:
  *   - if Ghost starts, it will first init the site app with the wrapper router and then call `start`
  *     separately, because it could be that your blog goes into maintenance mode
- *   - if you upload your routes.yaml in the admin client, we will re-initialise routing
- *   -
+ *   - if you change your route settings, we will re-initialise routing
  *
  * @param {Object} options
  * @returns {ExpressRouter}
@@ -41,14 +40,16 @@ module.exports.init = (options = {start: false}) => {
 
     if (options.start) {
         let apiVersion = _.isBoolean(options.start) ? defaultApiVersion : options.start;
-        this.start(apiVersion);
+        // NOTE: Get the routes.yaml config
+        const dynamicRoutes = frontendSettings.get('routes');
+        this.start(apiVersion, dynamicRoutes);
     }
 
     return siteRouter.router();
 };
 
 /**
- * @description This function will create the routers based on the routes.yaml config.
+ * @description This function will create the routers based on the route settings
  *
  * The routers are created in a specific order. This order defines who can get a resource first or
  * who can dominant other routers.
@@ -59,8 +60,11 @@ module.exports.init = (options = {start: false}) => {
  * 4. Collections
  * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
  * 6. Internal Apps: Weakest
+ *
+ * @param {string} apiVersion
+ * @param {object} dynamicRoutes
  */
-module.exports.start = (apiVersion) => {
+module.exports.start = (apiVersion, dynamicRoutes) => {
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
     const unsubscribeRouter = new UnsubscribeRouter();
@@ -71,11 +75,8 @@ module.exports.start = (apiVersion) => {
     siteRouter.mountRouter(previewRouter.router());
     registry.setRouter('previewRouter', previewRouter);
 
-    // NOTE: Get the routes.yaml config
-    const dynamicRoutes = settingsService.get('routes');
-
     _.each(dynamicRoutes.routes, (value, key) => {
-        const staticRoutesRouter = new StaticRoutesRouter(key, value, RESOURCE_CONFIG);
+        const staticRoutesRouter = new StaticRoutesRouter(key, value);
         siteRouter.mountRouter(staticRoutesRouter.router());
 
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
