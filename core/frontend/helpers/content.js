@@ -22,13 +22,18 @@ function restrictedCta(options) {
     _.merge(this, {
         accentColor: (options.data.site && options.data.site.accent_color)
     });
-    if (this.visibility !== 'members' && this.visibility !== 'paid' && this.visibility.includes('product:')) {
+    if (this.visibility.includes('product:')) {
         const productSlugs = this.visibility.split(',').filter(qry => qry.startsWith('product:')).map(qry => qry.replace('product:', ''));
         const productNames = productSlugs.map((slug) => {
             return options.data.products.find(product => product.slug === slug);
-        }).filter(product => !!product).map(product => product.name);
-
-        const customVisibilityText = `This post is only for subscribers on products - ${productNames.join()}`;
+        }).filter(product => !!product).sort((productA, productB) => {
+            if (productA.monthlyPrice && productB.monthlyPrice) {
+                return productA.monthlyPrice.amount - productB.monthlyPrice.amount;
+            }
+            return 0;
+        }).map(product => product.name);
+        const productName = productNames[0] || 'specific';
+        const customVisibilityText = `This post is for subscribers on ${productName} product`;
         _.merge(this, {
             customVisibilityText: customVisibilityText
         });
