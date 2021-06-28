@@ -16,13 +16,17 @@
                 <span class="gh-badge gh-badge-green">Available in Portal</span>
             {{/if}}
         </div>
-        <div class="gh-product-card-block">
-            <h4>Benefits <span class="counter">({{product.benefits.length}})</span></h4>
+        <div class="gh-product-card-block benefits-block">
+            <h4>Benefits <span class="counter">({{if product.benefits.length product.benefit.length "0"}})</span></h4>
+            {{#if product.benefits.length}}
             <ul class="benefits">
                 {{#each product.benefits as |benefit|}}
                     <li>{{svg-jar "check"}} {{benefit.name}} </li>
                 {{/each}}
             </ul>
+            {{else}}
+            <p class="gh-product-card-description">No benefits added for this product.</p>
+            {{/if}}
         </div>
         <div class="gh-product-card-block">
             <div class="gh-product-price-container">
