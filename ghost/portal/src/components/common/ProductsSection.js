@@ -364,7 +364,7 @@ function ProductBenefits({product}) {
         return (
             <div className="gh-portal-product-benefit">
                 <CheckmarkIcon className='gh-portal-benefit-checkmark' alt=''/>
-                <div className="gh-portal-benefit-title">{benefit.title}</div>
+                <div className="gh-portal-benefit-title">{benefit.name}</div>
             </div>
         );
     });
