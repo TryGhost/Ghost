@@ -89,7 +89,9 @@ describe('Settings API', function () {
                 },
                 {
                     key: 'navigation',
-                    value: {label: 'label1'}
+                    value: JSON.stringify([{
+                        label: 'label1'
+                    }])
                 },
                 {
                     key: 'slack',
@@ -180,7 +182,7 @@ describe('Settings API', function () {
         should.equal(putBody.settings[1].value, null);
 
         putBody.settings[2].key.should.eql('navigation');
-        should.equal(putBody.settings[2].value, JSON.stringify({label: 'label1'}));
+        should.equal(putBody.settings[2].value, JSON.stringify([{label: 'label1'}]));
 
         putBody.settings[3].key.should.eql('slack_username');
         should.equal(putBody.settings[3].value, 'New Slack Username');

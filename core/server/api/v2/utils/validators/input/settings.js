@@ -48,13 +48,20 @@ module.exports = {
                     property: 'value'
                 });
 
-                try {
-                    const value = JSON.parse(setting.value);
-                    if (!_.isArray(value)) {
+                // NOTE: The additional check on raw value is here because internal calls to
+                //       settings API use raw unstringified objects (e.g. when adding notifications)
+                //       The conditional can be removed once internals are changed to do the calls properly
+                //       and the JSON.parse should be left as the only valid way to check the value.
+                if (!_.isArray(setting.value)) {
+                    try {
+                        const parsedSettingValue = JSON.parse(setting.value);
+
+                        if (!_.isArray(parsedSettingValue)) {
+                            errors.push(typeError);
+                        }
+                    } catch (err) {
                         errors.push(typeError);
                     }
-                } catch (err) {
-                    errors.push(typeError);
                 }
             }
         });
