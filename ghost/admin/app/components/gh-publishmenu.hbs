@@ -1,4 +1,4 @@
-<GhBasicDropdown @verticalPosition="below" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
+<GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
     <dd.Trigger class="gh-btn gh-btn-editor {{if (or (eq this.displayState "published") (eq this.displayState "scheduled") (eq this.uiContext "preview")) "green"}} gh-publishmenu-trigger">
         <span data-test-publishmenu-trigger>{{this.triggerText}} {{svg-jar "arrow-down"}}</span>
     </dd.Trigger>
