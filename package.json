@@ -137,7 +137,6 @@
     "multer": "1.4.2",
     "mysql": "2.18.1",
     "nconf": "0.11.3",
-    "netjet": "1.4.0",
     "node-jose": "2.0.0",
     "nodemailer": "0.7.1",
     "oembed-parser": "1.4.7",

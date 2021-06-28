@@ -3,7 +3,6 @@ const express = require('../../../shared/express');
 const vhost = require('@tryghost/vhost-middleware');
 const config = require('../../../shared/config');
 const compress = require('compression');
-const netjet = require('netjet');
 const mw = require('./middleware');
 const escapeRegExp = require('lodash/escapeRegExp');
 const {URL} = require('url');
@@ -22,15 +21,6 @@ module.exports = function setupParentApp(options = {}) {
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
         parentApp.use(compress());
-    }
-
-    // Preload link headers
-    if (config.get('preloadHeaders')) {
-        parentApp.use(netjet({
-            cache: {
-                max: config.get('preloadHeaders')
-            }
-        }));
     }
 
     // This sets global res.locals which are needed everywhere
