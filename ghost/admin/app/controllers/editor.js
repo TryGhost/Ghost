@@ -491,6 +491,8 @@ export default Controller.extend({
 
             return post;
         } catch (error) {
+            this.set('post.status', prevStatus);
+
             if (error === undefined) {
                 // validation error or "handled" error from _saveTask
                 return;
@@ -509,8 +511,6 @@ export default Controller.extend({
                 this.send('error', error);
                 return;
             }
-
-            this.set('post.status', prevStatus);
 
             if (!options.silent) {
                 let errorOrMessages = error || this.get('post.errors.messages');
@@ -625,8 +625,8 @@ export default Controller.extend({
                 if (isServerUnreachableError(error) && attempts < maxAttempts) {
                     yield timeout(5 * 1000);
                 } else if (isServerUnreachableError(error)) {
-                    const status = this.post.status;
-                    this._showErrorAlert(status, status, error);
+                    const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
+                    this._showErrorAlert(prevStatus, newStatus, error);
                     if (this.config.get('sentry_dsn')) {
                         captureException(error);
                     }
