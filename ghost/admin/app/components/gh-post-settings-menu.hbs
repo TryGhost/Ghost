@@ -100,6 +100,7 @@
                                     <div class="gh-radio-label">Members-only</div>
                                     <div class="gh-radio-desc">
                                         <GhMembersSegmentSelect
+                                            @hideLabels={{true}}
                                             @segment={{this.post.visibilitySegment}}
                                             @onChange={{action "setVisibility"}}
                                             @renderInPlace={{true}}
