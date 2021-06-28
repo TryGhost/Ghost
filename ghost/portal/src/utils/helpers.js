@@ -190,7 +190,7 @@ export function getAvailableProducts({site}) {
     }).filter((product) => {
         return !!(Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0);
     }).filter((product) => {
-        if (portalProducts) {
+        if (portalProducts && products.length > 1) {
             return portalProducts.includes(product.id);
         }
         return true;
