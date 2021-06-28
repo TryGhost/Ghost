@@ -491,6 +491,11 @@ export default Controller.extend({
 
             return post;
         } catch (error) {
+            if (error === undefined) {
+                // validation error or "handled" error from _saveTask
+                return;
+            }
+
             // trigger upgrade modal if forbidden(403) error
             if (isHostLimitError(error)) {
                 this.post.rollbackAttributes();
