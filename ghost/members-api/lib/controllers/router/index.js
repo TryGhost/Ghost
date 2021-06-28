@@ -1,6 +1,6 @@
 const common = require('../../../lib/common');
 const _ = require('lodash');
-const errors = require('ghost-ignition').errors;
+const errors = require('@tryghost/ignition-errors');
 
 /**
  * RouterController

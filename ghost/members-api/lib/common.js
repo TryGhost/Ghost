@@ -17,6 +17,6 @@ module.exports = {
     },
 
     get errors() {
-        return require('ghost-ignition').errors;
+        return require('@tryghost/ignition-errors');
     }
 };

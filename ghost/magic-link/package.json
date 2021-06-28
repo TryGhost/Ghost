@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "bluebird": "^3.5.5",
-    "ghost-ignition": "4.6.3",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15"
   }
