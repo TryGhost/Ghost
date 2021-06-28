@@ -73,7 +73,7 @@ export default class GhMembersSegmentSelect extends Component {
         // TODO: add `include: 'count.members` to query once API is fixed
         const labels = yield this.store.query('label', {limit: 'all'});
 
-        if (labels.length > 0) {
+        if (labels.length > 0 && !this.args.hideLabels) {
             const labelsGroup = {
                 groupName: 'Labels',
                 options: []
