@@ -250,10 +250,10 @@
 }
 
 .gh-modal-reset-passwords h4 {
+    margin-bottom: .4rem;
     font-size: 1.4rem;
     font-weight: 600;
     line-height: 1.4em;
-    margin-bottom: .4rem;
 }
 
 .gh-modal-reset-passwords p {
@@ -262,6 +262,6 @@
 
 .gh-modal-reset-passwords .description {
     color: var(--midgrey);
-    font-weight: 300;
     font-size: 1.4rem;
+    font-weight: 300;
 }
