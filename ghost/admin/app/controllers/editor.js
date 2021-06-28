@@ -13,7 +13,7 @@ import {get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
-import {isHostLimitError, isServerUnreachableError} from 'ghost-admin/services/ajax';
+import {isHostLimitError, isMaintenanceError, isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -604,11 +604,13 @@ export default Controller.extend({
         let {post} = this;
 
         // retry save every 5 seconds for a total of 30secs
-        // only retry if we get a ServerUnreachable error (code 0) from the browser
+        // only retry if we get a ServerUnreachable error (code 0) from the browser or a MaintenanceError from Ghost
         let attempts = 0;
-        let maxAttempts = 6;
-        let startTime = moment();
+        const maxAttempts = 6;
+        const startTime = moment();
+        const retryErrorChecks = [isServerUnreachableError, isMaintenanceError];
         let success = false;
+
         while (attempts < maxAttempts && !success) {
             try {
                 yield post.save(options);
@@ -622,7 +624,7 @@ export default Controller.extend({
             } catch (error) {
                 attempts += 1;
 
-                if (isServerUnreachableError(error) && attempts < maxAttempts) {
+                if (retryErrorChecks.some(check => check(error)) && attempts < maxAttempts) {
                     yield timeout(5 * 1000);
                 } else if (isServerUnreachableError(error)) {
                     const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
