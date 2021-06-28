@@ -196,7 +196,7 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-product-benefit {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .gh-portal-benefit-checkmark {

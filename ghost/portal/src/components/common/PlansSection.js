@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import calculateDiscount from '../../utils/discount';
 import {isCookiesDisabled, formatNumber, hasOnlyFreePlan, hasBenefits} from '../../utils/helpers';
 
@@ -55,6 +56,11 @@ export const PlanSectionStyles = `
 
     .gh-portal-plan-section:last-of-type {
         border-right: none;
+    }
+
+    .gh-portal-plan-section.has-benefits::before {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
     .gh-portal-plans-container.disabled .gh-portal-plan-section.checked::before {
@@ -337,6 +343,11 @@ export const PlanSectionStyles = `
         border: none;
     }
 
+    .gh-portal-plans-container.has-benefits {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
     .gh-portal-plan-product {
         border: 1px solid var(--grey11);
         border-radius: 5px;
@@ -361,6 +372,14 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-accountplans-main .gh-portal-plan-section:last-of-type {
+        border-radius: 0 0 5px 5px;
+    }
+
+    .gh-portal-singleproduct-benefits {
+        border: 1px solid var(--grey11);
+        border-top: none !important;
+        padding: 24px 24px 8px !important;
+        margin: 0 0 4px !important;
         border-radius: 0 0 5px 5px;
     }
 `;
@@ -437,7 +456,6 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     return plans.map(({name, currency_symbol: currencySymbol, amount, description, interval, id}) => {
         const price = amount / 100;
         const isChecked = selectedPlan === id;
-        const classes = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         const planDetails = {};
         let displayName = name;
         switch (name) {
@@ -451,15 +469,18 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             break;
         }
 
+        let planClass = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
+        planClass += _hasBenefits ? ' has-benefits' : '';
         const planNameClass = planDetails.feature ? 'gh-portal-plan-name' : 'gh-portal-plan-name no-description';
+        const featureClass = _hasBenefits ? 'gh-portal-plan-featurewrapper hidden' : 'gh-portal-plan-featurewrapper';
 
         return (
-            <div className={classes} key={id} onClick={e => onPlanSelect(e, id)}>
+            <div className={planClass} key={id} onClick={e => onPlanSelect(e, id)}>
                 <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className={planNameClass}>{displayName}</h4>
                 <PriceLabel currencySymbol={currencySymbol} price={price} interval={interval} />
-                <div className='gh-portal-plan-featurewrapper'>
-                    <PlanFeature feature={planDetails.feature} hide={_hasBenefits} />
+                <div className={featureClass}>
+                    <PlanFeature feature={planDetails.feature} />
                     {(changePlan && selectedPlan === id ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
                 </div>
             </div>
@@ -483,7 +504,10 @@ function PlanBenefit({benefit}) {
         return null;
     }
     return (
-        <div> {benefit.name} </div>
+        <div className="gh-portal-product-benefit">
+            <CheckmarkIcon className='gh-portal-benefit-checkmark' alt=''/>
+            {benefit.name}
+        </div>
     );
 }
 
@@ -501,7 +525,7 @@ function PlanBenefits({plans, selectedPlan}) {
         );
     });
     return (
-        <div>
+        <div className="gh-portal-singleproduct-benefits gh-portal-product-benefits">
             {benefits}
         </div>
     );
@@ -526,6 +550,9 @@ function getPlanClassNames({changePlan, cookiesDisabled, plans = [], showVertica
     }
     if (changePlan || plans.length > 3 || showVertical) {
         className += ' vertical';
+    }
+    if (hasBenefits({prices: plans})) {
+        className += ' has-benefits';
     }
     return className;
 }
@@ -557,13 +584,15 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, chan
         onPlanSelect = () => {};
     }
     const className = getPlanClassNames({cookiesDisabled, changePlan, plans});
+    const _hasBenefits = hasBenefits({prices: plans});
     return (
         <section className="gh-portal-plans">
             <PlanLabel showLabel={showLabel} />
             <div className={className}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
-            <PlanBenefits plans={plans} selectedPlan={selectedPlan} />
+            {(_hasBenefits ? 
+                <PlanBenefits plans={plans} selectedPlan={selectedPlan} /> : '')}
         </section>
     );
 }
