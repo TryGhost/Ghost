@@ -1,12 +1,10 @@
 const debug = require('@tryghost/debug')('web:parent');
-const express = require('../../../shared/express');
-const vhost = require('@tryghost/vhost-middleware');
 const config = require('../../../shared/config');
+const express = require('../../../shared/express');
 const compress = require('compression');
 const mw = require('./middleware');
-const escapeRegExp = require('lodash/escapeRegExp');
-const {URL} = require('url');
-const shared = require('../shared');
+const vhost = require('@tryghost/vhost-middleware');
+const vhostUtils = require('./vhost-utils');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
@@ -28,39 +26,14 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.use(mw.ghostLocals);
 
     // Mount the express apps on the parentApp
-    const backendHost = config.get('admin:url') ? (new URL(config.get('admin:url')).hostname) : '';
-    const frontendHost = new URL(config.get('url')).hostname;
-    const hasSeparateBackendHost = backendHost && backendHost !== frontendHost;
-
-    // BACKEND
-    // Wrap the admin and API apps into a single express app for use with vhost
-    const backendApp = express('backend');
-    backendApp.use('/ghost/api', require('../api')());
-    backendApp.use('/ghost/oauth', require('../oauth')());
-    backendApp.use('/ghost/.well-known', require('../well-known')());
-    backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
 
     // ADMIN + API
-    // with a separate admin url only serve on that host, otherwise serve on all hosts
-    const backendVhostArg = hasSeparateBackendHost && backendHost ? backendHost : /.*/;
-    parentApp.use(vhost(backendVhostArg, backendApp));
-
-    // FRONTEND
-    const frontendApp = express('frontend');
-
-    // Force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
-    // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
-    frontendApp.use(shared.middlewares.urlRedirects.frontendSSLRedirect);
-
-    frontendApp.use('/members', require('../members')());
-    frontendApp.use('/', require('../site')(options));
+    const backendApp = require('./backend')();
+    parentApp.use(vhost(vhostUtils.getBackendHostArg(), backendApp));
 
     // SITE + MEMBERS
-    // with a separate admin url we adjust the frontend vhost to exclude requests to that host, otherwise serve on all hosts
-    const frontendVhostArg = (hasSeparateBackendHost && backendHost) ?
-        new RegExp(`^(?!${escapeRegExp(backendHost)}).*`) : /.*/;
-
-    parentApp.use(vhost(frontendVhostArg, frontendApp));
+    const frontendApp = require('./frontend')(options);
+    parentApp.use(vhost(vhostUtils.getFrontendHostArg(), frontendApp));
 
     debug('ParentApp setup end');
 
