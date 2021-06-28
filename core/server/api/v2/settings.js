@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../models');
-const frontendRouting = require('../../../frontend/services/routing');
+const routeSettings = require('../../services/route-settings');
 const frontendSettings = require('../../../frontend/services/settings');
 const i18n = require('../../../shared/i18n');
 const {NoPermissionError, NotFoundError} = require('@tryghost/errors');
@@ -168,7 +168,7 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            await frontendRouting.settings.setFromFilePath(frame.file.path);
+            await routeSettings.setFromFilePath(frame.file.path);
             const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
             await settingsService.syncRoutesHash(getRoutesHash);
         }
@@ -188,7 +188,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            return frontendRouting.settings.get();
+            return routeSettings.get();
         }
     }
 };

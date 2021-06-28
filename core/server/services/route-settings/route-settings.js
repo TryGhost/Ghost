@@ -2,9 +2,9 @@ const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const fs = require('fs-extra');
 const path = require('path');
-const urlService = require('../url');
+const urlService = require('../../../frontend/services/url');
 
-const debug = require('@tryghost/debug')('services:frontend:routing:settings');
+const debug = require('@tryghost/debug')('services:route-settings');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
