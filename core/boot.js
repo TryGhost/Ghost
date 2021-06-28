@@ -65,6 +65,12 @@ async function initDatabase({config, logging}) {
  */
 async function initCore({ghostServer}) {
     debug('Begin: initCore');
+
+    // URL Utils is a bit slow, put it here so the timing is visible separate from models
+    debug('Begin: Load urlUtils');
+    require('./shared/url-utils');
+    debug('End: Load urlUtils');
+
     // Models are the heart of Ghost - this is a syncronous operation
     debug('Begin: models');
     const models = require('./server/models');
@@ -293,15 +299,11 @@ async function bootGhost() {
         i18n.init();
         debug('End: i18n');
 
-        debug('Begin: Load urlUtils');
-        const urlUtils = require('./shared/url-utils');
-        debug('End: Load urlUtils');
-
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
         const GhostServer = require('./server/ghost-server');
-        ghostServer = new GhostServer({url: urlUtils.urlFor('home', true)});
+        ghostServer = new GhostServer({url: config.getSiteUrl()});
         await ghostServer.start(rootApp);
         bootLogger.log('server started');
         debug('End: load server + minimal app');
@@ -324,7 +326,7 @@ async function bootGhost() {
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
         debug('Begin: mountGhost');
         rootApp.disable('maintenance');
-        rootApp.use(urlUtils.getSubdir(), ghostApp);
+        rootApp.use(config.getSubdir(), ghostApp);
         debug('End: mountGhost');
 
         // Step 6 - We are technically done here - let everyone know!
