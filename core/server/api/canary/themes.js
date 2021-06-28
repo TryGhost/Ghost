@@ -66,12 +66,14 @@ module.exports = {
             'ref'
         ],
         validation: {
-            source: {
-                required: true,
-                values: ['github']
-            },
-            ref: {
-                required: true
+            options: {
+                source: {
+                    required: true,
+                    values: ['github']
+                },
+                ref: {
+                    required: true
+                }
             }
         },
         permissions: {
