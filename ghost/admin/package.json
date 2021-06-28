@@ -102,7 +102,7 @@
     "ember-sinon": "5.0.0",
     "ember-source": "3.21.3",
     "ember-svg-jar": "2.3.3",
-    "ember-test-selectors": "5.3.0",
+    "ember-test-selectors": "5.4.0",
     "ember-tooltips": "3.4.7",
     "ember-truth-helpers": "3.0.0",
     "ember-useragent": "0.10.0",

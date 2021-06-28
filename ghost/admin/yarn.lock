@@ -6941,10 +6941,10 @@ ember-svg-jar@2.3.3:
     mkdirp "^0.5.1"
     path-posix "^1.0.0"
 
-ember-test-selectors@5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-5.3.0.tgz#1dee515e43e7beb7b7083a2fee2cdf808bf9de26"
-  integrity sha512-B9kkCTO39l+XXcp6eRnfZWHeeL3Ffxdux8chXHSwmAPYCc50KI8VW7mr1uy2ZcUMNP/o0sk7VrpA6x3lBkSvWQ==
+ember-test-selectors@5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-5.4.0.tgz#1572bcc1a7d0ab4566b8ab98974c0864cce2cb6b"
+  integrity sha512-HTvDFEjg6ZcimOFTe2oSL/iCaK9Nrxyj7IPwO3D91IHRQUKnwYST50OO+GtXw4m6tFlLrhso679AUwJ2Q9qM0Q==
   dependencies:
     calculate-cache-key-for-tree "^2.0.0"
     ember-cli-babel "^7.26.4"
