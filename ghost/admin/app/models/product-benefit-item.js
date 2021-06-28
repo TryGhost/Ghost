@@ -4,20 +4,20 @@ import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
 
 export default EmberObject.extend(ValidationEngine, {
-    label: '',
+    name: '',
     isNew: false,
 
     validationType: 'productBenefitItem',
 
-    isComplete: computed('label', function () {
-        let {label} = this;
+    isComplete: computed('name', function () {
+        let {name} = this;
 
-        return !isBlank(label);
+        return !isBlank(name);
     }),
 
-    isBlank: computed('label', function () {
-        let {label} = this;
+    isBlank: computed('name', function () {
+        let {name} = this;
 
-        return isBlank(label);
+        return isBlank(name);
     })
 });

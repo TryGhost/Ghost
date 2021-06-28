@@ -2,17 +2,17 @@ import BaseValidator from './base';
 import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({
-    properties: ['label'],
+    properties: ['name'],
 
-    label(model) {
-        let label = model.get('label');
+    name(model) {
+        let name = model.get('name');
         let hasValidated = model.get('hasValidated');
 
-        if (isBlank(label)) {
-            model.get('errors').add('label', 'You must specify a label');
+        if (isBlank(name)) {
+            model.get('errors').add('name', 'You must specify a name');
             this.invalidate();
         }
 
-        hasValidated.addObject('label');
+        hasValidated.addObject('name');
     }
 });

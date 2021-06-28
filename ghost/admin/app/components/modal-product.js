@@ -19,25 +19,25 @@ const CURRENCIES = currencies.map((currency) => {
 
 let BENEFITSDATA = emberA([
     ProductBenefitItem.create({
-        label: 'Benefit 1'
+        name: 'Benefit 1'
     }),
     ProductBenefitItem.create({
-        label: 'Benefit 2'
+        name: 'Benefit 2'
     }),
     ProductBenefitItem.create({
-        label: 'Benefit 3'
+        name: 'Benefit 3'
     }),
     ProductBenefitItem.create({
-        label: 'Benefit 4'
+        name: 'Benefit 4'
     }),
     ProductBenefitItem.create({
-        label: 'Benefit 5'
+        name: 'Benefit 5'
     }),
     ProductBenefitItem.create({
-        label: 'Benefit 6'
+        name: 'Benefit 6'
     }),
     ProductBenefitItem.create({
-        label: 'Benefit 7'
+        name: 'Benefit 7'
     })
 ]);
 
@@ -81,7 +81,7 @@ export default class ModalProductPrice extends ModalBase {
         this.benefits = this.product.get('benefits') || BENEFITSDATA;
         this.newBenefit = ProductBenefitItem.create({
             isNew: true,
-            label: ''
+            name: ''
         });
     }
 
@@ -166,7 +166,7 @@ export default class ModalProductPrice extends ModalBase {
         item.set('isNew', false);
         this.benefits.pushObject(item);
 
-        this.newBenefit = ProductBenefitItem.create({isNew: true, label: ''});
+        this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
     }
 
     actions = {
@@ -186,8 +186,8 @@ export default class ModalProductPrice extends ModalBase {
                 return;
             }
 
-            if (benefitItem.get('label') !== label) {
-                benefitItem.set('label', label);
+            if (benefitItem.get('name') !== label) {
+                benefitItem.set('name', label);
             }
         },
         confirm() {

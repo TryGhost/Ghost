@@ -6,11 +6,7 @@ export default Transform.extend({
     deserialize(serialized, options) {
         let benefitsItems, benefitsArray;
 
-        try {
-            benefitsArray = JSON.parse(serialized) || [];
-        } catch (e) {
-            benefitsArray = [];
-        }
+        benefitsArray = serialized || [];
 
         benefitsItems = benefitsArray.map((itemDetails) => {
             itemDetails.isSecondary = options && options.isSecondary || false;
@@ -25,13 +21,13 @@ export default Transform.extend({
 
         if (isEmberArray(deserialized)) {
             benefitsArray = deserialized.map((item) => {
-                let label = item.get('label').trim();
-                return {label};
+                let name = item.get('name').trim();
+                return {name};
             }).compact();
         } else {
             benefitsArray = [];
         }
 
-        return JSON.stringify(benefitsArray);
+        return benefitsArray;
     }
 });
