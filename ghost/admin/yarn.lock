@@ -1787,10 +1787,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tryghost/helpers@1.1.47":
-  version "1.1.47"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.47.tgz#a99b7d90ca2a88c7987b44b75ef033b4109b072a"
-  integrity sha512-tLXCE/VMX6bM4M7aOVCgpO45ZwQuiUqxDXsiAUVfk7g+zm+lWyCm2sJrj4G2dGJAW7GufIAXZ9cbiWfs9fKXKw==
+"@tryghost/helpers@1.1.48":
+  version "1.1.48"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.48.tgz#58e9443af54d3bd92209c289e3be9c886c1a344f"
+  integrity sha512-6tYaAFdb+UwbPXwwpgLdgJcV+PHXacxigqVIMC8NKn77ABC5zpaUJfcBntjhdBdEDjZf/re2+83/8f5I/R26wg==
   dependencies:
     lodash-es "^4.17.11"
 
