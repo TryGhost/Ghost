@@ -468,6 +468,35 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     });
 }
 
+function PlanBenefit({benefit}) {
+    if (!benefit?.name) {
+        return null;
+    }
+    return (
+        <div> {benefit.name} </div>
+    );
+}
+
+function PlanBenefits({plans, selectedPlan}) {
+    const plan = plans.find((_plan) => {
+        return _plan.id === selectedPlan;
+    });
+    if (!plan?.benefits?.length) {
+        return null;
+    }
+    const benefits = plan.benefits.map((benefit, idx) => {
+        const key = `${benefit.name}-${idx}`;
+        return (
+            <PlanBenefit benefit={benefit} key={key} />
+        );
+    });
+    return (
+        <div>
+            {benefits}
+        </div>
+    );
+}
+
 function PlanLabel({showLabel}) {
     if (!showLabel) {
         return null;
@@ -524,6 +553,7 @@ function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, chan
             <div className={className}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
+            <PlanBenefits plans={plans} selectedPlan={selectedPlan} />
         </section>
     );
 }
