@@ -1,4 +1,4 @@
-<div class="gh-portal-links-container">
+<div class="gh-portal-links-container" {{did-insert (perform this.fetchProducts)}}>
     <div class="gh-portal-links-main">
         <h2>Links</h2>
         <p>Use these {{if isLink "links" "data attributes"}} in your theme to show pages of Portal.</p>
@@ -81,69 +81,159 @@
                     </div>
                 </td>
             </tr>
-            <tr>
-                <td class='pagename'>Sign up/Monthly</td>
-                <td class='page-url'>
-                    <div class="gh-portal-page-url-container">
-                        <div class="page-url-label">
-                            {{#if isLink}}
-                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/monthly</span>
-                            {{else}}
-                                data-portal="signup/monthly"
-                            {{/if}}
+            {{#if (and (feature "multipleProducts") (gt this.products.length 1))}}
+                <tr>
+                    <td colspan="2"><hr class="gh-portal-links-group-divider" /></td>
+                </tr>
+                <tr>
+                    <td class='pagename bold'>Product</td>
+                    <td class='page-url'>
+                         <span
+                                class="gh-select mt2"
+                                data-select-text="test"
+                                tabindex="0"
+                            >
+                                <OneWaySelect
+                                    @id="portal-product-link"
+                                    @name="portal[product-link]"
+                                    @options={{this.productOptions}}
+                                    @optionValuePath="name"
+                                    @optionLabelPath="label"
+                                    @value={{this.selectedProduct}}
+                                    @update={{action "setSelectedProduct"}}
+                                />
+                                {{svg-jar "arrow-down-small"}}
+                            </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='pagename'>Sign up/Monthly</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            <div class="page-url-label">
+                                {{#if isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/monthly</span>
+                                {{else}}
+                                    data-portal="signup{{this.selectedProductIdPath}}/monthly"
+                                {{/if}}
+                            </div>
+                            <button type="button" {{action (perform this.copyProductSignupLink "monthly")}} class="gh-portal-setting-copy">
+                                {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "monthly"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
                         </div>
-                        <button type="button" {{action (perform this.copyStaticLink "signup/monthly")}} class="gh-portal-setting-copy">
-                            {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/monthly"))}}
-                                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
-                            {{else}}
-                                <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-                            {{/if}}
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class='pagename'>Sign up/Yearly</td>
-                <td class='page-url'>
-                    <div class="gh-portal-page-url-container">
-                        <div class="page-url-label">
-                            {{#if isLink}}
-                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/yearly</span>
-                            {{else}}
-                                data-portal="signup/yearly"
-                            {{/if}}
+                    </td>
+                </tr>
+                <tr>
+                    <td class='pagename'>Sign up/Yearly</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            <div class="page-url-label">
+                                {{#if isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}yearly</span>
+                                {{else}}
+                                    data-portal="signup{{this.selectedProductIdPath}}/yearly"
+                                {{/if}}
+                            </div>
+                            <button type="button" {{action (perform this.copyProductSignupLink "yearly")}} class="gh-portal-setting-copy">
+                                {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "yearly"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
                         </div>
-                        <button type="button" {{action (perform this.copyStaticLink "signup/yearly")}} class="gh-portal-setting-copy">
-                            {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/yearly"))}}
-                                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
-                            {{else}}
-                                <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-                            {{/if}}
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class='pagename'>Sign up/Free</td>
-                <td class='page-url'>
-                    <div class="gh-portal-page-url-container">
-                        <div class="page-url-label">
-                            {{#if isLink}}
-                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
-                            {{else}}
-                                data-portal="signup/free"
-                            {{/if}}
+                    </td>
+                </tr>
+                <tr>
+                    <td class='pagename'>Sign up/Free</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            <div class="page-url-label">
+                                {{#if isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
+                                {{else}}
+                                    data-portal="signup/free"
+                                {{/if}}
+                            </div>
+                            <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
+                                {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
                         </div>
-                        <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
-                            {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
-                                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
-                            {{else}}
-                                <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-                            {{/if}}
-                        </button>
-                    </div>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+            {{else}}
+                <tr>
+                    <td class='pagename'>Sign up/Monthly</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            <div class="page-url-label">
+                                {{#if isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/monthly</span>
+                                {{else}}
+                                    data-portal="signup/monthly"
+                                {{/if}}
+                            </div>
+                            <button type="button" {{action (perform this.copyStaticLink "signup/monthly")}} class="gh-portal-setting-copy">
+                                {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/monthly"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='pagename'>Sign up/Yearly</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            <div class="page-url-label">
+                                {{#if isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/yearly</span>
+                                {{else}}
+                                    data-portal="signup/yearly"
+                                {{/if}}
+                            </div>
+                            <button type="button" {{action (perform this.copyStaticLink "signup/yearly")}} class="gh-portal-setting-copy">
+                                {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/yearly"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='pagename'>Sign up/Free</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            <div class="page-url-label">
+                                {{#if isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
+                                {{else}}
+                                    data-portal="signup/free"
+                                {{/if}}
+                            </div>
+                            <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
+                                {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            {{/if}}
             <tr>
                 <td colspan="2"><hr class="gh-portal-links-group-divider" /></td>
             </tr>

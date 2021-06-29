@@ -499,6 +499,10 @@
     width: 130px;
 }
 
+.gh-portal-links-table tr td.pagename.bold {
+    font-weight: bold;
+}
+
 .gh-portal-page-url-container {
     position: relative;
     display: flex;
