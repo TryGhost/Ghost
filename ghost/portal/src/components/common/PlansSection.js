@@ -74,6 +74,10 @@ export const PlanSectionStyles = `
         margin-top: 2px;
     }
 
+    .gh-portal-plans-container.has-benefits .gh-portal-plan-pricelabel {
+        min-height: unset;
+    }
+
     .gh-portal-plan-pricecontainer {
         display: flex;
     }
@@ -537,7 +541,7 @@ function PlanBenefits({product, plans, selectedPlan}) {
     });
     return (
         <div className="gh-portal-singleproduct-benefits gh-portal-product-benefits">
-            <div style={{textAlign: 'center', color: 'grey', marginBottom: '12px'}}> {planDescription} </div>
+            <div className='gh-portal-product-description'> {planDescription} </div>
             {benefits}
         </div>
     );
