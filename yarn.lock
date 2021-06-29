@@ -893,10 +893,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.15.0":
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.15.0.tgz#f5367ab208a9658f116ece9fa30fc87fd6bc4ab7"
-  integrity sha512-UwXmMIZhAiCatbIKfFzeNQUPrIJg3yPbPYGg8Yp5TfIRIjeBEOXyauNc5XR8616Wc2mktkvTs/BBs5er6QBvoQ==
+"@tryghost/members-api@1.16.0":
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.16.0.tgz#58f0e5f0a2f6d4149e48ee1f26d022018160e938"
+  integrity sha512-h4OzuHQd8POM44CyimaLeA6nHCQ/ihkSveDKXVRZ2saBYaP2PX+u1nntjNk+3xMXFzpklvB70V38x0plUj3URw==
   dependencies:
     "@tryghost/errors" "^0.2.9"
     "@tryghost/magic-link" "^1.0.4"

@@ -65,7 +65,7 @@
     "@tryghost/limit-service": "0.6.1",
     "@tryghost/logging": "0.1.3",
     "@tryghost/magic-link": "1.0.4",
-    "@tryghost/members-api": "1.15.0",
+    "@tryghost/members-api": "1.16.0",
     "@tryghost/members-csv": "1.1.0",
     "@tryghost/members-ssr": "1.0.4",
     "@tryghost/mw-session-from-token": "0.1.22",
