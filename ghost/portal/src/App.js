@@ -228,7 +228,7 @@ export default class App extends React.Component {
 
         const allowedPlans = [];
         let portalPrices;
-        let portalProducts = [];
+        let portalProducts = null;
         let monthlyPrice, yearlyPrice, currency;
         // Handle the query params key/value pairs
         for (let pair of qsParams.entries()) {
