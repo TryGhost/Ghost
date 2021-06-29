@@ -46,6 +46,22 @@ describe('Email card', function () {
             .should.equal('');
     });
 
+    it('wraps in segment div when segment payload present renders html with no replacements', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                html: '<p>Plain html with no replacements</p>',
+                segment: 'member.status:paid'
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.equal('<div data-gh-segment="member.status:paid"><p>Plain html with no replacements</p></div>');
+    });
+
     it('wraps {foo} in %%', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},

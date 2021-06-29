@@ -18,9 +18,19 @@ module.exports = {
         // NOTE: must be plain text rather than a custom element so that it's not removed by html->plaintext conversion
         payload.html = payload.html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
 
-        // use the SimpleDOM document to create a raw HTML section.
-        // avoids parsing/rendering of potentially broken or unsupported HTML
-        return dom.createRawHTMLSection(payload.html);
+        const rawHTMLSecion = dom.createRawHTMLSection(payload.html);
+
+        if (payload.segment) {
+            let segment = dom.createElement('div');
+            segment.setAttribute('data-gh-segment', payload.segment);
+            segment.appendChild(rawHTMLSecion);
+
+            return segment;
+        } else {
+            // use the SimpleDOM document to create a raw HTML section.
+            // avoids parsing/rendering of potentially broken or unsupported HTML
+            return rawHTMLSecion;
+        }
     },
 
     absoluteToRelative(payload, options) {
