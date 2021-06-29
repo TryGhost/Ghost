@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import PlansSection, {MultipleProductsPlansSection, SingleProductPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getSubscriptionFromId, getUpgradeProducts, hasMultipleProducts, hasMultipleProductsFeature, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProducts, hasMultipleProductsFeature, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -103,7 +103,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
 
 // For confirmation flows
 const PlanConfirmationSection = ({plan, type, onConfirm}) => {
-    const {action, member, brandColor} = useContext(AppContext);
+    const {site, action, member, brandColor} = useContext(AppContext);
     const [reason, setReason] = useState('');
     const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
@@ -115,6 +115,8 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     }
     const priceString = formatNumber(plan.price);
     const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.interval} – Starting ${planStartDate}`;
+    const product = getProductFromPrice({site, priceId: plan?.id});
+    const priceLabel = hasMultipleProductsFeature({site}) ? product.name : 'Price';
     if (type === 'changePlan') {
         return (
             <>
@@ -127,7 +129,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                     </section>
                     <section>
                         <div className='gh-portal-list-detail'>
-                            <h3>Price</h3>
+                            <h3>{priceLabel}</h3>
                             <p>{planStartMessage}</p>
                         </div>
                     </section>
