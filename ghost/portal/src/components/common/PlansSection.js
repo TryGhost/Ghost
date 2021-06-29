@@ -3,6 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import calculateDiscount from '../../utils/discount';
 import {isCookiesDisabled, formatNumber, hasOnlyFreePlan, hasMultipleProductsFeature, getFreeBenefits, getProductBenefits} from '../../utils/helpers';
+import ProductsSection from './ProductsSection';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
@@ -445,22 +446,6 @@ function addDiscountToPlans(plans) {
     }
 }
 
-function ProductOptions({products, selectedPlan, onPlanSelect, changePlan}) {
-    return products.map(({id, monthlyPrice, yearlyPrice, name}) => {
-        return (
-            <div className="gh-portal-plan-product" key={id}>
-                <div className="gh-portal-plan-productname">{name}</div>
-                <PlanOptions
-                    plans={[monthlyPrice, yearlyPrice]}
-                    selectedPlan={selectedPlan}
-                    onPlanSelect={onPlanSelect}
-                    changePlan={changePlan}
-                />
-            </div>
-        );
-    });
-}
-
 function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site} = useContext(AppContext);
     addDiscountToPlans(plans);
@@ -581,40 +566,20 @@ function getPlanClassNames({changePlan, cookiesDisabled, plans = [], showVertica
 }
 
 export function MultipleProductsPlansSection({products, selectedPlan, onPlanSelect, changePlan = false}) {
-    const {site} = useContext(AppContext);
-
     const cookiesDisabled = isCookiesDisabled();
     /**Don't allow plans selection if cookies are disabled */
     if (cookiesDisabled) {
         onPlanSelect = () => {};
     }
 
-    const className = getPlanClassNames({cookiesDisabled, changePlan, showVertical: true, site}) + ' multiple-products';
     return (
         <section className="gh-portal-plans">
-            <div className={className}>
-                <ProductOptions products={products} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
-            </div>
-        </section>
-    );
-}
-
-function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, changePlan = false}) {
-    const {site} = useContext(AppContext);
-    if (hasOnlyFreePlan({plans})) {
-        return null;
-    }
-    const cookiesDisabled = isCookiesDisabled();
-    /**Don't allow plans selection if cookies are disabled */
-    if (cookiesDisabled) {
-        onPlanSelect = () => {};
-    }
-    const className = getPlanClassNames({cookiesDisabled, changePlan, plans, site});
-    return (
-        <section className="gh-portal-plans">
-            <PlanLabel showLabel={showLabel} />
-            <div className={className}>
-                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
+            <div>
+                <ProductsSection
+                    type='upgrade'
+                    products={products}
+                    onPlanSelect={onPlanSelect}
+                />
             </div>
         </section>
     );
@@ -640,6 +605,27 @@ export function SingleProductPlansSection({product, plans, showLabel = true, sel
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
             <PlanBenefits product={product} plans={plans} selectedPlan={selectedPlan} />
+        </section>
+    );
+}
+
+function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, changePlan = false}) {
+    const {site} = useContext(AppContext);
+    if (hasOnlyFreePlan({plans})) {
+        return null;
+    }
+    const cookiesDisabled = isCookiesDisabled();
+    /**Don't allow plans selection if cookies are disabled */
+    if (cookiesDisabled) {
+        onPlanSelect = () => {};
+    }
+    const className = getPlanClassNames({cookiesDisabled, changePlan, plans, site});
+    return (
+        <section className="gh-portal-plans">
+            <PlanLabel showLabel={showLabel} />
+            <div className={className}>
+                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
+            </div>
         </section>
     );
 }
