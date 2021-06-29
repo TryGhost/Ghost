@@ -6,9 +6,8 @@ const debug = require('@tryghost/debug')('jobs:email-analytics:fetch-latest');
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
 // where it left off on next run
 function cancel() {
-    parentPort.postMessage('Email analytics fetch-latest job cancelled before completion');
-
     if (parentPort) {
+        parentPort.postMessage('Email analytics fetch-latest job cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -31,13 +30,19 @@ if (parentPort) {
 
     const logging = {
         info(message) {
-            parentPort.postMessage(message);
+            if (parentPort) {
+                parentPort.postMessage(message);
+            }
         },
         warn(message) {
-            parentPort.postMessage(message);
+            if (parentPort) {
+                parentPort.postMessage(message);
+            }
         },
         error(message) {
-            parentPort.postMessage(message);
+            if (parentPort) {
+                parentPort.postMessage(message);
+            }
         }
     };
 
@@ -84,9 +89,8 @@ if (parentPort) {
     const aggregateEndDate = new Date();
     debug(`Finished aggregating email analytics in ${aggregateEndDate - aggregateStartDate}ms`);
 
-    parentPort.postMessage(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
-
     if (parentPort) {
+        parentPort.postMessage(`Fetched ${eventStats.totalEvents} events and aggregated stats for ${eventStats.emailIds.length} emails in ${aggregateEndDate - fetchStartDate}ms`);
         parentPort.postMessage('done');
     } else {
         // give the logging pipes time finish writing before exit
