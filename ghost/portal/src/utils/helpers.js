@@ -244,15 +244,16 @@ export function getFreeBenefits() {
     }];
 }
 
-export function getProductBenefits({product}) {
+export function getProductBenefits({product, site = null}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
+        const availablePrices = getAvailablePrices({site, products: [product]});
         const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = product?.benefits?.length > 0 ? [...productBenefits] : [{
             name: 'Full access'
         }];
         const yearlyBenefits = [...monthlyBenefits];
-        if (yearlyDiscount > 0) {
+        if (yearlyDiscount > 0 && availablePrices.length > 1) {
             yearlyBenefits.push({
                 name: `${yearlyDiscount}% discount`
             });
@@ -288,7 +289,14 @@ export function hasFreeProductPrice({site}) {
     return allowSelfSignup && portalPlans.includes('free');
 }
 
-export function getAvailablePrices({site}) {
+export function getProductFromPrice({site, priceId}) {
+    const products = getAvailableProducts({site});
+    return products.find((product) => {
+        return (product?.monthlyPrice?.id === priceId) || (product?.yearlyPrice?.id === priceId);
+    });
+}
+
+export function getAvailablePrices({site, products = null}) {
     const {
         portal_plans: portalPlans = [],
         is_stripe_configured: isStripeConfigured
@@ -298,7 +306,7 @@ export function getAvailablePrices({site}) {
         return [];
     }
 
-    const productPrices = getPricesFromProducts({site});
+    const productPrices = getPricesFromProducts({site, products});
 
     return productPrices.filter((d) => {
         return !!(d && d.id);

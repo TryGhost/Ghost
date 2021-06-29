@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getPricesFromProducts, getMemberActivePrice} from '../../utils/helpers';
+import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getMemberActivePrice, getAvailablePrices} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import {ChangeProductPlansSection} from './PlansSection';
 
@@ -331,7 +331,7 @@ export const ProductsSectionStyles = ({site}) => {
             grid-gap: 20px;
             width: 100%;
         }
-        
+
         .gh-portal-upgrade-product .gh-portal-products-grid:not(.change-plan) {
             padding: 32px 0 0;
         }
@@ -710,7 +710,8 @@ function ProductsSection({onPlanSelect, products, type = null}) {
 function ChangeProductCard({product, onPlanSelect}) {
     const {member} = useContext(AppContext);
     const cardClass = 'gh-portal-product-card';
-    const plans = getPricesFromProducts({products: [product]});
+    const {site} = useContext(AppContext);
+    const plans = getAvailablePrices({site, products: [product]});
     const selectedPlan = getMemberActivePrice({member});
     return (
         <div>
