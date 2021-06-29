@@ -3,6 +3,7 @@ import {inject as service} from '@ember/service';
 export default class MembersUtilsService extends Service {
     @service config;
     @service settings;
+    @service feature;
 
     get isMembersEnabled() {
         return this.settings.get('membersSignupAccess') !== 'none';
@@ -113,7 +114,7 @@ export default class MembersUtilsService extends Service {
             settingsParam.append('portalPrices', encodeURIComponent(portalPlans));
         }
 
-        if (portalProducts) {
+        if (portalProducts && this.feature.get('multipleProducts')) {
             settingsParam.append('portalProducts', encodeURIComponent(portalProducts));
         }
 
