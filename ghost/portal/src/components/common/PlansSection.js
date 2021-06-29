@@ -3,7 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import calculateDiscount from '../../utils/discount';
 import {isCookiesDisabled, formatNumber, hasOnlyFreePlan, hasMultipleProductsFeature, getFreeBenefits, getProductBenefits} from '../../utils/helpers';
-import ProductsSection from './ProductsSection';
+import ProductsSection, {ChangeProductSection} from './ProductsSection';
 
 export const PlanSectionStyles = `
     .gh-portal-plans-container {
@@ -26,6 +26,11 @@ export const PlanSectionStyles = `
         padding: 16px 10px;
         cursor: pointer;
         user-select: none;
+    }
+
+    .gh-portal-change-plan-section {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
 
     .gh-portal-plans-container.disabled .gh-portal-plan-section {
@@ -62,6 +67,11 @@ export const PlanSectionStyles = `
     .gh-portal-plans-container.has-multiple-products .gh-portal-plan-section::before {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
+    }
+
+    .gh-portal-plans-container.is-change-plan.has-multiple-products .gh-portal-plan-section::before {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
     }
 
     .gh-portal-plans-container.disabled .gh-portal-plan-section.checked::before {
@@ -353,6 +363,11 @@ export const PlanSectionStyles = `
         border-bottom-right-radius: 0;
     }
 
+    .gh-portal-plans-container.has-multiple-products.is-change-plan {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
     .gh-portal-plan-product {
         border: 1px solid var(--grey11);
         border-radius: 5px;
@@ -572,6 +587,19 @@ export function MultipleProductsPlansSection({products, selectedPlan, onPlanSele
         onPlanSelect = () => {};
     }
 
+    if (changePlan) {
+        return (
+            <section className="gh-portal-plans">
+                <div>
+                    <ChangeProductSection
+                        products={products}
+                        onPlanSelect={onPlanSelect}
+                    />
+                </div>
+            </section>
+        );
+    }
+
     return (
         <section className="gh-portal-plans">
             <div>
@@ -585,7 +613,7 @@ export function MultipleProductsPlansSection({products, selectedPlan, onPlanSele
     );
 }
 
-export function SingleProductPlansSection({product, plans, showLabel = true, selectedPlan, onPlanSelect, changePlan = false}) {
+export function SingleProductPlansSection({product, plans, selectedPlan, onPlanSelect, changePlan = false}) {
     const {site} = useContext(AppContext);
     if (!product || hasOnlyFreePlan({plans})) {
         return null;
@@ -605,6 +633,65 @@ export function SingleProductPlansSection({product, plans, showLabel = true, sel
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
             <PlanBenefits product={product} plans={plans} selectedPlan={selectedPlan} />
+        </section>
+    );
+}
+
+function getChangePlanClassNames({cookiesDisabled, site}) {
+    let className = 'gh-portal-plans-container is-change-plan hide-checkbox';
+    if (cookiesDisabled) {
+        className += ' disabled';
+    }
+
+    if (hasMultipleProductsFeature({site})) {
+        className += ' has-multiple-products';
+    }
+    return className;
+}
+
+function ChangePlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
+    addDiscountToPlans(plans);
+
+    return plans.map(({name, currency_symbol: currencySymbol, amount, description, interval, id}) => {
+        const price = amount / 100;
+        const isChecked = selectedPlan === id;
+        let displayName = interval === 'month' ? 'Monthly' : 'Yearly';
+
+        let planClass = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
+        planClass += ' gh-portal-change-plan-section';
+        const planNameClass = 'gh-portal-plan-name no-description';
+        const featureClass = 'gh-portal-plan-featurewrapper';
+
+        return (
+            <div className={planClass} key={id} onClick={e => onPlanSelect(e, id)}>
+                <h4 className={planNameClass}>{displayName}</h4>
+                <PriceLabel currencySymbol={currencySymbol} price={price} interval={interval} />
+                <div className={featureClass} style={{border: 'none', paddingTop: '3px'}}>
+                    {(changePlan && selectedPlan === id ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
+                </div>
+            </div>
+        );
+    });
+}
+
+export function ChangeProductPlansSection({product, plans, selectedPlan, onPlanSelect, changePlan = false}) {
+    const {site} = useContext(AppContext);
+    if (!product || hasOnlyFreePlan({plans})) {
+        return null;
+    }
+
+    const cookiesDisabled = isCookiesDisabled();
+    /**Don't allow plans selection if cookies are disabled */
+    if (cookiesDisabled) {
+        onPlanSelect = () => {};
+    }
+    const className = getChangePlanClassNames({cookiesDisabled, site});
+
+    return (
+        <section className="gh-portal-plans">
+            <div className={className}>
+                <ChangePlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
+            </div>
         </section>
     );
 }
