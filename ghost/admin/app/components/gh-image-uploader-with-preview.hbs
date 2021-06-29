@@ -1,7 +1,7 @@
 {{#if @image}}
     <div class="gh-image-uploader -with-image">
         <div><img src={{@image}}></div>
-        <a class="image-delete" title="Delete" {{on "click" @remove}}>
+        <a class="image-delete" title="Delete" {{on "click" (fn @remove "")}}>
             {{svg-jar "trash"}}
             <span class="hidden">Delete</span>
         </a>
