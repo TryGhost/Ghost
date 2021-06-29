@@ -58,7 +58,7 @@ export const PlanSectionStyles = `
         border-right: none;
     }
 
-    .gh-portal-plan-section.has-benefits::before {
+    .gh-portal-plans-container.has-multiple-products .gh-portal-plan-section::before {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
@@ -74,7 +74,7 @@ export const PlanSectionStyles = `
         margin-top: 2px;
     }
 
-    .gh-portal-plans-container.has-benefits .gh-portal-plan-pricelabel {
+    .gh-portal-plans-container.has-multiple-products .gh-portal-plan-pricelabel {
         min-height: unset;
     }
 
@@ -347,7 +347,7 @@ export const PlanSectionStyles = `
         border: none;
     }
 
-    .gh-portal-plans-container.has-benefits {
+    .gh-portal-plans-container.has-multiple-products {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
@@ -386,6 +386,14 @@ export const PlanSectionStyles = `
         padding: 24px 24px 8px !important;
         margin: 0 0 4px !important;
         border-radius: 0 0 5px 5px;
+    }
+
+    .gh-portal-singleproduct-benefits .gh-portal-product-description {
+        margin-bottom: 12px !important;
+    }
+
+    .gh-portal-singleproduct-benefits .gh-portal-product-benefit:last-of-type {
+        margin-bottom: 12px;
     }
 `;
 
@@ -473,8 +481,7 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             break;
         }
 
-        let planClass = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
-        planClass += hasMultipleProductsFeature({site}) ? ' has-benefits' : '';
+        const planClass = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
         const planNameClass = planDetails.feature ? 'gh-portal-plan-name' : 'gh-portal-plan-name no-description';
         const featureClass = hasMultipleProductsFeature({site}) ? 'gh-portal-plan-featurewrapper hidden' : 'gh-portal-plan-featurewrapper';
 
@@ -568,7 +575,7 @@ function getPlanClassNames({changePlan, cookiesDisabled, plans = [], showVertica
         className += ' vertical';
     }
     if (hasMultipleProductsFeature({site})) {
-        className += ' has-benefits';
+        className += ' has-multiple-products';
     }
     return className;
 }
