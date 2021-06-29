@@ -246,6 +246,7 @@ export const site = {
         currency: 'USD'
     },
     portal_products: ['product_1', 'product_2', 'product_3'],
+    // products: [products[0]],
     products: products,
     prices,
     allow_self_signup: true,
