@@ -331,13 +331,13 @@ const FrameStyles = `
         position: relative;
         overflow-y: scroll;
         padding: 24px 32px 32px;
-        max-height: calc(100vh - 12vw);
+        max-height: 680px;
     }
 
     .gh-portal-content.with-footer {
         overflow-y: scroll;
         padding-bottom: 0;
-        max-height: calc(100vh - 12vw - 72px);
+        max-height: calc(680px - 72px);
     }
 
     /* Hide scrollbar for Chrome, Safari and Opera */
