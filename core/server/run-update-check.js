@@ -1,12 +1,18 @@
 const {parentPort} = require('bthreads');
 
+const postParentPortMessage = (message) => {
+    if (parentPort) {
+        parentPort.postMessage(message);
+    }
+};
+
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
 // where it left off on next run
 function cancel() {
-    parentPort.postMessage('Update check job cancelled before completion');
+    postParentPortMessage('Update check job cancelled before completion');
 
     if (parentPort) {
-        parentPort.postMessage('cancelled');
+        postParentPortMessage('cancelled');
     } else {
         setTimeout(() => {
             process.exit(0);
@@ -27,13 +33,13 @@ if (parentPort) {
 
     const logging = {
         info(message) {
-            parentPort.postMessage(message);
+            postParentPortMessage(message);
         },
         warn(message) {
-            parentPort.postMessage(message);
+            postParentPortMessage(message);
         },
         error(message) {
-            parentPort.postMessage(message);
+            postParentPortMessage(message);
         }
     };
 
@@ -53,10 +59,10 @@ if (parentPort) {
 
     await updateCheck({logging});
 
-    parentPort.postMessage(`Ran update check`);
+    postParentPortMessage(`Ran update check`);
 
     if (parentPort) {
-        parentPort.postMessage('done');
+        postParentPortMessage('done');
     } else {
         // give the logging pipes time finish writing before exit
         setTimeout(() => {
