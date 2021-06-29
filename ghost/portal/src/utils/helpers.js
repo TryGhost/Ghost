@@ -171,13 +171,18 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
 }
 
-export function hasMultipleProducts({site = {}}) {
+export function hasMultipleProducts({site}) {
     const products = getAvailableProducts({site});
 
     if (products?.length > 1) {
         return true;
     }
     return false;
+}
+
+export function hasMultipleProductsFeature({site}) {
+    const {portal_products: portalProducts} = site || {};
+    return !!portalProducts;
 }
 
 export function getAvailableProducts({site}) {
@@ -211,7 +216,10 @@ export function getAvailableProducts({site}) {
     });
 }
 
-export function hasBenefits({prices}) {
+export function hasBenefits({prices, site}) {
+    if (!hasMultipleProductsFeature({site})) {
+        return false;
+    }
     if (!prices?.length) {
         return false;
     }
@@ -230,26 +238,38 @@ export function getSiteProducts({site}) {
     return products;
 }
 
-export function getPricesFromProducts({site}) {
-    const products = getAvailableProducts({site}) || [];
-    const prices = products.reduce((accumPrices, product) => {
+export function getFreeBenefits() {
+    return [{
+        name: 'Access to free articles'
+    }];
+}
+
+export function getProductBenefits({product}) {
+    if (product?.monthlyPrice && product?.yearlyPrice) {
+        const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
+        const productBenefits = product?.benefits || [];
+        const monthlyBenefits = product?.benefits?.length > 0 ? [...productBenefits] : [{
+            name: 'Full Access'
+        }];
+        const yearlyBenefits = [...monthlyBenefits];
+        if (yearlyDiscount > 0) {
+            yearlyBenefits.push({
+                name: `${yearlyDiscount}% discount`
+            });
+        }
+        return {
+            monthly: monthlyBenefits,
+            yearly: yearlyBenefits
+        };
+    }
+}
+
+export function getPricesFromProducts({site, products = null}) {
+    const availableProducts = products || getAvailableProducts({site});
+    const prices = availableProducts.reduce((accumPrices, product) => {
         if (product.monthlyPrice && product.yearlyPrice) {
-            const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
-            const showBenefits = product.benefits?.length > 0;
-            const yearlyBenefits = showBenefits ? [...product.benefits] : null;
-            if (showBenefits && yearlyDiscount > 0) {
-                yearlyBenefits.push({
-                    name: `${yearlyDiscount}% discount`
-                });
-            }
-            accumPrices.push({
-                ...product.monthlyPrice,
-                ...(showBenefits ? {benefits: product.benefits} : {})
-            });
-            accumPrices.push({
-                ...product.yearlyPrice,
-                ...(showBenefits ? {benefits: yearlyBenefits} : {})
-            });
+            accumPrices.push(product.monthlyPrice);
+            accumPrices.push(product.yearlyPrice);
         }
         return accumPrices;
     }, []);
