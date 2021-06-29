@@ -3,9 +3,9 @@ import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
-import PlansSection, {MultipleProductsPlansSection} from '../common/PlansSection';
+import PlansSection, {MultipleProductsPlansSection, SingleProductPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getSubscriptionFromId, getUpgradeProducts, hasMultipleProducts, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getSubscriptionFromId, getUpgradeProducts, hasMultipleProducts, hasMultipleProductsFeature, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .gh-portal-accountplans-main {
@@ -204,15 +204,26 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
 function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, changePlan}) {
     const {site, member} = useContext(AppContext);
     const products = getUpgradeProducts({site, member});
-    if (hasMultipleProducts({site})) {
-        return (
-            <MultipleProductsPlansSection
-                products={products}
-                selectedPlan={selectedPlan}
-                changePlan={changePlan}
-                onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
-            />
-        );
+    if (hasMultipleProductsFeature({site})) {
+        if (hasMultipleProducts({site})) {
+            return (
+                <MultipleProductsPlansSection
+                    products={products}
+                    selectedPlan={selectedPlan}
+                    changePlan={changePlan}
+                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+                />
+            );
+        } else {
+            return (
+                <SingleProductPlansSection
+                    product={products?.[0]}
+                    plans={plans}
+                    selectedPlan={selectedPlan}
+                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+                />
+            );
+        }
     }
     return (
         <PlansSection
@@ -370,7 +381,7 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onPlanSelect(e, priceId) {
-        e.preventDefault();
+        e?.preventDefault();
 
         const {member} = this.context;
 
