@@ -143,7 +143,7 @@ export const ProductsSectionStyles = ({site}) => {
         }
 
         .gh-portal-product-description {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             line-height: 1.45em;
             text-align: center;
             color: var(--grey5);
@@ -429,10 +429,12 @@ export const ProductsSectionStyles = ({site}) => {
         }
 
         .gh-portal-products-grid.change-plan .gh-portal-product-name {
+            text-align: center;
             font-weight: 600;
         }
 
         .gh-portal-products-grid.change-plan .gh-portal-product-description {
+            text-align: center;
             grid-column: 1;
         }
     `;

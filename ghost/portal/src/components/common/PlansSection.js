@@ -400,10 +400,11 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-singleproduct-benefits {
-        display: block !important;
+        display: flex;
+        flex-direction: column;
         border: 1px solid var(--grey11);
         border-top: none !important;
-        padding: 24px 24px 8px !important;
+        padding: 16px 24px 8px !important;
         margin: 0 0 4px !important;
         border-radius: 0 0 5px 5px;
     }
@@ -414,6 +415,10 @@ export const PlanSectionStyles = `
 
     .gh-portal-singleproduct-benefits .gh-portal-product-benefit:last-of-type {
         margin-bottom: 12px;
+    }
+
+    .gh-portal-singleproduct-benefits.default-benefits {
+        align-items: center;
     }
 `;
 
@@ -535,7 +540,7 @@ function PlanBenefits({product, plans, selectedPlan}) {
     let planDescription = product.description;
     if (selectedPlan === 'free') {
         planBenefits = getFreeBenefits();
-        planDescription = `A free preview of ${product.name}`;
+        planDescription = `Free preview`;
     } else if (plan?.interval === 'month') {
         planBenefits = productBenefits.monthly;
     } else if (plan?.interval === 'year') {
@@ -550,8 +555,10 @@ function PlanBenefits({product, plans, selectedPlan}) {
             <PlanBenefit benefit={benefit} key={key} />
         );
     });
+
+    const benefitContainerClass = !product?.benefits?.length || planBenefits.length <= 1 ? 'default-benefits' : '';
     return (
-        <div className="gh-portal-singleproduct-benefits gh-portal-product-benefits">
+        <div className={'gh-portal-singleproduct-benefits gh-portal-product-benefits ' + benefitContainerClass}>
             <div className='gh-portal-product-description'> {planDescription} </div>
             {benefits}
         </div>
