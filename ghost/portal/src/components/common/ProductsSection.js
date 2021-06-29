@@ -314,19 +314,23 @@ export const ProductsSectionStyles = ({site}) => {
                 margin-bottom: 0;
             }
         }
+        
         .gh-portal-upgrade-product.gh-portal-products {
             margin: 0 -32px;
             background: none;
         }
+
         .gh-portal-upgrade-product .gh-portal-products-grid {
             grid-template-columns: unset;
             grid-gap: 20px;
-            padding: 32px 0;
+            padding: 32px 0 0;
             width: 100%;
         }
+        
         .gh-portal-upgrade-product .gh-portal-products-priceswitch {
             padding-top: 18px;
         }
+        
         .gh-portal-upgrade-product .gh-portal-product-card {
             display: grid;
             grid-template-columns: 1fr minmax(60px,auto);
@@ -338,11 +342,13 @@ export const ProductsSectionStyles = ({site}) => {
             border: 1px solid var(--grey12);
             box-shadow: none;
         }
+        
         .gh-portal-upgrade-product .gh-portal-product-card-header {
             grid-row: 1;
             display: grid;
             grid-template-columns: 20px auto;
         }
+        
         .gh-portal-upgrade-product .gh-portal-product-name {
             margin: 4px 0;
             padding: 0;
@@ -350,37 +356,46 @@ export const ProductsSectionStyles = ({site}) => {
             border-bottom: none;
             min-height: unset;
         }
+        
         .gh-portal-upgrade-product .gh-portal-product-description {
             grid-column: 2 / 3;
             margin-bottom: 0px;
             text-align: left;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-price {
             position: relative;
             justify-content: flex-end;
             width: 100%;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-price .currency-sign {
             font-size: 1.5rem;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-price .amount {
             font-size: 2.6rem;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-price .billing-period {
             position: absolute;
             right: 0;
             top: 24px;
             font-size: 1.2rem;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-card-footer {
             grid-row: 1;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-alternative-price {
             display: none;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-benefits {
             display: none;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-benefits.vertical {
             grid-column: 2;
             padding: 12px 20px;
@@ -389,6 +404,7 @@ export const ProductsSectionStyles = ({site}) => {
             grid-row: 2;
             grid-column: 1 / 3;
         }
+
         .gh-portal-upgrade-product .gh-portal-product-benefit:last-of-type {
             margin-bottom: 0;
         }
