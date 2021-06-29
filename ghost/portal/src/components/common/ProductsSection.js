@@ -324,7 +324,6 @@ const ProductsContext = React.createContext({
 });
 
 function productColumns(noOfProducts) {
-    // TODO: has to take Free on/off setting into account
     return noOfProducts >= 5 ? 5 : noOfProducts;
 }
 

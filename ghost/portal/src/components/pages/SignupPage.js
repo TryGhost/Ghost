@@ -1,11 +1,11 @@
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
-import PlansSection from '../common/PlansSection';
+import PlansSection, {SingleProductPlansSection} from '../common/PlansSection';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite, getAvailableProducts, hasMultipleProductsFeature} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -376,16 +376,28 @@ class SignupPage extends React.Component {
     renderPlans() {
         const {site, pageQuery} = this.context;
         const prices = getSitePrices({site, pageQuery});
-        return (
-            <>
-                <PlansSection
+        if (hasMultipleProductsFeature({site})) {
+            const availableProducts = getAvailableProducts({site});
+            const product = availableProducts?.[0];
+            return (
+                <SingleProductPlansSection
+                    product={product}
                     plans={prices}
                     selectedPlan={this.state.plan}
                     onPlanSelect={(e, id) => {
                         this.handleSelectPlan(e, id);
                     }}
                 />
-            </>
+            );
+        }
+        return (
+            <PlansSection
+                plans={prices}
+                selectedPlan={this.state.plan}
+                onPlanSelect={(e, id) => {
+                    this.handleSelectPlan(e, id);
+                }}
+            />
         );
     }
 
@@ -547,11 +559,21 @@ class SignupPage extends React.Component {
     }
 
     render() {
-        const {site} = this.context;
-        if (hasMultipleProducts({site})) {
-            return this.renderMultipleProducts();
-        }
-        return this.renderSingleProduct();
+        let {sectionClass, footerClass} = this.getClassNames();
+
+        return (
+            <>
+                <div className={'gh-portal-content signup ' + sectionClass}>
+                    <CloseButton />
+                    {this.renderFormHeader()}
+                    {this.renderForm()}
+                </div>
+                <footer className={'gh-portal-signup-footer ' + footerClass}>
+                    {this.renderSubmitButton()}
+                    {this.renderLoginMessage()}
+                </footer>
+            </>
+        );
     }
 }
 
