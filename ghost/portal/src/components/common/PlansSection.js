@@ -364,8 +364,12 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-plans-container.has-multiple-products.is-change-plan {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
+        border-radius: 0 0 5px 5px;
+        border-top: none;
+    }
+
+    .gh-portal-plans-container.has-multiple-products.is-change-plan .gh-portal-plan-section {
+        min-height: 90px;
     }
 
     .gh-portal-plan-product {
@@ -387,7 +391,7 @@ export const PlanSectionStyles = `
         border-bottom: 1px solid var(--grey12);
     }
 
-    .gh-portal-accountplans-main .gh-portal-plan-section:hover {
+    .gh-portal-accountplans-main .gh-portal-plan-section:hover:not(.checked) {
         background: var(--grey14);
     }
 
@@ -628,7 +632,6 @@ export function SingleProductPlansSection({product, plans, selectedPlan, onPlanS
 
     return (
         <section className="gh-portal-plans">
-            <label className='gh-portal-input-label'>{site.title} membership</label>
             <div className={className}>
                 <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
             </div>
