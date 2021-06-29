@@ -315,7 +315,7 @@ export const ProductsSectionStyles = ({site}) => {
                 margin-bottom: 0;
             }
         }
-        
+
         .gh-portal-upgrade-product.gh-portal-products {
             margin: 0 -32px;
             background: none;
@@ -327,11 +327,11 @@ export const ProductsSectionStyles = ({site}) => {
             padding: 32px 0 0;
             width: 100%;
         }
-        
+
         .gh-portal-upgrade-product .gh-portal-products-priceswitch {
             padding-top: 18px;
         }
-        
+
         .gh-portal-upgrade-product .gh-portal-product-card {
             display: grid;
             grid-template-columns: 1fr minmax(60px,auto);
@@ -343,13 +343,13 @@ export const ProductsSectionStyles = ({site}) => {
             border: 1px solid var(--grey12);
             box-shadow: none;
         }
-        
+
         .gh-portal-upgrade-product .gh-portal-product-card-header {
             grid-row: 1;
             display: grid;
             grid-template-columns: 20px auto;
         }
-        
+
         .gh-portal-upgrade-product .gh-portal-product-name {
             margin: 4px 0;
             padding: 0;
@@ -357,7 +357,7 @@ export const ProductsSectionStyles = ({site}) => {
             border-bottom: none;
             min-height: unset;
         }
-        
+
         .gh-portal-upgrade-product .gh-portal-product-description {
             grid-column: 2 / 3;
             margin-bottom: 0px;
@@ -722,10 +722,14 @@ function ChangeProductCards({products, onPlanSelect}) {
 }
 
 export function ChangeProductSection({products, onPlanSelect}) {
+    let className = 'gh-portal-products gh-portal-upgrade-product';
+
     return (
-        <div className="gh-portal-products-grid">
-            <ChangeProductCards products={products} onPlanSelect={onPlanSelect} />
-        </div>
+        <section className={className}>
+            <div className="gh-portal-products-grid change-plan">
+                <ChangeProductCards products={products} onPlanSelect={onPlanSelect} />
+            </div>
+        </section>
     );
 }
 
