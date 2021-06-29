@@ -167,7 +167,7 @@ class PopupContent extends React.Component {
         }
 
         if (hasMultipleProducts({site}) && (page === 'signup' || page === 'signin')) {
-            pageClass += ' fullscreen';
+            pageClass += ' multiple-products';
         }
 
         if (hasMode(['preview'])) {

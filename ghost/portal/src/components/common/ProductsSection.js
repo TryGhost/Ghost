@@ -228,7 +228,7 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-products-grid {
                 grid-template-columns: unset;
                 grid-gap: 20px;
-                padding: 32px 0;
+                padding: 32px 0 0;
                 width: 100%;
             }
 

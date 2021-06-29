@@ -35,10 +35,6 @@ export const SignupPageStyles = `
         margin-top: 12px;
     }
 
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-signin-header {
-        padding-top: 18vmin;
-    }
-
     .gh-portal-signup-logo + .gh-portal-main-title {
         margin: 4px 0 0;
     }
@@ -54,10 +50,6 @@ export const SignupPageStyles = `
     .gh-portal-signup-header.nodivider {
         border: none;
         margin-bottom: 0;
-    }
-
-    .gh-portal-popup-wrapper.signin.fullscreen .gh-portal-popup-container {
-        padding-bottom: 3vmin;
     }
 
     .gh-portal-signup-message {
@@ -92,16 +84,6 @@ export const SignupPageStyles = `
         background-attachment: local,local,scroll,scroll;
     }
 
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-content.signup,
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-content.signin {
-        width: 100%;
-    }
-
-    .gh-portal-popup-wrapper.fullscreen .gh-portal-input-section {
-        max-width: 420px;
-        margin: 0 auto;
-    }
-
     .gh-portal-content.signup.invite-only {
         background: none;
     }
@@ -110,26 +92,6 @@ export const SignupPageStyles = `
     footer.gh-portal-signin-footer {
         padding-top: 24px;
         height: 132px;
-    }
-
-    .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signup-footer,
-    .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
-        width: 100%;
-        max-width: 420px;
-        height: unset;
-        padding: 0 !important;
-        margin: 24px 32px;
-    }
-
-    @media (max-width: 480px) {
-        .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signup-footer,
-        .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
-            padding: 0 24px !important;
-        }
-    }
-
-    .gh-portal-popup-wrapper.fullscreen footer.gh-portal-signin-footer {
-        padding-top: 24px;
     }
 
     .gh-portal-content.signup,
@@ -188,6 +150,60 @@ export const SignupPageStyles = `
         width: 44px;
         height: 44px;
         margin: 12px 0 2px;
+    }
+
+
+    /* Multiple products signup */
+
+    .gh-portal-popup-wrapper.signup.multiple-products .gh-portal-content,
+    .gh-portal-popup-wrapper.signin.multiple-products .gh-portal-content {
+        width: 100%;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .gh-portal-popup-wrapper.multiple-products .gh-portal-signin-header {
+        padding-top: 18vmin;
+    }
+
+    .gh-portal-popup-wrapper.signin.multiple-products .gh-portal-popup-container {
+        padding-bottom: 3vmin;
+    }
+
+    .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
+    .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
+        width: 100%;
+        max-width: 420px;
+        height: unset;
+        padding: 0 !important;
+        margin: 24px 32px;
+    }
+
+
+    .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
+        padding-top: 24px;
+    }
+    
+    .gh-portal-popup-wrapper.multiple-products.signin .gh-portal-powered {
+        position: absolute;
+        bottom: 0;
+    }
+    
+    @media (max-width: 480px) {
+        .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
+        .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
+            padding: 0 24px !important;
+        }
+
+        .gh-portal-popup-wrapper.multiple-products.preview footer.gh-portal-signup-footer,
+        .gh-portal-popup-wrapper.multiple-products.preview footer.gh-portal-signin-footer {
+            padding-bottom: 32px !important;
+        }
+
+        .gh-portal-popup-wrapper.signup.multiple-products.preview .gh-portal-content,
+        .gh-portal-popup-wrapper.signin.multiple-products.preview .gh-portal-content {
+            overflow: unset;
+        }
     }
 `;
 
