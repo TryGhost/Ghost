@@ -183,12 +183,12 @@ export const SignupPageStyles = `
     .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
         padding-top: 24px;
     }
-    
+
     .gh-portal-popup-wrapper.multiple-products.signin .gh-portal-powered {
         position: absolute;
         bottom: 0;
     }
-    
+
     @media (max-width: 480px) {
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {

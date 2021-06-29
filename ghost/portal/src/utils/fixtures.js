@@ -50,30 +50,6 @@ const products = [
             type: 'recurring',
             interval: 'year'
         },
-        prices: [
-            {
-                id: '6086d2c776909b1a2382369a',
-                stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
-                stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'usd',
-                amount: 500,
-                type: 'recurring',
-                interval: 'month'
-            },
-            {
-                id: '6086eff0823dd7240afc8083',
-                stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
-                stripe_product_id: 'prod_JNGGBrrogUXcoM',
-                active: 1,
-                nickname: 'Yearly',
-                currency: 'usd',
-                amount: 5000,
-                type: 'recurring',
-                interval: 'year'
-            }
-        ],
         benefits: [
             {
                 id: 'a1',
@@ -123,30 +99,6 @@ const products = [
             type: 'recurring',
             interval: 'year'
         },
-        prices: [
-            {
-                id: '6086d2c776909b1a2382369a',
-                stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
-                stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'usd',
-                amount: 1200,
-                type: 'recurring',
-                interval: 'month'
-            },
-            {
-                id: '6086eff0823dd7240afc8083',
-                stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
-                stripe_product_id: 'prod_JNGGBrrogUXcoM',
-                active: 1,
-                nickname: 'Yearly',
-                currency: 'usd',
-                amount: 12000,
-                type: 'recurring',
-                interval: 'year'
-            }
-        ],
         benefits: [
             {
                 id: 'b1',
@@ -192,30 +144,6 @@ const products = [
             type: 'recurring',
             interval: 'year'
         },
-        prices: [
-            {
-                id: '6086d2c776909b1a2382369a',
-                stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
-                stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
-                active: 1,
-                nickname: 'Monthly',
-                currency: 'usd',
-                amount: 1200,
-                type: 'recurring',
-                interval: 'month'
-            },
-            {
-                id: '6086eff0823dd7240afc8083',
-                stripe_price_id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
-                stripe_product_id: 'prod_JNGGBrrogUXcoM',
-                active: 1,
-                nickname: 'Yearly',
-                currency: 'usd',
-                amount: 12000,
-                type: 'recurring',
-                interval: 'year'
-            }
-        ],
         benefits: [
             {
                 id: 'c1',
@@ -292,17 +220,17 @@ export const member = {
                 id: 'fd43b943666b97640188afb382cca39479de30f799985679dd7a71ad2925ac6c',
                 nickname: 'Yearly',
                 interval: 'year',
-                amount: 1500,
+                amount: 7000,
                 currency: 'USD'
             },
             price: {
-                id: 'price_1IkXLAFToJelIqAseQdK4WSU',
-                price_id: '6086ead8070218227791fe4f',
+                id: 'price_1IkXgCFToJelIqAsTP3V1paQ',
+                price_id: '6086eff0823dd7240afc8012',
                 nickname: 'Yearly',
                 currency: 'usd',
-                amount: 1500,
+                amount: 7000,
                 type: 'recurring',
-                interval: 'month',
+                interval: 'year',
                 product: {
                     id: 'prod_JNGGBrrogUXcoM',
                     name: 'Main Product',
