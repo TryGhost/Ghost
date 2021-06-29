@@ -192,7 +192,8 @@ export const SignupPageStyles = `
     @media (max-width: 480px) {
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
-            padding: 0 24px !important;
+            max-width: unset;
+            padding: 0 32px !important;
         }
 
         .gh-portal-popup-wrapper.multiple-products.preview footer.gh-portal-signup-footer,
@@ -203,6 +204,13 @@ export const SignupPageStyles = `
         .gh-portal-popup-wrapper.signup.multiple-products.preview .gh-portal-content,
         .gh-portal-popup-wrapper.signin.multiple-products.preview .gh-portal-content {
             overflow: unset;
+        }
+    }
+
+    @media (max-width: 390px) {
+        .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
+        .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
+            padding: 0 24px !important;
         }
     }
 `;
