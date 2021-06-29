@@ -191,7 +191,7 @@
                                         @text="Add Twitter image"
                                         @allowUnsplash={{true}}
                                         @update={{action (mut this.settings.twitterImage)}}
-                                        @remove={{action (mut this.settings.twitterImage "")}}
+                                        @remove={{action (mut this.settings.twitterImage) ""}}
                                     />
                                 </GhFormGroup>
                                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="twitterTitle">
@@ -279,7 +279,7 @@
                                             @text="Add Facebook image"
                                             @allowUnsplash={{true}}
                                             @update={{action (mut this.settings.ogImage)}}
-                                            @remove={{action (mut this.settings.ogImage "")}}
+                                            @remove={{action (mut this.settings.ogImage) ""}}
                                         />
                                     </GhFormGroup>
                                     <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ogTitle">
