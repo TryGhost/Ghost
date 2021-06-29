@@ -126,7 +126,7 @@ export const ProductsSectionStyles = ({site}) => {
         }
 
         .gh-portal-product-name {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 500;
             line-height: 1.45em;
             letter-spacing: 0.5px;
@@ -136,6 +136,7 @@ export const ProductsSectionStyles = ({site}) => {
             min-height: 24px;
             word-break: break-word;
             width: 100%;
+            color: var(--grey1);
             border-bottom: 1px solid var(--grey12);
             padding: 8px 0 16px;
             margin-bottom: 12px;
@@ -218,6 +219,10 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-product-benefits.vertical {
             display: none !important;
+        }
+
+        .gh-portal-products-grid.change-plan {
+            padding: 0;
         }
 
         @media (max-width: 480px) {
@@ -324,8 +329,15 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-upgrade-product .gh-portal-products-grid {
             grid-template-columns: unset;
             grid-gap: 20px;
-            padding: 32px 0 0;
             width: 100%;
+        }
+        
+        .gh-portal-upgrade-product .gh-portal-products-grid:not(.change-plan) {
+            padding: 32px 0 0;
+        }
+
+        .gh-portal-upgrade-product .gh-portal-products-grid.change-plan .gh-portal-product-card {
+            cursor: auto;
         }
 
         .gh-portal-upgrade-product .gh-portal-products-priceswitch {
@@ -340,7 +352,7 @@ export const ProductsSectionStyles = ({site}) => {
             min-height: 68px;
             padding: 12px 20px;
             background: none;
-            border: 1px solid var(--grey12);
+            border: 1px solid var(--grey11);
             box-shadow: none;
         }
 
@@ -360,6 +372,7 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-upgrade-product .gh-portal-product-description {
             grid-column: 2 / 3;
+            grid-row: 2;
             margin-bottom: 0px;
             text-align: left;
         }
@@ -408,6 +421,19 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-upgrade-product .gh-portal-product-benefit:last-of-type {
             margin-bottom: 0;
+        }
+
+        .gh-portal-products-grid.change-plan .gh-portal-product-card-header {
+            grid-template-columns: auto;
+            grid-column: 1 / 3;
+        }
+
+        .gh-portal-products-grid.change-plan .gh-portal-product-name {
+            font-weight: 600;
+        }
+
+        .gh-portal-products-grid.change-plan .gh-portal-product-description {
+            grid-column: 1;
         }
     `;
 };
@@ -687,9 +713,7 @@ function ChangeProductCard({product, onPlanSelect}) {
     return (
         <div>
             <div className={cardClass} key={product.id}>
-                <div className="gh-portal-product-card-header" style={{
-                    gridTemplateColumns: 'auto auto'
-                }}>
+                <div className="gh-portal-product-card-header">
                     <h4 className="gh-portal-product-name">{product.name}</h4>
                     <div className="gh-portal-product-description" style={{
                         gridColumn: '1/2'
