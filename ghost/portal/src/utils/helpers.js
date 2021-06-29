@@ -264,7 +264,11 @@ export function getProductBenefits({product}) {
     }
 }
 
-export function getPricesFromProducts({site, products = null}) {
+export function getPricesFromProducts({site = null, products = null}) {
+    if (!site && !products) {
+        return [];
+    }
+
     const availableProducts = products || getAvailableProducts({site});
     const prices = availableProducts.reduce((accumPrices, product) => {
         if (product.monthlyPrice && product.yearlyPrice) {

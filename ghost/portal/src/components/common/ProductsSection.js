@@ -1,8 +1,9 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled} from '../../utils/helpers';
+import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getPricesFromProducts, getMemberActivePrice} from '../../utils/helpers';
 import AppContext from '../../AppContext';
+import {ChangeProductPlansSection} from './PlansSection';
 
 export const ProductsSectionStyles = ({site}) => {
     const products = getSiteProducts({site});
@@ -675,6 +676,56 @@ function ProductsSection({onPlanSelect, products, type = null}) {
                 </div>
             </section>
         </ProductsContext.Provider>
+    );
+}
+
+function ChangeProductCard({product, onPlanSelect}) {
+    const {member} = useContext(AppContext);
+    const cardClass = 'gh-portal-product-card';
+    const plans = getPricesFromProducts({products: [product]});
+    const selectedPlan = getMemberActivePrice({member});
+    return (
+        <div>
+            <div className={cardClass} key={product.id}>
+                <div className="gh-portal-product-card-header" style={{
+                    gridTemplateColumns: 'auto auto'
+                }}>
+                    <h4 className="gh-portal-product-name">{product.name}</h4>
+                    <div className="gh-portal-product-description" style={{
+                        gridColumn: '1/2'
+                    }}>{product.description}</div>
+                    <ProductBenefitsContainer product={product} />
+                </div>
+                {/* <ProductCardFooter product={product} /> */}
+                <ProductBenefitsContainer product={product} showVertical={true} />
+            </div>
+            <ChangeProductPlansSection
+                product={product}
+                plans={plans}
+                selectedPlan={selectedPlan?.id}
+                changePlan={true}
+                onPlanSelect={onPlanSelect}
+            />
+        </div>
+    );
+}
+
+function ChangeProductCards({products, onPlanSelect}) {
+    return products.map((product) => {
+        if (product.id === 'free') {
+            return null;
+        }
+        return (
+            <ChangeProductCard product={product} key={product.id} onPlanSelect={onPlanSelect} />
+        );
+    });
+}
+
+export function ChangeProductSection({products, onPlanSelect}) {
+    return (
+        <div className="gh-portal-products-grid">
+            <ChangeProductCards products={products} onPlanSelect={onPlanSelect} />
+        </div>
     );
 }
 

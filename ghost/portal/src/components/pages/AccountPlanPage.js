@@ -192,7 +192,7 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
                     showLabel={false}
                     plans={plans}
                     selectedPlan={selectedPlan}
-                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+                    onPlanSelect={onPlanSelect}
                     changePlan={true}
                 />
             </div>
@@ -205,13 +205,22 @@ function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, ch
     const {site, member} = useContext(AppContext);
     const products = getUpgradeProducts({site, member});
     if (hasMultipleProductsFeature({site})) {
-        if (hasMultipleProducts({site})) {
+        if (changePlan === true) {
+            return (
+                <MultipleProductsPlansSection
+                    products={products}
+                    selectedPlan={selectedPlan}
+                    changePlan={true}
+                    onPlanSelect={onPlanSelect}
+                />
+            );
+        } else if (hasMultipleProducts({site})) {
             return (
                 <MultipleProductsPlansSection
                     products={products}
                     selectedPlan={selectedPlan}
                     changePlan={changePlan}
-                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+                    onPlanSelect={onPlanSelect}
                 />
             );
         } else {
@@ -220,7 +229,7 @@ function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, ch
                     product={products?.[0]}
                     plans={plans}
                     selectedPlan={selectedPlan}
-                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+                    onPlanSelect={onPlanSelect}
                 />
             );
         }
@@ -231,7 +240,7 @@ function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, ch
             plans={plans}
             selectedPlan={selectedPlan}
             changePlan={changePlan}
-            onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+            onPlanSelect={onPlanSelect}
         />
     );
 }
@@ -380,7 +389,7 @@ export default class AccountPlanPage extends React.Component {
         }
     }
 
-    onPlanSelect(e, priceId) {
+    onPlanSelect = (e, priceId) => {
         e?.preventDefault();
 
         const {member} = this.context;
@@ -466,7 +475,7 @@ export default class AccountPlanPage extends React.Component {
                         {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType}}
                         onConfirm={(...args) => this.onConfirm(...args)}
                         onCancelSubscription = {data => this.onCancelSubscription(data)}
-                        onPlanSelect = {(e, name) => this.onPlanSelect(e, name)}
+                        onPlanSelect = {this.onPlanSelect}
                         onPlanCheckout = {(e, name) => this.onPlanCheckout(e, name)}
                     />
                 </div>
