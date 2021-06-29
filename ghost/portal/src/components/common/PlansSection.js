@@ -376,6 +376,7 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-singleproduct-benefits {
+        display: block !important;
         border: 1px solid var(--grey11);
         border-top: none !important;
         padding: 24px 24px 8px !important;
