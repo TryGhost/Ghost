@@ -61,7 +61,7 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-products-grid {
             display: grid;
-            grid-template-columns: repeat(${productColumns(noOfProducts)}, minmax(0, 280px));
+            grid-template-columns: repeat(${productColumns(noOfProducts)}, minmax(0, ${(productColumns(noOfProducts) <= 3 ? `360px` : `300px`)}));
             grid-gap: 32px;
             margin: 0 auto;
             padding: 32px 2vw;
