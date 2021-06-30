@@ -344,10 +344,17 @@ async function getEmailMemberRows({emailModel, options}) {
     return memberRows;
 }
 
-// Store email_batch and email_recipient records for an email.
-// Uses knex directly rather than bookshelf to avoid thousands of bookshelf model
-// instantiations and associated processing and event loop blocking.
-// Returns array of batch ids
+/**
+ * Store email_batch and email_recipient records for an email.
+ * Uses knex directly rather than bookshelf to avoid thousands of bookshelf model
+ * instantiations and associated processing and event loop blocking.
+ *
+ * @param {Object} options
+ * @param {Object} options.emailModel - instance of Email model
+ * @param {Object} options.options
+ *
+ * @returns {Promise<string[]>} - created batch ids
+ */
 async function createEmailBatches({emailModel, options}) {
     const memberRows = await getEmailMemberRows({emailModel, options});
 
