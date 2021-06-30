@@ -1,7 +1,7 @@
 const should = require('should');
 const getBlogLogo = require('../../../../core/frontend/meta/blog_logo');
 const sinon = require('sinon');
-const settingsCache = require('../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('getBlogLogo', function () {
     afterEach(function () {

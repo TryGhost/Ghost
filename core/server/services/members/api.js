@@ -1,4 +1,4 @@
-const settingsCache = require('../settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 const MembersApi = require('@tryghost/members-api');
 const logging = require('@tryghost/logging');
 const mail = require('../mail');

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const url = require('./utils/url');
 const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
-const settingsCache = require('../../../../../services/settings/cache');
+const settingsCache = require('../../../../../../shared/settings-cache');
 
 const DEPRECATED_SETTINGS = [
     'bulk_email_settings',

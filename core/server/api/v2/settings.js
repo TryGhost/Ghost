@@ -6,7 +6,7 @@ const frontendSettings = require('../../../frontend/services/settings');
 const i18n = require('../../../shared/i18n');
 const {NoPermissionError, NotFoundError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
-const settingsCache = require('../../services/settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 
 module.exports = {
     docName: 'settings',

@@ -1,4 +1,4 @@
-const settingsCache = require('../../services/settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 
 module.exports = {

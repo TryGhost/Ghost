@@ -12,7 +12,7 @@ const configUtils = require('../../utils/configUtils');
 const cheerio = require('cheerio');
 const config = require('../../../core/shared/config');
 const api = require('../../../core/server/api');
-const settingsCache = require('../../../core/server/services/settings/cache');
+const settingsCache = require('../../../core/shared/settings-cache');
 const ghost = testUtils.startGhost;
 
 let request;

@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const urlUtils = require('../../../../core/shared/url-utils');
 const membersService = require('../../../../core/server/services/members');
 const membersMiddleware = require('../../../../core/server/services/members/middleware');
-const settingsCache = require('../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {

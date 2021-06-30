@@ -2,7 +2,7 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:rss');
 const url = require('url');
 const security = require('@tryghost/security');
-const settingsCache = require('../../../../server/services/settings/cache');
+const settingsCache = require('../../../../shared/settings-cache');
 const rssService = require('../../rss');
 const helpers = require('../helpers');
 

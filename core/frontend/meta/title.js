@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const settingsCache = require('../../server/services/settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 
 function getTitle(data, root, options = {}) {
     const context = root ? root.context : null;

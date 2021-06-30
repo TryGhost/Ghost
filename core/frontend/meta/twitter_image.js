@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const urlUtils = require('../../shared/url-utils');
 const getContextObject = require('./context_object.js');
-const settingsCache = require('../../server/services/settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 
 function getTwitterImage(data) {
     const context = data.context ? data.context : null;

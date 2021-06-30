@@ -6,7 +6,7 @@ const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
 
 // Values to test against
-const publicSettings = require('../../../core/server/services/settings/public');
+const publicSettings = require('../../../core/shared/settings-cache/public');
 const defaultSettings = require('../../../core/server/data/schema').defaultSettings;
 
 const defaultSettingsKeys = [

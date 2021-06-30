@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 const MembersConfigProvider = require('../../../../services/members/config');
-const settingsCache = require('../../../../services/settings/cache');
+const settingsCache = require('../../../../../shared/settings-cache');
 const config = require('../../../../../shared/config');
 
 // members_allow_free_signup was migrated to members_signup_access in 4.3/08-migrate-members-signup-setting

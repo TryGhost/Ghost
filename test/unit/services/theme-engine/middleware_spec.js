@@ -4,7 +4,7 @@ const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const middleware = require('../../../../core/frontend/services/theme-engine').middleware;
 // is only exposed via themeEngine.getActive()
 const activeTheme = require('../../../../core/frontend/services/theme-engine/active');
-const settingsCache = require('../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 const sandbox = sinon.createSandbox();
 

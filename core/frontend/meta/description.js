@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const settingsCache = require('../../server/services/settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 const getExcerpt = require('./excerpt');
 
 function getDescription(data, root, options = {}) {

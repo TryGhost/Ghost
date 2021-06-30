@@ -14,7 +14,7 @@ const logging = require('@tryghost/logging');
 const events = require('./server/lib/common/events');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
-const settingsCache = require('./server/services/settings/cache');
+const settingsCache = require('./shared/settings-cache');
 
 const messages = {
     activateFailed: 'Unable to activate the theme "{theme}".'

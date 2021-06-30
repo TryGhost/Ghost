@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const moment = require('moment');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
-const settingsCache = require('../../core/server/services/settings/cache');
+const settingsCache = require('../../core/shared/settings-cache');
 
 function assertContentIsPresent(res) {
     res.text.should.containEql('<h2 id="markdown">markdown</h2>');

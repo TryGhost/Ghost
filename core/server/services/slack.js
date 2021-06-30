@@ -6,7 +6,7 @@ const request = require('@tryghost/request');
 const {blogIcon} = require('../lib/image');
 const urlUtils = require('../../shared/url-utils');
 const urlService = require('../../frontend/services/url');
-const settingsCache = require('./settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 const schema = require('../data/schema').checks;
 const moment = require('moment');
 

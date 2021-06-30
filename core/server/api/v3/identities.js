@@ -1,4 +1,4 @@
-const settings = require('../../services/settings/cache');
+const settings = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const jwt = require('jsonwebtoken');
 const jose = require('node-jose');

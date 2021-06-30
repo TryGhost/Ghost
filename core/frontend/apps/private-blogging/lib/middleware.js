@@ -7,7 +7,7 @@ const urlUtils = require('../../../../shared/url-utils');
 const constants = require('@tryghost/constants');
 const {i18n} = require('../../../services/proxy');
 const errors = require('@tryghost/errors');
-const settingsCache = require('../../../../server/services/settings/cache');
+const settingsCache = require('../../../../shared/settings-cache');
 // routeKeywords.private: 'private'
 const privateRoute = '/private/';
 
