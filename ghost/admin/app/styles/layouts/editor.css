@@ -398,9 +398,12 @@
     width: 100%;
     max-width: 740px;
     min-height: auto;
-    margin-left: auto;
-    margin-right: auto;
+    margin: -56px auto 0;
     padding-bottom: 3.6rem;
+}
+
+.gh-editor-feature-image-container .gh-progress-container-progress {
+    width: 100%;
 }
 
 .gh-editor-feature-image {
@@ -409,8 +412,12 @@
     border-left: 1px solid var(--whitegrey);
 }
 
-.gh-editor-feature-image-container .gh-progress-container-progress {
-    width: 100%;
+.gh-editor-feature-image .image-delete {
+    opacity: 0;
+}
+
+.gh-editor-feature-image:hover .image-delete {
+    opacity: 1;
 }
 
 .gh-editor-feature-image-add-button {

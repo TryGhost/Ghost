@@ -21,10 +21,10 @@
             {{/each}}
         {{else if @image}}
             {{!-- image is present --}}
+            <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
+                {{svg-jar "feature-image"}}
+            </span>
             <div class="gh-editor-feature-image">
-                <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
-                    {{svg-jar "feature-image"}}
-                </span>
                 <img src={{@image}}>
                 <button type="button" class="image-delete" title="Delete image" {{on "click" @clearImage}}>
                     {{svg-jar "trash"}}
