@@ -7,13 +7,12 @@ import moment from 'moment';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
-import {captureException, captureMessage} from '@sentry/browser';
 import {inject as controller} from '@ember/controller';
 import {get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
-import {isHostLimitError, isMaintenanceError, isServerUnreachableError} from 'ghost-admin/services/ajax';
+import {isHostLimitError, isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -603,43 +602,21 @@ export default Controller.extend({
     _savePostTask: task(function* (options) {
         let {post} = this;
 
-        // retry save every 5 seconds for a total of 30secs
-        // only retry if we get a ServerUnreachable error (code 0) from the browser or a MaintenanceError from Ghost
-        let attempts = 0;
-        const maxAttempts = 6;
-        const startTime = moment();
-        const retryErrorChecks = [isServerUnreachableError, isMaintenanceError];
-        let success = false;
+        try {
+            yield post.save(options);
+        } catch (error) {
+            if (isServerUnreachableError(error)) {
+                const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
+                this._showErrorAlert(prevStatus, newStatus, error);
 
-        while (attempts < maxAttempts && !success) {
-            try {
-                yield post.save(options);
-                success = true;
-                this.notifications.closeAlerts('post.save');
-
-                if (attempts !== 0 && this.config.get('sentry_dsn')) {
-                    let totalSeconds = moment().diff(startTime, 'seconds');
-                    captureMessage('Saving post required multiple attempts', {extra: {attempts, totalSeconds}});
-                }
-            } catch (error) {
-                attempts += 1;
-
-                if (retryErrorChecks.some(check => check(error)) && attempts < maxAttempts) {
-                    yield timeout(5 * 1000);
-                } else if (isServerUnreachableError(error)) {
-                    const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
-                    this._showErrorAlert(prevStatus, newStatus, error);
-                    if (this.config.get('sentry_dsn')) {
-                        captureException(error);
-                    }
-
-                    // simulate a validation error so we don't end up on a 500 screen
-                    throw undefined;
-                } else {
-                    throw error;
-                }
+                // simulate a validation error so we don't end up on a 500 screen
+                throw undefined;
             }
+
+            throw error;
         }
+
+        this.notifications.closeAlerts('post.save');
 
         // remove any unsaved tags
         // NOTE: `updateTags` changes `hasDirtyAttributes => true`.
