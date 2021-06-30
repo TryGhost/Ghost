@@ -16,6 +16,7 @@ const jobsService = require('../jobs');
 const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
+const {getSegmentsFromHtml} = require('./segment-parser');
 
 const getFromAddress = () => {
     let fromAddress = membersService.config.getEmailFromAddress();
@@ -277,7 +278,7 @@ async function sendEmailJob({emailModel, options}) {
             let newBatchCount;
 
             await models.Base.transaction(async (transacting) => {
-                newBatchCount = await createEmailBatches({emailModel, options: {transacting}});
+                newBatchCount = await createSegmentedEmailBatches({emailModel, options: {transacting}});
             });
 
             if (newBatchCount === 0) {
@@ -311,10 +312,19 @@ async function sendEmailJob({emailModel, options}) {
     }
 }
 
-// Fetch rows of members that should receive an email.
-// Uses knex directly rather than bookshelf to avoid thousands of bookshelf model
-// instantiations and associated processing and event loop blocking
-async function getEmailMemberRows({emailModel, options}) {
+/**
+ * Fetch rows of members that should receive an email.
+ * Uses knex directly rather than bookshelf to avoid thousands of bookshelf model
+ * instantiations and associated processing and event loop blocking
+ *
+ * @param {Object} options
+ * @param {Object} options.emailModel - instance of Email model
+ * @param {string} [options.memberSegment] - NQL filter to apply in addition to the one defined in emailModel
+ * @param {Object} options.options - knex options
+ *
+ * @returns {Promise<Object[]>} instances of filtered knex member rows
+ */
+async function getEmailMemberRows({emailModel, memberSegment, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions);
 
@@ -334,6 +344,10 @@ async function getEmailMemberRows({emailModel, options}) {
         filterOptions.filter = `subscribed:true+${recipientFilter}`;
     }
 
+    if (memberSegment) {
+        filterOptions.filter = `${filterOptions.filter}+${memberSegment}`;
+    }
+
     const startRetrieve = Date.now();
     debug('getEmailMemberRows: retrieving members list');
     // select('members.*') is necessary here to avoid duplicate `email` columns in the result set
@@ -345,18 +359,46 @@ async function getEmailMemberRows({emailModel, options}) {
 }
 
 /**
+ * Detects segment filters in emailModel's html and creates separate batches per segment
+ *
+ * @param {Object} options
+ * @param {Object} options.emailModel - instance of Email model
+ * @param {Object} options.options - knex options
+ */
+async function createSegmentedEmailBatches({emailModel, options}) {
+    const segments = getSegmentsFromHtml(emailModel.get('html'));
+    const batchIds = [];
+
+    if (segments.length) {
+        for (const memberSegment of segments) {
+            const emailBatchIds = await createEmailBatches({
+                emailModel,
+                memberSegment,
+                options
+            });
+            batchIds.push(emailBatchIds);
+        }
+    } else {
+        const emailBatchIds = createEmailBatches({emailModel, options});
+        batchIds.push(emailBatchIds);
+    }
+
+    return batchIds;
+}
+
+/**
  * Store email_batch and email_recipient records for an email.
  * Uses knex directly rather than bookshelf to avoid thousands of bookshelf model
  * instantiations and associated processing and event loop blocking.
  *
  * @param {Object} options
  * @param {Object} options.emailModel - instance of Email model
- * @param {Object} options.options
- *
+ * @param {string} [options.memberSegment] - NQL filter to apply in addition to the one defined in emailModel
+ * @param {Object} options.options - knex options
  * @returns {Promise<string[]>} - created batch ids
  */
-async function createEmailBatches({emailModel, options}) {
-    const memberRows = await getEmailMemberRows({emailModel, options});
+async function createEmailBatches({emailModel, memberSegment, options}) {
+    const memberRows = await getEmailMemberRows({emailModel, memberSegment, options});
 
     if (!memberRows.length) {
         return [];
@@ -364,6 +406,7 @@ async function createEmailBatches({emailModel, options}) {
 
     const storeRecipientBatch = async function (recipients) {
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
+        // TODO: store `memberSegment` in EmailBatch once the table migration is merged
         const batchModel = await models.EmailBatch.add({email_id: emailModel.id}, knexOptions);
 
         const recipientData = [];
