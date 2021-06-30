@@ -2,13 +2,13 @@ const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
-const testUtils = require('../../../../utils');
-const urlUtils = require('../../../../../core/shared/url-utils');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
+const testUtils = require('../../../utils');
+const urlUtils = require('../../../../core/shared/url-utils');
+const IndexGenerator = require('../../../../core/frontend/services/sitemap/index-generator');
+const PostGenerator = require('../../../../core/frontend/services/sitemap/post-generator');
+const PageGenerator = require('../../../../core/frontend/services/sitemap/page-generator');
+const TagGenerator = require('../../../../core/frontend/services/sitemap/tag-generator');
+const UserGenerator = require('../../../../core/frontend/services/sitemap/user-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct

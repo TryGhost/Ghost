@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
-const urlUtils = require('../../../../core/shared/url-utils');
-const urlService = require('../../../../core/frontend/services/url');
-const getUrl = require('../../../../core/frontend/meta/url');
-const testUtils = require('../../../utils');
+const urlUtils = require('../../../core/shared/url-utils');
+const urlService = require('../../../core/frontend/services/url');
+const getUrl = require('../../../core/frontend/meta/url');
+const testUtils = require('../../utils');
 
 describe('getUrl', function () {
     beforeEach(function () {

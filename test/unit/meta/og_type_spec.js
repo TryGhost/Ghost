@@ -1,5 +1,5 @@
 const should = require('should');
-const getOgType = require('../../../../core/frontend/meta/og_type');
+const getOgType = require('../../../core/frontend/meta/og_type');
 
 describe('getOgType', function () {
     it('should return og type profile if context is type author', function () {

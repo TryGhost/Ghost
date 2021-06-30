@@ -1,10 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const urlUtils = require('../../../../core/shared/url-utils');
-const testUtils = require('../../../utils');
+const urlUtils = require('../../../core/shared/url-utils');
+const testUtils = require('../../utils');
 
-let getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical_url');
+let getCanonicalUrl = rewire('../../../core/frontend/meta/canonical_url');
 
 describe('getCanonicalUrl', function () {
     let getUrlStub;
@@ -12,7 +12,7 @@ describe('getCanonicalUrl', function () {
     beforeEach(function () {
         getUrlStub = sinon.stub();
 
-        getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical_url');
+        getCanonicalUrl = rewire('../../../core/frontend/meta/canonical_url');
         getCanonicalUrl.__set__('getUrl', getUrlStub);
 
         sinon.stub(urlUtils, 'urlJoin');

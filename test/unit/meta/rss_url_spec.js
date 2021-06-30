@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const routing = require('../../../../core/frontend/services/routing');
-const getRssUrl = require('../../../../core/frontend/meta/rss_url');
+const routing = require('../../../core/frontend/services/routing');
+const getRssUrl = require('../../../core/frontend/meta/rss_url');
 
 describe('getRssUrl', function () {
     beforeEach(function () {
