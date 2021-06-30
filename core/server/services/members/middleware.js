@@ -81,7 +81,7 @@ const updateMemberData = async function (req, res) {
 
 const getPortalProductPrices = async function () {
     const page = await membersService.api.productRepository.list({
-        withRelated: ['monthlyPrice', 'yearlyPrice']
+        withRelated: ['monthlyPrice', 'yearlyPrice', 'benefits']
     });
 
     const products = page.data.map((productModel) => {
@@ -99,6 +99,7 @@ const getPortalProductPrices = async function () {
             description: product.description || '',
             monthlyPrice: product.monthlyPrice,
             yearlyPrice: product.yearlyPrice,
+            benefits: product.benefits,
             prices: productPrices
         };
     });
