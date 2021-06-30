@@ -1,10 +1,13 @@
 import AjaxService from 'ember-ajax/services/ajax';
 import config from 'ghost-admin/config/environment';
+import moment from 'moment';
 import {AjaxError, isAjaxError} from 'ember-ajax/errors';
+import {captureMessage} from '@sentry/browser';
 import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {isNone} from '@ember/utils';
 import {inject as service} from '@ember/service';
+import {timeout} from 'ember-concurrency';
 
 const JSON_CONTENT_TYPE = 'application/json';
 const GHOST_REQUEST = /\/ghost\/api\//;
@@ -158,6 +161,7 @@ export function isAcceptedResponse(errorOrStatus) {
 }
 
 let ajaxService = AjaxService.extend({
+    config: service(),
     session: service(),
 
     // flag to tell our ESA authenticator not to try an invalidate DELETE request
@@ -180,9 +184,9 @@ let ajaxService = AjaxService.extend({
         }
     },
 
-    // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
-    // and formats appropriately, we want to handle `application/json` the same
-    _makeRequest(hash) {
+    async _makeRequest(hash) {
+        // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
+        // and formats appropriately, we want to handle `application/json` the same
         if (isJSONContentType(hash.contentType) && hash.type !== 'GET') {
             if (typeof hash.data === 'object') {
                 hash.data = JSON.stringify(hash.data);
@@ -191,7 +195,64 @@ let ajaxService = AjaxService.extend({
 
         hash.withCredentials = true;
 
-        return this._super(hash);
+        // attempt retries for 15 seconds in two situations:
+        // 1. Server Unreachable error from the browser (code 0), typically from short internet blips
+        // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
+
+        let success = false;
+        let errorName = null;
+        let attempts = 0;
+        let startTime = new Date();
+        let retryingMs = 0;
+        const maxRetryingMs = 15_000;
+        const retryPeriods = [500, 1000];
+        const retryErrorChecks = [this.isServerUnreachableError, this.isMaintenanceError];
+
+        const getErrorData = () => {
+            const data = {
+                errorName,
+                attempts,
+                totalSeconds: moment().diff(moment(startTime), 'seconds')
+            };
+            if (this._responseServer) {
+                data.server = this._responseServer;
+            }
+            return data;
+        };
+
+        const makeRequest = this._super.bind(this);
+
+        while (retryingMs <= maxRetryingMs && !success) {
+            try {
+                const result = await makeRequest(hash);
+                success = true;
+
+                if (attempts !== 0 && this.config.get('sentry_dsn')) {
+                    captureMessage('Request took multiple attempts', {extra: getErrorData()});
+                }
+
+                return result;
+            } catch (error) {
+                errorName = error.response?.constructor?.name;
+                retryingMs = (new Date()) - startTime;
+
+                // avoid retries in tests because it slows things down and is not expected in mocks
+                // isTesting can be overridden in individual tests if required
+                if (this.isTesting) {
+                    throw error;
+                }
+
+                if (retryErrorChecks.some(check => check(error.response)) && retryingMs <= maxRetryingMs) {
+                    await timeout(retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
+                    attempts += 1;
+                } else if (attempts > 0 && this.config.get('sentry_dsn')) {
+                    captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                    throw error;
+                } else {
+                    throw error;
+                }
+            }
+        }
     },
 
     handleResponse(status, headers, payload, request) {
@@ -218,6 +279,11 @@ let ajaxService = AjaxService.extend({
         let isGhostRequest = GHOST_REQUEST.test(request.url);
         let isAuthenticated = this.get('session.isAuthenticated');
         let isUnauthorized = this.isUnauthorizedError(status, headers, payload);
+
+        // used when reporting connection errors, helps distinguish CDN
+        if (isGhostRequest) {
+            this._responseServer = headers.server;
+        }
 
         if (isAuthenticated && isGhostRequest && isUnauthorized) {
             this.skipSessionDeletion = true;
