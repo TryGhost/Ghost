@@ -1235,7 +1235,6 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-email-design-typography .gh-radio-content {
     border: 1px solid var(--whitegrey);
-    border-radius: 3px; /* labs-newsletter-settings - delete line when removing flag */
     margin: 0 -32px 0 0;
 }
 
@@ -1250,12 +1249,6 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-email-design-typography .gh-radio-label {
-    padding: 12px 12px 12px 14px;
-    display: flex;
-    align-items: center;
-}
-
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-label {
     padding: 8px 4px;
     display: flex;
     align-items: center;
@@ -1271,23 +1264,19 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-email-design-typography .gh-radio-label .description h4 {
-    font-size: 1.3rem;
     margin: 0;
     padding: 0;
     line-height: 1.4em;
-}
-
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-label .description h4 {
+    font-size: 1.3rem;
     font-weight: 400;
 }
 
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-label.serif .description h4 {
-    font-size: 1.32rem;
+.gh-email-design-typography .gh-radio-label.serif .description h4 {
     letter-spacing: .4px;
 }
 
 .gh-email-design-typography .gh-radio-label.serif .description h4,
-.labs-newsletter-settings .gh-email-design-typography .gh-radio-content.serif .description h4 {
+.gh-email-design-typography .gh-radio-content.serif .description h4 {
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 1.3rem;
 }
