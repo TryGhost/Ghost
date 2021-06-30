@@ -9,7 +9,7 @@
 const Promise = require('bluebird');
 
 const moment = require('moment');
-const {SafeString, logging, i18n, errors} = require('../../../../services/proxy');
+const {SafeString, logging, errors} = require('../../../../services/proxy');
 const amperizeCache = {};
 let allowedAMPTags = [];
 let allowedAMPAttributes = {};
@@ -128,11 +128,11 @@ function getAmperizeHTML(html, post) {
                     if (err.src) {
                         // This is a valid 500 GhostError because it means the amperize parser is unable to handle some Ghost HTML.
                         logging.error(new errors.GhostError({
-                            message: `AMP HTML couldn't get parsed: ${err.src}`,
+                            message: `AMP HTML couldn't be parsed: ${err.src}`,
                             code: 'AMP_PARSER_ERROR',
                             err: err,
                             context: post.url,
-                            help: i18n.t('errors.apps.appWillNotBeLoaded.help')
+                            help: 'Please share this error on GitHub or https://forum.ghost.org'
                         }));
                     } else {
                         logging.error(new errors.GhostError({err, code: 'AMP_PARSER_ERROR'}));
