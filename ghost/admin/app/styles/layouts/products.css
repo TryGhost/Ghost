@@ -22,7 +22,7 @@
     justify-content: space-between;
     border-radius: 3px;
     padding: 24px;
-    background: white;
+    background: var(--main-bg-color);
     margin-bottom: 12px;
     box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
 }
