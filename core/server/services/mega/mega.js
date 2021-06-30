@@ -406,8 +406,10 @@ async function createEmailBatches({emailModel, memberSegment, options}) {
 
     const storeRecipientBatch = async function (recipients) {
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-        // TODO: store `memberSegment` in EmailBatch once the table migration is merged
-        const batchModel = await models.EmailBatch.add({email_id: emailModel.id}, knexOptions);
+        const batchModel = await models.EmailBatch.add({
+            email_id: emailModel.id,
+            member_segment: memberSegment
+        }, knexOptions);
 
         const recipientData = [];
 
