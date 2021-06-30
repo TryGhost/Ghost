@@ -3,7 +3,6 @@
 // circular dependency bugs.
 const debug = require('@tryghost/debug')('settings:cache');
 const _ = require('lodash');
-const events = require('../../lib/common/events');
 const publicSettings = require('./public');
 
 // Local function, only ever used for initialising
@@ -110,12 +109,13 @@ module.exports = {
      *
      * Optionally takes a collection of settings & can populate the cache with these.
      *
+     * @param {EventEmitter} events
      * @param {Bookshelf.Collection<Settings>} [settingsCollection]
      * @return {object}
      */
-    init(settingsCollection) {
+    init(events, settingsCollection) {
         // First, reset the cache and listeners
-        this.reset();
+        this.reset(events);
 
         // // if we have been passed a collection of settings, use this to populate the cache
         if (settingsCollection && settingsCollection.models) {
@@ -132,8 +132,9 @@ module.exports = {
 
     /**
      * Reset both the cache and the listeners, must be called during init
+     * @param {EventEmitter} events
      */
-    reset() {
+    reset(events) {
         settingsCache = {};
 
         events.removeListener('settings.edited', updateSettingFromModel);
