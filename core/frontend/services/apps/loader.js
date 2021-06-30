@@ -1,9 +1,14 @@
 const path = require('path');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const Proxy = require('./proxy');
+
+const messages = {
+    noActivateMethodLoadingAppError: 'Error loading app named {name}; no activate() method defined.'
+};
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
@@ -35,7 +40,9 @@ module.exports = {
 
         // Check for an activate() method on the app.
         if (!_.isFunction(app.activate)) {
-            return Promise.reject(new Error(i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
+            return Promise.reject(new errors.IncorrectUsageError(
+                tpl(messages.noActivateMethodLoadingAppError, {name: name})
+            ));
         }
 
         // Wrapping the activate() with a when because it's possible
