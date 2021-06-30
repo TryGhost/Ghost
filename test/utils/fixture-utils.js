@@ -14,7 +14,6 @@ const fixtureUtils = require('../../core/server/data/schema/fixtures/utils');
 const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings');
-const settingsCache = require('../../core/server/services/settings/cache');
 const labsService = require('../../core/server/services/labs');
 
 // Other Test Utilities
@@ -557,7 +556,6 @@ const fixtures = {
             await models.Settings.add(labsSetting);
         }
 
-        settingsCache.shutdown();
         await settingsService.init();
     }
 };
@@ -597,7 +595,6 @@ const toDoList = {
         return fixtures.insertExtraTags();
     },
     settings: function populateSettings() {
-        settingsCache.shutdown();
         return settingsService.init();
     },
     'users:roles': function createUsersWithRoles() {
