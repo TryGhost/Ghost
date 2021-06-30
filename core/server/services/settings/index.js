@@ -2,6 +2,7 @@
  * Settings Lib
  * A collection of utilities for handling settings including a cache
  */
+const events = require('../../lib/common/events');
 const models = require('../../models');
 const SettingsCache = require('./cache');
 
@@ -27,14 +28,14 @@ module.exports = {
      */
     async init() {
         const settingsCollection = await models.Settings.populateDefaults();
-        SettingsCache.init(settingsCollection);
+        SettingsCache.init(events, settingsCollection);
     },
 
     /**
      * Shutdown the cache, used in force boot during testing
      */
     shutdown() {
-        SettingsCache.reset();
+        SettingsCache.reset(events);
     },
 
     /**

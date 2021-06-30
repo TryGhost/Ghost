@@ -70,7 +70,7 @@ describe('UNIT: settings cache', function () {
             }]
         };
 
-        cache.init(settingsCollection);
+        cache.init(events, settingsCollection);
         cache.get('key1').should.equal('init value');
 
         // check handler only called once on settings.edit
@@ -83,7 +83,7 @@ describe('UNIT: settings cache', function () {
         cache.get('key1').should.equal('first edit');
 
         // init does a reset by default
-        cache.init(settingsCollection);
+        cache.init(events, settingsCollection);
         setSpy.callCount.should.equal(3);
         cache.get('key1').should.equal('init value');
 
