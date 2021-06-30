@@ -410,7 +410,8 @@ export const PlanSectionStyles = `
     }
 
     .gh-portal-singleproduct-benefits .gh-portal-product-description {
-        margin-bottom: 12px !important;
+        margin-top: 8px !important;
+        margin-bottom: 24px !important;
     }
 
     .gh-portal-singleproduct-benefits .gh-portal-product-benefit:last-of-type {
@@ -560,7 +561,7 @@ function PlanBenefits({product, plans, selectedPlan}) {
     const benefitContainerClass = !product?.benefits?.length || planBenefits.length <= 1 ? 'default-benefits' : '';
     return (
         <div className={'gh-portal-singleproduct-benefits gh-portal-product-benefits ' + benefitContainerClass}>
-            <div className='gh-portal-product-description'> {planDescription} </div>
+            {(product.description ? <div className='gh-portal-product-description'> {planDescription} </div> : '')}
             {benefits}
         </div>
     );
