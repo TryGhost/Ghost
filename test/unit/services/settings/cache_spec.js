@@ -60,7 +60,7 @@ describe('UNIT: settings cache', function () {
         cache.getPublic().should.eql(values);
     });
 
-    it('can shutdown and init without double handling of events', function () {
+    it('can reset and init without double handling of events', function () {
         const setSpy = sinon.spy(cache, 'set');
 
         const settingsCollection = {
@@ -82,8 +82,7 @@ describe('UNIT: settings cache', function () {
         setSpy.callCount.should.equal(2);
         cache.get('key1').should.equal('first edit');
 
-        // shutdown + init
-        cache.shutdown();
+        // init does a reset by default
         cache.init(settingsCollection);
         setSpy.callCount.should.equal(3);
         cache.get('key1').should.equal('init value');

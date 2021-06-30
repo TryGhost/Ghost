@@ -18,7 +18,6 @@ const models = require('../../core/server/models');
 const urlService = require('../../core/frontend/services/url');
 const settingsService = require('../../core/server/services/settings');
 const frontendSettingsService = require('../../core/frontend/services/settings');
-const settingsCache = require('../../core/server/services/settings/cache');
 const web = require('../../core/server/web');
 const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
@@ -107,8 +106,6 @@ const restartModeGhostStart = async () => {
     await knexMigrator.init({only: 2});
 
     // Reset the settings cache
-    // @TODO: Prob A: why/how is this different to using settingsCache.reset()
-    settingsCache.shutdown();
     await settingsService.init();
 
     // Reload the frontend
@@ -116,7 +113,7 @@ const restartModeGhostStart = async () => {
     await themeService.init();
 
     // Reload the URL service & wait for it to be ready again
-    // @TODO: Prob B: why/how is this different to urlService.resetGenerators?
+    // @TODO: why/how is this different to urlService.resetGenerators?
     urlServiceUtils.reset();
     urlServiceUtils.init();
     await urlServiceUtils.isFinished();
@@ -151,13 +148,11 @@ const freshModeGhostStart = async (options) => {
     // Reset the DB
     await knexMigrator.reset({force: true});
 
-    // Stop the serve (forceStart Mode)
+    // Stop the server (forceStart Mode)
     await stopGhost();
 
-    // Reset the settings cache
-    // @TODO: Prob A: why/how is this different to using settingsService.init() and why to do we need this?
-    settingsCache.shutdown();
-    settingsCache.reset();
+    // Reset the settings cache and disable listeners so they don't get triggered further
+    settingsService.shutdown();
 
     // Do a full database initialisation
     await knexMigrator.init();
@@ -165,6 +160,8 @@ const freshModeGhostStart = async (options) => {
     if (config.get('database:client') === 'sqlite3') {
         await db.knex.raw('PRAGMA journal_mode = TRUNCATE;');
     }
+
+    await settingsService.init();
 
     // Reset the URL service generators
     // @TODO: Prob B: why/how is this different to urlService.reset?
@@ -174,7 +171,7 @@ const freshModeGhostStart = async (options) => {
     // Actually boot Ghost
     await bootGhost(options);
 
-    // Wait for the URL service to be ready, which happens after boot
+    // Wait for the URL service to be ready, which happens after bootYou
     await urlServiceUtils.isFinished();
 };
 

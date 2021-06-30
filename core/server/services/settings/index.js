@@ -22,9 +22,19 @@ function hideValueIfSecret(setting) {
 }
 
 module.exports = {
+    /**
+     * Initialise the cache, used in boot and in testing
+     */
     async init() {
         const settingsCollection = await models.Settings.populateDefaults();
         SettingsCache.init(settingsCollection);
+    },
+
+    /**
+     * Shutdown the cache, used in force boot during testing
+     */
+    shutdown() {
+        SettingsCache.reset();
     },
 
     /**

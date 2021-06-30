@@ -114,8 +114,8 @@ module.exports = {
      * @return {object}
      */
     init(settingsCollection) {
-        // First, reset the cache
-        settingsCache = {};
+        // First, reset the cache and listeners
+        this.reset();
 
         // // if we have been passed a collection of settings, use this to populate the cache
         if (settingsCollection && settingsCollection.models) {
@@ -130,13 +130,14 @@ module.exports = {
         return settingsCache;
     },
 
-    shutdown() {
+    /**
+     * Reset both the cache and the listeners, must be called during init
+     */
+    reset() {
+        settingsCache = {};
+
         events.removeListener('settings.edited', updateSettingFromModel);
         events.removeListener('settings.added', updateSettingFromModel);
         events.removeListener('settings.deleted', updateSettingFromModel);
-    },
-
-    reset() {
-        settingsCache = {};
     }
 };
