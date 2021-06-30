@@ -5,7 +5,7 @@ const path = require('path');
 const models = require('../../core/server/models');
 const routingService = require('../../core/frontend/services/routing');
 const settingsService = require('../../core/server/services/settings');
-const settingsCache = require('../../core/server/services/settings/cache');
+const settingsCache = require('../../core/shared/settings-cache');
 const imageLib = require('../../core/server/lib/image');
 const themeService = require('../../core/server/services/themes');
 

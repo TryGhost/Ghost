@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const settingsCache = require('../../server/services/settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 const urlUtils = require('../../shared/url-utils');
 const logging = require('@tryghost/logging');
 const getUrl = require('./url');

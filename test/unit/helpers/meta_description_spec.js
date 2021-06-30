@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const helpers = require('../../../core/frontend/helpers');
-const settingsCache = require('../../../core/server/services/settings/cache');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 describe('{{meta_description}} helper', function () {
     const localSettingsCache = {};

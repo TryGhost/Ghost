@@ -4,7 +4,7 @@
  */
 const events = require('../../lib/common/events');
 const models = require('../../models');
-const SettingsCache = require('./cache');
+const SettingsCache = require('../../../shared/settings-cache');
 
 // The string returned when a setting is set as write-only
 const obfuscatedSetting = '••••••••';

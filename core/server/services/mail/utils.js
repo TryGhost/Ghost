@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const htmlToText = require('html-to-text');
 const urlUtils = require('../../../shared/url-utils');
-const settingsCache = require('../settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 const templatesDir = path.resolve(__dirname, '..', 'mail', 'templates');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;

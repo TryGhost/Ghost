@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const settingsCache = require('../../../../../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../../../../../core/shared/settings-cache');
 const dateUtil = require('../../../../../../../../core/server/api/v2/utils/serializers/output/utils/date');
 
 describe('Unit: v2/utils/serializers/output/utils/date', function () {

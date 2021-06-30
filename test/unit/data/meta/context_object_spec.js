@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const getContextObject = require('../../../../core/frontend/meta/context_object.js');
-const settingsCache = require('../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('getContextObject', function () {
     let data;

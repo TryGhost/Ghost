@@ -2,15 +2,17 @@ const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const events = require('../../../../core/server/lib/common/events');
-const publicSettings = require('../../../../core/server/services/settings/public');
-let cache = rewire('../../../../core/server/services/settings/cache');
+const events = require('../../../core/server/lib/common/events');
+
+// Testing  the Private API
+let cache = rewire('../../../core/shared/settings-cache/cache');
+const publicSettings = require('../../../core/shared/settings-cache/public');
 
 should.equal(true, true);
 
 describe('UNIT: settings cache', function () {
     beforeEach(function () {
-        cache = rewire('../../../../core/server/services/settings/cache');
+        cache = rewire('../../../core/shared/settings-cache/cache');
     });
 
     afterEach(function () {

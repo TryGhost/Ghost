@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const imageLib = require('../../../../core/server/lib/image');
-const settingsCache = require('../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../core/shared/settings-cache');
 const configUtils = require('../../../utils/configUtils');
 const config = configUtils.config;
 

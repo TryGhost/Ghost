@@ -1,5 +1,5 @@
 const moment = require('moment-timezone');
-const settingsCache = require('../../../../../../services/settings/cache');
+const settingsCache = require('../../../../../../../shared/settings-cache');
 
 const format = (date) => {
     return moment(date)
