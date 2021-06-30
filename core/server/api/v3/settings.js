@@ -313,7 +313,7 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            await routeSettings.settings.setFromFilePath(frame.file.path);
+            await routeSettings.setFromFilePath(frame.file.path);
             const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
             await settingsService.syncRoutesHash(getRoutesHash);
         }
@@ -333,7 +333,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            return routeSettings.settings.get();
+            return routeSettings.get();
         }
     }
 };
