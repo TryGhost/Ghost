@@ -1,5 +1,5 @@
 const should = require('should');
-const getPublishedDate = require('../../../../core/frontend/meta/published_date');
+const getPublishedDate = require('../../../core/frontend/meta/published_date');
 
 describe('getPublishedDate', function () {
     it('should return published at date as ISO 8601 from context if exists', function () {

@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
-const getOgImage = require('../../../../core/frontend/meta/og_image');
-const settingsCache = require('../../../../core/shared/settings-cache');
+const getTwitterImage = require('../../../core/frontend/meta/twitter_image');
+const settingsCache = require('../../../core/shared/settings-cache');
 
-describe('getOgImage', function () {
+describe('getTwitterImage', function () {
     let localSettingsCache = {};
 
     beforeEach(function () {
@@ -18,211 +18,211 @@ describe('getOgImage', function () {
     });
 
     it('has correct fallbacks for context: home', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
-        getOgImage({context: ['home'], home: {}})
-            .should.endWith('/content/images/settings-og.jpg');
+        getTwitterImage({context: ['home'], home: {}})
+            .should.endWith('/content/images/settings-twitter.jpg');
 
-        localSettingsCache.og_image = '';
+        localSettingsCache.twitter_image = '';
 
-        getOgImage({context: ['home'], home: {}})
+        getTwitterImage({context: ['home'], home: {}})
             .should.endWith('/content/images/settings-cover.jpg');
 
         localSettingsCache.cover_image = '';
 
         should(
-            getOgImage({context: ['home'], home: {}})
+            getTwitterImage({context: ['home'], home: {}})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: post', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const post = {
-            og_image: '/content/images/post-og.jpg',
+            twitter_image: '/content/images/post-twitter.jpg',
             feature_image: '/content/images/post-feature.jpg'
         };
 
-        getOgImage({context: ['post'], post})
-            .should.endWith('post-og.jpg');
+        getTwitterImage({context: ['post'], post})
+            .should.endWith('post-twitter.jpg');
 
-        post.og_image = '';
+        post.twitter_image = '';
 
-        getOgImage({context: ['post'], post})
+        getTwitterImage({context: ['post'], post})
             .should.endWith('post-feature.jpg');
 
         post.feature_image = '';
 
         should(
-            getOgImage({context: ['post'], post})
-        ).endWith('settings-og.jpg');
+            getTwitterImage({context: ['post'], post})
+        ).endWith('settings-twitter.jpg');
 
-        localSettingsCache.og_image = '';
+        localSettingsCache.twitter_image = '';
 
         should(
-            getOgImage({context: ['post'], post})
+            getTwitterImage({context: ['post'], post})
         ).endWith('settings-cover.jpg');
 
         localSettingsCache.cover_image = '';
 
         should(
-            getOgImage({context: ['post'], post})
+            getTwitterImage({context: ['post'], post})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: page', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const page = {
-            og_image: '/content/images/page-og.jpg',
+            twitter_image: '/content/images/page-twitter.jpg',
             feature_image: '/content/images/page-feature.jpg'
         };
 
-        getOgImage({context: ['page'], page})
-            .should.endWith('page-og.jpg');
+        getTwitterImage({context: ['page'], page})
+            .should.endWith('page-twitter.jpg');
 
-        page.og_image = '';
+        page.twitter_image = '';
 
-        getOgImage({context: ['page'], page})
+        getTwitterImage({context: ['page'], page})
             .should.endWith('page-feature.jpg');
 
         page.feature_image = '';
 
         should(
-            getOgImage({context: ['page'], page})
-        ).endWith('settings-og.jpg');
+            getTwitterImage({context: ['page'], page})
+        ).endWith('settings-twitter.jpg');
 
-        localSettingsCache.og_image = '';
+        localSettingsCache.twitter_image = '';
 
         should(
-            getOgImage({context: ['page'], page})
+            getTwitterImage({context: ['page'], page})
         ).endWith('settings-cover.jpg');
 
         localSettingsCache.cover_image = '';
 
         should(
-            getOgImage({context: ['page'], page})
+            getTwitterImage({context: ['page'], page})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: page (legacy format)', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const post = {
-            og_image: '/content/images/page-og.jpg',
+            twitter_image: '/content/images/page-twitter.jpg',
             feature_image: '/content/images/page-feature.jpg'
         };
 
-        getOgImage({context: ['page'], post})
-            .should.endWith('page-og.jpg');
+        getTwitterImage({context: ['page'], post})
+            .should.endWith('page-twitter.jpg');
 
-        post.og_image = '';
+        post.twitter_image = '';
 
-        getOgImage({context: ['page'], post})
+        getTwitterImage({context: ['page'], post})
             .should.endWith('page-feature.jpg');
 
         post.feature_image = '';
 
         should(
-            getOgImage({context: ['page'], post})
-        ).endWith('settings-og.jpg');
+            getTwitterImage({context: ['page'], post})
+        ).endWith('settings-twitter.jpg');
 
-        localSettingsCache.og_image = '';
+        localSettingsCache.twitter_image = '';
 
         should(
-            getOgImage({context: ['page'], post})
+            getTwitterImage({context: ['page'], post})
         ).endWith('settings-cover.jpg');
 
         localSettingsCache.cover_image = '';
 
         should(
-            getOgImage({context: ['page'], post})
+            getTwitterImage({context: ['page'], post})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: author', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const author = {
             cover_image: '/content/images/author-cover.jpg'
         };
 
-        getOgImage({context: ['author'], author})
+        getTwitterImage({context: ['author'], author})
             .should.endWith('author-cover.jpg');
 
         author.cover_image = '';
 
         should(
-            getOgImage({context: ['author'], author})
+            getTwitterImage({context: ['author'], author})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: author_paged', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const author = {
             cover_image: '/content/images/author-cover.jpg'
         };
 
-        getOgImage({context: ['author', 'paged'], author})
+        getTwitterImage({context: ['author', 'paged'], author})
             .should.endWith('author-cover.jpg');
 
         author.cover_image = '';
 
         should(
-            getOgImage({context: ['author', 'paged'], author})
+            getTwitterImage({context: ['author', 'paged'], author})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: tag', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const tag = {
             feature_image: '/content/images/tag-feature.jpg'
         };
 
-        getOgImage({context: ['tag'], tag})
+        getTwitterImage({context: ['tag'], tag})
             .should.endWith('tag-feature.jpg');
 
         tag.feature_image = '';
 
-        getOgImage({context: ['tag'], tag})
+        getTwitterImage({context: ['tag'], tag})
             .should.endWith('settings-cover.jpg');
 
         localSettingsCache.cover_image = '';
 
         should(
-            getOgImage({context: ['tag'], tag})
+            getTwitterImage({context: ['tag'], tag})
         ).equal(null);
     });
 
     it('has correct fallbacks for context: tag_paged', function () {
-        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
         const tag = {
             feature_image: '/content/images/tag-feature.jpg'
         };
 
-        getOgImage({context: ['tag', 'paged'], tag})
+        getTwitterImage({context: ['tag', 'paged'], tag})
             .should.endWith('tag-feature.jpg');
 
         tag.feature_image = '';
 
-        getOgImage({context: ['tag', 'paged'], tag})
+        getTwitterImage({context: ['tag', 'paged'], tag})
             .should.endWith('settings-cover.jpg');
 
         localSettingsCache.cover_image = '';
 
         should(
-            getOgImage({context: ['tag', 'paged'], tag})
+            getTwitterImage({context: ['tag', 'paged'], tag})
         ).equal(null);
     });
 });
