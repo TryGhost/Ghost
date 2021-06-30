@@ -26,8 +26,8 @@ const prices = [
 const products = [
     {
         id: 'product_1',
-        name: 'Gold',
-        description: 'A bit longer description',
+        name: 'Ball is life membership',
+        description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
         monthlyPrice: {
             id: '6085adc776909b1a2382369a',
             stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
@@ -49,29 +49,25 @@ const products = [
             amount: 20000,
             type: 'recurring',
             interval: 'year'
-        }
-        // benefits: [
-        //     {
-        //         id: 'a1',
-        //         name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
-        //     },
-        //     {
-        //         id: 'a2',
-        //         name: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
-        //     },
-        //     {
-        //         id: 'a3',
-        //         name: 'Nullam hendrerit accumsan facilisis'
-        //     },
-        //     {
-        //         id: 'a4',
-        //         name: 'Vivamus vel elit lectus'
-        //     },
-        //     {
-        //         id: 'a5',
-        //         name: 'Maecenas tempus cursus metus'
-        //     }
-        // ]
+        },
+        benefits: [
+            {
+                id: 'a1',
+                name: 'Limited early adopter pricing'
+            },
+            {
+                id: 'a2',
+                name: 'Latest gear reviews'
+            },
+            {
+                id: 'a3',
+                name: 'Weekly email newsletter'
+            },
+            {
+                id: 'a4',
+                name: 'Listen to my podcast'
+            }
+        ]
     },
     {
         id: 'product_2',
@@ -102,19 +98,15 @@ const products = [
         benefits: [
             {
                 id: 'b1',
-                name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+                name: 'Limited early adopter pricing'
             },
             {
                 id: 'b2',
-                name: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
+                name: 'Latest gear reviews'
             },
             {
                 id: 'b3',
-                name: 'Nullam hendrerit accumsan facilisis'
-            },
-            {
-                id: 'b4',
-                name: 'Vivamus vel elit lectus'
+                name: 'Weekly email newsletter'
             }
         ]
     },
@@ -147,15 +139,11 @@ const products = [
         benefits: [
             {
                 id: 'c1',
-                name: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec maximus odio'
+                name: 'Latest gear reviews'
             },
             {
                 id: 'c2',
-                name: 'Aliquam nec condimentum libero. In in turpis quis nibh faucibus bibendum mollis et elit'
-            },
-            {
-                id: 'c3',
-                name: 'Nullam hendrerit accumsan facilisis'
+                name: 'Weekly email newsletter'
             }
         ]
     }
@@ -184,7 +172,7 @@ export const site = {
     is_stripe_configured: true,
     portal_button: true,
     portal_name: true,
-    portal_plans: ['free', 'yearly'],
+    portal_plans: ['monthly', 'yearly'],
     portal_button_icon: 'icon-1',
     portal_button_signup_text: 'Subscribe now',
     portal_button_style: 'icon-and-text',

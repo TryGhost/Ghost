@@ -250,7 +250,7 @@ export function getProductBenefits({product, site = null}) {
         const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = product?.benefits?.length > 0 ? [...productBenefits] : [{
-            name: 'Full access'
+            name: 'Full access to all articles'
         }];
         const yearlyBenefits = [...monthlyBenefits];
         if (yearlyDiscount > 0 && availablePrices.length > 1) {
