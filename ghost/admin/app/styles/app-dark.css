@@ -83,6 +83,7 @@
     --whitegrey: #1c1e21;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
 
+    --main-bg-color: #151719;
     --dark-main-bg-color: #151719;
     --hairline-color-1: #272a30;
     --hairline-color-2: #626D79;
@@ -289,15 +290,15 @@ input:focus,
 
 /* ---------------------------------------------------------------------- */
 
-.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red),
-.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link),
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link),
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link) {
     background: var(--lightgrey);
 }
 
-.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
-.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
+.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link):hover,
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link):hover,
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link):hover {
     background: var(--lightgrey-l1);
 }
 
