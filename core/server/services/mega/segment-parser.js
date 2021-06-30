@@ -7,7 +7,8 @@ const getSegmentsFromHtml = (html) => {
         .get()
         .map(el => el.attribs['data-gh-segment']);
 
-    return allSegments;
+    // only return unique elements
+    return [...new Set(allSegments)];
 };
 
 module.exports.getSegmentsFromHtml = getSegmentsFromHtml;

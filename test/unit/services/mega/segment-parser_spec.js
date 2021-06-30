@@ -27,6 +27,20 @@ describe('MEGA: Segment Parser', function () {
         segments[2].should.equal('status:-free,label.slug:VIP');
     });
 
+    it('extracts only unique segments', function () {
+        const html = `
+            <div data-gh-segment="status:-free"><p>Text for paid</p></div>
+            <div data-gh-segment="status:free"><p>Text for free</p></div>
+            <div data-gh-segment="status:-free"><p>Another message for paid member</p></div>
+        `;
+
+        const segments = getSegmentsFromHtml(html);
+
+        segments.length.should.equal(2);
+        segments[0].should.equal('status:-free');
+        segments[1].should.equal('status:free');
+    });
+
     it('extracts no segments from HTML', function () {
         const html = '<div data-gh-somethingelse="status:-free"><p>Plain html with no replacements</p></div>';
 
