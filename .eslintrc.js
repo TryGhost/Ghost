@@ -13,20 +13,9 @@ module.exports = {
         // @TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',
         'no-var': 'error',
-        'one-var': [2, 'never'],
-        'no-restricted-syntax': ['warn',
-            {
-                selector: 'NewExpression[callee.name=\'Error\']',
-                message: 'Direct calls to new Error() are not allowed. Please use @tryghost/errors.'
-            }]
+        'one-var': ['error', 'never']
     },
     overrides: [
-        {
-            files: '**/index.js',
-            rules: {
-                'max-lines': ['warn', {skipBlankLines: true, skipComments: true, max: 50}]
-            }
-        },
         {
             files: 'core/server/api/canary/*',
             rules: {
