@@ -421,6 +421,12 @@ export const PlanSectionStyles = `
     .gh-portal-singleproduct-benefits.default-benefits {
         align-items: center;
     }
+
+    @media (max-width: 480px) {
+        .gh-portal-singleproduct-benefits {
+            display: flex !important;
+        }
+    }
 `;
 
 function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
