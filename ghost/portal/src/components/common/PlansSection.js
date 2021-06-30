@@ -532,7 +532,8 @@ function PlanBenefit({benefit}) {
 }
 
 function PlanBenefits({product, plans, selectedPlan}) {
-    const productBenefits = getProductBenefits({product});
+    const {site} = useContext(AppContext);
+    const productBenefits = getProductBenefits({product, site});
     const plan = plans.find((_plan) => {
         return _plan.id === selectedPlan;
     });
