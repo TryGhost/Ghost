@@ -1,5 +1,5 @@
 const ghostVersion = require('@tryghost/version');
-const settingsCache = require('../settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 

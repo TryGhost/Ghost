@@ -3,7 +3,7 @@ const should = require('should');
 const sinon = require('sinon');
 const crypto = require('crypto');
 const fs = require('fs-extra');
-const settingsCache = require('../../../../core/server/services/settings/cache');
+const settingsCache = require('../../../../core/shared/settings-cache');
 const privateBlogging = require('../../../../core/frontend/apps/private-blogging/lib/middleware');
 
 function hash(password, salt) {

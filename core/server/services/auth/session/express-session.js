@@ -2,7 +2,7 @@ const util = require('util');
 const session = require('express-session');
 const constants = require('@tryghost/constants');
 const config = require('../../../../shared/config');
-const settingsCache = require('../../settings/cache');
+const settingsCache = require('../../../../shared/settings-cache');
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
 

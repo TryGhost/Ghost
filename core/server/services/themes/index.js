@@ -7,7 +7,7 @@ const themeLoader = require('./loader');
 const bridge = require('../../../bridge');
 const validate = require('./validate');
 const list = require('./list');
-const settingsCache = require('../settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 
 module.exports = {
     // Init themes module

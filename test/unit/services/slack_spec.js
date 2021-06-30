@@ -12,7 +12,7 @@ const logging = require('@tryghost/logging');
 const imageLib = require('../../../core/server/lib/image');
 const urlService = require('../../../core/frontend/services/url');
 const schema = require('../../../core/server/data/schema').checks;
-const settingsCache = require('../../../core/server/services/settings/cache');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 // Test data
 const slackURL = 'https://hooks.slack.com/services/a-b-c-d';

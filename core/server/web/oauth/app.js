@@ -6,7 +6,7 @@ const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
 const config = require('../../../shared/config');
-const settingsCache = require('../../services/settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 const models = require('../../models');
 const auth = require('../../services/auth');
 

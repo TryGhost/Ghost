@@ -13,7 +13,7 @@ const cheerio = require('cheerio');
 const _ = require('lodash');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
-const settingsCache = require('../../core/server/services/settings/cache');
+const settingsCache = require('../../core/shared/settings-cache');
 const origCache = _.cloneDeep(settingsCache);
 
 function assertCorrectFrontendHeaders(res) {

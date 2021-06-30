@@ -6,7 +6,7 @@ const errors = require('@tryghost/errors');
 
 const i18n = require('../../shared/i18n');
 const logging = require('@tryghost/logging');
-const settingsCache = require('../../server/services/settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 
 // Direct requires:

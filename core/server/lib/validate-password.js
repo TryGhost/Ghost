@@ -3,7 +3,7 @@ const _ = require('lodash');
 const validator = require('@tryghost/validator');
 
 const tpl = require('@tryghost/tpl');
-const settingsCache = require('../services/settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 const urlUtils = require('../../shared/url-utils');
 
 const messages = {

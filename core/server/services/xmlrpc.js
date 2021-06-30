@@ -7,7 +7,7 @@ const events = require('../lib/common/events');
 const i18n = require('../../shared/i18n');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const settingsCache = require('./settings/cache');
+const settingsCache = require('../../shared/settings-cache');
 const sentry = require('../../shared/sentry');
 
 const defaultPostSlugs = [

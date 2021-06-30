@@ -6,7 +6,7 @@ const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const i18n = require('../../../shared/i18n');
-const settingsCache = require('../settings/cache');
+const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 
 function getDomain() {
