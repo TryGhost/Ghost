@@ -12,12 +12,9 @@
             <p class="gh-product-card-description">
                 {{product.description}}
             </p>
-            {{#if (and (eq productIdx 0) (not (eq products.length 1)))}}
-                <span class="gh-badge gh-badge-green">Available in Portal</span>
-            {{/if}}
         </div>
         <div class="gh-product-card-block benefits-block">
-            <h4>Benefits <span class="counter">({{if product.benefits.length product.benefit.length "0"}})</span></h4>
+            <h4>Benefits <span class="counter">({{if product.benefits.length product.benefits.length "0"}})</span></h4>
             {{#if product.benefits.length}}
             <ul class="benefits">
                 {{#each product.benefits as |benefit|}}
