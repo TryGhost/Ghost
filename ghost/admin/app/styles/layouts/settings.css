@@ -1678,6 +1678,7 @@ p.theme-validation-details {
 
 .gh-setting-members-currencylabel span {
     margin-right: 0;
+    pointer-events: none;
 }
 
 
