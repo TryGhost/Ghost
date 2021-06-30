@@ -1,6 +1,6 @@
 const should = require('should');
-const getSchema = require('../../../../core/frontend/meta/schema');
-const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
+const getSchema = require('../../../core/frontend/meta/schema');
+const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 
 describe('getSchema', function () {
     it('should return post schema if context starts with post', function (done) {

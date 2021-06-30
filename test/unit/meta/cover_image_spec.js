@@ -1,5 +1,5 @@
 const should = require('should');
-const getCoverImage = require('../../../../core/frontend/meta/cover_image');
+const getCoverImage = require('../../../core/frontend/meta/cover_image');
 
 describe('getCoverImage', function () {
     it('should return absolute cover image url for home', function () {
