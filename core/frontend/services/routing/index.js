@@ -7,6 +7,10 @@ module.exports = {
         return require('./registry');
     },
 
+    get settings() {
+        return require('./settings');
+    },
+
     get helpers() {
         return require('./helpers');
     },
