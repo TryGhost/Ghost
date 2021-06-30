@@ -499,8 +499,8 @@
     width: 130px;
 }
 
-.gh-portal-links-table tr td.pagename.bold {
-    font-weight: bold;
+.gh-portal-links-table tr td.pagename.strong {
+    font-weight: 600;
 }
 
 .gh-portal-page-url-container {
