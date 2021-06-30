@@ -89,7 +89,11 @@
             <div class="gh-main-section-content grey gh-product-form-benefits">
                 <div class="gh-product-benefits">
                     <form id="product-benefits" class="gh-blognav" novalidate="novalidate">
-                        <SortableObjects @sortableObjectList={{this.benefits}} @useSwap={{false}}>
+                        <SortableObjects
+                            @sortableObjectList={{this.benefits}}
+                            @useSwap={{false}}
+                            @sortEndAction={{action "reorderItems"}}
+                        >
                             {{#each this.benefits as |benefitItem index|}}
                                 <DraggableObject @content={{benefitItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
                                     <GhBenefitItem
