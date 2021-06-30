@@ -27,23 +27,6 @@ module.exports = {
         SettingsCache.init(settingsCollection);
     },
 
-    async reinit() {
-        const oldSettings = SettingsCache.getAll();
-
-        SettingsCache.shutdown();
-        const settingsCollection = await models.Settings.populateDefaults();
-        const newSettings = SettingsCache.init(settingsCollection);
-
-        for (const model of settingsCollection.models) {
-            const key = model.attributes.key;
-
-            // The type of setting is object. That's why we need to compare the value of the `value` property.
-            if (newSettings[key].value !== oldSettings[key].value) {
-                model.emitChange(key + '.' + 'edited', {});
-            }
-        }
-    },
-
     /**
      * Handles syncronization of routes.yaml hash loaded in the frontend with
      * the value stored in the settings table.
