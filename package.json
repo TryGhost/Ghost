@@ -59,7 +59,7 @@
     "@tryghost/job-manager": "0.8.7",
     "@tryghost/kg-card-factory": "2.2.3",
     "@tryghost/kg-default-atoms": "2.0.4",
-    "@tryghost/kg-default-cards": "4.0.4",
+    "@tryghost/kg-default-cards": "4.1.0",
     "@tryghost/kg-markdown-html-renderer": "4.0.3",
     "@tryghost/kg-mobiledoc-html-renderer": "4.0.0",
     "@tryghost/limit-service": "0.6.1",
