@@ -61,6 +61,18 @@ describe('Images API', function () {
         images.push(res.body.images[0].url.replace(config.get('url'), ''));
     });
 
+    it('Can upload a webp', async function () {
+        const res = await request.post(localUtils.API.getApiQuery('images/upload'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.webp'))
+            .expect(201);
+
+        res.body.images[0].url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghosticon.webp`));
+
+        images.push(res.body.images[0].url.replace(config.get('url'), ''));
+    });
+
     it('Can upload a square profile image', async function () {
         const res = await request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
