@@ -441,8 +441,8 @@ module.exports = class MemberRepository {
             }, options);
         }
 
-        let status = 'free';
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
+        let status = memberProducts.length === 0 ? 'free' : 'comped';
         if (this.isActiveSubscriptionStatus(subscription.status)) {
             status = 'paid';
             if (ghostProduct) {
