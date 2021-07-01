@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('mega');
+const tpl = require('@tryghost/tpl');
 const url = require('url');
 const moment = require('moment');
 const ObjectID = require('bson-objectid');
@@ -17,6 +18,10 @@ const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const {getSegmentsFromHtml} = require('./segment-parser');
+
+const messages = {
+    invalidSegment: 'Invalid segment value. Use one of the valid:"status:free" or "status:-free" values.'
+};
 
 const getFromAddress = () => {
     let fromAddress = membersService.config.getEmailFromAddress();
@@ -359,6 +364,43 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
 }
 
 /**
+ * Partitions array of member records according to the segment they belong to
+ *
+ * @param {Object[]} memberRows raw member rows to partition
+ * @param {string[]} segments segment filters to partition batches by
+ *
+ * @returns {Object} partitioned memberRows with keys that correspond segment names
+ */
+function partitionMembersBySegment(memberRows, segments) {
+    const partitions = {};
+
+    for (const memberSegment of segments) {
+        let segmentedMemberRows;
+
+        // NOTE: because we only support two types of segments at the moment the logic was kept dead simple
+        //       in the future this segmentation should probably be substituted with NQL:
+        //       memberRows.filter(member => nql(memberSegment).queryJSON(member));
+        if (memberSegment === 'status:free') {
+            segmentedMemberRows = memberRows.filter(member => member.status === 'free');
+            memberRows = memberRows.filter(member => member.status !== 'free');
+        } else if (memberSegment === 'status:-free') {
+            segmentedMemberRows = memberRows.filter(member => member.status !== 'free');
+            memberRows = memberRows.filter(member => member.status === 'free');
+        } else {
+            throw new errors.ValidationError(tpl(messages.invalidSegment));
+        }
+
+        partitions[memberSegment] = segmentedMemberRows;
+    }
+
+    if (memberRows.length) {
+        partitions.unsegmented = memberRows;
+    }
+
+    return partitions;
+}
+
+/**
  * Detects segment filters in emailModel's html and creates separate batches per segment
  *
  * @param {Object} options
@@ -471,7 +513,8 @@ module.exports = {
     addEmail,
     retryFailedEmail,
     sendTestEmail,
-    handleUnsubscribeRequest
+    handleUnsubscribeRequest,
+    partitionMembersBySegment // NOTE: only exposed for testing
 };
 
 /**
