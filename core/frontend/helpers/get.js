@@ -1,7 +1,7 @@
 // # Get Helper
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
-const {config, logging, errors, i18n, hbs, api} = require('../services/proxy');
+const {config, logging, errors, i18n, hbs, api, SafeString} = require('../services/proxy');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const jsonpath = require('jsonpath');
@@ -141,14 +141,22 @@ module.exports = function get(resource, options) {
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10548
     return controller[action](apiOptions).then(function success(result) {
-        let blockParams;
+        // prepare data properties for use with handlebars
+        if (result[resource] && result[resource].length) {
+            result[resource].forEach((entry) => {
+                // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
+                if (entry.feature_image_caption) {
+                    entry.feature_image_caption = new SafeString(entry.feature_image_caption);
+                }
+            });
+        }
 
         // used for logging details of slow requests
         returnedRowsCount = result[resource] && result[resource].length;
 
         // block params allows the theme developer to name the data using something like
         // `{{#get "posts" as |result pageInfo|}}`
-        blockParams = [result[resource]];
+        const blockParams = [result[resource]];
         if (result.meta && result.meta.pagination) {
             result.pagination = result.meta.pagination;
             blockParams.push(result.meta.pagination);
