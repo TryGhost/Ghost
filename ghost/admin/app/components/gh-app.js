@@ -1,15 +1,9 @@
-import $ from 'jquery';
-import Component from '@ember/component';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 
-export default Component.extend({
-    classNames: ['gh-app'],
-
-    showSettingsMenu: false,
-
-    didReceiveAttrs() {
-        this._super(...arguments);
-        let showSettingsMenu = this.showSettingsMenu;
-
-        $('body').toggleClass('settings-menu-expanded', showSettingsMenu);
+export default class GhAppComponent extends Component {
+    @action
+    setBodyClass() {
+        document.body.classList.toggle('settings-menu-expanded', this.args.showSettingsMenu);
     }
-});
+}
