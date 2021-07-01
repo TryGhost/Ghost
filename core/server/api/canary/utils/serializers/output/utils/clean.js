@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const localUtils = require('../../../index');
-const labs = require('../../../../../../services/labs');
 
 const tag = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {

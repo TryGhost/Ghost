@@ -6,7 +6,6 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
-const labs = require('../../../../../services/labs');
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
