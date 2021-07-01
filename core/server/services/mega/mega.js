@@ -367,7 +367,7 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
  */
 async function createSegmentedEmailBatches({emailModel, options}) {
     const segments = getSegmentsFromHtml(emailModel.get('html'));
-    const batchIds = [];
+    let batchIds = [];
 
     if (segments.length) {
         for (const memberSegment of segments) {
@@ -376,11 +376,11 @@ async function createSegmentedEmailBatches({emailModel, options}) {
                 memberSegment,
                 options
             });
-            batchIds.push(emailBatchIds);
+            batchIds = emailBatchIds;
         }
     } else {
-        const emailBatchIds = createEmailBatches({emailModel, options});
-        batchIds.push(emailBatchIds);
+        const emailBatchIds = await createEmailBatches({emailModel, options});
+        batchIds = emailBatchIds;
     }
 
     return batchIds;
