@@ -2,7 +2,6 @@ const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../services/labs');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
 const cheerio = require('cheerio');
