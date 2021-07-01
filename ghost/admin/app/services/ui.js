@@ -1,7 +1,8 @@
 import Service, {inject as service} from '@ember/service';
+import {action} from '@ember/object';
 import {get} from '@ember/object';
 import {isEmpty} from '@ember/utils';
-import {not, or, reads} from '@ember/object/computed';
+import {tracked} from '@glimmer/tracking';
 
 function collectMetadataClasses(transition, prop) {
     let oldClasses = [];
@@ -33,23 +34,31 @@ function updateBodyClasses(transition) {
     });
 }
 
-export default Service.extend({
-    config: service(),
-    dropdown: service(),
-    mediaQueries: service(),
-    router: service(),
+export default class UiService extends Service {
+    @service config;
+    @service dropdown;
+    @service mediaQueries;
+    @service router;
 
-    isFullScreen: false,
-    showMobileMenu: false,
-    showSettingsMenu: false,
-    mainClass: '',
+    @tracked isFullScreen = false;
+    @tracked mainClass = '';
+    @tracked showMobileMenu = false;
+    @tracked showSettingsMenu = false;
 
-    hasSideNav: not('isSideNavHidden'),
-    isMobile: reads('mediaQueries.isMobile'),
-    isSideNavHidden: or('isFullScreen', 'isMobile'),
+    get isMobile() {
+        return this.mediaQueries.isMobile;
+    }
 
-    init() {
-        this._super(...arguments);
+    get isSideNavHidden() {
+        return this.isFullScreen || this.isMobile;
+    }
+
+    get hasSideNav() {
+        return !this.isSideNavHidden;
+    }
+
+    constructor() {
+        super(...arguments);
 
         this.router.on('routeDidChange', (transition) => {
             updateBodyClasses(transition);
@@ -57,30 +66,38 @@ export default Service.extend({
             this.updateDocumentTitle();
 
             let {newClasses: mainClasses} = collectMetadataClasses(transition, 'mainClasses');
-            this.set('mainClass', mainClasses.join(' '));
+            this.mainClass = mainClasses.join(' ');
         });
-    },
+    }
 
+    @action
     closeMenus() {
         this.dropdown.closeDropdowns();
-        this.setProperties({
-            showSettingsMenu: false,
-            showMobileMenu: false
-        });
-    },
+        this.showSettingsMenu = false;
+        this.showMobileMenu = false;
+    }
 
+    @action
     closeMobileMenu() {
-        this.set('showMobileMenu', false);
-    },
+        this.showMobileMenu = false;
+    }
 
+    @action
     openMobileMenu() {
-        this.set('showMobileMenu', true);
-    },
+        this.showMobileMenu = true;
+    }
 
+    @action
     openSettingsMenu() {
-        this.set('showSettingsMenu', true);
-    },
+        this.showSettingsMenu = true;
+    }
 
+    @action
+    setMainClass(mainClass) {
+        this.mainClass = mainClass;
+    }
+
+    @action
     updateDocumentTitle() {
         let {currentRoute} = this.router;
         let tokens = [];
@@ -106,27 +123,5 @@ export default Service.extend({
         } else {
             window.document.title = blogTitle;
         }
-    },
-
-    actions: {
-        closeMenus() {
-            this.closeMenus();
-        },
-
-        closeMobileMenu() {
-            this.closeMobileMenu();
-        },
-
-        openMobileMenu() {
-            this.openMobileMenu();
-        },
-
-        openSettingsMenu() {
-            this.openSettingsMenu();
-        },
-
-        setMainClass(cls) {
-            this.set('mainClass', cls);
-        }
     }
-});
+}
