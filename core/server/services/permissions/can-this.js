@@ -2,10 +2,16 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const models = require('../../models');
 const errors = require('@tryghost/errors');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
+
+const messages = {
+    noPermissionToAction: 'You do not have permission to perform this action',
+    noActionsMapFoundError: 'No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use.'
+};
+
 let canThis;
 let CanThisResult;
 
@@ -104,7 +110,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+                return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
             });
         };
 
@@ -122,7 +128,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     context = parseContext(context);
 
     if (actionsMap.empty()) {
-        throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
+        throw new errors.GhostError({message: tpl(messages.noActionsMapFoundError)});
     }
 
     // Kick off loading of user permissions if necessary
