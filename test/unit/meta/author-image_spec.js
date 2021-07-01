@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const getAuthorImage = require('../../../core/frontend/meta/author_image');
+const getAuthorImage = require('../../../core/frontend/meta/author-image');
 
 describe('getAuthorImage', function () {
     afterEach(function () {

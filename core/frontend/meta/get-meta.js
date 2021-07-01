@@ -4,28 +4,28 @@ const urlUtils = require('../../shared/url-utils');
 const logging = require('@tryghost/logging');
 
 // These are in filename order
-const getAmpUrl = require('./amp_url');
-const getAuthorFacebook = require('./author_fb_url');
-const getAuthorImage = require('./author_image');
-const getAuthorUrl = require('./author_url');
-const getBlogLogo = require('./blog_logo');
-const getCanonicalUrl = require('./canonical_url');
-const getCoverImage = require('./cover_image');
-const getCreatorTwitter = require('./creator_url');
+const getAmpUrl = require('./amp-url');
+const getAuthorFacebook = require('./author-fb-url');
+const getAuthorImage = require('./author-image');
+const getAuthorUrl = require('./author-url');
+const getBlogLogo = require('./blog-logo');
+const getCanonicalUrl = require('./canonical-url');
+const getCoverImage = require('./cover-image');
+const getCreatorTwitter = require('./creator-url');
 const getDescription = require('./description');
 const getExcerpt = require('./excerpt');
 const getImageDimensions = require('./image-dimensions');
 const getKeywords = require('./keywords');
-const getModifiedDate = require('./modified_date');
-const getOgType = require('./og_type');
-const getOgImage = require('./og_image');
-const getPaginatedUrl = require('./paginated_url');
-const getPublishedDate = require('./published_date');
-const getRssUrl = require('./rss_url');
+const getModifiedDate = require('./modified-date');
+const getOgType = require('./og-type');
+const getOgImage = require('./og-image');
+const getPaginatedUrl = require('./paginated-url');
+const getPublishedDate = require('./published-date');
+const getRssUrl = require('./rss-url');
 const getSchema = require('./schema');
-const getStructuredData = require('./structured_data');
+const getStructuredData = require('./structured-data');
 const getTitle = require('./title');
-const getTwitterImage = require('./twitter_image');
+const getTwitterImage = require('./twitter-image');
 const getUrl = require('./url');
 
 function getMetaData(data, root) {

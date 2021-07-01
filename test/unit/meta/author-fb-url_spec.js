@@ -1,5 +1,5 @@
 const should = require('should');
-const getAuthorFacebookUrl = require('../../../core/frontend/meta/author_fb_url');
+const getAuthorFacebookUrl = require('../../../core/frontend/meta/author-fb-url');
 
 describe('getAuthorFacebookUrl', function () {
     it('should return author facebook url if post and has url',

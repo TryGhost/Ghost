@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid');
 const urlService = require('../../../core/frontend/services/url');
-const getAuthorUrl = require('../../../core/frontend/meta/author_url');
+const getAuthorUrl = require('../../../core/frontend/meta/author-url');
 
 describe('getAuthorUrl', function () {
     beforeEach(function () {
