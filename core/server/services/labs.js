@@ -16,7 +16,6 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'multipleProducts',
-    'featureImageMeta',
     'psmRedesign'
 ];
 

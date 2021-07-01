@@ -125,11 +125,6 @@ const post = (attrs, frame) => {
     delete attrs.author;
     delete attrs.type;
 
-    if (!labs.isSet('featureImageMeta')) {
-        delete attrs.feature_image_alt;
-        delete attrs.feature_image_caption;
-    }
-
     return attrs;
 };
 

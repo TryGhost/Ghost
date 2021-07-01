@@ -103,13 +103,6 @@ const forceStatusFilter = (frame) => {
     }
 };
 
-const cleanLabsProperties = (frame) => {
-    if (!labs.isSet('featureImageMeta') && frame.data.pages[0]) {
-        delete frame.data.pages[0].feature_image_alt;
-        delete frame.data.pages[0].feature_image_caption;
-    }
-};
-
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -188,7 +181,6 @@ module.exports = {
             });
         }
 
-        cleanLabsProperties(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);
