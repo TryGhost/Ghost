@@ -11,7 +11,7 @@ function formatPageResponse(result) {
 
     if (result.posts) {
         response.posts = result.posts;
-        response.posts.forEach(prepareContextResource);
+        prepareContextResource(response.posts);
     }
 
     if (result.meta && result.meta.pagination) {
@@ -19,6 +19,8 @@ function formatPageResponse(result) {
     }
 
     _.each(result.data, function (data, name) {
+        prepareContextResource(data);
+
         if (data.meta) {
             // Move pagination to be a top level key
             response[name] = data;
