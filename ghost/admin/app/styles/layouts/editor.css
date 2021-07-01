@@ -344,6 +344,7 @@
     background: transparent;
 }
 
+/* delete when psmRedesign flag is removed */
 @media (max-width: 750px) {
     .gh-editor-header {
         padding: 0 4vw;
@@ -376,6 +377,7 @@
     margin: 0 auto;
     padding: 0 8px;
 }
+/* END delete when psmRedesign flag is removed */
 
 .gh-editor-status {
     color: var(--midgrey);
@@ -406,6 +408,12 @@
     min-height: auto;
     margin: -56px auto 0;
     padding-bottom: 3.6rem;
+}
+
+@media (max-width: 1400px) {
+    .gh-editor-feature-image-container {
+        margin: 0 auto;
+    }
 }
 
 .gh-editor-feature-image-container .gh-progress-container-progress {
@@ -596,6 +604,12 @@
     cursor: pointer;
     color: var(--green-d1);
     background: var(--whitegrey);
+}
+
+@media (max-width: 500px) {
+    .gh-editor-preview-trigger {
+        display: none;
+    }
 }
 
 .gh-editor-wordcount {
