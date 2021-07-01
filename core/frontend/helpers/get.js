@@ -1,7 +1,7 @@
 // # Get Helper
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
-const {config, logging, errors, i18n, hbs, api, SafeString} = require('../services/proxy');
+const {config, logging, errors, i18n, hbs, api, prepareContextResource} = require('../services/proxy');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const jsonpath = require('jsonpath');
@@ -143,12 +143,7 @@ module.exports = function get(resource, options) {
     return controller[action](apiOptions).then(function success(result) {
         // prepare data properties for use with handlebars
         if (result[resource] && result[resource].length) {
-            result[resource].forEach((entry) => {
-                // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
-                if (entry.feature_image_caption) {
-                    entry.feature_image_caption = new SafeString(entry.feature_image_caption);
-                }
-            });
+            result[resource].forEach(prepareContextResource);
         }
 
         // used for logging details of slow requests

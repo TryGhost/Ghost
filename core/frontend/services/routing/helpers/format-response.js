@@ -1,12 +1,5 @@
 const _ = require('lodash');
-const {SafeString} = require('../../proxy');
-
-function formatEntryData(entry) {
-    // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
-    if (entry.feature_image_caption) {
-        entry.feature_image_caption = new SafeString(entry.feature_image_caption);
-    }
-}
+const {prepareContextResource} = require('../../proxy');
 
 /**
  * @description Formats API response into handlebars/theme format.
@@ -18,7 +11,7 @@ function formatPageResponse(result) {
 
     if (result.posts) {
         response.posts = result.posts;
-        response.posts.forEach(formatEntryData);
+        response.posts.forEach(prepareContextResource);
     }
 
     if (result.meta && result.meta.pagination) {
@@ -52,7 +45,7 @@ function formatPageResponse(result) {
  * @return {Object} containing page variables
  */
 function formatResponse(post) {
-    formatEntryData(post);
+    prepareContextResource(post);
 
     return {
         post: post
