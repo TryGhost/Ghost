@@ -81,7 +81,7 @@ describe('MEGA', function () {
             const segments = ['not a valid segment'];
 
             should.throws(() => {
-                partitionMembersBySegment(members, segments)
+                partitionMembersBySegment(members, segments);
             }, errors.ValidationError);
         });
     });
