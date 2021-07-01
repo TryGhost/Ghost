@@ -271,9 +271,6 @@
             }
         },
         "permissions": {
-            "noActionsMapFound": {
-                "error": "No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use."
-            },
             "applyStatusRules": {
                 "error": "You do not have permission to retrieve {docName} with that status"
             },
@@ -561,12 +558,6 @@
             }
         },
         "services": {
-            "ping": {
-                "requestFailed": {
-                    "error": "The {service} service was unable to send a ping request, your site will continue to function.",
-                    "help": "If you get this error repeatedly, please seek help on {url}."
-                }
-            },
             "settings": {
                 "yaml": {
                     "error": "Could not parse {file}: {context}.",
