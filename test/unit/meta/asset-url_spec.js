@@ -6,7 +6,7 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const configUtils = require('../../utils/configUtils');
 const config = configUtils.config;
 
-const getAssetUrl = rewire('../../../core/frontend/meta/asset_url');
+const getAssetUrl = rewire('../../../core/frontend/meta/asset-url');
 
 describe('getAssetUrl', function () {
     afterEach(function () {

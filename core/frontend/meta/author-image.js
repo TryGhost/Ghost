@@ -1,5 +1,5 @@
 const urlUtils = require('../../shared/url-utils');
-const getContextObject = require('./context_object.js');
+const getContextObject = require('./context-object.js');
 const _ = require('lodash');
 
 function getAuthorImage(data, absolute) {

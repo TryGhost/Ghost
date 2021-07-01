@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const getOgImage = require('../../../core/frontend/meta/og_image');
+const getOgImage = require('../../../core/frontend/meta/og-image');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 describe('getOgImage', function () {

@@ -1,5 +1,5 @@
 const should = require('should');
-const getPaginatedUrl = require('../../../core/frontend/meta/paginated_url');
+const getPaginatedUrl = require('../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../utils/configUtils');
 
 describe('getPaginatedUrl', function () {
