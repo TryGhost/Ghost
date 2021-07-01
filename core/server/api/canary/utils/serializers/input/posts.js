@@ -112,13 +112,6 @@ const transformLegacyEmailRecipientFilters = (frame) => {
     }
 };
 
-const cleanLabsProperties = (frame) => {
-    if (!labs.isSet('featureImageMeta') && frame.data.posts[0]) {
-        delete frame.data.posts[0].feature_image_alt;
-        delete frame.data.posts[0].feature_image_caption;
-    }
-};
-
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -213,7 +206,6 @@ module.exports = {
             });
         }
 
-        cleanLabsProperties(frame);
         transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
