@@ -394,6 +394,19 @@
     min-width: 501px;
 }
 
+@media (max-width: 1024px) {
+    .settings-menu-container-labs {
+        position: absolute;
+        right: 0;
+    }
+}
+
+@media (max-width: 800px) {
+    .settings-menu-container-labs {
+        padding-bottom: 64px;
+    }
+}
+
 .settings-menu-toggle-labs {
     position: absolute;
     top: 31px;
