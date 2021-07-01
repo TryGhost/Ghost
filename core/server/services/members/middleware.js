@@ -65,7 +65,7 @@ const updateMemberData = async function (req, res) {
         if (member) {
             const options = {
                 id: member.id,
-                withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer']
+                withRelated: ['stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice']
             };
             const updatedMember = await membersService.api.members.update(data, options);
 
