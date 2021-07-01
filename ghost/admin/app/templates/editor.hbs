@@ -5,7 +5,7 @@
             @class="gh-editor gh-view relative"
             as |editor|
         >
-            <header class="gh-editor-header br2 pe-none {{editor.headerClass}}">
+            <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if (feature "psmRedesign") "labs"}}">
                 <div class="flex items-center pe-auto">
                     {{#if this.ui.isFullScreen}}
                         <div class="ml3 flex items-center">
