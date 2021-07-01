@@ -5,18 +5,16 @@
         {{on "mousedown" this.trackMousedown}}
         {{on "mouseup" this.focusEditor}}
     >
-        {{#if (feature "featureImageMeta")}}
-            <GhEditorFeatureImage
-                @image={{@featureImage}}
-                @updateImage={{@setFeatureImage}}
-                @clearImage={{@clearFeatureImage}}
-                @alt={{@featureImageAlt}}
-                @updateAlt={{@setFeatureImageAlt}}
-                @caption={{@featureImageCaption}}
-                @updateCaption={{@setFeatureImageCaption}}
-                @forceButtonDisplay={{or this.titleIsHovered this.titleIsFocused}}
-            />
-        {{/if}}
+        <GhEditorFeatureImage
+            @image={{@featureImage}}
+            @updateImage={{@setFeatureImage}}
+            @clearImage={{@clearFeatureImage}}
+            @alt={{@featureImageAlt}}
+            @updateAlt={{@setFeatureImageAlt}}
+            @caption={{@featureImageCaption}}
+            @updateCaption={{@setFeatureImageCaption}}
+            @forceButtonDisplay={{or this.titleIsHovered this.titleIsFocused}}
+        />
 
         <GhTextarea
             @class="gh-editor-title"

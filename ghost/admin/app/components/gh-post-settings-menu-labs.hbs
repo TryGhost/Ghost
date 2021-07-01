@@ -9,15 +9,6 @@
                 <h4>{{capitalize this.post.displayName}} settings</h4>
             </div>
             <div class="settings-menu-content labs">
-                {{#unless (feature "featureImageMeta")}}
-                    <GhImageUploaderWithPreview
-                        @image={{this.post.featureImage}}
-                        @text={{concat "Upload " this.post.displayName " image"}}
-                        @allowUnsplash={{true}}
-                        @update={{action "setCoverImage"}}
-                        @remove={{action "clearCoverImage"}}
-                    />
-                {{/unless}}
                 <form>
                 <div class="form-group">
                     <label for="url">{{capitalize this.post.displayName}} URL</label>
