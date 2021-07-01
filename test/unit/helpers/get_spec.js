@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
+const {SafeString} = require('../../../core/frontend/services/proxy');
 
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
@@ -26,6 +27,36 @@ describe('{{#get}} helper', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('context preparation', function () {
+        let browsePostsStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {apiVersion: 'canary'}}};
+
+            browsePostsStub = sinon.stub(api.canary, 'postsPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({posts: [{feature_image_caption: '<a href="#">A link</a>'}], meta: meta})
+                };
+            });
+        });
+
+        it('converts html strings to SafeString', function (done) {
+            helpers.get.call(
+                {},
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+
+                fn.firstCall.args[0].posts[0].feature_image_caption.should.be.an.instanceOf(SafeString);
+
+                done();
+            }).catch(done);
+        });
     });
 
     describe('authors v2', function () {

@@ -60,5 +60,15 @@ module.exports = {
     blogIcon: require('../../server/lib/image').blogIcon,
     urlService: require('./url'),
     urlUtils: require('../../shared/url-utils'),
-    localUtils: require('./theme-engine/handlebars/utils')
+    localUtils: require('./theme-engine/handlebars/utils'),
+
+    // Used by router service and {{get}} helper to prepare data for optimal usage in themes
+    prepareContextResource(data) {
+        (Array.isArray(data) ? data : [data]).forEach((resource) => {
+            // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
+            if (resource.feature_image_caption) {
+                resource.feature_image_caption = new hbs.SafeString(resource.feature_image_caption);
+            }
+        });
+    }
 };
