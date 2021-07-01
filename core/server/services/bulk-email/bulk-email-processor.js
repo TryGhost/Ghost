@@ -91,11 +91,11 @@ module.exports = {
         // only fetch pending or failed batches to avoid re-sending previously sent emails
         const batchIds = await models.EmailBatch
             .getFilteredCollectionQuery({filter: `email_id:${emailId}+status:[pending,failed]`}, knexOptions)
-            .select('id');
+            .select('id', 'member_segment');
 
-        const batchResults = await Promise.map(batchIds, async ({id: emailBatchId}) => {
+        const batchResults = await Promise.map(batchIds, async ({id: emailBatchId, member_segment: memberSegment}) => {
             try {
-                await this.processEmailBatch({emailBatchId, options});
+                await this.processEmailBatch({emailBatchId, options, memberSegment});
                 return new SuccessfulBatch(emailBatchId);
             } catch (error) {
                 return new FailedBatch(emailBatchId, error);
@@ -133,7 +133,7 @@ module.exports = {
     },
 
     // accepts an ID rather than an EmailBatch model to better support running via a job queue
-    async processEmailBatch({emailBatchId, options}) {
+    async processEmailBatch({emailBatchId, options, memberSegment}) {
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
         const emailBatchModel = await models.EmailBatch
@@ -163,7 +163,7 @@ module.exports = {
 
         try {
             // send the email
-            const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows);
+            const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
 
             // update batch success status
             return await emailBatchModel.save({
@@ -196,9 +196,10 @@ module.exports = {
     /**
      * @param {Email-like} emailData - The email to send, must be a POJO so emailModel.toJSON() before calling if needed
      * @param {[EmailRecipient]} recipients - The recipients to send the email to with their associated data
+     * @param {string?} memberSegment - The member segment of the recipients
      * @returns {Object} - {providerId: 'xxx'}
      */
-    send(emailData, recipients) {
+    send(emailData, recipients, memberSegment) {
         const mailgunInstance = mailgunProvider.getInstance();
         if (!mailgunInstance) {
             return;
@@ -228,6 +229,10 @@ module.exports = {
 
             recipientData[recipient.member_email] = data;
         });
+
+        if (memberSegment) {
+            emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
+        }
 
         return mailgunProvider.send(emailData, recipientData, replacements).then((response) => {
             debug(`sent message (${Date.now() - startTime}ms)`);

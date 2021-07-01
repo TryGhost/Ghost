@@ -1,6 +1,6 @@
 const should = require('should');
 
-const {parseReplacements} = require('../../../../core/server/services/mega/post-email-serializer');
+const {parseReplacements, renderEmailForSegment} = require('../../../../core/server/services/mega/post-email-serializer');
 
 describe('Post Email Serializer', function () {
     it('creates replacement pattern for valid format and value', function () {
@@ -30,5 +30,43 @@ describe('Post Email Serializer', function () {
         });
 
         replaced.length.should.equal(0);
+    });
+
+    describe('renderEmailForSegment', function () {
+        it('shouldn\'t change an email that has no member segment', function () {
+            const email = {
+                otherProperty: true,
+                html: '<div>test</div>',
+                plaintext: 'test'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+
+            output.should.have.keys('html', 'plaintext', 'otherProperty');
+            output.html.should.eql('<div>test</div>');
+            output.plaintext.should.eql('test');
+            output.otherProperty.should.eql(true); // Make sure to keep other properties
+        });
+
+        it('should hide non matching member segments', function () {
+            const email = {
+                otherProperty: true,
+                html: 'hello<div data-gh-segment="status:free"> free users!</div><div data-gh-segment="status:-free"> paid users!</div>',
+                plaintext: 'test'
+            };
+            Object.freeze(email); // Make sure we don't modify `email`
+
+            let output = renderEmailForSegment(email, 'status:free');
+
+            output.should.have.keys('html', 'plaintext', 'otherProperty');
+            output.html.should.eql('hello<div> free users!</div>');
+            output.plaintext.should.eql('hello free users!');
+
+            output = renderEmailForSegment(email, 'status:-free');
+
+            output.should.have.keys('html', 'plaintext', 'otherProperty');
+            output.html.should.eql('hello<div> paid users!</div>');
+            output.plaintext.should.eql('hello paid users!');
+        });
     });
 });

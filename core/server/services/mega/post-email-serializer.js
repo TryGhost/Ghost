@@ -22,6 +22,20 @@ const getSite = () => {
     });
 };
 
+const htmlToPlaintext = (html) => {
+    // same options as used in Post model for generating plaintext but without `wordwrap: 80`
+    // to avoid replacement strings being split across lines and for mail clients to handle
+    // word wrapping based on user preferences
+    return htmlToText.fromString(html, {
+        wordwrap: false,
+        ignoreImage: true,
+        hideLinkHrefIfSameAsText: true,
+        preserveNewlines: true,
+        returnDomByDefault: true,
+        uppercaseHeadings: false
+    });
+};
+
 /**
  * createUnsubscribeUrl
  *
@@ -195,17 +209,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
     }
 
     post.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(post.mobiledoc), {target: 'email'});
-    // same options as used in Post model for generating plaintext but without `wordwrap: 80`
-    // to avoid replacement strings being split across lines and for mail clients to handle
-    // word wrapping based on user preferences
-    post.plaintext = htmlToText.fromString(post.html, {
-        wordwrap: false,
-        ignoreImage: true,
-        hideLinkHrefIfSameAsText: true,
-        preserveNewlines: true,
-        returnDomByDefault: true,
-        uppercaseHeadings: false
-    });
+    post.plaintext = htmlToPlaintext(post.html);
 
     // Outlook will render feature images at full-size breaking the layout.
     // Content images fix this by rendering max 600px images - do the same for feature image here
@@ -276,8 +280,27 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
     };
 };
 
+function renderEmailForSegment(email, memberSegment) {
+    const result = {...email};
+    const $ = cheerio.load(result.html);
+
+    $('[data-gh-segment]').get().forEach((node) => {
+        if (node.attribs['data-gh-segment'] !== memberSegment) { //TODO: replace with NQL interpretation
+            $(node).remove();
+        } else {
+            // Getting rid of the attribute for a cleaner html output
+            $(node).removeAttr('data-gh-segment');
+        }
+    });
+    result.html = $.html();
+    result.plaintext = htmlToPlaintext(result.html);
+
+    return result;
+}
+
 module.exports = {
     serialize,
     createUnsubscribeUrl,
+    renderEmailForSegment,
     parseReplacements
 };
