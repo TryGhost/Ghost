@@ -42,6 +42,9 @@ export function getMemberSubscription({member = {}}) {
         const activeSubscription = subscriptions.find((sub) => {
             return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.status);
         });
+        if (!activeSubscription?.price && activeSubscription?.plan) {
+            activeSubscription.price = activeSubscription.plan;
+        }
         return activeSubscription;
     }
     return null;
