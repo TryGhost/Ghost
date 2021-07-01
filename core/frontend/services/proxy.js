@@ -50,15 +50,7 @@ module.exports = {
     labs: require('../../server/services/labs'),
 
     // Things required from data/meta
-    metaData: {
-        get: require('../meta'), // ghost_head
-        getAssetUrl: require('../meta/asset_url'), // asset
-        getMetaDataExcerpt: require('../meta/generate-excerpt'), // excerpt
-        getMetaDataDescription: require('../meta/description'), // meta_desc
-        getMetaDataTitle: require('../meta/title'), // meta_title
-        getPaginatedUrl: require('../meta/paginated_url'), // page_url
-        getMetaDataUrl: require('../meta/url') // url
-    },
+    metaData: require('../meta'),
 
     // The local template thing, should this be merged with the channels one?
     templates: require('./theme-engine/handlebars/template'),
