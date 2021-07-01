@@ -1,5 +1,5 @@
 const should = require('should');
-const getExcerpt = require('../../../core/frontend/meta/excerpt');
+const getExcerpt = require('../../../core/frontend/meta/generate-excerpt');
 
 describe('getExcerpt', function () {
     it('should return html excerpt with no html', function () {

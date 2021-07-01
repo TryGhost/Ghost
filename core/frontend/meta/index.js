@@ -24,7 +24,7 @@ const getOgImage = require('./og_image');
 const getTwitterImage = require('./twitter_image');
 const getStructuredData = require('./structured_data');
 const getSchema = require('./schema');
-const getExcerpt = require('./excerpt');
+const generateExcerpt = require('./generate-excerpt');
 
 function getMetaData(data, root) {
     const metaData = {
@@ -88,7 +88,7 @@ function getMetaData(data, root) {
         // @TODO: https://github.com/TryGhost/Ghost/issues/10062
         customExcerpt = data.post.excerpt || data.post.custom_excerpt;
         metaDescription = data.post.meta_description;
-        fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
+        fallbackExcerpt = data.post.html ? generateExcerpt(data.post.html, {words: 50}) : '';
 
         metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
     }
