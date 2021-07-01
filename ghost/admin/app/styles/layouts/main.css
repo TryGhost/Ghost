@@ -885,6 +885,10 @@
         padding-bottom: 55px;
     }
 
+    .gh-nav-body {
+        padding-bottom: 64px;
+    }
+
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
         .gh-viewport {
             padding-bottom: calc(55px + env(safe-area-inset-bottom, 0px));
