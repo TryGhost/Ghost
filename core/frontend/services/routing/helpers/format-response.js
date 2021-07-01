@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const {prepareContextResource} = require('../../proxy');
 
 /**
  * @description Formats API response into handlebars/theme format.
@@ -10,6 +11,7 @@ function formatPageResponse(result) {
 
     if (result.posts) {
         response.posts = result.posts;
+        prepareContextResource(response.posts);
     }
 
     if (result.meta && result.meta.pagination) {
@@ -17,6 +19,8 @@ function formatPageResponse(result) {
     }
 
     _.each(result.data, function (data, name) {
+        prepareContextResource(data);
+
         if (data.meta) {
             // Move pagination to be a top level key
             response[name] = data;
@@ -43,6 +47,8 @@ function formatPageResponse(result) {
  * @return {Object} containing page variables
  */
 function formatResponse(post) {
+    prepareContextResource(post);
+
     return {
         post: post
     };
