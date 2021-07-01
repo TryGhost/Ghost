@@ -435,8 +435,18 @@ input:focus,
     color: var(--midgrey);
 }
 
+
+/* delete when psmRedesign flag is removed */
 .gh-editor-header-small {
     background: var(--dark-main-bg-color);
+}
+/* END delete */
+
+/* psmRedesign labs feature */
+@media (max-width: 1024px) {
+    .gh-editor-header.labs {
+        background-color: var(--dark-main-bg-color);
+    }
 }
 
 .gh-markdown-editor .CodeMirror-cursor {
@@ -710,7 +720,11 @@ input:focus,
 }
 
 .gh-editor-preview-trigger {
-    background: var(--dark-main-bg-color);
+    background: var(--dark-main-bg-color) !important;
+}
+
+.gh-editor-preview-trigger:hover {
+    background: var(--whitegrey) !important;
 }
 
 .gh-btn-editor {

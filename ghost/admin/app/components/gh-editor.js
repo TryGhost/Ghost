@@ -7,6 +7,8 @@ import {debounce, run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    feature: service(),
+
     ui: service(),
 
     classNameBindings: [
@@ -84,6 +86,10 @@ export default Component.extend({
     },
 
     _setHeaderClass() {
+        if (this.feature.psmRedesign) {
+            return;
+        }
+        
         let editorTitle = this.element.querySelector('.gh-editor-title, .kg-title-input');
         let smallHeaderClass = 'gh-editor-header-small';
         let newHeaderClass = '';

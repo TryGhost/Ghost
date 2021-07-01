@@ -398,6 +398,12 @@
     .settings-menu-container-labs {
         position: absolute;
         right: 0;
+        box-shadow:
+        -4.5px 0 3.6px rgba(0, 0, 0, 0.007),
+        -12.5px 0 10px rgba(0, 0, 0, 0.008),
+        -30.1px 0 24.1px rgba(0, 0, 0, 0.01),
+        -100px 0 80px rgba(0, 0, 0, 0.02)
+    ;
     }
 }
 
@@ -423,8 +429,26 @@
     stroke: var(--black);
 }
 
+@media (min-width: 500px) and (max-width: 1024px) {
+    .settings-menu-toggle-labs {
+        top: 12px;
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-toggle-labs {
+        top: 15px;
+    }
+}
+
 .settings-menu-toggle-spacer-labs {
     width: 40px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-toggle-spacer-labs {
+        width: 68px;
+    }
 }
 
 .settings-menu-container-labs .settings-menu-pane {
@@ -449,6 +473,7 @@
     top: auto;
     right: auto;
     bottom: auto;
+    height: 100vh;
 }
 
 .settings-menu-header.labs {
@@ -460,8 +485,26 @@
     background: var(--white);
 }
 
+@media (min-width: 500px) and (max-width: 1024px) {
+    .settings-menu-header.labs {
+        padding-top: 17px; 
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-header.labs {
+        padding-top: 19px; 
+    }
+}
+
 .settings-menu-content.labs {
     padding: 92px 24px 33px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-content.labs {
+        padding-top: 72px; 
+    }
 }
 
 .settings-menu-header.subview.labs {
@@ -486,4 +529,16 @@
 
 .gh-publishmenu-labs {
     margin-right: 8px;
+}
+
+@media (max-width: 1024px) {
+    .gh-editor-header.labs {
+        z-index: 100;
+        height: 64px;
+        margin: 0;
+        padding: 0;
+        padding-left: 15px;
+        background-color: var(--white);
+        border-radius: 0;
+    }
 }
