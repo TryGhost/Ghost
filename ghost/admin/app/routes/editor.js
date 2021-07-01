@@ -87,6 +87,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             titleToken: () => {
                 return this.get('controller.post.title') || 'Editor';
             },
+            bodyClasses: ['gh-body-fullscreen'],
             mainClasses: ['gh-main-white']
         };
     },
