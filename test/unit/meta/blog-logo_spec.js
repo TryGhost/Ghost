@@ -1,5 +1,5 @@
 const should = require('should');
-const getBlogLogo = require('../../../core/frontend/meta/blog_logo');
+const getBlogLogo = require('../../../core/frontend/meta/blog-logo');
 const sinon = require('sinon');
 const settingsCache = require('../../../core/shared/settings-cache');
 

@@ -1,5 +1,5 @@
 const urlService = require('../services/url');
-const getContextObject = require('./context_object.js');
+const getContextObject = require('./context-object.js');
 
 function getAuthorUrl(data, absolute) {
     let context = data.context ? data.context[0] : null;
