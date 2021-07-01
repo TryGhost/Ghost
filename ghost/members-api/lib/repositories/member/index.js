@@ -84,8 +84,17 @@ module.exports = class MemberRepository {
             throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
         }
 
+        const memberStatusData = {
+            status: 'free'
+        };
+
+        if (memberData.products.length === 1) {
+            memberStatusData.status = 'comped';
+        }
+
         const member = await this._Member.add({
             ...memberData,
+            ...memberStatusData,
             labels
         }, options);
 
@@ -122,6 +131,18 @@ module.exports = class MemberRepository {
             transacting: options.transacting
         };
 
+        const memberData = _.pick(data, [
+            'email',
+            'name',
+            'note',
+            'subscribed',
+            'labels',
+            'geolocation',
+            'products'
+        ]);
+
+        const memberStatusData = {};
+
         if (this._stripeAPIService.configured && data.products) {
             const member = await this._Member.findOne({
                 id: options.id
@@ -140,7 +161,7 @@ module.exports = class MemberRepository {
             const productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
             const productsToModify = productsToAdd.concat(productsToRemove);
 
-            if (productsToModify.length > 0) {
+            if (productsToModify.length !== 0) {
                 const exisitingSubscriptions = await member.related('stripeSubscriptions').fetch(sharedOptions);
                 const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
                     return this.isActiveSubscriptionStatus(subscription.get('status'));
@@ -150,17 +171,24 @@ module.exports = class MemberRepository {
                     throw new errors.BadRequestError(tpl(messages.existingSubscriptions));
                 }
             }
+
+            // CASE: We are removing all products from a member & there were no active subscriptions - the member is "free"
+            if (incomingProductIds.length === 0) {
+                memberStatusData.status = 'free';
+            } else {
+                // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
+                if (productsToModify.length !== 0) {
+                    memberStatusData.status = 'comped';
+                } else {
+                    // CASE: We are not changing any products - leave the status alone
+                }
+            }
         }
 
-        const member = await this._Member.edit(_.pick(data, [
-            'email',
-            'name',
-            'note',
-            'subscribed',
-            'labels',
-            'geolocation',
-            'products'
-        ]), options);
+        const member = await this._Member.edit({
+            ...memberData,
+            ...memberStatusData
+        }, options);
 
         // member._changed.subscribed has a value if the `subscribed` attribute is passed in the update call, regardless of the previous value
         if (member.attributes.subscribed !== member._previousAttributes.subscribed) {
@@ -185,6 +213,14 @@ module.exports = class MemberRepository {
                 member_id: member.id,
                 from_email: member._previousAttributes.email,
                 to_email: member.get('email')
+            }, sharedOptions);
+        }
+
+        if (member.attributes.status !== member._previousAttributes.status) {
+            await this._MemberStatusEvent.add({
+                member_id: member.id,
+                from_status: member._previousAttributes.status,
+                to_status: member.get('status')
             }, sharedOptions);
         }
 
