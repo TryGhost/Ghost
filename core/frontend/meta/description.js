@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const settingsCache = require('../../shared/settings-cache');
-const getExcerpt = require('./excerpt');
+const getExcerpt = require('./generate-excerpt');
 
 function getDescription(data, root, options = {}) {
     const context = root ? root.context : null;

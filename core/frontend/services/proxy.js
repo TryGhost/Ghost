@@ -53,7 +53,7 @@ module.exports = {
     metaData: {
         get: require('../meta'), // ghost_head
         getAssetUrl: require('../meta/asset_url'), // asset
-        getMetaDataExcerpt: require('../meta/excerpt'), // excerpt
+        getMetaDataExcerpt: require('../meta/generate-excerpt'), // excerpt
         getMetaDataDescription: require('../meta/description'), // meta_desc
         getMetaDataTitle: require('../meta/title'), // meta_title
         getPaginatedUrl: require('../meta/paginated_url'), // page_url
