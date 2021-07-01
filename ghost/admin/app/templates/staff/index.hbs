@@ -4,8 +4,7 @@
         {{!-- Do not show Invite user button to authors --}}
         {{#unless this.currentUser.isAuthorOrContributor}}
             <section class="view-actions">
-                {{#if (enable-developer-experiments)}}
-                    {{#if (gh-user-can-admin this.session.user)}}
+                {{#if (gh-user-can-admin this.session.user)}}
                     <span class="dropdown">
                         <GhDropdownButton
                             @dropdownName="staff-actions-menu"
@@ -24,15 +23,12 @@
                             @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
                         >
                             <li >
-                                {{!-- <LinkTo @route="staff['reset-all-passwords']" class="mr2" data-test-link="reset-all-passwords">
-                                </LinkTo> --}}
                                 <button {{on "click" (action "toggleResetAllPasswordsModal")}}>
                                     <span>Reset all passwords</span>
                                 </button>
                             </li>
                         </GhDropdown>
                     </span>
-                    {{/if}}
                 {{/if}}
                 <button class="gh-btn gh-btn-primary" {{on "click" (action "toggleInviteUserModal")}} data-test-button="invite-staff-user"><span>Invite people</span></button>
             </section>
