@@ -141,8 +141,7 @@ const getTemplateSettings = async () => {
         bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
         showBadge: settingsCache.get('newsletter_show_badge'),
         footerContent: settingsCache.get('newsletter_footer_content'),
-        accentColor: settingsCache.get('accent_color'),
-        labsFeatureImageMeta: labs.isSet('featureImageMeta')
+        accentColor: settingsCache.get('accent_color')
     };
 
     if (templateSettings.headerImage) {

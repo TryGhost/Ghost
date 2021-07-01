@@ -2,7 +2,7 @@
 const iff = (cond, yes, no) => (cond ? yes : no);
 module.exports = ({post, site, templateSettings}) => {
     const date = new Date();
-    const hasFeatureImageCaption = templateSettings.labsFeatureImageMeta && templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
+    const hasFeatureImageCaption = templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
     return `<!doctype html>
 <html>
 
