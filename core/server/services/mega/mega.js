@@ -408,20 +408,29 @@ function partitionMembersBySegment(memberRows, segments) {
  * @param {Object} options.options - knex options
  */
 async function createSegmentedEmailBatches({emailModel, options}) {
+    let memberRows = await getEmailMemberRows({emailModel, options});
+
+    if (!memberRows.length) {
+        return [];
+    }
+
     const segments = getSegmentsFromHtml(emailModel.get('html'));
     const batchIds = [];
 
     if (segments.length) {
-        for (const memberSegment of segments) {
+        const partitionedMembers = partitionMembersBySegment(memberRows, segments);
+
+        for (const partition in partitionedMembers) {
             const emailBatchIds = await createEmailBatches({
                 emailModel,
-                memberSegment,
+                memberRows: partitionedMembers[partition],
+                memberSegment: partition === 'unsegmented' ? null : partition,
                 options
             });
             batchIds.push(emailBatchIds);
         }
     } else {
-        const emailBatchIds = await createEmailBatches({emailModel, options});
+        const emailBatchIds = await createEmailBatches({emailModel, memberRows, options});
         batchIds.push(emailBatchIds);
     }
 
@@ -436,16 +445,11 @@ async function createSegmentedEmailBatches({emailModel, options}) {
  * @param {Object} options
  * @param {Object} options.emailModel - instance of Email model
  * @param {string} [options.memberSegment] - NQL filter to apply in addition to the one defined in emailModel
+ * @param {Object[]} [options.memberRows] - member rows to be batched
  * @param {Object} options.options - knex options
  * @returns {Promise<string[]>} - created batch ids
  */
-async function createEmailBatches({emailModel, memberSegment, options}) {
-    const memberRows = await getEmailMemberRows({emailModel, memberSegment, options});
-
-    if (!memberRows.length) {
-        return [];
-    }
-
+async function createEmailBatches({emailModel, memberRows, memberSegment, options}) {
     const storeRecipientBatch = async function (recipients) {
         const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
         const batchModel = await models.EmailBatch.add({
