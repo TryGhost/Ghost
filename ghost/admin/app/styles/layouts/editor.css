@@ -297,6 +297,12 @@
     max-width: calc(100vw - var(--editor-sidebar-width))
 }
 
+@media (max-width: 1024px) {
+    .gh-editor {
+        max-width: 100%;
+    }
+}
+
 .gh-editor-header {
     position: absolute;
     top: 0;
