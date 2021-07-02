@@ -37,20 +37,22 @@ describe('Importer', function () {
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(11);
+            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(12);
             ImportManager.getExtensions().should.containEql('.json');
             ImportManager.getExtensions().should.containEql('.zip');
             ImportManager.getExtensions().should.containEql('.jpg');
             ImportManager.getExtensions().should.containEql('.md');
+            ImportManager.getExtensions().should.containEql('.webp');
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(12);
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(13);
             ImportManager.getContentTypes().should.containEql('application/octet-stream');
             ImportManager.getContentTypes().should.containEql('application/json');
             ImportManager.getContentTypes().should.containEql('application/zip');
             ImportManager.getContentTypes().should.containEql('application/x-zip-compressed');
             ImportManager.getContentTypes().should.containEql('text/plain');
+            ImportManager.getContentTypes().should.containEql('image/webp');
         });
 
         it('gets the correct directories', function () {
@@ -61,27 +63,27 @@ describe('Importer', function () {
 
         it('globs extensions correctly', function () {
             ImportManager.getGlobPattern(ImportManager.getExtensions())
-                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.json|.md|.markdown|.zip)');
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
             ImportManager.getGlobPattern(ImportManager.getDirectories())
                 .should.equal('+(images|content)');
             ImportManager.getGlobPattern(JSONHandler.extensions)
                 .should.equal('+(.json)');
             ImportManager.getGlobPattern(ImageHandler.extensions)
-                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico)');
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions())
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories())
                 .should.equal('+(images|content)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 0)
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 0)
                 .should.equal('+(images|content)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 1)
-                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.json|.md|.markdown|.zip)');
+                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 1)
                 .should.equal('{*/,}+(images|content)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 2)
-                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.json|.md|.markdown|.zip)');
+                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.json|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 2)
                 .should.equal('**/+(images|content)');
         });
@@ -366,7 +368,7 @@ describe('Importer', function () {
 
         it('has the correct interface', function () {
             ImageHandler.type.should.eql('images');
-            ImageHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(7);
+            ImageHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(8);
             ImageHandler.extensions.should.containEql('.jpg');
             ImageHandler.extensions.should.containEql('.jpeg');
             ImageHandler.extensions.should.containEql('.gif');
@@ -374,13 +376,15 @@ describe('Importer', function () {
             ImageHandler.extensions.should.containEql('.svg');
             ImageHandler.extensions.should.containEql('.svgz');
             ImageHandler.extensions.should.containEql('.ico');
-            ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(6);
+            ImageHandler.extensions.should.containEql('.webp');
+            ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(7);
             ImageHandler.contentTypes.should.containEql('image/jpeg');
             ImageHandler.contentTypes.should.containEql('image/png');
             ImageHandler.contentTypes.should.containEql('image/gif');
             ImageHandler.contentTypes.should.containEql('image/svg+xml');
             ImageHandler.contentTypes.should.containEql('image/x-icon');
             ImageHandler.contentTypes.should.containEql('image/vnd.microsoft.icon');
+            ImageHandler.contentTypes.should.containEql('image/webp');
             ImageHandler.loadFile.should.be.instanceof(Function);
         });
 
