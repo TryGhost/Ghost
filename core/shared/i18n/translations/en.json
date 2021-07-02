@@ -276,15 +276,6 @@
             },
             "noPermissionToAction": "You do not have permission to perform this action"
         },
-        "updateCheck": {
-            "checkingForUpdatesFailed": {
-                "error": "Checking for updates failed, your site will continue to function.",
-                "help": "If you get this error repeatedly, please seek help from {url}."
-            },
-            "unableToDecodeUpdateResponse": {
-                "error": "Unable to decode update response"
-            }
-        },
         "api": {
             "common": {
                 "notImplemented": "The server does not support the functionality required to fulfill the request."

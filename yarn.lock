@@ -866,7 +866,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@0.1.3":
+"@tryghost/logging@0.1.3", "@tryghost/logging@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.3.tgz#86cc8b54c2b319acea4c5ef4a390ac770f4a1495"
   integrity sha512-zq/s2rrfiaGtoTXrfl4zLkyVnXHm0qL4K+t64ngDArCapi+WnUOpAVAGWzpOVESVF8mqycFjZZo9xg6TjMuSWg==
@@ -1054,12 +1054,14 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/update-check-service@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.1.0.tgz#ca1277989989968f2b2603a7d3b86e1124025be5"
-  integrity sha512-i79AXxYlyR4sLOWBUgQ62DpNZ+12LE36kuYP39/R/qa2XiCQUd+2JYbm+Irf1m5f3x2U9B9Pmj4PkoeKhH4FHw==
+"@tryghost/update-check-service@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.0.tgz#3c473faf380cda4b34d106b1109222d4fd8ca942"
+  integrity sha512-RN6roj5f6CqPVEEbBYPLkqRKGuPaOA7NrBZBIpTB5MEFQRKpeh3hwSb65KsViFfUKLkshV1haYVe1ggx+0KP5A==
   dependencies:
     "@tryghost/errors" "^0.2.11"
+    "@tryghost/logging" "^0.1.3"
+    "@tryghost/tpl" "^0.1.3"
     bluebird "3.7.2"
     lodash "4.17.21"
     moment "2.24.0"

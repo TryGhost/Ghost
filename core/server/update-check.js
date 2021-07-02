@@ -6,7 +6,6 @@ const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const jobsService = require('./services/jobs');
 
-const i18n = require('../shared/i18n');
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('@tryghost/update-check-service');
@@ -14,13 +13,11 @@ const UpdateCheckService = require('@tryghost/update-check-service');
 const ghostMailer = new GhostMailer();
 
 /**
- *
- * @param {Object} options
- * @param {Object} [options.logging] - logging object instance or defaults to Ghost's default logger otherwise
+ * Initializes and triggers update check
  *
  * @returns {Promise<any>}
  */
-module.exports = async ({logging = require('@tryghost/logging')} = {}) => {
+module.exports = async () => {
     const allowedCheckEnvironments = ['development', 'production'];
 
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
@@ -55,8 +52,6 @@ module.exports = async ({logging = require('@tryghost/logging')} = {}) => {
             forceUpdate: config.get('updateCheck:forceUpdate'),
             ghostVersion: ghostVersion.original
         },
-        i18n,
-        logging,
         request,
         sendEmail: ghostMailer.send
     });
