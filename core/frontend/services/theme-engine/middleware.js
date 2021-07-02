@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const hbs = require('./engine');
 const urlUtils = require('../../../shared/url-utils');
-const config = require('../../../shared/config');
 const {i18n, api} = require('../proxy');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../shared/settings-cache');
@@ -21,16 +20,6 @@ function ensureActiveTheme(req, res, next) {
             // We use the settingsCache here, because the setting will be set,
             // even if the theme itself is not usable because it is invalid or missing.
             message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: settingsCache.get('active_theme')})
-        }));
-    }
-
-    // CASE: bootstrap theme validation failed, we would like to show the errors on the site [only production]
-    if (activeTheme.get().error && config.get('env') === 'production') {
-        return next(new errors.InternalServerError({
-            // We use the settingsCache here, because the setting will be set,
-            // even if the theme itself is not usable because it is invalid or missing.
-            message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: settingsCache.get('active_theme')}),
-            errorDetails: activeTheme.get().error.errorDetails
         }));
     }
 
