@@ -59,15 +59,19 @@ export default class GhMembersSegmentSelect extends Component {
 
     @task
     *fetchOptionsTask() {
-        const options = yield [{
-            name: 'Free members',
-            segment: 'status:free',
-            class: 'segment-status-free'
-        }, {
-            name: 'Paid members',
-            segment: 'status:-free', // paid & comped
-            class: 'segment-status-paid'
-        }];
+        const options = yield [];
+
+        if (!this.args.hideDefaultSegments) {
+            options.push({
+                name: 'Free members',
+                segment: 'status:free',
+                class: 'segment-status-free'
+            }, {
+                name: 'Paid members',
+                segment: 'status:-free', // paid & comped
+                class: 'segment-status-paid'
+            });
+        }
 
         // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API is fixed
