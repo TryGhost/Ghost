@@ -435,20 +435,6 @@ input:focus,
     color: var(--midgrey);
 }
 
-
-/* delete when psmRedesign flag is removed */
-.gh-editor-header-small {
-    background: var(--dark-main-bg-color);
-}
-/* END delete */
-
-/* psmRedesign labs feature */
-@media (max-width: 1024px) {
-    .gh-editor-header.labs {
-        background-color: var(--dark-main-bg-color);
-    }
-}
-
 .gh-markdown-editor .CodeMirror-cursor {
     border-color: #fff;
 }
@@ -505,7 +491,6 @@ input:focus,
     background: var(--lightgrey);
 }
 
-.settings-menu-expanded .content-cover,
 .mobile-menu-expanded .content-cover {
     background: transparent;
 }
@@ -711,6 +696,12 @@ input:focus,
 }
 
 /* Editor  */
+@media (max-width: 1024px) {
+    .gh-editor-header {
+        background-color: var(--dark-main-bg-color);
+    }
+}
+
 .gh-editor-back-button {
     background: var(--dark-main-bg-color);
 }
@@ -923,7 +914,7 @@ input:focus,
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
     outline: none;
 }
-    
+
 .gh-dashboard-btn:hover {
     background: var(--white);
 }

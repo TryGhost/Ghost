@@ -1,10 +1,10 @@
-<div class="settings-menu-header subview {{if (feature "psmRedesign") "labs"}}">
+<div class="settings-menu-header subview">
     <button {{on "click" this.close}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
     <h4>Email newsletter</h4>
     <div style="width:23px;"></div>
 </div>
 
-<div class="settings-menu-content settings-menu-email {{if (feature "psmRedesign") "labs"}}">
+<div class="settings-menu-content settings-menu-email">
     {{#if this.post.email.isSuccess}}
         {{!-- Mail has already been sent --}}
         <div class="ba b--whitegrey bg-white br3">
