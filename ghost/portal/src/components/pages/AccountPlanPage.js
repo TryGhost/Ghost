@@ -264,7 +264,7 @@ const UpgradePlanSection = ({
                     showLabel={false}
                     plans={plans}
                     selectedPlan={selectedPlan}
-                    onPlanSelect={(e, priceId) => onPlanSelect(e, priceId)}
+                    onPlanSelect={onPlanSelect}
                 />
             </div>
             <ActionButton
