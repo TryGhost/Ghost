@@ -11,6 +11,7 @@ const VISIBILITIES = [
 export default Component.extend({
 
     settings: service(),
+    feature: service(),
 
     // public attrs
     post: null,
@@ -22,11 +23,19 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         this.availableVisibilities = VISIBILITIES;
+        if (this.feature.get('multipleProducts')) {
+            this.availableVisibilities.push(
+                {label: 'A segment', name: 'filter'}
+            );
+        }
     },
 
     actions: {
         updateVisibility(newVisibility) {
             this.post.set('visibility', newVisibility);
+            if (newVisibility !== 'filter') {
+                this.post.set('visibilityFilter', null);
+            }
         }
     }
 });
