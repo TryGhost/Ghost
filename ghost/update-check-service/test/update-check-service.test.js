@@ -9,7 +9,6 @@ const UpdateCheckService = require('../lib/update-check-service');
 describe('Update Check', function () {
     const internal = {context: {internal: true}};
     let settingsStub;
-    let i18nStub;
     let loggingStub;
     let requestStub;
 
@@ -27,10 +26,6 @@ describe('Update Check', function () {
                 value: 'casperito'
             }]
         });
-
-        i18nStub = {
-            t: sinon.stub()
-        };
 
         loggingStub = {
             error: sinon.stub()
@@ -64,7 +59,6 @@ describe('Update Check', function () {
                     isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
-                i18n: i18nStub,
                 logging: loggingStub,
                 request: requestStub
             });
@@ -125,7 +119,6 @@ describe('Update Check', function () {
                     isPrivacyDisabled: true,
                     ghostVersion: '5.3.4'
                 },
-                i18n: i18nStub,
                 logging: loggingStub,
                 request: requestStub
             });
@@ -172,7 +165,6 @@ describe('Update Check', function () {
                     databaseType: 'mysql',
                     ghostVersion: '4.0.0'
                 },
-                i18n: i18nStub,
                 logging: loggingStub,
                 request: requestStub,
                 ghostMailer: {
@@ -243,7 +235,6 @@ describe('Update Check', function () {
                 config: {
                     siteUrl: 'https://localhost:2368/test'
                 },
-                i18n: i18nStub,
                 logging: loggingStub,
                 request: sinon.stub().resolves({
                     body: {
@@ -307,7 +298,6 @@ describe('Update Check', function () {
                 config: {
                     siteUrl: 'http://127.0.0.1:2369'
                 },
-                i18n: i18nStub,
                 logging: loggingStub,
                 request: sinon.stub().resolves({
                     body: [notification]
@@ -355,7 +345,6 @@ describe('Update Check', function () {
                 config: {
                     siteUrl: 'https://localhost:2368/test'
                 },
-                i18n: i18nStub,
                 logging: loggingStub,
                 request: sinon.stub().resolves({
                     body: {
@@ -367,6 +356,26 @@ describe('Update Check', function () {
             await updateCheckService.check();
 
             notificationsAPIAddStub.calledOnce.should.equal(false);
+        });
+    });
+
+    describe('Error handling', function () {
+        it('logs an error when error', function () {
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        edit: settingsStub
+                    }
+                },
+                logging: loggingStub
+            });
+
+            updateCheckService.updateCheckError({});
+
+            settingsStub.called.should.be.true();
+            loggingStub.error.called.should.be.true();
+            loggingStub.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
+            loggingStub.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
         });
     });
 });

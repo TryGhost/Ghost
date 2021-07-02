@@ -4,10 +4,16 @@ const crypto = require('crypto');
 const moment = require('moment');
 const Promise = require('bluebird');
 const exec = require('child_process').exec;
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('update-check');
 
 const internal = {context: {internal: true}};
+
+const messages = {
+    checkingForUpdatesFailedError: 'Checking for updates failed, your site will continue to function.',
+    checkingForUpdatesFailedHelp: 'If you get this error repeatedly, please seek help from {url}'
+};
 
 /**
  * Update Checker Class
@@ -44,10 +50,9 @@ class UpdateCheckService {
      * @param {Function} options.request - a HTTP request proxy function
      * @param {Function} options.sendEmail - function handling sending an email
     */
-    constructor({api, config, i18n, logging, request, sendEmail}) {
+    constructor({api, config, logging, request, sendEmail}) {
         this.api = api;
         this.config = config;
-        this.i18n = i18n;
         this.logging = logging;
         this.request = request;
         this.sendEmail = sendEmail;
@@ -78,8 +83,8 @@ class UpdateCheckService {
             }]
         }, internal);
 
-        err.context = this.i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
-        err.help = this.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://ghost.org/docs/'});
+        err.context = tpl(messages.checkingForUpdatesFailedError);
+        err.help = tpl(messages.checkingForUpdatesFailedHelp, {url: 'https://ghost.org/docs/'});
 
         this.logging.error(err);
     }
