@@ -143,7 +143,7 @@ module.exports = class RouterController {
             return res.end('Unauthorized');
         }
 
-        const member = email ? await this._memberRepository.get({email}, {withRelated: ['stripeCustomers', 'stripeSubscriptions']}) : null;
+        const member = email ? await this._memberRepository.get({email}, {withRelated: ['stripeCustomers', 'products']}) : null;
 
         if (!member) {
             const customer = null;
@@ -167,11 +167,9 @@ module.exports = class RouterController {
             return res.end(JSON.stringify(sessionInfo));
         }
 
-        for (const subscription of member.related('stripeSubscriptions')) {
-            if (['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status'))) {
-                res.writeHead(403);
-                return res.end('No permission');
-            }
+        if (member.related('products').length !== 0) {
+            res.writeHead(403);
+            return res.end('No permission');
         }
 
         let stripeCustomer;
