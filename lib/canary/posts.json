@@ -52,6 +52,9 @@
         "visibility": {
           "type": ["string", "null"]
         },
+        "visibility_filter": {
+          "type": ["string", "null"]
+        },
         "meta_title": {
           "type": ["string", "null"],
           "maxLength": 300
