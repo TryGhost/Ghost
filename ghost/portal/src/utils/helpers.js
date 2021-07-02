@@ -55,6 +55,8 @@ export function isComplimentaryMember({member = {}}) {
     if (subscription) {
         const {price} = subscription;
         return (price && price.amount === 0);
+    } else if (!subscription && !!member.paid) {
+        return true;
     }
     return false;
 }

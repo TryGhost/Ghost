@@ -190,6 +190,16 @@ export const member = {
         subscriptions: [],
         paid: false
     },
+    alphaComplimentary: {
+        uuid: '7dcc8939-3be0-4ac8-a363-96d19f909de6',
+        email: 'jamie@example.com',
+        name: 'Jamie Larson',
+        firstname: 'Jamie',
+        // avatar_image: 'https://gravatar.com/avatar/eb0ef27b5faa9528c900170cba4c11dc?s=250&',
+        avatar_image: '',
+        subscriptions: [],
+        paid: true
+    },
     paid: {
         uuid: '7dcc8939-3be0-4ac8-a363-96d19f909de6',
         email: 'jamie@example.com',
