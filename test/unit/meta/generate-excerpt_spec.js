@@ -1,7 +1,7 @@
 const should = require('should');
-const getExcerpt = require('../../../core/frontend/meta/generate-excerpt');
+const generateExcerpt = require('../../../core/frontend/meta/generate-excerpt');
 
-describe('getExcerpt', function () {
+describe('generateExcerpt', function () {
     it('should return html excerpt with no html', function () {
         const html = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:' +
                 '<img src=b alt="c"> those who <img src="@" onclick="javascript:alert(\'hello\');">' +
@@ -11,7 +11,7 @@ describe('getExcerpt', function () {
         const expected = 'There are 10  types of people in the world: those who understand trinary,  those who ' +
             'don\'t and those>> who mistake it &lt;for&gt; binary.';
 
-        getExcerpt(html, {}).should.equal(expected);
+        generateExcerpt(html, {}).should.equal(expected);
     });
 
     it('should return html excerpt strips multiple inline footnotes', function () {
@@ -22,7 +22,7 @@ describe('getExcerpt', function () {
 
         const expected = 'Testing, my footnotes. And stuff. Footnotewith a link right after.';
 
-        getExcerpt(html, {}).should.equal(expected);
+        generateExcerpt(html, {}).should.equal(expected);
     });
 
     it('should return html excerpt striping inline and bottom footnotes', function () {
@@ -34,14 +34,14 @@ describe('getExcerpt', function () {
 
         const expected = 'Testing a very short post with a single footnote.';
 
-        getExcerpt(html, {}).should.equal(expected);
+        generateExcerpt(html, {}).should.equal(expected);
     });
 
     it('should return html excerpt truncated by word', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
         const expected = 'Hello World!';
 
-        getExcerpt(html, {words: '2'}).should.equal(expected);
+        generateExcerpt(html, {words: '2'}).should.equal(expected);
     });
 
     it('should return html excerpt truncated by words with non-ascii characters',
@@ -49,7 +49,7 @@ describe('getExcerpt', function () {
             const html = '<p>Едквюэ опортэат <strong>праэчынт ючю но, квуй эю</strong></p>';
             const expected = 'Едквюэ опортэат';
 
-            getExcerpt(html, {words: '2'}).should.equal(expected);
+            generateExcerpt(html, {words: '2'}).should.equal(expected);
         });
 
     it('should return html excerpt truncated by character',
@@ -57,7 +57,7 @@ describe('getExcerpt', function () {
             const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
             const expected = 'Hello Wo';
 
-            getExcerpt(html, {characters: '8'}).should.equal(expected);
+            generateExcerpt(html, {characters: '8'}).should.equal(expected);
         });
 
     it('should fall back to 50 words if not specified',
@@ -70,7 +70,7 @@ describe('getExcerpt', function () {
             const expected = 'There are 10  types of people in the world: those who understand trinary,  those who ' +
                 'don\'t and those>> who mistake it &lt;for&gt; binary.';
 
-            getExcerpt(html).should.equal(expected);
+            generateExcerpt(html).should.equal(expected);
         });
 
     it('should truncate plain text for custom excerpts',
@@ -85,6 +85,6 @@ describe('getExcerpt', function () {
                        'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
                        'after 300 characters. This give';
 
-            getExcerpt(html, {characters: '300'}).should.equal(expected);
+            generateExcerpt(html, {characters: '300'}).should.equal(expected);
         });
 });
