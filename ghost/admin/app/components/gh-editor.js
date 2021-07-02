@@ -19,7 +19,6 @@ export default Component.extend({
 
     // Internal attributes
     droppedFiles: null,
-    headerClass: '',
     headerHeight: 0,
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
@@ -33,29 +32,10 @@ export default Component.extend({
     _onResizeHandler: null,
     _viewActionsWidth: 190,
 
-    init() {
-        this._super(...arguments);
-        this._onResizeHandler = (evt) => {
-            debounce(this, this._setHeaderClass, evt, 100);
-        };
-    },
-
-    didInsertElement() {
-        this._super(...arguments);
-        window.addEventListener('resize', this._onResizeHandler);
-        this._setHeaderClass();
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-        window.removeEventListener('resize', this._onResizeHandler);
-    },
-
     actions: {
         toggleFullScreen(isFullScreen) {
             this.set('isFullScreen', isFullScreen);
             this.ui.set('isFullScreen', isFullScreen);
-            run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
         togglePreview(isPreview) {
@@ -64,7 +44,6 @@ export default Component.extend({
 
         toggleSplitScreen(isSplitScreen) {
             this.set('isSplitScreen', isSplitScreen);
-            run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
         uploadImages(fileList, resetInput) {
@@ -83,40 +62,6 @@ export default Component.extend({
         uploadCancelled() {
             this.set('droppedFiles', null);
         }
-    },
-
-    _setHeaderClass() {
-        if (this.feature.psmRedesign) {
-            return;
-        }
-        
-        let editorTitle = this.element.querySelector('.gh-editor-title, .kg-title-input');
-        let smallHeaderClass = 'gh-editor-header-small';
-        let newHeaderClass = '';
-
-        this._editorTitleElement = editorTitle;
-
-        if (this.isSplitScreen) {
-            this.set('headerClass', smallHeaderClass);
-            return;
-        }
-
-        if (editorTitle) {
-            let boundingRect = editorTitle.getBoundingClientRect();
-            let maxRight = window.innerWidth - this._viewActionsWidth;
-
-            if (boundingRect.right >= maxRight) {
-                newHeaderClass = smallHeaderClass;
-            }
-        }
-
-        if (newHeaderClass !== this.headerClass) {
-            // grab height of header so that we can pass it as an offset to other
-            // editor components
-            run.scheduleOnce('afterRender', this, this._setHeaderHeight);
-        }
-
-        this.set('headerClass', newHeaderClass);
     },
 
     _setHeaderHeight() {

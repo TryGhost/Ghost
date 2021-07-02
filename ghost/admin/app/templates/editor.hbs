@@ -5,7 +5,7 @@
             @class="gh-editor gh-view relative"
             as |editor|
         >
-            <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if (feature "psmRedesign") "labs"}}">
+            <header class="gh-editor-header br2 pe-none">
                 <div class="flex items-center pe-auto">
                     {{#if this.ui.isFullScreen}}
                         <div class="ml3 flex items-center">
@@ -43,41 +43,19 @@
                                 @runningText="Saving"
                                 @class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
                                 data-test-contributor-save=true />
-                        {{else if (feature "psmRedesign")}}
-                            <div class="gh-publishmenu-labs">
-                                <GhPublishmenu
-                                    @post={{this.post}}
-                                    @postStatus={{this.post.status}}
-                                    @saveTask={{this.saveTask}}
-                                    @setSaveType={{action "setSaveType"}}
-                                    @onOpen={{action "cancelAutosave"}} />
-                            </div>
                         {{else}}
-                            <div>
-                                <GhPublishmenu
-                                    @post={{this.post}}
-                                    @postStatus={{this.post.status}}
-                                    @saveTask={{this.saveTask}}
-                                    @setSaveType={{action "setSaveType"}}
-                                    @onOpen={{action "cancelAutosave"}} />
-                            </div>
+                            <GhPublishmenu
+                                @post={{this.post}}
+                                @postStatus={{this.post.status}}
+                                @saveTask={{this.saveTask}}
+                                @setSaveType={{action "setSaveType"}}
+                                @onOpen={{action "cancelAutosave"}} />
                         {{/if}}
 
-                        {{#if (feature "psmRedesign")}}
-                            {{#unless this.showSettingsMenu}}
-                                <div class="settings-menu-toggle-spacer-labs"></div>
-                            {{/unless}}
-                        {{/if}}
-                    {{/unless}}
-
-                    <div>
-                        {{#unless (feature "psmRedesign")}}
-                            {{!-- TODO: clean up everything related to ui.showSettingsMenu when flag is removed --}}
-                            <button type="button" class="gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog ml3" title="Settings" data-test-button="psm-toggle" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
-                                <span>{{svg-jar "settings"}}</span>
-                            </button>
+                        {{#unless this.showSettingsMenu}}
+                            <div class="settings-menu-toggle-spacer"></div>
                         {{/unless}}
-                    </div>
+                    {{/unless}}
                 </section>
             </header>
 
@@ -96,7 +74,6 @@
                 @onBodyChange={{action "updateScratch"}}
                 @headerOffset={{editor.headerHeight}}
                 @scrollContainerSelector=".gh-koenig-editor"
-                @scrollOffsetTopSelector=".gh-editor-header-small"
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{action "setKoenigEditor"}}
                 @onWordCountChange={{action "updateWordCount"}}
@@ -112,39 +89,34 @@
                 @clearFeatureImage={{action "clearFeatureImage"}}
             />
 
-            <div class="gh-editor-wordcount-container {{if editor.headerClass "small"}}">
-                <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw4">
+            <div class="gh-editor-wordcount-container">
+                <div class="midgrey-l2 f8 pl4 pr3 fw4">
                     {{gh-pluralize this.wordCount.wordCount "word"}}
                 </div>
-                <a href="https://ghost.org/help/using-the-editor/" class="flex {{if editor.headerClass "pa2" "pa3"}}" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
+                <a href="https://ghost.org/help/using-the-editor/" class="flex pa3" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
             </div>
 
         </GhEditor>
 
-        {{#if (feature "psmRedesign")}}
-            {{#if this.showSettingsMenu}}
-                <GhPostSettingsMenuLabs
-                    @post={{this.post}}
-                    @showSettingsMenu={{this.showSettingsMenu}}
-                    @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
-                    @deletePost={{action "toggleDeletePostModal"}}
-                    @updateSlugTask={{this.updateSlugTask}}
-                    @savePostTask={{this.savePostTask}}
-                />
-            {{/if}}
+        {{#if this.showSettingsMenu}}
+            <GhPostSettingsMenu
+                @post={{this.post}}
+                @showSettingsMenu={{this.showSettingsMenu}}
+                @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
+                @deletePost={{action "toggleDeletePostModal"}}
+                @updateSlugTask={{this.updateSlugTask}}
+                @savePostTask={{this.savePostTask}}
+            />
         {{/if}}
     </div>
 
-    {{#if (feature "psmRedesign")}}
-        <button type="button" class="settings-menu-toggle-labs gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog" title="Settings" data-test-button="psm-toggle" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
-            {{#if this.showSettingsMenu}}
-                {{!-- TODO: switch to close state --}}
-                <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
-            {{else}}
-                <span>{{svg-jar "sidemenu"}}</span>
-            {{/if}}
-        </button>
-    {{/if}}
+    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog" title="Settings" data-test-button="psm-toggle" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
+        {{#if this.showSettingsMenu}}
+            <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
+        {{else}}
+            <span>{{svg-jar "sidemenu"}}</span>
+        {{/if}}
+    </button>
 
     {{#if this.showDeletePostModal}}
         <GhFullscreenModal @modal="delete-post"
@@ -206,19 +178,6 @@
             @modifier="action wide"
         />
     {{/if}}
-
-    {{#unless (feature "psmRedesign")}}
-        <LiquidWormhole>
-            <GhPostSettingsMenu
-                @post={{this.post}}
-                @showSettingsMenu={{this.ui.showSettingsMenu}}
-                @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
-                @deletePost={{action "toggleDeletePostModal"}}
-                @updateSlugTask={{this.updateSlugTask}}
-                @savePostTask={{this.savePostTask}}
-            />
-        </LiquidWormhole>
-    {{/unless}}
 {{/if}}
 
 {{outlet}}

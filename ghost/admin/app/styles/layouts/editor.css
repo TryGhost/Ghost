@@ -318,6 +318,18 @@
     z-index: 799;
 }
 
+@media (max-width: 1024px) {
+    .gh-editor-header {
+        z-index: 100;
+        height: 64px;
+        margin: 0;
+        padding: 0;
+        padding-left: 15px;
+        background-color: var(--white);
+        border-radius: 0;
+    }
+}
+
 .gh-btn-editor {
     background: var(--white) !important;
 }
@@ -343,41 +355,6 @@
     border-radius: 3px;
     background: transparent;
 }
-
-/* delete when psmRedesign flag is removed */
-@media (max-width: 750px) {
-    .gh-editor-header {
-        padding: 0 4vw;
-    }
-}
-
-.gh-editor-header-small {
-    z-index: 100;
-    height: 48px;
-    padding: 0;
-    padding-left: 15px;
-    background-color: #fff;
-    margin: 0;
-    border-radius: 0;
-}
-
-.gh-editor-header-small .gh-publishmenu {
-    line-height: 0;
-}
-
-.gh-editor-header-small .post-settings {
-    padding: 13px 15px;
-}
-
-.gh-editor-header-small .gh-koenig-info {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    padding: 0 8px;
-}
-/* END delete when psmRedesign flag is removed */
 
 .gh-editor-status {
     color: var(--midgrey);
