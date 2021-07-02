@@ -101,7 +101,6 @@
         {{#if this.showSettingsMenu}}
             <GhPostSettingsMenu
                 @post={{this.post}}
-                @showSettingsMenu={{this.showSettingsMenu}}
                 @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
                 @deletePost={{action "toggleDeletePostModal"}}
                 @updateSlugTask={{this.updateSlugTask}}
@@ -110,7 +109,7 @@
         {{/if}}
     </div>
 
-    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog" title="Settings" data-test-button="psm-toggle" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
+    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon only-has-icon gh-actions-cog" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
         {{#if this.showSettingsMenu}}
             <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
         {{else}}

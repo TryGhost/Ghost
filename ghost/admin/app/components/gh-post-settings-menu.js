@@ -22,8 +22,7 @@ export default Component.extend({
 
     post: null,
 
-    showSettingsMenu: false,
-    _showSettingsMenu: false,
+    isViewingSubview: false,
 
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
@@ -69,38 +68,16 @@ export default Component.extend({
         return urlParts.join(' > ');
     }),
 
-    isViewingSubview: computed('showSettingsMenu', {
-        get() {
-            return false;
-        },
-        set(key, value) {
-            // Not viewing a subview if we can't even see the PSM
-            if (!this.showSettingsMenu) {
-                return false;
-            }
-            return value;
-        }
-    }),
-
-    didReceiveAttrs() {
-        this._super(...arguments);
-
-        // fired when menu is closed
-        if (!this.showSettingsMenu && this._showSettingsMenu) {
-            let post = this.post;
-            let errors = post.get('errors');
-
-            // reset the publish date if it has an error
-            if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
-                post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
-                post.validate({attribute: 'publishedAtBlog'});
-            }
-        }
-
-        this._showSettingsMenu = this.showSettingsMenu;
-    },
-
     willDestroyElement() {
+        let post = this.post;
+        let errors = post.get('errors');
+
+        // reset the publish date if it has an error
+        if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
+            post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
+            post.validate({attribute: 'publishedAtBlog'});
+        }
+
         this.setSidebarWidthVariable(0);
     },
 
