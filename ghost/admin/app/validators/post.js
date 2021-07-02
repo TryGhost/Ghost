@@ -74,6 +74,13 @@ export default BaseValidator.create({
         }
     },
 
+    visibilityFilter(model) {
+        if (isBlank(model.visibilityFilter) && !isBlank(model.visibility) && model.visibility === 'filter' && !model.isNew) {
+            model.errors.add('visibilityFilter', 'A members group must be selected for members-only posts');
+            this.invalidate();
+        }
+    },
+
     codeinjectionFoot(model) {
         if (!validator.isLength(model.codeinjectionFoot || '', 0, 65535)) {
             model.errors.add('codeinjectionFoot', 'Footer code cannot be longer than 65535 characters.');

@@ -45,6 +45,12 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
 
         if (json.visibility === null) {
             delete json.visibility;
+            delete json.visibility_filter;
+        }
+
+        if (json.visibility === 'filter' && json.visibility_filter === null) {
+            delete json.visibility;
+            delete json.visibility_filter;
         }
 
         return json;
