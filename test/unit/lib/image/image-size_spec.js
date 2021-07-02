@@ -645,6 +645,49 @@ describe('lib/image: image size', function () {
             }).catch(done);
         });
 
+        it('[success] should return image dimensions for locally stored .webp image', function (done) {
+            const url = 'http://myblog.com/content/images/ghosticon.webp';
+            const expectedImageObject = {
+                height: 249,
+                url: 'http://myblog.com/content/images/ghosticon.webp',
+                width: 249
+            };
+
+            const storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
+            const urlForStub = sinon.stub();
+            urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghosticon.webp');
+            urlForStub.withArgs('home').returns('http://myblog.com/');
+            const urlGetSubdirStub = sinon.stub();
+            urlGetSubdirStub.returns('');
+
+            const imageSize = new ImageSize({config: {
+                get: () => {}
+            }, i18n: {}, storage: {
+                getStorage: () => ({
+                    read: obj => fs.promises.readFile(obj.path)
+                })
+            }, storageUtils: {
+                isLocalImage: () => true,
+                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+            }, validator: {}, urlUtils: {
+                urlFor: urlForStub,
+                getSubdir: urlGetSubdirStub
+            }, request: () => {
+                return Promise.reject({});
+            }});
+
+            imageSize.getImageSizeFromStoragePath(url).then(function (res) {
+                should.exist(res);
+                should.exist(res.width);
+                res.width.should.be.equal(expectedImageObject.width);
+                should.exist(res.height);
+                res.height.should.be.equal(expectedImageObject.height);
+                should.exist(res.url);
+                res.url.should.be.equal(expectedImageObject.url);
+                done();
+            }).catch(done);
+        });
+
         it('[failure] returns error if storage adapter errors', function (done) {
             const url = '/content/images/not-existing-image.png';
 
