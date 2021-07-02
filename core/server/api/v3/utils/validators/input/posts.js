@@ -4,7 +4,7 @@ const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    invalidVisibilityFilter: 'Invalid filter in visibility_filter property'
+    invalidVisibilityFilter: 'Invalid filter in visibility property'
 };
 
 const validateVisibility = async function (frame) {
@@ -14,17 +14,16 @@ const validateVisibility = async function (frame) {
 
     // validate visibility - not done at schema level because this can be an NQL query so needs model access
     const visibility = frame.data.posts[0].visibility;
-    const visibilityFilter = frame.data.posts[0].visibility_filter;
     if (visibility) {
         if (!['public', 'members', 'paid'].includes(visibility)) {
             // check filter is valid
             try {
-                await models.Member.findPage({filter: visibilityFilter, limit: 1});
+                await models.Member.findPage({filter: visibility, limit: 1});
                 return Promise.resolve();
             } catch (err) {
                 return Promise.reject(new ValidationError({
                     message: tpl(messages.invalidVisibilityFilter),
-                    property: 'visibility_filter'
+                    property: 'visibility'
                 }));
             }
         }

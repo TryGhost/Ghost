@@ -198,7 +198,8 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                         pages: [{
                             title: 'pass',
                             authors: [{id: 'correct'}],
-                            visibility: 'label:vip'
+                            visibility: 'filter',
+                            visibility_filter: 'label:vip'
                         }]
                     }
                 };
