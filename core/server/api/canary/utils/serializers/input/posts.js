@@ -111,6 +111,13 @@ const transformLegacyEmailRecipientFilters = (frame) => {
     }
 };
 
+const transformPostVisibilityFilters = (frame) => {
+    if (frame.data.posts[0].visibility === 'filter' && frame.data.posts[0].visibility_filter) {
+        frame.data.posts[0].visibility = frame.data.posts[0].visibility_filter;
+    }
+    delete frame.data.posts[0].visibility_filter;
+};
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -205,6 +212,7 @@ module.exports = {
             });
         }
 
+        transformPostVisibilityFilters(frame);
         transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
