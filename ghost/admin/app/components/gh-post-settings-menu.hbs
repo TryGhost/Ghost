@@ -74,35 +74,22 @@
                     {{#if (feature "multipleProducts")}}
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
                             <label for="visibility-input">Post access</label>
-                            <div
-                                class="gh-radio {{if this.post.isPublic "active"}}"
-                                {{on "click" (action "setVisibility" "public")}}
-                            >
-                                <div class="gh-radio-button"></div>
-                                <div class="gh-radio-content">
-                                    <div class="gh-radio-label">Public</div>
-                                </div>
-                            </div>
-                            <div
-                                class="gh-radio {{if (not this.post.isPublic) "active"}}"
-                                {{on "click" (action "setVisibility" this.post.visibilitySegment)}}
-                            >
-                                <div class="gh-radio-button"></div>
-                                <div class="gh-radio-content">
-                                    <div class="gh-radio-label">Members-only</div>
-                                    <div class="gh-radio-desc">
-                                        <GhMembersSegmentSelect
-                                            @hideLabels={{true}}
-                                            @segment={{this.post.visibilitySegment}}
-                                            @onChange={{action "setVisibility"}}
-                                            @renderInPlace={{true}}
-                                            @hideOptionsWhenAllSelected={{true}}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <GhErrorMessage @errors={{this.post.errors}} @property="visibility" class="no-selection" data-test-error="visibility" />
+                            <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
                         </GhFormGroup>
+
+                        {{#if (eq this.post.visibility "filter")}}
+                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibilityFilter">
+                                <GhMembersSegmentSelect
+                                    @hideLabels={{true}}
+                                    @segment={{this.post.visibilitySegment}}
+                                    @onChange={{action "setVisibility"}}
+                                    @renderInPlace={{true}}
+                                    @hideDefaultSegments={{true}}
+                                    @hideOptionsWhenAllSelected={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.post.errors}} @property="visibilityFilter" data-test-error="visibilityFilter" />
+                            </GhFormGroup>
+                        {{/if}}
                     {{else}}
                         <div class="form-group">
                             <label for="visibility-input">Post access</label>

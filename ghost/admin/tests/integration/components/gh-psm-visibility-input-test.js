@@ -37,7 +37,8 @@ describe('Integration: Component: gh-psm-visibility-input', function () {
         await fillIn('select', 'paid');
         await blur('select');
 
-        expect(setVisibility.calledOnce).to.be.true;
+        expect(setVisibility.calledTwice).to.be.true;
         expect(setVisibility.calledWith('visibility', 'paid')).to.be.true;
+        expect(setVisibility.calledWith('visibilityFilter', null)).to.be.true;
     });
 });
