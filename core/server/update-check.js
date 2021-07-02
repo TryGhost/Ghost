@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const api = require('./api').v2;
+const api = require('./api');
 const GhostMailer = require('./services/mail').GhostMailer;
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
