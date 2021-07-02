@@ -56,6 +56,7 @@ export default Service.extend({
     matchHelper: feature('matchHelper'),
     multipleProducts: feature('multipleProducts', {developer: true}),
     psmRedesign: feature('psmRedesign', {developer: true}),
+    emailCardSegments: feature('emailCardSegments', {developer: true}),
 
     _user: null,
 
