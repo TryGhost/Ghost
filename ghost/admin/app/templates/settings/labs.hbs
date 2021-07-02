@@ -280,6 +280,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Gated content in emails</h4>
+                            <p class="gh-expandable-description">
+                                Experimental feature to gate email card only to free/paid members.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="emailCardSegments" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
