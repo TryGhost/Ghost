@@ -148,7 +148,7 @@ describe('Acceptance: Editor', function () {
                 .to.equal('Must be in the past');
 
             // closing the PSM will reset the invalid date/time
-            await click('[data-test-close-settings-menu]');
+            await click('[data-test-psm-trigger]');
             await click('[data-test-psm-trigger]');
 
             expect(
@@ -173,7 +173,7 @@ describe('Acceptance: Editor', function () {
             await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
 
             // hide psm
-            await click('[data-test-close-settings-menu]');
+            await click('[data-test-psm-trigger]');
 
             // checking the flow of the saving button for a draft
             expect(
@@ -237,8 +237,9 @@ describe('Acceptance: Editor', function () {
 
             // post id 2 is a published post, checking for published post behaviour now
             await visit('/editor/post/2');
-
             expect(currentURL(), 'currentURL').to.equal('/editor/post/2');
+
+            await click('[data-test-psm-trigger]');
             expect(find('[data-test-date-time-picker-date-input]').value).to.equal('2015-12-19');
             expect(find('[data-test-date-time-picker-time-input]').value).to.equal('16:25');
 
@@ -246,6 +247,9 @@ describe('Acceptance: Editor', function () {
             await datepickerSelect('[data-test-date-time-picker-datepicker]', moment('2016-05-10 10:00').toDate());
             await fillIn('[data-test-date-time-picker-time-input]', '10:00');
             await blur('[data-test-date-time-picker-time-input]');
+
+            await click('[data-test-psm-trigger]');
+
             // saving
             await click('[data-test-publishmenu-trigger]');
 
@@ -286,6 +290,7 @@ describe('Acceptance: Editor', function () {
             expect(currentURL(), 'currentURL in editor')
                 .to.equal('/editor/post/2');
 
+            await click('[data-test-psm-trigger]');
             expect(
                 find('[data-test-date-time-picker-date-input]').value,
                 'date after timezone change'
@@ -534,6 +539,9 @@ describe('Acceptance: Editor', function () {
 
             expect(currentURL(), 'currentURL')
                 .to.equal('/editor/post/1');
+
+            await click('[data-test-psm-trigger]');
+
             expect(find('[data-test-date-time-picker-date-input]').value, 'scheduled date')
                 .to.equal(compareDateString);
             expect(find('[data-test-date-time-picker-time-input]').value, 'scheduled time')
@@ -558,7 +566,7 @@ describe('Acceptance: Editor', function () {
             expect(currentURL(), 'currentURL')
                 .to.equal('/editor/post/1');
 
-            await click('[data-test-button="psm-toggle"]');
+            await click('[data-test-psm-trigger]');
 
             let tokens = findAll('[data-test-input="authors"] .ember-power-select-multiple-option');
 
