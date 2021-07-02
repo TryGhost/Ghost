@@ -47,10 +47,11 @@ class UpdateCheckService {
      * @param {string} options.config.siteUrl - Ghost instance URL
      * @param {boolean} [options.config.forceUpdate]
      * @param {string} options.config.ghostVersion - Ghost instance version
+     * @param {Object} [options.logging] - logging override defaults to @tryghost/logging if not specified
      * @param {Function} options.request - a HTTP request proxy function
      * @param {Function} options.sendEmail - function handling sending an email
     */
-    constructor({api, config, logging, request, sendEmail}) {
+    constructor({api, config, logging = require('@tryghost/logging'), request, sendEmail}) {
         this.api = api;
         this.config = config;
         this.logging = logging;

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "^0.2.11",
+    "@tryghost/logging": "^0.1.3",
     "@tryghost/tpl": "^0.1.3",
     "bluebird": "3.7.2",
     "lodash": "4.17.21",
