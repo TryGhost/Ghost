@@ -23,4 +23,16 @@
             </div>
         </div>
     </PowerSelect>
+    {{#if this.hasVisibilityFilter}}
+        <div class="mt2">
+            <GhMembersSegmentSelect
+                @hideLabels={{true}}
+                @segment={{this.settings.defaultContentVisibility}}
+                @onChange={{action "setVisibility"}}
+                @renderInPlace={{true}}
+                @hideDefaultSegments={{true}}
+                @hideOptionsWhenAllSelected={{true}}
+            />
+        </div>
+    {{/if}}
 </div>
