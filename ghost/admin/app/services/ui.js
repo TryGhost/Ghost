@@ -43,7 +43,6 @@ export default class UiService extends Service {
     @tracked isFullScreen = false;
     @tracked mainClass = '';
     @tracked showMobileMenu = false;
-    @tracked showSettingsMenu = false;
 
     get isMobile() {
         return this.mediaQueries.isMobile;
@@ -73,7 +72,6 @@ export default class UiService extends Service {
     @action
     closeMenus() {
         this.dropdown.closeDropdowns();
-        this.showSettingsMenu = false;
         this.showMobileMenu = false;
     }
 
@@ -85,11 +83,6 @@ export default class UiService extends Service {
     @action
     openMobileMenu() {
         this.showMobileMenu = true;
-    }
-
-    @action
-    openSettingsMenu() {
-        this.showSettingsMenu = true;
     }
 
     @action

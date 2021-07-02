@@ -1,11 +1,12 @@
-<div class="settings-menu-container {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-wide"}}">
+<div
+    class="settings-menu-container {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-wide"}}"
+    {{did-insert this.setSidebarWidthFromElement}}
+    {{did-update this.setSidebarWidthFromElement this.isViewingSubview}}
+>
     <div id="entry-controls">
-        <div class="{{if this.isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
+        <div class="settings-menu settings-menu-pane settings-menu-pane-main">
             <div class="settings-menu-header">
                 <h4>{{capitalize this.post.displayName}} settings</h4>
-                <button aria-label="Close" class="close settings-menu-header-action" {{action "closeMenus" target=this.ui}} data-test-close-settings-menu>
-                    {{svg-jar "close"}}<span class="hidden">Close</span>
-                </button>
             </div>
             <div class="settings-menu-content">
                 <form>
@@ -17,7 +18,7 @@
                         <a class="post-view-link" target="_blank" href="{{this.post.url}}">
                             View {{this.post.displayName}} {{svg-jar "external"}}
                         </a>
-                        {{else}}
+                        {{else if this.post.isScheduled}}
                         <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}">
                             Preview {{svg-jar "external"}}
                         </a>
@@ -202,9 +203,9 @@
             </div>{{! .settings-menu-content }}
         </div>{{! .post-settings-menu }}
 
-        <div class="{{if this.isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane {{unless (eq this.subview "email-settings") "settings-menu-pane-wide"}}">
+        {{#if this.isViewingSubview}}
+        <div class="settings-menu settings-menu-pane {{unless (eq this.subview "email-settings") "settings-menu-pane-wide"}}">
             <div class="active">
-                {{#if this.isViewingSubview}}
                     {{#if (eq this.subview "meta-data")}}
                         <div class="settings-menu-header subview">
                             <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
@@ -459,8 +460,8 @@
                             </form>
                         </div>
                     {{/if}}
-                {{/if}}
             </div>
         </div>
+        {{/if}}
     </div>
 </div>

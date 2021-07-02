@@ -1,9 +1,9 @@
-<GhApp @showSettingsMenu={{this.ui.showSettingsMenu}}>
+<GhApp>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
     <GhAlerts />
 
-    <div class="gh-viewport {{if this.ui.showSettingsMenu 'settings-menu-expanded'}} {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
+    <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if this.showNavMenu}}
             <GhNavMenu />
         {{/if}}

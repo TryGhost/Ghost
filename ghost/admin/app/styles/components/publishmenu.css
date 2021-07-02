@@ -23,6 +23,7 @@
     position: relative;
     z-index: 1000;
     display: flex;
+    margin-right: 8px;
 }
 
 .gh-publishmenu-dropdown {
@@ -232,7 +233,7 @@
 .gh-publishmenu-email .gh-box {
     padding: 12px 16px;
     font-size: 1.3rem;
-    line-height: 1.5em;    
+    line-height: 1.5em;
 }
 
 .gh-publishmenu-email .select-members {
