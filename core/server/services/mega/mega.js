@@ -18,6 +18,7 @@ const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const {getSegmentsFromHtml} = require('./segment-parser');
+const labs = require('../labs');
 
 const messages = {
     invalidSegment: 'Invalid segment value. Use one of the valid:"status:free" or "status:-free" values.'
@@ -414,26 +415,28 @@ async function createSegmentedEmailBatches({emailModel, options}) {
         return [];
     }
 
-    const segments = getSegmentsFromHtml(emailModel.get('html'));
-    const batchIds = [];
+    if (labs.isSet('emailCardSegments')) {
+        const segments = getSegmentsFromHtml(emailModel.get('html'));
+        const batchIds = [];
 
-    if (segments.length) {
-        const partitionedMembers = partitionMembersBySegment(memberRows, segments);
+        if (segments.length) {
+            const partitionedMembers = partitionMembersBySegment(memberRows, segments);
 
-        for (const partition in partitionedMembers) {
-            const emailBatchIds = await createEmailBatches({
-                emailModel,
-                memberRows: partitionedMembers[partition],
-                memberSegment: partition === 'unsegmented' ? null : partition,
-                options
-            });
-            batchIds.push(emailBatchIds);
+            for (const partition in partitionedMembers) {
+                const emailBatchIds = await createEmailBatches({
+                    emailModel,
+                    memberRows: partitionedMembers[partition],
+                    memberSegment: partition === 'unsegmented' ? null : partition,
+                    options
+                });
+                batchIds.push(emailBatchIds);
+            }
+            return batchIds;
         }
-    } else {
-        const emailBatchIds = await createEmailBatches({emailModel, memberRows, options});
-        batchIds.push(emailBatchIds);
     }
 
+    const emailBatchIds = await createEmailBatches({emailModel, memberRows, options});
+    const batchIds = [emailBatchIds];
     return batchIds;
 }
 
