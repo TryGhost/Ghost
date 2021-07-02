@@ -1,6 +1,6 @@
 const downsize = require('downsize');
 
-function getExcerpt(html, truncateOptions) {
+function generateExcerpt(html, truncateOptions) {
     truncateOptions = truncateOptions || {};
     // Strip inline and bottom footnotes
     let excerpt = html.replace(/<a href="#fn.*?rel="footnote">.*?<\/a>/gi, '');
@@ -20,4 +20,4 @@ function getExcerpt(html, truncateOptions) {
     return downsize(excerpt, truncateOptions);
 }
 
-module.exports = getExcerpt;
+module.exports = generateExcerpt;

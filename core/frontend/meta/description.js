@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const settingsCache = require('../../shared/settings-cache');
-const getExcerpt = require('./generate-excerpt');
+const generateExcerpt = require('./generate-excerpt');
 
 function getDescription(data, root, options = {}) {
     const context = root ? root.context : null;
@@ -47,7 +47,7 @@ function getDescription(data, root, options = {}) {
             description = data.post[`${options.property}_description`]
                 || data.post.custom_excerpt
                 || data.post.meta_description
-                || getExcerpt(data.post.html || '', {words: 50})
+                || generateExcerpt(data.post.html || '', {words: 50})
                 || settingsCache.get('description')
                 || '';
         } else {
@@ -59,7 +59,7 @@ function getDescription(data, root, options = {}) {
             description = data.post[`${options.property}_description`]
                 || data.post.custom_excerpt
                 || data.post.meta_description
-                || getExcerpt(data.post.html || '', {words: 50})
+                || generateExcerpt(data.post.html || '', {words: 50})
                 || settingsCache.get('description')
                 || '';
         } else {
@@ -70,7 +70,7 @@ function getDescription(data, root, options = {}) {
             description = data.page[`${options.property}_description`]
                 || data.page.custom_excerpt
                 || data.page.meta_description
-                || getExcerpt(data.page.html || '', {words: 50})
+                || generateExcerpt(data.page.html || '', {words: 50})
                 || settingsCache.get('description')
                 || '';
         } else {
