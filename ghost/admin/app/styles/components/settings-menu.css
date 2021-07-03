@@ -87,7 +87,7 @@
     width: 100%;
     max-width: 380px;
     overflow: auto;
-    background-color: white;
+    background-color: var(--white);
     opacity: 1;
 }
 
