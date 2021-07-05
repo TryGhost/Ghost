@@ -639,6 +639,17 @@
     max-width: calc(100vw - 280px);
 }
 
+@media (max-width: 1024px) {
+    .koenig-breakout-full {
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+    }
+
+    .koenig-breakout-full .mw-100vw {
+        max-width: 100vw;
+    }
+}
+
 /* Table
 /* --------------------------------------------------------------- */
 
