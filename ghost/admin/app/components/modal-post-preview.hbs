@@ -29,7 +29,7 @@
         <ModalPostPreview::Browser @post={{@model.post}} />
     {{/if}}
 
-    {{#if (and (eq this.tab "mobile") @model.post.isPost)}}
+    {{#if (and (eq this.tab "mobile"))}}
         <ModalPostPreview::Mobile @post={{@model.post}} />
     {{/if}}
 
