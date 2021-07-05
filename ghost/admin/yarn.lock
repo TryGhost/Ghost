@@ -1850,10 +1850,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.46":
-  version "0.2.46"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.46.tgz#f7024e94d077ebfae49c96c12bf680f3721cc348"
-  integrity sha512-Dva2vnou5jnBpZByVNXJlyENmYtvdVDX0P8rZI9lulwRBUqy7Py5YAhmYO4TsUShy0DWuhigLXN+RvK4xvTOJA==
+"@tryghost/timezone-data@0.2.47":
+  version "0.2.47"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.47.tgz#800284285be6a33942d0e845eb339831bc76b449"
+  integrity sha512-ZRrtn1ZTP2F/VAuACjlkDaumt+4Ja3j8yFhrMSCcDA+D4NeNRsuVSdYSU9srtmbvonNaLrFx0w60b81+gqn2LQ==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
