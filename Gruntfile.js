@@ -208,9 +208,6 @@ const configureGrunt = function (grunt) {
         // ### grunt-shell
         // Command line tools where it's easier to run a command directly than configure a grunt plugin
         shell: {
-            lint: {
-                command: 'yarn lint'
-            },
             main: {
                 command: function () {
                     const upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
@@ -443,11 +440,7 @@ const configureGrunt = function (grunt) {
         return knexMigrator.init({noScripts: true});
     });
 
-    // ### Validate
-    // **Main testing task**
-    //
-    // `grunt validate` will either run all tests or run linting
-    // `grunt validate` is called by `yarn test` and is used by Travis.
+    // `grunt validate` runs unit and acceptance tests
     grunt.registerTask('validate', 'Run tests', function () {
         grunt.task.run(['test-unit', 'test-acceptance']);
     });
@@ -455,12 +448,10 @@ const configureGrunt = function (grunt) {
     grunt.registerTask('test-all', 'Run all server tests',
         ['test-unit', 'test-acceptance', 'test-regression']);
 
-    // ### Lint
-    //
-    // `grunt lint` will run the linter
-    grunt.registerTask('lint', 'Run the code style checks for server & tests',
-        ['shell:lint']
-    );
+    // Linting via grunt is deprecated
+    grunt.registerTask('lint', function () {
+        grunt.log.error('@deprecated: Use `yarn lint` instead');
+    });
 
     // ### test-setup *(utility)(
     // `grunt test-setup` will run all the setup tasks required for running tests
