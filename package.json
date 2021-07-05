@@ -25,7 +25,7 @@
     "dev:debug": "DEBUG=ghost:* grunt",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || (exit 0)",
     "main": "grunt shell:main && grunt subgrunt:init",
-    "test": "yarn test:unit && yarn test:acceptance",
+    "test": "mocha --require=test/utils/overrides.js --exit --trace-warnings --recursive --timeout=10000",
     "test:all": "yarn test:unit && yarn test:acceptance && yarn test:regression",
     "test:unit": "mocha --require=test/utils/overrides.js --exit --trace-warnings './test/unit/**/*_spec.js' --timeout=7000",
     "test:acceptance": "mocha --require=test/utils/overrides.js --exit --trace-warnings './test/api-acceptance/**/*_spec.js' './test/frontend-acceptance/**/*_spec.js' --timeout=10000",

@@ -12,50 +12,6 @@ const logBuildingClient = function (grunt) {
 };
 
 module.exports = function (grunt) {
-    /**
-     * Ghosts Gruntfile contains two main useful commands:
-     *
-     * grunt test:[file or folder]
-     *   - special command for running a single test or group of tests
-     *
-     * grunt release
-     *   - Ghost's release tooling
-     */
-
-    // grunt test
-    // - Special command for running a single test or group of tests
-    // File: grunt test:unit/apps_spec.js - will run just the tests inside the apps_spec.js file
-    // Folder: grunt test:regression/api` - runs the api regression tests
-    grunt.registerTask('test', 'Run a particular spec file from the /test/ directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
-        if (!test) {
-            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `yarn test`?');
-        }
-
-        if (!test.match(/test\//)) {
-            test = 'test/' + test;
-        }
-
-        // CASE: execute folder
-        if (!test.match(/.js/)) {
-            test += '/**';
-        } else if (!fs.existsSync(test)) {
-            grunt.fail.fatal('This file does not exist!');
-        }
-
-        // grunt-mocha-cli
-        grunt.config.set('mochacli.single', {
-            options: {
-                timeout: '10000',
-                require: ['test/utils/overrides'],
-                flags: ['--trace-warnings'],
-                exit: true
-            },
-            src: [test]
-        });
-
-        grunt.task.run('mochacli:single');
-    });
-
     // grunt dev - use yarn dev instead!
     // - Start a server & build assets on the fly whilst developing
     grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
