@@ -24,6 +24,12 @@ module.exports = function (grunt) {
         }
     });
 
+    // grunt build -- use yarn build instead!
+    // - Builds the client without a watch task
+    grunt.registerTask('build', 'Build client app in development mode',
+        ['subgrunt:init', 'clean:tmp', 'ember']);
+
+    // Helpers for common deprecated tasks
     grunt.registerTask('main', function () {
         grunt.log.error('@deprecated: Run `yarn main` instead');
     });
@@ -38,10 +44,6 @@ module.exports = function (grunt) {
     // Updates submodules, then installs and builds the client for you
     grunt.registerTask('init', 'Prepare the project for development',
         ['update_submodules:pinned', 'build']);
-
-    // Client build
-    grunt.registerTask('build', 'Build client app in development mode',
-        ['subgrunt:init', 'clean:tmp', 'ember']);
 
     // Runs ember dev
     grunt.registerTask('ember', 'Build JS & templates for development',
