@@ -82,12 +82,11 @@
                     <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.description 500}}</p>
                 </GhFormGroup>
             </div>
-            <GhFormGroup @class="no-margin" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
+            <GhFormGroup @class="gh-tag-image-uploader no-margin" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="featureImage">
                 <label for="tag-image">Tag image</label>
                 <GhImageUploaderWithPreview
                     @image={{this.tag.featureImage}}
                     @text="Upload tag image"
-                    @class="gh-tag-image-uploader"
                     @allowUnsplash={{true}}
                     @update={{action "setCoverImage"}}
                     @remove={{action "clearCoverImage"}}
@@ -186,12 +185,11 @@
             <div class="gh-setting-content-extended">
                 <div class="gh-twitter-settings">
                     <div class="gh-twitter-settings-left flex-basis-1-2-m flex-basis-2-3-l">
-                        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterImage">
+                        <GhFormGroup @class="gh-tag-image-uploader" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="twitterImage">
                             <label for="twitter-image">Twitter image</label>
                             <GhImageUploaderWithPreview
                                 @image={{this.tag.twitterImage}}
                                 @text="Add Twitter image"
-                                @class="gh-tag-image-uploader"
                                 @allowUnsplash={{true}}
                                 @update={{action "setTwitterImage"}}
                                 @remove={{action "clearTwitterImage"}}
@@ -281,12 +279,11 @@
             <div class="gh-setting-content-extended">
                 <div class="gh-og-settings">
                     <div class="gh-og-settings-left flex-basis-1-2-m flex-basis-2-3-l">
-                        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogImage">
+                        <GhFormGroup @class="gh-tag-image-uploader" @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="ogImage">
                             <label for="og-image">Facebook image</label>
                             <GhImageUploaderWithPreview
                                 @image={{this.tag.ogImage}}
                                 @text="Add Facebook image"
-                                @class="gh-tag-image-uploader"
                                 @allowUnsplash={{true}}
                                 @update={{action "setOgImage"}}
                                 @remove={{action "clearOgImage"}}
