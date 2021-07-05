@@ -21,7 +21,8 @@
   "license": "MIT",
   "scripts": {
     "start": "node index",
-    "dev": "DEBUG=ghost:* grunt dev",
+    "dev": "grunt dev",
+    "dev:debug": "DEBUG=ghost:* grunt dev",
     "test": "grunt validate",
     "test:slow": "grunt validate --reporter=mocha-slow-test-reporter",
     "ci": "grunt validate --verbose",
