@@ -382,12 +382,9 @@ const configureGrunt = function (grunt) {
     //
     // TLDR; run `grunt validate`
 
-    // #### Set Test Env *(Utility Task)*
-    // Set the NODE_ENV to 'testing' unless the environment is already set to TRAVIS.
-    // This ensures that the tests get run under the correct environment, using the correct database, and
-    // that they work as expected. Trying to run tests with no ENV set will throw an error to do with `client`.
+    // This ensures that the tests get run under the correct environment, using the correct database, and that they work as expected.
     grunt.registerTask('setTestEnv',
-        'Use "testing" Ghost config; unless we are running on travis (then show queries for debugging)',
+        'Use "testing" Ghost config; unless we are running on CI',
         function () {
             process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
             cfg.express.test.options.node_env = process.env.NODE_ENV;
@@ -570,7 +567,7 @@ const configureGrunt = function (grunt) {
         'Release task - creates a final built zip\n' +
         ' - Do our standard build steps \n' +
         ' - Copy files to release-folder/#/#{version} directory\n' +
-        ' - Clean out unnecessary files (travis, .git*, etc)\n' +
+        ' - Clean out unnecessary files (.git*, etc)\n' +
         ' - Zip files in release-folder to dist-folder/#{version} directory',
         function () {
             grunt.config.set('copy.release', {
