@@ -177,7 +177,7 @@
     "jwks-rsa": "2.0.3",
     "mocha": "9.0.2",
     "mock-knex": "0.4.10",
-    "nock": "13.1.0",
+    "nock": "13.1.1",
     "papaparse": "5.3.1",
     "postcss": "8.3.5",
     "rewire": "5.0.0",
