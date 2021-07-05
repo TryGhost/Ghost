@@ -102,31 +102,10 @@ const configureGrunt = function (grunt) {
         // ### grunt-mocha-cli
         mochacli: {
             options: {
-                ui: 'bdd',
-                reporter: grunt.option('reporter') || 'spec',
-                timeout: '60000',
-                require: ['core/server/overrides'],
+                timeout: '10000',
+                require: ['test/utils/overrides'],
                 flags: ['--trace-warnings'],
                 exit: true
-            },
-
-            unit: {
-                src: [
-                    'test/unit/**/*_spec.js'
-                ]
-            },
-
-            acceptance: {
-                src: [
-                    'test/api-acceptance/**/*_spec.js',
-                    'test/frontend-acceptance/**/*_spec.js'
-                ]
-            },
-
-            regression: {
-                src: [
-                    'test/regression/**/*_spec.js'
-                ]
             },
 
             // #### Run single test (src is set dynamically, see grunt task 'test')
@@ -325,13 +304,6 @@ const configureGrunt = function (grunt) {
     // Load the configuration
     grunt.initConfig(cfg);
 
-    // This ensures that the tests get run under the correct environment, using the correct database, and that they work as expected.
-    grunt.registerTask('setTestEnv',
-        'Use "testing" Ghost config; unless we are running on CI',
-        function () {
-            process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
-        });
-
     // ### Test
     // `grunt test:unit/apps_spec.js` will run just the tests inside the apps_spec.js file
     //
@@ -357,25 +329,8 @@ const configureGrunt = function (grunt) {
 
         cfg.mochacli.single.src = [test];
         grunt.initConfig(cfg);
-        grunt.task.run('setTestEnv', 'mochacli:single');
+        grunt.task.run('mochacli:single');
     });
-
-    // Linting via grunt is deprecated
-    grunt.registerTask('lint', function () {
-        grunt.log.error('@deprecated: Use `yarn lint` instead');
-    });
-
-    grunt.registerTask('test-unit', 'Run unit tests (mocha)',
-        ['setTestEnv', 'mochacli:unit']
-    );
-
-    grunt.registerTask('test-regression', 'Run regression tests.',
-        ['setTestEnv', 'mochacli:regression']
-    );
-
-    grunt.registerTask('test-acceptance', 'Run acceptance tests',
-        ['setTestEnv', 'mochacli:acceptance']
-    );
 
     // ## Building assets
     //

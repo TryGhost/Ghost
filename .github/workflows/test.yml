@@ -104,11 +104,11 @@ jobs:
           mysql root password: 'root'
 
       - run: yarn
-      - run: grunt test-acceptance --verbose
+      - run: yarn test:acceptance
         env:
           database__connection__filename: /dev/shm/ghost-test.db
-      - run: grunt test-unit --verbose
-      - run: grunt test-regression --verbose
+      - run: yarn test:unit
+      - run: yarn test:regression
         env:
           database__connection__filename: /dev/shm/ghost-test.db
 
