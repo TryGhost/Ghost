@@ -546,6 +546,7 @@
     background: var(--white);
     border-radius: 3px;
     transition: all 0.25s ease;
+    transition-property: color, border-color, background, width, height, box-shadow;
 }
 
 .gh-editor-back-button:hover {
