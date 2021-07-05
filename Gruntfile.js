@@ -1,10 +1,3 @@
-// # Task automation for Ghost
-//
-// Run various tasks when developing for and working with Ghost.
-//
-// **Usage instructions:** can be found in the [Custom Tasks](#custom%20tasks) section or by running `grunt --help`.
-//
-// **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
 const config = require('./core/shared/config');
 const _ = require('lodash');
 const fs = require('fs-extra');
@@ -366,17 +359,7 @@ const configureGrunt = function (grunt) {
     // * [Testing](#testing):
     //     `grunt validate`, the `grunt test-*` sub-tasks.
 
-    // ### Help
-    // Run `grunt help` on the commandline to get a print out of the available tasks and details of
-    // what each one does along with any available options. This is an alias for `grunt --help`
-    grunt.registerTask('help',
-        'Outputs help information if you type `grunt help` instead of `grunt --help`',
-        function () {
-            grunt.log.writeln('Type `grunt --help` to get the details of available grunt tasks.');
-        });
-
     // ## Testing
-
     // Ghost has an extensive set of test suites. The following section documents the various types of tests
     // and how to run them.
     //
