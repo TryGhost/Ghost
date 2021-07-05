@@ -21,8 +21,8 @@
   "license": "MIT",
   "scripts": {
     "start": "node index",
-    "dev": "grunt dev",
-    "dev:debug": "DEBUG=ghost:* grunt dev",
+    "dev": "grunt",
+    "dev:debug": "DEBUG=ghost:* grunt",
     "test": "yarn test:unit && yarn test:acceptance",
     "test:all": "yarn test:unit && yarn test:acceptance && yarn test:regression",
     "test:unit": "mocha --require=test/utils/overrides.js --exit --trace-warnings './test/unit/**/*_spec.js' --timeout=7000",

@@ -351,20 +351,18 @@ const configureGrunt = function (grunt) {
     // running `yarn install`.
     //
     grunt.registerTask('init', 'Prepare the project for development',
-        ['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'default']);
+        ['update_submodules:pinned', 'build']);
 
     // ### Build assets
     // `grunt build` - will build client assets (without updating the submodule)
     //
     // This task is identical to `grunt init`, except it does not build client dependencies
     grunt.registerTask('build', 'Build client app',
-        ['subgrunt:init', 'clean:tmp', 'default']);
+        ['subgrunt:init', 'clean:tmp', 'client']);
 
-    // ### Default asset build
-    // `grunt` - default grunt task
-    //
+    // ### Client asset build
     // Build assets and dev version of the admin app.
-    grunt.registerTask('default', 'Build JS & templates for development',
+    grunt.registerTask('client', 'Build JS & templates for development',
         ['subgrunt:dev']);
 
     // ### Production assets
@@ -395,6 +393,10 @@ const configureGrunt = function (grunt) {
         }
     });
 
+    // Default task is an alias of dev
+    grunt.registerTask('default', 'Dev Mode; watch files and restart server on changes',
+        ['dev']);
+
     // ### grunt main
     // This command helps you to bring your working directory back to current main.
     // It will also update your dependencies to main and shows you if your database is healthy.
@@ -406,7 +408,8 @@ const configureGrunt = function (grunt) {
         ['shell:main', 'subgrunt:init']
     );
 
-    grunt.registerTask('master', 'Backwards compatible alias for `grunt main`.', 'main');
+    grunt.registerTask('master', 'Backwards compatible alias for `grunt main`.',
+        ['main']);
 
     // ### Release
     // Run `grunt release` to create a Ghost release zip file.
