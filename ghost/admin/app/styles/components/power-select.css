@@ -257,7 +257,8 @@
 /* Tag input */
 
 .tag-token--internal {
-    background: color-mod(var(--black) alpha(0.1));
+    background: var(--lightgrey-l1);
+    border: 1px solid var(--lightgrey-l1);
     color: var(--black);
 }
 
