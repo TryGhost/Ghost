@@ -22,7 +22,6 @@
 .gh-publishmenu {
     position: relative;
     z-index: 1000;
-    display: flex;
     margin-right: 8px;
 }
 
