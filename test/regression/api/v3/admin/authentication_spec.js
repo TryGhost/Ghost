@@ -61,6 +61,7 @@ describe('Authentication API v3', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.users);
                     should.not.exist(jsonResponse.meta);
+                    should.exist(res.headers['x-cache-invalidate']);
 
                     jsonResponse.users.should.have.length(1);
                     localUtils.API.checkResponse(jsonResponse.users[0], 'user');
