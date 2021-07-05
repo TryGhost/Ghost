@@ -436,7 +436,7 @@ const configureGrunt = function (grunt) {
     // ### test-setup *(utility)(
     // `grunt test-setup` will run all the setup tasks required for running tests
     grunt.registerTask('test-setup', 'Setup ready to run tests',
-        ['knex-migrator', 'clean:test', 'setTestEnv', 'stubClientFiles']
+        ['setTestEnv']
     );
 
     // ### Unit Tests *(sub task)*
