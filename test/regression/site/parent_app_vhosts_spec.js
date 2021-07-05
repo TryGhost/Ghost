@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../utils');
+const adminUtils = require('../../utils/admin-utils');
 const mockUtils = require('../../utils/mocks');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
@@ -15,6 +16,7 @@ describe('Integration - Web - vhosts', function () {
     before(testUtils.integrationTesting.urlService.resetGenerators);
     before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
+    before(adminUtils.stubClientFiles);
 
     after(function () {
         configUtils.restore();
