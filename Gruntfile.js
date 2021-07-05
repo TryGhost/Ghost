@@ -1,11 +1,5 @@
 const config = require('./core/shared/config');
-const _ = require('lodash');
 const fs = require('fs-extra');
-const KnexMigrator = require('knex-migrator');
-const knexMigrator = new KnexMigrator({
-    knexMigratorFilePath: config.get('paths:appRoot')
-});
-
 const path = require('path');
 const escapeChar = process.platform.match(/^win/) ? '^' : '\\';
 const cwd = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1');
@@ -110,11 +104,6 @@ const configureGrunt = function (grunt) {
 
             dev: {
                 options: {}
-            },
-            test: {
-                options: {
-                    node_env: 'testing'
-                }
             }
         },
 
@@ -248,9 +237,6 @@ const configureGrunt = function (grunt) {
             release: {
                 src: ['<%= paths.releaseBuild %>/**']
             },
-            test: {
-                src: ['content/data/ghost-test.db']
-            },
             tmp: {
                 src: ['.tmp/**']
             },
@@ -370,8 +356,16 @@ const configureGrunt = function (grunt) {
         'Use "testing" Ghost config; unless we are running on CI',
         function () {
             process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
-            cfg.express.test.options.node_env = process.env.NODE_ENV;
         });
+
+    // @TODO: fix this - it's only used for a handful of regression tests
+    // Creates stub files in the built directory and the views directory so that the test environments do not need to build out the client files
+    grunt.registerTask('stubClientFiles', function () {
+        cfg.clientFiles.forEach((file) => {
+            const filePath = path.resolve(cwd + '/core/' + file);
+            fs.ensureFileSync(filePath);
+        });
+    });
 
     // ### Test
     // **Testing utility**
@@ -400,24 +394,7 @@ const configureGrunt = function (grunt) {
 
         cfg.mochacli.single.src = [test];
         grunt.initConfig(cfg);
-        grunt.task.run('test-setup', 'mochacli:single');
-    });
-
-    // #### Stub out ghost files *(Utility Task)*
-    // Creates stub files in the built directory and the views directory
-    // so that the test environments do not need to build out the client files
-    grunt.registerTask('stubClientFiles', function () {
-        _.each(cfg.clientFiles, function (file) {
-            const filePath = path.resolve(cwd + '/core/' + file);
-            fs.ensureFileSync(filePath);
-        });
-    });
-
-    /**
-     * Ensures the target database get's automatically created.
-     */
-    grunt.registerTask('knex-migrator', function () {
-        return knexMigrator.init({noScripts: true});
+        grunt.task.run('setTestEnv', 'mochacli:single');
     });
 
     // `grunt validate` runs unit and acceptance tests
@@ -433,36 +410,16 @@ const configureGrunt = function (grunt) {
         grunt.log.error('@deprecated: Use `yarn lint` instead');
     });
 
-    // ### test-setup *(utility)(
-    // `grunt test-setup` will run all the setup tasks required for running tests
-    grunt.registerTask('test-setup', 'Setup ready to run tests',
-        ['setTestEnv']
-    );
-
-    // ### Unit Tests *(sub task)*
-    // `grunt test-unit` will run just the unit tests
-    //
-    // If you need to run an individual unit test file, you can use the `grunt test:<file_path>` task:
-    //
-    // `grunt test:unit/config_spec.js`
-    //
-    // This also works for folders (although it isn't recursive), E.g.
-    //
-    // `grunt test:unit/helpers`
-    //
-    // Unit tests are run with [mocha](http://mochajs.org/) using
-    // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
-    // Unit tests do **not** touch the database.
     grunt.registerTask('test-unit', 'Run unit tests (mocha)',
-        ['test-setup', 'mochacli:unit']
+        ['setTestEnv', 'mochacli:unit']
     );
 
     grunt.registerTask('test-regression', 'Run regression tests.',
-        ['test-setup', 'mochacli:regression']
+        ['setTestEnv', 'stubClientFiles', 'mochacli:regression']
     );
 
     grunt.registerTask('test-acceptance', 'Run acceptance tests',
-        ['test-setup', 'mochacli:acceptance']
+        ['setTestEnv', 'mochacli:acceptance']
     );
 
     // ## Building assets
