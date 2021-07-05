@@ -6928,6 +6928,16 @@ mobiledoc-text-renderer@0.4.0:
   resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.4.0.tgz#473fbe50aa6cde2c3b449752f3b984834dc824d2"
   integrity sha512-+Tzfo0hhUFxS0n5FWZ0nf6WUrvnVmsxaIdq0CyeLYD1lk8oW2ml+6WLdeLlzKM5OYYi3PWV6NR9HCUG01cdvWQ==
 
+mocha-slow-test-reporter@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/mocha-slow-test-reporter/-/mocha-slow-test-reporter-0.1.2.tgz#e1d8138f8c2b8a2d72a727e6a14d808e406221c4"
+  integrity sha1-4dgTj4wrii1ypyfmoU2AjkBiIcQ=
+  dependencies:
+    chalk "^1.1.1"
+    string-length "^1.0.1"
+    text-table "^0.2.0"
+    wordwrap "^1.0.0"
+
 mocha@9.0.2:
   version "9.0.2"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-9.0.2.tgz#e84849b61f406a680ced85af76425f6f3108d1a0"
@@ -9448,6 +9458,13 @@ streamsearch@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/streamsearch/-/streamsearch-0.1.2.tgz#808b9d0e56fc273d809ba57338e929919a1a9f1a"
   integrity sha1-gIudDlb8Jz2Am6VzOOkpkZoanxo=
+
+string-length@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/string-length/-/string-length-1.0.1.tgz#56970fb1c38558e9e70b728bf3de269ac45adfac"
+  integrity sha1-VpcPscOFWOnnC3KL894mmsRa36w=
+  dependencies:
+    strip-ansi "^3.0.0"
 
 string-template@~0.2.1:
   version "0.2.1"
