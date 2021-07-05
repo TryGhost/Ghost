@@ -333,24 +333,6 @@ const configureGrunt = function (grunt) {
     // Load the configuration
     grunt.initConfig(cfg);
 
-    // # Custom Tasks
-
-    // Ghost has a number of useful tasks that we use every day in development. Tasks marked as *Utility* are used
-    // by grunt to perform current actions, but isn't useful to developers.
-    //
-    // Skip ahead to the section on:
-    //
-    // * [Building assets](#building%20assets):
-    //     `grunt init`, `grunt` & `grunt prod` or live reload with `grunt dev`
-    // * [Testing](#testing):
-    //     `grunt validate`, the `grunt test-*` sub-tasks.
-
-    // ## Testing
-    // Ghost has an extensive set of test suites. The following section documents the various types of tests
-    // and how to run them.
-    //
-    // TLDR; run `grunt validate`
-
     // This ensures that the tests get run under the correct environment, using the correct database, and that they work as expected.
     grunt.registerTask('setTestEnv',
         'Use "testing" Ghost config; unless we are running on CI',
@@ -368,8 +350,6 @@ const configureGrunt = function (grunt) {
     });
 
     // ### Test
-    // **Testing utility**
-    //
     // `grunt test:unit/apps_spec.js` will run just the tests inside the apps_spec.js file
     //
     // It works for any path relative to the /test/ folder. It will also run all the tests in a single directory
@@ -378,7 +358,7 @@ const configureGrunt = function (grunt) {
     // `grunt test:regression/api` - runs the api regression tests
     grunt.registerTask('test', 'Run a particular spec file from the /test/ directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
         if (!test) {
-            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `yarn test` or `grunt validate`?');
+            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `yarn test`?');
         }
 
         if (!test.match(/test\//) && !test.match(/core\/server/)) {
@@ -396,14 +376,6 @@ const configureGrunt = function (grunt) {
         grunt.initConfig(cfg);
         grunt.task.run('setTestEnv', 'mochacli:single');
     });
-
-    // `grunt validate` runs unit and acceptance tests
-    grunt.registerTask('validate', 'Run tests', function () {
-        grunt.task.run(['test-unit', 'test-acceptance']);
-    });
-
-    grunt.registerTask('test-all', 'Run all server tests',
-        ['test-unit', 'test-acceptance', 'test-regression']);
 
     // Linting via grunt is deprecated
     grunt.registerTask('lint', function () {
