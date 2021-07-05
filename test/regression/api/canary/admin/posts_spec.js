@@ -283,6 +283,14 @@ describe('Posts API (canary)', function () {
                     done();
                 });
         });
+
+        it('throws a 400 when a non-existing field is requested', async function () {
+            await request.get(localUtils.API.getApiQuery(`posts/slug/${testUtils.DataGenerator.Content.posts[0].slug}/?fields=tags`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(400);
+        });
     });
 
     describe('Add', function () {
