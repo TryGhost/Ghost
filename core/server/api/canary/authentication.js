@@ -20,6 +20,9 @@ module.exports = {
     setup: {
         statusCode: 201,
         permissions: false,
+        headers: {
+            cacheInvalidate: true
+        },
         validation: {
             docName: 'setup'
         },
