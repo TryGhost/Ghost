@@ -506,6 +506,10 @@
     opacity: 1;
 }
 
+.td-item-action.gh-btn {
+    width: 80px;
+}
+
 @media (max-width: 1400px) {
     .theme-directory {
         grid-template-columns: 1fr 1fr 1fr 1fr;
