@@ -265,7 +265,7 @@ const configureGrunt = function (grunt) {
                 src: ['.tmp/**']
             },
             dependencies: {
-                src: ['node_modules/**', 'core/client/bower_components/**', 'core/client/node_modules/**']
+                src: ['node_modules/**', 'core/client/node_modules/**']
             }
         },
 
@@ -407,7 +407,7 @@ const configureGrunt = function (grunt) {
     // `grunt test:regression/api` - runs the api regression tests
     grunt.registerTask('test', 'Run a particular spec file from the /test/ directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
         if (!test) {
-            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
+            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `yarn test` or `grunt validate`?');
         }
 
         if (!test.match(/test\//) && !test.match(/core\/server/)) {
@@ -498,31 +498,20 @@ const configureGrunt = function (grunt) {
     //
     // Ghost's GitHub repository contains the un-built source code for Ghost. If you're looking for the already
     // built release zips, you can get these from the [release page](https://github.com/TryGhost/Ghost/releases) on
-    // GitHub or from https://ghost.org/docs/install/. These zip files are created using the [grunt release](#release)
-    // task.
+    // GitHub or from https://ghost.org/docs/install/.
     //
     // If you want to work on Ghost core, or you want to use the source files from GitHub, then you have to build
     // the Ghost assets in order to make them work.
-    //
-    // There are a number of grunt tasks available to help with this. Firstly after fetching an updated version of
-    // the Ghost codebase, after running `yarn install`, you will need to run [grunt init](#init%20assets).
-    //
-    // For production blogs you will need to run [grunt prod](#production%20assets).
-    //
-    // For updating assets during development, the tasks [grunt](#default%20asset%20build) and
-    // [grunt dev](#live%20reload) are available.
 
     // ### Init assets
     // `grunt init` - will run an initial asset build for you
     //
-    // Grunt init runs `yarn install && bower install` inside `core/client` as well as the standard asset build
+    // Grunt init runs `yarn install` inside `core/client` as well as the standard asset build
     // tasks which occur when you run just `grunt`. This fetches the latest client-side dependencies.
     //
     // This task is very important, and should always be run when fetching down an updated code base just after
     // running `yarn install`.
     //
-    // `bower` does have some quirks, such as not running as root. If you have problems please try running
-    // `grunt init --verbose` to see if there are any errors.
     grunt.registerTask('init', 'Prepare the project for development',
         ['update_submodules:pinned', 'subgrunt:init', 'clean:tmp', 'default']);
 
