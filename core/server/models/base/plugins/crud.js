@@ -1,10 +1,5 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-
-const messages = {
-    couldNotUnderstandRequest: 'Could not understand request.'
-};
 
 /**
  * @param {Bookshelf} Bookshelf
@@ -121,7 +116,7 @@ module.exports = function (Bookshelf) {
          * @param {Object} [unfilteredOptions]
          * @return {Promise<Bookshelf['Model']>} Single Model
          */
-        findOne: async function findOne(data, unfilteredOptions) {
+        findOne: function findOne(data, unfilteredOptions) {
             const options = this.filterOptions(unfilteredOptions, 'findOne');
             data = this.filterData(data);
             const model = this.forge(data);
@@ -136,19 +131,7 @@ module.exports = function (Bookshelf) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
             }
 
-            try {
-                return await model.fetch(options);
-            } catch (err) {
-                // CASE: SQL syntax is incorrect
-                if (err.errno === 1054 || err.errno === 1) {
-                    throw new errors.BadRequestError({
-                        message: tpl(messages.couldNotUnderstandRequest),
-                        err
-                    });
-                }
-
-                throw err;
-            }
+            return model.fetch(options);
         },
 
         /**
