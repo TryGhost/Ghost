@@ -986,7 +986,7 @@ export default Controller.extend({
         }
 
         if (isServerUnreachableError(error)) {
-            errorMessage = 'Unable to connect, please check your connection and press Ctrl/Cmd+S to retry.';
+            errorMessage = 'Unable to connect, please check your connection and try again';
         } else if (error && isString(error)) {
             errorMessage = error;
         } else if (error && isEmberArray(error)) {
