@@ -53,14 +53,6 @@ const configureGrunt = function (grunt) {
         // Load package.json so that we can create correctly versioned releases.
         pkg: grunt.file.readJSON('package.json'),
 
-        clientFiles: [
-            'server/web/admin/views/default.html',
-            'built/assets/ghost.js',
-            'built/assets/ghost.css',
-            'built/assets/vendor.js',
-            'built/assets/vendor.css'
-        ],
-
         // ### grunt-contrib-watch
         // Watch files and livereload in the browser during development.
         // See the [grunt dev](#live%20reload) task for how this is used.
@@ -340,15 +332,6 @@ const configureGrunt = function (grunt) {
             process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
         });
 
-    // @TODO: fix this - it's only used for a handful of regression tests
-    // Creates stub files in the built directory and the views directory so that the test environments do not need to build out the client files
-    grunt.registerTask('stubClientFiles', function () {
-        cfg.clientFiles.forEach((file) => {
-            const filePath = path.resolve(cwd + '/core/' + file);
-            fs.ensureFileSync(filePath);
-        });
-    });
-
     // ### Test
     // `grunt test:unit/apps_spec.js` will run just the tests inside the apps_spec.js file
     //
@@ -387,7 +370,7 @@ const configureGrunt = function (grunt) {
     );
 
     grunt.registerTask('test-regression', 'Run regression tests.',
-        ['setTestEnv', 'stubClientFiles', 'mochacli:regression']
+        ['setTestEnv', 'mochacli:regression']
     );
 
     grunt.registerTask('test-acceptance', 'Run acceptance tests',
