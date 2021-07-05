@@ -1,5 +1,3 @@
-require('../../core/server/overrides');
-
 // Utility Packages
 const Promise = require('bluebird');
 const _ = require('lodash');

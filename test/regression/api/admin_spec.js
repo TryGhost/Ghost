@@ -9,6 +9,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
+const adminUtils = require('../../utils/admin-utils');
 const ghost = testUtils.startGhost;
 const i18n = require('../../../core/shared/i18n');
 const config = require('../../../core/shared/config');
@@ -44,6 +45,8 @@ describe('Admin Routing', function () {
     }
 
     before(function () {
+        adminUtils.stubClientFiles();
+
         return ghost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
