@@ -353,7 +353,24 @@
     display: flex;
     align-items: center;
     border-radius: 3px;
-    background: transparent;
+    background: var(--white);
+}
+
+.gh-editor-wordcount-container svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin: 9px 12px;
+}
+
+.gh-editor-wordcount-container svg path {
+    stroke: var(--midgrey-l2);
+}
+
+.gh-editor-wordcount {
+    padding: 0 4px 0 14px;
+    color: var(--midgrey-l2);
+    font-size: 1.3rem;
+    font-weight: 400;
 }
 
 .gh-editor-status {
@@ -585,18 +602,6 @@
 
 @media (max-width: 500px) {
     .gh-editor-preview-trigger {
-        display: none;
-    }
-}
-
-.gh-editor-wordcount {
-    position: fixed;
-    bottom: 0;
-    padding: 10px;
-}
-
-@media (max-width: 1200px) {
-    .gh-editor-wordcount {
         display: none;
     }
 }
