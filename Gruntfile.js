@@ -1,11 +1,8 @@
 const config = require('./core/shared/config');
 const fs = require('fs-extra');
 const path = require('path');
-const escapeChar = process.platform.match(/^win/) ? '^' : '\\';
-const cwd = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1');
-const buildDirectory = path.resolve(cwd, '.build');
-const distDirectory = path.resolve(cwd, '.dist');
 
+// Utility for outputting messages indicating that the admin is building, as it can take a while.
 let hasBuiltClient = false;
 const logBuildingClient = function (grunt) {
     if (!hasBuiltClient) {
@@ -14,44 +11,92 @@ const logBuildingClient = function (grunt) {
     }
 };
 
-// Grunt configuration
-const configureGrunt = function (grunt) {
-    // Load all grunt tasks
-    grunt.loadNpmTasks('@lodder/grunt-postcss');
-    grunt.loadNpmTasks('grunt-bg-shell');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-compress');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-symlink');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-express-server');
-    grunt.loadNpmTasks('grunt-mocha-cli');
-    grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-subgrunt');
-    grunt.loadNpmTasks('grunt-update-submodules');
+module.exports = function (grunt) {
+    /**
+     * Ghosts Gruntfile contains two main useful commands:
+     *
+     * grunt test:[file or folder]
+     *   - special command for running a single test or group of tests
+     *
+     * grunt release
+     *   - Ghost's release tooling
+     */
 
-    // This little bit of weirdness gives the express server chance to shutdown properly
-    const waitBeforeExit = () => {
-        setTimeout(() => {
-            process.exit(0);
-        }, 1000);
-    };
+    // grunt test
+    // - Special command for running a single test or group of tests
+    // File: grunt test:unit/apps_spec.js - will run just the tests inside the apps_spec.js file
+    // Folder: grunt test:regression/api` - runs the api regression tests
+    grunt.registerTask('test', 'Run a particular spec file from the /test/ directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
+        if (!test) {
+            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `yarn test`?');
+        }
 
-    process.on('SIGINT', waitBeforeExit);
-    process.on('SIGTERM', waitBeforeExit);
+        if (!test.match(/test\//)) {
+            test = 'test/' + test;
+        }
 
+        // CASE: execute folder
+        if (!test.match(/.js/)) {
+            test += '/**';
+        } else if (!fs.existsSync(test)) {
+            grunt.fail.fatal('This file does not exist!');
+        }
+
+        // grunt-mocha-cli
+        grunt.config.set('mochacli.single', {
+            options: {
+                timeout: '10000',
+                require: ['test/utils/overrides'],
+                flags: ['--trace-warnings'],
+                exit: true
+            },
+            src: [test]
+        });
+
+        grunt.task.run('mochacli:single');
+    });
+
+    // grunt dev - use yarn dev instead!
+    // - Start a server & build assets on the fly whilst developing
+    grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
+        if (grunt.option('client')) {
+            grunt.task.run(['clean:built', 'bgShell:client']);
+        } else if (grunt.option('server')) {
+            grunt.task.run(['express:dev', 'watch']);
+        } else {
+            grunt.task.run(['clean:built', 'bgShell:client', 'express:dev', 'watch']);
+        }
+    });
+
+    grunt.registerTask('main', function () {
+        grunt.log.error('@deprecated: Run `yarn main` instead');
+    });
+
+    grunt.registerTask('validate', function () {
+        grunt.log.error('@deprecated: Run `yarn test` instead');
+    });
+
+    // --- Sub Commands
+    // Used to make other commands work
+
+    // Updates submodules, then installs and builds the client for you
+    grunt.registerTask('init', 'Prepare the project for development',
+        ['update_submodules:pinned', 'build']);
+
+    // Client build
+    grunt.registerTask('build', 'Build client app in development mode',
+        ['subgrunt:init', 'clean:tmp', 'ember']);
+
+    // Runs ember dev
+    grunt.registerTask('ember', 'Build JS & templates for development',
+        ['subgrunt:dev']);
+
+    // Production asset build
+    grunt.registerTask('prod', 'Build JS & templates for production',
+        ['subgrunt:prod', 'postcss:prod']);
+
+    // --- Configuration
     const cfg = {
-        // Common paths used by tasks
-        paths: {
-            build: buildDirectory,
-            releaseBuild: path.join(buildDirectory, 'release'),
-            dist: distDirectory,
-            releaseDist: path.join(distDirectory, 'release')
-        },
-
-        // Load package.json so that we can create correctly versioned releases.
-        pkg: grunt.file.readJSON('package.json'),
-
         // grunt-contrib-watch
         // Watch files and livereload in the browser during development.
         // See the grunt dev task for how this is used.
@@ -86,25 +131,12 @@ const configureGrunt = function (grunt) {
         },
 
         // grunt-express-server
-        // Start a Ghost express server for use in development
+        // Start a Ghost express server for use in development and testing
         express: {
             dev: {
                 options: {
                     script: 'index.js',
                     output: 'Ghost is running'
-                }
-            }
-        },
-
-        // grunt-mocha-cli
-        // Run single test - src is set dynamically, see grunt task 'test'
-        mochacli: {
-            single: {
-                options: {
-                    timeout: '10000',
-                    require: ['test/utils/overrides'],
-                    flags: ['--trace-warnings'],
-                    exit: true
                 }
             }
         },
@@ -283,77 +315,39 @@ const configureGrunt = function (grunt) {
         }
     };
 
+    // --- Grunt Initialisation
+
+    // Load all grunt tasks
+    grunt.loadNpmTasks('@lodder/grunt-postcss');
+    grunt.loadNpmTasks('grunt-bg-shell');
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-compress');
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-symlink');
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-express-server');
+    grunt.loadNpmTasks('grunt-mocha-cli');
+    grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-subgrunt');
+    grunt.loadNpmTasks('grunt-update-submodules');
+
+    // This little bit of weirdness gives the express server chance to shutdown properly
+    const waitBeforeExit = () => {
+        setTimeout(() => {
+            process.exit(0);
+        }, 1000);
+    };
+
+    process.on('SIGINT', waitBeforeExit);
+    process.on('SIGTERM', waitBeforeExit);
+
     // Load the configuration
     grunt.initConfig(cfg);
 
-    // grunt test
-    // Special command for running a single test or group of tests
-    // File: grunt test:unit/apps_spec.js - will run just the tests inside the apps_spec.js file
-    // Folder: grunt test:regression/api` - runs the api regression tests
-    grunt.registerTask('test', 'Run a particular spec file from the /test/ directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
-        if (!test) {
-            grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `yarn test`?');
-        }
-
-        if (!test.match(/test\//) && !test.match(/core\/server/)) {
-            test = 'test/' + test;
-        }
-
-        // CASE: execute folder
-        if (!test.match(/.js/)) {
-            test += '/**';
-        } else if (!fs.existsSync(test)) {
-            grunt.fail.fatal('This file does not exist!');
-        }
-
-        cfg.mochacli.single.src = [test];
-        grunt.initConfig(cfg);
-        grunt.task.run('mochacli:single');
-    });
-
-    // grunt init
-    // Updates submodules, then installs and builds the client for you
-    grunt.registerTask('init', 'Prepare the project for development',
-        ['update_submodules:pinned', 'build']);
-
-    // Client build
-    grunt.registerTask('build', 'Build client app in development mode',
-        ['subgrunt:init', 'clean:tmp', 'ember']);
-
-    // Runs ember dev
-    grunt.registerTask('ember', 'Build JS & templates for development',
-        ['subgrunt:dev']);
-
-    // Production asset build
-    grunt.registerTask('prod', 'Build JS & templates for production',
-        ['subgrunt:prod', 'postcss:prod']);
-
-    // grunt dev
-    // Build assets on the fly whilst developing
-    grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
-        if (grunt.option('client')) {
-            grunt.task.run(['clean:built', 'bgShell:client']);
-        } else if (grunt.option('server')) {
-            grunt.task.run(['express:dev', 'watch']);
-        } else {
-            grunt.task.run(['clean:built', 'bgShell:client', 'express:dev', 'watch']);
-        }
-    });
-
-    // grunt
-    // Default task is an alias of dev
-    grunt.registerTask('default', 'Dev Mode; watch files and restart server on changes',
-        ['dev']);
-
-    // grunt main
-    // This command helps you to bring your working directory back to current main.
-    // It will also update your dependencies to main and shows you if your database is healthy.
-    grunt.registerTask('main', 'Update your current working folder to latest main.',
-        ['shell:main', 'subgrunt:init']
-    );
+    // --- Release Tooling
 
     // grunt release
-    // Create a Ghost release zip file.
+    // - create a Ghost release zip file.
     // Uses the files specified by `.npmignore` to know what should and should not be included.
     // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
     grunt.registerTask('release',
@@ -363,7 +357,23 @@ const configureGrunt = function (grunt) {
         ' - Clean out unnecessary files (.git*, etc)\n' +
         ' - Zip files in release-folder to dist-folder/#{version} directory',
         function () {
-            // grunt-contrib-copu
+            const escapeChar = process.platform.match(/^win/) ? '^' : '\\';
+            const cwd = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1');
+            const buildDirectory = path.resolve(cwd, '.build');
+            const distDirectory = path.resolve(cwd, '.dist');
+
+            // Common paths used by release
+            grunt.config.set('paths', {
+                build: buildDirectory,
+                releaseBuild: path.join(buildDirectory, 'release'),
+                dist: distDirectory,
+                releaseDist: path.join(distDirectory, 'release')
+            });
+
+            // Load package.json so that we can create correctly versioned releases.
+            grunt.config.set('pkg', grunt.file.readJSON('package.json'));
+
+            // grunt-contrib-copy
             grunt.config.set('copy.release', {
                 expand: true,
                 // A list of files and patterns to include when creating a release zip.
@@ -414,5 +424,3 @@ const configureGrunt = function (grunt) {
         }
     );
 };
-
-module.exports = configureGrunt;
