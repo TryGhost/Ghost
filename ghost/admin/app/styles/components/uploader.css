@@ -53,6 +53,7 @@
 .image-delete svg {
     width: 13px;
     height: 13px;
+    margin: 0 !important;
     fill: #fff;
 }
 
