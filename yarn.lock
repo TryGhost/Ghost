@@ -909,12 +909,16 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.0.tgz#883f8b1f6af15134c89a4e406ea9b236c57546d4"
-  integrity sha512-/cgfSW6rcxgA440Nt1/KE/OZR8t8n3SOenST/BhweHS48QqLN0FU7Ku0t8adZPtCzZLvcKfPIfc13hG/SiRtUA==
+"@tryghost/members-csv@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.1.tgz#3bf3866c83a0acc11de2125f20a1cae92beeb07b"
+  integrity sha512-6D0k8CzELtkDyP1bJmDshHYVYS51v/0MQOnTmb2rv0xe6e6xS539fZ5GM7zFORY4KXnFci9BRjC1+G518puxNQ==
   dependencies:
+    bluebird "^3.7.2"
+    fs-extra "^10.0.0"
+    lodash "^4.17.21"
     papaparse "5.3.1"
+    pump "^3.0.0"
 
 "@tryghost/members-ssr@1.0.5":
   version "1.0.5"
