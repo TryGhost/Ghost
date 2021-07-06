@@ -21,8 +21,8 @@
   "license": "MIT",
   "scripts": {
     "start": "node index",
-    "dev": "grunt",
-    "dev:debug": "DEBUG=ghost:* grunt",
+    "dev": "grunt dev",
+    "dev:debug": "DEBUG=ghost:* grunt dev",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || (exit 0)",
     "main": "grunt shell:main && grunt subgrunt:init",
     "build": "grunt build",
