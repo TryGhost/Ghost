@@ -31,7 +31,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
                 name: 'A segment',
                 description: 'Members with any of the selected products',
                 value: 'filter',
-                icon: 'members-paid',
+                icon: 'members-segment',
                 icon_color: 'yellow'
             });
         }
