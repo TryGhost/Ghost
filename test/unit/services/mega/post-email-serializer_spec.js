@@ -68,5 +68,17 @@ describe('Post Email Serializer', function () {
             output.html.should.eql('hello<div> paid users!</div>');
             output.plaintext.should.eql('hello paid users!');
         });
+
+        it('should hide all segments when the segment filter is empty', function () {
+            const email = {
+                otherProperty: true,
+                html: 'hello<div data-gh-segment="status:free"> free users!</div><div data-gh-segment="status:-free"> paid users!</div>',
+                plaintext: 'test'
+            };
+
+            let output = renderEmailForSegment(email, null);
+            output.html.should.equal('hello');
+            output.plaintext.should.equal('hello');
+        });
     });
 });
