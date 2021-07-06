@@ -22,7 +22,7 @@ jobs:
           git config --global user.email "ghost@example.com"
 
       - run: yarn
-      - run: grunt main
+      - run: yarn main
 
       - run: echo "ghost_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - run: echo "ghost_admin_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
