@@ -9,7 +9,7 @@
     border: var(--input-border);
 }
 
-.ember-power-select-trigger:not(.gh-setting-dropdown) svg {
+.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
     height: 4px;
     width: 6.11px;
     margin-left: 2px;
@@ -17,7 +17,7 @@
     vertical-align: middle;
 }
 
-.ember-power-select-trigger:not(.gh-setting-dropdown) svg path {
+.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg path {
     stroke: var(--darkgrey);
 }
 
@@ -209,7 +209,7 @@
 }
 
 .ember-power-select-multiple-remove-btn {
-    padding: 2px 1px;
+    padding: 2px;
 }
 
 .ember-power-select-multiple-remove-btn:not(:hover) {
