@@ -144,14 +144,20 @@ async function initExpressApps() {
 async function initDynamicRouting() {
     debug('Begin: Dynamic Routing');
     const routing = require('./frontend/services/routing');
-    const bridge = require('./bridge');
-    // We pass the frontend API version + the dynamic routes here, so that the frontend services are slightly less tightly-coupled
-    const settings = require('./server/services/settings');
     const frontendSettings = require('./frontend/services/settings');
-    const dynamicRoutes = frontendSettings.get('routes');
-    routing.bootstrap.start(bridge.getFrontendApiVersion(), dynamicRoutes);
+    const bridge = require('./bridge');
+
+    // We pass the frontend API version + the dynamic routes here, so that the frontend services are slightly less tightly-coupled
+    const apiVersion = bridge.getFrontendApiVersion();
+    const routeSettings = frontendSettings.get('routes');
+    debug(`Frontend API Version: ${apiVersion}`);
+
+    routing.bootstrap.start(apiVersion, routeSettings);
     const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
+
+    const settings = require('./server/services/settings');
     await settings.syncRoutesHash(getRoutesHash);
+
     debug('End: Dynamic Routing');
 }
 
