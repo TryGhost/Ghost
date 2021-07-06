@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('web:frontend');
+const debug = require('@tryghost/debug')('frontend');
 const express = require('../../../shared/express');
 
 const shared = require('../shared');
@@ -9,7 +9,7 @@ const shared = require('../shared');
  * @returns {import('express').RequestHandler}
  */
 module.exports = (options) => {
-    debug('FrontendApp setup start');
+    debug('FrontendApp setup start', options);
 
     // FRONTEND
     const frontendApp = express('frontend');

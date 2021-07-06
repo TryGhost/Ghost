@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('web:members:app');
+const debug = require('@tryghost/debug')('members');
 const {URL} = require('url');
 const cors = require('cors');
 const bodyParser = require('body-parser');

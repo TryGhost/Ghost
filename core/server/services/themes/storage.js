@@ -1,3 +1,4 @@
+const debug = require('@tryghost/debug')('themes');
 const fs = require('fs-extra');
 
 const bridge = require('../../../bridge');
@@ -11,7 +12,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('api:themes');
+
 const ObjectID = require('bson-objectid');
 
 let themeStorage;
