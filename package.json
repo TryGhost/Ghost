@@ -28,6 +28,7 @@
     "build": "grunt build",
     "test": "mocha --require=test/utils/overrides.js --exit --trace-warnings --recursive --timeout=60000",
     "test:all": "yarn test:unit && yarn test:acceptance && yarn test:regression",
+    "test:debug": "DEBUG=ghost:test* yarn test",
     "test:unit": "mocha --require=test/utils/overrides.js --exit --trace-warnings './test/unit/**/*_spec.js' --timeout=7000",
     "test:acceptance": "mocha --require=test/utils/overrides.js --exit --trace-warnings './test/api-acceptance/**/*_spec.js' './test/frontend-acceptance/**/*_spec.js' --timeout=10000",
     "test:regression": "mocha --require=test/utils/overrides.js --exit --trace-warnings  './test/regression/**/*_spec.js' --timeout=60000",
