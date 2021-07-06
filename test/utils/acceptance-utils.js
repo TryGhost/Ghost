@@ -118,9 +118,6 @@ const restartModeGhostStart = async () => {
     // @TODO: why does this happen _after_ URL service
     web.shared.middlewares.customRedirects.reload();
 
-    // Trigger themes to load again
-    themeService.loadInactiveThemes();
-
     // Reload limits service
     limits.init();
 };
