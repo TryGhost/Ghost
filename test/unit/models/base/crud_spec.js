@@ -89,8 +89,6 @@ describe('Models: crud', function () {
 
             const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
 
-            should.equal(findOneReturnValue, fetchStub.returnValues[0]);
-
             return findOneReturnValue.then((result) => {
                 should.equal(result, fetchedModel);
 

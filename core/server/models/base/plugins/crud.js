@@ -1,6 +1,12 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    couldNotUnderstandRequest: 'Could not understand request.'
+};
+
 /**
  * @param {Bookshelf} Bookshelf
  */
@@ -131,7 +137,18 @@ module.exports = function (Bookshelf) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
             }
 
-            return model.fetch(options);
+            return model.fetch(options)
+                .catch((err) => {
+                    // CASE: SQL syntax is incorrect
+                    if (err.errno === 1054 || err.errno === 1) {
+                        throw new errors.BadRequestError({
+                            message: tpl(messages.couldNotUnderstandRequest),
+                            err
+                        });
+                    }
+
+                    throw err;
+                });
         },
 
         /**
