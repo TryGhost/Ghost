@@ -29,6 +29,7 @@ class Bridge {
          * @deprecated: the term "lang" was deprecated in favor of "locale" publicly in 4.0
          */
         events.on('settings.lang.edited', (model) => {
+            debug('Active theme init18n');
             this.getActiveTheme().initI18n({locale: model.get('value')});
         });
     }

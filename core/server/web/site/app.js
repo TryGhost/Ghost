@@ -191,7 +191,7 @@ module.exports = function setupSiteApp(options = {}) {
 
 module.exports.reload = ({apiVersion}) => {
     // https://github.com/expressjs/express/issues/2596
-    router = siteRoutes({start: apiVersion});
+    router = siteRoutes({start: true, apiVersion});
     Object.setPrototypeOf(SiteRouter, router);
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)

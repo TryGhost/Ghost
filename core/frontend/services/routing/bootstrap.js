@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('routing');
 const _ = require('lodash');
 const events = require('../../../server/lib/common/events');
-const frontendSettings = require('../settings');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
@@ -27,8 +26,8 @@ let siteRouter;
  * @param {Object} options
  * @returns {ExpressRouter}
  */
-module.exports.init = (options = {start: false}) => {
-    debug('bootstrap init', options);
+module.exports.init = ({start = false, routerSettings, apiVersion}) => {
+    debug('bootstrap init', start, apiVersion, routerSettings);
 
     registry.resetAllRouters();
     registry.resetAllRoutes();
@@ -38,11 +37,9 @@ module.exports.init = (options = {start: false}) => {
     siteRouter = new ParentRouter('SiteRouter');
     registry.setRouter('siteRouter', siteRouter);
 
-    if (options.start) {
-        let apiVersion = _.isBoolean(options.start) ? defaultApiVersion : options.start;
-        // NOTE: Get the routes.yaml config
-        const dynamicRoutes = frontendSettings.get('routes');
-        this.start(apiVersion, dynamicRoutes);
+    if (start) {
+        apiVersion = apiVersion || defaultApiVersion;
+        this.start(apiVersion, routerSettings);
     }
 
     return siteRouter.router();
@@ -62,10 +59,10 @@ module.exports.init = (options = {start: false}) => {
  * 6. Internal Apps: Weakest
  *
  * @param {string} apiVersion
- * @param {object} dynamicRoutes
+ * @param {object} routerSettings
  */
-module.exports.start = (apiVersion, dynamicRoutes) => {
-    debug('bootstrap start', apiVersion, dynamicRoutes);
+module.exports.start = (apiVersion, routerSettings) => {
+    debug('bootstrap start', apiVersion, routerSettings);
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
     const unsubscribeRouter = new UnsubscribeRouter();
@@ -76,14 +73,14 @@ module.exports.start = (apiVersion, dynamicRoutes) => {
     siteRouter.mountRouter(previewRouter.router());
     registry.setRouter('previewRouter', previewRouter);
 
-    _.each(dynamicRoutes.routes, (value, key) => {
+    _.each(routerSettings.routes, (value, key) => {
         const staticRoutesRouter = new StaticRoutesRouter(key, value);
         siteRouter.mountRouter(staticRoutesRouter.router());
 
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
     });
 
-    _.each(dynamicRoutes.collections, (value, key) => {
+    _.each(routerSettings.collections, (value, key) => {
         const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG);
         siteRouter.mountRouter(collectionRouter.router());
         registry.setRouter(collectionRouter.identifier, collectionRouter);
@@ -94,7 +91,7 @@ module.exports.start = (apiVersion, dynamicRoutes) => {
 
     registry.setRouter('staticPagesRouter', staticPagesRouter);
 
-    _.each(dynamicRoutes.taxonomies, (value, key) => {
+    _.each(routerSettings.taxonomies, (value, key) => {
         const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG);
         siteRouter.mountRouter(taxonomyRouter.router());
 
