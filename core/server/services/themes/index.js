@@ -1,13 +1,20 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('themes');
-const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const themeLoader = require('./loader');
 const bridge = require('../../../bridge');
 const validate = require('./validate');
 const list = require('./list');
 const settingsCache = require('../../../shared/settings-cache');
+
+const messages = {
+    missingTheme: 'The currently active theme "{theme}" is missing.',
+    themeCannotBeActivated: '{themeName} cannot be activated because it is not currently installed.',
+    invalidTheme: 'The currently active theme "{theme}" is invalid.',
+    themeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.'
+};
 
 module.exports = {
     // Init themes module
@@ -26,7 +33,7 @@ module.exports = {
                     .then(function validationSuccess(checkedTheme) {
                         if (!validate.canActivate(checkedTheme)) {
                             const checkError = new errors.ThemeValidationError({
-                                message: i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
+                                message: tpl(messages.invalidTheme, {theme: activeThemeName}),
                                 errorDetails: Object.assign(
                                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                         errors: checkedTheme.results.error
@@ -42,7 +49,7 @@ module.exports = {
                             if (checkedTheme.results.error.length) {
                                 logging.warn(new errors.ThemeValidationError({
                                     errorType: 'ThemeWorksButHasErrors',
-                                    message: i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
+                                    message: tpl(messages.themeHasErrors, {theme: activeThemeName}),
                                     errorDetails: Object.assign(
                                         _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                             errors: checkedTheme.results.error
@@ -60,13 +67,12 @@ module.exports = {
             .catch(function (err) {
                 if (err instanceof errors.NotFoundError) {
                     // CASE: active theme is missing, we don't want to exit because the admin panel will still work
-                    err.message = i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
-                    logging.error(err);
-                } else {
-                    // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
-                    // This is the absolute catch-all, at this point, we do not know what went wrong!
-                    logging.error(err);
+                    err.message = tpl(messages.missingTheme, {theme: activeThemeName});
                 }
+
+                // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
+                // This is the absolute catch-all, at this point, we do not know what went wrong!
+                logging.error(err);
             });
     },
     getJSON: require('./to-json'),
@@ -75,7 +81,7 @@ module.exports = {
 
         if (!loadedTheme) {
             return Promise.reject(new errors.ValidationError({
-                message: i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
+                message: tpl(messages.themeCannotBeActivated, {themeName: themeName}),
                 errorDetails: themeName
             }));
         }
