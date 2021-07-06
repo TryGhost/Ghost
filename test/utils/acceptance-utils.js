@@ -1,4 +1,5 @@
 // Utility Packages
+const debug = require('@tryghost/debug')('test');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const fs = require('fs-extra');
@@ -29,6 +30,7 @@ const context = require('./fixtures/context');
 
 let ghostServer;
 let existingData = {};
+let totalStartTime = 0;
 
 /**
  * Because we use ObjectID we don't know the ID of fixtures ahead of time
@@ -95,26 +97,29 @@ const prepareContentFolder = (options) => {
 // - re-run default fixtures
 // - reload affected services
 const restartModeGhostStart = async () => {
-    console.log('Restart Mode'); // eslint-disable-line no-console
-
+    debug('Reload Mode');
     // Teardown truncates all tables and also calls urlServiceUtils.reset();
     await dbUtils.teardown();
 
     // The tables have been truncated, this runs the fixture init task (init file 2) to re-add our default fixtures
     await knexMigrator.init({only: 2});
+    debug('init done');
 
     // Reset the settings cache
     await settingsService.init();
+    debug('settings done');
 
     // Reload the frontend
     await frontendSettingsService.init();
     await themeService.init();
+    debug('frontend done');
 
     // Reload the URL service & wait for it to be ready again
     // @TODO: why/how is this different to urlService.resetGenerators?
     urlServiceUtils.reset();
     urlServiceUtils.init();
     await urlServiceUtils.isFinished();
+    debug('routes done');
     // @TODO: why does this happen _after_ URL service
     web.shared.middlewares.customRedirects.reload();
 
@@ -135,9 +140,9 @@ const bootGhost = async () => {
 // - Start Ghost: Uses OLD Boot process
 const freshModeGhostStart = async (options) => {
     if (options.forceStart) {
-        console.log('Force Start Mode'); // eslint-disable-line no-console
+        debug('Forced Restart Mode');
     } else {
-        console.log('Fresh Start Mode'); // eslint-disable-line no-console
+        debug('Fresh Start Mode');
     }
 
     // Reset the DB
@@ -171,7 +176,8 @@ const freshModeGhostStart = async (options) => {
 };
 
 const startGhost = async (options) => {
-    console.time('Start Ghost'); // eslint-disable-line no-console
+    const startTime = Date.now();
+    debug('Start Ghost');
     options = _.merge({
         redirectsFile: true,
         redirectsFileExt: '.json',
@@ -194,7 +200,12 @@ const startGhost = async (options) => {
 
     // Expose fixture data, wrap-up and return
     await exposeFixtures();
-    console.timeEnd('Start Ghost'); // eslint-disable-line no-console
+
+    // Reporting
+    const totalTime = Date.now() - startTime;
+    totalStartTime += totalTime;
+    debug(`Started Ghost in ${totalTime / 1000}s`);
+    debug(`Accumulated start time is ${totalStartTime / 1000}s`);
     return ghostServer;
 };
 
