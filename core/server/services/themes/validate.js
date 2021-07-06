@@ -3,8 +3,12 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
 const config = require('../../../shared/config');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    invalidTheme: 'Theme is not compatible or contains errors.'
+};
 
 const canActivate = function canActivate(checkedTheme) {
     // CASE: production and no fatal errors
@@ -61,7 +65,7 @@ const checkSafe = function checkSafe(theme, isZip) {
             }
 
             return Promise.reject(new errors.ThemeValidationError({
-                message: i18n.t('errors.api.themes.invalidTheme'),
+                message: tpl(messages.invalidTheme),
                 errorDetails: Object.assign(
                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                         errors: checkedTheme.results.error
