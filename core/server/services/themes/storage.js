@@ -9,11 +9,19 @@ const themeLoader = require('./loader');
 const toJSON = require('./to-json');
 
 const settingsCache = require('../../../shared/settings-cache');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
 const ObjectID = require('bson-objectid');
+
+const messages = {
+    themeDoesNotExist: 'Theme does not exist.',
+    invalidThemeName: 'Please select a valid theme.',
+    overrideCasper: 'Please rename your zip, it\'s not allowed to override the default casper theme.',
+    destroyCasper: 'Deleting the default casper theme is not allowed.',
+    destroyActive: 'Deleting the active theme is not allowed.'
+};
 
 let themeStorage;
 
@@ -29,7 +37,7 @@ module.exports = {
 
         if (!theme) {
             return Promise.reject(new errors.BadRequestError({
-                message: i18n.t('errors.api.themes.invalidThemeName')
+                message: tpl(messages.invalidThemeName)
             }));
         }
 
@@ -44,7 +52,7 @@ module.exports = {
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
             throw new errors.ValidationError({
-                message: i18n.t('errors.api.themes.overrideCasper')
+                message: tpl(messages.overrideCasper)
             });
         }
 
@@ -124,13 +132,13 @@ module.exports = {
     destroy: function (themeName) {
         if (themeName === 'casper') {
             throw new errors.ValidationError({
-                message: i18n.t('errors.api.themes.destroyCasper')
+                message: tpl(messages.destroyCasper)
             });
         }
 
         if (themeName === settingsCache.get('active_theme')) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.api.themes.destroyActive')
+                message: tpl(messages.destroyActive)
             });
         }
 
@@ -138,7 +146,7 @@ module.exports = {
 
         if (!theme) {
             throw new errors.NotFoundError({
-                message: i18n.t('errors.api.themes.themeDoesNotExist')
+                message: tpl(messages.themeDoesNotExist)
             });
         }
 
