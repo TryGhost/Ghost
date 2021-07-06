@@ -15,6 +15,9 @@ module.exports = function setupMembersApp() {
     // send 503 json response in case of maintenance
     membersApp.use(shared.middlewares.maintenance);
 
+    // Members API shouldn't be cached
+    membersApp.use(shared.middlewares.cacheControl('private'));
+
     // Support CORS for requests from the frontend
     const siteUrl = new URL(urlUtils.getSiteUrl());
     membersApp.use(cors(siteUrl.origin));
