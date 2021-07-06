@@ -3,6 +3,8 @@ const sinon = require('sinon');
 
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
+const proxy = require('../../../core/frontend/services/proxy');
+const settingsCache = proxy.settingsCache;
 
 describe('{{#has}} helper', function () {
     let fn;
@@ -27,6 +29,8 @@ describe('{{#has}} helper', function () {
             fn: fn,
             inverse: inverse
         };
+
+        sinon.stub(settingsCache, 'get');
     });
 
     function callHasHelper(context, hash) {
@@ -840,6 +844,56 @@ describe('{{#has}} helper', function () {
 
             fn.called.should.be.false();
             inverse.called.should.be.true();
+        });
+    });
+
+    describe('members signup access match', function () {
+        it('matches "all"', function () {
+            settingsCache.get.withArgs('members_signup_access').returns('all');
+
+            callHasHelper(thisCtx, {members: 'all'});
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches "invite"', function () {
+            settingsCache.get.withArgs('members_signup_access').returns('invite');
+
+            callHasHelper(thisCtx, {members: 'invite'});
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches "none"', function () {
+            settingsCache.get.withArgs('members_signup_access').returns('none');
+
+            callHasHelper(thisCtx, {members: 'none'});
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches "true" with "invite"', function () {
+            settingsCache.get.withArgs('members_signup_access').returns('invite');
+
+            callHasHelper(thisCtx, {members: 'true'});
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches "true" with "all"', function () {
+            settingsCache.get.withArgs('members_signup_access').returns('all');
+
+            callHasHelper(thisCtx, {members: 'true'});
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches "false" with "none"', function () {
+            settingsCache.get.withArgs('members_signup_access').returns('none');
+
+            callHasHelper(thisCtx, {members: 'false'});
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
         });
     });
 });
