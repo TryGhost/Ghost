@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('theme:validate');
+const debug = require('@tryghost/debug')('themes');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');

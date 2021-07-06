@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('web:site:app');
+const debug = require('@tryghost/debug')('frontend');
 const path = require('path');
 const express = require('../../../shared/express');
 const cors = require('cors');
@@ -73,7 +73,7 @@ function SiteRouter(req, res, next) {
 }
 
 module.exports = function setupSiteApp(options = {}) {
-    debug('Site setup start');
+    debug('Site setup start', options);
 
     const siteApp = express('site');
 

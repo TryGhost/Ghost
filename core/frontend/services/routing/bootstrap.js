@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('services:routing:bootstrap');
+const debug = require('@tryghost/debug')('routing');
 const _ = require('lodash');
 const events = require('../../../server/lib/common/events');
 const frontendSettings = require('../settings');
@@ -28,7 +28,7 @@ let siteRouter;
  * @returns {ExpressRouter}
  */
 module.exports.init = (options = {start: false}) => {
-    debug('bootstrap');
+    debug('bootstrap init', options);
 
     registry.resetAllRouters();
     registry.resetAllRoutes();
@@ -65,6 +65,7 @@ module.exports.init = (options = {start: false}) => {
  * @param {object} dynamicRoutes
  */
 module.exports.start = (apiVersion, dynamicRoutes) => {
+    debug('bootstrap start', apiVersion, dynamicRoutes);
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
     const unsubscribeRouter = new UnsubscribeRouter();

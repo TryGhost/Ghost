@@ -8,6 +8,8 @@
  *
  * This file is a great place for all the cross-component event handling in lieu of refactoring
  */
+
+const debug = require('@tryghost/debug')('bridge');
 const errors = require('@tryghost/errors');
 const config = require('./shared/config');
 const logging = require('@tryghost/logging');
@@ -73,6 +75,7 @@ class Bridge {
 
     reloadFrontend() {
         const apiVersion = this.getFrontendApiVersion();
+        debug('reload frontend', apiVersion);
         const siteApp = require('./server/web/site/app');
         siteApp.reload({apiVersion});
     }
