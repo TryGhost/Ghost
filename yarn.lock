@@ -926,15 +926,16 @@
   dependencies:
     papaparse "5.3.1"
 
-"@tryghost/members-ssr@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.4.tgz#5ff34d041808b1a2390a031e4337f38d55651973"
-  integrity sha512-Ky8B/ST6nbuY+y/Hk0VHwIPTJbeAl2MwELNIAMAZYGw/wM9cp/8qp+LBgzMymveCAdQ9v9c/t4mzFqtTYleA6Q==
+"@tryghost/members-ssr@1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.5.tgz#800787c466bf26c119ce52c58c7d751716a5777c"
+  integrity sha512-/YjOfAbt4NA/N02BiA85yZWALG4AENXLgmJOSJkJ8OJNtG1W2r5tPHW+MBLjz6faPcmvVlIZ4aff5hP5TaqHFw==
   dependencies:
+    "@tryghost/debug" "^0.1.2"
+    "@tryghost/ignition-errors" "^0.1.2"
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
     cookies "^0.8.0"
-    ghost-ignition "4.6.3"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
