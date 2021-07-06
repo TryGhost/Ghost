@@ -78,7 +78,7 @@
                         </GhFormGroup>
 
                         {{#if (eq this.post.visibility "filter")}}
-                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibilityFilter">
+                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibilityFilter" @class="nt3">
                                 <GhMembersSegmentSelect
                                     @hideLabels={{true}}
                                     @segment={{this.post.visibilitySegment}}

@@ -69,14 +69,14 @@ export default BaseValidator.create({
 
     visibility(model) {
         if (isBlank(model.visibility) && !model.isNew) {
-            model.errors.add('visibility', 'Please select a product');
+            model.errors.add('visibility', 'Please select at least one product');
             this.invalidate();
         }
     },
 
     visibilityFilter(model) {
         if (isBlank(model.visibilityFilter) && !isBlank(model.visibility) && model.visibility === 'filter' && !model.isNew) {
-            model.errors.add('visibilityFilter', 'Please select a product');
+            model.errors.add('visibilityFilter', 'Please select at least one product');
             this.invalidate();
         }
     },
