@@ -4441,7 +4441,7 @@ ghost-ignition@4.6.2:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-ignition@4.6.3, ghost-ignition@^4.2.4, ghost-ignition@^4.6.2:
+ghost-ignition@4.6.3, ghost-ignition@^4.2.4:
   version "4.6.3"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
   integrity sha512-F9Kms91NG7miRH8FdmvHvWGt9crVHaKYap3gFrGekCi0TTpssN6duGi0NERSqAcf+7gC7QXT3BP/yCWwBr3fqw==
