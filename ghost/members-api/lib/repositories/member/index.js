@@ -88,7 +88,7 @@ module.exports = class MemberRepository {
             status: 'free'
         };
 
-        if (memberData.products.length === 1) {
+        if (memberData.products && memberData.products.length === 1) {
             memberStatusData.status = 'comped';
         }
 
