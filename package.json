@@ -72,7 +72,7 @@
     "@tryghost/logging": "0.1.3",
     "@tryghost/magic-link": "1.0.5",
     "@tryghost/members-api": "1.19.0",
-    "@tryghost/members-csv": "1.1.0",
+    "@tryghost/members-csv": "1.1.1",
     "@tryghost/members-ssr": "1.0.5",
     "@tryghost/mw-session-from-token": "0.1.22",
     "@tryghost/package-json": "1.0.2",
