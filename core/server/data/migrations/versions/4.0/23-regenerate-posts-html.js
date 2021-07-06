@@ -30,10 +30,12 @@ module.exports = createIrreversibleMigration(async (knex) => {
                 mobiledoc = JSON.parse(post.mobiledoc || null);
 
                 if (!mobiledoc) {
-                    return logging.warn(`No mobiledoc for ${id}. Skipping.`);
+                    logging.warn(`No mobiledoc for ${id}. Skipping.`);
+                    continue;
                 }
             } catch (err) {
-                return logging.warn(`Invalid JSON structure for ${id}. Skipping`);
+                logging.warn(`Invalid JSON structure for ${id}. Skipping`);
+                continue;
             }
 
             const html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc);
