@@ -69,14 +69,14 @@ export default BaseValidator.create({
 
     visibility(model) {
         if (isBlank(model.visibility) && !model.isNew) {
-            model.errors.add('visibility', 'A members group must be selected for members-only posts');
+            model.errors.add('visibility', 'Please select a product');
             this.invalidate();
         }
     },
 
     visibilityFilter(model) {
         if (isBlank(model.visibilityFilter) && !isBlank(model.visibility) && model.visibility === 'filter' && !model.isNew) {
-            model.errors.add('visibilityFilter', 'A members group must be selected for members-only posts');
+            model.errors.add('visibilityFilter', 'Please select a product');
             this.invalidate();
         }
     },
