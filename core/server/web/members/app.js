@@ -18,6 +18,9 @@ module.exports = function setupMembersApp() {
     // Entire app is behind labs flag
     membersApp.use(shared.middlewares.labs.members);
 
+    // Members API shouldn't be cached
+    membersApp.use(shared.middlewares.cacheControl('private'));
+
     // Support CORS for requests from the frontend
     const siteUrl = new URL(urlUtils.getSiteUrl());
     membersApp.use(cors(siteUrl.origin));
