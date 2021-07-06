@@ -219,6 +219,10 @@ async function initServices({config}) {
 async function initBackgroundServices({config}) {
     debug('Begin: initBackgroundServices');
 
+    // Load all inactive themes
+    const themeService = require('./server/services/themes');
+    themeService.loadInactiveThemes();
+
     // we don't want to kick off background services that will interfere with tests
     if (process.env.NODE_ENV.match(/^testing/)) {
         return;
@@ -229,10 +233,6 @@ async function initBackgroundServices({config}) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
         await emailAnalyticsJobs.scheduleRecurringJobs();
     }
-
-    // Load all inactive themes
-    const themeService = require('./server/services/themes');
-    themeService.loadInactiveThemes();
 
     const updateCheck = require('./server/update-check');
     updateCheck.scheduleRecurringJobs();
