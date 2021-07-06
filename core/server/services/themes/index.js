@@ -57,15 +57,16 @@ module.exports = {
                         }
                     });
             })
-            .catch(errors.NotFoundError, function (err) {
-                // CASE: active theme is missing, we don't want to exit because the admin panel will still work
-                err.message = i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
-                logging.error(err);
-            })
             .catch(function (err) {
-                // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
-                // This is the absolute catch-all, at this point, we do not know what went wrong!
-                logging.error(err);
+                if (err instanceof errors.NotFoundError) {
+                    // CASE: active theme is missing, we don't want to exit because the admin panel will still work
+                    err.message = i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
+                    logging.error(err);
+                } else {
+                    // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
+                    // This is the absolute catch-all, at this point, we do not know what went wrong!
+                    logging.error(err);
+                }
             });
     },
     getJSON: require('./to-json'),
