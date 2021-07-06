@@ -1,12 +1,17 @@
 const _ = require('lodash');
 const hbs = require('./engine');
 const urlUtils = require('../../../shared/url-utils');
-const {i18n, api} = require('../proxy');
+const {api} = require('../proxy');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../server/services/labs');
 const activeTheme = require('./active');
 const preview = require('./preview');
+
+const messages = {
+    missingTheme: 'The currently active theme "{theme}" is missing.'
+};
 
 // ### Ensure Active Theme
 // Ensure there's a properly set & mounted active theme before attempting to serve a site request
@@ -19,7 +24,7 @@ function ensureActiveTheme(req, res, next) {
         return next(new errors.InternalServerError({
             // We use the settingsCache here, because the setting will be set,
             // even if the theme itself is not usable because it is invalid or missing.
-            message: i18n.t('errors.middleware.themehandler.missingTheme', {theme: settingsCache.get('active_theme')})
+            message: tpl(messages.missingTheme, {theme: settingsCache.get('active_theme')})
         }));
     }
 
