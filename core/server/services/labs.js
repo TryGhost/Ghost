@@ -16,7 +16,8 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'emailCardSegments',
-    'multipleProducts'
+    'multipleProducts',
+    'savedIndicator'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
