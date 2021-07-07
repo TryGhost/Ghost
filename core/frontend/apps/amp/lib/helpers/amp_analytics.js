@@ -3,10 +3,7 @@
 //
 // Outputs inline scripts used for analytics
 
-const proxy = require('../../../../services/proxy');
-
-const SafeString = proxy.SafeString;
-const settingsCache = proxy.settingsCache;
+const {SafeString, settingsCache} = require('../../../../services/proxy');
 
 function ampComponents() {
     let components = [];
