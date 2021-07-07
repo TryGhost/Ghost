@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
-const labs = require('../../../core/server/services/labs');
+const labs = require('../../../core/shared/labs');
 const Papa = require('papaparse');
 const moment = require('moment-timezone');
 
