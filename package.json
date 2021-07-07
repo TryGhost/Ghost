@@ -39,7 +39,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js'",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "posttest": "yarn lint",
+    "posttest:unit": "yarn lint",
     "fix:client": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../",
     "fix:server": "yarn cache clean && rm -rf node_modules && yarn",
     "fix": "yarn fix:client && yarn fix:server"
