@@ -21,6 +21,7 @@
                         <span>
                             <GhEditorPostStatus
                                 @post={{this.post}}
+                                @hasDirtyAttributes={{this.hasDirtyAttributes}}
                                 @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
                             />
                         </span>

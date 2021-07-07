@@ -280,6 +280,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Show saved state in editor</h4>
+                            <p class="gh-expandable-description">
+                                Post status in editor shows "- Saved" when a post has no unsaved changes
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="savedIndicator" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
