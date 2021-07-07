@@ -61,7 +61,7 @@ module.exports = {
         let renamedExisting = false;
 
         try {
-            checkedTheme = await validate.checkSafe(zip, true);
+            checkedTheme = await validate.checkSafe(shortName, zip, true);
             const themeExists = await getStorage().exists(shortName);
             // CASE: move the existing theme to a backup folder
             if (themeExists) {

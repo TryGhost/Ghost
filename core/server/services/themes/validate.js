@@ -7,7 +7,9 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    invalidTheme: 'Theme is not compatible or contains errors.'
+    themeHasErrors: 'Theme {name} is not compatible or contains errors.',
+    activeThemeHasFatalErrors: 'The currently active theme "{theme}" has fatal errors.',
+    activeThemeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.'
 };
 
 const canActivate = function canActivate(checkedTheme) {
@@ -44,7 +46,7 @@ const check = async function check(theme, isZip) {
     return checkedTheme;
 };
 
-const checkSafe = async function checkSafe(theme, isZip) {
+const checkSafe = async function checkSafe(themeName, theme, isZip) {
     const checkedTheme = await check(theme, isZip);
 
     if (canActivate(checkedTheme)) {
@@ -61,16 +63,21 @@ const checkSafe = async function checkSafe(theme, isZip) {
         fs.remove(checkedTheme.path);
     }
 
-    return Promise.reject(new errors.ThemeValidationError({
-        message: tpl(messages.invalidTheme),
+    return Promise.reject(getThemeValidationError('themeHasErrors', themeName, checkedTheme));
+};
+
+const getThemeValidationError = (message, themeName, checkedTheme) => {
+    return new errors.ThemeValidationError({
+        message: tpl(messages[message], {theme: themeName}),
         errorDetails: Object.assign(
             _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                 errors: checkedTheme.results.error
             }
         )
-    }));
+    });
 };
 
 module.exports.check = check;
 module.exports.checkSafe = checkSafe;
 module.exports.canActivate = canActivate;
+module.exports.getThemeValidationError = getThemeValidationError;

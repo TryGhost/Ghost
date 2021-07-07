@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('themes');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -10,10 +9,8 @@ const list = require('./list');
 const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
-    missingTheme: 'The currently active theme "{theme}" is missing.',
-    themeCannotBeActivated: '{themeName} cannot be activated because it is not currently installed.',
-    invalidTheme: 'The currently active theme "{theme}" is invalid.',
-    themeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.'
+    activeThemeIsMissing: 'The currently active theme "{theme}" is missing.',
+    themeCannotBeActivated: '{themeName} cannot be activated because it is not currently installed.'
 };
 
 module.exports = {
@@ -32,25 +29,10 @@ module.exports = {
                     .check(theme)
                     .then(function validationSuccess(checkedTheme) {
                         if (!validate.canActivate(checkedTheme)) {
-                            logging.error(new errors.ThemeValidationError({
-                                message: tpl(messages.invalidTheme, {theme: activeThemeName}),
-                                errorDetails: Object.assign(
-                                    _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
-                                        errors: checkedTheme.results.error
-                                    }
-                                )
-                            }));
-                            // CASE: inform that the theme has errors, but not fatal (theme still works)
+                            logging.error(validate.getThemeValidationError('activeThemeHasFatalErrors', activeThemeName, checkedTheme));
                         } else if (checkedTheme.results.error.length) {
-                            logging.warn(new errors.ThemeValidationError({
-                                errorType: 'ThemeWorksButHasErrors',
-                                message: tpl(messages.themeHasErrors, {theme: activeThemeName}),
-                                errorDetails: Object.assign(
-                                    _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
-                                        errors: checkedTheme.results.error
-                                    }
-                                )
-                            }));
+                            // CASE: inform that the theme has errors, but not fatal (theme still works)
+                            logging.warn(validate.getThemeValidationError('activeThemeHasErrors', activeThemeName, checkedTheme));
                         }
 
                         debug('Activating theme (method A on boot)', activeThemeName);
@@ -60,7 +42,7 @@ module.exports = {
             .catch(function (err) {
                 if (err instanceof errors.NotFoundError) {
                     // CASE: active theme is missing, we don't want to exit because the admin panel will still work
-                    err.message = tpl(messages.missingTheme, {theme: activeThemeName});
+                    err.message = tpl(messages.activeThemeIsMissing, {theme: activeThemeName});
                 }
 
                 // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
@@ -79,7 +61,7 @@ module.exports = {
             }));
         }
 
-        return validate.checkSafe(loadedTheme)
+        return validate.checkSafe(themeName, loadedTheme)
             .then((checkedTheme) => {
                 debug('Activating theme (method B on API "activate")', themeName);
                 bridge.activateTheme(loadedTheme, checkedTheme);
