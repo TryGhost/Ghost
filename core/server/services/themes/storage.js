@@ -14,7 +14,6 @@ const activator = require('./activation-bridge');
 const toJSON = require('./to-json');
 
 const settingsCache = require('../../../shared/settings-cache');
-const bridge = require('../../../bridge');
 
 const messages = {
     themeDoesNotExist: 'Theme does not exist.',
@@ -47,8 +46,8 @@ module.exports = {
         });
     },
     setFromZip: async (zip) => {
-        const shortName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
-        const backupName = `${shortName}_${ObjectID()}`;
+        const themeName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
+        const backupName = `${themeName}_${ObjectID()}`;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
@@ -62,38 +61,40 @@ module.exports = {
         let renamedExisting = false;
 
         try {
-            checkedTheme = await validate.checkSafe(shortName, zip, true);
-            const themeExists = await getStorage().exists(shortName);
+            checkedTheme = await validate.checkSafe(themeName, zip, true);
+            const themeExists = await getStorage().exists(themeName);
             // CASE: move the existing theme to a backup folder
             if (themeExists) {
+                debug('setFromZip Theme exists already');
                 renamedExisting = true;
-                await getStorage().rename(shortName, backupName);
+                await getStorage().rename(themeName, backupName);
             }
 
             // CASE: store extracted theme
             await getStorage().save({
-                name: shortName,
+                name: themeName,
                 path: checkedTheme.path
             });
             // CASE: loads the theme from the fs & sets the theme on the themeList
-            const loadedTheme = await themeLoader.loadOneTheme(shortName);
-            overrideTheme = (shortName === settingsCache.get('active_theme'));
+            const loadedTheme = await themeLoader.loadOneTheme(themeName);
+            overrideTheme = (themeName === settingsCache.get('active_theme'));
             // CASE: if this is the active theme, we are overriding
             if (overrideTheme) {
-                activator.activateFromOverride(shortName, loadedTheme, checkedTheme);
+                debug('setFromZip Theme is active alreadu');
+                activator.activateFromOverride(themeName, loadedTheme, checkedTheme);
             }
 
             // @TODO: unify the name across gscan and Ghost!
             return {
                 themeOverridden: overrideTheme,
-                theme: toJSON(shortName, checkedTheme)
+                theme: toJSON(themeName, checkedTheme)
             };
         } catch (error) {
             // restore backup if we renamed an existing theme but saving failed
             if (renamedExisting) {
-                return getStorage().exists(shortName).then((themeExists) => {
+                return getStorage().exists(themeName).then((themeExists) => {
                     if (!themeExists) {
-                        return getStorage().rename(backupName, shortName).then(() => {
+                        return getStorage().rename(backupName, themeName).then(() => {
                             throw error;
                         });
                     }
