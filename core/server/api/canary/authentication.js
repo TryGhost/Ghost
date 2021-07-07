@@ -60,6 +60,9 @@ module.exports = {
     },
 
     updateSetup: {
+        headers: {
+            cacheInvalidate: true
+        },
         permissions: (frame) => {
             return models.User.findOne({role: 'Owner', status: 'all'})
                 .then((owner) => {
