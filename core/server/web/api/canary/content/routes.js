@@ -1,6 +1,6 @@
 const express = require('../../../../../shared/express');
 const cors = require('cors');
-const apiCanary = require('../../../../api/canary');
+const api = require('../../../../api').canary;
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
@@ -8,32 +8,32 @@ module.exports = function apiRoutes() {
 
     router.use(cors());
 
-    const http = apiCanary.http;
+    const http = api.http;
 
     // ## Posts
-    router.get('/posts', mw.authenticatePublic, http(apiCanary.postsPublic.browse));
-    router.get('/posts/:id', mw.authenticatePublic, http(apiCanary.postsPublic.read));
-    router.get('/posts/slug/:slug', mw.authenticatePublic, http(apiCanary.postsPublic.read));
+    router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
+    router.get('/posts/:id', mw.authenticatePublic, http(api.postsPublic.read));
+    router.get('/posts/slug/:slug', mw.authenticatePublic, http(api.postsPublic.read));
 
     // ## Pages
-    router.get('/pages', mw.authenticatePublic, http(apiCanary.pagesPublic.browse));
-    router.get('/pages/:id', mw.authenticatePublic, http(apiCanary.pagesPublic.read));
-    router.get('/pages/slug/:slug', mw.authenticatePublic, http(apiCanary.pagesPublic.read));
+    router.get('/pages', mw.authenticatePublic, http(api.pagesPublic.browse));
+    router.get('/pages/:id', mw.authenticatePublic, http(api.pagesPublic.read));
+    router.get('/pages/slug/:slug', mw.authenticatePublic, http(api.pagesPublic.read));
 
     // ## Users
-    router.get('/authors', mw.authenticatePublic, http(apiCanary.authorsPublic.browse));
-    router.get('/authors/:id', mw.authenticatePublic, http(apiCanary.authorsPublic.read));
-    router.get('/authors/slug/:slug', mw.authenticatePublic, http(apiCanary.authorsPublic.read));
+    router.get('/authors', mw.authenticatePublic, http(api.authorsPublic.browse));
+    router.get('/authors/:id', mw.authenticatePublic, http(api.authorsPublic.read));
+    router.get('/authors/slug/:slug', mw.authenticatePublic, http(api.authorsPublic.read));
 
     // ## Tags
-    router.get('/tags', mw.authenticatePublic, http(apiCanary.tagsPublic.browse));
-    router.get('/tags/:id', mw.authenticatePublic, http(apiCanary.tagsPublic.read));
-    router.get('/tags/slug/:slug', mw.authenticatePublic, http(apiCanary.tagsPublic.read));
+    router.get('/tags', mw.authenticatePublic, http(api.tagsPublic.browse));
+    router.get('/tags/:id', mw.authenticatePublic, http(api.tagsPublic.read));
+    router.get('/tags/slug/:slug', mw.authenticatePublic, http(api.tagsPublic.read));
 
     // ## Settings
-    router.get('/settings', mw.authenticatePublic, http(apiCanary.publicSettings.browse));
+    router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
-    router.get('/products', mw.authenticatePublic, http(apiCanary.productsPublic.browse));
+    router.get('/products', mw.authenticatePublic, http(api.productsPublic.browse));
 
     return router;
 };
