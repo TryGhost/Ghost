@@ -53,7 +53,7 @@ module.exports = async () => {
             ghostVersion: ghostVersion.original
         },
         request,
-        sendEmail: ghostMailer.send
+        sendEmail: ghostMailer.send.bind(ghostMailer)
     });
 
     await updateChecker.check();
