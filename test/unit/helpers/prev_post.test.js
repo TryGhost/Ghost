@@ -6,6 +6,7 @@ const helpers = require('../../../core/frontend/helpers');
 const api = require('../../../core/server/api');
 
 describe('{{prev_post}} helper', function () {
+    const apiVersion = 'canary';
     let browsePostsStub;
     let locals;
 
@@ -13,7 +14,7 @@ describe('{{prev_post}} helper', function () {
         locals = {
             root: {
                 _locals: {
-                    apiVersion: 'v3'
+                    apiVersion: apiVersion
                 },
                 context: ['post']
             }
@@ -142,7 +143,7 @@ describe('{{prev_post}} helper', function () {
             locals = {
                 root: {
                     _locals: {
-                        apiVersion: 'v2'
+                        apiVersion: apiVersion
                     },
                     context: ['page']
                 }
@@ -186,7 +187,7 @@ describe('{{prev_post}} helper', function () {
             locals = {
                 root: {
                     _locals: {
-                        apiVersion: 'v2'
+                        apiVersion: apiVersion
                     },
                     context: ['preview', 'post']
                 }
