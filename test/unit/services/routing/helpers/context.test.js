@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
-const labs = require('../../../../../core/server/services/labs');
+const labs = require('../../../../../core/shared/labs');
 
 describe('Contexts', function () {
     let req;
