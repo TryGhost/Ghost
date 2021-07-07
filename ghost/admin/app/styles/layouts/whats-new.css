@@ -79,6 +79,10 @@
     padding: 0;
 }
 
+.gh-wn-entry img {
+    height: auto;
+}
+
 
 /* Bookmark card details */
 .gh-wn-entry .kg-bookmark-card {
