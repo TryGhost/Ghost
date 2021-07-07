@@ -1,5 +1,6 @@
 const debug = require('@tryghost/debug')('frontend');
 const express = require('../../../shared/express');
+const vhostUtils = require('./vhost-utils');
 
 const shared = require('../shared');
 
@@ -13,6 +14,8 @@ module.exports = (options) => {
 
     // FRONTEND
     const frontendApp = express('frontend');
+
+    frontendApp.set('vhostArg', vhostUtils.getFrontendHostArg());
 
     // Force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
     // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
