@@ -94,3 +94,11 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 
     return errString;
 };
+
+module.exports.enabledMiddleware = flag => (req, res, next) => {
+    if (this.isSet(flag) === true) {
+        return next();
+    } else {
+        return next(new errors.NotFoundError());
+    }
+};
