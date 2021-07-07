@@ -1,6 +1,6 @@
 const express = require('../../../../../shared/express');
 const cors = require('cors');
-const apiv2 = require('../../../../api/v2');
+const api = require('../../../../api').v2;
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
@@ -8,30 +8,30 @@ module.exports = function apiRoutes() {
 
     router.use(cors());
 
-    const http = apiv2.http;
+    const http = api.http;
 
     // ## Posts
-    router.get('/posts', mw.authenticatePublic, http(apiv2.postsPublic.browse));
-    router.get('/posts/:id', mw.authenticatePublic, http(apiv2.postsPublic.read));
-    router.get('/posts/slug/:slug', mw.authenticatePublic, http(apiv2.postsPublic.read));
+    router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
+    router.get('/posts/:id', mw.authenticatePublic, http(api.postsPublic.read));
+    router.get('/posts/slug/:slug', mw.authenticatePublic, http(api.postsPublic.read));
 
     // ## Pages
-    router.get('/pages', mw.authenticatePublic, http(apiv2.pagesPublic.browse));
-    router.get('/pages/:id', mw.authenticatePublic, http(apiv2.pagesPublic.read));
-    router.get('/pages/slug/:slug', mw.authenticatePublic, http(apiv2.pagesPublic.read));
+    router.get('/pages', mw.authenticatePublic, http(api.pagesPublic.browse));
+    router.get('/pages/:id', mw.authenticatePublic, http(api.pagesPublic.read));
+    router.get('/pages/slug/:slug', mw.authenticatePublic, http(api.pagesPublic.read));
 
     // ## Users
-    router.get('/authors', mw.authenticatePublic, http(apiv2.authorsPublic.browse));
-    router.get('/authors/:id', mw.authenticatePublic, http(apiv2.authorsPublic.read));
-    router.get('/authors/slug/:slug', mw.authenticatePublic, http(apiv2.authorsPublic.read));
+    router.get('/authors', mw.authenticatePublic, http(api.authorsPublic.browse));
+    router.get('/authors/:id', mw.authenticatePublic, http(api.authorsPublic.read));
+    router.get('/authors/slug/:slug', mw.authenticatePublic, http(api.authorsPublic.read));
 
     // ## Tags
-    router.get('/tags', mw.authenticatePublic, http(apiv2.tagsPublic.browse));
-    router.get('/tags/:id', mw.authenticatePublic, http(apiv2.tagsPublic.read));
-    router.get('/tags/slug/:slug', mw.authenticatePublic, http(apiv2.tagsPublic.read));
+    router.get('/tags', mw.authenticatePublic, http(api.tagsPublic.browse));
+    router.get('/tags/:id', mw.authenticatePublic, http(api.tagsPublic.read));
+    router.get('/tags/slug/:slug', mw.authenticatePublic, http(api.tagsPublic.read));
 
     // ## Settings
-    router.get('/settings', mw.authenticatePublic, http(apiv2.publicSettings.browse));
+    router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
     return router;
 };
