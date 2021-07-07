@@ -9,7 +9,7 @@ module.exports = {
     browse: {
         permissions: true,
         query() {
-            return themeService.getJSON();
+            return themeService.api.getJSON();
         }
     },
 
@@ -40,14 +40,14 @@ module.exports = {
                 value: themeName
             }];
 
-            return themeService.activate(themeName)
+            return themeService.api.activate(themeName)
                 .then((checkedTheme) => {
                     // @NOTE: we use the model, not the API here, as we don't want to trigger permissions
                     return models.Settings.edit(newSettings, frame.options)
                         .then(() => checkedTheme);
                 })
                 .then((checkedTheme) => {
-                    return themeService.getJSON(themeName, checkedTheme);
+                    return themeService.api.getJSON(themeName, checkedTheme);
                 });
         }
     },
@@ -73,7 +73,7 @@ module.exports = {
                 name: frame.file.originalname
             };
 
-            return themeService.storage.setFromZip(zip)
+            return themeService.api.setFromZip(zip)
                 .then(({theme, themeOverridden}) => {
                     if (themeOverridden) {
                         // CASE: clear cache
@@ -102,7 +102,7 @@ module.exports = {
         query(frame) {
             let themeName = frame.options.name;
 
-            return themeService.storage.getZip(themeName);
+            return themeService.api.getZip(themeName);
         }
     },
 
@@ -125,7 +125,7 @@ module.exports = {
         query(frame) {
             let themeName = frame.options.name;
 
-            return themeService.storage.destroy(themeName);
+            return themeService.api.destroy(themeName);
         }
     }
 };
