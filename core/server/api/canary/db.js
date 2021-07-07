@@ -68,6 +68,9 @@ module.exports = {
     },
 
     importContent: {
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'include'
         ],
@@ -85,6 +88,9 @@ module.exports = {
     },
 
     deleteAllContent: {
+        headers: {
+            cacheInvalidate: true
+        },
         statusCode: 204,
         permissions: true,
         query() {

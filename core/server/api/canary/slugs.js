@@ -11,6 +11,9 @@ const allowedTypes = {
 module.exports = {
     docName: 'slugs',
     generate: {
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'include',
             'type'

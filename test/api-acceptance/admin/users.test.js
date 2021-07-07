@@ -314,6 +314,7 @@ describe('User API', function () {
         should.exist(res.body.apiKey);
         should.exist(res.body.apiKey.id);
         should.exist(res.body.apiKey.secret);
+        should.not.exist(res.headers['x-cache-invalidate']);
 
         should(res.body.id).not.be.equal(id);
         should(res.body.secret).not.be.equal(secret);

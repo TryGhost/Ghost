@@ -20,7 +20,7 @@ describe('Slug API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        should.exist(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.slugs);

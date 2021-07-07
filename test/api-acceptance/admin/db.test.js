@@ -67,10 +67,11 @@ describe('DB API', function () {
         let jsonResponse = res.body;
         jsonResponse.posts.should.have.length(7);
 
-        await request.delete(localUtils.API.getApiQuery('db/'))
+        const deleteRequest = await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect(204);
+        should.exist(deleteRequest.headers['x-cache-invalidate']);
 
         const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
