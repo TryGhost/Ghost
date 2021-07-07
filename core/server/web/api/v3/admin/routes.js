@@ -1,5 +1,5 @@
 const express = require('../../../../../shared/express');
-const api = require('../../../../api/v3');
+const api = require('../../../../api').v3;
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 

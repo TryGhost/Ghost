@@ -1,6 +1,6 @@
 const express = require('../../../../../shared/express');
 const cors = require('cors');
-const api = require('../../../../api/v3');
+const api = require('../../../../api').v3;
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
