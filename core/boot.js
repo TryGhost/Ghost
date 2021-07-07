@@ -131,6 +131,18 @@ async function initFrontend() {
 async function initExpressApps() {
     debug('Begin: initExpressApps');
     const parentApp = require('./server/web/parent/app')();
+    const vhost = require('@tryghost/vhost-middleware');
+
+    // Mount the express apps on the parentApp
+
+    // ADMIN + API
+    const backendApp = require('./server/web/parent/backend')();
+    parentApp.use(vhost(backendApp.get('vhostArg'), backendApp));
+
+    // SITE + MEMBERS
+    const frontendApp = require('./server/web/parent/frontend')({});
+    parentApp.use(vhost(frontendApp.get('vhostArg'), frontendApp));
+
     debug('End: initExpressApps');
     return parentApp;
 }
