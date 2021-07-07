@@ -406,6 +406,7 @@ figure blockquote p {
 .kg-image-card img {
     display: block;
     margin: 0 auto;
+    width: auto;
     height: auto !important;
 }
 
