@@ -1,6 +1,5 @@
 const debug = require('@tryghost/debug')('routing');
 const _ = require('lodash');
-const events = require('../../../server/lib/common/events');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
@@ -8,6 +7,9 @@ const TaxonomyRouter = require('./TaxonomyRouter');
 const PreviewRouter = require('./PreviewRouter');
 const ParentRouter = require('./ParentRouter');
 const UnsubscribeRouter = require('./UnsubscribeRouter');
+
+// This emits its own routing events
+const events = require('../../../server/lib/common/events');
 
 const defaultApiVersion = 'v4';
 

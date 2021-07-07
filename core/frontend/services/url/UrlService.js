@@ -1,13 +1,15 @@
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:services:url:service');
 const _ = require('lodash');
-const events = require('../../../server/lib/common/events');
 const errors = require('@tryghost/errors');
 const UrlGenerator = require('./UrlGenerator');
 const Queue = require('./Queue');
 const Urls = require('./Urls');
 const Resources = require('./Resources');
 const urlUtils = require('../../../shared/url-utils');
+
+// This listens to services.themes.api.changed, routing events, and it's own queue events
+const events = require('../../../server/lib/common/events');
 
 /**
  * The url service class holds all instances in a centralised place.

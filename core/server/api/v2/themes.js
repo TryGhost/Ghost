@@ -1,7 +1,9 @@
-const events = require('../../lib/common/events');
 const themeService = require('../../services/themes');
 const limitService = require('../../services/limits');
 const models = require('../../models');
+
+// Used to emit theme.uploaded which is used in core/server/analytics-events
+const events = require('../../lib/common/events');
 
 module.exports = {
     docName: 'themes',

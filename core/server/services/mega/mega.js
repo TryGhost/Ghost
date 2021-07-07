@@ -6,7 +6,6 @@ const url = require('url');
 const moment = require('moment');
 const ObjectID = require('bson-objectid');
 const errors = require('@tryghost/errors');
-const events = require('../../lib/common/events');
 const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const settingsCache = require('../../../shared/settings-cache');
@@ -19,6 +18,9 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const {getSegmentsFromHtml} = require('./segment-parser');
 const labs = require('../labs');
+
+// Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
+const events = require('../../lib/common/events');
 
 const messages = {
     invalidSegment: 'Invalid segment value. Use one of the valid:"status:free" or "status:-free" values.'

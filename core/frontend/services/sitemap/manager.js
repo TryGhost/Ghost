@@ -1,9 +1,11 @@
-const events = require('../../../server/lib/common/events');
 const IndexMapGenerator = require('./index-generator');
 const PagesMapGenerator = require('./page-generator');
 const PostsMapGenerator = require('./post-generator');
 const UsersMapGenerator = require('./user-generator');
 const TagsMapGenerator = require('./tag-generator');
+
+// This uses events from the routing service and the URL service
+const events = require('../../../server/lib/common/events');
 
 class SiteMapManager {
     constructor(options) {

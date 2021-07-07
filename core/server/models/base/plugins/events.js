@@ -2,8 +2,10 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:model-events');
 const ObjectId = require('bson-objectid');
 
-const events = require('../../../lib/common/events');
 const schema = require('../../../data/schema');
+
+// This wires up our model event system
+const events = require('../../../lib/common/events');
 
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({

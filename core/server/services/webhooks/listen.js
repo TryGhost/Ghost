@@ -1,8 +1,10 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
-const events = require('../../lib/common/events');
 const logging = require('@tryghost/logging');
 const trigger = require('./trigger');
+
+// The webhook system is fundamentally built on top of our model event system
+const events = require('../../lib/common/events');
 
 const WEBHOOKS = [
     'site.changed',

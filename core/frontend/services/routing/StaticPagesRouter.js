@@ -2,6 +2,8 @@ const debug = require('@tryghost/debug')('routing:static-pages-router');
 const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
+
+// This emits its own routing events
 const events = require('../../../server/lib/common/events');
 
 /**

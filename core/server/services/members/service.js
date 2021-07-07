@@ -5,13 +5,15 @@ const MembersCSVImporter = require('./importer');
 const MembersStats = require('./stats');
 const createMembersApiInstance = require('./api');
 const createMembersSettingsInstance = require('./settings');
-const events = require('../../lib/common/events');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
+
+// Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
+const events = require('../../lib/common/events');
 
 const membersConfig = new MembersConfigProvider({
     config,
