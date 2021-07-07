@@ -213,9 +213,6 @@ module.exports = {
     },
 
     regenerateToken: {
-        headers: {
-            cacheInvalidate: true
-        },
         options: [
             'id'
         ],
