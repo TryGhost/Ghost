@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const path = require('path');
+const {GhostError} = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../adapters/storage');
 const activeTheme = require('../../../../frontend/services/theme-engine/active');
@@ -100,6 +101,12 @@ module.exports = function (req, res, next) {
                 return storageInstance.read({path: storagePath});
             })
             .then((originalImageBuffer) => {
+                if (originalImageBuffer.length <= 0) {
+                    throw new GhostError({
+                        errorType: 'NoContentError',
+                        statusCode: 204
+                    });
+                }
                 return imageTransform.resizeFromBuffer(originalImageBuffer, imageDimensionConfig);
             })
             .then((resizedImageBuffer) => {
@@ -108,7 +115,7 @@ module.exports = function (req, res, next) {
     }).then(() => {
         next();
     }).catch(function (err) {
-        if (err.code === 'SHARP_INSTALLATION') {
+        if (err.code === 'SHARP_INSTALLATION' || err.errorType === 'NoContentError') {
             return redirectToOriginal();
         }
         next(err);
