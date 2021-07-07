@@ -8,9 +8,7 @@
 // By default supported AMP HTML tags (no additional script tag necessary):
 // amp-img, amp-ad, amp-embed, amp-video and amp-pixel.
 // (less) dirty requires
-const proxy = require('../../../../services/proxy');
-
-const SafeString = proxy.SafeString;
+const {SafeString, settingsCache} = require('../../../../services/proxy');
 
 function ampComponents() {
     let components = [];
@@ -39,7 +37,7 @@ function ampComponents() {
         components.push('<script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>');
     }
 
-    if (proxy.settingsCache.get('amp_gtag_id')) {
+    if (settingsCache.get('amp_gtag_id')) {
         components.push('<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>');
     }
 

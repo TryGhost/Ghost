@@ -4,10 +4,7 @@
 // Password input used on private.hbs for password-protected blogs
 
 // (less) dirty requires
-const proxy = require('../../../../services/proxy');
-
-const SafeString = proxy.SafeString;
-const templates = proxy.templates;
+const {SafeString, templates} = require('../../../../services/proxy');
 
 // We use the name input_password to match the helper for consistency:
 module.exports = function input_password(options) { // eslint-disable-line camelcase
