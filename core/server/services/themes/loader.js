@@ -1,25 +1,19 @@
 const debug = require('@tryghost/debug')('themes');
-const config = require('../../../shared/config');
 const packageJSON = require('@tryghost/package-json');
+
+const config = require('../../../shared/config');
 const themeList = require('./list');
 
-const loadAllThemes = function loadAllThemes() {
-    return packageJSON
-        .readPackages(config.getContentPath('themes'))
-        .then(function updateThemeList(themes) {
-            debug('loading themes', Object.keys(themes));
-
-            themeList.init(themes);
-        });
+const loadAllThemes = async function loadAllThemes() {
+    const themes = await packageJSON.readPackages(config.getContentPath('themes'));
+    debug('loading themes', Object.keys(themes));
+    themeList.init(themes);
 };
 
-const loadOneTheme = function loadOneTheme(themeName) {
-    return packageJSON
-        .readPackage(config.getContentPath('themes'), themeName)
-        .then(function (readThemes) {
-            debug('loaded one theme', themeName);
-            return themeList.set(themeName, readThemes[themeName]);
-        });
+const loadOneTheme = async function loadOneTheme(themeName) {
+    const theme = await packageJSON.readPackage(config.getContentPath('themes'), themeName);
+    debug('loaded one theme', themeName);
+    return themeList.set(themeName, theme[themeName]);
 };
 
 module.exports = {
