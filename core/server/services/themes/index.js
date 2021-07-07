@@ -10,64 +10,60 @@ const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
     activeThemeIsMissing: 'The currently active theme "{theme}" is missing.',
-    themeCannotBeActivated: '{themeName} cannot be activated because it is not currently installed.'
+    themeCannotBeActivated: '{themeName} cannot be activated because it was not found in the theme directory.'
 };
 
 module.exports = {
     // Init themes module
     // TODO: move this once we're clear what needs to happen here
-    init: function initThemes() {
+    init: async () => {
         const activeThemeName = settingsCache.get('active_theme');
 
         debug('init themes', activeThemeName);
-        // Just read the active theme for now
-        return themeLoader
-            .loadOneTheme(activeThemeName)
-            .then(function activeThemeHasLoaded(theme) {
-                // Validate
-                return validate
-                    .check(theme)
-                    .then(function validationSuccess(checkedTheme) {
-                        if (!validate.canActivate(checkedTheme)) {
-                            logging.error(validate.getThemeValidationError('activeThemeHasFatalErrors', activeThemeName, checkedTheme));
-                        } else if (checkedTheme.results.error.length) {
-                            // CASE: inform that the theme has errors, but not fatal (theme still works)
-                            logging.warn(validate.getThemeValidationError('activeThemeHasErrors', activeThemeName, checkedTheme));
-                        }
+        try {
+            // Just read the active theme for now
+            const theme = await themeLoader.loadOneTheme(activeThemeName);
+            // Validate
+            // @NOTE: this is now the only usage of check, rather than checkSafe...
+            const checkedTheme = await validate.check(theme);
 
-                        debug('Activating theme (method A on boot)', activeThemeName);
-                        bridge.activateTheme(theme, checkedTheme);
-                    });
-            })
-            .catch(function (err) {
-                if (err instanceof errors.NotFoundError) {
-                    // CASE: active theme is missing, we don't want to exit because the admin panel will still work
-                    err.message = tpl(messages.activeThemeIsMissing, {theme: activeThemeName});
-                }
+            if (!validate.canActivate(checkedTheme)) {
+                logging.error(validate.getThemeValidationError('activeThemeHasFatalErrors', activeThemeName, checkedTheme));
+            } else if (checkedTheme.results.error.length) {
+                // CASE: inform that the theme has errors, but not fatal (theme still works)
+                logging.warn(validate.getThemeValidationError('activeThemeHasErrors', activeThemeName, checkedTheme));
+            }
 
-                // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
-                // This is the absolute catch-all, at this point, we do not know what went wrong!
-                logging.error(err);
-            });
+            debug('Activating theme (method A on boot)', activeThemeName);
+            bridge.activateTheme(theme, checkedTheme);
+        } catch (err) {
+            if (err instanceof errors.NotFoundError) {
+                // CASE: active theme is missing, we don't want to exit because the admin panel will still work
+                err.message = tpl(messages.activeThemeIsMissing, {theme: activeThemeName});
+            }
+
+            // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
+            // This is the absolute catch-all, at this point, we do not know what went wrong!
+            logging.error(err);
+        }
     },
     getJSON: require('./to-json'),
-    activate: function (themeName) {
+    activate: async (themeName) => {
         const loadedTheme = list.get(themeName);
 
         if (!loadedTheme) {
-            return Promise.reject(new errors.ValidationError({
+            throw new errors.ValidationError({
                 message: tpl(messages.themeCannotBeActivated, {themeName: themeName}),
                 errorDetails: themeName
-            }));
+            });
         }
 
-        return validate.checkSafe(themeName, loadedTheme)
-            .then((checkedTheme) => {
-                debug('Activating theme (method B on API "activate")', themeName);
-                bridge.activateTheme(loadedTheme, checkedTheme);
+        const checkedTheme = await validate.checkSafe(themeName, loadedTheme);
 
-                return checkedTheme;
-            });
+        debug('Activating theme (method B on API "activate")', themeName);
+        bridge.activateTheme(loadedTheme, checkedTheme);
+
+        return checkedTheme;
     },
     storage: require('./storage'),
     /**

@@ -1,6 +1,5 @@
 const debug = require('@tryghost/debug')('themes');
 const _ = require('lodash');
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
@@ -63,7 +62,7 @@ const checkSafe = async function checkSafe(themeName, theme, isZip) {
         fs.remove(checkedTheme.path);
     }
 
-    return Promise.reject(getThemeValidationError('themeHasErrors', themeName, checkedTheme));
+    throw getThemeValidationError('themeHasErrors', themeName, checkedTheme);
 };
 
 const getThemeValidationError = (message, themeName, checkedTheme) => {
