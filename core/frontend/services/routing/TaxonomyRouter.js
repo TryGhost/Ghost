@@ -1,11 +1,13 @@
 const debug = require('@tryghost/debug')('routing:taxonomy-router');
 const config = require('../../../shared/config');
-const events = require('../../../server/lib/common/events');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
 const urlUtils = require('../../../shared/url-utils');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
+
+// This emits its own routing events
+const events = require('../../../server/lib/common/events');
 
 /**
  * @description Taxonomies are groupings of posts based on a common relation.

@@ -1,11 +1,13 @@
 const debug = require('@tryghost/debug')('routing:collection-router');
-const events = require('../../../server/lib/common/events');
 const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
+
+// This emits its own routing events AND listens to settings.timezone.edited :(
+const events = require('../../../server/lib/common/events');
 
 /**
  * @description Collection Router for post resource.

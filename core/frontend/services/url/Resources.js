@@ -4,6 +4,8 @@ const debug = require('@tryghost/debug')('services:url:resources');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../../server/models');
+
+// This listens to all manner of model events to find new content that needs a URL...
 const events = require('../../../server/lib/common/events');
 
 /**

@@ -1,11 +1,13 @@
 const debug = require('@tryghost/debug')('routing:static-routes-router');
-const events = require('../../../server/lib/common/events');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const RSSRouter = require('./RSSRouter');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const ParentRouter = require('./ParentRouter');
+
+// This emits its own routing events
+const events = require('../../../server/lib/common/events');
 
 /**
  * @description Template routes allow you to map individual URLs to specific template files within a Ghost theme

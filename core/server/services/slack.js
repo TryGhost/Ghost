@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const events = require('../lib/common/events');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
@@ -9,6 +8,9 @@ const urlService = require('../../frontend/services/url');
 const settingsCache = require('../../shared/settings-cache');
 const schema = require('../data/schema').checks;
 const moment = require('moment');
+
+// Used to receive post.published model event, but also the slack.test event from the API which iirc this was done to avoid circular deps a long time ago
+const events = require('../lib/common/events');
 
 const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',

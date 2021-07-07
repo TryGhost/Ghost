@@ -2,13 +2,15 @@ const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
 const security = require('@tryghost/security');
-const events = require('../../lib/common/events');
 const themeService = require('../../services/themes');
 const limitService = require('../../services/limits');
 const models = require('../../models');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors/lib/errors');
 const i18n = require('../../../shared/i18n');
+
+// Used to emit theme.uploaded which is used in core/server/analytics-events
+const events = require('../../lib/common/events');
 
 module.exports = {
     docName: 'themes',
