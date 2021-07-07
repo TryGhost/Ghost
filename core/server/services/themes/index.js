@@ -32,36 +32,29 @@ module.exports = {
                     .check(theme)
                     .then(function validationSuccess(checkedTheme) {
                         if (!validate.canActivate(checkedTheme)) {
-                            const checkError = new errors.ThemeValidationError({
+                            logging.error(new errors.ThemeValidationError({
                                 message: tpl(messages.invalidTheme, {theme: activeThemeName}),
                                 errorDetails: Object.assign(
                                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                         errors: checkedTheme.results.error
                                     }
                                 )
-                            });
-
-                            logging.error(checkError);
-
-                            bridge.activateTheme(theme, checkedTheme, checkError);
-                        } else {
+                            }));
                             // CASE: inform that the theme has errors, but not fatal (theme still works)
-                            if (checkedTheme.results.error.length) {
-                                logging.warn(new errors.ThemeValidationError({
-                                    errorType: 'ThemeWorksButHasErrors',
-                                    message: tpl(messages.themeHasErrors, {theme: activeThemeName}),
-                                    errorDetails: Object.assign(
-                                        _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
-                                            errors: checkedTheme.results.error
-                                        }
-                                    )
-                                }));
-                            }
-
-                            debug('Activating theme (method A on boot)', activeThemeName);
-
-                            bridge.activateTheme(theme, checkedTheme);
+                        } else if (checkedTheme.results.error.length) {
+                            logging.warn(new errors.ThemeValidationError({
+                                errorType: 'ThemeWorksButHasErrors',
+                                message: tpl(messages.themeHasErrors, {theme: activeThemeName}),
+                                errorDetails: Object.assign(
+                                    _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
+                                        errors: checkedTheme.results.error
+                                    }
+                                )
+                            }));
                         }
+
+                        debug('Activating theme (method A on boot)', activeThemeName);
+                        bridge.activateTheme(theme, checkedTheme);
                     });
             })
             .catch(function (err) {
