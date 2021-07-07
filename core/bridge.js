@@ -13,10 +13,12 @@ const debug = require('@tryghost/debug')('bridge');
 const errors = require('@tryghost/errors');
 const config = require('./shared/config');
 const logging = require('@tryghost/logging');
-const events = require('./server/lib/common/events');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
 const settingsCache = require('./shared/settings-cache');
+
+// Listen to settings.lang.edited, similar to the member service and models/base/listeners
+const events = require('./server/lib/common/events');
 
 const messages = {
     activateFailed: 'Unable to activate the theme "{theme}".'
