@@ -10,6 +10,7 @@ const validate = require('./validate');
 const list = require('./list');
 const ThemeStorage = require('./ThemeStorage');
 const themeLoader = require('./loader');
+const activator = require('./activation-bridge');
 const toJSON = require('./to-json');
 
 const settingsCache = require('../../../shared/settings-cache');
@@ -79,8 +80,7 @@ module.exports = {
             overrideTheme = (shortName === settingsCache.get('active_theme'));
             // CASE: if this is the active theme, we are overriding
             if (overrideTheme) {
-                debug('Activating theme (method C, on API "override")', shortName);
-                bridge.activateTheme(loadedTheme, checkedTheme);
+                activator.activateFromOverride(shortName, loadedTheme, checkedTheme);
             }
 
             // @TODO: unify the name across gscan and Ghost!

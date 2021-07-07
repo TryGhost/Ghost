@@ -3,9 +3,9 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const themeLoader = require('./loader');
-const bridge = require('../../../bridge');
 const validate = require('./validate');
 const list = require('./list');
+const activator = require('./activation-bridge');
 const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
@@ -34,8 +34,7 @@ module.exports = {
                 logging.warn(validate.getThemeValidationError('activeThemeHasErrors', activeThemeName, checkedTheme));
             }
 
-            debug('Activating theme (method A on boot)', activeThemeName);
-            bridge.activateTheme(theme, checkedTheme);
+            activator.activateFromBoot(activeThemeName, theme, checkedTheme);
         } catch (err) {
             if (err instanceof errors.NotFoundError) {
                 // CASE: active theme is missing, we don't want to exit because the admin panel will still work
@@ -60,8 +59,7 @@ module.exports = {
 
         const checkedTheme = await validate.checkSafe(themeName, loadedTheme);
 
-        debug('Activating theme (method B on API "activate")', themeName);
-        bridge.activateTheme(loadedTheme, checkedTheme);
+        activator.activateFromAPI(themeName, loadedTheme, checkedTheme);
 
         return checkedTheme;
     },
