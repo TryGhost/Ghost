@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const helpers = require('../../../core/frontend/helpers');
-const labs = require('../../../core/server/services/labs');
+const labs = require('../../../core/shared/labs');
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 describe('Match helper', function () {
