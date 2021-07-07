@@ -14,7 +14,7 @@ const fixtureUtils = require('../../core/server/data/schema/fixtures/utils');
 const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings');
-const labsService = require('../../core/server/services/labs');
+const labsService = require('../../core/shared/labs');
 
 // Other Test Utilities
 const context = require('./fixtures/context');

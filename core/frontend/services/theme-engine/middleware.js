@@ -5,7 +5,7 @@ const {api} = require('../proxy');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../server/services/labs');
+const labs = require('../../../shared/labs');
 const activeTheme = require('./active');
 const preview = require('./preview');
 
