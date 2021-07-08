@@ -18,7 +18,7 @@ export function countDownCharacters(params) {
     if (length > maxCharacters) {
         el.style.color = '#E25440';
     } else {
-        el.style.color = '#9FBB58';
+        el.style.color = '#30CF43';
     }
 
     el.innerHTML = length;
