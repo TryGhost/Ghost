@@ -5,8 +5,8 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
-const settingsCache = require('./settings-cache');
-const config = require('./config');
+const settingsCache = require('../../shared/settings-cache');
+const config = require('../../shared/config');
 
 const messages = {
     errorMessage: 'The \\{\\{{helperName}\\}\\} helper is not available.',

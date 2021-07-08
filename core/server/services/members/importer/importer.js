@@ -7,7 +7,7 @@ const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
 const jobsService = require('../../jobs');
-const labsService = require('../../../../shared/labs');
+const labsService = require('../../labs');
 
 const ghostMailer = new GhostMailer();
 module.exports = class MembersCSVImporter {

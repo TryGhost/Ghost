@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const labsUtil = require('../../../../shared/labs');
+const labsUtil = require('../../../services/labs');
 
 const labs = flag => (req, res, next) => {
     if (labsUtil.isSet(flag) === true) {

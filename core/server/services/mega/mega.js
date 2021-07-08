@@ -17,7 +17,7 @@ const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const {getSegmentsFromHtml} = require('./segment-parser');
-const labs = require('../../../shared/labs');
+const labs = require('../labs');
 
 // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
 const events = require('../../lib/common/events');
