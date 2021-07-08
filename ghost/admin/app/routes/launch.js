@@ -6,10 +6,8 @@ export default class LaunchRoute extends AuthenticatedRoute {
 
     beforeModel() {
         super.beforeModel(...arguments);
-        return this.session.user.then((user) => {
-            if (!user.isOwner) {
-                return this.transitionTo('home');
-            }
-        });
+        if (!this.session.user.isOwner) {
+            return this.transitionTo('home');
+        }
     }
 }

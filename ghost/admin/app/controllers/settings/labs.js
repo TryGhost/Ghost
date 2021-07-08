@@ -115,7 +115,7 @@ export default Controller.extend({
                 // https://github.com/emberjs/data/issues/4963
                 run.schedule('destroy', this, () => {
                     // Reload currentUser and set session
-                    this.set('session.user', store.findRecord('user', currentUserId));
+                    this.session.populateUser({id: currentUserId});
 
                     // TODO: keep as notification, add link to view content
                     notifications.showNotification('Import successful', {key: 'import.upload.success'});

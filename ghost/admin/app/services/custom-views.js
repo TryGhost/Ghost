@@ -116,13 +116,13 @@ export default class CustomViewsService extends Service {
     }
 
     // eslint-disable-next-line ghost/ember/no-observers
-    @observes('settings.sharedViews', 'session.isAuthenticated')
+    @observes('settings.sharedViews', 'session.{isAuthenticated,user}')
     async updateViewList() {
         let {settings, session} = this;
 
         // avoid fetching user before authenticated otherwise the 403 can fire
         // during authentication and cause errors during setup/signin
-        if (!session.isAuthenticated) {
+        if (!session.isAuthenticated || !session.user) {
             return;
         }
 

@@ -18,11 +18,9 @@ export default class MembersRoute extends AuthenticatedRoute {
 
     beforeModel() {
         super.beforeModel(...arguments);
-        return this.session.user.then((user) => {
-            if (!user.isOwnerOrAdmin) {
-                return this.transitionTo('home');
-            }
-        });
+        if (!this.session.user.isOwnerOrAdmin) {
+            return this.transitionTo('home');
+        }
     }
 
     model(params) {

@@ -37,18 +37,17 @@ export default AuthenticatedRoute.extend({
     afterModel(post) {
         this._super(...arguments);
 
-        return this.get('session.user').then((user) => {
-            let returnRoute = pluralize(post.constructor.modelName);
+        const user = this.session.user;
+        const returnRoute = pluralize(post.constructor.modelName);
 
-            if (user.get('isAuthorOrContributor') && !post.isAuthoredByUser(user)) {
-                return this.replaceWith(returnRoute);
-            }
+        if (user.isAuthorOrContributor && !post.isAuthoredByUser(user)) {
+            return this.replaceWith(returnRoute);
+        }
 
-            // If the post is not a draft and user is contributor, redirect to index
-            if (user.get('isContributor') && !post.get('isDraft')) {
-                return this.replaceWith(returnRoute);
-            }
-        });
+        // If the post is not a draft and user is contributor, redirect to index
+        if (user.isContributor && !post.isDraft) {
+            return this.replaceWith(returnRoute);
+        }
     },
 
     serialize(model) {

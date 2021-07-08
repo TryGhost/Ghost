@@ -8,22 +8,21 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     beforeModel(transition) {
         this._super(...arguments);
-        return this.get('session.user')
-            .then(this.transitionAuthor())
-            .then(this.transitionEditor())
-            .then(() => {
-                if (transition.to.queryParams?.fromAddressUpdate === 'success') {
-                    this.notifications.showAlert(
-                        `Newsletter email address has been updated`.htmlSafe(),
-                        {type: 'success', key: 'members.settings.from-address.updated'}
-                    );
-                } else if (transition.to.queryParams?.supportAddressUpdate === 'success') {
-                    this.notifications.showAlert(
-                        `Support email address has been updated`.htmlSafe(),
-                        {type: 'success', key: 'members.settings.support-address.updated'}
-                    );
-                }
-            });
+
+        this.transitionAuthor(this.session.user);
+        this.transitionEditor(this.session.user);
+
+        if (transition.to.queryParams?.fromAddressUpdate === 'success') {
+            this.notifications.showAlert(
+                `Newsletter email address has been updated`.htmlSafe(),
+                {type: 'success', key: 'members.settings.from-address.updated'}
+            );
+        } else if (transition.to.queryParams?.supportAddressUpdate === 'success') {
+            this.notifications.showAlert(
+                `Support email address has been updated`.htmlSafe(),
+                {type: 'success', key: 'members.settings.support-address.updated'}
+            );
+        }
     },
 
     model() {

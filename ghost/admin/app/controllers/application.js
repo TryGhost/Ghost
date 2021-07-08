@@ -22,7 +22,7 @@ export default Controller.extend({
     ui: service(),
 
     showBilling: computed.reads('config.hostSettings.billing.enabled'),
-    showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
+    showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user}', 'ui.isFullScreen', function () {
         let {router, session, ui} = this;
 
         // if we're in fullscreen mode don't show the nav menu
@@ -31,8 +31,8 @@ export default Controller.extend({
         }
 
         // we need to defer showing the navigation menu until the session.user
-        // promise has fulfilled so that gh-user-can-admin has the correct data
-        if (!session.isAuthenticated || !session.user.isFulfilled) {
+        // is populated so that gh-user-can-admin has the correct data
+        if (!session.isAuthenticated || !session.user) {
             return false;
         }
 

@@ -12,16 +12,13 @@ export default EphemeralStore.extend({
     // session cookie or not so we can use that as an indication of the session
     // being authenticated
     restore() {
-        return this.session.user.then(() => {
+        return this.session.populateUser().then(() => {
             // provide the necessary data for internal-session to mark the
             // session as authenticated
             let data = {authenticated: {authenticator: 'authenticator:cookie'}};
             this.persist(data);
             return data;
         }).catch(() => {
-            // ensure the session.user doesn't return the same rejected promise
-            // after a succussful login
-            this.session.notifyPropertyChange('user');
             return RSVP.reject();
         });
     }
