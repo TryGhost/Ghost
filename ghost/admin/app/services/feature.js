@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import Ember from 'ember';
 import EmberError from '@ember/error';
-import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 import {computed} from '@ember/object';
 import {set} from '@ember/object';
@@ -81,11 +80,8 @@ export default Service.extend({
     }),
 
     fetch() {
-        return RSVP.hash({
-            settings: this.settings.fetch(),
-            user: this.get('session.user')
-        }).then(({user}) => {
-            this.set('_user', user);
+        return this.settings.fetch().then(() => {
+            this.set('_user', this.session.user);
             return this._setAdminTheme().then(() => true);
         });
     },

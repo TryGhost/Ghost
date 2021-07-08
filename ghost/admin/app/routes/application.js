@@ -1,11 +1,9 @@
 import AuthConfiguration from 'ember-simple-auth/configuration';
-import RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {InitSentryForEmber} from '@sentry/ember';
-import {configureScope} from '@sentry/browser';
 import {
     isAjaxError,
     isNotFoundError,
@@ -51,57 +49,14 @@ export default Route.extend(ShortcutsRoute, {
     },
 
     beforeModel() {
-        return this.config.fetchUnauthenticated()
-            .then(() => {
-                // init Sentry here rather than app.js so that we can use API-supplied
-                // sentry_dsn and sentry_env rather than building it into release assets
-                if (this.config.get('sentry_dsn')) {
-                    InitSentryForEmber({
-                        dsn: this.config.get('sentry_dsn'),
-                        environment: this.config.get('sentry_env'),
-                        release: `ghost@${this.config.get('version')}`
-                    });
-                }
-            });
+        return this.prepareApp();
     },
 
-    afterModel(model, transition) {
+    async afterModel(model, transition) {
         this._super(...arguments);
 
         if (this.get('session.isAuthenticated')) {
             this.session.appLoadTransition = transition;
-            this.session.loadServerNotifications();
-
-            // return the feature/settings load promises so that we block until
-            // they are loaded to enable synchronous access everywhere
-            return RSVP.all([
-                this.config.fetchAuthenticated(),
-                this.feature.fetch(),
-                this.settings.fetch()
-            ]).then((results) => {
-                this._appLoaded = true;
-
-                // update Sentry with the full Ghost version which we only get after authentication
-                if (this.config.get('sentry_dsn')) {
-                    configureScope((scope) => {
-                        scope.addEventProcessor((event) => {
-                            return new Promise((resolve) => {
-                                resolve({
-                                    ...event,
-                                    release: `ghost@${this.config.get('version')}`
-                                });
-                            });
-                        });
-                    });
-                }
-
-                // kick off background update of "whats new"
-                // - we don't want to block the router for this
-                // - we need the user details to know what the user has seen
-                this.whatsNew.fetchLatest.perform();
-
-                return results;
-            });
         }
 
         this._appLoaded = true;
@@ -186,5 +141,30 @@ export default Route.extend(ShortcutsRoute, {
             // fallback to 500 error page
             return true;
         }
+    },
+
+    async prepareApp() {
+        await this.config.fetchUnauthenticated();
+
+        // init Sentry here rather than app.js so that we can use API-supplied
+        // sentry_dsn and sentry_env rather than building it into release assets
+        if (this.config.get('sentry_dsn')) {
+            InitSentryForEmber({
+                dsn: this.config.get('sentry_dsn'),
+                environment: this.config.get('sentry_env'),
+                release: `ghost@${this.config.get('version')}`
+            });
+        }
+
+        if (this.session.isAuthenticated) {
+            try {
+                await this.session.populateUser();
+            } catch (e) {
+                await this.session.invalidate();
+            }
+
+            await this.session.postAuthPreparation();
+        }
     }
+
 });

@@ -105,7 +105,7 @@ export default Controller.extend({
             formData.append('file', imageFile, imageFile.name);
             formData.append('purpose', 'profile_image');
 
-            let user = yield this.get('session.user');
+            let user = this.session.user;
             let response = yield this.ajax.post(uploadUrl, {
                 data: formData,
                 processData: false,

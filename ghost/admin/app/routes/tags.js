@@ -23,8 +23,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     beforeModel() {
         this._super(...arguments);
 
-        return this.get('session.user')
-            .then(this.transitionAuthor());
+        this.transitionAuthor(this.session.user);
     },
 
     // set model to a live array so all tags are shown and created/deleted tags

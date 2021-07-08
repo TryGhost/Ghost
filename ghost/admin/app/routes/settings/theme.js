@@ -8,8 +8,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     beforeModel() {
         this._super(...arguments);
-        return this.get('session.user')
-            .then(this.transitionAuthor());
+        this.transitionAuthor(this.session.user);
     },
 
     model() {

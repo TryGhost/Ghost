@@ -25,7 +25,7 @@ export default class MembersCountCacheService extends Service {
     }
 
     async countString(filter = '', {knownCount} = {}) {
-        const user = await this.session.user;
+        const user = this.session.user;
 
         const basicFilter = filter.replace(/^subscribed:true\+\((.*)\)$/, '$1');
         const filterParts = basicFilter.split(',');

@@ -84,11 +84,14 @@ describe('Integration: Service: feature', function () {
         server.shutdown();
     });
 
-    it('loads labs and user settings correctly', function () {
+    it('loads labs and user settings correctly', async function () {
         stubSettings(server, {testFlag: true});
         stubUser(server, {testUserFlag: true});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
 
@@ -98,11 +101,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns false for set flag with config false and labs false', function () {
+    it('returns false for set flag with config false and labs false', async function () {
         stubSettings(server, {testFlag: false});
         stubUser(server, {});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
@@ -113,11 +119,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns true for set flag with config true and labs false', function () {
+    it('returns true for set flag with config true and labs false', async function () {
         stubSettings(server, {testFlag: false});
         stubUser(server, {});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', true);
@@ -128,11 +137,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns true for set flag with config false and labs true', function () {
+    it('returns true for set flag with config false and labs true', async function () {
         stubSettings(server, {testFlag: true});
         stubUser(server, {});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
@@ -143,11 +155,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns true for set flag with config true and labs true', function () {
+    it('returns true for set flag with config true and labs true', async function () {
         stubSettings(server, {testFlag: true});
         stubUser(server, {});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', true);
@@ -158,11 +173,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns false for set flag with accessibility false', function () {
+    it('returns false for set flag with accessibility false', async function () {
         stubSettings(server, {});
         stubUser(server, {testUserFlag: false});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
 
@@ -172,11 +190,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns true for set flag with accessibility true', function () {
+    it('returns true for set flag with accessibility true', async function () {
         stubSettings(server, {});
         stubUser(server, {testUserFlag: true});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
 
@@ -186,11 +207,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('saves labs setting correctly', function () {
+    it('saves labs setting correctly', async function () {
         stubSettings(server, {testFlag: false});
         stubUser(server, {testUserFlag: false});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
@@ -209,11 +233,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('saves accessibility setting correctly', function () {
+    it('saves accessibility setting correctly', async function () {
         stubSettings(server, {});
         stubUser(server, {testUserFlag: false});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
 
@@ -231,11 +258,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('notifies for server errors on labs save', function () {
+    it('notifies for server errors on labs save', async function () {
         stubSettings(server, {testFlag: false}, false);
         stubUser(server, {});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
@@ -263,11 +293,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('notifies for server errors on accessibility save', function () {
+    it('notifies for server errors on accessibility save', async function () {
         stubSettings(server, {});
         stubUser(server, {testUserFlag: false}, false);
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
 
@@ -294,11 +327,14 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('notifies for validation errors', function () {
+    it('notifies for validation errors', async function () {
         stubSettings(server, {testFlag: false}, true, false);
         stubUser(server, {});
 
         addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
