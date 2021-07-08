@@ -981,6 +981,13 @@
     overflow-y: auto;
     margin: -32px -32px 0;
     padding: 32px 32px 0;
+    max-height: calc(100vh - 20vw);
+}
+
+@media (max-height: 960px) {
+    .theme-validation-container {
+        max-height: calc(100vh - 180px);
+    }
 }
 
 .theme-validation-item {
