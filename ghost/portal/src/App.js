@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getProductFromId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -333,21 +333,14 @@ export default class App extends React.Component {
 
     /** Fetch state from Portal Links */
     fetchLinkData() {
-        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const [path] = window.location.hash.substr(1).split('?');
-        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)+))?\/?$/;
+        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)?))?\/?$/;
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
             const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
-            const showPopup = (
-                ['monthly', 'yearly'].includes(pageQuery) ||
-                productMonthlyPriceQueryRegex.test(pageQuery) ||
-                productYearlyPriceQueryRegex.test(pageQuery)
-            ) ? false : true;
             return {
-                showPopup,
+                showPopup: ['monthly', 'yearly'].includes(pageQuery) ? false : true,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
                 ...(lastPage ? {lastPage} : {})
@@ -517,48 +510,22 @@ export default class App extends React.Component {
 
     /** Handle direct signup link for a price */
     handleSignupQuery({site, pageQuery}) {
-        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        let priceId = pageQuery;
-        if (productMonthlyPriceQueryRegex.test(pageQuery || '')) {
-            const [, productId] = pageQuery.match(productMonthlyPriceQueryRegex);
-            const product = getProductFromId({site, productId});
-            priceId = product?.monthlyPrice?.id;
-        } else if (productYearlyPriceQueryRegex.test(pageQuery || '')) {
-            const [, productId] = pageQuery.match(productYearlyPriceQueryRegex);
-            const product = getProductFromId({site, productId});
-            priceId = product?.yearlyPrice?.id;
-        }
-        const queryPrice = getQueryPrice({site: site, priceId});
+        const queryPrice = getQueryPrice({site: site, priceId: pageQuery});
         if (!this.state.member
             && pageQuery
             && pageQuery !== 'free'
         ) {
             removePortalLinkFromUrl();
-            this.dispatchAction('signup', {plan: queryPrice?.id || priceId});
+            this.dispatchAction('signup', {plan: queryPrice?.id || pageQuery});
         }
     }
 
     /**Get Portal page from Link/Data-attribute path*/
     getPageFromLinkPath(path) {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
-        const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
-        const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         if (path === 'signup') {
             return {
                 page: 'signup'
-            };
-        } else if (customMonthlyProductSignup.test(path)) {
-            const [, productId] = path.match(customMonthlyProductSignup);
-            return {
-                page: 'signup',
-                pageQuery: `${productId}/monthly`
-            };
-        } else if (customYearlyProductSignup.test(path)) {
-            const [, productId] = path.match(customYearlyProductSignup);
-            return {
-                page: 'signup',
-                pageQuery: `${productId}/yearly`
             };
         } else if (customPricesSignupRegex.test(path)) {
             const [, pageQuery] = path.match(customPricesSignupRegex);
