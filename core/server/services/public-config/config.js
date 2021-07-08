@@ -1,6 +1,6 @@
 const {isPlainObject} = require('lodash');
 const config = require('../../../shared/config');
-const labs = require('../../../shared/labs');
+const labs = require('../labs');
 const ghostVersion = require('@tryghost/version');
 
 module.exports = function getConfigProperties() {

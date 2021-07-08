@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const membersService = require('../../services/members');
-const labsService = require('../../../shared/labs');
+const labsService = require('../../services/labs');
 
 const settingsCache = require('../../../shared/settings-cache');
 const i18n = require('../../../shared/i18n');

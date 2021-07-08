@@ -7,7 +7,7 @@ const models = require('../../../../models');
 const defaultSettings = require('../../../schema').defaultSettings;
 const keyGroupMapper = require('../../../../api/shared/serializers/input/utils/settings-key-group-mapper');
 const keyTypeMapper = require('../../../../api/shared/serializers/input/utils/settings-key-type-mapper');
-const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../shared/labs');
+const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../services/labs');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address'];
