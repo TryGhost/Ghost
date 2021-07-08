@@ -255,13 +255,6 @@
     line-height: 36px;
 }
 
-.gh-setting-content-extended svg {
-    position: relative;
-    bottom: 1px;
-    width: 18px;
-    margin-right: 8px;
-}
-
 .gh-setting-liquid-section .liquid-container,
 .gh-setting-liquid-section .liquid-child {
     padding: 0 20px;

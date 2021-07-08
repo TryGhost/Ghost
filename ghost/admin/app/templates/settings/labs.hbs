@@ -212,7 +212,7 @@
                     </div>
                     <div class="gh-expandable-content">
                         {{#if this.isOAuthEnabled}}
-                            <div class="gh-setting-content-extended pt2 pb4">
+                            <div class="gh-setting-content-extended gh-labs-sso-settings pt2 pb4">
                                 <a href="https://console.developers.google.com/" target="_blank" rel="noopener" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
                                 <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
                                     <div class="form-group">
