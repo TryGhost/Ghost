@@ -8,7 +8,8 @@
             <GhPublishmenuPublished
                 @post={{this.post}}
                 @saveType={{this.saveType}}
-                @setSaveType={{action "setSaveType"}} />
+                @setSaveType={{action "setSaveType"}}
+                data-test-publishmenu-published="true" />
 
         {{else if (eq this.displayState "scheduled")}}
             <GhPublishmenuScheduled
@@ -20,7 +21,8 @@
                 @setSaveType={{action "setSaveType"}}
                 @setTypedDateError={{action (mut this.typedDateError)}}
                 @isSendingEmailLimited={{this.isSendingEmailLimited}}
-                @sendingEmailLimitError={{this.sendingEmailLimitError}} />
+                @sendingEmailLimitError={{this.sendingEmailLimitError}}
+                data-test-publishmenu-scheduled="true" />
 
         {{else}}
             <GhPublishmenuDraft
@@ -30,10 +32,10 @@
                 @setTypedDateError={{action (mut this.typedDateError)}}
                 @canSendEmail={{this.canSendEmail}}
                 @recipientsFilter={{this.sendEmailWhenPublished}}
-                @updateMemberCount={{action "updateMemberCount"}}
                 @setSendEmailWhenPublished={{action "setSendEmailWhenPublished"}}
                 @isSendingEmailLimited={{this.isSendingEmailLimited}}
-                @sendingEmailLimitError={{this.sendingEmailLimitError}} />
+                @sendingEmailLimitError={{this.sendingEmailLimitError}}
+                data-test-publishmenu-draft="true" />
         {{/if}}
 
         {{!--
@@ -51,7 +53,7 @@
                 @successText={{this.successText}}
                 @runningText={{this.runningText}}
                 @class="gh-btn gh-btn-black gh-publishmenu-button gh-btn-icon"
-                data-test-publishmenu-save=true
+                data-test-publishmenu-save="true"
             />
         </footer>
     </dd.Content>
