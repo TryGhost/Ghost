@@ -9,9 +9,7 @@ export default AuthenticatedRoute.extend({
             return this.replaceWith('error404', {path, status: 404});
         }
 
-        return this.get('session.user').then(user => (
-            this.store.createRecord(modelName, {authors: [user]})
-        ));
+        this.store.createRecord(modelName, {authors: [this.session.user]});
     },
 
     // there's no specific controller for this route, instead all editor

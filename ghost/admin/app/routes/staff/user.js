@@ -10,24 +10,24 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     afterModel(user) {
         this._super(...arguments);
 
-        return this.get('session.user').then((currentUser) => {
-            let isOwnProfile = user.get('id') === currentUser.get('id');
-            let isAuthorOrContributor = currentUser.get('isAuthorOrContributor');
-            let isEditor = currentUser.get('isEditor');
+        const currentUser = this.session.user;
 
-            if (isAuthorOrContributor && !isOwnProfile) {
-                this.transitionTo('staff.user', currentUser);
-            } else if (isEditor && !isOwnProfile && !user.get('isAuthorOrContributor')) {
-                this.transitionTo('staff');
-            }
+        let isOwnProfile = user.get('id') === currentUser.get('id');
+        let isAuthorOrContributor = currentUser.get('isAuthorOrContributor');
+        let isEditor = currentUser.get('isEditor');
 
-            if (isOwnProfile) {
-                this.store.queryRecord('api-key', {id: 'me'}).then((apiKey) => {
-                    this.controller.set('personalToken', apiKey.id + ':' + apiKey.secret);
-                    this.controller.set('personalTokenRegenerated', false);
-                });
-            }
-        });
+        if (isAuthorOrContributor && !isOwnProfile) {
+            this.transitionTo('staff.user', currentUser);
+        } else if (isEditor && !isOwnProfile && !user.get('isAuthorOrContributor')) {
+            this.transitionTo('staff');
+        }
+
+        if (isOwnProfile) {
+            this.store.queryRecord('api-key', {id: 'me'}).then((apiKey) => {
+                this.controller.set('personalToken', apiKey.id + ':' + apiKey.secret);
+                this.controller.set('personalTokenRegenerated', false);
+            });
+        }
     },
 
     serialize(model) {

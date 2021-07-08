@@ -61,10 +61,6 @@ describe('Unit: Authenticator: cookie', () => {
             let authenticator = this.owner.lookup('authenticator:cookie');
             let post = authenticator.ajax.post;
 
-            let config = this.owner.lookup('service:config');
-            let feature = this.owner.lookup('service:feature');
-            let settings = this.owner.lookup('service:settings');
-
             return authenticator.authenticate('AzureDiamond', 'hunter2').then(() => {
                 expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
                 expect(post.args[0][1]).to.deep.include({
@@ -79,11 +75,6 @@ describe('Unit: Authenticator: cookie', () => {
                 expect(post.args[0][1]).to.deep.include({
                     contentType: 'application/json;charset=utf-8'
                 });
-
-                // ensure our pre-loading calls have been made
-                expect(config.fetchAuthenticated.calledOnce, 'config.fetchAuthenticated called').to.be.true;
-                expect(feature.fetch.calledOnce, 'feature.fetch called').to.be.true;
-                expect(settings.fetch.calledOnce, 'settings.fetch called').to.be.true;
             });
         });
     });

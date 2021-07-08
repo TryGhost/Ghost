@@ -38,45 +38,44 @@ export default AuthenticatedRoute.extend({
     },
 
     model(params) {
-        return this.session.user.then((user) => {
-            let queryParams = {};
-            let filterParams = {tag: params.tag, visibility: params.visibility};
-            let paginationParams = {
-                perPageParam: 'limit',
-                totalPagesParam: 'meta.pagination.pages'
-            };
+        const user = this.session.user;
+        let queryParams = {};
+        let filterParams = {tag: params.tag, visibility: params.visibility};
+        let paginationParams = {
+            perPageParam: 'limit',
+            totalPagesParam: 'meta.pagination.pages'
+        };
 
-            assign(filterParams, this._getTypeFilters(params.type));
+        assign(filterParams, this._getTypeFilters(params.type));
 
-            if (params.type === 'featured') {
-                filterParams.featured = true;
-            }
+        if (params.type === 'featured') {
+            filterParams.featured = true;
+        }
 
-            if (user.isAuthor) {
-                // authors can only view their own posts
-                filterParams.authors = user.slug;
-            } else if (user.isContributor) {
-                // Contributors can only view their own draft posts
-                filterParams.authors = user.slug;
-                filterParams.status = 'draft';
-            } else if (params.author) {
-                filterParams.authors = params.author;
-            }
+        if (user.isAuthor) {
+            // authors can only view their own posts
+            filterParams.authors = user.slug;
+        } else if (user.isContributor) {
+            // Contributors can only view their own draft posts
+            filterParams.authors = user.slug;
+            filterParams.status = 'draft';
+        } else if (params.author) {
+            filterParams.authors = params.author;
+        }
 
-            let filter = this._filterString(filterParams);
-            if (!isBlank(filter)) {
-                queryParams.filter = filter;
-            }
+        let filter = this._filterString(filterParams);
+        if (!isBlank(filter)) {
+            queryParams.filter = filter;
+        }
 
-            if (!isBlank(params.order)) {
-                queryParams.order = params.order;
-            }
+        if (!isBlank(params.order)) {
+            queryParams.order = params.order;
+        }
 
-            let perPage = this.perPage;
-            let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
+        let perPage = this.perPage;
+        let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
-            return this.infinity.model(this.modelName, paginationSettings);
-        });
+        return this.infinity.model(this.modelName, paginationSettings);
     },
 
     // trigger a background load of all tags, authors, and snipps for use in filter dropdowns and card menu
@@ -89,13 +88,11 @@ export default AuthenticatedRoute.extend({
             });
         }
 
-        this.session.user.then((user) => {
-            if (!user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
-                this.store.query('user', {limit: 'all'}).then(() => {
-                    controller._hasLoadedAuthors = true;
-                });
-            }
-        });
+        if (!this.session.user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
+            this.store.query('user', {limit: 'all'}).then(() => {
+                controller._hasLoadedAuthors = true;
+            });
+        }
 
         if (!controller._hasLoadedSnippets) {
             this.store.query('snippet', {limit: 'all'}).then(() => {

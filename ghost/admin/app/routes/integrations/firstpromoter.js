@@ -7,10 +7,10 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     beforeModel() {
         this._super(...arguments);
-        return this.get('session.user')
-            .then(this.transitionAuthor())
-            .then(this.transitionEditor())
-            .then(this.settings.reload());
+        this.transitionAuthor(this.session.user);
+        this.transitionEditor(this.session.user);
+
+        return this.settings.reload();
     },
 
     actions: {

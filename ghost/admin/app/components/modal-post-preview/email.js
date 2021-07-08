@@ -28,7 +28,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     @tracked html = '';
     @tracked subject = '';
-    @tracked previewEmailAddress = '';
+    @tracked previewEmailAddress = this.session.user.email;
     @tracked sendPreviewEmailError = '';
 
     get mailgunIsEnabled() {
@@ -47,12 +47,6 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
         }
-    }
-
-    @action
-    async initPreviewEmailAddress() {
-        const user = await this.session.user;
-        this.previewEmailAddress = user.email;
     }
 
     @task({drop: true})

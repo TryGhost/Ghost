@@ -1,6 +1,5 @@
 /* eslint-disable camelcase, ghost/ember/alias-model-in-controller */
 import Controller, {inject as controller} from '@ember/controller';
-import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {get} from '@ember/object';
 import {isInvalidError} from 'ember-ajax/errors';
@@ -15,7 +14,6 @@ export default Controller.extend(ValidationEngine, {
     ghostPaths: service(),
     notifications: service(),
     session: service(),
-    settings: service(),
 
     // ValidationEngine settings
     validationType: 'setup',
@@ -51,7 +49,7 @@ export default Controller.extend(ValidationEngine, {
 
     authenticate: task(function* (authStrategy, authentication) {
         // we don't want to redirect after sign-in during setup
-        this.set('session.skipAuthSuccessHandler', true);
+        this.session.skipAuthSuccessHandler = true;
 
         try {
             let authResult = yield this.session
@@ -141,15 +139,13 @@ export default Controller.extend(ValidationEngine, {
                 }
 
                 // Don't call the success handler, otherwise we will be redirected to admin
-                this.set('session.skipAuthSuccessHandler', true);
+                this.session.skipAuthSuccessHandler = true;
 
                 return this.session.authenticate('authenticator:cookie', data.email, data.password).then(() => {
                     this.set('blogCreated', true);
                     return this._afterAuthentication(result);
                 }).catch((error) => {
                     this._handleAuthenticationError(error);
-                }).finally(() => {
-                    this.set('session.skipAuthSuccessHandler', undefined);
                 });
             }).catch((error) => {
                 this._handleSaveError(error);
@@ -179,20 +175,14 @@ export default Controller.extend(ValidationEngine, {
     },
 
     _afterAuthentication(result) {
-        // fetch settings and private config for synchronous access before transitioning
-        let fetchSettingsAndConfig = RSVP.all([
-            this.settings.fetch()
-        ]);
-
         if (this.profileImage) {
             return this._sendImage(result.users[0])
-                .then(() => (fetchSettingsAndConfig))
                 .then(() => (this.transitionToRoute('setup.three')))
                 .catch((resp) => {
                     this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
                 });
         } else {
-            return fetchSettingsAndConfig.then(() => this.transitionToRoute('setup.three'));
+            return this.transitionToRoute('setup.three');
         }
     }
 });

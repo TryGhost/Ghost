@@ -13,13 +13,11 @@ export default AuthenticatedRoute.extend({
     beforeModel(transition) {
         this._super(...arguments);
 
-        return this.session.user.then((user) => {
-            if (!user.isOwner) {
-                return this.transitionTo('home');
-            }
+        if (!this.session.user.isOwner) {
+            return this.transitionTo('home');
+        }
 
-            this.billing.set('previousTransition', transition);
-        });
+        this.billing.set('previousTransition', transition);
     },
 
     model(params) {
