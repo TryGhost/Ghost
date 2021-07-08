@@ -5,7 +5,7 @@ const urlUtils = require('../../../shared/url-utils');
 const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../shared/settings-cache');
 const {formattedMemberResponse} = require('./utils');
-const labsService = require('../../../shared/labs');
+const labsService = require('../labs');
 const config = require('../../../shared/config');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app

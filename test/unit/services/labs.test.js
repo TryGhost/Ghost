@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 const configUtils = require('../../utils/configUtils');
-const labs = require('../../../core/shared/labs');
+const labs = require('../../../core/server/services/labs');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 describe('Labs Service', function () {

@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const helpers = require('../../../core/frontend/helpers');
-const labs = require('../../../core/shared/labs');
+const labs = require('../../../core/server/services/labs');
 const configUtils = require('../../utils/configUtils');
 
 describe('{{cancel_link}} helper', function () {

@@ -9,7 +9,7 @@ const i18n = require('../../shared/i18n');
 const errors = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const urlUtils = require('../../shared/url-utils');
-const {WRITABLE_KEYS_ALLOWLIST} = require('../../shared/labs');
+const {WRITABLE_KEYS_ALLOWLIST} = require('../services/labs');
 
 const internalContext = {context: {internal: true}};
 let Settings;

@@ -47,7 +47,7 @@ module.exports = {
     },
 
     // Labs utils for enabling/disabling helpers
-    labs: require('../../shared/labs'),
+    labs: require('../../server/services/labs'),
 
     // Things required from data/meta
     metaData: require('../meta'),
