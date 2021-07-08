@@ -92,3 +92,10 @@
     width: 10px;
     height: 6px;
 }
+
+.gh-labs-sso-settings svg {
+    position: relative;
+    bottom: 1px;
+    width: 18px;
+    margin-right: 8px;
+}
