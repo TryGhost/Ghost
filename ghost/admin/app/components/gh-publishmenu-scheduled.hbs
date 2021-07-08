@@ -1,51 +1,53 @@
-<header class="gh-publishmenu-heading">Will be published in {{this.timeToPublished}}</header>
-<div class="gh-publishmenu-content">
-    <section class="gh-publishmenu-section">
-        <div class="gh-publishmenu-radio {{if (eq this.saveType "draft") "active"}}" {{action "setSaveType" "draft" on="click"}}>
-            <div class="gh-publishmenu-radio-button" data-test-publishmenu-draft-option></div>
-            <div class="gh-publishmenu-radio-content">
-                <div class="gh-publishmenu-radio-label">Revert to draft</div>
-                <div class="gh-publishmenu-radio-desc">Do not publish</div>
-            </div>
-        </div>
-        <div class="gh-publishmenu-radio {{if (eq this.saveType "schedule") "active"}}" {{action "setSaveType" "schedule" on="click"}}>
-            <div class="gh-publishmenu-radio-button" data-test-publishmenu-scheduled-option></div>
-            <div class="gh-publishmenu-radio-content">
-                <div class="gh-publishmenu-radio-label">Schedule for later</div>
-                <GhDateTimePicker
-                    @date={{this.post.publishedAtBlogDate}}
-                    @time={{this.post.publishedAtBlogTime}}
-                    @setDate={{action "setDate"}}
-                    @setTime={{action "setTime"}}
-                    @setTypedDateError={{this.setTypedDateError}}
-                    @errors={{this.post.errors}}
-                    @dateErrorProperty="publishedAtBlogDate"
-                    @timeErrorProperty="publishedAtBlogTime"
-                    @minDate={{this._minDate}}
-                    @isActive={{eq this.saveType "schedule"}}
-                />
-                <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
-            </div>
-        </div>
-    </section>
-    {{#if this.canSendEmail}}
+<div {{did-insert (fn this.setSaveType "schedule")}} data-test-publishmenu-scheduled="true" ...attributes>
+    <header class="gh-publishmenu-heading">Will be published in {{this.timeToPublished}}</header>
+    <div class="gh-publishmenu-content">
         <section class="gh-publishmenu-section">
-            <div class="gh-publishmenu-email">
-                {{#if this.isSendingEmailLimited}}
-                    <p>{{html-safe this.sendingEmailLimitError}}</p>
-                {{else}}
-                    <div class="gh-publishmenu-email-label {{if this.disableEmailOption "pe-none"}}">
-                        <label class="gh-publishmenu-radio-label mb3 {{if this.disableEmailOption "midgrey"}}">Send by email to</label>
-
-                        <div class="form-group">
-                            <GhMembersRecipientSelect
-                                @filter={{this.recipientsFilter}}
-                                @disabled={{true}}
-                            />
-                        </div>
-                    </div>
-                {{/if}}
+            <div class="gh-publishmenu-radio {{if (eq @saveType "draft") "active"}}" {{on "click" (fn this.setSaveType "draft")}}>
+                <div class="gh-publishmenu-radio-button" data-test-publishmenu-draft-option></div>
+                <div class="gh-publishmenu-radio-content">
+                    <div class="gh-publishmenu-radio-label">Revert to draft</div>
+                    <div class="gh-publishmenu-radio-desc">Do not publish</div>
+                </div>
+            </div>
+            <div class="gh-publishmenu-radio {{if (eq @saveType "schedule") "active"}}" {{on "click" (fn this.setSaveType "schedule")}}>
+                <div class="gh-publishmenu-radio-button" data-test-publishmenu-scheduled-option></div>
+                <div class="gh-publishmenu-radio-content">
+                    <div class="gh-publishmenu-radio-label">Schedule for later</div>
+                    <GhDateTimePicker
+                        @date={{@post.publishedAtBlogDate}}
+                        @time={{@post.publishedAtBlogTime}}
+                        @setDate={{this.setDate}}
+                        @setTime={{this.setTime}}
+                        @setTypedDateError={{@setTypedDateError}}
+                        @errors={{@post.errors}}
+                        @dateErrorProperty="publishedAtBlogDate"
+                        @timeErrorProperty="publishedAtBlogTime"
+                        @minDate={{this.minDate}}
+                        @isActive={{eq @saveType "schedule"}}
+                    />
+                    <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
+                </div>
             </div>
         </section>
-    {{/if}}
+        {{#if @canSendEmail}}
+            <section class="gh-publishmenu-section">
+                <div class="gh-publishmenu-email">
+                    {{#if @isSendingEmailLimited}}
+                        <p>{{html-safe @sendingEmailLimitError}}</p>
+                    {{else}}
+                        <div class="gh-publishmenu-email-label pe-none">
+                            <label class="gh-publishmenu-radio-label mb3 midgrey">Send by email to</label>
+
+                            <div class="form-group">
+                                <GhMembersRecipientSelect
+                                    @filter={{@recipientsFilter}}
+                                    @disabled={{true}}
+                                />
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+            </section>
+        {{/if}}
+    </div>
 </div>

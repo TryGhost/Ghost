@@ -95,7 +95,7 @@
                         <VerticalCollection @items={{this.members}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
                             <GhMembersListItem
                                 @member={{member}}
-                                @data-test-member={{member.id}}
+                                data-test-member={{member.id}}
                             />
                         </VerticalCollection>
                     {{else}}
