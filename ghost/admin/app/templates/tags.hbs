@@ -20,7 +20,7 @@
                     <div class="gh-list-header gh-list-cellwidth-10"></div>
                 </li>
                 <VerticalCollection @items={{this.sortedTags}} @key="id" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |tag|>
-                    <GhTagsListItem @tag={{tag}} @data-test-tag-id={{tag.id}} />
+                    <GhTagsListItem @tag={{tag}} data-test-tag-id={{tag.id}} />
                 </VerticalCollection>
             {{else}}
                 <li class="no-posts-box">

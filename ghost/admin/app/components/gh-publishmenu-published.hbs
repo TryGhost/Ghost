@@ -1,17 +1,19 @@
-<header class="gh-publishmenu-heading">Update {{post.displayName}} status</header>
-<section class="gh-publishmenu-content gh-publishmenu-section">
-    <div class="gh-publishmenu-radio {{if (eq this.saveType "draft") "active"}}" {{action this.setSaveType "draft" on="click"}}>
-        <div class="gh-publishmenu-radio-button" data-test-publishmenu-unpublished-option></div>
-        <div class="gh-publishmenu-radio-content">
-            <div class="gh-publishmenu-radio-label">Unpublished</div>
-            <div class="gh-publishmenu-radio-desc">Revert this {{post.displayName}} to a private draft</div>
+<div {{did-insert (fn @setSaveType "publish")}} data-test-publishmenu-published="true" ...attributes>
+    <header class="gh-publishmenu-heading">Update {{@post.displayName}} status</header>
+    <section class="gh-publishmenu-content gh-publishmenu-section">
+        <div class="gh-publishmenu-radio {{if (eq @saveType "draft") "active"}}" {{on "click" (fn @setSaveType "draft")}}>
+            <div class="gh-publishmenu-radio-button" data-test-publishmenu-unpublished-option></div>
+            <div class="gh-publishmenu-radio-content">
+                <div class="gh-publishmenu-radio-label">Unpublished</div>
+                <div class="gh-publishmenu-radio-desc">Revert this {{@post.displayName}} to a private draft</div>
+            </div>
         </div>
-    </div>
-    <div class="gh-publishmenu-radio {{if (eq this.saveType "publish") "active"}}" {{action this.setSaveType "publish" on="click"}}>
-        <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
-        <div class="gh-publishmenu-radio-content">
-            <div class="gh-publishmenu-radio-label">Published</div>
-            <div class="gh-publishmenu-radio-desc">Display this {{post.displayName}} publicly</div>
+        <div class="gh-publishmenu-radio {{if (eq @saveType "publish") "active"}}" {{on "click" (fn @setSaveType "publish")}}>
+            <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
+            <div class="gh-publishmenu-radio-content">
+                <div class="gh-publishmenu-radio-label">Published</div>
+                <div class="gh-publishmenu-radio-desc">Display this {{@post.displayName}} publicly</div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+</div>
