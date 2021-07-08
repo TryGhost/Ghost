@@ -87,13 +87,15 @@
     padding: 0 32px;
 }
 
-.fullscreen-modal-body-scrolling .modal-footer {
+.fullscreen-modal-body-scrolling .modal-footer,
+.modal-footer.top-shadow {
     position: relative;
     margin: 20px -32px 0;
     padding: 0 32px;
 }
 
-.fullscreen-modal-body-scrolling .modal-footer:before {
+.fullscreen-modal-body-scrolling .modal-footer:before,
+.modal-footer.top-shadow:before {
     position: absolute;
     content: "";
     top: -20px;
@@ -102,6 +104,11 @@
     height: 6px;
     background: hsla(0,0%,100%,0);
     box-shadow: 0 -0.3px 1px rgb(0 0 0 / 3%), 0 -4px 7px rgb(0 0 0 / 6%);
+}
+
+.modal-footer.top-shadow:before {
+    left: 0;
+    right: 0;
 }
 
 
@@ -134,8 +141,8 @@
 
 .modal-content .close {
     position: absolute;
-    top: 19px;
-    right: 19px;
+    top: 16px;
+    right: 16px;
     z-index: 9999;
     margin: 0;
     padding: 0;

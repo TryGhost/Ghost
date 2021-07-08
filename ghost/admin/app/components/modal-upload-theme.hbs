@@ -112,7 +112,7 @@
     </div>
 </div>
 
-<div class="modal-footer">
+<div class="modal-footer {{if (and this.theme this.hasWarningsOrErrors) "top-shadow"}}">
     <div class="flex items-center justify-between {{if (or this.displayOverwriteWarning this.canActivateTheme this.validationErrors this.fatalValidationErrors) "flex-auto"}}">
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-close-button>
             <span>{{#if this.theme}}Close{{else}}Cancel{{/if}}</span>
