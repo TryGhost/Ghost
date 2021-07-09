@@ -378,8 +378,8 @@ export default class App extends React.Component {
 
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
+        const {siteUrl, customSiteUrl} = this.props;
         try {
-            const {siteUrl} = this.props;
             this.GhostApi = setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
 
@@ -392,7 +392,7 @@ export default class App extends React.Component {
             this.setupSentry({site});
             return {site, member};
         } catch (e) {
-            if (hasMode(['dev', 'test'])) {
+            if (hasMode(['dev', 'test'], {customSiteUrl})) {
                 return {};
             }
             throw e;
@@ -623,11 +623,11 @@ export default class App extends React.Component {
     }
 
     /**Get final member set in App context from state data*/
-    getContextMember({page, member}) {
-        if (hasMode(['dev', 'preview'])) {
+    getContextMember({page, member, customSiteUrl}) {
+        if (hasMode(['dev', 'preview'], {customSiteUrl})) {
             /** Use dummy member(free or paid) for account pages in dev/preview mode*/
             if (isAccountPage({page})) {
-                if (hasMode(['dev'])) {
+                if (hasMode(['dev'], {customSiteUrl})) {
                     return member || Fixtures.member.free;
                 } else if (hasMode(['preview'])) {
                     return Fixtures.member.preview;
@@ -646,7 +646,7 @@ export default class App extends React.Component {
     getContextFromState() {
         const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification, customSiteUrl} = this.state;
         const contextPage = this.getContextPage({site, page, member});
-        const contextMember = this.getContextMember({page: contextPage, member});
+        const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
             site,
             action,
