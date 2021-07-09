@@ -2,7 +2,7 @@ import calculateDiscount from './discount';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
-    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)+))?\/?$/;
+    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
     if (path && linkRegex.test(path)) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
