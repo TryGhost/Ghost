@@ -139,7 +139,7 @@ const UserHeader = () => {
 
 const PaidAccountActions = () => {
     const {member, site, onAction} = useContext(AppContext);
-    
+
     const onEditBilling = () => {
         const subscription = getMemberSubscription({member});
         onAction('editBilling', {subscriptionId: subscription.id});
@@ -156,10 +156,13 @@ const PaidAccountActions = () => {
     };
 
     const PlanLabel = ({price, isComplimentary}) => {
-        const {amount = 0, currency, interval} = price;
-        let label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
+        let label = '';
+        if (price) {
+            const {amount = 0, currency, interval} = price;
+            label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
+        }
         if (isComplimentary) {
-            label = `Complimentary (${label})`;
+            label = label ? `Complimentary (${label})` : `Complimentary`;
         }
         return (
             <p>
@@ -210,13 +213,13 @@ const PaidAccountActions = () => {
     };
 
     const subscription = getMemberSubscription({member});
-    if (subscription) {
-        let isComplimentary = isComplimentaryMember({member});
+    const isComplimentary = isComplimentaryMember({member});
+    if (subscription || isComplimentary) {
         const {
             plan,
             price,
             default_payment_card_last4: defaultCardLast4
-        } = subscription;
+        } = subscription || {};
         return (
             <>
                 <section>
@@ -313,11 +316,14 @@ const AccountWelcome = () => {
     if (!isStripeConfigured) {
         return null;
     }
-
-    if (member.paid) {
-        const subscription = getMemberSubscription({member});
-        const currentPeriodEnd = subscription.current_period_end;
-        if (subscription.cancel_at_period_end) {
+    const subscription = getMemberSubscription({member});
+    const isComplimentary = isComplimentaryMember({member});
+    if (isComplimentary && !subscription) {
+        return null;
+    }
+    if (subscription) {
+        const currentPeriodEnd = subscription?.current_period_end;
+        if (subscription?.cancel_at_period_end) {
             return null;
         }
         return (
@@ -337,9 +343,6 @@ const AccountWelcome = () => {
 
 const ContinueSubscriptionButton = () => {
     const {member, onAction, action, brandColor} = useContext(AppContext);
-    if (!member.paid) {
-        return null;
-    }
     const subscription = getMemberSubscription({member});
     if (!subscription) {
         return null;
@@ -426,10 +429,10 @@ export default class AccountHomePage extends React.Component {
         return (
             <div className='gh-portal-account-wrapper'>
                 <AccountMain />
-                <AccountFooter 
+                <AccountFooter
                     onClose={() => this.context.onAction('closePopup')}
                     handleSignout={e => this.handleSignout(e)}
-                    supportAddress={supportAddress} 
+                    supportAddress={supportAddress}
                 />
             </div>
         );

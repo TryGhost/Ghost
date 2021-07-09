@@ -2,7 +2,7 @@ import calculateDiscount from './discount';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
-    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)?))?\/?$/;
+    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)+))?\/?$/;
     if (path && linkRegex.test(path)) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
@@ -55,6 +55,8 @@ export function isComplimentaryMember({member = {}}) {
     if (subscription) {
         const {price} = subscription;
         return (price && price.amount === 0);
+    } else if (!subscription && !!member.paid) {
+        return true;
     }
     return false;
 }
@@ -266,6 +268,11 @@ export function getProductBenefits({product, site = null}) {
             yearly: yearlyBenefits
         };
     }
+}
+
+export function getProductFromId({site, productId}) {
+    const availableProducts = getAvailableProducts({site});
+    return availableProducts.find(product => product.id === productId);
 }
 
 export function getPricesFromProducts({site = null, products = null}) {
