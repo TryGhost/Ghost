@@ -81,7 +81,7 @@ module.exports = {
             // CASE: if this is the active theme, we are overriding
             if (overrideTheme) {
                 debug('setFromZip Theme is active alreadu');
-                activator.activateFromOverride(themeName, loadedTheme, checkedTheme);
+                activator.activateFromAPIOverride(themeName, loadedTheme, checkedTheme);
             }
 
             // @TODO: unify the name across gscan and Ghost!
@@ -98,6 +98,8 @@ module.exports = {
                             throw error;
                         });
                     }
+
+                    throw error;
                 });
             }
 
