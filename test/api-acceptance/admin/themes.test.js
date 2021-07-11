@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
@@ -7,6 +8,8 @@ const nock = require('nock');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
+const settingsCache = require('../../../core/shared/settings-cache');
+const origCache = _.cloneDeep(settingsCache);
 
 describe('Themes API', function () {
     let ownerRequest;
@@ -26,6 +29,10 @@ describe('Themes API', function () {
         await testUtils.startGhost();
         ownerRequest = supertest.agent(config.get('url'));
         await localUtils.doAuth(ownerRequest);
+    });
+
+    after(function () {
+        sinon.restore();
     });
 
     it('Can request all available themes', async function () {
@@ -92,19 +99,8 @@ describe('Themes API', function () {
         jsonResponse.themes[0].name.should.eql('valid');
         jsonResponse.themes[0].active.should.be.false();
 
-        // upload same theme again to force override
-        const res2 = await uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
-        const jsonResponse2 = res2.body;
-
-        should.not.exist(res2.headers['x-cache-invalidate']);
-        should.exist(jsonResponse2.themes);
-        localUtils.API.checkResponse(jsonResponse2, 'themes');
-        jsonResponse2.themes.length.should.eql(1);
-        localUtils.API.checkResponse(jsonResponse2.themes[0], 'theme');
-        jsonResponse2.themes[0].name.should.eql('valid');
-        jsonResponse2.themes[0].active.should.be.false();
-
-        // ensure tmp theme folder contains two themes now
+        // Note: at this point, the tmpFolder can legitimately still contain a valid_34324324 backup
+        // As it is deleted asynchronously
         const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
         tmpFolderContents.forEach((theme, index) => {
             if (theme.match(/^\./)) {
@@ -112,8 +108,6 @@ describe('Themes API', function () {
             }
         });
 
-        // Note: at this point, the tmpFolder can legitimately still contain a valid_34324324 backup
-        // As it is deleted asynchronously
         tmpFolderContents.should.containEql('valid');
         tmpFolderContents.should.containEql('valid.zip');
 
@@ -306,5 +300,30 @@ describe('Themes API', function () {
             .del(localUtils.API.getApiQuery('themes/test'))
             .set('Origin', config.get('url'))
             .expect(204);
+    });
+
+    it('Can re-upload the active theme to override', async function () {
+        // The tricky thing about this test is the default active theme is Casper and you're not allowed to override it.
+        // So we upload a valid theme, activate it, and then upload again.
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+            if (key === 'active_theme') {
+                return 'valid';
+            }
+
+            return origCache.get(key, options);
+        });
+
+        // Upload the valid theme
+        const res = await uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
+        const jsonResponse = res.body;
+
+        should.exist(res.headers['x-cache-invalidate']);
+
+        should.exist(jsonResponse.themes);
+        localUtils.API.checkResponse(jsonResponse, 'themes');
+        jsonResponse.themes.length.should.eql(1);
+        localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', 'templates');
+        jsonResponse.themes[0].name.should.eql('valid');
+        jsonResponse.themes[0].active.should.be.true();
     });
 });
