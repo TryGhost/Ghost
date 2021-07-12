@@ -10,7 +10,7 @@
     @beforeOptionsComponent={{@beforeOptionsComponent}}
     @buildSelection={{@buildSelection}}
     @calculatePosition={{@calculatePosition}}
-    @closeOnSelect={{this.closeOnSelect}}
+    @closeOnSelect={{or @closeOnSelect false}}
     @defaultHighlighted={{this.defaultHighlighted}}
     @destination={{@destination}}
     @disabled={{@disabled}}
@@ -31,7 +31,7 @@
     @onKeydown={{this.handleKeydown}}
     @onOpen={{@onOpen}}
     @options={{this.optionsWithoutSelected}}
-    @optionsComponent={{this.optionsComponent}}
+    @optionsComponent={{or @optionsComponent "power-select-vertical-collection-options"}}
     @placeholder={{@placeholder}}
     @placeholderComponent={{@placeholderComponent}}
     @preventScroll={{@preventScroll}}
@@ -49,7 +49,7 @@
     @eventType={{@eventType}}
     @title={{@title}}
     @triggerClass={{@triggerClass}}
-    @triggerComponent={{this.triggerComponent}}
+    @triggerComponent={{or @triggerComponent "gh-token-input/trigger"}}
     @triggerId={{@triggerId}}
     @verticalPosition={{@verticalPosition}}
     @tabindex={{@tabindex}}
@@ -62,7 +62,7 @@
         {{#if (has-block)}}
             {{yield option}}
         {{else}}
-            {{get option this.labelField}}
+            {{get option (or @labelField "name")}}
         {{/if}}
     {{/if}}
 </GhTokenInput::SelectMultiple>
