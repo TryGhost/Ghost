@@ -189,16 +189,17 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-product-benefits {
             font-size: 1.3rem;
             line-height: 1.45em;
-            margin: -8px 0 0;
-            padding: 20px 8px;
+            margin: -12px 0 0;
+            padding: 14px 24px;
             border-top: 1px solid var(--grey12);
             color: var(--grey3);
+            width: 100%;
         }
 
         .gh-portal-product-benefit {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .gh-portal-benefit-checkmark {
