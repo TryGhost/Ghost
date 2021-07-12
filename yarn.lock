@@ -1003,7 +1003,7 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.1", "@tryghost/root-utils@^0.3.2":
+"@tryghost/root-utils@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.2.tgz#f15a9f938ef9639149fe5f18ba7fb3326ec5ea57"
   integrity sha512-7zHrzfBa6Qka1CyO0RphBuVL0JOlc8sNiectPs6dAD6vTbeduCCGAl1lm9RXB7FNinuNBzRRRcVYZzMISNIvIw==
@@ -1105,15 +1105,7 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/version@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.1.tgz#8041f05ca5178d5cd6ac9dd2869c6b65d9274e8b"
-  integrity sha512-jq52T6p8NIgwktmyPAle0zFkJTML+IB7sAIlb9brpHOUbUfvAiJ104DEbAyndGsGRNBaLZgowcbBKCHC4OqhzA==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.1"
-    semver "^7.3.5"
-
-"@tryghost/version@^0.1.2":
+"@tryghost/version@0.1.2", "@tryghost/version@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.2.tgz#599e8008f7731c214930ad1a7d06e1bdbf440972"
   integrity sha512-EGukgUAXqV/0i1/6QKDTPIacgfJVnfPKOjNEUJS6CG9Aa6TwlK/su2vDiafZ4F2Y+vGjX+ILu2LsiWI+tI51nw==
