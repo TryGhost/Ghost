@@ -154,9 +154,9 @@ export default Controller.extend({
             .sort((a, b) => a.name.localeCompare(b.name));
     }),
 
-    canManageSnippets: computed('session.user.{isOwnerOrAdmin,isEditor}', function () {
+    canManageSnippets: computed('session.user.{isAdmin,isEditor}', function () {
         let {user} = this.session;
-        if (user.get('isOwnerOrAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEditor')) {
             return true;
         }
         return false;

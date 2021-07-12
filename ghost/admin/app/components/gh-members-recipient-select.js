@@ -176,7 +176,7 @@ export default class GhMembersRecipientSelect extends Component {
     *fetchMemberCountsTask() {
         const user = yield this.session.user;
 
-        if (!user.isOwnerOrAdmin) {
+        if (!user.isAdmin) {
             return;
         }
 

@@ -39,7 +39,7 @@
     <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
-        {{#if this.session.user.isOwner}}
+        {{#if this.session.user.isOwnerOnly}}
             <p>Your post has been published but the email failed to send. Please verify your email settings if the error persists.</p>
         {{else}}
             <p>Your post has been published but the email failed to send. Please verify your email settings if the error persists.</p>

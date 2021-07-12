@@ -11,7 +11,7 @@
         </h2>
 
         <section class="view-actions">
-            {{#if this.session.user.isOwnerOrAdmin}}
+            {{#if this.session.user.isAdmin}}
                 {{#unless this.member.isNew}}
                     <button
                         class="gh-btn gh-btn-white gh-btn-icon mr2"
