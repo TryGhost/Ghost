@@ -88,7 +88,7 @@
             <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
         </ul>
 
-        {{#if this.session.user.isOwner}}
+        {{#if this.session.user.isOwnerOnly}}
         <ul class="gh-nav-list">
             {{#if this.showBilling}}
                 <li class="relative">

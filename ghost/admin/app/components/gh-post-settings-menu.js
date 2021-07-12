@@ -44,8 +44,8 @@ export default Component.extend({
     twitterImage: or('post.twitterImage', 'post.featureImage', 'settings.twitterImage', 'settings.coverImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
-    showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
-    showEmailNewsletter: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
+    showVisibilityInput: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
+    showEmailNewsletter: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
 
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';

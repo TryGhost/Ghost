@@ -47,11 +47,11 @@ export default BaseModel.extend(ValidationEngine, {
     isContributor: equal('role.name', 'Contributor'),
     isAuthor: equal('role.name', 'Author'),
     isEditor: equal('role.name', 'Editor'),
-    isAdmin: equal('role.name', 'Administrator'),
-    isOwner: equal('role.name', 'Owner'),
+    isAdminOnly: equal('role.name', 'Administrator'),
+    isOwnerOnly: equal('role.name', 'Owner'),
 
     // These are used in enough places that it's useful to throw them here
-    isOwnerOrAdmin: or('isOwner', 'isAdmin'),
+    isAdmin: or('isOwnerOnly', 'isAdminOnly'),
     isAuthorOrContributor: or('isAuthor', 'isContributor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {

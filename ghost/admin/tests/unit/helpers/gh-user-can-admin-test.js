@@ -7,9 +7,10 @@ describe('Unit: Helper: gh-user-can-admin', function () {
     describe('Owner or admin roles', function () {
         let user = {
             get(role) {
-                if (role === 'isOwnerOrAdmin') {
+                if (role === 'isAdmin') {
                     return true;
                 }
+                throw new Error('unsupported'); // Make sure we only call get('isAdmin')
             }
         };
 
@@ -22,11 +23,10 @@ describe('Unit: Helper: gh-user-can-admin', function () {
     describe('Editor, Author & Contributor roles', function () {
         let user = {
             get(role) {
-                if (role === 'isOwner') {
-                    return false;
-                } else if (role === 'isAdmin') {
+                if (role === 'isAdmin') {
                     return false;
                 }
+                throw new Error('unsupported'); // Make sure we only call get('isAdmin')
             }
         };
 
