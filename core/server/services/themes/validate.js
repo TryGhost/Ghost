@@ -6,7 +6,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    themeHasErrors: 'Theme {name} is not compatible or contains errors.',
+    themeHasErrors: 'Theme "{theme}" is not compatible or contains errors.',
     activeThemeHasFatalErrors: 'The currently active theme "{theme}" has fatal errors.',
     activeThemeHasErrors: 'The currently active theme "{theme}" has errors, but will still work.'
 };
