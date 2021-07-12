@@ -404,14 +404,18 @@ export const PlanSectionStyles = `
         flex-direction: column;
         border: 1px solid var(--grey11);
         border-top: none !important;
-        padding: 16px 24px 8px !important;
+        padding: 16px 24px 12px !important;
         margin: 0 0 4px !important;
         border-radius: 0 0 5px 5px;
     }
 
+    .gh-portal-singleproduct-benefits .gh-portal-product-benefit {
+        padding: 0 24px;
+    }
+
     .gh-portal-singleproduct-benefits .gh-portal-product-description {
         margin-top: 8px !important;
-        margin-bottom: 24px !important;
+        margin-bottom: 14px !important;
     }
 
     .gh-portal-singleproduct-benefits .gh-portal-product-benefit:last-of-type {
