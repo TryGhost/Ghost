@@ -13,7 +13,7 @@ export default AuthenticatedRoute.extend({
     beforeModel(transition) {
         this._super(...arguments);
 
-        if (!this.session.user.isOwner) {
+        if (!this.session.user.isOwnerOnly) {
             return this.transitionTo('home');
         }
 

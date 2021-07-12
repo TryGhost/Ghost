@@ -1,4 +1,4 @@
-{{#if this.session.user.isOwnerOrAdmin}}
+{{#if this.session.user.isAdmin}}
 <span
     class="segment-totals"
     {{did-insert (perform this.fetchTotalsTask)}}

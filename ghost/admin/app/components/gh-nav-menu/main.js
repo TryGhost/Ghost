@@ -37,9 +37,9 @@ export default Component.extend(ShortcutsMixin, {
     // be a bug in Ember that's preventing it from working immediately after login
     isOnSite: equal('router.currentRouteName', 'site'),
 
-    showTagsNavigation: or('session.user.isOwnerOrAdmin', 'session.user.isEditor'),
-    showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwner'),
-    showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwner'),
+    showTagsNavigation: or('session.user.isAdmin', 'session.user.isEditor'),
+    showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwnerOnly'),
+    showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwnerOnly'),
     showBilling: computed.reads('config.hostSettings.billing.enabled'),
 
     init() {

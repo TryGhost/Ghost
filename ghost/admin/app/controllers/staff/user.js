@@ -46,11 +46,11 @@ export default Controller.extend({
 
     canChangeEmail: not('isAdminUserOnOwnerProfile'),
     canChangePassword: not('isAdminUserOnOwnerProfile'),
-    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin', 'isNotSuspended'),
-    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
-    isNotOwnersProfile: not('user.isOwner'),
+    canMakeOwner: and('currentUser.isOwnerOnly', 'isNotOwnProfile', 'user.isAdminOnly', 'isNotSuspended'),
+    isAdminUserOnOwnerProfile: and('currentUser.isAdminOnly', 'user.isOwnerOnly'),
+    isNotOwnersProfile: not('user.isOwnerOnly'),
     isNotSuspended: not('user.isSuspended'),
-    rolesDropdownIsVisible: and('currentUser.isOwnerOrAdmin', 'isNotOwnProfile', 'isNotOwnersProfile'),
+    rolesDropdownIsVisible: and('currentUser.isAdmin', 'isNotOwnProfile', 'isNotOwnersProfile'),
     userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
     isNotOwnProfile: not('isOwnProfile'),
@@ -58,7 +58,7 @@ export default Controller.extend({
         return this.get('user.id') === this.get('currentUser.id');
     }),
 
-    deleteUserActionIsVisible: computed('currentUser.{isOwnerOrAdmin,isEditor}', 'user.{isOwner,isAuthorOrContributor}', 'isOwnProfile', function () {
+    deleteUserActionIsVisible: computed('currentUser.{isAdmin,isEditor}', 'user.{isOwnerOnly,isAuthorOrContributor}', 'isOwnProfile', function () {
         // users can't delete themselves
         if (this.isOwnProfile) {
             return false;
@@ -66,7 +66,7 @@ export default Controller.extend({
 
         if (
             // owners/admins can delete any non-owner user
-            (this.currentUser.get('isOwnerOrAdmin') && !this.user.isOwner) ||
+            (this.currentUser.get('isAdmin') && !this.user.isOwnerOnly) ||
             // editors can delete any author or contributor
             (this.currentUser.get('isEditor') && this.user.isAuthorOrContributor)
         ) {

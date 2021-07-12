@@ -8,7 +8,7 @@ export default class GhContentfilterComponent extends Component {
     @service router;
 
     get showCustomViewManagement() {
-        let isOwnerOrAdmin = get(this.args.currentUser || {}, 'isOwnerOrAdmin');
+        let isAdmin = get(this.args.currentUser || {}, 'isAdmin');
         let onPostsScreen = this.router.currentRouteName === 'posts';
         let isDefaultView = this.customViews?.activeView?.isDefault;
         let hasFilter = this.args.selectedType.value
@@ -17,7 +17,7 @@ export default class GhContentfilterComponent extends Component {
             || this.args.selectedTag.slug
             || this.args.selectedOrder.value;
 
-        return isOwnerOrAdmin && onPostsScreen && !isDefaultView && hasFilter;
+        return isAdmin && onPostsScreen && !isDefaultView && hasFilter;
     }
 
     calculateActionsDropdownPosition(trigger, content) {

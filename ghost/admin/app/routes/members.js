@@ -16,7 +16,7 @@ export default class MembersRoute extends AuthenticatedRoute {
     // - logged in user isn't owner/admin
     beforeModel() {
         super.beforeModel(...arguments);
-        if (!this.session.user.isOwnerOrAdmin) {
+        if (!this.session.user.isAdmin) {
             return this.transitionTo('home');
         }
     }

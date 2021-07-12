@@ -21,7 +21,7 @@ export default class GhPublishMenuDraftComponent extends Component {
 
     get disableEmailOption() {
         // TODO: remove owner or admin check when editors can count members
-        return this.session.user.isOwnerOrAdmin && (this.totalMemberCount === 0 || this.countTotalMembersTask.isRunning);
+        return this.session.user.isAdmin && (this.totalMemberCount === 0 || this.countTotalMembersTask.isRunning);
     }
 
     constructor() {
@@ -82,7 +82,7 @@ export default class GhPublishMenuDraftComponent extends Component {
     *countTotalMembersTask() {
         const user = yield this.session.user;
 
-        if (user.isOwnerOrAdmin) {
+        if (user.isAdmin) {
             const result = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
             this.totalMemberCount = result.meta.pagination.total;
         }

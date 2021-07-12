@@ -6,7 +6,7 @@ import {helper} from '@ember/component/helper';
 // @param session.user
 
 export function ghUserCanAdmin(params) {
-    return !!(params[0].get('isOwnerOrAdmin'));
+    return !!(params[0].get('isAdmin'));
 }
 
 export default helper(function (params) {

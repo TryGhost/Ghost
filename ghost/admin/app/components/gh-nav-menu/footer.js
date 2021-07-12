@@ -10,7 +10,7 @@ export default Component.extend({
     whatsNew: service(),
     feature: service(),
 
-    showDropdownExtension: and('config.clientExtensions.dropdown', 'session.user.isOwner'),
+    showDropdownExtension: and('config.clientExtensions.dropdown', 'session.user.isOwnerOnly'),
     isSettingsRoute: match('router.currentRouteName', /^settings/),
 
     // equivalent to "left: auto; right: -20px"

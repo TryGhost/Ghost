@@ -68,8 +68,8 @@ describe('Unit: Model: user', function () {
         expect(model.get('isAuthorOrContributor')).to.be.ok;
         expect(model.get('isAuthor')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
-        expect(model.get('isAdmin')).to.not.be.ok;
-        expect(model.get('isOwner')).to.not.be.ok;
+        expect(model.get('isAdminOnly')).to.not.be.ok;
+        expect(model.get('isOwnerOnly')).to.not.be.ok;
     });
 
     it('isAuthor property is correct', function () {
@@ -83,8 +83,8 @@ describe('Unit: Model: user', function () {
         expect(model.get('isContributor')).to.not.be.ok;
         expect(model.get('isAuthorOrContributor')).to.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
-        expect(model.get('isAdmin')).to.not.be.ok;
-        expect(model.get('isOwner')).to.not.be.ok;
+        expect(model.get('isAdminOnly')).to.not.be.ok;
+        expect(model.get('isOwnerOnly')).to.not.be.ok;
     });
 
     it('isEditor property is correct', function () {
@@ -98,37 +98,37 @@ describe('Unit: Model: user', function () {
         expect(model.get('isAuthor')).to.not.be.ok;
         expect(model.get('isContributor')).to.not.be.ok;
         expect(model.get('isAuthorOrContributor')).to.not.be.ok;
-        expect(model.get('isAdmin')).to.not.be.ok;
-        expect(model.get('isOwner')).to.not.be.ok;
+        expect(model.get('isAdminOnly')).to.not.be.ok;
+        expect(model.get('isOwnerOnly')).to.not.be.ok;
     });
 
-    it('isAdmin property is correct', function () {
+    it('isAdminOnly property is correct', function () {
         let model = store.createRecord('user');
 
         run(() => {
             let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Administrator'}}});
             model.set('role', role);
         });
-        expect(model.get('isAdmin')).to.be.ok;
+        expect(model.get('isAdminOnly')).to.be.ok;
         expect(model.get('isAuthor')).to.not.be.ok;
         expect(model.get('isContributor')).to.not.be.ok;
         expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
-        expect(model.get('isOwner')).to.not.be.ok;
+        expect(model.get('isOwnerOnly')).to.not.be.ok;
     });
 
-    it('isOwner property is correct', function () {
+    it('isOwnerOnly property is correct', function () {
         let model = store.createRecord('user');
 
         run(() => {
             let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Owner'}}});
             model.set('role', role);
         });
-        expect(model.get('isOwner')).to.be.ok;
+        expect(model.get('isOwnerOnly')).to.be.ok;
         expect(model.get('isAuthor')).to.not.be.ok;
         expect(model.get('isContributor')).to.not.be.ok;
         expect(model.get('isAuthorOrContributor')).to.not.be.ok;
-        expect(model.get('isAdmin')).to.not.be.ok;
+        expect(model.get('isAdminOnly')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
     });
 });
