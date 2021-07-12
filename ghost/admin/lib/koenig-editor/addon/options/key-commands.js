@@ -234,7 +234,7 @@ export const DEFAULT_KEY_COMMANDS = [{
         // if a card is selected we should delete the card then place the cursor
         // at the beginning of the next section or select the following card
         if (koenig.selectedCard) {
-            let selectNextCard = section.next.type === 'card-section';
+            let selectNextCard = section.next?.type === 'card-section';
             let nextCard = koenig.getCardFromSection(section.next);
 
             koenig.deleteCard(koenig.selectedCard);
