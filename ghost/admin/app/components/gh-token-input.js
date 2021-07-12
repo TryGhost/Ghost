@@ -1,10 +1,8 @@
 /* global key */
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import Ember from 'ember';
-import classic from 'ember-classic-decorator';
-import fallbackIfUndefined from '../utils/computed-fallback-if-undefined';
 import {A, isArray} from '@ember/array';
-import {action, computed, get} from '@ember/object';
+import {action, get} from '@ember/object';
 import {
     advanceSelectableOption,
     defaultMatcher,
@@ -12,7 +10,6 @@ import {
 } from 'ember-power-select/utils/group-utils';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
-import {tagName} from '@ember-decorators/component';
 import {task} from 'ember-concurrency-decorators';
 
 const {Handlebars} = Ember;
@@ -20,21 +17,46 @@ const {Handlebars} = Ember;
 const BACKSPACE = 8;
 const TAB = 9;
 
-@classic
-@tagName('')
 class GhTokenInput extends Component {
-    // public attrs
-    @fallbackIfUndefined(true) allowCreation
-    @fallbackIfUndefined(false) closeOnSelect
-    @fallbackIfUndefined('name') labelField
-    @fallbackIfUndefined(defaultMatcher) matcher
-    @fallbackIfUndefined('name') searchField
-    @fallbackIfUndefined('gh-token-input/trigger') triggerComponent
-    @fallbackIfUndefined('power-select-vertical-collection-options') optionsComponent
+    get matcher() {
+        return this.args.matcher || defaultMatcher;
+    }
 
-    @computed('options.[]', 'selected.[]')
+    get searchField() {
+        return this.args.searchField === undefined ? 'name' : this.args.searchField;
+    }
+
     get optionsWithoutSelected() {
-        return this.optionsWithoutSelectedTask.perform();
+        let options = this.args.options;
+        let selected = this.args.selected;
+
+        let optionsWithoutSelected = [];
+
+        function filterSelectedOptions(opts, result) {
+            opts.forEach((o) => {
+                if (o.options) {
+                    const withoutSelected = [];
+                    filterSelectedOptions(o.options, withoutSelected);
+
+                    if (withoutSelected.length > 0) {
+                        result.push({
+                            groupName: o.groupName,
+                            options: withoutSelected
+                        });
+                    }
+
+                    return;
+                }
+
+                if (!selected.includes(o)) {
+                    result.push(o);
+                }
+            });
+        }
+
+        filterSelectedOptions(options, optionsWithoutSelected);
+
+        return optionsWithoutSelected;
     }
 
     // actions -----------------------------------------------------------------
@@ -47,7 +69,7 @@ class GhTokenInput extends Component {
             let lastSelection = select.selected[select.selected.length - 1];
 
             if (lastSelection) {
-                this.onChange(select.selected.slice(0, -1), select);
+                this.args.onChange(select.selected.slice(0, -1), select);
                 select.actions.search('');
                 select.actions.open(event);
             }
@@ -83,19 +105,13 @@ class GhTokenInput extends Component {
     @action
     handleFocus() {
         key.setScope('gh-token-input');
-
-        if (this.onFocus) {
-            this.onFocus(...arguments);
-        }
+        this.args.onFocus?.(...arguments);
     }
 
     @action
     handleBlur() {
         key.setScope('default');
-
-        if (this.onBlur) {
-            this.onBlur(...arguments);
-        }
+        this.args.onBlur?.(...arguments);
     }
 
     @action
@@ -119,9 +135,9 @@ class GhTokenInput extends Component {
         let suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
-            this.onCreate(suggestion.__value__, select);
+            this.args.onCreate(suggestion.__value__, select);
         } else {
-            this.onChange(selection, select);
+            this.args.onChange(selection, select);
         }
 
         // clear select search
@@ -131,48 +147,14 @@ class GhTokenInput extends Component {
     // tasks -------------------------------------------------------------------
 
     @task
-    *optionsWithoutSelectedTask() {
-        let options = yield this.options;
-        let selected = yield this.selected;
-
-        let optionsWithoutSelected = [];
-
-        function filterSelectedOptions(opts, result) {
-            opts.forEach((o) => {
-                if (o.options) {
-                    const withoutSelected = [];
-                    filterSelectedOptions(o.options, withoutSelected);
-
-                    if (withoutSelected.length > 0) {
-                        result.push({
-                            groupName: o.groupName,
-                            options: withoutSelected
-                        });
-                    }
-
-                    return;
-                }
-
-                if (!selected.includes(o)) {
-                    result.push(o);
-                }
-            });
-        }
-
-        filterSelectedOptions(options, optionsWithoutSelected);
-
-        return optionsWithoutSelected;
-    }
-
-    @task
     *searchAndSuggestTask(term, select) {
-        let newOptions = (yield this.optionsWithoutSelected).toArray();
+        let newOptions = this.optionsWithoutSelected.toArray();
 
         if (term.length === 0) {
             return newOptions;
         }
 
-        let searchAction = this.search;
+        let searchAction = this.args.search;
         if (searchAction) {
             let results = yield searchAction(term, select);
 
@@ -193,6 +175,7 @@ class GhTokenInput extends Component {
     // internal ----------------------------------------------------------------
 
     // always select the first item in the list that isn't the "Add x" option
+    @action
     defaultHighlighted(select) {
         let {results} = select;
         let option = advanceSelectableOption(results, undefined, 1);
@@ -213,12 +196,12 @@ class GhTokenInput extends Component {
     }
 
     _shouldShowCreateOption(term, options) {
-        if (!this.allowCreation) {
+        if (this.args.allowCreation === false) {
             return false;
         }
 
-        if (this.showCreateWhen) {
-            return this.showCreateWhen(term, options);
+        if (this.args.showCreateWhen) {
+            return this.args.showCreateWhen(term, options);
         } else {
             return this._hideCreateOptionOnSameTerm(term, options);
         }
@@ -233,8 +216,7 @@ class GhTokenInput extends Component {
     }
 
     _hideCreateOptionOnSameTerm(term, options) {
-        let searchField = this.searchField;
-        let existingOption = options.findBy(searchField, term);
+        let existingOption = options.findBy(this.searchField, term);
         return !existingOption;
     }
 
@@ -249,8 +231,8 @@ class GhTokenInput extends Component {
     }
 
     _buildSuggestionLabel(term) {
-        if (this.buildSuggestion) {
-            return this.buildSuggestion(term);
+        if (this.args.buildSuggestion) {
+            return this.args.buildSuggestion(term);
         }
         return htmlSafe(`Add <strong>"${Handlebars.Utils.escapeExpression(term)}"...</strong>`);
     }
