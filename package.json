@@ -69,7 +69,7 @@
     "@tryghost/kg-markdown-html-renderer": "4.0.3",
     "@tryghost/kg-mobiledoc-html-renderer": "4.0.0",
     "@tryghost/limit-service": "0.6.1",
-    "@tryghost/logging": "0.1.3",
+    "@tryghost/logging": "0.1.4",
     "@tryghost/magic-link": "1.0.5",
     "@tryghost/members-api": "1.19.0",
     "@tryghost/members-csv": "1.1.1",
