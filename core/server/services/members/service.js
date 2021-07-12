@@ -68,7 +68,8 @@ const membersService = {
 
         if (env !== 'production') {
             if (!process.env.WEBHOOK_SECRET && membersConfig.isStripeConnected()) {
-                throw new Error('Cannot use remote webhooks in development. Please restart in production mode or see https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.');
+                process.env.WEBHOOK_SECRET = 'DEFAULT_WEBHOOK_SECRET';
+                logging.warn('Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.');
             }
 
             if (paymentConfig && paymentConfig.secretKey.startsWith('sk_live')) {
