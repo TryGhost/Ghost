@@ -7,7 +7,7 @@ jobs:
   automate:
     runs-on: ubuntu-18.04
     env:
-      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       FORCE_COLOR: 1
     steps:
