@@ -168,6 +168,8 @@ module.exports = function MembersAPI({
             return stripeMigrations.populateDefaultProductYearlyPriceId();
         }).then(() => {
             return stripeMigrations.revertPortalPlansSetting();
+        }).then(() => {
+            return stripeMigrations.removeInvalidSubscriptions();
         }),
         stripeWebhookService.configure({
             webhookSecret: process.env.WEBHOOK_SECRET,

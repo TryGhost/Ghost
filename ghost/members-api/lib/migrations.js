@@ -480,4 +480,22 @@ module.exports = class StripeMigrations {
             id: portalPlansSetting.id
         });
     }
+
+    async removeInvalidSubscriptions() {
+        const subscriptionModels = await this._StripeCustomerSubscription.findAll({
+            withRelated: ['stripePrice']
+        });
+        const invalidSubscriptions = subscriptionModels.filter((sub) => {
+            return !sub.toJSON().price;
+        });
+        if (invalidSubscriptions.length > 0) {
+            this._logging.warn(`Deleting ${invalidSubscriptions.length} invalid subscription(s)`);
+            for (let sub of invalidSubscriptions) {
+                this._logging.warn(`Deleting subscription - ${sub.id} - no price found`);
+                await sub.destroy();
+            }
+        } else {
+            this._logging.info(`No invalid subscriptions, skipping migration`);
+        }
+    }
 };
