@@ -633,7 +633,7 @@ module.exports = class MemberRepository {
                 const fetchedCustomer = await this._stripeAPIService.getCustomer(customer.get('customer_id'));
                 stripeCustomer = fetchedCustomer;
             } catch (err) {
-                console.log('Ignoring error for fetching customer for checkout');
+                this._logging.info('Ignoring error for fetching customer for checkout');
             }
         }
 
