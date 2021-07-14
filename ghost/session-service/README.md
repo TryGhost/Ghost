@@ -73,7 +73,6 @@ Follow the instructions for the top-level repo.
 
 ## Test
 
-- `yarn types` run just type check
 - `yarn lint` run just eslint
 - `yarn test` run lint and tests and type check
 

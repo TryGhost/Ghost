@@ -5,14 +5,11 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
-  "types": "types/index.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing c8 mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
-    "posttest": "yarn lint",
-    "pretest": "yarn types",
-    "types": "rm -r types && yarn tsc"
+    "posttest": "yarn lint"
   },
   "files": [
     "index.js",
@@ -22,13 +19,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/mocha": "8.2.3",
-    "@types/sinon": "10.0.2",
     "c8": "7.7.3",
     "mocha": "9.0.0",
     "should": "13.2.3",
-    "sinon": "11.0.0",
-    "typescript": "4.3.5"
+    "sinon": "11.0.0"
   },
   "dependencies": {
     "@tryghost/errors": "^0.2.13"
