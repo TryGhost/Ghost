@@ -56,18 +56,20 @@ export default class SessionService extends ESASessionService {
     }
 
     async handleAuthentication() {
+        if (!this.user) {
+            try {
+                await this.populateUser();
+            } catch (err) {
+                await this.invalidate();
+            }
+
+            await this.postAuthPreparation();
+        }
+
         if (this.skipAuthSuccessHandler) {
             this.skipAuthSuccessHandler = false;
             return;
         }
-
-        try {
-            await this.populateUser();
-        } catch (err) {
-            await this.invalidate();
-        }
-
-        await this.postAuthPreparation();
 
         super.handleAuthentication('home');
     }
