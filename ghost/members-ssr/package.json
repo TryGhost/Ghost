@@ -19,9 +19,9 @@
     "@types/cookies": "0.7.6",
     "@types/node": "14.17.0",
     "keypair": "1.0.3",
-    "mocha": "6.2.3",
+    "mocha": "9.0.2",
     "should": "13.2.3",
-    "sinon": "7.5.0"
+    "sinon": "11.1.1"
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.2",
