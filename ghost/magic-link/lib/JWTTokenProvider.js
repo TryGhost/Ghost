@@ -1,3 +1,4 @@
+const {UnauthorizedError} = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
 
 /**
@@ -42,7 +43,7 @@ module.exports = class JWTTokenProvider {
         });
 
         if (!claims || typeof claims === 'string') {
-            throw new Error();
+            throw new UnauthorizedError();
         }
 
         return claims;
