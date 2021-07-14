@@ -13,6 +13,7 @@ const errors = require('@tryghost/ignition-errors');
  * @param {any} deps.stripeAPIService
  * @param {any} deps.tokenService
  * @param {any} deps.config
+ * @param {any} deps.logging
  */
 module.exports = class RouterController {
     constructor({
@@ -23,7 +24,8 @@ module.exports = class RouterController {
         stripeAPIService,
         tokenService,
         sendEmailWithMagicLink,
-        config
+        config,
+        logging
     }) {
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
@@ -33,6 +35,7 @@ module.exports = class RouterController {
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this._config = config;
+        this._logging = logging;
     }
 
     async ensureStripe(_req, res, next) {
@@ -182,7 +185,7 @@ module.exports = class RouterController {
                     break;
                 }
             } catch (err) {
-                console.log('Ignoring error for fetching customer for checkout');
+                this._logging.info('Ignoring error for fetching customer for checkout');
             }
         }
 

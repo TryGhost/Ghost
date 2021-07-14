@@ -151,7 +151,8 @@ module.exports = function MembersApi({
             checkoutCancelUrl: stripeConfig.checkoutCancelUrl,
             billingSuccessUrl: stripeConfig.billingSuccessUrl,
             billingCancelUrl: stripeConfig.billingCancelUrl
-        }
+        },
+        logging: common.logging
     });
 
     const ready = paymentConfig.stripe ? Promise.all([
