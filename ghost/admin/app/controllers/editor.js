@@ -284,6 +284,15 @@ export default Controller.extend({
         },
 
         toggleReAuthenticateModal() {
+            if (this.showReAuthenticateModal) {
+                // closing, re-attempt save if needed
+                if (this._reauthSave) {
+                    this.saveTask.perform(this._reauthSaveOptions);
+                }
+
+                this._reauthSave = false;
+                this._reauthSaveOptions = null;
+            }
             this.toggleProperty('showReAuthenticateModal');
         },
 
@@ -490,6 +499,12 @@ export default Controller.extend({
 
             return post;
         } catch (error) {
+            if (this.showReAuthenticateModal) {
+                this._reauthSave = true;
+                this._reauthSaveOptions = options;
+                return;
+            }
+
             this.set('post.status', prevStatus);
 
             if (error === undefined && this.post.errors.length === 0) {
