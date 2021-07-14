@@ -7,6 +7,11 @@ const MIGRATION_USER = 1;
 
 /**
  * Creates a migrations which will add a new table from schema.js to the database
+ * @param {string} name - table name
+ * @param {Object} tableSpec - copy of table schema definition as defined in schema.js at the moment of writing the migration,
+ * this parameter MUST be present, otherwise @daniellockyer will hunt you down
+ *
+ * @returns {Object} migration object returning config/up/down properties
  */
 function addTable(name, tableSpec) {
     return createNonTransactionalMigration(
@@ -391,6 +396,18 @@ function createDropColumnMigration(table, column, columnDefinition) {
     );
 }
 
+function createAddSettingMigration(setting) {
+    // return createTransactionalMigration(
+    //     // up
+    //     commands.createSettingMigration{
+    //         dbIsInCorrectState: hasKey => hasKey === false,
+    //         operation: commands.addSetting,
+    //         operationVerb: 'Adding'
+    //     }),
+    //     // down migration doesn't work until we stop
+    // )
+}
+
 module.exports = {
     addTable,
     dropTables,
@@ -404,6 +421,7 @@ module.exports = {
     combineNonTransactionalMigrations,
     createAddColumnMigration,
     createDropColumnMigration,
+    createAddSettingMigration,
     meta: {
         MIGRATION_USER
     }
