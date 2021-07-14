@@ -3,7 +3,8 @@ const createCookies = require('cookies');
 const debug = require('@tryghost/debug')('members-ssr');
 
 const {
-    BadRequestError
+    BadRequestError,
+    IncorrectUsageError
 } = require('@tryghost/ignition-errors');
 
 /**
@@ -52,13 +53,13 @@ class MembersSSR {
         } = options;
 
         if (!getMembersApi) {
-            throw new Error('Missing option getMembersApi');
+            throw new IncorrectUsageError('Missing option getMembersApi');
         }
 
         this._getMembersApi = getMembersApi;
 
         if (!cookieKeys) {
-            throw new Error('Missing option cookieKeys');
+            throw new IncorrectUsageError('Missing option cookieKeys');
         }
 
         this.sessionCookieName = cookieName;
@@ -287,7 +288,7 @@ class MembersSSR {
  */
 module.exports = function create(options) {
     if (!options) {
-        throw new Error('Must pass options');
+        throw new IncorrectUsageError('Must pass options');
     }
     return new MembersSSR(options);
 };
