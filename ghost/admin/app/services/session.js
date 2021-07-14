@@ -56,6 +56,11 @@ export default class SessionService extends ESASessionService {
     }
 
     async handleAuthentication() {
+        if (this.skipAuthSuccessHandler) {
+            this.skipAuthSuccessHandler = false;
+            return;
+        }
+
         try {
             await this.populateUser();
         } catch (err) {
@@ -63,11 +68,6 @@ export default class SessionService extends ESASessionService {
         }
 
         await this.postAuthPreparation();
-
-        if (this.skipAuthSuccessHandler) {
-            this.skipAuthSuccessHandler = false;
-            return;
-        }
 
         super.handleAuthentication('home');
     }

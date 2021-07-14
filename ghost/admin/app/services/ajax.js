@@ -1,7 +1,7 @@
 import AjaxService from 'ember-ajax/services/ajax';
 import config from 'ghost-admin/config/environment';
 import moment from 'moment';
-import {AjaxError, isAjaxError} from 'ember-ajax/errors';
+import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
 import {captureMessage} from '@sentry/browser';
 import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
@@ -279,15 +279,19 @@ let ajaxService = AjaxService.extend({
         let isGhostRequest = GHOST_REQUEST.test(request.url);
         let isAuthenticated = this.get('session.isAuthenticated');
         let isUnauthorized = this.isUnauthorizedError(status, headers, payload);
+        let isForbidden = isForbiddenError(status, headers, payload);
 
         // used when reporting connection errors, helps distinguish CDN
         if (isGhostRequest) {
             this._responseServer = headers.server;
         }
 
-        if (isAuthenticated && isGhostRequest && isUnauthorized) {
+        if (isAuthenticated && isGhostRequest && (isUnauthorized || (isForbidden && payload.errors?.[0].message === 'Authorization failed'))) {
             this.skipSessionDeletion = true;
             this.session.invalidate();
+            // skip showing alert message. Wouldn't be shown if fully logged out,
+            // is unneeded when showing re-authenticate modal
+            return;
         }
 
         return this._super(...arguments);
