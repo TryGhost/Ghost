@@ -3,7 +3,7 @@ import Transform from '@ember-data/serializer/transform';
 export default Transform.extend({
     deserialize(serialized) {
         if (serialized) {
-            let [, user] = serialized.match(/(\S+)/);
+            let [, user] = serialized.match(/(\S+)/) || [];
 
             return `https://www.facebook.com/${user}`;
         }
@@ -12,7 +12,7 @@ export default Transform.extend({
 
     serialize(deserialized) {
         if (deserialized) {
-            let [, user] = deserialized.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi);
+            let [, user] = deserialized.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi) || [];
 
             return user;
         }
