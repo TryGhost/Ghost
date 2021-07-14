@@ -301,7 +301,7 @@ describe('migrations/utils/permissions', function () {
     });
 
     describe('addPermissionToRole', function () {
-        it('Accepts a permisson name and role name and returns a migration which adds a permission to the database', async function () {
+        it('Accepts a permission name and role name and returns a migration which adds a permission to the database', async function () {
             const knex = await setupDb();
 
             const migration = utils.addPermissionToRole({
