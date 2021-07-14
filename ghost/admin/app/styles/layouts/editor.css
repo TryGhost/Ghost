@@ -442,14 +442,14 @@
 .gh-editor-feature-image-add-button {
     display: flex;
     align-items: center;
-    color: var(--midgrey-d1);
-    font-size: 1.4rem;
+    color: var(--midgrey-l2);
+    font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: .2px;
 }
 
 .gh-editor-feature-image-add-button:hover {
-    color: var(--darkgrey-l2);
+    color: var(--midgrey-d2);
 }
 
 .gh-editor-feature-image-add-button svg {
@@ -459,12 +459,12 @@
 }
 
 .gh-editor-feature-image-add-button svg path {
-    stroke: var(--midgrey-d1);
+    stroke: var(--midgrey-l2);
     stroke-width: 2;
 }
 
 .gh-editor-feature-image-add-button:hover svg path {
-    stroke: var(--darkgrey-l2);
+    stroke: var(--midgrey-d2);
 }
 
 .gh-editor-feature-image-unsplash {
