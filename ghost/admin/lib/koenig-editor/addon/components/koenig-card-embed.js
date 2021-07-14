@@ -329,6 +329,7 @@ export default Component.extend({
     },
 
     _setupWindowResizeHandler(iframe) {
+        window.removeEventListener('resize', this._windowResizeHandler);
         this._windowResizeHandler = run.bind(this, this._resizeIframe, iframe);
         window.addEventListener('resize', this._windowResizeHandler, {passive: true});
     },
