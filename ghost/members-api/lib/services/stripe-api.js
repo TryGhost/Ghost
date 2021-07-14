@@ -1,3 +1,4 @@
+const {VersionMismatchError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('services/stripe');
 const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
@@ -293,7 +294,7 @@ module.exports = class StripeAPIService {
                 enabled_events: events
             });
             if (webhook.api_version !== STRIPE_API_VERSION) {
-                throw new Error('Webhook has incorrect api_version');
+                throw new VersionMismatchError('Webhook has incorrect api_version');
             }
             debug(`updateWebhook(${id}, ${url}) -> Success`);
             return webhook;
