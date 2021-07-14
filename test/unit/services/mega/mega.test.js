@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
-const {addEmail, partitionMembersBySegment} = require('../../../../core/server/services/mega/mega');
+const {addEmail, _partitionMembersBySegment} = require('../../../../core/server/services/mega/mega');
 
 describe('MEGA', function () {
     describe('addEmail', function () {
@@ -49,7 +49,7 @@ describe('MEGA', function () {
             }];
             const segments = [];
 
-            const partitions = partitionMembersBySegment(members, segments);
+            const partitions = _partitionMembersBySegment(members, segments);
 
             partitions.unsegmented.length.should.equal(3);
             partitions.unsegmented[0].name.should.equal('Free Rish');
@@ -68,7 +68,7 @@ describe('MEGA', function () {
             }];
             const segments = ['status:free'];
 
-            const partitions = partitionMembersBySegment(members, segments);
+            const partitions = _partitionMembersBySegment(members, segments);
 
             should.exist(partitions['status:free']);
             partitions['status:free'].length.should.equal(2);
@@ -93,7 +93,7 @@ describe('MEGA', function () {
             }];
             const segments = ['status:free', 'status:-free'];
 
-            const partitions = partitionMembersBySegment(members, segments);
+            const partitions = _partitionMembersBySegment(members, segments);
 
             should.exist(partitions['status:free']);
             partitions['status:free'].length.should.equal(2);
@@ -113,7 +113,7 @@ describe('MEGA', function () {
             const segments = ['not a valid segment'];
 
             should.throws(() => {
-                partitionMembersBySegment(members, segments);
+                _partitionMembersBySegment(members, segments);
             }, errors.ValidationError);
         });
     });

@@ -533,7 +533,8 @@ module.exports = {
     retryFailedEmail,
     sendTestEmail,
     handleUnsubscribeRequest,
-    partitionMembersBySegment // NOTE: only exposed for testing
+    // NOTE: below are only exposed for testing purposes
+    _partitionMembersBySegment: partitionMembersBySegment
 };
 
 /**
