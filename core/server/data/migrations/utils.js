@@ -396,18 +396,6 @@ function createDropColumnMigration(table, column, columnDefinition) {
     );
 }
 
-function createAddSettingMigration(setting) {
-    // return createTransactionalMigration(
-    //     // up
-    //     commands.createSettingMigration{
-    //         dbIsInCorrectState: hasKey => hasKey === false,
-    //         operation: commands.addSetting,
-    //         operationVerb: 'Adding'
-    //     }),
-    //     // down migration doesn't work until we stop
-    // )
-}
-
 module.exports = {
     addTable,
     dropTables,
@@ -421,7 +409,6 @@ module.exports = {
     combineNonTransactionalMigrations,
     createAddColumnMigration,
     createDropColumnMigration,
-    createAddSettingMigration,
     meta: {
         MIGRATION_USER
     }
