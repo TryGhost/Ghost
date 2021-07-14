@@ -1,28 +1,24 @@
 const logging = require('@tryghost/logging');
+const {createIrreversibleMigration} = require('../../utils');
 
-module.exports = {
-    async up({connection}) {
-        let result = await connection('settings')
-            .where('key', '=', 'labs')
-            .select('value');
+module.exports = createIrreversibleMigration(async (knex) => {
+    let result = await knex('settings')
+        .where('key', '=', 'labs')
+        .select('value');
 
-        if (!result || !result[0]) {
-            logging.warn(`Could not find labs setting`);
-            result = [{}];
-        }
-
-        const labs = JSON.parse(result[0].value);
-
-        labs.members = !!labs.members || !!labs.subscribers;
-
-        logging.info(`Updating labs setting removing subscribers (was ${labs.subscribers}) settings members to ${labs.members}`);
-        labs.subscribers = undefined;
-
-        await connection('settings')
-            .where('key', '=', 'labs')
-            .update('value', JSON.stringify(labs));
-    },
-    async down() {
-        throw new Error();
+    if (!result || !result[0]) {
+        logging.warn(`Could not find labs setting`);
+        result = [{}];
     }
-};
+
+    const labs = JSON.parse(result[0].value);
+
+    labs.members = !!labs.members || !!labs.subscribers;
+
+    logging.info(`Updating labs setting removing subscribers (was ${labs.subscribers}) settings members to ${labs.members}`);
+    labs.subscribers = undefined;
+
+    await knex('settings')
+        .where('key', '=', 'labs')
+        .update('value', JSON.stringify(labs));
+});
