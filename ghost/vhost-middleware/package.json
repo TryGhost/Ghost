@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
@@ -19,6 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "c8": "7.7.3",
     "mocha": "9.0.0",
     "supertest": "6.1.3"
   }
