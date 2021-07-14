@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
-const {addEmail, _partitionMembersBySegment} = require('../../../../core/server/services/mega/mega');
+const {addEmail, _partitionMembersBySegment, _getEmailMemberRows} = require('../../../../core/server/services/mega/mega');
 
 describe('MEGA', function () {
     describe('addEmail', function () {
@@ -31,6 +31,36 @@ describe('MEGA', function () {
             } catch (err) {
                 should.equal(err instanceof errors.GhostError, true);
                 err.message.should.equal('Cannot sent email to "none" email_recipient_filter');
+            }
+        });
+    });
+
+    describe('getEmailMemberRows', function () {
+        it('addEmail throws when "free" or "paid" strings are used as a recipient_filter', async function () {
+            const emailModel = {
+                get: sinon.stub().returns('paid')
+            };
+
+            try {
+                await _getEmailMemberRows({emailModel});
+                should.fail('getEmailMemberRows did not throw');
+            } catch (err) {
+                should.equal(err instanceof errors.GhostError, true);
+                err.message.should.equal('Unexpected recipient_filter value "paid", expected an NQL equivalent');
+            }
+        });
+
+        it('addEmail throws when "none" is used as a recipient_filter', async function () {
+            const emailModel = {
+                get: sinon.stub().returns('none')
+            };
+
+            try {
+                await _getEmailMemberRows({emailModel});
+                should.fail('getEmailMemberRows did not throw');
+            } catch (err) {
+                should.equal(err instanceof errors.GhostError, true);
+                err.message.should.equal('Cannot sent email to "none" recipient_filter');
             }
         });
     });
