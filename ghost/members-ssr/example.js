@@ -32,7 +32,6 @@ const server = require('http').createServer(async (req, res) => {
             res.writeHead(200);
             res.end();
         } catch (err) {
-            console.error(err);
             res.writeHead(err.statusCode);
             res.end(err.message);
         }
@@ -44,7 +43,6 @@ const server = require('http').createServer(async (req, res) => {
             });
             res.end(JSON.stringify(member));
         } catch (err) {
-            console.error(err);
             res.writeHead(err.statusCode);
             res.end(err.message);
         }
@@ -70,15 +68,15 @@ server.listen(0, '127.0.0.1', () => {
 
     require('http').request(`${url}?token=${token}`, {
         method: 'post'
-    }, (res) => {
-        const cookies = res.headers['set-cookie'] || [];
+    }, (loginResponse) => {
+        const cookies = loginResponse.headers['set-cookie'] || [];
         require('http').request(url, {
             headers: {
                 cookie: cookies.join('; ')
             }
-        }, (res) => {
-            res.pipe(process.stdout);
-            res.on('close', () => {
+        }, (authResponse) => {
+            authResponse.pipe(process.stdout);
+            authResponse.on('close', () => {
                 server.close();
             });
         }).end();
