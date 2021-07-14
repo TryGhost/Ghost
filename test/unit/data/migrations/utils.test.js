@@ -1,5 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 
 const utils = require('../../../../core/server/data/migrations/utils');
 
@@ -358,6 +359,87 @@ describe('migrations/utils/permissions', function () {
             });
 
             should.ok(!attachedPermissionAfterDown, 'The permission was removed from the role.');
+        });
+
+        describe('Throws errors', function () {
+            it('Throws when permission cannot be found in up migration', async function () {
+                const knex = await setupDb();
+
+                const migration = utils.addPermissionToRole({
+                    permission: 'Unimaginable',
+                    role: 'Not there'
+                });
+
+                let runDownMigration;
+                try {
+                    runDownMigration = await runUpMigration(knex, migration);
+                    should.fail('addPermissionToRole up migration did not throw');
+                } catch (err) {
+                    should.equal(err instanceof errors.GhostError, true);
+                    err.message.should.equal('Cannot add permission(Unimaginable) with role(Not there) - permission does not exist');
+                }
+            });
+
+            it('Throws when permission cannot be found in down migration', async function () {
+                const knex = await setupDb();
+
+                const migration = utils.addPermissionToRole({
+                    permission: 'Permission Name',
+                    role: 'Role Name'
+                });
+
+                const runDownMigration = await runUpMigration(knex, migration);
+                await knex('permissions')
+                    .where('name', '=', 'Permission Name')
+                    .del();
+
+                try {
+                    await runDownMigration(knex, migration);
+                    should.fail('addPermissionToRole down migration did not throw');
+                } catch (err) {
+                    should.equal(err instanceof errors.GhostError, true);
+                    err.message.should.equal('Cannot remove permission(Permission Name) with role(Role Name) - permission does not exist');
+                }
+            });
+
+            it('Throws when role cannot be found', async function () {
+                const knex = await setupDb();
+
+                const migration = utils.addPermissionToRole({
+                    permission: 'Permission Name',
+                    role: 'Not there'
+                });
+
+                try {
+                    await runUpMigration(knex, migration);
+                    should.fail('addPermissionToRole did not throw');
+                } catch (err) {
+                    should.equal(err instanceof errors.GhostError, true);
+                    err.message.should.equal('Cannot add permission(Permission Name) with role(Not there) - role does not exist');
+                }
+            });
+
+            it('Throws when role cannot be found in down migration', async function () {
+                const knex = await setupDb();
+
+                const migration = utils.addPermissionToRole({
+                    permission: 'Permission Name',
+                    role: 'Role Name'
+                });
+
+                const runDownMigration = await runUpMigration(knex, migration);
+                await knex('roles')
+                    .where('name', '=', 'Role Name')
+                    .del();
+
+                try {
+                    await runDownMigration(knex, migration);
+                    should.fail('addPermissionToRole down migration did not throw');
+                } catch (err) {
+                    should.equal(err instanceof errors.GhostError, true);
+                    err.message.should.equal('Cannot remove permission(Permission Name) with role(Role Name) - role does not exist');
+                }
+            });
         });
     });
 
