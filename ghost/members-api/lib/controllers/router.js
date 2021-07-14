@@ -1,4 +1,4 @@
-const common = require('../../../lib/common');
+const common = require('../../lib/common');
 const _ = require('lodash');
 const errors = require('@tryghost/ignition-errors');
 
