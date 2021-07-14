@@ -55,9 +55,13 @@ export default Component.extend({
         const urlParts = [];
 
         if (this.post.canonicalUrl) {
-            const canonicalUrl = new URL(this.post.canonicalUrl);
-            urlParts.push(canonicalUrl.host);
-            urlParts.push(...canonicalUrl.pathname.split('/').reject(p => !p));
+            try {
+                const canonicalUrl = new URL(this.post.canonicalUrl);
+                urlParts.push(canonicalUrl.host);
+                urlParts.push(...canonicalUrl.pathname.split('/').reject(p => !p));
+            } catch (e) {
+                // no-op, invalid URL
+            }
         } else {
             const blogUrl = new URL(this.config.get('blogUrl'));
             urlParts.push(blogUrl.host);
