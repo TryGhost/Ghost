@@ -289,9 +289,6 @@ let ajaxService = AjaxService.extend({
         if (isAuthenticated && isGhostRequest && (isUnauthorized || (isForbidden && payload.errors?.[0].message === 'Authorization failed'))) {
             this.skipSessionDeletion = true;
             this.session.invalidate();
-            // skip showing alert message. Wouldn't be shown if fully logged out,
-            // is unneeded when showing re-authenticate modal
-            return;
         }
 
         return this._super(...arguments);
