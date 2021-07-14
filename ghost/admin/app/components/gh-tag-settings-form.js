@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Ember from 'ember';
+import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {or} from '@ember/object/computed';
@@ -161,7 +162,7 @@ export default Component.extend({
         }
     },
 
-    updateAccentColor: async function (event) {
+    updateAccentColor: action(async function (event) {
         let newColor = event.target.value;
         const oldColor = this.tag.get('accentColor');
 
@@ -199,7 +200,7 @@ export default Component.extend({
             this.tag.errors.add('accentColor', 'The colour should be in valid hex format');
             this.tag.hasValidated.pushObject('accentColor');
         }
-    },
+    }),
 
     debounceUpdateAccentColor: task(function*(event) {
         yield timeout(10);
