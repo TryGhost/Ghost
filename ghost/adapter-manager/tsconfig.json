@@ -2,7 +2,6 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "types",
     "allowJs": true,
     "checkJs": true,
     "module": "commonjs",
