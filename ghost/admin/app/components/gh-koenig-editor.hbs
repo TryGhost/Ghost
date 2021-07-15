@@ -13,7 +13,7 @@
             @updateAlt={{@setFeatureImageAlt}}
             @caption={{@featureImageCaption}}
             @updateCaption={{@setFeatureImageCaption}}
-            @forceButtonDisplay={{or this.titleIsHovered this.titleIsFocused}}
+            @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
         />
 
         <GhTextarea
