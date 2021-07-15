@@ -3960,7 +3960,7 @@ css-tree@1.0.0-alpha.37:
     mdn-data "2.0.4"
     source-map "^0.6.1"
 
-css-tree@^1.1.2:
+css-tree@^1.0.0-alpha.39, css-tree@^1.1.2:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/css-tree/-/css-tree-1.1.3.tgz#eb4870fb6fd7707327ec95c2ff2ab09b5e8db91d"
   integrity sha512-tRpdppF7TRazZrjJ6v3stzv93qxRcSsFmW6cX0Zm2NVKpxE1WV1HblnghVv9TreireHkqI/VDEsfolRF1p6y7Q==
@@ -4713,14 +4713,17 @@ eslint-module-utils@^2.6.1:
     debug "^3.2.7"
     pkg-dir "^2.0.0"
 
-eslint-plugin-ember@9.3.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-9.3.0.tgz#77ec28a0c586ea55bbd30d140c784afcdf59e97b"
-  integrity sha512-qrzptSwC58HD8211vF8rGu+TRT8XzIsZVm6j4PleuSZqJ6k3VG8FKofQkb4ZBVU9jOJ0lnZCbYqBfjs4Iy/HHw==
+eslint-plugin-ember@10.5.1:
+  version "10.5.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-10.5.1.tgz#3ec65cb562b438c64aa28d772606dbb55705e037"
+  integrity sha512-6cubCQdsybN2DtuXnlkhqi3SemBk4ktjq2k4vcjFG8QLmrpmiS6sDwIZMM/TLI8f9QwZIjmewhwS4zB/77E47w==
   dependencies:
     "@ember-data/rfc395-data" "^0.0.4"
+    css-tree "^1.0.0-alpha.39"
     ember-rfc176-data "^0.3.15"
+    eslint-utils "^3.0.0"
     lodash.kebabcase "^4.1.1"
+    requireindex "^1.2.0"
     snake-case "^3.0.3"
 
 eslint-plugin-es@^3.0.0:
@@ -4739,12 +4742,12 @@ eslint-plugin-flowtype@^5.2.0:
     lodash "^4.17.15"
     string-natural-compare "^3.0.1"
 
-eslint-plugin-ghost@2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.4.0.tgz#d8cab629fa403b6cc5f8125c80ac0261739337d8"
-  integrity sha512-OY/vdRF8oXGknpZ9dna+YSEUWshgUjXUiw5m7jj7wXE0jchFmlDyzyFdkT1x7E0U8YvxzX4wAAm6tUVcVKnH0g==
+eslint-plugin-ghost@2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.5.0.tgz#e441c8edb869b7d6660ba847e30bea8ba5fd5679"
+  integrity sha512-cGPoGk1jpj94rziTZ+JkuS7LtjR8kCmbi0fjXGeJyeL+RiNqpNXgKsX5LTGx3H7yCfrTV9VSR6rV6ijoHaekrw==
   dependencies:
-    eslint-plugin-ember "9.3.0"
+    eslint-plugin-ember "10.5.1"
     eslint-plugin-mocha "7.0.1"
     eslint-plugin-node "11.1.0"
     eslint-plugin-sort-imports-es6-autofix "0.5.0"
@@ -9943,6 +9946,11 @@ require-main-filename@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
   integrity sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==
+
+requireindex@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.2.0.tgz#3463cdb22ee151902635aa6c9535d4de9c2ef1ef"
+  integrity sha512-L9jEkOi3ASd9PYit2cwRfyppc9NoABujTP8/5gFcbERmo5jUoAKovIC3fsF17pkTnGsrByysqX+Kxd2OTNI1ww==
 
 requires-port@^1.0.0:
   version "1.0.0"
