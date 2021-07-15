@@ -24,6 +24,7 @@ export default ModalComponent.extend({
     },
 
     didReceiveAttrs() {
+        this._super(...arguments);
         if (this.webhook.isNew) {
             this.set('buttonText', 'Create');
             this.set('successText', 'Created');

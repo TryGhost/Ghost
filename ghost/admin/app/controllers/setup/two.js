@@ -2,6 +2,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {get} from '@ember/object';
+import {htmlSafe} from '@ember/template';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -65,7 +66,7 @@ export default Controller.extend(ValidationEngine, {
                 }
 
                 error.payload.errors.forEach((err) => {
-                    err.message = err.message.htmlSafe();
+                    err.message = htmlSafe(err.message);
                 });
 
                 this.set('flowErrors', error.payload.errors[0].message.string);

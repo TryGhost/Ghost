@@ -31,6 +31,8 @@ export default ModalComponent.extend({
     }),
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         let image = this.image;
         this.set('url', image);
         this.set('newUrl', image);

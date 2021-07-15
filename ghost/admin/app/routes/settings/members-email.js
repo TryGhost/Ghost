@@ -14,12 +14,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
         if (transition.to.queryParams?.fromAddressUpdate === 'success') {
             this.notifications.showAlert(
-                `Newsletter email address has been updated`.htmlSafe(),
+                `Newsletter email address has been updated`,
                 {type: 'success', key: 'members.settings.from-address.updated'}
             );
         } else if (transition.to.queryParams?.supportAddressUpdate === 'success') {
             this.notifications.showAlert(
-                `Support email address has been updated`.htmlSafe(),
+                `Support email address has been updated`,
                 {type: 'success', key: 'members.settings.support-address.updated'}
             );
         }

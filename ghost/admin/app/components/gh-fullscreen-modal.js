@@ -32,6 +32,7 @@ const FullScreenModalComponent = Component.extend({
     }),
 
     didInsertElement() {
+        this._super(...arguments);
         run.schedule('afterRender', this, function () {
             this.dropdown.closeDropdowns();
         });

@@ -11,6 +11,8 @@ export default class GhSiteIframeComponent extends Component {
     @tracked isInvisible = this.args.invisibleUntilLoaded;
 
     willDestroy() {
+        super.willDestroy?.(...arguments);
+
         if (this.messageListener) {
             window.removeEventListener('message', this.messageListener);
         }

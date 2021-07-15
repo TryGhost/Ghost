@@ -956,7 +956,7 @@ export default Controller.extend({
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }
 
-        notifications.showNotification(message, {type: 'success', actions: (actions && actions.htmlSafe()), delayed});
+        notifications.showNotification(message, {type: 'success', actions: (actions && htmlSafe(actions.htmlSafe)), delayed});
     },
 
     async _showScheduledNotification(delayed) {
@@ -984,9 +984,9 @@ export default Controller.extend({
             description.push(`(UTC${publishedAtBlogTZ.format('Z').replace(/([+-])0/, '$1').replace(/:00/, '')})</span>`);
         }
 
-        description = description.join(' ').htmlSafe();
+        description = htmlSafe(description.join(' '));
 
-        let actions = `<a href="${previewUrl}" target="_blank">View Preview</a>`.htmlSafe();
+        let actions = htmlSafe(`<a href="${previewUrl}" target="_blank">View Preview</a>`);
 
         return this.notifications.showNotification(title, {description, actions, type: 'success', delayed});
     },

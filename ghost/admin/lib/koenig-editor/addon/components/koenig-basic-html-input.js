@@ -87,6 +87,8 @@ export default Component.extend({
     },
 
     willRender() {
+        this._super(...arguments);
+
         let mobiledoc = this.mobiledoc;
 
         if (!mobiledoc && !this.cleanHTML) {

@@ -10,6 +10,7 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
     @service settings;
 
     willDestroy() {
+        super.willDestroy?.(...arguments);
         // clear any unsaved settings changes when going back/forward/closing
         this.settings.rollbackAttributes();
     }

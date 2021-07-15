@@ -150,6 +150,8 @@ export default Component.extend({
     },
 
     didInsertElement() {
+        this._super(...arguments);
+
         if (this.payload.triggerBrowse && !this.payload.src && !this.payload.files) {
             // we don't want to persist this in the serialized payload
             this._updatePayloadAttr('triggerBrowse', undefined);
