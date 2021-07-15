@@ -621,7 +621,7 @@ export default Service.extend({
         if (!dropIndicator) {
             dropIndicator = document.createElement('div');
             dropIndicator.id = constants.DROP_INDICATOR_ID;
-            dropIndicator.classList.add('bg-blue', 'br-pill');
+            dropIndicator.classList.add('bg-green', 'br-pill');
             dropIndicator.style.position = 'absolute';
             dropIndicator.style.opacity = 0;
             dropIndicator.style.width = '4px';
