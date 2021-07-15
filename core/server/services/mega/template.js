@@ -954,7 +954,7 @@ ${ templateSettings.showBadge ? `
                                     </tr>
                                     ${ templateSettings.showFeatureImage && post.feature_image ? `
                                     <tr>
-                                        <td class="feature-image ${hasFeatureImageCaption ? 'feature-image-with-caption' : ''}"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''} alt="${post.feature_image_alt}"></td>
+                                        <td class="feature-image ${hasFeatureImageCaption ? 'feature-image-with-caption' : ''}"><img src="${post.feature_image}"${post.feature_image_width ? ` width="${post.feature_image_width}"` : ''}${post.feature_image_alt ? ` alt="${post.feature_image_alt}"` : ''}></td>
                                     </tr>
                                     ` : ``}
                                     ${ hasFeatureImageCaption ? `
