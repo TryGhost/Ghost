@@ -2,12 +2,19 @@ const moment = require('moment-timezone');
 const path = require('path');
 const fs = require('fs-extra');
 const membersCSV = require('@tryghost/members-csv');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const GhostMailer = require('../../mail').GhostMailer;
 const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
 const jobsService = require('../../jobs');
 const labsService = require('../../../../shared/labs');
+
+const messages = {
+    filenameCollision: 'Filename already exists, please try again.',
+    jobAlreadyComplete: 'Job is already complete.'
+};
 
 const ghostMailer = new GhostMailer();
 module.exports = class MembersCSVImporter {
@@ -71,7 +78,7 @@ module.exports = class MembersCSVImporter {
         const pathExists = await fs.pathExists(outputFilePath);
 
         if (pathExists) {
-            throw new Error('Maybe we need better name generation');
+            throw new errors.DataImportError(tpl(messages.filenameCollision));
         }
 
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
@@ -102,7 +109,7 @@ module.exports = class MembersCSVImporter {
         const job = await this.getJob(id);
 
         if (job.status === 'complete') {
-            throw new Error('Job is already complete');
+            throw new errors.BadRequestError(tpl(messages.jobAlreadyComplete));
         }
 
         const rows = membersCSV.parse(job.filename);
