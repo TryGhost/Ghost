@@ -882,33 +882,24 @@
     moment "^2.29.1"
     prettyjson "^1.2.1"
 
-"@tryghost/magic-link@1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.5.tgz#ffaeeb62b7c5c42ab47c6a41579a3b04b3c9157d"
-  integrity sha512-XeduAwBpsKu38c/NHUYO0BQWXMPH8XGkSvfKrl1VMJ4qWLsEhJtCrOB+IuZupXvNcynquwPElNvOw4IXGYr05w==
+"@tryghost/magic-link@1.0.7", "@tryghost/magic-link@^1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.7.tgz#68f3ffe7b830fe2e336d55f2c7d98edb3d90656c"
+  integrity sha512-eb5ngIaxHPEQTuh0s2Mnfhy9loLHjUax2SaZdpSjUibi+pKuHhjcpSDV1/SrmxiQ4XBiex5G15/S4l0KvJ+ksw==
   dependencies:
     bluebird "^3.5.5"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.6.tgz#84b5ee863d984f7870a7c90ecc6ef88870fafbe4"
-  integrity sha512-ol0Qk4qR02SLic3GBC85z2vjpgDxGXfL41XFhTh3pRGNdrdE1pX6H73+QICkzB1M2DigCktnIMBN8p95nIv7xA==
-  dependencies:
-    bluebird "^3.5.5"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/members-api@1.20.1":
-  version "1.20.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.20.1.tgz#22b824a63723114ca53d2671b397dad7e8785095"
-  integrity sha512-+ZehUJNxOwMUly5YsTz5EwWGiU9BF+Yla6z16y5aUr+XFOdDLYhzbAJicSDcvLbNOIb2uLZPHyJX/cHiTtuBOA==
+"@tryghost/members-api@1.20.3":
+  version "1.20.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.20.3.tgz#5b711e65fbdc056c6113a88174370535c833937d"
+  integrity sha512-FUTrCzNyq8BiCUsJmLHbPMB0IIC518ocCxN/eLGfILDOAq5/ya+3LMc72KdJYeQTk5aASlHd9As7bwbBRmA5/A==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
     "@tryghost/ignition-errors" "^0.1.2"
-    "@tryghost/magic-link" "^1.0.6"
+    "@tryghost/magic-link" "^1.0.7"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -922,10 +913,10 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.1.tgz#3bf3866c83a0acc11de2125f20a1cae92beeb07b"
-  integrity sha512-6D0k8CzELtkDyP1bJmDshHYVYS51v/0MQOnTmb2rv0xe6e6xS539fZ5GM7zFORY4KXnFci9BRjC1+G518puxNQ==
+"@tryghost/members-csv@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.2.tgz#408973028d587925ddebaf686f4b8479e2843462"
+  integrity sha512-wUgKjC+OhUDbaejHhhLAl97LqyzDjzUc6CmbZ8zmwk0B1TaoFPuRGwMfGLyMmqp25b+9mTETrLWn/aSGa/0Uyw==
   dependencies:
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
@@ -933,10 +924,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-ssr@1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.5.tgz#800787c466bf26c119ce52c58c7d751716a5777c"
-  integrity sha512-/YjOfAbt4NA/N02BiA85yZWALG4AENXLgmJOSJkJ8OJNtG1W2r5tPHW+MBLjz6faPcmvVlIZ4aff5hP5TaqHFw==
+"@tryghost/members-ssr@1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.7.tgz#c494c0df3261c8fc43600c9d1128d38b9b1a3405"
+  integrity sha512-a838IUeLzNX5S5Nm6m4qxhEegP2JMzoBd3Mxa4iEF9LEb7MsByozbcUGCFrZr/OyZTyGXWdNGByFprfkWA02qA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/ignition-errors" "^0.1.2"
