@@ -1,18 +1,18 @@
 const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
-const common = require('./lib/common');
+const common = require('./common');
 
-const StripeAPIService = require('./lib/services/stripe-api');
-const StripeWebhookService = require('./lib/services/stripe-webhook');
-const TokenService = require('./lib/services/token');
-const GeolocationSerice = require('./lib/services/geolocation');
-const MemberRepository = require('./lib/repositories/member');
-const EventRepository = require('./lib/repositories/event');
-const ProductRepository = require('./lib/repositories/product');
-const RouterController = require('./lib/controllers/router');
-const MemberController = require('./lib/controllers/member');
-const StripeMigrations = require('./lib/migrations');
+const StripeAPIService = require('./services/stripe-api');
+const StripeWebhookService = require('./services/stripe-webhook');
+const TokenService = require('./services/token');
+const GeolocationSerice = require('./services/geolocation');
+const MemberRepository = require('./repositories/member');
+const EventRepository = require('./repositories/event');
+const ProductRepository = require('./repositories/product');
+const RouterController = require('./controllers/router');
+const MemberController = require('./controllers/member');
+const StripeMigrations = require('./migrations');
 
 module.exports = function MembersAPI({
     tokenConfig: {

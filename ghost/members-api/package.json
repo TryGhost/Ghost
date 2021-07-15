@@ -13,6 +13,7 @@
   },
   "files": [
     "index.js",
+    "MembersAPI.js",
     "lib",
     "gateway"
   ],
