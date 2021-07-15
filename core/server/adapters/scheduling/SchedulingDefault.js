@@ -276,6 +276,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
     const options = {
         timeout: requestTimeout,
         method: httpMethod.toLowerCase(),
+        retry: 0,
         headers: {
             'Content-Type': 'application/json'
         }
