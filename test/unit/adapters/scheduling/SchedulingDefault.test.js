@@ -2,9 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
-const bodyParser = require('body-parser');
-const http = require('http');
-const express = require('../../../../core/shared/express');
+const nock = require('nock');
 const SchedulingDefault = require('../../../../core/server/adapters/scheduling/SchedulingDefault');
 
 describe('Scheduling Default Adapter', function () {
@@ -239,163 +237,105 @@ describe('Scheduling Default Adapter', function () {
             Object.keys(scope.adapter.deletedJobs).length.should.eql(0);
         });
 
-        it('pingUrl (PUT)', function (done) {
-            const app = express();
-            const server = http.createServer(app);
-            let wasPinged = false;
-            let reqBody;
+        describe('pingUrl', function () {
+            it('pingUrl (PUT)', function (done) {
+                const ping = nock('http://localhost:1111')
+                    .put('/ping')
+                    .query({})
+                    .reply(200);
 
-            app.use(bodyParser.json());
+                scope.adapter._pingUrl({
+                    url: 'http://localhost:1111/ping',
+                    time: moment().add(1, 'second').valueOf(),
+                    extra: {
+                        httpMethod: 'PUT'
+                    }
+                });
 
-            app.put('/ping', function (req, res) {
-                wasPinged = true;
-                reqBody = req.body;
-                res.sendStatus(200);
+                (function retry() {
+                    if (ping.isDone()) {
+                        done();
+                    } else {
+                        setTimeout(retry, 100);
+                    }
+                })();
             });
 
-            server.listen(1111);
+            it('pingUrl (GET)', async function () {
+                const ping = nock('http://localhost:1111')
+                    .get('/ping')
+                    .query({})
+                    .reply(200);
 
-            scope.adapter._pingUrl({
-                url: 'http://localhost:1111/ping',
-                time: moment().add(1, 'second').valueOf(),
-                extra: {
-                    httpMethod: 'PUT'
-                }
+                await scope.adapter._pingUrl({
+                    url: 'http://localhost:1111/ping',
+                    time: moment().add(1, 'second').valueOf(),
+                    extra: {
+                        httpMethod: 'GET'
+                    }
+                });
+
+                ping.isDone().should.be.true();
             });
 
-            (function retry() {
-                if (wasPinged) {
-                    should.not.exist(reqBody.force);
-                    return server.close(done);
-                }
+            it('pingUrl (PUT, and detect publish in the past)', async function () {
+                const ping = nock('http://localhost:1111')
+                    .put('/ping')
+                    .query({})
+                    .reply(200);
 
-                setTimeout(retry, 100);
-            })();
-        });
+                await scope.adapter._pingUrl({
+                    url: 'http://localhost:1111/ping',
+                    time: moment().subtract(10, 'minutes').valueOf(),
+                    extra: {
+                        httpMethod: 'PUT'
+                    }
+                });
 
-        it('pingUrl (GET)', function (done) {
-            const app = express();
-            const server = http.createServer(app);
-            let wasPinged = false;
-            let reqQuery;
-
-            app.get('/ping', function (req, res) {
-                wasPinged = true;
-                reqQuery = req.query;
-                res.sendStatus(200);
+                ping.isDone().should.be.true();
             });
 
-            server.listen(1111);
+            it('pingUrl (GET, and detect publish in the past)', async function () {
+                const ping = nock('http://localhost:1111')
+                    .get('/ping')
+                    .query({force: true})
+                    .reply(200);
 
-            scope.adapter._pingUrl({
-                url: 'http://localhost:1111/ping',
-                time: moment().add(1, 'second').valueOf(),
-                extra: {
-                    httpMethod: 'GET'
-                }
-            }).then(() => {
-                wasPinged.should.be.true();
-                should.not.exist(reqQuery.force);
-                server.close(done);
-            });
-        });
+                await scope.adapter._pingUrl({
+                    url: 'http://localhost:1111/ping',
+                    time: moment().subtract(10, 'minutes').valueOf(),
+                    extra: {
+                        httpMethod: 'GET'
+                    }
+                });
 
-        it('pingUrl (PUT, and detect publish in the past)', function (done) {
-            const app = express();
-            const server = http.createServer(app);
-            let wasPinged = false;
-            let reqBody;
-
-            app.use(bodyParser.json());
-
-            app.put('/ping', function (req, res) {
-                wasPinged = true;
-                reqBody = req.body;
-                res.sendStatus(200);
+                ping.isDone().should.be.true();
             });
 
-            server.listen(1111);
+            it('pingUrl, but blog returns 503', function (done) {
+                scope.adapter.retryTimeoutInMs = 50;
 
-            scope.adapter._pingUrl({
-                url: 'http://localhost:1111/ping',
-                time: moment().subtract(10, 'minutes').valueOf(),
-                extra: {
-                    httpMethod: 'PUT'
-                }
-            }).then(() => {
-                wasPinged.should.be.true();
-                should.exist(reqBody.force);
-                server.close(done);
+                const ping = nock('http://localhost:1111')
+                    .put('/ping').reply(503)
+                    .put('/ping').reply(503)
+                    .put('/ping', {force: true}).reply(200);
+
+                scope.adapter._pingUrl({
+                    url: 'http://localhost:1111/ping',
+                    time: moment().valueOf(),
+                    extra: {
+                        httpMethod: 'PUT'
+                    }
+                });
+
+                (function retry() {
+                    if (ping.isDone()) {
+                        return done();
+                    }
+
+                    setTimeout(retry, 50);
+                }());
             });
-        });
-
-        it('pingUrl (GET, and detect publish in the past)', function (done) {
-            const app = express();
-            const server = http.createServer(app);
-            let wasPinged = false;
-            let reqQuery;
-
-            app.get('/ping', function (req, res) {
-                wasPinged = true;
-                reqQuery = req.query;
-                res.sendStatus(200);
-            });
-
-            server.listen(1111);
-
-            scope.adapter._pingUrl({
-                url: 'http://localhost:1111/ping',
-                time: moment().subtract(10, 'minutes').valueOf(),
-                extra: {
-                    httpMethod: 'GET'
-                }
-            }).then(() => {
-                wasPinged.should.be.true();
-                should.exist(reqQuery.force);
-                server.close(done);
-            });
-        });
-
-        it('pingUrl, but blog returns 503', function (done) {
-            const app = express();
-            const server = http.createServer(app);
-            let returned500Count = 0;
-            let returned200 = false;
-            let reqBody;
-
-            scope.adapter.retryTimeoutInMs = 10;
-
-            app.use(bodyParser.json());
-            app.put('/ping', function (req, res) {
-                reqBody = req.body;
-
-                if (returned500Count === 5) {
-                    returned200 = true;
-                    return res.sendStatus(200);
-                }
-
-                returned500Count = returned500Count + 1;
-                res.sendStatus(503);
-            });
-
-            server.listen(1111);
-
-            scope.adapter._pingUrl({
-                url: 'http://localhost:1111/ping',
-                time: moment().valueOf(),
-                extra: {
-                    httpMethod: 'PUT'
-                }
-            });
-
-            (function retry() {
-                if (returned200) {
-                    should.exist(reqBody.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 50);
-            })();
         });
     });
 });
