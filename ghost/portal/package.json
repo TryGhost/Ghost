@@ -70,7 +70,7 @@
     "chalk": "4.1.1",
     "chokidar": "3.5.2",
     "copy-webpack-plugin": "6.4.1",
-    "eslint-plugin-ghost": "2.4.0",
+    "eslint-plugin-ghost": "2.5.0",
     "minimist": "1.2.5",
     "ora": "5.4.1",
     "rewire": "5.0.0",
