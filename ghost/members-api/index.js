@@ -1,1 +1,1 @@
-module.exports = require('./MembersAPI');
+module.exports = require('./lib/MembersAPI');
