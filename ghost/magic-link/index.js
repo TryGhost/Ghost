@@ -1,1 +1,1 @@
-module.exports = require('./MagicLink');
+module.exports = require('./lib/MagicLink');
