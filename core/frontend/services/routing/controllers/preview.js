@@ -14,7 +14,7 @@ const helpers = require('../helpers');
 module.exports = function previewController(req, res, next) {
     debug('previewController');
 
-    const api = require('../../../../server/api')[res.locals.apiVersion];
+    const api = require('../../proxy').api[res.locals.apiVersion];
 
     const params = {
         uuid: req.params.uuid,
