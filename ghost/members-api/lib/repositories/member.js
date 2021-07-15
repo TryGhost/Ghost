@@ -109,17 +109,21 @@ module.exports = class MemberRepository {
             source = 'member';
         }
 
+        const eventData = _.pick(data, ['created_at']);
+
         await this._MemberStatusEvent.add({
             member_id: member.id,
             from_status: null,
-            to_status: member.get('status')
+            to_status: member.get('status'),
+            ...eventData
         }, options);
 
         if (member.get('subscribed')) {
             await this._MemberSubscribeEvent.add({
                 member_id: member.id,
                 subscribed: true,
-                source
+                source,
+                ...eventData
             }, options);
         }
 
@@ -410,6 +414,7 @@ module.exports = class MemberRepository {
             plan_amount: subscriptionPriceData.unit_amount,
             plan_currency: subscriptionPriceData.currency
         };
+        let eventData = {};
         if (model) {
             const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
@@ -430,6 +435,7 @@ module.exports = class MemberRepository {
                 }, options);
             }
         } else {
+            eventData.created_at = new Date(subscription.start_date * 1000);
             await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: member.id,
@@ -437,7 +443,8 @@ module.exports = class MemberRepository {
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
                 currency: subscriptionPriceData.currency,
-                mrr_delta: getMRRDelta({interval: _.get(subscriptionPriceData, 'recurring.interval'), amount: subscriptionPriceData.unit_amount, status: subscriptionPriceData.status})
+                mrr_delta: getMRRDelta({interval: _.get(subscriptionPriceData, 'recurring.interval'), amount: subscriptionPriceData.unit_amount, status: subscriptionPriceData.status}),
+                ...eventData
             }, options);
         }
 
@@ -489,7 +496,8 @@ module.exports = class MemberRepository {
             await this._MemberStatusEvent.add({
                 member_id: data.id,
                 from_status: updatedMember._previousAttributes.status,
-                to_status: updatedMember.get('status')
+                to_status: updatedMember.get('status'),
+                ...eventData
             }, options);
         }
     }
