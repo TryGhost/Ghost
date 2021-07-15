@@ -17,12 +17,15 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
             return qb.clear('select')
                 .select(knex.raw('DATE(created_at) as date'))
                 .select(knex.raw(`SUM(
-                    CASE WHEN to_status IN ('paid', 'comped') THEN 1
-                    WHEN from_status IN ('paid', 'comped') THEN -1
-                    ELSE 0
-                    END
+                    CASE WHEN to_status='paid' THEN 1
+                    WHEN from_status='paid' THEN -1
+                    ELSE 0 END
                 ) as paid_delta`))
-                .select(knex.raw(`0 as comped_delta`))
+                .select(knex.raw(`SUM(
+                    CASE WHEN to_status='comped' THEN 1
+                    WHEN from_status='comped' THEN -1
+                    ELSE 0 END
+                ) as comped_delta`))
                 .select(knex.raw(`SUM(
                     CASE WHEN to_status='free' THEN 1
                     WHEN from_status='free' THEN -1
