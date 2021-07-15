@@ -310,12 +310,12 @@ describe('External Request', function () {
             const options = {
                 headers: {
                     'User-Agent': 'Mozilla/5.0'
-                }
+                },
+                retry: 0
             };
 
             const requestMock = nock('http://nofilehere.com')
                 .get('/files/test.txt')
-                .times(3) // 1 original request + 2 default retries
                 .reply(500, {message: 'something awful happened', code: 'AWFUL_ERROR'});
 
             return externalRequest(url, options).then(() => {
