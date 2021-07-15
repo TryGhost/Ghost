@@ -5,6 +5,7 @@ import XFileInput from 'emberx-file-input/components/x-file-input';
 
 export default XFileInput.extend({
     didInsertElement() {
+        this._super(...arguments);
         this.onInsert?.(this.element.querySelector('input[type="file"]'));
     },
 

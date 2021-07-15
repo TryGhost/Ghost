@@ -54,15 +54,16 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return this.settings.get('membersSignupAccess') !== 'all';
     }
 
+    willDestroy() {
+        super.willDestroy?.(...arguments);
+        // clear any unsaved settings changes when going back/forward/closing
+        this.args.updatePreview('');
+    }
+
     @action
     setup() {
         this.fetchDefaultProduct.perform();
         this.updatePreviewUrl();
-    }
-
-    willDestroy() {
-        // clear any unsaved settings changes when going back/forward/closing
-        this.args.updatePreview('');
     }
 
     @action

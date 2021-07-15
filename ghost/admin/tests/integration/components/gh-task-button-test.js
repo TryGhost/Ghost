@@ -174,7 +174,6 @@ describe('Integration: Component: gh-task-button', function () {
 
         await render(hbs`<GhTaskButton @task={{myTask}} />`);
         await click('button');
-        await settled();
 
         expect(taskCount, 'taskCount').to.equal(1);
     });

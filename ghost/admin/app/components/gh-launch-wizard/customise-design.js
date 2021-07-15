@@ -7,6 +7,7 @@ export default class GhLaunchWizardCustomiseDesignComponent extends Component {
     @service settings;
 
     willDestroy() {
+        super.willDestroy?.(...arguments);
         this.settings.rollbackAttributes();
         this.settings.errors.remove('accentColor');
     }

@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import {Response} from 'ember-cli-mirage';
+import {dasherize} from '@ember/string';
 import {isBlank} from '@ember/utils';
 
 export default function mockAuthentication(server) {
@@ -55,7 +56,7 @@ export default function mockAuthentication(server) {
         attrs.roles = [role];
 
         if (!isBlank(attrs.email)) {
-            attrs.slug = attrs.email.split('@')[0].dasherize();
+            attrs.slug = dasherize(attrs.email.split('@')[0]);
         }
 
         // NOTE: server does not use the user factory to fill in blank fields

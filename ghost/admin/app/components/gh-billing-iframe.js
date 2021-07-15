@@ -8,6 +8,8 @@ export default Component.extend({
     ajax: service(),
 
     didInsertElement() {
+        this._super(...arguments);
+
         let fetchingSubscription = false;
         this.billing.getBillingIframe().src = this.billing.getIframeURL();
 

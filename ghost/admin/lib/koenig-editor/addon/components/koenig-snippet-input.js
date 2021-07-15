@@ -3,6 +3,7 @@ import getScrollParent from '../utils/get-scroll-parent';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {action} from '@ember/object';
 import {guidFor} from '@ember/object/internals';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
@@ -15,7 +16,7 @@ export default class KoenigSnippetInputComponent extends Component {
     @service koenigUi;
 
     @tracked name = '';
-    @tracked style = ''.htmlSafe();
+    @tracked style = htmlSafe('');
 
     constructor() {
         super(...arguments);
@@ -52,6 +53,7 @@ export default class KoenigSnippetInputComponent extends Component {
     }
 
     willDestroy() {
+        super.willDestroy?.(...arguments);
         this.koenigUi.inputHasFocus = false;
         window.removeEventListener('mousedown', this._onMousedownHandler);
         window.removeEventListener('keydown', this._onKeydownHandler);
@@ -146,11 +148,11 @@ export default class KoenigSnippetInputComponent extends Component {
         }
 
         // update the toolbar position
-        this.style = Object.keys(newPosition).map((style) => {
+        this.style = htmlSafe(Object.keys(newPosition).map((style) => {
             if (newPosition[style] !== null) {
                 return `${style}: ${newPosition[style]}px`;
             }
-        }).compact().join('; ').htmlSafe();
+        }).compact().join('; '));
     }
 
     _handleMousedown(event) {

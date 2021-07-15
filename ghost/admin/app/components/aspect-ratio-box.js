@@ -17,6 +17,7 @@ export default Component.extend({
     },
 
     didReceiveAttrs() {
+        this._super(...arguments);
         assert(
             '{{aspect-ratio-box}} requires a `ratio` property in the format `"16/9"`',
             this.ratio.match(/\d+\/\d+/)
@@ -25,6 +26,7 @@ export default Component.extend({
     },
 
     didInsertElement() {
+        this._super(...arguments);
         this._resize();
         window.addEventListener('resize', this._onResizeHandler);
     },

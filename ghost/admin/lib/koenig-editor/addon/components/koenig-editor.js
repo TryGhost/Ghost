@@ -279,6 +279,7 @@ export default Component.extend({
     },
 
     willRender() {
+        this._super(...arguments);
         // use a default mobiledoc. If there are no changes then return early
         let mobiledoc = this.mobiledoc || BLANK_DOC;
         let mobiledocIsSame =
@@ -481,6 +482,8 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
+
         let {editor, _dropTarget, _cardDragDropContainer} = this;
 
         _dropTarget.removeEventListener('dragover', this._dragOverHandler);

@@ -29,7 +29,7 @@ export default class GhMembersNoMembersComponent extends Component {
                 this.args.afterCreate();
             }
 
-            this.notifications.showNotification('Member added'.htmlSafe(),
+            this.notifications.showNotification('Member added',
                 {
                     description: 'You\'ve successfully added yourself as a member.'
                 }

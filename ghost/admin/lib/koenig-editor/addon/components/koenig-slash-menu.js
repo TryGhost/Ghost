@@ -50,6 +50,7 @@ export default class KoenigSlashMenuComponent extends Component {
     }
 
     willDestroy() {
+        super.willDestroy?.(...arguments);
         window.removeEventListener('mousedown', this._onWindowMousedownHandler);
     }
 

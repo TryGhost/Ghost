@@ -51,6 +51,7 @@ export default class GhCustomViewsIndexLinkComponent extends Component {
 
         let currentRouteName = this.router.currentRouteName.replace(/_loading$/, '');
 
+        // eslint-disable-next-line ghost/ember/no-side-effects
         this._lastIsActive = currentRouteName === this.args.route
             && !this.customViews.activeView;
 

@@ -57,7 +57,7 @@ export default ModalComponent.extend({
             }
 
             let savedLabel = yield label.save();
-            this.notifications.showNotification('Label saved'.htmlSafe());
+            this.notifications.showNotification('Label saved');
             this.send('closeModal');
             return savedLabel;
         } catch (error) {
@@ -75,7 +75,7 @@ export default ModalComponent.extend({
         try {
             yield label.destroyRecord();
             let routeName = this.router.currentRouteName;
-            this.notifications.showNotification('Label deleted'.htmlSafe());
+            this.notifications.showNotification('Label deleted');
             this.send('closeModal');
             this.router.transitionTo(routeName, {queryParams: resetQueryParams(routeName)});
         } catch (error) {

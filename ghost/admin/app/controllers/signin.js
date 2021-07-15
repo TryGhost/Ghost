@@ -70,8 +70,8 @@ export default Controller.extend(ValidationEngine, {
             if (error && error.payload && error.payload.errors) {
                 let [mainError] = error.payload.errors;
 
-                mainError.message = (mainError.message || '').htmlSafe();
-                mainError.context = (mainError.context || '').htmlSafe();
+                mainError.message = htmlSafe(mainError.message || '');
+                mainError.context = htmlSafe(mainError.context || '');
 
                 this.set('flowErrors', (mainError.context.string || mainError.message.string));
 

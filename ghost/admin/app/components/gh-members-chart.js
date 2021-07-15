@@ -73,6 +73,8 @@ export default Component.extend({
     },
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         if (this.chartStats) {
             const {options, data, title, stats} = this.chartStats;
 
@@ -127,7 +129,7 @@ export default Component.extend({
 
     setChartData({dateLabels, dateValues, label = 'Total Members'}) {
         let backgroundColors = this.lineColor;
-        
+
         if (this.chartType === 'open-rate') {
             backgroundColors = dateLabels.map((val) => {
                 if (val) {
@@ -315,7 +317,7 @@ export default Component.extend({
         if (this.chartType === 'open-rate') {
             options.scales.yAxes[0].ticks.suggestedMin = 0;
         }
-        
+
         if (this.isSmall) {
             options.scales.yAxes[0].ticks.display = false;
             options.scales.xAxes[0].gridLines.display = true;

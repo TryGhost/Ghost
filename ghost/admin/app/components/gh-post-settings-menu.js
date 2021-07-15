@@ -73,6 +73,8 @@ export default Component.extend({
     }),
 
     willDestroyElement() {
+        this._super(...arguments);
+
         let post = this.post;
         let errors = post.get('errors');
 

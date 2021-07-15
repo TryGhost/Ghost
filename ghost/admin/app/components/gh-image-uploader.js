@@ -118,6 +118,8 @@ export default Component.extend({
     },
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         let image = this.image;
         this.set('url', image);
     },

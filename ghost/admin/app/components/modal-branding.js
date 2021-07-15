@@ -9,6 +9,7 @@ export default ModalComponent.extend({
     settings: service(),
 
     willDestroyElement() {
+        this._super(...arguments);
         // reset any unsaved changes when closing
         this.settings.rollbackAttributes();
     },

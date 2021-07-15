@@ -73,6 +73,8 @@ export default Component.extend({
     }),
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         let date = this.date;
         let time = this.time;
         let minDate = this.minDate;
@@ -124,6 +126,7 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         this.setTypedDateError(null);
     },
 

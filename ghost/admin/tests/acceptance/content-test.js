@@ -185,14 +185,14 @@ describe('Acceptance: Content', function () {
             await visit('/posts');
 
             // nav bar contains default + custom views
-            expect(find('[data-test-nav-custom="posts-Drafts"')).to.exist;
-            expect(find('[data-test-nav-custom="posts-Scheduled"')).to.exist;
-            expect(find('[data-test-nav-custom="posts-Published"')).to.exist;
-            expect(find('[data-test-nav-custom="posts-My posts"')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Drafts"]')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Published"]')).to.exist;
+            expect(find('[data-test-nav-custom="posts-My posts"]')).to.exist;
 
             // screen has default title and sidebar is showing inactive custom view
             expect(find('[data-test-screen-title]').textContent.trim()).to.equal('Posts');
-            expect(find('[data-test-nav="posts"')).to.have.class('active');
+            expect(find('[data-test-nav="posts"]')).to.have.class('active');
 
             // clicking sidebar custom view link works
             await click('[data-test-nav-custom="posts-Scheduled"]');

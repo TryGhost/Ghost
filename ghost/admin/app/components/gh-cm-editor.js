@@ -31,6 +31,8 @@ const CmEditorComponent = Component.extend({
     _value: boundOneWay('value'), // make sure a value exists
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         if (this._value === null || undefined) {
             this.set('_value', '');
         }

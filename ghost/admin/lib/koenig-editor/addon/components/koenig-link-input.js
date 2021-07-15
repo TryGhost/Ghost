@@ -98,6 +98,8 @@ export default Component.extend({
     },
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         if (this.source === 'direct' && this.href !== this._href) {
             this.set('_href', this.href);
         }

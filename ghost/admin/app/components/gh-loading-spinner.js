@@ -10,6 +10,7 @@ export default Component.extend({
     slowLoadTimeout: 200,
 
     didInsertElement() {
+        this._super(...arguments);
         this.startSpinnerTimeout.perform();
     },
 
