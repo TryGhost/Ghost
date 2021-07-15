@@ -4,16 +4,18 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhMemberLabelInput extends Component {
-    @service
-    store;
+    @service store;
 
-    @tracked
-    selectedLabels = [];
+    @tracked selectedLabels = [];
 
     get availableLabels() {
         return this._availableLabels.toArray().sort((labelA, labelB) => {
             return labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true});
         });
+    }
+
+    get availableLabelNames() {
+        return this.availableLabels.map(label => label.name.toLowerCase());
     }
 
     constructor(...args) {
@@ -26,11 +28,8 @@ export default class GhMemberLabelInput extends Component {
         this.selectedLabels = this.args.labels || [];
     }
 
-    get availableLabelNames() {
-        return this.availableLabels.map(label => label.name.toLowerCase());
-    }
-
     willDestroy() {
+        super.willDestroy?.(...arguments);
         this._availableLabels.forEach((label) => {
             if (label.get('isNew')) {
                 this.store.deleteRecord(label);

@@ -39,27 +39,7 @@ export default Mixin.create({
     // or by calling `this.validate()` without the model property.
     // in that case the model will be the class that the ValidationEngine
     // was mixed into, i.e. the controller or Ember Data model.
-    validators: {
-        customView: CustomViewValidator,
-        inviteUser: InviteUserValidator,
-        navItem: NavItemValidator,
-        productBenefitItem: ProductBenefitItemValidator,
-        post: PostValidator,
-        reset: ResetValidator,
-        setting: SettingValidator,
-        setup: SetupValidator,
-        signin: SigninValidator,
-        signup: SignupValidator,
-        slackIntegration: SlackIntegrationValidator,
-        tag: TagSettingsValidator,
-        user: UserValidator,
-        member: MemberValidator,
-        integration: IntegrationValidator,
-        webhook: WebhookValidator,
-        label: LabelValidator,
-        snippet: SnippetValidator,
-        product: ProductValidator
-    },
+    validators: null,
 
     // This adds the Errors object to the validation engine, and shouldn't affect
     // ember-data models because they essentially use the same thing
@@ -73,6 +53,28 @@ export default Mixin.create({
         this._super(...arguments);
         this.set('errors', Errors.create());
         this.set('hasValidated', emberA());
+
+        this.validators = {
+            customView: CustomViewValidator,
+            inviteUser: InviteUserValidator,
+            navItem: NavItemValidator,
+            productBenefitItem: ProductBenefitItemValidator,
+            post: PostValidator,
+            reset: ResetValidator,
+            setting: SettingValidator,
+            setup: SetupValidator,
+            signin: SigninValidator,
+            signup: SignupValidator,
+            slackIntegration: SlackIntegrationValidator,
+            tag: TagSettingsValidator,
+            user: UserValidator,
+            member: MemberValidator,
+            integration: IntegrationValidator,
+            webhook: WebhookValidator,
+            label: LabelValidator,
+            snippet: SnippetValidator,
+            product: ProductValidator
+        };
     },
 
     /**

@@ -33,6 +33,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     }
 
     willDestroy() {
+        super.willDestroy?.(...arguments);
         // clear any unsaved settings changes when going back/forward/closing
         this.settings.rollbackAttributes();
     }
