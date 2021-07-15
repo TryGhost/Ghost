@@ -1,1 +1,1 @@
-module.exports = require('./MembersSSR');
+module.exports = require('./lib/MembersSSR');
