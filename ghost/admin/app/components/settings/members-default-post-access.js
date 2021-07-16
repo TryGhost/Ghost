@@ -1,10 +1,12 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class SettingsMembersDefaultPostAccess extends Component {
     @service settings;
     @service feature;
+    @tracked showSegmentError;
 
     get options() {
         const defaultOptions = [{
@@ -56,6 +58,10 @@ export default class SettingsMembersDefaultPostAccess extends Component {
     setVisibility(segment) {
         if (segment) {
             this.settings.set('defaultContentVisibility', segment);
+            this.showSegmentError = false;
+        } else {
+            this.settings.set('defaultContentVisibility', '');
+            this.showSegmentError = true;
         }
     }
 

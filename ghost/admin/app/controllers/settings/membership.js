@@ -316,13 +316,6 @@ export default class MembersAccessController extends Controller {
 
     @task({drop: true})
     *saveSettingsTask(options) {
-        if (!this.settings.get('defaultContentVisibility')) {
-            const oldValue = this.settings.changedAttributes().defaultContentVisibility?.[0];
-            if (oldValue) {
-                this.settings.set('defaultContentVisibility', oldValue);
-            }
-        }
-
         if (!this.feature.get('multipleProducts')) {
             yield this.validateStripePlans({updatePortalPreview: false});
 
@@ -342,6 +335,10 @@ export default class MembersAccessController extends Controller {
             return result;
         } else {
             if (this.settings.get('errors').length !== 0) {
+                return;
+            }
+            // When no filer is selected in `A Segment` option
+            if (!this.settings.get('defaultContentVisibility')) {
                 return;
             }
             const result = yield this.settings.save();
