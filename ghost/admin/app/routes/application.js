@@ -46,6 +46,8 @@ export default Route.extend(ShortcutsRoute, {
         this.router.on('routeDidChange', () => {
             this.notifications.displayDelayed();
         });
+
+        // TODO: featureImgDragDrop - move event initialization here when removing feature flag
     },
 
     beforeModel() {
@@ -141,6 +143,12 @@ export default Route.extend(ShortcutsRoute, {
             // fallback to 500 error page
             return true;
         }
+    },
+
+    willDestroy() {
+        // TODO: featureImgDragDrop - remove .session. when removing feature flag
+        document.body.removeEventListener('dragenter', this.session.bodyDragEnterHandler);
+        document.body.removeEventListener('dragleave', this.session.bodyDragLeaveHandler);
     },
 
     async prepareApp() {
