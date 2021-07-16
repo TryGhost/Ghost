@@ -27,12 +27,18 @@
         <div class="mt2">
             <GhMembersSegmentSelect
                 @hideLabels={{true}}
+                @selectDefaultProduct={{true}}
                 @segment={{this.settings.defaultContentVisibility}}
                 @onChange={{action "setVisibility"}}
                 @renderInPlace={{true}}
                 @hideDefaultSegments={{true}}
                 @hideOptionsWhenAllSelected={{true}}
             />
+            {{#if this.showSegmentError}}
+                <p class="response red">
+                    Please select at least one product
+                </p>
+            {{/if}}
         </div>
     {{/if}}
 </div>
