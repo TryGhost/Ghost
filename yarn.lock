@@ -924,10 +924,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-ssr@1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.5.tgz#800787c466bf26c119ce52c58c7d751716a5777c"
-  integrity sha512-/YjOfAbt4NA/N02BiA85yZWALG4AENXLgmJOSJkJ8OJNtG1W2r5tPHW+MBLjz6faPcmvVlIZ4aff5hP5TaqHFw==
+"@tryghost/members-ssr@1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.7.tgz#c494c0df3261c8fc43600c9d1128d38b9b1a3405"
+  integrity sha512-a838IUeLzNX5S5Nm6m4qxhEegP2JMzoBd3Mxa4iEF9LEb7MsByozbcUGCFrZr/OyZTyGXWdNGByFprfkWA02qA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/ignition-errors" "^0.1.2"
