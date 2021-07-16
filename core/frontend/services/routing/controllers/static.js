@@ -4,7 +4,7 @@ const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const helpers = require('../helpers');
 
 function processQuery(query, locals) {
-    const api = require('../../../../server/api')[locals.apiVersion];
+    const api = require('../../proxy').api[locals.apiVersion];
     query = _.cloneDeep(query);
 
     // CASE: If you define a single data key for a static route (e.g. data: page.team), this static route will represent

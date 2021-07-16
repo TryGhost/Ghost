@@ -14,7 +14,7 @@ const routeMatch = require('path-match')();
 function entryLookup(postUrl, routerOptions, locals) {
     debug(postUrl);
 
-    const api = require('../../../../server/api')[locals.apiVersion];
+    const api = require('../../proxy').api[locals.apiVersion];
     const targetPath = url.parse(postUrl).path;
     const permalinks = routerOptions.permalinks;
     let isEditURL = false;
