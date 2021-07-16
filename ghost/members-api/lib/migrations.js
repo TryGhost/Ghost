@@ -262,6 +262,7 @@ module.exports = class StripeMigrations {
             plans = JSON.parse(stripePlans.get('value'));
         } catch (err) {
             this._logging.warn('Skipping population of members_monthly_price_id, could not parse stripe_plans');
+            return;
         }
 
         const monthlyPlan = plans.find((plan) => {
@@ -284,10 +285,8 @@ module.exports = class StripeMigrations {
 
         if (!monthlyPrice) {
             this._logging.info('Could not find active Monthly price from stripe_plans - searching by interval');
-            monthlyPrice = await this._StripePrice.findOne({
-                interval: 'month',
-                active: true
-            });
+            monthlyPrice = await this._StripePrice.where('amount', '>', 0)
+                .where({interval: 'month', active: true}).fetch();
         }
 
         if (!monthlyPrice) {
@@ -357,10 +356,8 @@ module.exports = class StripeMigrations {
 
         if (!yearlyPrice) {
             this._logging.info('Could not find active yearly price from stripe_plans - searching by interval');
-            yearlyPrice = await this._StripePrice.findOne({
-                interval: 'year',
-                active: true
-            });
+            yearlyPrice = await this._StripePrice.where('amount', '>', 0)
+                .where({interval: 'year', active: true}).fetch();
         }
 
         if (!yearlyPrice) {
