@@ -56,6 +56,7 @@ export default Service.extend({
     multipleProducts: feature('multipleProducts', {developer: true}),
     emailCardSegments: feature('emailCardSegments', {developer: true}),
     savedIndicator: feature('savedIndicator', {developer: true}),
+    featureImgDragDrop: feature('featureImgDragDrop', {developer: true}),
 
     _user: null,
 
