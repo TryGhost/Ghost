@@ -12,6 +12,9 @@ module.exports = function setupApiApp() {
         apiApp.use(require('./testmode')());
     }
 
+    // API healthcheck endpoint for load balancer
+    apiApp.get('/health', (req, res) => res.status(200).send('SUCCESS'));
+
     // Mount different API versions
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app')());
