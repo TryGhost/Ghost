@@ -8,6 +8,21 @@
         @onComplete={{this.setUploadedImage}}
         as |uploader|
     >
+        {{#if (feature "featureImgDragDrop")}}
+            {{#unless @image}}
+                <div
+                    class="gh-editor-feature-image-dropzone"
+                    {{on "dragover" this.dragOver}}
+                    {{on "dragleave" this.dragLeave}}
+                    {{on "drop" (fn this.drop uploader.setFiles)}}
+                ></div>
+            {{/unless}}
+        {{/if}}
+
+        {{#if this.canDrop}}
+            <div class="gh-editor-feature-image-drop-indicator bg-blue br-pill pe-none"></div>
+        {{/if}}
+
         {{#if uploader.isUploading}}
             {{!-- upload in progress --}}
             {{uploader.progressBar}}
@@ -63,8 +78,12 @@
         {{else}}
             {{!-- no-image state --}}
             <div class="flex flex-row items-center {{if this.hideButton "invisible"}}">
-                <button type="button" class="gh-editor-feature-image-add-button" {{on "click" uploader.triggerFileDialog}}>{{svg-jar "plus"}}<span>Add feature image</span></button>
-                <button type="button" class="gh-editor-feature-image-unsplash" {{on "click" this.toggleUnsplashSelector}}>{{svg-jar "unsplash"}}</button>
+                {{#if this.canDrop}}
+                    <div class="gh-editor-feature-image-add-button"><span>Drop to upload feature image</span></div>
+                {{else}}
+                    <button type="button" class="gh-editor-feature-image-add-button" {{on "click" uploader.triggerFileDialog}}>{{svg-jar "plus"}}<span>Add feature image</span></button>
+                    <button type="button" class="gh-editor-feature-image-unsplash" {{on "click" this.toggleUnsplashSelector}}>{{svg-jar "unsplash"}}</button>
+                {{/if}}
             </div>
         {{/if}}
 

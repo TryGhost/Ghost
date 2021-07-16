@@ -51,6 +51,35 @@ export default class SessionService extends ESASessionService {
             });
         }
 
+        // TODO: featureImgDragDrop - move this to application route init when removing flag
+        if (this.feature.featureImgDragDrop) {
+            // when any drag event is occurring we add `data-user-is-dragging` to the
+            // body element so that we can have dropzones start listening to pointer
+            // events allowing us to have interactive elements "underneath" drop zones
+            if (this.feature.featureImgDragDrop) {
+                this.bodyDragEnterHandler = (event) => {
+                    if (!event.dataTransfer) {
+                        return;
+                    }
+
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    document.body.dataset.userIsDragging = true;
+                    window.clearTimeout(this.dragTimer);
+                };
+                this.bodyDragLeaveHandler = (event) => {
+                    event.preventDefault();
+                    window.clearTimeout(this.dragTimer);
+                    this.dragTimer = window.setTimeout(() => {
+                        delete document.body.dataset.userIsDragging;
+                    }, 100);
+                };
+                document.body.addEventListener('dragenter', this.bodyDragEnterHandler);
+                document.body.addEventListener('dragleave', this.bodyDragLeaveHandler);
+            }
+        }
+
         this.loadServerNotifications();
         this.whatsNew.fetchLatest.perform();
     }

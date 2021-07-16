@@ -425,6 +425,27 @@
     }
 }
 
+.gh-editor-feature-image-dropzone {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 175px;
+    top: -50px;
+    pointer-events: none;
+}
+
+body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
+    pointer-events: auto;
+}
+
+.gh-editor-feature-image-drop-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 40px;
+    height: 4px;
+}
+
 .gh-editor-feature-image {
     margin-left: -1.2rem;
     padding-left: 1.2rem;
