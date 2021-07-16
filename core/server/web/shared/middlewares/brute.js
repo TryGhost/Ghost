@@ -94,5 +94,20 @@ module.exports = {
             }
             return next(err, ...rest);
         });
+    },
+
+    /**
+     */
+    membersAuth(req, res, next) {
+        return spamPrevention.userLogin().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                if (_req.body.email) {
+                    return _next(`${_req.body.email}login`);
+                }
+
+                return _next();
+            }
+        })(req, res, next);
     }
 };
