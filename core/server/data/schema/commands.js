@@ -2,9 +2,16 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const db = require('../db');
 const schema = require('./schema');
 const clients = require('./clients');
+
+const messages = {
+    hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
+    hasForeignSQLite3: 'Must use hasForeignSQLite3 on an SQLite3 database'
+};
 
 function addTableColumn(tableName, table, columnName, columnSpec = schema[tableName][columnName]) {
     let column;
@@ -132,7 +139,9 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
     const client = knex.client.config.client;
 
     if (client !== 'sqlite3') {
-        throw new Error('Must use hasForeignSQLite3 on an SQLite3 database');
+        throw new errors.GhostError({
+            message: tpl(messages.hasForeignSQLite3)
+        });
     }
 
     const foreignKeys = await knex.raw(`PRAGMA foreign_key_list('${fromTable}');`);
@@ -249,14 +258,16 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
  * Checks if primary key index exists in a table over the given columns.
  *
  * @param {string} tableName - name of the table to check primary key constraint on
- * @param {import('knex')} transaction - connnection object containing knex reference
+ * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function hasPrimaryKeySQLite(tableName, transaction) {
     const knex = (transaction || db.knex);
     const client = knex.client.config.client;
 
     if (client !== 'sqlite3') {
-        throw new Error('Must use hasPrimaryKeySQLite on an SQLite3 database');
+        throw new errors.GhostError({
+            message: tpl(messages.hasPrimaryKeySQLiteError)
+        });
     }
 
     const rawConstraints = await knex.raw(`PRAGMA index_list('${tableName}');`);
@@ -270,7 +281,7 @@ async function hasPrimaryKeySQLite(tableName, transaction) {
  *
  * @param {string} tableName - name of the table to add primaykey  constraint to
  * @param {string|[string]} columns - column(s) to form primary key constraint with
- * @param {import('knex')} transaction - connnection object containing knex reference
+ * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function addPrimaryKey(tableName, columns, transaction) {
     const isSQLite = db.knex.client.config.client === 'sqlite3';
@@ -406,5 +417,8 @@ module.exports = {
     addColumn: addColumn,
     dropColumn: dropColumn,
     getColumns: getColumns,
-    createColumnMigration
+    createColumnMigration,
+    // NOTE: below are exposed for testing purposes only
+    _hasForeignSQLite: hasForeignSQLite,
+    _hasPrimaryKeySQLite: hasPrimaryKeySQLite
 };

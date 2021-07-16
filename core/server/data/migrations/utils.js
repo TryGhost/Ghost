@@ -1,9 +1,15 @@
 const ObjectId = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const commands = require('../schema').commands;
 const Promise = require('bluebird');
 
 const MIGRATION_USER = 1;
+
+const messages = {
+    permissionRoleActionError: 'Cannot {action} permission({permission}) with role({role}) - {resource} does not exist'
+};
 
 /**
  * Creates a migrations which will add a new table from schema.js to the database
@@ -138,9 +144,14 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!permission) {
-                throw new Error(
-                    `Cannot add permission(${config.permission}) to role(${config.role}) - permission does not exist`
-                );
+                throw new errors.GhostError({
+                    message: tpl(messages.permissionRoleActionError, {
+                        action: 'add',
+                        permission: config.permission,
+                        role: config.role,
+                        resource: 'permission'
+                    })
+                });
             }
 
             const role = await connection('roles').where({
@@ -148,9 +159,14 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!role) {
-                throw new Error(
-                    `Cannot add permission(${config.permission}) to role(${config.role}) - role does not exist`
-                );
+                throw new errors.GhostError({
+                    message: tpl(messages.permissionRoleActionError, {
+                        action: 'add',
+                        permission: config.permission,
+                        role: config.role,
+                        resource: 'role'
+                    })
+                });
             }
 
             const existingRelation = await connection('permissions_roles').where({
@@ -176,9 +192,14 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!permission) {
-                throw new Error(
-                    `Cannot remove permission(${config.permission}) from role(${config.role}) - permission does not exist`
-                );
+                throw new errors.GhostError({
+                    message: tpl(messages.permissionRoleActionError, {
+                        action: 'remove',
+                        permission: config.permission,
+                        role: config.role,
+                        resource: 'permission'
+                    })
+                });
             }
 
             const role = await connection('roles').where({
@@ -186,9 +207,14 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!role) {
-                throw new Error(
-                    `Cannot remove permission(${config.permission}) from role(${config.role}) - role does not exist`
-                );
+                throw new errors.GhostError({
+                    message: tpl(messages.permissionRoleActionError, {
+                        action: 'remove',
+                        permission: config.permission,
+                        role: config.role,
+                        resource: 'role'
+                    })
+                });
             }
 
             const existingRelation = await connection('permissions_roles').where({
