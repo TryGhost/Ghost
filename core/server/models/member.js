@@ -155,6 +155,7 @@ const Member = ghostBookshelf.Model.extend({
                         return label.name.toLowerCase() === lab.get('name').toLowerCase();
                     });
                     label.name = (existingLabel && existingLabel.get('name')) || label.name;
+                    label.id = (existingLabel && existingLabel.id) || label.id;
                 });
 
                 model.set('labels', labelsToSave);
