@@ -391,9 +391,9 @@ describe('Members API', function () {
         should.exist(jsonResponse.data);
         const data = jsonResponse.data;
         // 2 from above posts, 2 from above import
-        data[0].free.should.equal(4);
-        data[0].paid.should.equal(0);
-        data[0].comped.should.equal(0);
+        data[data.length - 1].free.should.equal(4);
+        data[data.length - 1].paid.should.equal(0);
+        data[data.length - 1].comped.should.equal(0);
     });
 
     it('Can import CSV and bulk destroy via auto-added label', function () {
