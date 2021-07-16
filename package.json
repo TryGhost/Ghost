@@ -116,7 +116,7 @@
     "glob": "7.1.7",
     "got": "9.6.0",
     "gscan": "4.1.2",
-    "html-to-text": "5.1.1",
+    "html-to-text": "8.0.0",
     "image-size": "1.0.0",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
