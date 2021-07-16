@@ -956,7 +956,7 @@ export default Controller.extend({
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }
 
-        notifications.showNotification(message, {type: 'success', actions: (actions && htmlSafe(actions.htmlSafe)), delayed});
+        notifications.showNotification(message, {type: 'success', actions: (actions && htmlSafe(actions)), delayed});
     },
 
     async _showScheduledNotification(delayed) {
