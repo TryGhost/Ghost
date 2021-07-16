@@ -1405,10 +1405,10 @@ amperize@0.6.1:
     uuid "^7.0.1"
     validator "^12.0.0"
 
-analytics-node@4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-4.0.1.tgz#f3d20738d4da1e4aa7236d654d9f580e254a7437"
-  integrity sha512-+zXOOTB+eTRW6R9+pfvPfk1dHraFJzhNnAyZiYJIDGOjHQgfk9qfqgoJX9MfR4qY0J/E1YJ3FBncrLGadTDW1A==
+analytics-node@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-5.0.0.tgz#7435c39253956cdd1a9074f608b083e985d63d31"
+  integrity sha512-eU/lPK6V3hmmv7hnJ8762zExL7WvcpVeBL6RgGZ8yQZQewk08VbbHk0M5GAlhruyh0ZT+/IBPW3Q/SYVhjexNQ==
   dependencies:
     "@segment/loosely-validate-event" "^2.0.0"
     axios "^0.21.1"
@@ -1417,7 +1417,7 @@ analytics-node@4.0.1:
     md5 "^2.2.1"
     ms "^2.0.0"
     remove-trailing-slash "^0.1.0"
-    uuid "^3.2.1"
+    uuid "^8.3.2"
 
 ansi-colors@4.1.1, ansi-colors@^4.1.1:
   version "4.1.1"
@@ -10136,7 +10136,7 @@ uuid@8.3.2, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-uuid@^3.0.0, uuid@^3.2.1, uuid@^3.3.2, uuid@^3.3.3:
+uuid@^3.0.0, uuid@^3.3.2, uuid@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
