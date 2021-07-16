@@ -1,5 +1,6 @@
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
+const {NoPermissionError} = require('@tryghost/errors');
 
 const Integration = ghostBookshelf.Model.extend({
     tableName: 'integrations',
@@ -63,7 +64,7 @@ const Integration = ghostBookshelf.Model.extend({
         return options;
     },
 
-    async permissible(integrationModel, action) {
+    async permissible(integrationModel, action, context, attrs, loadedPerms, hasUserPermission, hasApiKeyPermission) {
         const isAdd = (action === 'add');
 
         if (isAdd && limitService.isLimited('customIntegrations')) {
@@ -71,7 +72,10 @@ const Integration = ghostBookshelf.Model.extend({
             // Inviting a new custom integration requires we check we won't go over the limit
             await limitService.errorIfWouldGoOverLimit('customIntegrations');
         }
-        return true;
+
+        if (!hasUserPermission || !hasApiKeyPermission) {
+            throw new NoPermissionError();
+        }
     }
 });
 
