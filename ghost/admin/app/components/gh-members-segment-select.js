@@ -115,6 +115,9 @@ export default class GhMembersSegmentSelect extends Component {
                 });
 
                 options.push(productsGroup);
+                if (this.args.selectDefaultProduct) {
+                    this.args.onChange?.(productsGroup.options[0].segment);
+                }
             }
         }
 
