@@ -1798,10 +1798,10 @@
     "@babel/runtime" "^7.12.5"
     "@testing-library/dom" "^8.0.0"
 
-"@testing-library/user-event@13.1.9":
-  version "13.1.9"
-  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-13.1.9.tgz#29e49a42659ac3c1023565ff56819e0153a82e99"
-  integrity sha512-NZr0zL2TMOs2qk+dNlqrAdbaRW5dAmYwd1yuQ4r7HpkVEOj0MWuUjDWwKhcLd/atdBy8ZSMHSKp+kXSQe47ezg==
+"@testing-library/user-event@13.2.0":
+  version "13.2.0"
+  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-13.2.0.tgz#8d63aaae1f5ec1d683d3afe57acd5f175f819f0f"
+  integrity sha512-wDEuKkkChNfA02Fpd9A39AXmdmxkvRcHyt/cK3WWiPAQTyMhcKFNM51aQgpEDJUcdj7uPsOaDEESoW/L1b2kZA==
   dependencies:
     "@babel/runtime" "^7.12.5"
 
@@ -4742,10 +4742,10 @@ eslint-plugin-flowtype@^5.2.0:
     lodash "^4.17.15"
     string-natural-compare "^3.0.1"
 
-eslint-plugin-ghost@2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.5.0.tgz#e441c8edb869b7d6660ba847e30bea8ba5fd5679"
-  integrity sha512-cGPoGk1jpj94rziTZ+JkuS7LtjR8kCmbi0fjXGeJyeL+RiNqpNXgKsX5LTGx3H7yCfrTV9VSR6rV6ijoHaekrw==
+eslint-plugin-ghost@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.6.0.tgz#cbf2ca2981e707ca595a04ada96e5c8a499a058b"
+  integrity sha512-GpSLV5okek0YbXf5apVCj91Nz/pvvUrrWqZhLc0MEBIFTR252LSDce+4ZRaplcQXbVCkKFLjXMBp5YHquqLh9Q==
   dependencies:
     eslint-plugin-ember "10.5.1"
     eslint-plugin-mocha "7.0.1"
