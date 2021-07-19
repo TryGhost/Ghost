@@ -12,6 +12,7 @@ const EventRepository = require('./repositories/event');
 const ProductRepository = require('./repositories/product');
 const RouterController = require('./controllers/router');
 const MemberController = require('./controllers/member');
+const WellKnownController = require('./controllers/well-known');
 const StripeMigrations = require('./migrations');
 
 module.exports = function MembersAPI({
@@ -152,6 +153,11 @@ module.exports = function MembersAPI({
             billingSuccessUrl: stripeConfig.billingSuccessUrl,
             billingCancelUrl: stripeConfig.billingCancelUrl
         },
+        logging: common.logging
+    });
+
+    const wellKnownController = new WellKnownController({
+        tokenService,
         logging: common.logging
     });
 
@@ -329,7 +335,11 @@ module.exports = function MembersAPI({
             body.json(),
             (req, res) => memberController.updateSubscription(req, res)
         ),
-        handleStripeWebhook: Router()
+        handleStripeWebhook: Router(),
+        wellKnown: Router()
+            .get('/jwks.json',
+                (req, res) => wellKnownController.getPublicKeys(req, res)
+            )
     };
 
     middleware.handleStripeWebhook.use(body.raw({type: 'application/json'}), async function (req, res) {
