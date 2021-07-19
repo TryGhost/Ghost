@@ -39,7 +39,7 @@ module.exports = function setupMembersApp() {
     membersApp.get('/api/site', middleware.getMemberSiteData);
 
     // NOTE: this is wrapped in a function to ensure we always go via the getter
-    membersApp.post('/api/send-magic-link', (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
+    membersApp.post('/api/send-magic-link', bodyParser.json(), shared.middlewares.brute.membersAuth, (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
     membersApp.post('/api/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
     membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
