@@ -505,10 +505,6 @@
                 "HostLimitError": "Host Limit error, cannot {action}.",
                 "DisabledFeatureError": "Theme validation error, the {{{helperName}}} helper is not available. Cannot {action}.",
                 "UpdateCollisionError": "Saving failed! Someone else is editing this post."
-            },
-            "snippets": {
-                "snippetNotFound": "Snippet not found.",
-                "snippetAlreadyExists": "Snippet already exists"
             }
         },
         "data": {
