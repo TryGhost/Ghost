@@ -1,3 +1,5 @@
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const MembersSSR = require('@tryghost/members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./config');
@@ -11,6 +13,12 @@ const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
+
+const messages = {
+    noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
+    sslRequiredForStripe: 'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
+    remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.'
+};
 
 // Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
 const events = require('../../lib/common/events');
@@ -69,16 +77,16 @@ const membersService = {
         if (env !== 'production') {
             if (!process.env.WEBHOOK_SECRET && membersConfig.isStripeConnected()) {
                 process.env.WEBHOOK_SECRET = 'DEFAULT_WEBHOOK_SECRET';
-                logging.warn('Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.');
+                logging.warn(tpl(messages.remoteWebhooksInDevelopment));
             }
 
             if (paymentConfig && paymentConfig.secretKey.startsWith('sk_live')) {
-                throw new Error('Cannot use live stripe keys in development. Please restart in production mode.');
+                throw new errors.IncorrectUsageError(tpl(messages.noLiveKeysInDevelopment));
             }
         } else {
             const siteUrl = urlUtils.getSiteUrl();
             if (!/^https/.test(siteUrl) && membersConfig.isStripeConnected()) {
-                throw new Error('Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://"');
+                throw new errors.IncorrectUsageError(tpl(messages.sslRequiredForStripe));
             }
         }
     },
