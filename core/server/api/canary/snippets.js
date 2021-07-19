@@ -1,7 +1,12 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const models = require('../../models');
+
+const messages = {
+    snippetNotFound: 'Snippet not found.',
+    snippetAlreadyExists: 'Snippet already exists.'
+};
 
 module.exports = {
     docName: 'snippets',
@@ -29,7 +34,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.snippets.snippetNotFound')
+                            message: tpl(messages.snippetNotFound)
                         }));
                     }
 
@@ -42,16 +47,15 @@ module.exports = {
         statusCode: 201,
         headers: {},
         permissions: true,
-        async query(frame) {
-            try {
-                return await models.Snippet.add(frame.data.snippets[0], frame.options);
-            } catch (error) {
-                if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                    throw new errors.ValidationError({message: i18n.t('errors.api.snippets.snippetAlreadyExists')});
-                }
+        query(frame) {
+            return models.Snippet.add(frame.data.snippets[0], frame.options)
+                .catch((error) => {
+                    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                        throw new errors.ValidationError({message: tpl(messages.snippetAlreadyExists)});
+                    }
 
-                throw error;
-            }
+                    throw error;
+                });
         }
     },
 
@@ -73,7 +77,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.snippets.snippetNotFound')
+                            message: tpl(messages.snippetNotFound)
                         }));
                     }
 
@@ -103,7 +107,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Snippet.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.snippets.snippetNotFound')
+                        message: tpl(messages.snippetNotFound)
                     }));
                 });
         }
