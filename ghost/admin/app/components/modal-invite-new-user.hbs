@@ -25,7 +25,6 @@
                 @keyEvents={{hash
                     Enter=(action "confirm")
                 }}
-                @focus-out={{action "validate" "email"}}
             />
             <GhErrorMessage @errors={{this.errors}} @property="email" />
         </GhFormGroup>
