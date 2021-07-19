@@ -101,7 +101,7 @@ export default class GhMembersSegmentSelect extends Component {
 
             if (products.length > 0) {
                 const productsGroup = {
-                    groupName: 'Products',
+                    groupName: 'Tiers',
                     options: []
                 };
 

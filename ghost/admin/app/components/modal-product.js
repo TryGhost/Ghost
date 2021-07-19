@@ -63,9 +63,9 @@ export default class ModalProductPrice extends ModalBase {
 
     get title() {
         if (this.isExistingProduct) {
-            return `Edit product`;
+            return `Edit tier`;
         }
-        return 'New Product';
+        return 'New tier';
     }
 
     get isExistingProduct() {
