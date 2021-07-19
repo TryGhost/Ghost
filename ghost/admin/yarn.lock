@@ -1828,12 +1828,16 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/members-csv@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.0.tgz#883f8b1f6af15134c89a4e406ea9b236c57546d4"
-  integrity sha512-/cgfSW6rcxgA440Nt1/KE/OZR8t8n3SOenST/BhweHS48QqLN0FU7Ku0t8adZPtCzZLvcKfPIfc13hG/SiRtUA==
+"@tryghost/members-csv@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.2.tgz#408973028d587925ddebaf686f4b8479e2843462"
+  integrity sha512-wUgKjC+OhUDbaejHhhLAl97LqyzDjzUc6CmbZ8zmwk0B1TaoFPuRGwMfGLyMmqp25b+9mTETrLWn/aSGa/0Uyw==
   dependencies:
+    bluebird "^3.7.2"
+    fs-extra "^10.0.0"
+    lodash "^4.17.21"
     papaparse "5.3.1"
+    pump "^3.0.0"
 
 "@tryghost/mobiledoc-kit@0.12.5-ghost.1":
   version "0.12.5-ghost.1"
@@ -3429,7 +3433,7 @@ blank-object@^1.0.1:
   resolved "https://registry.yarnpkg.com/blank-object/-/blank-object-1.0.2.tgz#f990793fbe9a8c8dd013fb3219420bec81d5f4b9"
   integrity sha1-+ZB5P76ajI3QE/syGUIL7IHV9Lk=
 
-bluebird@^3.1.1, bluebird@^3.3.5, bluebird@^3.4.6, bluebird@^3.5.5:
+bluebird@^3.1.1, bluebird@^3.3.5, bluebird@^3.4.6, bluebird@^3.5.5, bluebird@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
@@ -8228,7 +8232,7 @@ from2@^2.1.0, from2@^2.1.1:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
 
-fs-extra@10.0.0:
+fs-extra@10.0.0, fs-extra@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-10.0.0.tgz#9ff61b655dde53fb34a82df84bb214ce802e17c1"
   integrity sha512-C5owb14u9eJwizKGdchcDUQeFtlSHHthBk8pbX9Vc1PFZrLombudjDnNns88aYslCyF6IY5SUw3Roz6xShcEIQ==
