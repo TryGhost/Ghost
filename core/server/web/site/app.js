@@ -15,7 +15,7 @@ const sitemapHandler = require('../../../frontend/services/sitemap/handler');
 const appService = require('../../../frontend/services/apps');
 const themeEngine = require('../../../frontend/services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
-const membersMiddleware = require('../../services/members').middleware;
+const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 const mw = require('./middleware');
@@ -118,7 +118,8 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Helpers done');
 
     // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersMiddleware.loadMemberSession);
+    siteApp.use(membersService.middleware.loadMemberSession);
+    siteApp.use('/members/.well-known', (req, res, next) => membersService.api.middleware.wellKnown(req, res, next));
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
