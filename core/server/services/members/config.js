@@ -1,7 +1,13 @@
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const {URL} = require('url');
 const crypto = require('crypto');
 const createKeypair = require('keypair');
 const path = require('path');
+
+const messages = {
+    incorrectKeyType: 'type must be one of "direct" or "connect".'
+};
 
 class MembersConfigProvider {
     /**
@@ -92,7 +98,7 @@ class MembersConfigProvider {
      */
     getStripeKeys(type) {
         if (type !== 'direct' && type !== 'connect') {
-            throw new Error();
+            throw new errors.IncorrectUsageError(tpl(messages.incorrectKeyType));
         }
 
         const secretKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);

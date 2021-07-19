@@ -1,6 +1,12 @@
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const {Buffer} = require('buffer');
 const {randomBytes} = require('crypto');
 const {URL} = require('url');
+
+const messages = {
+    incorrectState: 'State did not match.'
+};
 
 const STATE_PROP = 'stripe-connect-state';
 
@@ -45,7 +51,7 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
  * @param {string} encodedData - A string encoding the response from Stripe Connect
  * @param {(prop: string) => Promise<any>} getSessionProp - A function to retrieve data from the current session
  *
- * @returns {Promise<{secret_key: string, public_key: string, livemode: boolean}>}
+ * @returns {Promise<{secret_key: string, public_key: string, livemode: boolean, display_name: string, account_id: string}>}
  */
 async function getStripeConnectTokenData(encodedData, getSessionProp) {
     const data = JSON.parse(Buffer.from(encodedData, 'base64').toString());
@@ -53,7 +59,7 @@ async function getStripeConnectTokenData(encodedData, getSessionProp) {
     const state = await getSessionProp(STATE_PROP);
 
     if (state !== data.s) {
-        throw new Error('State did not match');
+        throw new errors.NoPermissionError(tpl(messages.incorrectState));
     }
 
     return {
