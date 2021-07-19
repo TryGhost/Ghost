@@ -29,7 +29,7 @@
     "test": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --timeout=60000",
     "test:all": "yarn test:unit && yarn test:acceptance && yarn lint",
     "test:debug": "DEBUG=ghost:test* yarn test",
-    "test:unit": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/unit' --timeout=1000",
+    "test:unit": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/unit' --timeout=2000",
     "test:acceptance": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/api-acceptance' './test/frontend-acceptance' --timeout=10000",
     "test:regression": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/regression' --timeout=60000",
     "test:slow": "yarn test:unit --reporter=mocha-slow-test-reporter && yarn test:acceptance --reporter=mocha-slow-test-reporter",
