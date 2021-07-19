@@ -185,8 +185,8 @@ module.exports = class MembersCSVImporter {
                 };
             } catch (error) {
                 // The model layer can sometimes throw arrays of errors
-                const errors = [].concat(error);
-                const errorMessage = errors.map(({message}) => message).join(', ');
+                const errorList = [].concat(error);
+                const errorMessage = errorList.map(({message}) => message).join(', ');
                 await trx.rollback();
                 return {
                     ...resultAccumulator,
