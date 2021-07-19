@@ -22,7 +22,7 @@
     "@sentry/tracing": "6.9.0",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "12.0.0",
-    "@testing-library/user-event": "13.1.9",
+    "@testing-library/user-event": "13.2.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-scripts": "4.0.3"
@@ -70,7 +70,7 @@
     "chalk": "4.1.1",
     "chokidar": "3.5.2",
     "copy-webpack-plugin": "6.4.1",
-    "eslint-plugin-ghost": "2.5.0",
+    "eslint-plugin-ghost": "2.6.0",
     "minimist": "1.2.5",
     "ora": "5.4.1",
     "rewire": "5.0.0",
