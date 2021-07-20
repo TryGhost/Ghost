@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-ssr",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-ssr",
   "author": "Ghost Foundation",
   "license": "MIT",
