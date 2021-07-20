@@ -736,35 +736,35 @@
     fastq "^1.11.0"
     p-wait-for "^3.2.0"
 
-"@tryghost/kg-card-factory@2.2.3":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-2.2.3.tgz#bbbdd1243e9774a14d32858e8153e8b5bd76c56d"
-  integrity sha512-/XkOtAZcHdU/r1nTkkGK3FJUTQ4b8/NKDCpni+Oq9REYvp3cqvJtzQAL2yCXGaiqHfK2q/KzqmcqfEdAgZHyVw==
+"@tryghost/kg-card-factory@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.0.0.tgz#c8524690b0b31eac2800890c3b9fd94deb0c0046"
+  integrity sha512-oDcekVy/fGqLcLmViAi6eV5uRVDNuX0WrDAtuI0F1BRO02Uh2maBQVUWs0oqUIjx+S3jfYNkHbghd06UOioRzg==
 
 "@tryghost/kg-clean-basic-html@^1.0.18":
   version "1.0.18"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.18.tgz#2d626c5da951551cf09c28a55ac23df801d2e880"
   integrity sha512-5jUY/McF01hDi6BsdKOsBhtdhmuCv1djYYj7eVOFGFcdmLkxRHOJWqmRfJTCVdfeU5hnOu+D6XcNsDxmTJXLKQ==
 
-"@tryghost/kg-default-atoms@2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-2.0.4.tgz#0c7885343019bae8fffc01b95fb5ae0e8d463ba9"
-  integrity sha512-IAqcbWpjtrS7z50DufQPBBS4c4/BL9SsYylHui2V1F5FBY9JxJTdq4fq3xlgg8bqSUwhWuBn1xGA07JX1dah1w==
+"@tryghost/kg-default-atoms@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.0.0.tgz#da92ddc8c7d513d641ec1fdd2c8c19e71f6b3616"
+  integrity sha512-1f9CM49QYVyx7vWnCA22soX71veVhRWUtV4sPmy9Qf92zLHTZwQ9O9W1hs8jVesNBPRdVU5t/dWHsydx2n7Tmg==
 
-"@tryghost/kg-default-cards@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-4.1.0.tgz#472540af5077f7691e9c3f6746c5c9386f868216"
-  integrity sha512-VtVM4RNOetz51sKHbrKRcTckgU3duX0yUuEGw0uuMqZJbZ5hyT3NSUIGKN9/d2AoUQ9FnOlULSctxK2AZHtVVA==
+"@tryghost/kg-default-cards@5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.0.0.tgz#4ad07ff19cf43c9c6a6d3bcad071ec567864733f"
+  integrity sha512-EV74vM4+k4j8xVzYihRWbuw806IR222nPcmvMKSC0AdD/3eM86VSsAtdAiN2LT5dPBGD+eZc1+Wzp8q5nUnmvQ==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "^4.0.3"
-    "@tryghost/url-utils" "^1.1.2"
+    "@tryghost/kg-markdown-html-renderer" "^5.0.0"
+    "@tryghost/url-utils" "^2.0.0"
     handlebars "^4.7.6"
-    juice "^7.0.0"
+    juice "^8.0.0"
 
-"@tryghost/kg-markdown-html-renderer@4.0.3", "@tryghost/kg-markdown-html-renderer@^4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-4.0.3.tgz#50fb7835e7aee75b6ca8888746bfd8b67ce3de54"
-  integrity sha512-lj61IrS45HUjMRq3DGxQX0/9lumkXLFvxdc83f4seCiikvmgiyblqAV6DvTYAiphUYYcIFZ9KtMTnyRuUErnoQ==
+"@tryghost/kg-markdown-html-renderer@5.0.0", "@tryghost/kg-markdown-html-renderer@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-5.0.0.tgz#3f113312faa2971b952901eaa3666d3d4c040eeb"
+  integrity sha512-tQhtHMDrUpYWitWAJ0ie8eU7ZnhjRrJM7MGH1tLdlE251NQNVyUCJlY4KYI9iE04tsq1ScEPD1dhyveWQnxKdA==
   dependencies:
     markdown-it "^12.0.6"
     markdown-it-footnote "^3.0.3"
@@ -773,10 +773,10 @@
     markdown-it-mark "^3.0.0"
     semver "^7.3.4"
 
-"@tryghost/kg-mobiledoc-html-renderer@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-4.0.0.tgz#310f8343535225c2fb766ddca85cc6d59ebc29c1"
-  integrity sha512-sJyxaNSKR0hSi8I1vkUACfrh607YCAbrrHv5LASckn5zIrABNmGAEQLfUzHrDCahf/WYYWzxmFwcbkiKy/n5qg==
+"@tryghost/kg-mobiledoc-html-renderer@5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-5.0.0.tgz#1c64d91d92a9ba5db6e2a6ae87231f95506124db"
+  integrity sha512-Gp7PSM+3P4f/YT3zS0HLSqQTMOR+xNfC+11LA/DkJ7DpYcp6Knn0zEUgD1jisXWCrEYk2U28YTUE6QP5HrHs6w==
   dependencies:
     mobiledoc-dom-renderer "^0.7.0"
     semver "^7.3.4"
@@ -983,22 +983,10 @@
     lodash "4.17.21"
     moment "2.24.0"
 
-"@tryghost/url-utils@2.0.1":
+"@tryghost/url-utils@2.0.1", "@tryghost/url-utils@^2.0.0":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-2.0.1.tgz#2b21b7f6d211286bf19c5f1d1fbb576446844cb9"
   integrity sha512-fs+JIvUcKwtv+0kkSc7jcFnKl2yOiXiVUmp1LDK9WrUqRyLA0fnHSDeK1F5y8UoAZCqR8sWwSR0tyP5ej+nWig==
-  dependencies:
-    cheerio "^0.22.0"
-    moment "^2.27.0"
-    moment-timezone "^0.5.31"
-    remark "^11.0.2"
-    remark-footnotes "^1.0.0"
-    unist-util-visit "^2.0.0"
-
-"@tryghost/url-utils@^1.1.2":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-1.1.4.tgz#9b7ffeafcc4331d9d2cc842e59d4a0ea37eb151e"
-  integrity sha512-WLjjjSl3Hh1S+6s8lTGtCM+FPgRHDodUr5BKzMzYY74E+CSkxGJ9WyuVI2J5s5SQw0lM0s8qylWKZtGU7Ca7Hg==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
@@ -2372,7 +2360,7 @@ combined-stream@^1.0.6, combined-stream@^1.0.8, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@5.1.0, commander@^5.1.0:
+commander@5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
   integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
@@ -5776,24 +5764,13 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-juice@8.0.0:
+juice@8.0.0, juice@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/juice/-/juice-8.0.0.tgz#ac77d3372373409b06a875aee425b9d381f645fe"
   integrity sha512-LRCfXBOqI1wt+zYR/5xwDnf+ZyiJiDt44DGZaBSAVwZWyWv3BliaiGTLS6KCvadv3uw6XGiPPFcTfY7CdF7Z/Q==
   dependencies:
     cheerio "^1.0.0-rc.3"
     commander "^6.1.0"
-    mensch "^0.3.4"
-    slick "^1.12.2"
-    web-resource-inliner "^5.0.0"
-
-juice@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/juice/-/juice-7.0.0.tgz#509bed6adbb6e4bbaa7fbfadac4e2e83e8c89ba3"
-  integrity sha512-AjKQX31KKN+uJs+zaf+GW8mBO/f/0NqSh2moTMyvwBY+4/lXIYTU8D8I2h6BAV3Xnz6GGsbalUyFqbYMe+Vh+Q==
-  dependencies:
-    cheerio "^1.0.0-rc.3"
-    commander "^5.1.0"
     mensch "^0.3.4"
     slick "^1.12.2"
     web-resource-inliner "^5.0.0"
