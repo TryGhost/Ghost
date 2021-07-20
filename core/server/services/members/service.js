@@ -15,6 +15,7 @@ const config = require('../../../shared/config');
 const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
+const jobsService = require('../jobs');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -132,7 +133,8 @@ const membersService = {
     settingsCache,
     () => membersApi,
     ghostMailer,
-    labsService.isSet
+    labsService.isSet,
+    jobsService.addJob
     ),
 
     stats: new MembersStats({
