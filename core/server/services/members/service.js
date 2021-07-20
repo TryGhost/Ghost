@@ -135,7 +135,8 @@ const membersService = {
     ghostMailer,
     labsService.isSet,
     jobsService.addJob,
-    db.knex
+    db.knex,
+    urlUtils.urlFor
     ),
 
     stats: new MembersStats({
