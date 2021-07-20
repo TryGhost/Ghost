@@ -823,10 +823,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.22.0":
-  version "1.22.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.22.0.tgz#2309d5f562c2c84783cf5470b0e336eb624264ea"
-  integrity sha512-zZ6th/zugVuL3iIFUWrBVy9HhZG5gjTOWSNO6rMJbt7pugzCuwJiYgk0BR9j6uuEkNhc9BAju6a24WnP3Tg+WQ==
+"@tryghost/members-api@1.22.1":
+  version "1.22.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.22.1.tgz#c8000bca7a9cfb73c84cd2bc79ac5a6f5707863d"
+  integrity sha512-1knevHQOryiYaeWNmZPyo5Qpo5vpGUgm8ZsbyWN7lYUAZDtrs5Nz3jooL3GbfrTOXb0ZAPpDHB77roWBZgGugg==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
