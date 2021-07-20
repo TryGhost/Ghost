@@ -30,8 +30,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/core": "7.14.3",
-    "@babel/preset-env": "7.14.4",
+    "@babel/core": "7.14.6",
+    "@babel/preset-env": "7.14.7",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "jsdom": "16.6.0",
     "mocha": "8.4.0",
