@@ -32,6 +32,6 @@
     "@tryghost/kg-markdown-html-renderer": "^4.0.3",
     "@tryghost/url-utils": "^2.0.0",
     "handlebars": "^4.7.6",
-    "juice": "^7.0.0"
+    "juice": "^8.0.0"
   }
 }
