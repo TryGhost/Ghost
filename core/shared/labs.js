@@ -26,7 +26,8 @@ const ALPHA_FEATURES = [
     'multipleProducts',
     'savedIndicator',
     'featureImgDragDrop',
-    'checkEmailList'
+    'checkEmailList',
+    'oauthLogin'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
