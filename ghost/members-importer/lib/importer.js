@@ -14,17 +14,18 @@ const messages = {
 
 module.exports = class MembersCSVImporter {
     /**
-     * @param {Object} config
-     * @param {string} config.storagePath - The path to store CSV's in before importing
-     * @param {Object} settingsCache - An instance of the Ghost Settings Cache
-     * @param {() => Object} getMembersApi
-     * @param {Object} ghostMailer - An instance of GhostMailer
-     * @param {(string) => boolean} isSet - Method checking if specific feature is enabled
-     * @param {({name, at, job, data, offloaded}) => void} addJob - Method registering an async job
-     * @param {Object} knex - An instance of the Ghost Database connection
-     * @param {Function} urlFor - function generating urls
+     * @param {Object} options
+     * @param {Object} options.config
+     * @param {string} options.config.storagePath - The path to store CSV's in before importing
+     * @param {Object} options.settingsCache - An instance of the Ghost Settings Cache
+     * @param {() => Object} options.getMembersApi
+     * @param {Object} options.ghostMailer - An instance of GhostMailer
+     * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
+     * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
+     * @param {Object} options.knex - An instance of the Ghost Database connection
+     * @param {Function} options.urlFor - function generating urls
      */
-    constructor(config, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor) {
+    constructor({config, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor}) {
         this._storagePath = config.storagePath;
         this._settingsCache = settingsCache;
         this._getMembersApi = getMembersApi;
