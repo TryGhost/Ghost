@@ -8,7 +8,6 @@ const tpl = require('@tryghost/tpl');
 const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
-const jobsService = require('../../jobs');
 
 const messages = {
     filenameCollision: 'Filename already exists, please try again.',
@@ -22,14 +21,16 @@ module.exports = class MembersCSVImporter {
      * @param {Object} settingsCache - An instance of the Ghost Settings Cache
      * @param {Object} ghostMailer - An instance of GhostMailer
      * @param {(string) => boolean} isSet - Method checking if specific feature is enabled
+     * @param {({name, at, job, data, offloaded}) => void} addJob - Method registering an async job
      * @param {() => Object} getMembersApi
      */
-    constructor(config, settingsCache, getMembersApi, ghostMailer, isSet) {
+    constructor(config, settingsCache, getMembersApi, ghostMailer, isSet, addJob) {
         this._storagePath = config.storagePath;
         this._settingsCache = settingsCache;
         this._getMembersApi = getMembersApi;
         this._ghostMailer = ghostMailer;
         this._isSet = isSet;
+        this._addJob = addJob;
     }
 
     /**
@@ -280,7 +281,7 @@ module.exports = class MembersCSVImporter {
             };
         } else {
             const emailRecipient = user.email;
-            jobsService.addJob({
+            this._addJob({
                 job: async () => {
                     const result = await this.perform(job.id);
                     const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
