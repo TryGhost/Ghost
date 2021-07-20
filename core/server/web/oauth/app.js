@@ -5,10 +5,10 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
-const config = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
 const models = require('../../models');
 const auth = require('../../services/auth');
+const labs = require('../../../shared/labs');
 
 function randomPassword() {
     return require('crypto').randomBytes(128).toString('hex');
@@ -17,10 +17,14 @@ function randomPassword() {
 module.exports = function setupOAuthApp() {
     debug('OAuth App setup start');
     const oauthApp = express('oauth');
-    if (!config.get('enableDeveloperExperiments')) {
-        debug('OAuth App setup skipped');
-        return oauthApp;
+
+    function labsMiddleware(req, res, next) {
+        if (labs.isSet('oauthLogin')) {
+            return next();
+        }
+        res.sendStatus(404);
     }
+    oauthApp.use(labsMiddleware);
 
     // send 503 json response in case of maintenance
     oauthApp.use(shared.middlewares.maintenance);
