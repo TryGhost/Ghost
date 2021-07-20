@@ -4,7 +4,7 @@ const fs = require('fs-extra');
 const membersCSV = require('@tryghost/members-csv');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const GhostMailer = require('../../mail').GhostMailer;
+
 const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
@@ -16,18 +16,19 @@ const messages = {
     jobAlreadyComplete: 'Job is already complete.'
 };
 
-const ghostMailer = new GhostMailer();
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} config
      * @param {string} config.storagePath - The path to store CSV's in before importing
      * @param {Object} settingsCache - An instance of the Ghost Settings Cache
+     * @param {Object} ghostMailer - An instance of GhostMailer
      * @param {() => Object} getMembersApi
      */
-    constructor(config, settingsCache, getMembersApi) {
+    constructor(config, settingsCache, getMembersApi, ghostMailer) {
         this._storagePath = config.storagePath;
         this._settingsCache = settingsCache;
         this._getMembersApi = getMembersApi;
+        this._ghostMailer = ghostMailer;
     }
 
     /**
@@ -289,7 +290,7 @@ module.exports = class MembersCSVImporter {
                     const errorCSV = this.generateErrorCSV(result);
                     const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
 
-                    await ghostMailer.send({
+                    await this._ghostMailer.send({
                         to: emailRecipient,
                         subject: emailSubject,
                         html: emailContent,
