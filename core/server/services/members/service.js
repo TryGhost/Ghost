@@ -134,7 +134,8 @@ const membersService = {
     () => membersApi,
     ghostMailer,
     labsService.isSet,
-    jobsService.addJob
+    jobsService.addJob,
+    db.knex
     ),
 
     stats: new MembersStats({
