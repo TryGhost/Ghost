@@ -9,7 +9,6 @@ const urlUtils = require('../../../../shared/url-utils');
 const db = require('../../../data/db');
 const emailTemplate = require('./email-template');
 const jobsService = require('../../jobs');
-const labsService = require('../../../../shared/labs');
 
 const messages = {
     filenameCollision: 'Filename already exists, please try again.',
@@ -22,13 +21,15 @@ module.exports = class MembersCSVImporter {
      * @param {string} config.storagePath - The path to store CSV's in before importing
      * @param {Object} settingsCache - An instance of the Ghost Settings Cache
      * @param {Object} ghostMailer - An instance of GhostMailer
+     * @param {(string) => boolean} isSet - Method checking if specific feature is enabled
      * @param {() => Object} getMembersApi
      */
-    constructor(config, settingsCache, getMembersApi, ghostMailer) {
+    constructor(config, settingsCache, getMembersApi, ghostMailer, isSet) {
         this._storagePath = config.storagePath;
         this._settingsCache = settingsCache;
         this._getMembersApi = getMembersApi;
         this._ghostMailer = ghostMailer;
+        this._isSet = isSet;
     }
 
     /**
@@ -156,7 +157,7 @@ module.exports = class MembersCSVImporter {
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
-                    if (!labsService.isSet('multipleProducts')) {
+                    if (!this._isSet('multipleProducts')) {
                         await membersApi.members.setComplimentarySubscription(member, options);
                     } else if (!row.products) {
                         await membersApi.members.update({
@@ -168,7 +169,7 @@ module.exports = class MembersCSVImporter {
                     }
                 }
 
-                if (labsService.isSet('multipleProducts')) {
+                if (this._isSet('multipleProducts')) {
                     if (row.products) {
                         await membersApi.members.update({
                             products: row.products
