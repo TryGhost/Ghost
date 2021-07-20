@@ -12,6 +12,7 @@ export const CARD_COMPONENT_MAP = {
     bookmark: 'koenig-card-bookmark',
     gallery: 'koenig-card-gallery',
     email: 'koenig-card-email',
+    'email-cta': 'koenig-card-email-cta',
     paywall: 'koenig-card-paywall'
 };
 
@@ -27,6 +28,7 @@ export const CARD_ICON_MAP = {
     bookmark: 'koenig/kg-card-type-bookmark',
     gallery: 'koenig/kg-card-type-gallery',
     email: 'koenig/kg-card-type-gen-embed',
+    'email-cta': 'koenig/kg-card-type-gen-embed',
     paywall: 'koenig/kg-card-type-divider'
 };
 
@@ -45,6 +47,7 @@ export default [
     createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'}),
     createComponentCard('gallery', {hasEditMode: false}),
     createComponentCard('email', {deleteIfEmpty: 'payload.html'}),
+    createComponentCard('email-cta', {deleteIfEmpty: 'payload.html'}),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 
@@ -117,6 +120,15 @@ export const CARD_MENU = [
             matches: ['email'],
             type: 'card',
             replaceArg: 'email'
+        },
+        {
+            label: 'Email call to action',
+            icon: 'koenig/kg-card-type-email',
+            desc: 'Target free or paid members with a CTA',
+            matches: ['email', 'cta'],
+            type: 'card',
+            replaceArg: 'email-cta',
+            feature: 'emailCardSegments'
         },
         {
             label: 'Public preview',
