@@ -5,7 +5,6 @@ const membersCSV = require('@tryghost/members-csv');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
-const urlUtils = require('../../../../shared/url-utils');
 const emailTemplate = require('./email-template');
 
 const messages = {
@@ -19,12 +18,13 @@ module.exports = class MembersCSVImporter {
      * @param {string} config.storagePath - The path to store CSV's in before importing
      * @param {Object} settingsCache - An instance of the Ghost Settings Cache
      * @param {() => Object} getMembersApi
-    * @param {Object} ghostMailer - An instance of GhostMailer
+     * @param {Object} ghostMailer - An instance of GhostMailer
      * @param {(string) => boolean} isSet - Method checking if specific feature is enabled
      * @param {({name, at, job, data, offloaded}) => void} addJob - Method registering an async job
      * @param {Object} knex - An instance of the Ghost Database connection
+     * @param {Function} urlFor - function generating urls
      */
-    constructor(config, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex) {
+    constructor(config, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor) {
         this._storagePath = config.storagePath;
         this._settingsCache = settingsCache;
         this._getMembersApi = getMembersApi;
@@ -32,6 +32,7 @@ module.exports = class MembersCSVImporter {
         this._isSet = isSet;
         this._addJob = addJob;
         this._knex = knex;
+        this._urlFor = urlFor;
     }
 
     /**
@@ -212,8 +213,8 @@ module.exports = class MembersCSVImporter {
     }
 
     generateCompletionEmail(result, data) {
-        const siteUrl = new URL(urlUtils.urlFor('home', null, true));
-        const membersUrl = new URL('members', urlUtils.urlFor('admin', null, true));
+        const siteUrl = new URL(this._urlFor('home', null, true));
+        const membersUrl = new URL('members', this._urlFor('admin', null, true));
         if (data.importLabel) {
             membersUrl.searchParams.set('label', data.importLabel.slug);
         }
