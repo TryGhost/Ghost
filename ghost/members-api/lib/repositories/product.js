@@ -211,7 +211,6 @@ class ProductRepository {
             await product.related('stripePrices').fetch(options);
             await product.related('monthlyPrice').fetch(options);
             await product.related('yearlyPrice').fetch(options);
-            await product.related('benefits').fetch(options);
         }
 
         return product;
