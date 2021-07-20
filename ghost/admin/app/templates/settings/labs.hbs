@@ -198,20 +198,11 @@
                             </p>
                         </div>
                         <div class="for-switch">
-                            <label class="switch" for="settings-oauth">
-                                <input
-                                    type="checkbox"
-                                    checked={{this.isOAuthEnabled}}
-                                    id="settings-oauth"
-                                    onclick={{action "toggleIsOAuthEnabled" value="target.checked"}}
-                                    data-test-private-checkbox
-                                >
-                                <span class="input-toggle-component"></span>
-                            </label>
+                            <GhFeatureFlag @flag="oauthLogin" />
                         </div>
                     </div>
                     <div class="gh-expandable-content">
-                        {{#if this.isOAuthEnabled}}
+                        {{#if this.feature.oauthLogin}}
                             <div class="gh-setting-content-extended gh-labs-sso-settings pt2 pb4">
                                 <a href="https://console.developers.google.com/" target="_blank" rel="noopener" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
                                 <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
