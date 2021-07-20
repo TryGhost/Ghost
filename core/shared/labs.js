@@ -25,7 +25,8 @@ const ALPHA_FEATURES = [
     'emailCardSegments',
     'multipleProducts',
     'savedIndicator',
-    'featureImgDragDrop'
+    'featureImgDragDrop',
+    'checkEmailList'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
