@@ -128,16 +128,17 @@ const membersService = {
     stripeConnect: require('./stripe-connect'),
 
     importer: new MembersCSVImporter({
-        storagePath: config.getContentPath('data')
-    },
-    settingsCache,
-    () => membersApi,
-    ghostMailer,
-    labsService.isSet,
-    jobsService.addJob,
-    db.knex,
-    urlUtils.urlFor
-    ),
+        config: {
+            storagePath: config.getContentPath('data')
+        },
+        settingsCache,
+        getMembersApi: () => membersApi,
+        ghostMailer,
+        isSet: labsService.isSet,
+        addJob: jobsService.addJob,
+        knex: db.knex,
+        urlFor: urlUtils.urlFor
+    }),
 
     stats: new MembersStats({
         db: db,
