@@ -125,9 +125,10 @@ export default Component.extend({
 
         // reset local mobiledoc if html has been changed upstream so that
         // the html will be re-parsed by the mobiledoc-kit editor
-        if (this.html !== this.getCleanHTML()) {
+        if (this.html !== this._lastHtml && this.html !== this.getCleanHTML()) {
             this.set('mobiledoc', null);
         }
+        this._lastHtml = this.html;
     },
 
     willRender() {
