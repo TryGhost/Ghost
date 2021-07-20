@@ -9,6 +9,7 @@ const createMembersApiInstance = require('./api');
 const createMembersSettingsInstance = require('./settings');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
+const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const ghostVersion = require('@tryghost/version');
@@ -126,9 +127,12 @@ const membersService = {
     stripeConnect: require('./stripe-connect'),
 
     importer: new MembersCSVImporter({
-        storagePath: config.getContentPath('data')},
-        settingsCache, () => membersApi,
-        ghostMailer
+        storagePath: config.getContentPath('data')
+    },
+    settingsCache,
+    () => membersApi,
+    ghostMailer,
+    labsService.isSet
     ),
 
     stats: new MembersStats({
