@@ -120,7 +120,7 @@ module.exports = {
                                             <tr>
                                                 {{#if metadata.icon}}
                                                     <td valign="middle" class="kg-bookmark-icon--outlook">
-                                                        <a href="{{url}}"><img src="{{metadata.icon}}" width="22" height="22"></a>
+                                                        <a href="{{url}}"><img src="{{metadata.icon}}" width="22" height="22" alt=" "></a>
                                                     </td>
                                                 {{/if}}
                                                 <td valign="middle" class="kg-bookmark-byline--outlook">
@@ -150,14 +150,14 @@ module.exports = {
                             <div class="kg-bookmark-title">{{metadata.title}}</div>
                             <div class="kg-bookmark-description">{{metadata.description}}</div>
                             <div class="kg-bookmark-metadata">
-                                {{#if metadata.icon}}<img class="kg-bookmark-icon" src="{{metadata.icon}}">{{/if}}
+                                {{#if metadata.icon}}<img class="kg-bookmark-icon" src="{{metadata.icon}}" alt="">{{/if}}
                                 {{#if metadata.publisher}}<span class="kg-bookmark-author">{{metadata.publisher}}</span>{{/if}}
                                 {{#if metadata.author}}<span class="kg-bookmark-publisher">{{metadata.author}}</span>{{/if}}
                             </div>
                         </div>
                         {{#if metadata.thumbnail}}
                             <div class="kg-bookmark-thumbnail"{{#if isEmail}} style="background-image: url('{{metadata.thumbnail}}')"{{/if}}>
-                                <img src="{{metadata.thumbnail}}">
+                                <img src="{{metadata.thumbnail}}" alt="">
                             </div>
                         {{/if}}
                     </a>
