@@ -108,7 +108,7 @@ class MembersSSR {
      */
     _removeSessionCookie(req, res) {
         const cookies = this._getCookies(req, res);
-        cookies.set(this.sessionCookieName, this.sessionCookieOptions);
+        cookies.set(this.sessionCookieName, null, this.sessionCookieOptions);
     }
 
     /**
