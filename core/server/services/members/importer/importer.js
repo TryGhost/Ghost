@@ -15,8 +15,7 @@ const messages = {
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} options
-     * @param {Object} options.config
-     * @param {string} options.config.storagePath - The path to store CSV's in before importing
+     * @param {string} options.storagePath - The path to store CSV's in before importing
      * @param {Object} options.settingsCache - An instance of the Ghost Settings Cache
      * @param {() => Object} options.getMembersApi
      * @param {Object} options.ghostMailer - An instance of GhostMailer
@@ -25,8 +24,8 @@ module.exports = class MembersCSVImporter {
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      */
-    constructor({config, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor}) {
-        this._storagePath = config.storagePath;
+    constructor({storagePath, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor}) {
+        this._storagePath = storagePath;
         this._settingsCache = settingsCache;
         this._getMembersApi = getMembersApi;
         this._ghostMailer = ghostMailer;
