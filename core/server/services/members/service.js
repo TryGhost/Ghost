@@ -128,9 +128,7 @@ const membersService = {
     stripeConnect: require('./stripe-connect'),
 
     importer: new MembersCSVImporter({
-        config: {
-            storagePath: config.getContentPath('data')
-        },
+        storagePath: config.getContentPath('data'),
         settingsCache,
         getMembersApi: () => membersApi,
         ghostMailer,
