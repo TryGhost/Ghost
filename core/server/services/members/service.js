@@ -13,6 +13,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
+const {GhostMailer} = require('../mail');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -22,6 +23,8 @@ const messages = {
 
 // Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
 const events = require('../../lib/common/events');
+
+const ghostMailer = new GhostMailer();
 
 const membersConfig = new MembersConfigProvider({
     config,
@@ -122,7 +125,11 @@ const membersService = {
 
     stripeConnect: require('./stripe-connect'),
 
-    importer: new MembersCSVImporter({storagePath: config.getContentPath('data')}, settingsCache, () => membersApi),
+    importer: new MembersCSVImporter({
+        storagePath: config.getContentPath('data')},
+        settingsCache, () => membersApi,
+        ghostMailer
+    ),
 
     stats: new MembersStats({
         db: db,
