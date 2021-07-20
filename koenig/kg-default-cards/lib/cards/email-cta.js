@@ -5,7 +5,7 @@ const {
 } = require('@tryghost/url-utils/lib/utils');
 
 module.exports = {
-    name: 'email',
+    name: 'email-cta',
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
@@ -20,7 +20,17 @@ module.exports = {
 
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML
-        return dom.createRawHTMLSection(payload.html);
+        const rawHTMLSecion = dom.createRawHTMLSection(payload.html);
+
+        if (payload.segment) {
+            let segment = dom.createElement('div');
+            segment.setAttribute('data-gh-segment', payload.segment);
+            segment.appendChild(rawHTMLSecion);
+
+            return segment;
+        } else {
+            return rawHTMLSecion;
+        }
     },
 
     absoluteToRelative(payload, options) {
