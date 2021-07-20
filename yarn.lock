@@ -856,10 +856,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-ssr@1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.7.tgz#c494c0df3261c8fc43600c9d1128d38b9b1a3405"
-  integrity sha512-a838IUeLzNX5S5Nm6m4qxhEegP2JMzoBd3Mxa4iEF9LEb7MsByozbcUGCFrZr/OyZTyGXWdNGByFprfkWA02qA==
+"@tryghost/members-ssr@1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.8.tgz#ebf837b913fa049d6df36171206b372e1e1ebfd4"
+  integrity sha512-v32kUlnH7tPNKhB6j9OTvGkl+3PxAAlEkoYI0vrnGHHP+Lzx9bEsWLBEOmGCmHfYVFJB4dzAealnqtdVLkRpew==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/ignition-errors" "^0.1.2"
