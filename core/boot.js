@@ -162,7 +162,7 @@ async function initDynamicRouting() {
 }
 
 /**
- * Services are components that make up part of Ghost and need initialising on boot
+ * Services are components that make up part of Ghost and need initializing on boot
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  *
@@ -206,7 +206,7 @@ async function initServices({config}) {
     ]);
     debug('End: Services');
 
-    // Initialise analytics events
+    // Initialize analytics events
     if (config.get('segment:key')) {
         require('./server/analytics-events').init();
     }
@@ -295,7 +295,7 @@ async function bootGhost() {
         require('@tryghost/version');
         debug('End: Load version info');
 
-        // Sentry must be initialised early, but requires config
+        // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
         require('./shared/sentry');
         debug('End: Load sentry');
