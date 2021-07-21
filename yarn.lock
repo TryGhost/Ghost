@@ -913,7 +913,7 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.1.2":
+"@tryghost/members-csv@1.1.2", "@tryghost/members-csv@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.2.tgz#408973028d587925ddebaf686f4b8479e2843462"
   integrity sha512-wUgKjC+OhUDbaejHhhLAl97LqyzDjzUc6CmbZ8zmwk0B1TaoFPuRGwMfGLyMmqp25b+9mTETrLWn/aSGa/0Uyw==
@@ -923,6 +923,16 @@
     lodash "^4.17.21"
     papaparse "5.3.1"
     pump "^3.0.0"
+
+"@tryghost/members-importer@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.1.0.tgz#d36544e2917c41e7f35c66c91deff567c83da9b5"
+  integrity sha512-eiruaYreKd7S7mGtLS2RzAMwq7T48bL4Pa5497bi3soCQCS0P8GCfonojwQmYPDHaF3xPN/oY+80q6HqP43+rw==
+  dependencies:
+    "@tryghost/errors" "^0.2.13"
+    "@tryghost/members-csv" "^1.1.2"
+    "@tryghost/tpl" "^0.1.3"
+    moment-timezone "0.5.23"
 
 "@tryghost/members-ssr@1.0.8":
   version "1.0.8"
