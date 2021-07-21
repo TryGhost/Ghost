@@ -131,7 +131,7 @@ const membersService = {
         storagePath: config.getContentPath('data'),
         getTimezone: () => settingsCache.get('timezone'),
         getMembersApi: () => membersApi,
-        ghostMailer,
+        sendEmail: ghostMailer.send.bind(ghostMailer),
         isSet: labsService.isSet,
         addJob: jobsService.addJob,
         knex: db.knex,
