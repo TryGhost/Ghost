@@ -3,7 +3,6 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {isBlank} from '@ember/utils';
-import {notifyPropertyChange} from '@ember/object';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
