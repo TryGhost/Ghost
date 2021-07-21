@@ -129,7 +129,7 @@ const membersService = {
 
     importer: new MembersCSVImporter({
         storagePath: config.getContentPath('data'),
-        settingsCache,
+        getTimezone: () => settingsCache.get('timezone'),
         getMembersApi: () => membersApi,
         ghostMailer,
         isSet: labsService.isSet,
