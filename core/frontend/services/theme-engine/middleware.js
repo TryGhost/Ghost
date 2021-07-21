@@ -36,12 +36,7 @@ function ensureActiveTheme(req, res, next) {
     next();
 }
 
-/*
- * @TODO
- * This should be definitely refactored and we need to consider _some_
- * members settings as publicly readable
- */
-async function haxGetMembersPriceData() {
+function calculateLegacyPriceData(products) {
     const defaultPrice = {
         amount: 0,
         currency: 'usd',
@@ -63,31 +58,19 @@ async function haxGetMembersPriceData() {
         };
     }
 
-    try {
-        const {products} = await api.canary.products.browse({
-            include: ['monthly_price','yearly_price']
-        });
+    const defaultProduct = products[0] || {};
 
-        const defaultProduct = products[0];
+    const monthlyPrice = makePriceObject(defaultProduct.monthly_price || defaultPrice);
 
-        const monthlyPrice = makePriceObject(defaultProduct.monthly_price || defaultPrice);
+    const yearlyPrice = makePriceObject(defaultProduct.yearly_price || defaultPrice);
 
-        const yearlyPrice = makePriceObject(defaultProduct.yearly_price || defaultPrice);
+    const priceData = {
+        monthly: monthlyPrice,
+        yearly: yearlyPrice,
+        currency: monthlyPrice ? monthlyPrice.currency : defaultPrice.currency
+    };
 
-        const priceData = {
-            monthly: monthlyPrice,
-            yearly: yearlyPrice,
-            currency: monthlyPrice ? monthlyPrice.currency : defaultPrice.currency
-        };
-
-        return priceData;
-    } catch (err) {
-        return {
-            monthly: makePriceObject(defaultPrice),
-            yearly: makePriceObject(defaultPrice),
-            currency: 'usd'
-        };
-    }
+    return priceData;
 }
 
 async function getProductAndPricesData() {
@@ -131,8 +114,8 @@ async function updateGlobalTemplateOptions(req, res, next) {
         posts_per_page: activeTheme.get().config('posts_per_page'),
         image_sizes: activeTheme.get().config('image_sizes')
     };
-    const priceData = await haxGetMembersPriceData();
     const productData = await getProductAndPricesData();
+    const priceData = calculateLegacyPriceData(productData);
 
     let products = null;
     let product = null;
