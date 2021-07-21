@@ -207,7 +207,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
             if (options.data.site.accent_color && !_.includes(context, 'amp')) {
                 const accentColor = escapeExpression(options.data.site.accent_color);
                 const accentColorHSL = convert.rgb.hsl(convert.hex.rgb(options.data.site.accent_color));
-                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};--ghost-accent-h: ${accentColorHSL[0]};--ghost-accent-s: ${accentColorHSL[1]};--ghost-accent-l: ${accentColorHSL[2]};}</style>`;
+                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};--ghost-accent-h: ${accentColorHSL[0]};--ghost-accent-s: ${accentColorHSL[1]}%;--ghost-accent-l: ${accentColorHSL[2]}%;}</style>`;
                 const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
 
                 if (existingScriptIndex !== -1) {

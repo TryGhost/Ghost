@@ -1537,7 +1537,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;--ghost-accent-h: 210;--ghost-accent-s: 65;--ghost-accent-l: 20;}</style>');
+                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;--ghost-accent-h: 210;--ghost-accent-s: 65%;--ghost-accent-l: 20%;}</style>');
                 done();
             }).catch(done);
         });
@@ -1615,7 +1615,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;--ghost-accent-h: 210;--ghost-accent-s: 65;--ghost-accent-l: 20;}</style>');
+                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;--ghost-accent-h: 210;--ghost-accent-s: 65%;--ghost-accent-l: 20%;}</style>');
                 done();
             }).catch(done);
         });
