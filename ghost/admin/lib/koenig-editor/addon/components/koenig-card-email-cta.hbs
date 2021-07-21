@@ -32,12 +32,36 @@
         />
         <div class="kg-card-help">
             <p>
-                <span>Only visible when delivered by email, this card will not be published on your site.</span>
-                <a href="https://ghost.org/help/email-newsletters/#email-cards" class="dib lh-zero v-mid kg-card-help-icon-link" target="_blank" rel="noreferer nopener">{{svg-jar "help" class="stroke-midgrey"}}</a>
+                <span>
+                    Only visible to
+                    <PowerSelect
+                        @options={{this.segments}}
+                        @selected={{this.selectedSegment}}
+                        @onChange={{this.setSegment}}
+                        @searchEnabled={{false}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="ember-power-select-inline"
+                        as |segment|
+                    >
+                        {{segment.name}}
+                    </PowerSelect>
+                    when delievered by email.
+                </span>
+                <br>
+                <span>This card will not be published on your site.</span>
             </p>
         </div>
     {{else}}
         <p>{{{this.formattedHtml}}}</p>
+        <div class="kg-card-help">
+            <p>
+                <span>
+                    Only visible to <strong>{{this.selectedSegment.name}}</strong> when delievered by email.
+                </span>
+                <br>
+                <span>This card will not be published on your site.</span>
+            </p>
+        </div>
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 </KoenigCard>
