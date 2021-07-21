@@ -132,10 +132,10 @@ const membersService = {
         getTimezone: () => settingsCache.get('timezone'),
         getMembersApi: () => membersApi,
         sendEmail: ghostMailer.send.bind(ghostMailer),
-        isSet: labsService.isSet,
-        addJob: jobsService.addJob,
+        isSet: labsService.isSet.bind(labsService),
+        addJob: jobsService.addJob.bind(jobsService),
         knex: db.knex,
-        urlFor: urlUtils.urlFor
+        urlFor: urlUtils.urlFor.bind(urlUtils)
     }),
 
     stats: new MembersStats({
