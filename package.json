@@ -166,7 +166,7 @@
   "devDependencies": {
     "@lodder/grunt-postcss": "3.0.1",
     "coffeescript": "2.5.1",
-    "cssnano": "5.0.6",
+    "cssnano": "5.0.7",
     "eslint": "7.31.0",
     "eslint-plugin-ghost": "2.6.0",
     "grunt": "1.4.1",
@@ -186,7 +186,7 @@
     "mock-knex": "0.4.10",
     "nock": "13.1.1",
     "papaparse": "5.3.1",
-    "postcss": "8.3.5",
+    "postcss": "8.3.6",
     "rewire": "5.0.0",
     "should": "13.2.3",
     "sinon": "11.1.1",
