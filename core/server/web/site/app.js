@@ -123,13 +123,6 @@ module.exports = function setupSiteApp(options = {}) {
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use('/members/.well-known', (req, res, next) => membersService.api.middleware.wellKnown(req, res, next));
 
-    // Theme middleware
-    // This should happen AFTER any shared assets are served, as it only changes things to do with templates
-    // At this point the active theme object is already updated, so we have the right path, so it can probably
-    // go after staticTheme() as well, however I would really like to simplify this and be certain
-    siteApp.use(themeMiddleware);
-    debug('Themes done');
-
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
     config.get('apps:internal').forEach((appName) => {
@@ -143,6 +136,11 @@ module.exports = function setupSiteApp(options = {}) {
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
     debug('Static content done');
+
+    // Theme middleware
+    // This should happen AFTER any shared assets are served, as it only changes things to do with templates
+    siteApp.use(themeMiddleware);
+    debug('Themes done');
 
     // Serve robots.txt if not found in theme
     siteApp.use(mw.servePublicFile('robots.txt', 'text/plain', constants.ONE_HOUR_S));
