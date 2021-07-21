@@ -3,6 +3,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {isBlank} from '@ember/utils';
+import {notifyPropertyChange} from '@ember/object';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
@@ -12,6 +13,20 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
     get formattedHtml() {
         return formatTextReplacementHtml(this.args.payload.html);
+    }
+
+    get segments() {
+        return [{
+            name: 'Free members',
+            filter: 'status:free'
+        }, {
+            name: 'Paid members',
+            filter: 'status:-free'
+        }];
+    }
+
+    get selectedSegment() {
+        return this.segments.find(segment => segment.filter === this.args.payload.segment);
     }
 
     get toolbar() {
@@ -38,11 +53,20 @@ export default class KoenigCardEmailCtaComponent extends Component {
         if (!this.args.payload.html) {
             this._updatePayloadAttr('html', '<p>Hey {first_name, "there"},</p>');
         }
+
+        if (!this.args.payload.segment) {
+            this._updatePayloadAttr('segment', 'status:free');
+        }
     }
 
     @action
     updateHtml(html) {
         this._updatePayloadAttr('html', html);
+    }
+
+    @action
+    setSegment(segment) {
+        this._updatePayloadAttr('segment', segment.filter);
     }
 
     @action
