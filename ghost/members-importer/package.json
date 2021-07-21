@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-importer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-importer",
   "author": "Ghost Foundation",
   "license": "MIT",
