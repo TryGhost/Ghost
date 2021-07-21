@@ -311,3 +311,10 @@
 .gh-labs-mailgun-region .ember-power-select-selected-item {
     margin-left: 0;
 }
+
+/* Inline input */
+.ember-power-select-inline {
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 4px;
+}

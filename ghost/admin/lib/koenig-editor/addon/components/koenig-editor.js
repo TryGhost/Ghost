@@ -17,6 +17,7 @@ import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import validator from 'validator';
 import {A} from '@ember/array';
+import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
@@ -320,11 +321,11 @@ export default Component.extend({
                 let cardName = env.name;
                 let componentName = CARD_COMPONENT_MAP[cardName];
 
-                // the payload must be copied to avoid sharing the reference
+                // the payload must be copied to avoid sharing the reference.
                 // `payload.files` is special because it's set by paste/drag-n-drop
                 // events and can't be copied for security reasons
                 let {files} = payload;
-                let payloadCopy = JSON.parse(JSON.stringify(payload || null));
+                let payloadCopy = new TrackedObject(JSON.parse(JSON.stringify(payload || null)));
                 payloadCopy.files = files;
 
                 // all of the properties that will be passed through to the
@@ -979,7 +980,7 @@ export default Component.extend({
             if (range && range.isCollapsed && range.headSection.isBlank && !range.headSection.isListItem) {
                 if (!this._modifierKeys.shift) {
                     editor.run((postEditor) => {
-                        let payload = {url: text, linkOnError: true, isDirectUrl: true};
+                        let payload = new TrackedObject({url: text, linkOnError: true, isDirectUrl: true});
                         let card = postEditor.builder.createCardSection('embed', payload);
                         let nextSection = range.headSection.next;
 
