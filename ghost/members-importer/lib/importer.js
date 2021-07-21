@@ -16,7 +16,7 @@ module.exports = class MembersCSVImporter {
     /**
      * @param {Object} options
      * @param {string} options.storagePath - The path to store CSV's in before importing
-     * @param {Object} options.settingsCache - An instance of the Ghost Settings Cache
+     * @param {Function} options.getTimezone - function returning currently configured timezone
      * @param {() => Object} options.getMembersApi
      * @param {Object} options.ghostMailer - An instance of GhostMailer
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
@@ -24,9 +24,9 @@ module.exports = class MembersCSVImporter {
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      */
-    constructor({storagePath, settingsCache, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor}) {
+    constructor({storagePath, getTimezone, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor}) {
         this._storagePath = storagePath;
-        this._settingsCache = settingsCache;
+        this._getTimezone = getTimezone;
         this._getMembersApi = getMembersApi;
         this._ghostMailer = ghostMailer;
         this._isSet = isSet;
@@ -75,7 +75,7 @@ module.exports = class MembersCSVImporter {
     async prepare(inputFilePath, headerMapping, defaultLabels) {
         const batchSize = 1;
 
-        const siteTimezone = this._settingsCache.get('timezone');
+        const siteTimezone = this._getTimezone();
         const currentTime = moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm:ss.SSS');
         const outputFileName = `Members Import ${currentTime}.csv`;
         const outputFilePath = path.join(this._storagePath, '/', outputFileName);
