@@ -1,1 +1,1 @@
-module.exports = require('./lib/members-importer');
+module.exports = require('./lib/importer');
