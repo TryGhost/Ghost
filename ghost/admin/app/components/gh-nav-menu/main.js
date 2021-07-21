@@ -113,6 +113,7 @@ export default Component.extend(ShortcutsMixin, {
         this._icon = icon;
 
         if (icon && icon.match(/^https?:\/\//i)) {
+            this.set('iconClass', '');
             this.set('iconStyle', htmlSafe(`background-image: url(${icon})`));
             return;
         }
