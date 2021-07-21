@@ -6,6 +6,12 @@ const {metaData, escapeExpression, SafeString, logging, settingsCache, config, b
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
+/*
+ * @TODO:
+ *  replace with Ghost util when https://github.com/TryGhost/Admin/blob/main/app/utils/color.js
+ *  has been refactored into a module
+*/
+const convert = require('color-convert');
 
 const getMetaData = metaData.get;
 
@@ -200,7 +206,8 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
             // AMP template has style injected directly because there can only be one <style amp-custom> tag
             if (options.data.site.accent_color && !_.includes(context, 'amp')) {
                 const accentColor = escapeExpression(options.data.site.accent_color);
-                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+                const accentColorHSL = convert.rgb.hsl(convert.hex.rgb(options.data.site.accent_color));
+                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};--ghost-accent-h: ${accentColorHSL[0]};--ghost-accent-s: ${accentColorHSL[1]};--ghost-accent-l: ${accentColorHSL[2]};}</style>`;
                 const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
 
                 if (existingScriptIndex !== -1) {

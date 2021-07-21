@@ -100,6 +100,7 @@
     "bson-objectid": "2.0.1",
     "bthreads": "0.5.1",
     "cheerio": "0.22.0",
+    "color-convert": "^1.9.3",
     "compression": "1.7.4",
     "connect-slashes": "1.4.0",
     "cookie-session": "1.4.0",
