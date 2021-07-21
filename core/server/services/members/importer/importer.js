@@ -18,17 +18,17 @@ module.exports = class MembersCSVImporter {
      * @param {string} options.storagePath - The path to store CSV's in before importing
      * @param {Function} options.getTimezone - function returning currently configured timezone
      * @param {() => Object} options.getMembersApi
-     * @param {Object} options.ghostMailer - An instance of GhostMailer
+     * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
      * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      */
-    constructor({storagePath, getTimezone, getMembersApi, ghostMailer, isSet, addJob, knex, urlFor}) {
+    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersApi = getMembersApi;
-        this._ghostMailer = ghostMailer;
+        this._sendEmail = sendEmail;
         this._isSet = isSet;
         this._addJob = addJob;
         this._knex = knex;
@@ -294,7 +294,7 @@ module.exports = class MembersCSVImporter {
                     const errorCSV = this.generateErrorCSV(result);
                     const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
 
-                    await this._ghostMailer.send({
+                    await this._sendEmail({
                         to: emailRecipient,
                         subject: emailSubject,
                         html: emailContent,
