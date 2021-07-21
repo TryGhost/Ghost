@@ -2,6 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
+const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
 const MembersCSVImporter = require('..');
@@ -9,6 +10,22 @@ const MembersCSVImporter = require('..');
 const csvPath = path.join(__dirname, '/fixtures/');
 
 describe('Importer', function () {
+    let fsWriteSpy;
+
+    beforeEach(function () {
+        fsWriteSpy = sinon.spy(fs, 'writeFile');
+    });
+
+    afterEach(function () {
+        const writtenFile = fsWriteSpy.args[0][0];
+
+        if (writtenFile) {
+            fs.removeSync(writtenFile);
+        }
+
+        sinon.restore();
+    });
+
     describe('process', function () {
         it('should import a CSV file', async function () {
             const defaultProduct = {
@@ -74,6 +91,8 @@ describe('Importer', function () {
 
             should.exist(result.meta.stats.invalid);
             should.equal(result.meta.import_label, null);
+
+            fsWriteSpy.calledOnce.should.be.true();
         });
     });
 
@@ -97,6 +116,8 @@ describe('Importer', function () {
 
             result.batches.should.equal(2);
             should.exist(result.metadata);
+
+            fsWriteSpy.calledOnce.should.be.true();
         });
     });
 });
