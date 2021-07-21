@@ -54,6 +54,7 @@ export default Service.extend({
     launchComplete: feature('launchComplete', {user: true}),
     matchHelper: feature('matchHelper'),
     multipleProducts: feature('multipleProducts', {developer: true}),
+    membersFiltering: feature('membersFiltering', {developer: true}),
     emailCardSegments: feature('emailCardSegments', {developer: true}),
     savedIndicator: feature('savedIndicator', {developer: true}),
     featureImgDragDrop: feature('featureImgDragDrop', {developer: true}),
