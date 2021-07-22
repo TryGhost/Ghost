@@ -66,6 +66,10 @@
     max-width: 1600px;
 }
 
+.gh-main-fullwidth .gh-canvas {
+    max-width: 100%;
+}
+
 /*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
 .gh-main > section {
     width: 100%;
