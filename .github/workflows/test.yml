@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'v4.*'
       - 3.x
       - 2.x
       - 'renovate/*'
