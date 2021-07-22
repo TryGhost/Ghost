@@ -80,6 +80,32 @@
 
     {{#unless this.members.loading}}
         <section class="view-container">
+            {{#if (feature "membersFiltering")}}
+            <div class="gh-list-scrolling">
+                <table class="gh-list">
+                    <thead>
+                        <tr>
+                            <th>{{this.listHeader}}</th>
+                            <th>Open rate</th>
+                            <th>Location</th>
+                            <th>Created</th>
+                            <th>Open rate</th>
+                            <th>Location</th>
+                            <th>Created</th>
+                            <th>Open rate</th>
+                            <th>Location</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
+                        <GhMembersListItem
+                            @member={{member}}
+                            data-test-member={{member.id}}
+                        />
+                    </VerticalCollection>
+                </table>
+            </div>
+            {{else}}
             <section class="content-list">
                 <ol class="members-list gh-list {{unless this.members "no-posts"}}">
                     {{#if this.members}}
@@ -113,6 +139,7 @@
                     {{/if}}
                 </ol>
             </section>
+            {{/if}}
         </section>
     {{else}}
         <div class="gh-content">

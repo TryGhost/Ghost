@@ -296,3 +296,78 @@ ul.nostyle li {
     height: 9px;
     margin-top: 8px;
 }
+
+/* Horizontally scrolling list */
+.gh-list-scrolling {
+    position: relative;
+    overflow: scroll;
+    max-width: calc(100% + 96px);
+    height: calc(100vh - 96px);
+    margin: 0 -48px -81px;
+    padding: 0 48px 0 0;
+}
+
+.gh-list-scrolling table {
+    position: relative;
+    border-collapse: inherit;
+    margin: 0;
+}
+
+.gh-list-scrolling thead th {
+    position: sticky;
+    top: 0;
+    vertical-align: middle;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: var(--black);
+    background: var(--main-bg-color);
+    background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
+    border-bottom: var(--whitegrey) 1px solid;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.gh-list-scrolling thead th:first-child {
+    left: 0;
+    z-index: 1;
+    border-bottom: none;
+    padding: 0 60px 0 48px;
+}
+
+.gh-list-scrolling tbody .gh-list-data:first-child {
+    position: sticky;
+    left: 0;
+    border-bottom: none;
+    background: var(--main-bg-color);
+    background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
+    padding: 0 60px 0 48px;
+}
+
+.gh-list-scrolling thead th:first-child::before,
+.gh-list-scrolling tbody .gh-list-data:first-child::before {
+    position: absolute;
+    content: "";
+    bottom: 0;
+    right: 0;
+    left: 48px;
+    height: 1px;
+    background: var(--whitegrey);
+}
+
+.gh-list-scrolling td,
+.gh-list-scrolling th,
+.gh-list-scrolling a {
+    white-space: nowrap;
+}
+
+.gh-list-scrolling tbody th{
+    position: sticky;
+    left: 0;
+}
+
+.gh-list-scrolling tbody .gh-list-data {
+    border-top: none;
+    border-bottom: var(--whitegrey) 1px solid;
+}

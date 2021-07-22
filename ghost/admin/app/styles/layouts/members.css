@@ -68,35 +68,13 @@
 
 .members-list .gh-list-header {
     position: sticky;
-    top: 84px;
+    top: 96px;
     z-index: 1;
     background: var(--white);
 }
 
-.members-list-header-overlay {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    position: sticky;
-    height: 40px;
-    top: calc(84px - 40px); /* match gh-list-header sticky top */
-    left: 0;
-    right: 0;
-    margin-top: -40px;
-    transform: translateY(40px);
-    z-index: 2;
-
-    border-radius: 5px 5px 0 0;
-
-    border-bottom: 1px solid #e5eff5;
-    font-size: 1.2rem;
-    font-weight: 500;
-    letter-spacing: .1px;
-    color: #738a94;
-    text-transform: uppercase;
-    padding: 10px 16px;
-    white-space: nowrap;
-    background: #f8fafc;
+.gh-list-scrolling-h .members-list .gh-list-header {
+    top: 0;
 }
 
 .members-header .view-actions input.gh-members-list-searchfield {
