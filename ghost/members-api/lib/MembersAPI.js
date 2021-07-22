@@ -269,7 +269,9 @@ module.exports = function MembersAPI({
         const model = await users.get({email}, {
             withRelated: [
                 'stripeSubscriptions',
-                'stripeSubscriptions.stripePrice'
+                'stripeSubscriptions.stripePrice',
+                'labels',
+                'products'
             ]
         });
         if (!model) {
