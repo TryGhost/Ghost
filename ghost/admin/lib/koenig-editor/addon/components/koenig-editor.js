@@ -10,7 +10,7 @@ import EmberObject, {computed, get} from '@ember/object';
 import Key from 'mobiledoc-kit/utils/key';
 import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import calculateReadingTime from '../utils/reading-time';
-import defaultAtoms from '../options/atoms';
+import defaultAtoms, {ATOM_COMPONENT_MAP} from '../options/atoms';
 import defaultCards, {CARD_COMPONENT_MAP, CARD_ICON_MAP} from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import registerKeyCommands from '../options/key-commands';
@@ -38,6 +38,8 @@ const UNDO_DEPTH = 100;
 
 export const ADD_CARD_HOOK = 'addComponent';
 export const REMOVE_CARD_HOOK = 'removeComponent';
+export const ADD_ATOM_HOOK = 'addAtomComponent';
+export const REMOVE_ATOM_HOOK = 'removeAtomComponent';
 
 // used in test helpers to grab a reference to the underlying mobiledoc editor
 export const TESTING_EXPANDO_PROPERTY = '__mobiledoc_kit_editor';
@@ -170,7 +172,9 @@ function insertImageCards(files, postEditor) {
 }
 
 export default Component.extend({
+    feature: service(),
     koenigDragDropHandler: service(),
+    koenigUi: service(),
 
     tagName: 'article',
     classNames: ['koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0'],
@@ -192,6 +196,7 @@ export default Component.extend({
     activeMarkupTagNames: null,
     activeSectionTagNames: null,
     selectedRange: null,
+    componentAtoms: null,
     componentCards: null,
     linkRange: null,
     selectedCard: null,
@@ -256,6 +261,7 @@ export default Component.extend({
             this.set('mobiledoc', mobiledoc);
         }
 
+        this.set('componentAtoms', A([]));
         this.set('componentCards', A([]));
         this.set('activeMarkupTagNames', {});
         this.set('activeSectionTagNames', {});
@@ -367,6 +373,46 @@ export default Component.extend({
             // triggered when a card section is removed from the mobiledoc
             [REMOVE_CARD_HOOK]: (card) => {
                 this.componentCards.removeObject(card);
+            },
+            [ADD_ATOM_HOOK]: ({env, options, value, payload}) => {
+                const atomName = env.name;
+                const componentName = ATOM_COMPONENT_MAP[atomName];
+
+                const payloadCopy = new TrackedObject(JSON.parse(JSON.stringify(payload || null)));
+
+                const atom = EmberObject.create({
+                    atomName,
+                    componentName,
+                    value,
+                    payload: payloadCopy,
+                    env,
+                    options,
+                    editor
+                });
+
+                // the desination element is the container that gets rendered
+                // inside the editor, once rendered we use {{in-element}} to
+                // wormhole in the actual ember component
+                let atomId = guidFor(atom);
+                let destinationElementId = `koenig-editor-atom-${atomId}`;
+                let destinationElement = document.createElement('div');
+                destinationElement.id = destinationElementId;
+                destinationElement.classList.add('dib');
+
+                atom.setProperties({
+                    destinationElementId,
+                    destinationElement
+                });
+
+                run.schedule('afterRender', () => {
+                    this.componentAtoms.pushObject(atom);
+                });
+
+                // render the destination element inside the editor
+                return {atom, element: destinationElement};
+            },
+            [REMOVE_ATOM_HOOK]: (atom) => {
+                this.componentAtoms.removeObject(atom);
             }
         };
         editorOptions.cardOptions = componentHooks;

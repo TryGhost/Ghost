@@ -94,3 +94,15 @@
         }}
     {{/in-element}}
 {{/each}}
+
+{{!-- all component atoms wormholed into the editor canvas --}}
+{{#each this.componentAtoms as |atom|}}
+    {{#in-element atom.destinationElement}}
+        {{component atom.componentName
+            editor=this.editor
+            atom=atom
+            saveAtom=(fn atom.env.save atom.env.value atom.env.payload)
+            registerComponent=(action (mut atom.component))
+        }}
+    {{/in-element}}
+{{/each}}
