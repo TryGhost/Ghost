@@ -479,7 +479,7 @@ module.exports = {
             const pathToCSV = frame.file.path;
             const headerMapping = frame.data.mapping;
 
-            return membersService.importer.process({
+            return membersService.processImport({
                 pathToCSV,
                 headerMapping,
                 globalLabels,
