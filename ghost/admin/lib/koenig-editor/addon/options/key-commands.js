@@ -419,31 +419,6 @@ export const DEFAULT_KEY_COMMANDS = [{
 
         return false;
     }
-}, {
-    str: 'META+SHIFT+B',
-    run(editor, koenig) {
-        if (!koenig.feature.emailCardSegments || !editor.range.headSection.isMarkerable) {
-            return;
-        }
-
-        editor.run((postEditor) => {
-            const texts = [
-                'Hit me!',
-                'Hit me!',
-                'Hit me!',
-                'Hit me slowly',
-                'Hit me quick',
-                'Hit me with your rhythm stick!'
-            ];
-
-            const buttonText = texts[koenig.koenigUi.buttonCount % texts.length];
-            koenig.koenigUi.buttonCount += 1;
-
-            const button = postEditor.builder.createAtom('button', buttonText);
-            const endPos = postEditor.insertMarkers(editor.range.head, [button]);
-            postEditor.insertText(endPos, ' ');
-        });
-    }
 }];
 
 // key commands that are used in koenig-basic-html-input
