@@ -3,6 +3,7 @@
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
         <section class="view-actions">
             <div class="view-actions-bottom-row">
+                {{#unless (feature "membersFiltering")}}
                 <GhMembersFilter
                     @selectedLabel={{this.selectedLabel}}
                     @availableLabels={{this.availableLabels}}
@@ -16,6 +17,7 @@
                     @selectedOrder={{this.selectedOrder}}
                     @onOrderChange={{this.changeOrder}}
                 />
+                {{/unless}}
                 <div class="relative gh-members-header-search">
                     {{svg-jar "search" class="gh-input-search-icon"}}
                     <GhTextInput
@@ -27,10 +29,25 @@
             </div>
 
             <div class="view-actions-top-row">
+                {{#if (feature "membersFiltering")}}
+                <GhMembersFilter
+                    @selectedLabel={{this.selectedLabel}}
+                    @availableLabels={{this.availableLabels}}
+                    @onLabelChange={{this.changeLabel}}
+                    @onLabelAdd={{this.addLabel}}
+                    @onLabelEdit={{this.editLabel}}
+                    @selectedPaidParam={{this.selectedPaidParam}}
+                    @availablePaidParams={{this.paidParams}}
+                    @onPaidParamChange={{this.changePaidParam}}
+                    @availableOrders={{this.availableOrders}}
+                    @selectedOrder={{this.selectedOrder}}
+                    @onOrderChange={{this.changeOrder}}
+                />
+                {{/if}}
                 <span class="dropdown">
                     <GhDropdownButton
                         @dropdownName="members-actions-menu"
-                        @classNames="gh-btn gh-btn-icon only-has-icon gh-actions-cog"
+                        @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
                         @title="Members Actions"
                         data-test-button="members-actions"
                     >

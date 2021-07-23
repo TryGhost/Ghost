@@ -6,7 +6,7 @@
 */
 @import "spirit/spirit-dark.css";
 
-/* Patterns: Groups of Styles
+/* Patterns
 /* ---------------------------------------------------------- */
 @import "patterns/global.css";
 @import "patterns/icons.css";
@@ -18,7 +18,7 @@
 @import "patterns/boxes.css";
 
 
-/* Components: Groups of Patterns
+/* Components
 /* ---------------------------------------------------------- */
 @import "components/loading-indicator.css";
 @import "components/modals.css";
@@ -40,9 +40,10 @@
 @import "components/browser-preview.css";
 @import "components/stacks.css";
 @import "components/browser-preview.css";
+@import "components/filter-builder.css";
 
 
-/* Layouts: Groups of Components
+/* Layouts
 /* ---------------------------------------------------------- */
 @import "layouts/main.css";
 @import "layouts/flow.css";

@@ -1802,3 +1802,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-member-addcomp-warning {
     margin-top: -16px;
 }
+
+.gh-members-filter-builder {
+    width: 720px;
+}
