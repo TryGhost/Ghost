@@ -59,6 +59,7 @@ export default Service.extend({
     savedIndicator: feature('savedIndicator', {developer: true}),
     featureImgDragDrop: feature('featureImgDragDrop', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
+    checkEmailList: feature('checkEmailList', {developer: true}),
 
     _user: null,
 
