@@ -23,8 +23,9 @@ module.exports = class MembersCSVImporter {
      * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
+     * @param {number} options.importThreshold - threshold to activate freeze flag if reached
      */
-    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor}) {
+    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor, importThreshold}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersApi = getMembersApi;
@@ -33,6 +34,7 @@ module.exports = class MembersCSVImporter {
         this._addJob = addJob;
         this._knex = knex;
         this._urlFor = urlFor;
+        this._importThreshold = importThreshold;
     }
 
     /**
@@ -267,19 +269,27 @@ module.exports = class MembersCSVImporter {
      * @param {Object} config.LabelModel - instance of Ghosts Label model
      */
     async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel}) {
+        const meta = {};
         const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
+
+        if (this._isSet('checkEmailList') && this._importThreshold) {
+            meta.freeze = job.batches > this._importThreshold;
+        } else {
+            meta.freeze = false;
+        }
 
         if (job.batches <= 500 && !job.metadata.hasStripeData) {
             const result = await this.perform(job.id);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
+
             return {
-                meta: {
+                meta: Object.assign(meta, {
                     stats: {
                         imported: result.imported,
                         invalid: result.errors
                     },
                     import_label: importLabelModel
-                }
+                })
             };
         } else {
             const emailRecipient = user.email;
@@ -310,7 +320,9 @@ module.exports = class MembersCSVImporter {
                 offloaded: false
             });
 
-            return {};
+            return {
+                meta
+            };
         }
     }
 };
