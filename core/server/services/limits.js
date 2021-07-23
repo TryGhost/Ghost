@@ -4,7 +4,10 @@ const db = require('../data/db');
 const LimitService = require('@tryghost/limit-service');
 let limitService = new LimitService();
 
-const initFn = (limits) => {
+/**
+ * @param {Object} [limits] - An object containing limit configuration
+**/
+const initFn = (limits = {}) => {
     let helpLink;
 
     if (config.get('hostSettings:billing:enabled') && config.get('hostSettings:billing:enabled') === true && config.get('hostSettings:billing:url')) {
@@ -22,8 +25,10 @@ const initFn = (limits) => {
         };
     }
 
+    const hostLimits = config.get('hostSettings:limits') || {};
+
     limitService.loadLimits({
-        limits: Object.assign(config.get('hostSettings:limits'), limits),
+        limits: Object.assign(hostLimits, limits),
         subscription,
         db,
         helpLink,
