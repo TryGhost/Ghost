@@ -48,6 +48,21 @@ function reconfigureMembersAPI() {
         logging.error(err);
     });
 }
+const membersImporter = new MembersCSVImporter({
+    storagePath: config.getContentPath('data'),
+    getTimezone: () => settingsCache.get('timezone'),
+    getMembersApi: () => membersApi,
+    sendEmail: ghostMailer.send.bind(ghostMailer),
+    isSet: labsService.isSet.bind(labsService),
+    addJob: jobsService.addJob.bind(jobsService),
+    knex: db.knex,
+    urlFor: urlUtils.urlFor.bind(urlUtils),
+    importThreshold: config.get('hostSettings.emailVerification.importThreshold')
+});
+
+const processImport = async (options) => {
+    return membersImporter.process(options);
+};
 
 const debouncedReconfigureMembersAPI = _.debounce(reconfigureMembersAPI, 600);
 
@@ -127,16 +142,7 @@ const membersService = {
 
     stripeConnect: require('./stripe-connect'),
 
-    importer: new MembersCSVImporter({
-        storagePath: config.getContentPath('data'),
-        getTimezone: () => settingsCache.get('timezone'),
-        getMembersApi: () => membersApi,
-        sendEmail: ghostMailer.send.bind(ghostMailer),
-        isSet: labsService.isSet.bind(labsService),
-        addJob: jobsService.addJob.bind(jobsService),
-        knex: db.knex,
-        urlFor: urlUtils.urlFor.bind(urlUtils)
-    }),
+    processImport: processImport,
 
     stats: new MembersStats({
         db: db,
