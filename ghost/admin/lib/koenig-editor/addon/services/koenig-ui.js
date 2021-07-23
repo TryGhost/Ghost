@@ -6,8 +6,6 @@ export default class KoenigUiService extends Service {
     @tracked inputHasFocus = false;
     @tracked isDragging = false;
 
-    buttonCount = 0;
-
     #focusedCaption = null;
 
     captionGainedFocus(caption) {
