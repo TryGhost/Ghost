@@ -16,11 +16,14 @@ const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
+const limits = require('../limits');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
     sslRequiredForStripe: 'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
-    remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.'
+    remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
+    emailVerificationNeeded: `To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
+    emailSendingDisabled: `Sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`
 };
 
 // Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
@@ -48,6 +51,15 @@ function reconfigureMembersAPI() {
         logging.error(err);
     });
 }
+
+const getThreshold = () => {
+    if (_.get(config.get('hostSettings'), 'emailVerification.verified')) {
+        return null;
+    }
+
+    return _.get(config.get('hostSettings'), 'emailVerification.importThreshold');
+};
+
 const membersImporter = new MembersCSVImporter({
     storagePath: config.getContentPath('data'),
     getTimezone: () => settingsCache.get('timezone'),
@@ -57,11 +69,26 @@ const membersImporter = new MembersCSVImporter({
     addJob: jobsService.addJob.bind(jobsService),
     knex: db.knex,
     urlFor: urlUtils.urlFor.bind(urlUtils),
-    importThreshold: config.get('hostSettings.emailVerification.importThreshold')
+    importThreshold: getThreshold()
 });
 
 const processImport = async (options) => {
-    return membersImporter.process(options);
+    const result = await membersImporter.process(options);
+
+    if (result.meta.freeze) {
+        limits.init({
+            emails: {
+                disabled: true,
+                error: tpl(messages.emailSendingDisabled)
+            }
+        });
+
+        throw new errors.ValidationError({
+            message: tpl(messages.emailVerificationNeeded)
+        });
+    }
+
+    return result;
 };
 
 const debouncedReconfigureMembersAPI = _.debounce(reconfigureMembersAPI, 600);
