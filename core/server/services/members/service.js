@@ -74,8 +74,10 @@ const membersImporter = new MembersCSVImporter({
 
 const processImport = async (options) => {
     const result = await membersImporter.process(options);
+    const freezeTriggered = result.meta.freeze;
+    delete result.meta.freeze;
 
-    if (result.meta.freeze) {
+    if (freezeTriggered) {
         limits.init({
             emails: {
                 disabled: true,
