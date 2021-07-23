@@ -159,8 +159,12 @@ input:focus,
     background: var(--white);
 }
 
-.settings-menu-container {
-    background: var(--main-color-content-greybg);
+.settings-menu-header {
+    background: var(--dark-main-bg-color);
+}
+
+.settings-menu-container .settings-menu-pane {
+    background: var(--dark-main-bg-color);
 }
 
 @media (max-width: 800px) {
@@ -320,6 +324,7 @@ input:focus,
     color: var(--red);
     border: none !important;
     border-color: transparent;
+    background: var(--dark-main-bg-color) !important;
 }
 
 .gh-publishmenu-trigger {
@@ -733,8 +738,28 @@ input:focus,
     background: var(--green) !important;
 }
 
-.settings-menu-delete-button {
-    background: var(--main-color-content-greybg) !important;
+.gh-editor-feature-image-add-button {
+    color: var(--midgrey);
+}
+
+.gh-editor-feature-image-add-button:hover {
+    color: var(--darkgrey);
+}
+
+.gh-editor-feature-image-add-button:hover svg path {
+    stroke: var(--darkgrey);
+}
+
+.gh-editor-feature-image-unsplash svg {
+    fill: var(--midgrey);
+}
+
+.gh-editor-feature-image-unsplash svg:hover {
+    fill: var(--darkgrey);
+}
+
+.gh-editor-wordcount-container {
+    background: var(--dark-main-bg-color);
 }
 
 /* Segment input */
