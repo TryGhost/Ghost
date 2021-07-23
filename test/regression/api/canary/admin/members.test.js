@@ -501,7 +501,8 @@ describe('Members API (canary)', function () {
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
-                should.not.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta);
+                should.not.exist(jsonResponse.meta.stats);
             });
     });
 
