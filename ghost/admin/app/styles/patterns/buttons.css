@@ -361,6 +361,24 @@ svg.gh-btn-icon-right {
     color: var(--red);
 }
 
+.gh-btn-action-icon {
+    margin-right: 10px
+}
+
+.gh-btn-action-icon svg {
+    height: 16px;
+    width: 16px;
+    margin: 0;
+}
+
+.gh-btn-action-icon:not(.icon-only) svg {
+    margin-right: 10px;
+}
+
+.gh-btn-action-icon svg path {
+    stroke: currentColor;
+}
+
 
 /*
 /* Button Variations

@@ -1417,13 +1417,13 @@
     font-size: 1.35rem;
 }
 
-.view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green) {
+.view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):not(.gh-btn-link) {
     border: none;
     box-shadow: none;
     background: color-mod(var(--whitegrey-l1) l(-3%));
 }
 
-.view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):hover {
+.view-actions .gh-btn:not(.gh-btn-primary):not(.gh-btn-blue):not(.gh-btn-green):not(.gh-btn-link):hover {
     background: var(--whitegrey);
 }
 
@@ -1445,20 +1445,6 @@
     width: 16px;
     height: 16px;
     fill: color-mod(var(--midlightgrey) l(+5%));
-}
-
-.gh-actions-cog {
-    margin-right: 10px
-}
-
-.gh-actions-cog svg {
-    height: 16px;
-    width: 16px;
-    margin-right: 0;
-}
-
-.gh-actions-cog svg path {
-    stroke: currentColor;
 }
 
 .gh-actions-menu {
