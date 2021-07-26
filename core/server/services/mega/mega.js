@@ -109,6 +109,36 @@ const sendTestEmail = async (postModel, toEmails, apiVersion) => {
 };
 
 /**
+ * transformRecipientFilter
+ *
+ * Accepts a filter string, errors on unexpected legacy filter syntax and enforces subscribed:true
+ *
+ * @param {string} filter NQL filter for members
+ */
+const transformEmailRecipientFilter = (emailRecipientFilter) => {
+    switch (emailRecipientFilter) {
+    // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
+    case 'paid':
+    case 'free':
+        throw new errors.GhostError({
+            message: tpl(messages.unexpectedEmailRecipientFilterError, {
+                emailRecipientFilter
+            })
+        });
+    case 'all':
+        return 'subscribed:true';
+    case 'none':
+        throw new errors.GhostError({
+            message: tpl(messages.noneEmailRecipientFilterError, {
+                emailRecipientFilter
+            })
+        });
+    default:
+        return `subscribed:true+(${emailRecipientFilter})`;
+    }
+};
+
+/**
  * addEmail
  *
  * Accepts a post model and creates an email record based on it. Only creates one
@@ -128,6 +158,7 @@ const addEmail = async (postModel, options) => {
     const filterOptions = Object.assign({}, knexOptions, {limit: 1});
 
     const emailRecipientFilter = postModel.get('email_recipient_filter');
+    filterOptions.filter = transformEmailRecipientFilter(emailRecipientFilter);
 
     switch (emailRecipientFilter) {
     // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
@@ -542,6 +573,7 @@ module.exports = {
     sendTestEmail,
     handleUnsubscribeRequest,
     // NOTE: below are only exposed for testing purposes
+    _transformEmailRecipientFilter: transformEmailRecipientFilter,
     _partitionMembersBySegment: partitionMembersBySegment,
     _getEmailMemberRows: getEmailMemberRows
 };
