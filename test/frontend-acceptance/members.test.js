@@ -140,7 +140,6 @@ describe('Front-end members behaviour', function () {
         let membersPost;
         let paidPost;
         let membersPostWithPaywallCard;
-        let labelPost;
         let productPost;
 
         before(function () {
@@ -170,12 +169,6 @@ describe('Front-end members behaviour', function () {
                 published_at: moment().add(5, 'seconds').toDate()
             });
 
-            labelPost = testUtils.DataGenerator.forKnex.createPost({
-                slug: 'thou-must-be-labelled-vip',
-                visibility: 'label:vip',
-                published_at: moment().toDate()
-            });
-
             productPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-must-have-default-product',
                 visibility: 'product:default-product',
@@ -187,7 +180,6 @@ describe('Front-end members behaviour', function () {
                 membersPost,
                 paidPost,
                 membersPostWithPaywallCard,
-                labelPost,
                 productPost
             ]);
         });
@@ -210,13 +202,6 @@ describe('Front-end members behaviour', function () {
             it('cannot read paid post content', async function () {
                 await request
                     .get('/thou-shalt-be-paid-for/')
-                    .expect(200)
-                    .expect(assertContentIsAbsent);
-            });
-
-            it('cannot read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
                     .expect(200)
                     .expect(assertContentIsAbsent);
             });
@@ -255,31 +240,11 @@ describe('Front-end members behaviour', function () {
                     .expect(assertContentIsAbsent);
             });
 
-            it('cannot read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsAbsent);
-            });
-
             it('cannot read product-only post content', async function () {
                 await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
                     .expect(assertContentIsAbsent);
-            });
-        });
-
-        describe('as free member with vip label', function () {
-            before(async function () {
-                await loginAsMember('vip@test.com');
-            });
-
-            it('can read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsPresent);
             });
         });
 
@@ -325,31 +290,11 @@ describe('Front-end members behaviour', function () {
                     .expect(assertContentIsPresent);
             });
 
-            it('cannot read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsAbsent);
-            });
-
             it('cannot read product-only post content', async function () {
                 await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
                     .expect(assertContentIsAbsent);
-            });
-        });
-
-        describe('as paid member with vip label', function () {
-            before(async function () {
-                await loginAsMember('vip-paid@test.com');
-            });
-
-            it('can read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsPresent);
             });
         });
 
@@ -377,13 +322,6 @@ describe('Front-end members behaviour', function () {
                     .get('/thou-shalt-be-paid-for/')
                     .expect(200)
                     .expect(assertContentIsPresent);
-            });
-
-            it('cannot read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsAbsent);
             });
 
             it('cannot read product-only post content', async function () {

@@ -8,12 +8,6 @@ const BLOCK_ACCESS = false;
 
 // TODO: better place to store this?
 const MEMBER_NQL_EXPANSIONS = [{
-    key: 'labels',
-    replacement: 'labels.slug'
-}, {
-    key: 'label',
-    replacement: 'labels.slug'
-}, {
     key: 'products',
     replacement: 'products.slug'
 }, {
