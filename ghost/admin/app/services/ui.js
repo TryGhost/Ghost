@@ -5,7 +5,8 @@ import {
     darkenToContrastThreshold,
     hexToRgb,
     lightenToContrastThreshold,
-    rgbToHex
+    rgbToHex,
+    textColorForBackgroundColor
 } from 'ghost-admin/utils/color';
 import {get} from '@ember/object';
 import {isEmpty} from '@ember/utils';
@@ -94,6 +95,15 @@ export default class UiService extends Service {
         }
 
         return rgbToHex(adjustedAccentRgb);
+    }
+
+    get textColorForAdjustedAccentBackground() {
+        const accentColor = this.settings.get('accentColor');
+
+        const accentColorRgb = hexToRgb(accentColor);
+        const textColorRgb = textColorForBackgroundColor(accentColorRgb);
+
+        return rgbToHex(textColorRgb);
     }
 
     constructor() {

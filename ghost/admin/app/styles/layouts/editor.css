@@ -974,3 +974,11 @@ figure {
     bottom: 0;
     z-index: 400;
 }
+
+/* Email-CTA card
+/* -------------------------------------------------------------------------- */
+.email-cta-button-text-input {
+    padding: 4px;
+    border: 0;
+    text-align: center;
+}

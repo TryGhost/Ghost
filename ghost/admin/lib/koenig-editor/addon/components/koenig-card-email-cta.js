@@ -4,11 +4,15 @@ import {action} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardEmailCtaComponent extends Component {
-    @tracked isFocused = false;
+    @service ui;
+
+    @tracked buttonFocused = false;
+    @tracked contentFocused = false;
 
     get formattedHtml() {
         return formatTextReplacementHtml(this.args.payload.html);
@@ -16,10 +20,10 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
     get segments() {
         return [{
-            name: 'Free members',
+            name: 'free members',
             filter: 'status:free'
         }, {
-            name: 'Paid members',
+            name: 'paid members',
             filter: 'status:-free'
         }];
     }
@@ -69,6 +73,16 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     @action
+    setButtonText(event) {
+        this._updatePayloadAttr('buttonText', event.target.value);
+    }
+
+    @action
+    setButtonUrl(event) {
+        this._updatePayloadAttr('buttonUrl', event.target.value);
+    }
+
+    @action
     registerEditor(textReplacementEditor) {
         let commands = {
             'META+ENTER': run.bind(this, this._enter, 'meta'),
@@ -96,6 +110,18 @@ export default class KoenigCardEmailCtaComponent extends Component {
             // TODO: see if there's a way to avoid afterRender
             run.scheduleOnce('afterRender', this, this.args.deleteCard);
         }
+    }
+
+    @action
+    blurElement(event) {
+        event.preventDefault();
+        event.target.blur();
+    }
+
+    @action
+    focusElement(selector, event) {
+        event.preventDefault();
+        document.querySelector(selector)?.focus();
     }
 
     _updatePayloadAttr(attr, value) {
