@@ -315,6 +315,17 @@
 /* Inline input */
 .ember-power-select-inline {
     display: inline-block;
-    vertical-align: middle;
-    margin-bottom: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-height: auto;
+    vertical-align: bottom;
+    font-weight: 600;
+    line-height: 1.6em;
+    cursor: pointer;
+}
+
+.ember-power-select-inline.ember-power-select-trigger--active,
+.ember-power-select-inline.ember-power-select-trigger:focus {
+    border: 0;
 }

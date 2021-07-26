@@ -150,3 +150,11 @@ export function darkenToContrastThreshold(foregroundRgb, backgroundRgb, contrast
 
     return newRgb;
 }
+
+export function textColorForBackgroundColor({r,g,b}) {
+    const whiteRgb = {r: 255, g: 255, b: 255};
+    const blackRgb = {r: 0, g: 0, b: 0};
+
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return (yiq >= 128) ? blackRgb : whiteRgb;
+}
