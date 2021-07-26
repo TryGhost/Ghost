@@ -1,6 +1,6 @@
 {{#if this.icon}}
     <div class="sticky" style="top: {{this.iconTop}}px; margin-bottom: {{this.iconTop}}px">
-        {{svg-jar this.icon class=this.iconClass}}
+        <span data-tooltip={{@iconTooltip}}>{{svg-jar this.icon class=this.iconClass}}</span>
     </div>
     <div style="margin-top: -{{this.iconTop}}px"></div>
 {{/if}}
