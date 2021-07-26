@@ -15,7 +15,7 @@
                     in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                 {{/if}}
 
-                 • {{gh-format-post-time @post.updatedAtUTC draft=true}}
+                 • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
 
             </span>
         </p>
