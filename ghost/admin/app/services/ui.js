@@ -1,5 +1,12 @@
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
+import {
+    contrast,
+    darkenToContrastThreshold,
+    hexToRgb,
+    lightenToContrastThreshold,
+    rgbToHex
+} from 'ghost-admin/utils/color';
 import {get} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';
@@ -37,8 +44,10 @@ function updateBodyClasses(transition) {
 export default class UiService extends Service {
     @service config;
     @service dropdown;
+    @service feature;
     @service mediaQueries;
     @service router;
+    @service settings;
 
     @tracked isFullScreen = false;
     @tracked mainClass = '';
@@ -54,6 +63,37 @@ export default class UiService extends Service {
 
     get hasSideNav() {
         return !this.isSideNavHidden;
+    }
+
+    get backgroundColor() {
+        // hardcoded background colors because
+        // grabbing color from .gh-main with getComputedStyle always returns #ffffff
+        return this.feature.nightShift ? '#151719' : '#ffffff';
+    }
+
+    get adjustedAccentColor() {
+        const accentColor = this.settings.get('accentColor');
+        const backgroundColor = this.backgroundColor;
+
+        const accentRgb = hexToRgb(accentColor);
+        const backgroundRgb = hexToRgb(backgroundColor);
+
+        // WCAG contrast. 1 = lowest contrast, 21 = highest contrast
+        const accentContrast = contrast(backgroundRgb, accentRgb);
+
+        if (accentContrast > 2) {
+            return accentColor;
+        }
+
+        let adjustedAccentRgb = accentRgb;
+
+        if (this.feature.nightShift) {
+            adjustedAccentRgb = lightenToContrastThreshold(accentRgb, backgroundRgb, 2);
+        } else {
+            adjustedAccentRgb = darkenToContrastThreshold(accentRgb, backgroundRgb, 2);
+        }
+
+        return rgbToHex(adjustedAccentRgb);
     }
 
     constructor() {
