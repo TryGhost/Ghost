@@ -48,11 +48,13 @@
                 border-left: 0.25rem solid var(--adjusted-accent-color);
             }
 
-            .email-cta-button-text-input {
+            .email-cta-button-text-input,
+            .gh-btn-accent {
                 color: var(--text-color-for-adjusted-accent-background);
                 background-color: var(--adjusted-accent-color)
             }
-            .email-cta-button-text-input:hover {
+            .email-cta-button-text-input:hover,
+            .gh-btn-accent:hover {
                 color: {{hex-adjust this.ui.textColorForAdjustedAccentBackground l=-15}};
                 background-color: {{hex-adjust this.settings.accentColor l=-15}}
             }
