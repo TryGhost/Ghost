@@ -79,7 +79,12 @@
             </p>
         </div>
     {{else}}
-        <p>{{{this.formattedHtml}}}</p>
-        <div class="koenig-card-click-overlay"></div>
+        <div class="relative">
+            <p>{{{this.formattedHtml}}}</p>
+            <div class="koenig-card-click-overlay"></div>
+        </div>
+        {{#if (and @payload.buttonText @payload.buttonUrl)}}
+            <div class="mt4"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
+        {{/if}}
     {{/if}}
 </KoenigCard>
