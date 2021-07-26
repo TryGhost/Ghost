@@ -1029,16 +1029,6 @@
   resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.15.tgz#6f5e7e018fe6d9b09b0f2b7f5294f8133398cbd1"
   integrity sha512-8ViwnbMg4kjahTri4nXojACTJtRpjJZmi6XTSjR0DHbFDbWIurLkcfWApRGtVOEumVT7jEnyzDG6wAeIvoNFzQ==
 
-"@tryghost/zip@1.1.12":
-  version "1.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.12.tgz#49e70168d062d81be4a73923e3585c43f35272b7"
-  integrity sha512-PAuQ0RtG/IlKa2fYKS8jktm5AL7Sf62NIwNRJb1QezMTTZIVdQJmIzHvo0C6sCLcxw67Q+4+GM6jdCP31PCiuw==
-  dependencies:
-    archiver "^4.0.2"
-    bluebird "^3.7.2"
-    extract-zip "2.0.0"
-    fs-extra "^9.1.0"
-
 "@tryghost/zip@1.1.14":
   version "1.1.14"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.14.tgz#44a0fce4b06a03a73e33197572d3e4d88a1217a3"
@@ -3822,17 +3812,6 @@ extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-extract-zip@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/extract-zip/-/extract-zip-2.0.0.tgz#f53b71d44f4ff5a4527a2259ade000fb8b303492"
-  integrity sha512-i42GQ498yibjdvIhivUsRslx608whtGoFIhF26Z7O4MYncBxp8CwalOs1lnHy21A9sIohWO2+uiE4SRtC9JXDg==
-  dependencies:
-    debug "^4.1.1"
-    get-stream "^5.1.0"
-    yauzl "^2.10.0"
-  optionalDependencies:
-    "@types/yauzl" "^2.9.1"
-
 extract-zip@2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/extract-zip/-/extract-zip-2.0.1.tgz#663dca56fe46df890d5f131ef4a06d22bb8ba13a"
@@ -4670,14 +4649,14 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.1.4:
-  version "4.1.4"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.1.4.tgz#24943343a2504972cbd1f2f4b2eb0a94cd851baf"
-  integrity sha512-1hPCHdmvLAYch9tGwEuBkUhxPG6lmyeUmN9ALqkHHEWUKEMEo7wC1AhTQLvWZkZXI21Fq0avmlMmZiCMrO0fnw==
+gscan@4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.2.1.tgz#665044709501b051430f832fac43f6378081b69f"
+  integrity sha512-U5BqkySohXVc6u64ueNn173V7YpITy11tRrO9YgQiUXe/BTJhrUFP5FtdF2Rlubv34njtya5BE6G7HfRVSXGOw==
   dependencies:
     "@sentry/node" "6.10.0"
     "@tryghost/pretty-cli" "1.2.18"
-    "@tryghost/zip" "1.1.12"
+    "@tryghost/zip" "1.1.14"
     bluebird "3.7.2"
     chalk "4.1.1"
     common-tags "1.8.0"
