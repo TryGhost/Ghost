@@ -2,11 +2,12 @@ const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
-const {addEmail, _partitionMembersBySegment, _getEmailMemberRows} = require('../../../../core/server/services/mega/mega');
+const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter} = require('../../../../core/server/services/mega/mega');
 
 describe('MEGA', function () {
     describe('addEmail', function () {
-        it('addEmail throws when "free" or "paid" strings are used as a email_recipient_filter', async function () {
+        // via transformEmailRecipientFilter
+        it('throws when "free" or "paid" strings are used as a email_recipient_filter', async function () {
             const postModel = {
                 get: sinon.stub().returns('free')
             };
@@ -20,7 +21,8 @@ describe('MEGA', function () {
             }
         });
 
-        it('addEmail throws when "none" is used as a email_recipient_filter', async function () {
+        // via transformEmailRecipientFilter
+        it('throws when "none" is used as a email_recipient_filter', async function () {
             const postModel = {
                 get: sinon.stub().returns('none')
             };
@@ -30,8 +32,15 @@ describe('MEGA', function () {
                 should.fail('addEmail did not throw');
             } catch (err) {
                 should.equal(err instanceof errors.GhostError, true);
-                err.message.should.equal('Cannot sent email to "none" email_recipient_filter');
+                err.message.should.equal('Cannot send email to "none" email_recipient_filter');
             }
+        });
+    });
+
+    describe('transformEmailRecipientFilter', function () {
+        it('enforces subscribed:true with correct operator precedence', function () {
+            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free');
+            transformedFilter.should.equal('subscribed:true+(status:free,status:-free)');
         });
     });
 
@@ -60,7 +69,7 @@ describe('MEGA', function () {
                 should.fail('getEmailMemberRows did not throw');
             } catch (err) {
                 should.equal(err instanceof errors.GhostError, true);
-                err.message.should.equal('Cannot sent email to "none" recipient_filter');
+                err.message.should.equal('Cannot send email to "none" recipient_filter');
             }
         });
     });
