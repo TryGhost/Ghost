@@ -24,10 +24,8 @@ const events = require('../../lib/common/events');
 
 const messages = {
     invalidSegment: 'Invalid segment value. Use one of the valid:"status:free" or "status:-free" values.',
-    unexpectedEmailRecipientFilterError: 'Unexpected email_recipient_filter value "{emailRecipientFilter}", expected an NQL equivalent',
-    noneEmailRecipientFilterError: 'Cannot sent email to "none" email_recipient_filter',
-    unexpectedRecipientFilterError: 'Unexpected recipient_filter value "{recipientFilter}", expected an NQL equivalent',
-    noneRecipientFileterError: 'Cannot sent email to "none" recipient_filter'
+    unexpectedFilterError: 'Unexpected {property} value "{value}", expected an NQL equivalent',
+    noneFilterError: 'Cannot send email to "none" {property}'
 };
 
 const getFromAddress = () => {
@@ -109,6 +107,38 @@ const sendTestEmail = async (postModel, toEmails, apiVersion) => {
 };
 
 /**
+ * transformRecipientFilter
+ *
+ * Accepts a filter string, errors on unexpected legacy filter syntax and enforces subscribed:true
+ *
+ * @param {string} emailRecipientFilter NQL filter for members
+ * @param {object} options
+ */
+const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'email_recipient_filter'} = {}) => {
+    switch (emailRecipientFilter) {
+    // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
+    case 'paid':
+    case 'free':
+        throw new errors.GhostError({
+            message: tpl(messages.unexpectedFilterError, {
+                property: errorProperty,
+                value: emailRecipientFilter
+            })
+        });
+    case 'all':
+        return 'subscribed:true';
+    case 'none':
+        throw new errors.GhostError({
+            message: tpl(messages.noneFilterError, {
+                property: errorProperty
+            })
+        });
+    default:
+        return `subscribed:true+(${emailRecipientFilter})`;
+    }
+};
+
+/**
  * addEmail
  *
  * Accepts a post model and creates an email record based on it. Only creates one
@@ -128,28 +158,7 @@ const addEmail = async (postModel, options) => {
     const filterOptions = Object.assign({}, knexOptions, {limit: 1});
 
     const emailRecipientFilter = postModel.get('email_recipient_filter');
-
-    switch (emailRecipientFilter) {
-    // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
-    case 'paid':
-    case 'free':
-        throw new errors.GhostError({
-            message: tpl(messages.unexpectedEmailRecipientFilterError, {
-                emailRecipientFilter
-            })
-        });
-    case 'all':
-        filterOptions.filter = 'subscribed:true';
-        break;
-    case 'none':
-        throw new errors.GhostError({
-            message: tpl(messages.noneEmailRecipientFilterError, {
-                emailRecipientFilter
-            })
-        });
-    default:
-        filterOptions.filter = `subscribed:true+${emailRecipientFilter}`;
-    }
+    filterOptions.filter = transformEmailRecipientFilter(emailRecipientFilter, {errorProperty: 'email_recipient_filter'});
 
     const startRetrieve = Date.now();
     debug('addEmail: retrieving members count');
@@ -348,27 +357,8 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions);
 
-    const recipientFilter = emailModel.get('recipient_filter');
-
-    switch (recipientFilter) {
-    // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
-    case 'paid':
-    case 'free':
-        throw new errors.GhostError({
-            message: tpl(messages.unexpectedRecipientFilterError, {
-                recipientFilter
-            })
-        });
-    case 'all':
-        filterOptions.filter = 'subscribed:true';
-        break;
-    case 'none':
-        throw new errors.GhostError({
-            message: tpl(messages.noneRecipientFileterError)
-        });
-    default:
-        filterOptions.filter = `subscribed:true+${recipientFilter}`;
-    }
+    const recipientFilter = transformEmailRecipientFilter(emailModel.get('recipient_filter'), {errorProperty: 'recipient_filter'});
+    filterOptions.filter = recipientFilter;
 
     if (memberSegment) {
         filterOptions.filter = `${filterOptions.filter}+${memberSegment}`;
@@ -542,6 +532,7 @@ module.exports = {
     sendTestEmail,
     handleUnsubscribeRequest,
     // NOTE: below are only exposed for testing purposes
+    _transformEmailRecipientFilter: transformEmailRecipientFilter,
     _partitionMembersBySegment: partitionMembersBySegment,
     _getEmailMemberRows: getEmailMemberRows
 };
