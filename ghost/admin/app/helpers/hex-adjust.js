@@ -11,7 +11,5 @@ export default helper(function hexAdjuster([hex], {s: sDiff, l: lDiff} = {}) {
     const adjRgb = hslToRgb({h, s: adjS, l: adjL});
     const adjHex = rgbToHex(adjRgb);
 
-    console.log(hex, adjHex);
-
     return adjHex;
 });
