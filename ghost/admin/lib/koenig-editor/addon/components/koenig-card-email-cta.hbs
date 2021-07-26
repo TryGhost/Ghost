@@ -1,5 +1,6 @@
 <KoenigCard
-    @icon="koenig/card-indicator-email"
+    @icon={{if (eq this.selectedSegment.name "Free members") "koenig/card-indicator-email" "koenig/card-indicator-email"}}
+    @iconTooltip={{concat "Delivered to " (lowercase this.selectedSegment.name) " only"}}
     @class={{concat (kg-style "container-card") " kg-email-card mih10 miw-100 relative"}}
     @style={{@cardStyle}}
     @headerOffset={{@headerOffset}}
@@ -26,10 +27,37 @@
             @autofocus={{true}}
             @class="miw-100 bn bg-transparent"
             @onChange={{this.updateHtml}}
-            @onFocus={{fn (mut this.isFocused) true}}
-            @onBlur={{fn (mut this.isFocused) false}}
+            @onFocus={{fn (mut this.contentFocused) true}}
+            @onBlur={{fn (mut this.contentFocused) false}}
             @didCreateEditor={{this.registerEditor}}
         />
+        <form class="flex mt4">
+            <label for="button-text-input" class="sr-only">CTA button text</label>
+            <input
+                type="text"
+                class="gh-btn email-cta-button-text-input mr4"
+                id="button-text-input"
+                name="button-text"
+                value={{@payload.buttonText}}
+                placeholder={{if this.buttonFocused "" "Add button text"}}
+                {{on "input" this.setButtonText}}
+                {{on "focus" (fn (mut this.buttonFocused) true)}}
+                {{on "blur" (fn (mut this.buttonFocused) false)}}
+                {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
+            >
+
+            <label for="button-url-input" class="sr-only">CTA URL</label>
+            <input
+                type="text"
+                class="gh-input email-cta-button-url-input"
+                id="button-url-input"
+                name="button-url"
+                value={{@payload.buttonUrl}}
+                placeholder="https://yoursite.com/#/portal/signup/"
+                {{on "input" this.setButtonUrl}}
+                {{on-key "Enter" this.blurElement}}
+            >
+        </form>
         <div class="kg-card-help">
             <p>
                 <span>
@@ -46,22 +74,12 @@
                         {{segment.name}}
                     </PowerSelect>
                     when delievered by email.
+                    This card will not be published on your site.
                 </span>
-                <br>
-                <span>This card will not be published on your site.</span>
             </p>
         </div>
     {{else}}
         <p>{{{this.formattedHtml}}}</p>
-        <div class="kg-card-help">
-            <p>
-                <span>
-                    Only visible to <strong>{{this.selectedSegment.name}}</strong> when delievered by email.
-                </span>
-                <br>
-                <span>This card will not be published on your site.</span>
-            </p>
-        </div>
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 </KoenigCard>
