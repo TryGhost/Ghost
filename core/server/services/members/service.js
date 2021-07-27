@@ -12,6 +12,7 @@ const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
+const models = require('../../models');
 const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
@@ -84,6 +85,11 @@ const processImport = async (options) => {
                 error: tpl(messages.emailSendingDisabled)
             }
         });
+
+        await models.Settings.edit([{
+            key: 'email_freeze',
+            value: true
+        }], {context: {internal: true}});
 
         throw new errors.ValidationError({
             message: tpl(messages.emailVerificationNeeded)
