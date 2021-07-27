@@ -737,10 +737,10 @@
     fastq "^1.11.0"
     p-wait-for "^3.2.0"
 
-"@tryghost/kg-card-factory@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.0.0.tgz#c8524690b0b31eac2800890c3b9fd94deb0c0046"
-  integrity sha512-oDcekVy/fGqLcLmViAi6eV5uRVDNuX0WrDAtuI0F1BRO02Uh2maBQVUWs0oqUIjx+S3jfYNkHbghd06UOioRzg==
+"@tryghost/kg-card-factory@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.0.1.tgz#fcf22d0222b8d27be4cfe77151861ed85ba13724"
+  integrity sha512-9jwygfR8wWJmLcRIx1CSKvEOwtvgFCZ0emlMuZ3zdyNTOTfrVUnBb0gPMp1CuHinJKchuIjoAtFRxd4NdN1ShQ==
 
 "@tryghost/kg-clean-basic-html@^1.0.18":
   version "1.0.18"

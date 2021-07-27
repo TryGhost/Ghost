@@ -63,7 +63,7 @@
     "@tryghost/helpers": "1.1.49",
     "@tryghost/image-transform": "1.0.13",
     "@tryghost/job-manager": "0.8.7",
-    "@tryghost/kg-card-factory": "3.0.0",
+    "@tryghost/kg-card-factory": "3.0.1",
     "@tryghost/kg-default-atoms": "3.0.0",
     "@tryghost/kg-default-cards": "5.0.0",
     "@tryghost/kg-markdown-html-renderer": "5.0.0",
