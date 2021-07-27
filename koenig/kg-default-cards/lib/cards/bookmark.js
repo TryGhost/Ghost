@@ -1,4 +1,3 @@
-const Handlebars = require('handlebars');
 const juice = require('juice');
 const {
     absoluteToRelative,
@@ -8,6 +7,10 @@ const {
     htmlToTransformReady,
     toTransformReady
 } = require('@tryghost/url-utils/lib/utils');
+const {
+    hbs,
+    dedent
+} = require('../utils');
 
 /**
 <figure class="kg-card kg-bookmark-card">
@@ -27,23 +30,6 @@ const {
   </a>
 </figure>
  */
-
-function hbs(literals, ...values) {
-    // interweave strings with substitutions
-    let output = '';
-    for (let i = 0; i < values.length; i++) {
-        output += literals[i] + values[i];
-    }
-    output += literals[values.length];
-
-    // return compiled handlebars template
-    return Handlebars.compile(output);
-}
-
-function dedent(str) {
-    let lines = str.split(/\n/);
-    return lines.map(line => line.replace(/^\s+/gm, '')).join('').trim();
-}
 
 let template;
 

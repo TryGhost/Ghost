@@ -1,4 +1,11 @@
 const {
+    hbs,
+    dedent
+} = require('../utils');
+const {
+    absoluteToRelative,
+    relativeToAbsolute,
+    toTransformReady,
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
@@ -9,8 +16,17 @@ module.exports = {
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
-        if (!payload.html || options.target !== 'email') {
+        const hasContent = !!payload.html;
+        const hasButton = !!payload.buttonText && !!payload.buttonUrl;
+
+        if ((!hasContent && !hasButton) || options.target !== 'email') {
             return dom.createTextNode('');
+        }
+
+        const container = dom.createElement('div');
+
+        if (payload.segment) {
+            container.setAttribute('data-gh-segment', payload.segment);
         }
 
         // wrap the replacement %%{replacement}%% so that when performing replacements
@@ -20,31 +36,49 @@ module.exports = {
 
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML
-        const rawHTMLSecion = dom.createRawHTMLSection(payload.html);
+        const htmlSection = dom.createRawHTMLSection(payload.html);
 
-        if (payload.segment) {
-            let segment = dom.createElement('div');
-            segment.setAttribute('data-gh-segment', payload.segment);
-            segment.appendChild(rawHTMLSecion);
+        container.appendChild(htmlSection);
 
-            return segment;
-        } else {
-            return rawHTMLSecion;
+        if (payload.buttonText && payload.buttonUrl) {
+            const buttonTemplate = hbs`
+                <p>
+                    <div class="btn btn-accent">
+                        <table border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="{{buttonAlignment}}">
+                                    <a href="{{buttonUrl}}">{{buttonText}}</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </p>
+            `;
+
+            const templateData = Object.assign({}, payload);
+            const button = dom.createRawHTMLSection(dedent(buttonTemplate(templateData)));
+
+            container.appendChild(button);
         }
+
+        return container;
     },
 
     absoluteToRelative(payload, options) {
         payload.html = payload.html && htmlAbsoluteToRelative(payload.html, options.siteUrl, options);
+        payload.buttonUrl = payload.buttonUrl && absoluteToRelative(payload.buttonUrl, options.siteUrl, options);
         return payload;
     },
 
     relativeToAbsolute(payload, options) {
         payload.html = payload.html && htmlRelativeToAbsolute(payload.html, options.siteUrl, options.itemUrl, options);
+        payload.buttonUrl = payload.buttonUrl && relativeToAbsolute(payload.buttonUrl, options.siteUrl, options.itemUrl, options);
         return payload;
     },
 
     toTransformReady(payload, options) {
         payload.html = payload.html && htmlToTransformReady(payload.html, options.siteUrl, options);
+        payload.buttonUrl = payload.buttonUrl && toTransformReady(payload.buttonUrl, options.siteUrl, options);
         return payload;
     }
 };

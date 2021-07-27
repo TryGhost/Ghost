@@ -17,7 +17,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Plain html with no replacements</p>');
+            .should.equal('<div><p>Plain html with no replacements</p></div>');
     });
 
     it('renders nothing if target is not email', function () {
@@ -33,7 +33,7 @@ describe('Email CTA card', function () {
             .should.equal('');
     });
 
-    it('renders nothing with no payload.html', function () {
+    it('renders nothing with no payload.html and no payload.button{Text,URL}', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {},
@@ -46,12 +46,13 @@ describe('Email CTA card', function () {
             .should.equal('');
     });
 
-    it('wraps in segment div when segment payload present renders html with no replacements', function () {
+    it('renders button with no payload.html', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
-                html: '<p>Plain html with no replacements</p>',
-                segment: 'member.status:paid'
+                html: '',
+                buttonText: 'Click me!',
+                buttonUrl: 'https://example.com'
             },
             options: {
                 target: 'email'
@@ -59,7 +60,57 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<div data-gh-segment="member.status:paid"><p>Plain html with no replacements</p></div>');
+            .should.containEql('<a href="https://example.com"');
+    });
+
+    it('does not render button if payload.buttonText is missing', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                html: '',
+                buttonText: '',
+                buttonUrl: 'https://example.com'
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.not.containEql('<a href="https://example.com"');
+    });
+
+    it('does not render button if payload.buttonUrl is missing', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                html: '',
+                buttonText: 'Click me!',
+                buttonUrl: ''
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.not.containEql('<a href="https://example.com"');
+    });
+
+    it('wraps in div with data-gh-segment attribute', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                html: '<p>Plain html with no replacements</p>',
+                segment: 'status:paid'
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.containEql('<div data-gh-segment="status:paid"');
     });
 
     it('wraps {foo} in %%', function () {
@@ -70,7 +121,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo}%% in %%{bar}%%</p>');
+            .should.containEql('<p>Testing %%{foo}%% in %%{bar}%%</p>');
     });
 
     it('wraps {foo, "test"} in %%', function () {
@@ -81,7 +132,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo, "replacement fallbacks"}%% in %%{bar, "email card"}%%</p>');
+            .should.containEql('<p>Testing %%{foo, "replacement fallbacks"}%% in %%{bar, "email card"}%%</p>');
     });
 
     it('wraps {foo,  "test"} (extra spaces)', function () {
@@ -92,7 +143,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo,  "valid"}%%</p>');
+            .should.containEql('<p>Testing %%{foo,  "valid"}%%</p>');
     });
 
     it('wraps {foo "value"} (missing comma)', function () {
@@ -103,7 +154,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo "valid"}%% in %%{bar}%%</p>');
+            .should.containEql('<p>Testing %%{foo "valid"}%% in %%{bar}%%</p>');
     });
 
     it('wraps {foo  "invalid"} (missing comma, extra spaces)', function () {
@@ -114,7 +165,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo  "valid"}%% in %%{bar}%%</p>');
+            .should.containEql('<p>Testing %%{foo  "valid"}%% in %%{bar}%%</p>');
     });
 
     it('does not wrap {invalid } (invalid whitespace)', function () {
@@ -125,7 +176,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {invalid } in %%{bar}%%</p>');
+            .should.containEql('<p>Testing {invalid } in %%{bar}%%</p>');
     });
 
     it('does not wrap { invalid} (invalid whitespace)', function () {
@@ -136,7 +187,7 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing { invalid} in %%{bar}%%</p>');
+            .should.containEql('<p>Testing { invalid} in %%{bar}%%</p>');
     });
 
     it('does not wrap {foo invalid} (missing quotes)', function () {
@@ -147,6 +198,6 @@ describe('Email CTA card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {foo invalid} in %%{bar}%%</p>');
+            .should.containEql('<p>Testing {foo invalid} in %%{bar}%%</p>');
     });
 });
