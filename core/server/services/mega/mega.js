@@ -72,11 +72,16 @@ const getEmailData = async (postModel, options) => {
  *
  * @param {Object} postModel - post model instance
  * @param {[string]} toEmails - member email addresses to send email to
- * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
+ * @param {ValidAPIVersion} apiVersion - api version to be used when serializing email data
+ * @param {ValidMemberSegment} memberSegment
  */
-const sendTestEmail = async (postModel, toEmails, apiVersion) => {
-    const emailData = await getEmailData(postModel, {apiVersion});
+const sendTestEmail = async (postModel, toEmails, apiVersion, memberSegment) => {
+    let emailData = await getEmailData(postModel, {apiVersion});
     emailData.subject = `[Test] ${emailData.subject}`;
+
+    if (labs.isSet('emailCardSegments') && memberSegment) {
+        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
+    }
 
     // fetch any matching members so that replacements use expected values
     const recipients = await Promise.all(toEmails.map(async (email) => {
@@ -539,4 +544,5 @@ module.exports = {
 
 /**
  * @typedef {'v2' | 'v3' | 'v4' | 'canary' } ValidAPIVersion
+ * @typedef {'status:free' | 'status:-free'} ValidMemberSegment
  */

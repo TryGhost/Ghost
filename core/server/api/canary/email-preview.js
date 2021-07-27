@@ -2,13 +2,15 @@ const models = require('../../models');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const mega = require('../../services/mega');
+const labs = require('../../../shared/labs');
 
 module.exports = {
     docName: 'email_preview',
 
     read: {
         options: [
-            'fields'
+            'fields',
+            'memberSegment'
         ],
         validation: {
             options: {
@@ -32,6 +34,10 @@ module.exports = {
                     }
 
                     return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true, apiVersion: 'canary'}).then((emailContent) => {
+                        if (labs.isSet('emailCardSegments') && frame.options.memberSegment) {
+                            emailContent = mega.postEmailSerializer.renderEmailForSegment(emailContent, frame.options.memberSegment);
+                        }
+
                         const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
 
                         replacements.forEach((replacement) => {
@@ -68,8 +74,8 @@ module.exports = {
                     message: i18n.t('errors.api.posts.postNotFound')
                 });
             }
-            const {emails = []} = frame.data;
-            const response = await mega.mega.sendTestEmail(model, emails, 'canary');
+            const {emails = [], memberSegment} = frame.data;
+            const response = await mega.mega.sendTestEmail(model, emails, 'canary', memberSegment);
             if (response && response[0] && response[0].error) {
                 throw new errors.EmailError({
                     statusCode: response[0].error.statusCode,
