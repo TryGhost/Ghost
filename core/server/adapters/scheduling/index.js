@@ -1,7 +1,7 @@
 const postScheduling = require('./post-scheduling');
 
 /**
- * @description Initialise all scheduler modules.
+ * @description Initialize all scheduler modules.
  *
  * We currently only support post-scheduling: publish posts/pages when scheduled.
  *

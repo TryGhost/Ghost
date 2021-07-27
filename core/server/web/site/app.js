@@ -119,7 +119,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);
-    
+
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use('/members/.well-known', (req, res, next) => membersService.api.middleware.wellKnown(req, res, next));
 
@@ -195,7 +195,7 @@ module.exports.reload = ({apiVersion}) => {
     router = siteRoutes({start: true, apiVersion});
     Object.setPrototypeOf(SiteRouter, router);
 
-    // re-initialse apps (register app routers, because we have re-initialised the site routers)
+    // re-initialize apps (register app routers, because we have re-initialized the site routers)
     appService.init();
 
     // connect routers and resources again
