@@ -56,6 +56,22 @@ module.exports = {
         }
     },
 
+    /**
+     * Handles email setting synchronization when email has been verified per instance
+     *
+     * @param {boolean} configValue current email verification value from local config
+     */
+    async syncEmailSettings(configValue) {
+        const isEmailDisabled = SettingsCache.get('email_verification_required');
+
+        if (configValue === true && isEmailDisabled) {
+            return await models.Settings.edit([{
+                key: 'email_verification_required',
+                value: false
+            }], {context: {internal: true}});
+        }
+    },
+
     obfuscatedSetting,
     isSecretSetting,
     hideValueIfSecret
