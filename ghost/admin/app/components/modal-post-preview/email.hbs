@@ -10,7 +10,14 @@
     </div>
 </div>
 <div class="gh-post-preview-email-footer">
+    {{#if (feature "emailCardSegments")}}
+    <div class="gh-btn-group mr3">
+        <button type="button" class="gh-btn {{if (eq this.memberSegment "status:free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:free")}}><span>free member</span></button>
+        <button type="button" class="gh-btn {{if (eq this.memberSegment "status:-free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:-free")}}><span>paid member</span></button>
+    </div>
+    {{else}}
     <span class="mr3 nowrap fw6 f8 darkgrey">Send a test newsletter</span>
+    {{/if}}
 
     <div class="gh-post-preview-email-input {{if this.sendPreviewEmailError "error"}}">
         <Input
@@ -25,9 +32,10 @@
             <div class="error fixed nowrap f8 lh-heading"><span class="response" id="sendError">{{this.sendPreviewEmailError}}</span></div>
         {{/if}}
     </div>
+
     <GhTaskButton
         @task={{this.sendPreviewEmailTask}}
-        @buttonText="Send"
+        @buttonText={{if (feature "emailCardSegments") "Send test email" "Send"}}
         @successText="Sent"
         @runningText="Sending..."
         @class="gh-btn gh-btn-green gh-btn-icon gh-post-preview-email-trigger"
