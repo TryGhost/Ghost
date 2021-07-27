@@ -62,8 +62,9 @@ async function initDatabase({config, logging}) {
  * (There's more to do to make this true)
  * @param {object} options
  * @param {object} options.ghostServer
+ * @param {object} options.config
  */
-async function initCore({ghostServer}) {
+async function initCore({ghostServer, config}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -81,6 +82,7 @@ async function initCore({ghostServer}) {
     debug('Begin: settings');
     const settings = require('./server/services/settings');
     await settings.init();
+    await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
     debug('End: settings');
 
     // The URLService is a core part of Ghost, which depends on models. It needs moving from the frontend to make this clear.
@@ -323,7 +325,7 @@ async function bootGhost() {
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer});
+        await initCore({ghostServer, config});
         await initFrontend();
         const ghostApp = await initExpressApps();
         await initDynamicRouting();
