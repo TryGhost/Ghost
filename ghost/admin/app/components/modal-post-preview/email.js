@@ -28,6 +28,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     @tracked html = '';
     @tracked subject = '';
+    @tracked memberSegment = 'status:free';
     @tracked previewEmailAddress = this.session.user.email;
     @tracked sendPreviewEmailError = '';
 
@@ -38,6 +39,8 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     @action
     async renderEmailPreview(iframe) {
+        this._previewIframe = iframe;
+
         await this._fetchEmailData();
         // avoid timing issues when _fetchEmailData didn't perform any async ops
         await timeout(100);
@@ -46,6 +49,15 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
+        }
+    }
+
+    @action
+    changeMemberSegment(segment) {
+        this.memberSegment = segment;
+
+        if (this._previewIframe) {
+            this.renderEmailPreview(this._previewIframe);
         }
     }
 
@@ -66,7 +78,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
             this.sendPreviewEmailError = '';
 
             const url = this.ghostPaths.url.api('/email_preview/posts', resourceId);
-            const data = {emails: [testEmail]};
+            const data = {emails: [testEmail], memberSegment: this.memberSegment};
             const options = {
                 data,
                 dataType: 'json'
@@ -91,12 +103,14 @@ export default class ModalPostPreviewEmailComponent extends Component {
     }
 
     async _fetchEmailData() {
-        let {html, subject} = this;
+        let {html, subject, memberSegment} = this;
         let {post} = this.args;
 
-        if (html && subject) {
+        if (html && subject && memberSegment === this._lastMemberSegment) {
             return {html, subject};
         }
+
+        this._lastMemberSegment = memberSegment;
 
         // model is an email
         if (post.html && post.subject) {
@@ -109,6 +123,9 @@ export default class ModalPostPreviewEmailComponent extends Component {
         // model is a post, fetch email preview
         } else {
             let url = this.ghostPaths.url.api('/email_preview/posts', post.id);
+            if (this.feature.emailCardSegments) {
+                url = `${url}?memberSegment=${encodeURIComponent(this.memberSegment)}`;
+            }
             let response = await this.ajax.request(url);
             let [emailPreview] = response.email_previews;
             html = emailPreview.html;
