@@ -22,6 +22,7 @@ html {
 export default class ModalPostPreviewEmailComponent extends Component {
     @service ajax;
     @service config;
+    @service feature;
     @service ghostPaths;
     @service session;
     @service settings;
