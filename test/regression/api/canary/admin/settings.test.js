@@ -296,6 +296,11 @@ const defaultSettingsKeyTypes = [
         group: 'email'
     },
     {
+        key: 'email_verification_required',
+        type: 'boolean',
+        group: 'email'
+    },
+    {
         key: 'amp',
         type: 'boolean',
         group: 'amp'

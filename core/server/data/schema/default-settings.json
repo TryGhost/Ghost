@@ -384,6 +384,15 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "email_verification_required": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean",
+            "flags": "RO"
         }
     },
     "amp": {
