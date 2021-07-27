@@ -54,10 +54,6 @@ function reconfigureMembersAPI() {
 }
 
 const getThreshold = () => {
-    if (_.get(config.get('hostSettings'), 'emailVerification.verified')) {
-        return null;
-    }
-
     return _.get(config.get('hostSettings'), 'emailVerification.importThreshold');
 };
 
@@ -78,7 +74,9 @@ const processImport = async (options) => {
     const freezeTriggered = result.meta.freeze;
     delete result.meta.freeze;
 
-    if (freezeTriggered) {
+    const isVerifiedEmail = config.get('hostSettings:emailVerification:verified') === true;
+
+    if ((!isVerifiedEmail) && freezeTriggered) {
         limits.init({
             emails: {
                 disabled: true,
