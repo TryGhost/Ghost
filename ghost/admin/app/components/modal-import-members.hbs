@@ -35,7 +35,7 @@
 
     {{#if (eq this.state 'ERROR')}}
         <header class="modal-header" data-test-modal="import-members">
-            <h1>Import error</h1>
+            <h1>{{this.errorHeader}}</h1>
         </header>
     {{/if}}
 
