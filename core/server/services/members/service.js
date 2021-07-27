@@ -63,7 +63,7 @@ const getThreshold = () => {
 const membersImporter = new MembersCSVImporter({
     storagePath: config.getContentPath('data'),
     getTimezone: () => settingsCache.get('timezone'),
-    getMembersApi: () => membersApi,
+    getMembersApi: () => membersService.api,
     sendEmail: ghostMailer.send.bind(ghostMailer),
     isSet: labsService.isSet.bind(labsService),
     addJob: jobsService.addJob.bind(jobsService),
