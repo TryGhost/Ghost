@@ -39,7 +39,7 @@ module.exports = {
     },
 
     /**
-     * Handles syncronization of routes.yaml hash loaded in the frontend with
+     * Handles synchronization of routes.yaml hash loaded in the frontend with
      * the value stored in the settings table.
      * getRoutesHash is a function to allow keeping "frontend" decoupled from settings
      *
