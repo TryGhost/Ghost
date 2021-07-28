@@ -981,4 +981,5 @@ figure {
     padding: 4px;
     border: 0;
     text-align: center;
+    user-select: auto;
 }
