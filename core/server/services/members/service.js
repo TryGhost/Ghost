@@ -22,7 +22,8 @@ const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
     sslRequiredForStripe: 'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
     remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
-    emailVerificationNeeded: `To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`
+    emailVerificationNeeded: `To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
+    emailVerificationEmailMessage: `Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.`
 };
 
 // Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
@@ -67,14 +68,31 @@ const membersImporter = new MembersCSVImporter({
     importThreshold: getThreshold()
 });
 
-const startEmailVerification = async () => {
+const startEmailVerification = async (importedNumber) => {
     const isVerifiedEmail = config.get('hostSettings:emailVerification:verified') === true;
 
     if ((!isVerifiedEmail)) {
-        await models.Settings.edit([{
-            key: 'email_freeze',
-            value: true
-        }], {context: {internal: true}});
+        // Only trigger flag change and escalation email the first time
+        if (settingsCache.get('email_verification_required') !== true) {
+            await models.Settings.edit([{
+                key: 'email_verification_required',
+                value: true
+            }], {context: {internal: true}});
+
+            const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
+
+            if (escalationAddress) {
+                ghostMailer.send({
+                    subject: 'Email needs verification',
+                    html: tpl(messages.emailVerificationEmailMessage, {
+                        importedNumber,
+                        siteUrl: urlUtils.getSiteUrl()
+                    }),
+                    forceTextContent: true,
+                    to: escalationAddress
+                });
+            }
+        }
 
         throw new errors.ValidationError({
             message: tpl(messages.emailVerificationNeeded)
@@ -85,10 +103,12 @@ const startEmailVerification = async () => {
 const processImport = async (options) => {
     const result = await membersImporter.process(options);
     const freezeTriggered = result.meta.freeze;
+    const importSize = result.meta.originalImportSize;
     delete result.meta.freeze;
+    delete result.meta.originalImportSize;
 
     if (freezeTriggered) {
-        await startEmailVerification();
+        await startEmailVerification(importSize);
     }
 
     return result;
