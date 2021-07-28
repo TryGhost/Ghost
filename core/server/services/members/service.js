@@ -67,14 +67,10 @@ const membersImporter = new MembersCSVImporter({
     importThreshold: getThreshold()
 });
 
-const processImport = async (options) => {
-    const result = await membersImporter.process(options);
-    const freezeTriggered = result.meta.freeze;
-    delete result.meta.freeze;
-
+const startEmailVerification = async () => {
     const isVerifiedEmail = config.get('hostSettings:emailVerification:verified') === true;
 
-    if ((!isVerifiedEmail) && freezeTriggered) {
+    if ((!isVerifiedEmail)) {
         await models.Settings.edit([{
             key: 'email_freeze',
             value: true
@@ -83,6 +79,16 @@ const processImport = async (options) => {
         throw new errors.ValidationError({
             message: tpl(messages.emailVerificationNeeded)
         });
+    }
+};
+
+const processImport = async (options) => {
+    const result = await membersImporter.process(options);
+    const freezeTriggered = result.meta.freeze;
+    delete result.meta.freeze;
+
+    if (freezeTriggered) {
+        await startEmailVerification();
     }
 
     return result;
