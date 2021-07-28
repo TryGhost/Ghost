@@ -272,6 +272,8 @@ module.exports = class MembersCSVImporter {
         const meta = {};
         const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
 
+        meta.originalImportSize = job.batches;
+
         if (this._isSet('checkEmailList') && this._importThreshold) {
             meta.freeze = job.batches > this._importThreshold;
         } else {

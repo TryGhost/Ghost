@@ -100,6 +100,9 @@ describe('Importer', function () {
             should.exist(result.meta.freeze);
             result.meta.freeze.should.be.false();
 
+            should.exist(result.meta.originalImportSize);
+            result.meta.originalImportSize.should.equal(2);
+
             fsWriteSpy.calledOnce.should.be.true();
         });
 
@@ -175,6 +178,9 @@ describe('Importer', function () {
 
             should.exist(result.meta.freeze);
             result.meta.freeze.should.be.true();
+
+            should.exist(result.meta.originalImportSize);
+            result.meta.originalImportSize.should.equal(2);
 
             fsWriteSpy.calledOnce.should.be.true();
         });
