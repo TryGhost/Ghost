@@ -1,15 +1,18 @@
+import Color from 'color';
 import {helper} from '@ember/component/helper';
-import {hexToRgb, hslToRgb, rgbToHex, rgbToHsl} from '../utils/color';
 
-export default helper(function hexAdjuster([hex], {s: sDiff, l: lDiff} = {}) {
-    const rgb = hexToRgb(hex);
-    const {h,s,l} = rgbToHsl(rgb);
+export default helper(function hexAdjuster([hex], {s: sDiff = 0, l: lDiff = 0} = {}) {
+    const originalColor = Color(hex);
 
-    const adjS = sDiff ? Math.min(Math.max(s + (sDiff / 100), 0), 1) : s;
-    const adjL = lDiff ? Math.min(Math.max(l + (lDiff / 100), 0), 1) : l;
+    let newColor = originalColor;
 
-    const adjRgb = hslToRgb({h, s: adjS, l: adjL});
-    const adjHex = rgbToHex(adjRgb);
+    if (sDiff !== 0) {
+        newColor = newColor.saturationl(newColor.saturationl() + sDiff);
+    }
 
-    return adjHex;
+    if (lDiff !== 0) {
+        newColor = newColor.lightness(newColor.lightness() + lDiff);
+    }
+
+    return newColor.hex();
 });

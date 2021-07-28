@@ -1,11 +1,9 @@
+import Color from 'color';
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
 import {
-    contrast,
     darkenToContrastThreshold,
-    hexToRgb,
     lightenToContrastThreshold,
-    rgbToHex,
     textColorForBackgroundColor
 } from 'ghost-admin/utils/color';
 import {get} from '@ember/object';
@@ -73,37 +71,29 @@ export default class UiService extends Service {
     }
 
     get adjustedAccentColor() {
-        const accentColor = this.settings.get('accentColor');
-        const backgroundColor = this.backgroundColor;
-
-        const accentRgb = hexToRgb(accentColor);
-        const backgroundRgb = hexToRgb(backgroundColor);
+        const accentColor = Color(this.settings.get('accentColor'));
+        const backgroundColor = Color(this.backgroundColor);
 
         // WCAG contrast. 1 = lowest contrast, 21 = highest contrast
-        const accentContrast = contrast(backgroundRgb, accentRgb);
+        const accentContrast = accentColor.contrast(backgroundColor);
 
         if (accentContrast > 2) {
-            return accentColor;
+            return accentColor.hex();
         }
 
-        let adjustedAccentRgb = accentRgb;
+        let adjustedAccentColor = accentColor;
 
         if (this.feature.nightShift) {
-            adjustedAccentRgb = lightenToContrastThreshold(accentRgb, backgroundRgb, 2);
+            adjustedAccentColor = lightenToContrastThreshold(accentColor, backgroundColor, 2);
         } else {
-            adjustedAccentRgb = darkenToContrastThreshold(accentRgb, backgroundRgb, 2);
+            adjustedAccentColor = darkenToContrastThreshold(accentColor, backgroundColor, 2);
         }
 
-        return rgbToHex(adjustedAccentRgb);
+        return adjustedAccentColor.hex();
     }
 
     get textColorForAdjustedAccentBackground() {
-        const accentColor = this.settings.get('accentColor');
-
-        const accentColorRgb = hexToRgb(accentColor);
-        const textColorRgb = textColorForBackgroundColor(accentColorRgb);
-
-        return rgbToHex(textColorRgb);
+        return textColorForBackgroundColor(this.settings.get('accentColor')).hex();
     }
 
     constructor() {
