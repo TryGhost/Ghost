@@ -47,7 +47,9 @@ export default [
     createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'}),
     createComponentCard('gallery', {hasEditMode: false}),
     createComponentCard('email', {deleteIfEmpty: 'payload.html'}),
-    createComponentCard('email-cta', {deleteIfEmpty: 'payload.html'}),
+    createComponentCard('email-cta', {deleteIfEmpty(card) {
+        return !card.payload.html && !card.payload.buttonText && !card.payload.buttonUrl;
+    }}),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 
