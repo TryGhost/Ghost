@@ -25,7 +25,8 @@ const events = require('../../lib/common/events');
 const messages = {
     invalidSegment: 'Invalid segment value. Use one of the valid:"status:free" or "status:-free" values.',
     unexpectedFilterError: 'Unexpected {property} value "{value}", expected an NQL equivalent',
-    noneFilterError: 'Cannot send email to "none" {property}'
+    noneFilterError: 'Cannot send email to "none" {property}',
+    emailSendingDisabled: `Sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`
 };
 
 const getFromAddress = () => {
@@ -157,6 +158,12 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
 const addEmail = async (postModel, options) => {
     if (limitService.isLimited('emails')) {
         await limitService.errorIfWouldGoOverLimit('emails');
+    }
+
+    if (settingsCache.get('email_verification_required') === true) {
+        throw new errors.HostLimitError({
+            message: tpl(messages.emailSendingDisabled)
+        });
     }
 
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
