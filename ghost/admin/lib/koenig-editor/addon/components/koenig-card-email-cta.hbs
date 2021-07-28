@@ -1,6 +1,5 @@
 <KoenigCard
     @icon={{"koenig/card-indicator-email"}}
-    @iconTooltip={{concat "Delivered to " (lowercase this.selectedSegment.name) " only"}}
     @class={{concat (kg-style "container-card") " kg-email-card mih10 miw-100 relative"}}
     @style={{@cardStyle}}
     @headerOffset={{@headerOffset}}
@@ -82,12 +81,8 @@
         </form>
     {{else}}
         <div class="gh-email-cta-segment-indicator">
-            {{#if (eq this.selectedSegment.name "free members")}}
-                <p>Free members</p>
-            {{else}}
-                <p>Paid members</p>
-            {{/if}}
-        </div> 
+            <p>{{capitalize this.selectedSegment.name}}</p>
+        </div>
         <div class="relative">
             <p>{{{this.formattedHtml}}}</p>
             <div class="koenig-card-click-overlay"></div>
