@@ -52,11 +52,6 @@ export default class KoenigCardEmailCtaComponent extends Component {
     constructor() {
         super(...arguments);
         this.args.registerComponent(this);
-
-        if (!this.args.payload.html) {
-            this._updatePayloadAttr('html', '<p>Hey {first_name, "there"},</p>');
-        }
-
         if (!this.args.payload.segment) {
             this._updatePayloadAttr('segment', 'status:free');
         }
