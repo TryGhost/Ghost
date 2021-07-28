@@ -4,14 +4,16 @@ export function lightenToContrastThreshold(foreground, background, contrastThres
     const foregroundColor = Color(foreground);
     const backgroundColor = Color(background);
 
+    const {h,s} = foregroundColor.hsl().object();
+
     let newColor = foregroundColor;
 
     while (newColor.contrast(backgroundColor) < contrastThreshold) {
-        if (newColor.l() >= 100) {
+        if (newColor.lightness() >= 100) {
             break;
         }
 
-        newColor = newColor.lightness(newColor.l() + 5);
+        newColor = Color({h, s, l: newColor.lightness() + 5});
     }
 
     return newColor;
@@ -21,14 +23,16 @@ export function darkenToContrastThreshold(foreground, background, contrastThresh
     const foregroundColor = Color(foreground);
     const backgroundColor = Color(background);
 
+    const {h,s} = foregroundColor.hsl().object();
+
     let newColor = foregroundColor;
 
     while (newColor.contrast(backgroundColor) < contrastThreshold) {
-        if (newColor.l() <= 0) {
+        if (newColor.lightness() <= 0) {
             break;
         }
 
-        newColor = newColor.lightness(newColor.l() - 5);
+        newColor = Color({h, s, l: newColor.lightness() - 5});
     }
 
     return newColor;
