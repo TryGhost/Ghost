@@ -1,5 +1,5 @@
 <KoenigCard
-    @icon={{if (eq this.selectedSegment.name "Free members") "koenig/card-indicator-email" "koenig/card-indicator-email"}}
+    @icon={{"koenig/card-indicator-email"}}
     @iconTooltip={{concat "Delivered to " (lowercase this.selectedSegment.name) " only"}}
     @class={{concat (kg-style "container-card") " kg-email-card mih10 miw-100 relative"}}
     @style={{@cardStyle}}
@@ -20,7 +20,29 @@
     @editor={{@editor}}
     as |card|
 >
+
     {{#if @isEditing}}
+        <div class="kg-card-help kg-card-help-labs">
+            <p>
+                <span>
+                    Only visible to
+                    <PowerSelect
+                        @options={{this.segments}}
+                        @selected={{this.selectedSegment}}
+                        @onChange={{this.setSegment}}
+                        @searchEnabled={{false}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="ember-power-select-inline ember-power-select-inline-labs"
+                        @dropdownClass="gh-member-segment-select-dropdown"
+                        as |segment|
+                    >
+                        {{segment.name}}
+                    </PowerSelect>
+                    when delievered by email.
+                    This card will not be published on your site.
+                </span>
+            </p>
+        </div>
         <KoenigTextReplacementHtmlInput
             @html={{@payload.html}}
             @placeholder="Email only content..."
@@ -31,11 +53,11 @@
             @onBlur={{fn (mut this.contentFocused) false}}
             @didCreateEditor={{this.registerEditor}}
         />
-        <form class="flex mt4">
+        <form class="flex mt6">
             <label for="button-text-input" class="sr-only">CTA button text</label>
             <input
                 type="text"
-                class="gh-btn email-cta-button-text-input mr4"
+                class="gh-btn email-cta-button-text-input"
                 id="button-text-input"
                 name="button-text"
                 value={{@payload.buttonText}}
@@ -58,33 +80,20 @@
                 {{on-key "Enter" this.blurElement}}
             >
         </form>
-        <div class="kg-card-help">
-            <p>
-                <span>
-                    Only visible to
-                    <PowerSelect
-                        @options={{this.segments}}
-                        @selected={{this.selectedSegment}}
-                        @onChange={{this.setSegment}}
-                        @searchEnabled={{false}}
-                        @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="ember-power-select-inline"
-                        as |segment|
-                    >
-                        {{segment.name}}
-                    </PowerSelect>
-                    when delievered by email.
-                    This card will not be published on your site.
-                </span>
-            </p>
-        </div>
     {{else}}
+        <div class="gh-email-cta-segment-indicator">
+            {{#if (eq this.selectedSegment.name "free members")}}
+                <p>Free members</p>
+            {{else}}
+                <p>Paid members</p>
+            {{/if}}
+        </div> 
         <div class="relative">
             <p>{{{this.formattedHtml}}}</p>
             <div class="koenig-card-click-overlay"></div>
         </div>
         {{#if (and @payload.buttonText @payload.buttonUrl)}}
-            <div class="mt4"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
+            <div class="mt6"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
         {{/if}}
     {{/if}}
 </KoenigCard>
