@@ -123,7 +123,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Email call to action',
-            icon: 'koenig/kg-card-type-email',
+            icon: 'koenig/kg-card-type-email-cta',
             desc: 'Target free or paid members with a CTA',
             matches: ['email', 'cta'],
             type: 'card',
