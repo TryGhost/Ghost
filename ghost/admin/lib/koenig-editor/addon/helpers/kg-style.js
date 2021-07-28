@@ -4,7 +4,7 @@ export function kgStyle([style], options) {
     let cssClass = '';
 
     let pFontStyle = 'f3 fw3 lh-copy tracked-1 serif';
-    let cardBorderStyle = 'pt2 pb2 pl3 nl3 pr3 nr3 ba b--white relative kg-card-left-border kg-card-hover';
+    let cardBorderStyle = 'pb2 pl3 nl3 pr3 nr3 ba b--white relative kg-card-left-border kg-card-hover';
 
     switch (style) {
     // Card menu
