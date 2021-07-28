@@ -17,14 +17,12 @@ const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
-const limits = require('../limits');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
     sslRequiredForStripe: 'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
     remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
-    emailVerificationNeeded: `To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
-    emailSendingDisabled: `Sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`
+    emailVerificationNeeded: `To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`
 };
 
 // Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
@@ -77,13 +75,6 @@ const processImport = async (options) => {
     const isVerifiedEmail = config.get('hostSettings:emailVerification:verified') === true;
 
     if ((!isVerifiedEmail) && freezeTriggered) {
-        limits.init({
-            emails: {
-                disabled: true,
-                error: tpl(messages.emailSendingDisabled)
-            }
-        });
-
         await models.Settings.edit([{
             key: 'email_freeze',
             value: true
