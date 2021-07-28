@@ -845,7 +845,7 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.1.2", "@tryghost/members-csv@^1.1.2":
+"@tryghost/members-csv@1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.2.tgz#408973028d587925ddebaf686f4b8479e2843462"
   integrity sha512-wUgKjC+OhUDbaejHhhLAl97LqyzDjzUc6CmbZ8zmwk0B1TaoFPuRGwMfGLyMmqp25b+9mTETrLWn/aSGa/0Uyw==
@@ -856,13 +856,24 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-importer@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.1.1.tgz#c1b6d26b3afc41fc1ae7f73e1661318d32ae949a"
-  integrity sha512-tzCimEgVT55x3HrOwwQuQDyX7Jx2vH6ec1HlJLVH4GwezRjh3ooztXRet6Qy5lp6oE3iB3Pob3KXaWnuI35Qtw==
+"@tryghost/members-csv@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.3.tgz#b7fe995cc0dc356d60519b3529d57b2cca987739"
+  integrity sha512-TUlK9C3y3odOgHIsj7wdYOU2WbhUcrKCRZ7Sie4Gr36+FZeBaQO2l7BBS8/Htn/v88LXbFWFPZVuGVPxnpkpAA==
+  dependencies:
+    bluebird "^3.7.2"
+    fs-extra "^10.0.0"
+    lodash "^4.17.21"
+    papaparse "5.3.1"
+    pump "^3.0.0"
+
+"@tryghost/members-importer@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.1.2.tgz#6298fa9eff6d4a536b7c8229ad5e2bff54db92cd"
+  integrity sha512-nLGVctLvt7NtqkodKztdb1smTR3FmVPgfrCrEFGZbZR5Au79a0lsjKgebLFH6D7D1dWOu/hHLSY4n3Vh93Hq0Q==
   dependencies:
     "@tryghost/errors" "^0.2.13"
-    "@tryghost/members-csv" "^1.1.2"
+    "@tryghost/members-csv" "^1.1.3"
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
