@@ -6,7 +6,7 @@ export default ModalComponent.extend({
     router: service(),
 
     upgradeMessage: computed('details', function () {
-        const {limit, total} = this.model.details;
+        const {limit, total} = this.model.details || {};
         const message = this.model.message;
 
         return {limit, total, message};
