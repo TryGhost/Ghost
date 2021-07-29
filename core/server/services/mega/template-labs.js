@@ -619,13 +619,13 @@ figure blockquote p {
 }
 
 .btn-accent table td {
-    background-color: ${templateSettings.accentColor || '#3498db'};
+    background-color: ${templateSettings.adjustedAccentColor || '#3498db'};
 }
 
 .btn-accent a {
-    background-color: ${templateSettings.accentColor || '#3498db'};
-    border-color: ${templateSettings.accentColor || '#3498db'};
-    color: ${templateSettings.accentContrastColor || '#ffffff'};
+    background-color: ${templateSettings.adjustedAccentColor || '#3498db'};
+    border-color: ${templateSettings.adjustedAccentColor || '#3498db'};
+    color: ${templateSettings.adjustedAccentContrastColor || '#ffffff'};
 }
 
 /* -------------------------------------
