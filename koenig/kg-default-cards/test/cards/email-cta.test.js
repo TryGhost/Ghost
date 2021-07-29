@@ -61,6 +61,9 @@ describe('Email CTA card', function () {
 
         serializer.serialize(card.render(opts))
             .should.containEql('<a href="https://example.com"');
+
+        serializer.serialize(card.render(opts))
+            .should.not.containEql('undefined');
     });
 
     it('does not render button if payload.buttonText is missing', function () {
