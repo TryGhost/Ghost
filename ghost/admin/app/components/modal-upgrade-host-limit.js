@@ -9,7 +9,7 @@ export default ModalComponent.extend({
         let header = 'Upgrade to enable publishing';
 
         if (this.model.message && this.model.message.match(/account is currently in review/gi)) {
-            header = `Hold up, we're migssing some details`;
+            header = `Hold up, we're missing some details`;
         }
 
         return header;
