@@ -640,6 +640,13 @@
   dependencies:
     long-timeout "^0.1.1"
 
+"@tryghost/color-utils@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.0.tgz#8a1be31f197d5ad899961b24e3db440038eae876"
+  integrity sha512-FzBH6vazZYNo+FfyltXcRq4vTiBcz0o3Em7iFETQIaMPHVSIBsPjXy5Vvhm7LaT+tyyZInXCsogfKlXynPVOqQ==
+  dependencies:
+    color "^3.2.1"
+
 "@tryghost/config-url-helpers@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.0.tgz#10cb3930c19a72e4967b52c6d6450a05449a3f9d"
@@ -2313,7 +2320,7 @@ color-string@^1.6.0:
     color-name "^1.0.0"
     simple-swizzle "^0.2.2"
 
-color@^3.1.3:
+color@^3.1.3, color@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/color/-/color-3.2.1.tgz#3544dc198caf4490c3ecc9a790b54fe9ff45e164"
   integrity sha512-aBl7dZI9ENN6fUGC7mWpMTPNHmWUSNan9tuWN6ahh5ZLNk9baLJOnSMlrQkHcrfFgz2/RigjUVAjdx36VcemKA==

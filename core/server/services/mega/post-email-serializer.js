@@ -1,8 +1,10 @@
 const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
+const labsTemplate = require('./template-labs');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
+const labs = require('../../../shared/labs');
 const moment = require('moment-timezone');
 const cheerio = require('cheerio');
 const api = require('../../api');
@@ -10,6 +12,7 @@ const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToText = require('html-to-text');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
+const {textColorForBackgroundColor} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
 
 const ALLOWED_REPLACEMENTS = ['first_name'];
@@ -154,7 +157,8 @@ const getTemplateSettings = async () => {
         bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
         showBadge: settingsCache.get('newsletter_show_badge'),
         footerContent: settingsCache.get('newsletter_footer_content'),
-        accentColor: settingsCache.get('accent_color')
+        accentColor: settingsCache.get('accent_color'),
+        accentContrastColor: textColorForBackgroundColor(settingsCache.get('accent_color')).hex()
     };
 
     if (templateSettings.headerImage) {
@@ -244,7 +248,9 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 
     const templateSettings = await getTemplateSettings();
 
-    let htmlTemplate = template({post, site: getSite(), templateSettings});
+    const render = labs.isSet('emailCardSegments') ? labsTemplate : template;
+
+    let htmlTemplate = render({post, site: getSite(), templateSettings});
 
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl(null);
