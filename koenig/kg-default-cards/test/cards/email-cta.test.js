@@ -50,7 +50,7 @@ describe('Email CTA card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
-                html: '',
+                html: undefined,
                 buttonText: 'Click me!',
                 buttonUrl: 'https://example.com'
             },
