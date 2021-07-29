@@ -55,8 +55,8 @@
             }
             .email-cta-button-text-input:hover,
             .gh-btn-accent:hover {
-                color: {{hex-adjust this.ui.textColorForAdjustedAccentBackground l=-15}};
-                background-color: {{hex-adjust this.settings.accentColor l=-15}}
+                color: {{hex-contrast this.ui.adjustedAccentColor}};
+                background-color: {{hex-adjust this.ui.adjustedAccentColor l=-15}}
             }
             .email-cta-button-text-input::placeholder {
                 {{!-- TODO: saturation adjustment for white/black doesn't work --}}
