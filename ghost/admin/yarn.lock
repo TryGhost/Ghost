@@ -1801,6 +1801,13 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@tryghost/color-utils@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.0.tgz#8a1be31f197d5ad899961b24e3db440038eae876"
+  integrity sha512-FzBH6vazZYNo+FfyltXcRq4vTiBcz0o3Em7iFETQIaMPHVSIBsPjXy5Vvhm7LaT+tyyZInXCsogfKlXynPVOqQ==
+  dependencies:
+    color "^3.2.1"
+
 "@tryghost/helpers@1.1.49":
   version "1.1.49"
   resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.49.tgz#0bbbe60bde134a93fa0726fef1a58c5bc54c8267"
@@ -4832,7 +4839,7 @@ color-string@^1.6.0:
     color-name "^1.0.0"
     simple-swizzle "^0.2.2"
 
-color@3.2.1, color@^3.0.0:
+color@^3.0.0, color@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/color/-/color-3.2.1.tgz#3544dc198caf4490c3ecc9a790b54fe9ff45e164"
   integrity sha512-aBl7dZI9ENN6fUGC7mWpMTPNHmWUSNan9tuWN6ahh5ZLNk9baLJOnSMlrQkHcrfFgz2/RigjUVAjdx36VcemKA==
@@ -6803,7 +6810,6 @@ ember-power-calendar@^0.16.3:
 
 ember-power-datepicker@cibernox/ember-power-datepicker:
   version "0.8.1"
-  uid da580474a2c449b715444934ddb626b7c07f46a7
   resolved "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7"
   dependencies:
     ember-basic-dropdown "^3.0.11"
@@ -8589,7 +8595,6 @@ gonzales-pe@4.2.4:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -9925,7 +9930,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -13257,7 +13261,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@^9.0.0:

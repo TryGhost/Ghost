@@ -1,11 +1,11 @@
-import Color from 'color';
 import Service, {inject as service} from '@ember/service';
-import {action} from '@ember/object';
 import {
+    Color,
     darkenToContrastThreshold,
     lightenToContrastThreshold,
     textColorForBackgroundColor
-} from 'ghost-admin/utils/color';
+} from '@tryghost/color-utils';
+import {action} from '@ember/object';
 import {get} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';
