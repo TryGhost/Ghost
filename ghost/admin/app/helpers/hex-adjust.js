@@ -1,4 +1,4 @@
-import Color from 'color';
+import {Color} from '@tryghost/color-utils';
 import {helper} from '@ember/component/helper';
 
 export default helper(function hexAdjuster([hex], {s: sDiff = 0, l: lDiff = 0} = {}) {
