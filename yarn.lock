@@ -736,10 +736,10 @@
     fastq "^1.11.0"
     p-wait-for "^3.2.0"
 
-"@tryghost/kg-card-factory@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.0.1.tgz#fcf22d0222b8d27be4cfe77151861ed85ba13724"
-  integrity sha512-9jwygfR8wWJmLcRIx1CSKvEOwtvgFCZ0emlMuZ3zdyNTOTfrVUnBb0gPMp1CuHinJKchuIjoAtFRxd4NdN1ShQ==
+"@tryghost/kg-card-factory@3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.0.2.tgz#fcb84fe46e7c31de2278cfac4e1dd09ce57c0945"
+  integrity sha512-yzPzfwQw8Yo1gQQpNIMAdHhF8cs9nJ3foIirNGIlhsXcCv5aMF3OUgu6+g71V9DEyb0i0DezgfaweiIY1xEL3A==
 
 "@tryghost/kg-clean-basic-html@^1.0.18":
   version "1.0.18"
@@ -751,20 +751,20 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.0.0.tgz#da92ddc8c7d513d641ec1fdd2c8c19e71f6b3616"
   integrity sha512-1f9CM49QYVyx7vWnCA22soX71veVhRWUtV4sPmy9Qf92zLHTZwQ9O9W1hs8jVesNBPRdVU5t/dWHsydx2n7Tmg==
 
-"@tryghost/kg-default-cards@5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.0.1.tgz#1516d7f6630ce9b51c3a186c2ab2a8db1556d44a"
-  integrity sha512-gnApEAKsdapK8Tu1ODhTm0ff+KjBQmSasycKGTMC8RS15hqbOSL/xTgRuS4d9r9gG07lOmt6Z1x+sCq6V2bX5A==
+"@tryghost/kg-default-cards@5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.0.2.tgz#f579e0442060bfa3a18369a03cc76b8814b22219"
+  integrity sha512-dlVKrPXHCSgf+mTh7T8kawoNrSBKx0Ai0DamxNeVIrAGCQMaps48qk031BImnHDmnecS0o0SUOHg2+cP7cG7+Q==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "^5.0.1"
+    "@tryghost/kg-markdown-html-renderer" "^5.0.2"
     "@tryghost/url-utils" "^2.0.0"
     handlebars "^4.7.6"
     juice "^8.0.0"
 
-"@tryghost/kg-markdown-html-renderer@5.0.1", "@tryghost/kg-markdown-html-renderer@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-5.0.1.tgz#05c1639624e360ead80b48d0ec770e62619142b7"
-  integrity sha512-eA2/ldwZvR0aPAZZv83QdzrSGx3BfsQqbJRhrWlU6yAVD+Lm5ff5EefNV/nuYtFPeslwbtX8RhC7fnonLe1mUw==
+"@tryghost/kg-markdown-html-renderer@5.0.2", "@tryghost/kg-markdown-html-renderer@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-5.0.2.tgz#9fbeda7b1fa8ec0997201bd5e8d0d71d79b878f2"
+  integrity sha512-4l69NRBb0zf2XhZUWaPQNKwzJRTIZ25YmOMCgI2DRR+KpliwViY5PkqFgDF+S7xftfFK/e+41O/eg8ZCTHtZig==
   dependencies:
     markdown-it "^12.0.6"
     markdown-it-footnote "^3.0.3"
