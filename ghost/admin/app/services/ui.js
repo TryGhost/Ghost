@@ -93,7 +93,7 @@ export default class UiService extends Service {
     }
 
     get textColorForAdjustedAccentBackground() {
-        return textColorForBackgroundColor(this.settings.get('accentColor')).hex();
+        return textColorForBackgroundColor(this.adjustedAccentColor).hex();
     }
 
     constructor() {
