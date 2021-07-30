@@ -28,8 +28,8 @@ const getIdentityToken = async function (req, res) {
         res.writeHead(200);
         res.end(token);
     } catch (err) {
-        res.writeHead(err.statusCode);
-        res.end(err.message);
+        res.writeHead(204);
+        res.end();
     }
 };
 
