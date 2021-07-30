@@ -122,6 +122,6 @@
     },
     "portal": {
         "url": "https://unpkg.com/@tryghost/portal@~1.7.0/umd/portal.min.js",
-        "version": "1.7"
+        "version": "1.8"
     }
 }
