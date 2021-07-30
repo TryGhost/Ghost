@@ -44,7 +44,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 url,
                 credentials: 'same-origin'
             }).then(function (res) {
-                if (!res.ok) {
+                if (!res.ok || res.status === 204) {
                     return null;
                 }
                 return res.text();
