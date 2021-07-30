@@ -66,9 +66,9 @@ describe('Front-end members behaviour', function () {
                 .expect(400);
         });
 
-        it('should error when invalid member token is passed into session', async function () {
+        it('should return no content for invalid token passed in session', async function () {
             await request.get('/members/api/session')
-                .expect(400);
+                .expect(204);
         });
 
         it('should return no content when removing member sessions', async function () {
