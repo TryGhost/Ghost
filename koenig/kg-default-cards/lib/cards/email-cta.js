@@ -48,9 +48,9 @@ module.exports = {
             const buttonTemplate = hbs`
                 <p>
                     <div class="btn btn-accent">
-                        <table border="0" cellspacing="0" cellpadding="0">
+                        <table border="0" cellspacing="0" cellpadding="0" align="{{buttonAlignment}}">
                             <tr>
-                                <td align="{{buttonAlignment}}">
+                                <td align="center">
                                     <a href="{{buttonUrl}}">{{buttonText}}</a>
                                 </td>
                             </tr>
