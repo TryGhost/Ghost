@@ -110,7 +110,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     @action
-    setBorder(border, event) {
+    setBorder(border) {
         this._updatePayloadAttr('border', border);
     }
 
