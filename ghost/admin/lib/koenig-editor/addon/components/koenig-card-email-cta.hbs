@@ -20,7 +20,7 @@
     as |card|
 >
     {{#if @isEditing}}
-        {{#if this.hasTopBorder}}<hr>{{/if}}
+        {{#if this.hasTopDivider}}<hr>{{/if}}
 
         <div class="kg-card-help kg-card-help-labs">
             <p>
@@ -86,7 +86,7 @@
             <p>{{capitalize this.selectedSegment.name}}</p>
         </div>
 
-        {{#if this.hasTopBorder}}<hr>{{/if}}
+        {{#if this.hasTopDivider}}<hr>{{/if}}
 
         {{#if @payload.html}}
             <div class="relative">
@@ -99,5 +99,5 @@
         {{/if}}
     {{/if}}
 
-    {{#if this.hasBottomBorder}}<hr>{{/if}}
+    {{#if this.hasBottomDivider}}<hr>{{/if}}
 </KoenigCard>

@@ -32,14 +32,12 @@ export default class KoenigCardEmailCtaComponent extends Component {
         return this.segments.find(segment => segment.filter === this.args.payload.segment);
     }
 
-    get hasTopBorder() {
-        const border = this.args.payload?.border;
-        return border === 'top' || border === 'both';
+    get hasTopDivider() {
+        return !!this.args.payload?.dividerTop;
     }
 
-    get hasBottomBorder() {
-        const border = this.args.payload?.border;
-        return border === 'bottom' || border === 'both';
+    get hasBottomDivider() {
+        return !!this.args.payload?.dividerBottom;
     }
 
     get toolbar() {
@@ -49,25 +47,15 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         return {
             items: [{
-                title: 'No dividers',
-                icon: 'koenig/kg-img-regular',
-                iconClass: this.args.payload.border === 'none' ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.setBorder, null)
-            }, {
                 title: 'Top divider',
                 icon: 'koenig/kg-img-regular',
-                iconClass: this.args.payload.border === 'top' ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.setBorder, 'top')
-            }, {
-                title: 'Both dividers',
-                icon: 'koenig/kg-img-regular',
-                iconClass: this.args.payload.border === 'both' ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.setBorder, 'both')
+                iconClass: this.hasTopDivider ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.toggleDivider, 'top')
             }, {
                 title: 'Bottom divider',
                 icon: 'koenig/kg-img-regular',
-                iconClass: this.args.payload.border === 'bottom' ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.setBorder, 'bottom')
+                iconClass: this.hasBottomDivider ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.toggleDivider, 'bottom')
             }, {
                 divider: true
             }, {
@@ -110,8 +98,13 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     @action
-    setBorder(border) {
-        this._updatePayloadAttr('border', border);
+    toggleDivider(border) {
+        if (border === 'top') {
+            this._updatePayloadAttr('dividerTop', !this.hasTopDivider);
+        }
+        if (border === 'bottom') {
+            this._updatePayloadAttr('dividerBottom', !this.hasBottomDivider);
+        }
     }
 
     @action
