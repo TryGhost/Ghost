@@ -19,8 +19,9 @@
     @editor={{@editor}}
     as |card|
 >
-
     {{#if @isEditing}}
+        {{#if this.hasTopBorder}}<hr>{{/if}}
+
         <div class="kg-card-help kg-card-help-labs">
             <p>
                 <span>
@@ -42,6 +43,7 @@
                 </span>
             </p>
         </div>
+
         <KoenigTextReplacementHtmlInput
             @html={{@payload.html}}
             @placeholder="Email only text... (optional)"
@@ -83,6 +85,9 @@
         <div class="gh-email-cta-segment-indicator">
             <p>{{capitalize this.selectedSegment.name}}</p>
         </div>
+
+        {{#if this.hasTopBorder}}<hr>{{/if}}
+
         {{#if @payload.html}}
             <div class="relative">
                 <p>{{{this.formattedHtml}}}</p>
@@ -93,4 +98,6 @@
             <div class="{{if @payload.html "mt6"}}"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
         {{/if}}
     {{/if}}
+
+    {{#if this.hasBottomBorder}}<hr>{{/if}}
 </KoenigCard>
