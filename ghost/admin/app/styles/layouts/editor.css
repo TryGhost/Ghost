@@ -987,6 +987,10 @@ figure {
     user-select: auto;
 }
 
+.email-cta-button-url-input {
+    margin-right: 1.2rem;
+}
+
 .kg-card-help-labs {
     margin: 0 -13px 16px;
     padding: 8px 12px;
@@ -995,7 +999,7 @@ figure {
 }
 
 .kg-card-help-labs p {
-    color: var(--midgrey);  
+    color: var(--midgrey);
     text-align: left;
 }
 
