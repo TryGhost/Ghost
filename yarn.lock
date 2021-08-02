@@ -768,7 +768,19 @@
     handlebars "^4.7.6"
     juice "^8.0.0"
 
-"@tryghost/kg-markdown-html-renderer@5.0.2", "@tryghost/kg-markdown-html-renderer@^5.0.2":
+"@tryghost/kg-markdown-html-renderer@5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-5.0.3.tgz#ab1ef50933f13fee53542beb947191ba613ccbdb"
+  integrity sha512-Ds+e1aN7TQIu0gBIFabeXTGQM7tN5dz/Lvh5SKbMboHM8AZfIecSf6Qx3AdAIhz0hCnFsCX7C8nvSC5KbG/84w==
+  dependencies:
+    markdown-it "^12.1.0"
+    markdown-it-footnote "^3.0.3"
+    markdown-it-image-lazy-loading "^1.1.0"
+    markdown-it-lazy-headers "^0.1.3"
+    markdown-it-mark "^3.0.0"
+    semver "^7.3.4"
+
+"@tryghost/kg-markdown-html-renderer@^5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-5.0.2.tgz#9fbeda7b1fa8ec0997201bd5e8d0d71d79b878f2"
   integrity sha512-4l69NRBb0zf2XhZUWaPQNKwzJRTIZ25YmOMCgI2DRR+KpliwViY5PkqFgDF+S7xftfFK/e+41O/eg8ZCTHtZig==
@@ -6469,7 +6481,7 @@ markdown-it-mark@^3.0.0:
   resolved "https://registry.yarnpkg.com/markdown-it-mark/-/markdown-it-mark-3.0.1.tgz#51257db58787d78aaf46dc13418d99a9f3f0ebd3"
   integrity sha512-HyxjAu6BRsdt6Xcv6TKVQnkz/E70TdGXEFHRYBGLncRE9lBFwDNLVtFojKxjJWgJ+5XxUwLaHXy+2sGBbDn+4A==
 
-markdown-it@^12.0.6:
+markdown-it@^12.0.6, markdown-it@^12.1.0:
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-12.1.0.tgz#7ad572caddd336bd27a68d20e86bac1fafe8fb20"
   integrity sha512-7temG6IFOOxfU0SgzhqR+vr2diuMhyO5uUIEZ3C5NbXhqC9uFUHoU41USYuDFoZRsaY7BEIEei874Z20VMLF6A==
