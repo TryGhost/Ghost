@@ -80,6 +80,11 @@
                 {{on "input" this.setButtonUrl}}
                 {{on-key "Enter" this.blurElement}}
             >
+
+            <div class="gh-btn-group icons">
+                <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+            </div>
         </form>
     {{else}}
         <div class="gh-email-cta-segment-indicator">
@@ -94,8 +99,9 @@
                 <div class="koenig-card-click-overlay"></div>
             </div>
         {{/if}}
+
         {{#if (and @payload.buttonText @payload.buttonUrl)}}
-            <div class="{{if @payload.html "mt6"}}"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
+            <div class="{{if @payload.html "mt6"}} {{if (eq @payload.buttonAlignment "center") "tc"}}"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
         {{/if}}
     {{/if}}
 
