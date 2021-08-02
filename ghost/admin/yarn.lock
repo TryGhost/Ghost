@@ -1808,10 +1808,10 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/helpers@1.1.49":
-  version "1.1.49"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.49.tgz#0bbbe60bde134a93fa0726fef1a58c5bc54c8267"
-  integrity sha512-5zi3A55YXjWhgFBZNTNCZYkKHhdUpfWmtyMTErgGHP2x5951xWvPNvtge/9JzD73llGK6X+QN60CO2BjmxVWaw==
+"@tryghost/helpers@1.1.50":
+  version "1.1.50"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.50.tgz#c57cbdc84ff1b2210677448ad588ab62534f77b3"
+  integrity sha512-ElSIWZZKa01zAAA6o7Io+8T1iK+nQNcbp8nwLB/Wmtln2wIsOOxRiiWOMaqMS2jlRb1LCUkIajWwzoRfCXRc7Q==
   dependencies:
     lodash-es "^4.17.11"
 
