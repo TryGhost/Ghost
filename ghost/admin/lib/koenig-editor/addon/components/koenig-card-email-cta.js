@@ -75,6 +75,9 @@ export default class KoenigCardEmailCtaComponent extends Component {
         if (!this.args.payload.segment) {
             this._updatePayloadAttr('segment', 'status:free');
         }
+        if (!this.args.payload.buttonAlignment) {
+            this._updatePayloadAttr('buttonAlignment', 'left');
+        }
     }
 
     @action
@@ -95,6 +98,12 @@ export default class KoenigCardEmailCtaComponent extends Component {
     @action
     setButtonUrl(event) {
         this._updatePayloadAttr('buttonUrl', event.target.value);
+    }
+
+    @action
+    setButtonAlignment(alignment, event) {
+        event.preventDefault();
+        this._updatePayloadAttr('buttonAlignment', alignment);
     }
 
     @action
