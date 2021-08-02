@@ -29,6 +29,10 @@ module.exports = {
             container.setAttribute('data-gh-segment', payload.segment);
         }
 
+        if (payload.dividerTop) {
+            container.appendChild(dom.createElement('hr'));
+        }
+
         // wrap the replacement %%{replacement}%% so that when performing replacements
         // it's less likely for code samples to be mistaken for our replacement strings
         // NOTE: must be plain text rather than a custom element so that it's not removed by html->plaintext conversion
@@ -59,6 +63,10 @@ module.exports = {
             const button = dom.createRawHTMLSection(dedent(buttonTemplate(templateData)));
 
             container.appendChild(button);
+        }
+
+        if (payload.dividerBottom) {
+            container.appendChild(dom.createElement('hr'));
         }
 
         return container;

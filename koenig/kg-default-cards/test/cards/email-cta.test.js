@@ -203,4 +203,47 @@ describe('Email CTA card', function () {
         serializer.serialize(card.render(opts))
             .should.containEql('<p>Testing {foo invalid} in %%{bar}%%</p>');
     });
+
+    it('renders top divider', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', dividerTop: true},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.containEql('<hr>');
+    });
+
+    it('renders bottom divider', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', dividerBottom: true},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.containEql('<hr>');
+    });
+
+    it('renders both dividers', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', dividerTop: true, dividerBottom: true},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts)).match(/<hr>/g).length.should.eql(2);
+    });
+
+    it('renders no dividers by default', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing {foo invalid} in {bar}</p>'},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.not.containEql('<hr>');
+    });
 });
