@@ -60,6 +60,7 @@ export default Service.extend({
     featureImgDragDrop: feature('featureImgDragDrop', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
     checkEmailList: feature('checkEmailList', {developer: true}),
+    emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
 
     _user: null,
 
