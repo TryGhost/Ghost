@@ -184,6 +184,12 @@ export default Component.extend({
     mouseUp(event) {
         let {isSelected, isEditing, hasEditMode, _skipMouseUp} = this;
 
+        // we want to allow toolbar buttons to be clicked without going into edit mode
+        if (event.target.closest('[data-kg-toolbar]')) {
+            this._skipMouseUp = true;
+            return;
+        }
+
         if (!_skipMouseUp && hasEditMode && isSelected && !isEditing && !this.koenigUi.isDragging) {
             this.editCard();
             this.set('showToolbar', true);

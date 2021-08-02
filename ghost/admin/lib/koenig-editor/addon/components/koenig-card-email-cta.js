@@ -32,6 +32,16 @@ export default class KoenigCardEmailCtaComponent extends Component {
         return this.segments.find(segment => segment.filter === this.args.payload.segment);
     }
 
+    get hasTopBorder() {
+        const border = this.args.payload?.border;
+        return border === 'top' || border === 'both';
+    }
+
+    get hasBottomBorder() {
+        const border = this.args.payload?.border;
+        return border === 'bottom' || border === 'both';
+    }
+
     get toolbar() {
         if (this.args.isEditing) {
             return false;
@@ -39,6 +49,28 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         return {
             items: [{
+                title: 'No dividers',
+                icon: 'koenig/kg-img-regular',
+                iconClass: this.args.payload.border === 'none' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setBorder, null)
+            }, {
+                title: 'Top divider',
+                icon: 'koenig/kg-img-regular',
+                iconClass: this.args.payload.border === 'top' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setBorder, 'top')
+            }, {
+                title: 'Both dividers',
+                icon: 'koenig/kg-img-regular',
+                iconClass: this.args.payload.border === 'both' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setBorder, 'both')
+            }, {
+                title: 'Bottom divider',
+                icon: 'koenig/kg-img-regular',
+                iconClass: this.args.payload.border === 'bottom' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setBorder, 'bottom')
+            }, {
+                divider: true
+            }, {
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
                 iconClass: 'fill-white',
@@ -75,6 +107,11 @@ export default class KoenigCardEmailCtaComponent extends Component {
     @action
     setButtonUrl(event) {
         this._updatePayloadAttr('buttonUrl', event.target.value);
+    }
+
+    @action
+    setBorder(border, event) {
+        this._updatePayloadAttr('border', border);
     }
 
     @action
