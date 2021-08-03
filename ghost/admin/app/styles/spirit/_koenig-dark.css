@@ -4,10 +4,6 @@
 
 /* Action bar */
 
-.kg-card-left-border {
-    border-left-color: var(--lightgrey-d1);
-}
-
 .kg-action-bar {
     background: var(--whitegrey-l2);
     border: 1px solid var(--whitegrey-l2);

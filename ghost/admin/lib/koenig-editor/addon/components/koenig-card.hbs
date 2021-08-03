@@ -24,7 +24,7 @@
         <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}} @instantClose={{this.koenigUi.inputHasFocus}}>
             {{#each this.toolbar.items as |item|}}
                 {{#if item.divider}}
-                    <li class="ma0 kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+                    <li class="ma0 ml1 mr1 kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
                 {{else}}
                     <li class="ma0 lh-solid">
                         <button
@@ -41,7 +41,7 @@
 
             {{#if showSnippetIcon}}
                 {{#if this.toolbar.items}}
-                    <li class="ma0 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
+                    <li class="ma0 ml1 mr1 lh-solid kg-action-bar-divider bg-darkgrey-l2 h5" role="separator"></li>
                 {{/if}}
                 <li class="ma0 lh-solid">
                     <button
