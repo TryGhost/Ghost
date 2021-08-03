@@ -576,6 +576,7 @@ figure blockquote p {
 .btn {
     box-sizing: border-box;
     width: 100%;
+    display: table;
 }
 
 .btn>tbody>tr>td {
