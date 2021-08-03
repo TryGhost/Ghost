@@ -48,12 +48,12 @@ export default class KoenigCardEmailCtaComponent extends Component {
         return {
             items: [{
                 title: 'Top divider',
-                icon: 'koenig/kg-img-regular',
+                icon: 'koenig/kg-cta-bordertop',
                 iconClass: this.hasTopDivider ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this.toggleDivider, 'top')
             }, {
                 title: 'Bottom divider',
-                icon: 'koenig/kg-img-regular',
+                icon: 'koenig/kg-cta-borderbottom',
                 iconClass: this.hasBottomDivider ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this.toggleDivider, 'bottom')
             }, {

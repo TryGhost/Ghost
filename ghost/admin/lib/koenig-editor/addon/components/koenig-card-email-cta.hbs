@@ -20,7 +20,6 @@
     as |card|
 >
     {{#if @isEditing}}
-        {{#if this.hasTopDivider}}<hr>{{/if}}
 
         <div class="kg-card-help kg-card-help-labs">
             <p>
@@ -91,7 +90,7 @@
             <p>{{capitalize this.selectedSegment.name}}</p>
         </div>
 
-        {{#if this.hasTopDivider}}<hr>{{/if}}
+        {{#if this.hasTopDivider}}<hr class="border-top">{{/if}}
 
         {{#if @payload.html}}
             <div class="relative">
@@ -103,7 +102,10 @@
         {{#if (and @payload.buttonText @payload.buttonUrl)}}
             <div class="{{if @payload.html "mt6"}} {{if (eq @payload.buttonAlignment "center") "tc"}}"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
         {{/if}}
+
+        {{#if this.hasBottomDivider}}<hr class="border-bottom">{{/if}}
+
     {{/if}}
 
-    {{#if this.hasBottomDivider}}<hr>{{/if}}
+
 </KoenigCard>
