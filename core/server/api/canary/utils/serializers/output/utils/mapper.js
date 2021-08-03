@@ -52,7 +52,8 @@ const mapPost = (model, frame) => {
     _(metaAttrs).filter((k) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
-        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
+        const defaultValue = (attr === 'email_only') ? false : null;
+        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
     });
     delete jsonModel.posts_meta;
 
@@ -89,6 +90,7 @@ const mapPage = (model, frame) => {
 
     delete jsonModel.email_subject;
     delete jsonModel.email_recipient_filter;
+    delete jsonModel.email_only;
 
     return jsonModel;
 };

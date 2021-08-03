@@ -39,6 +39,8 @@ describe('Posts API', function () {
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+        _.isBoolean(jsonResponse.posts[0].email_only).should.eql(true);
+        jsonResponse.posts[0].email_only.should.eql(false);
 
         // Ensure default order
         jsonResponse.posts[0].slug.should.eql('scheduled-post');

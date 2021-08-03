@@ -69,7 +69,8 @@ const expectedProperties = {
         'meta_title',
         'meta_description',
         'email_subject',
-        'frontmatter'
+        'frontmatter',
+        'email_only'
     ],
 
     page: [
