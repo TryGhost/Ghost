@@ -74,7 +74,8 @@ module.exports = {
         email_subject: {type: 'string', maxlength: 300, nullable: true},
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
-        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true}
+        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
+        email_only: {type: 'bool', nullable: false, defaultTo: false}
     },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
