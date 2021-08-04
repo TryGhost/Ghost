@@ -44,7 +44,7 @@ export default class MembersController extends Controller {
     @tracked members = A([]);
     @tracked searchText = '';
     @tracked searchParam = '';
-    @tracked filterParam = '';
+    @tracked filterParam = null;
     @tracked paidParam = null;
     @tracked label = null;
     @tracked orderParam = null;
