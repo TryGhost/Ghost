@@ -316,10 +316,10 @@
     url-regex-safe "~2.0.2"
     video-extensions "~1.2.0"
 
-"@nexes/mongo-knex@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.4.1.tgz#3eb07e9ac176f525704e56e4cc7522dd26ea7552"
-  integrity sha512-WjkizmhtJRLXQ4LFDMpyYhBjd1UgRX5iSznD1XvPeB5/HsRDptBD3nBMld+oWw7lgVz4UUjpT23wFClSKfLF9A==
+"@nexes/mongo-knex@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-knex/-/mongo-knex-0.5.0.tgz#58566614ca240bdf84a270117d72b46511b17743"
+  integrity sha512-6wiTbJpy7I2xsxuvwavuwDEtJfoiaxAy4PGPFEiVziQyH3SjOFbwyqnlrKPvhNHCj2YFQHcE8rnJ3JawJVtXOA==
   dependencies:
     debug "^4.3.1"
     lodash "^4.17.21"
@@ -336,12 +336,12 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha1-oTwCOHP5vBG55OKERJxs++zMgBE=
 
-"@nexes/nql@0.5.2", "@nexes/nql@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.5.2.tgz#64d847d563720d9c3a0f9683dde930fee518e064"
-  integrity sha512-qGLwtpYkKoHI++b+zgsEHuISDUv7LC1PI/0bWd6X9bOz2zGj1nJUDFJHjwdOuLmV5q6BR60VDBKw51Mvzqkl2g==
+"@nexes/nql@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.6.0.tgz#aec2d36d0ff5300b79e950a37f8c29b195f8152b"
+  integrity sha512-iI5fQPVfBAX9iM6P3S35XQhp7z7OS+7Ju7GMJGPxouBSDOkppNKh3zc4QGnrt9oMwbUN4hkZ2dsMwLs9VLmDAQ==
   dependencies:
-    "@nexes/mongo-knex" "^0.4.1"
+    "@nexes/mongo-knex" "0.5.0"
     "@nexes/mongo-utils" "^0.3.1"
     "@nexes/nql-lang" "^0.0.1"
     mingo "^2.2.2"
@@ -560,12 +560,12 @@
     "@tryghost/debug" "^0.1.4"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.2.0.tgz#c8871504b691c37fae05324110789588c4ee6b8e"
-  integrity sha512-4q5DPoCXCD1BzkkBeRhkDIwyNHZF0yMaujEdsRD0Ug3Leh8jixgXiOUY3gVyPFwvVOsZFo7/Xz7cXopWX8rN5w==
+"@tryghost/bookshelf-filter@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.3.0.tgz#2e703f2dda7196bbfad407456d266295c5209b08"
+  integrity sha512-PGNSUefvOwLcVMVQROY8c/AxgFNoajDS/JUnLaRZC92nE2RV+4Wu1CdqVmZtz5CfJbY9iTGj7DmzH8lNC9t8zw==
   dependencies:
-    "@nexes/nql" "^0.5.2"
+    "@nexes/nql" "0.6.0"
     "@tryghost/debug" "^0.1.4"
     "@tryghost/errors" "^0.2.12"
     "@tryghost/tpl" "^0.1.1"
@@ -602,15 +602,15 @@
     "@tryghost/tpl" "^0.1.1"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.2.0.tgz#53a558b4692006fb2e3905b4ab46c285230dce2b"
-  integrity sha512-/1TiDxCJYZDvZSGI9jNXeUVm9fg6viTl3QT6t7uHt0Q40bDHAh6AJl2Lk/NMvoYMAgktC/5nbHVeySCuFZuimw==
+"@tryghost/bookshelf-plugins@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.3.0.tgz#c2e6d96ff11bd411333b585364626e6969ca39c3"
+  integrity sha512-JhUGDMOMtvftNb56+7SnuE181372nXTkt7fgmMSvEVhOYG36a9QHa7yrDC9y/QqppUI39ob9yRuzXFShPRgFbQ==
   dependencies:
     "@tryghost/bookshelf-collision" "^0.1.3"
     "@tryghost/bookshelf-custom-query" "^0.1.3"
     "@tryghost/bookshelf-eager-load" "^0.1.4"
-    "@tryghost/bookshelf-filter" "^0.2.0"
+    "@tryghost/bookshelf-filter" "^0.3.0"
     "@tryghost/bookshelf-has-posts" "^0.1.5"
     "@tryghost/bookshelf-include-count" "^0.1.4"
     "@tryghost/bookshelf-order" "^0.1.3"
