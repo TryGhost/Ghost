@@ -8,7 +8,8 @@ export default class MembersRoute extends AuthenticatedRoute {
         label: {refreshModel: true},
         searchParam: {refreshModel: true, replace: true},
         paidParam: {refreshModel: true},
-        orderParam: {refreshModel: true}
+        orderParam: {refreshModel: true},
+        filterParam: {refreshModel: true, replace: true}
     };
 
     // redirect to posts screen if:
