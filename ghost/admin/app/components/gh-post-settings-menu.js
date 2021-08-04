@@ -44,8 +44,19 @@ export default Component.extend({
     twitterImage: or('post.twitterImage', 'post.featureImage', 'settings.twitterImage', 'settings.coverImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
-    showVisibilityInput: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
     showEmailNewsletter: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
+
+    showEmailOnlyInput: computed('post.isPost', function () {
+        return this.feature.get('emailOnlyPosts') && this.get('post.isPost');
+    }),
+
+    showVisibilityInput: computed('post.emailOnly', function () {
+        if (this.get('post.emailOnly')) {
+            return false;
+        }
+
+        return this.get('session.user.isOwnerOnly') || this.get('session.user.isAdminOnly') || this.get('session.user.isEditor');
+    }),
 
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
@@ -100,6 +111,11 @@ export default Component.extend({
 
         discardEnter() {
             return false;
+        },
+
+        toggleEmailOnly() {
+            this.toggleProperty('post.emailOnly');
+            this.set('post.visibility', 'public');
         },
 
         toggleFeatured() {
