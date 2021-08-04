@@ -107,6 +107,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     url: attr('string'),
     uuid: attr('string'),
     emailRecipientFilter: attr('members-segment-string', {defaultValue: null}),
+    emailOnly: attr('boolean', {defaultValue: false}),
 
     featureImage: attr('string'),
     featureImageAlt: attr('string'),
