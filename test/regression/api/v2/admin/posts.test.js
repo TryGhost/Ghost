@@ -399,6 +399,29 @@ describe('Posts API (v2)', function () {
                     res.body.posts[0].visibility.should.equal('members');
                 });
         });
+
+        it('cannot edit post_meta field that was introduced in API v4', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    should.equal(res.body.posts[0].email_only, undefined);
+
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                email_only: true,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(422);
+                });
+        });
     });
 
     describe('Destroy', function () {
