@@ -69,6 +69,21 @@
                 </div>
                 {{/unless}}
 
+                {{#if this.showEmailOnlyInput}}
+                    <div class="form-group for-checkbox">
+                        <label class="checkbox" for="emailOnly" {{action "toggleEmailOnly" bubbles="false"}}>
+                            <input
+                                type="checkbox"
+                                checked={{this.post.emailOnly}}
+                                class="gh-input post-settings-email-only"
+                                onclick={{action (mut this.post.emailOnly) value="target.checked"}}
+                                data-test-checkbox="emailOnly"
+                            >
+                            <span class="input-toggle-component"></span>
+                            <p>Set post to email only</p>
+                        </label>
+                    </div>
+                {{/if}}
 
                 {{#if this.showVisibilityInput}}
                     {{#if (feature "multipleProducts")}}
