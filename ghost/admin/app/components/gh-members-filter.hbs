@@ -18,93 +18,48 @@
     >
         <h3>Filter list</h3>
         <section class="gh-filters">
-            <div class="gh-filter-block">
-                <GhFormGroup @property="filter-1" @classNames="max-width">
-                    <div class="gh-filter-inputgroup">
-                        <span class="gh-select">
-                            <OneWaySelect 
-                                @options={{this.availableFilterProperties}}
-                                @optionValuePath="name"
-                                @optionLabelPath="label"
-                                @optionTargetPath="name"
-                                @groupLabelPath="group"
-                            />
-                            {{svg-jar "arrow-down-small"}}
-                        </span>
-                        <span class="gh-select">
-                            <OneWaySelect 
-                                @options={{this.availableFilterRelations}}
-                                @optionValuePath="name"
-                                @optionLabelPath="label"
-                                @optionTargetPath="name"
-                            />
-                            {{svg-jar "arrow-down-small"}}
-                        </span>
-                        <GhTextInput @id="filter-value-1" @name="filter-value-1" />
-                        <button class="gh-delete-filter" title="Delete filter">{{svg-jar "close"}}<span class="hidden">Delete filter</span></button>
-                    </div>
-                    <GhErrorMessage @errors={{member.errors}} @property="filter-property-1" />
-                </GhFormGroup>
-            </div>
+            {{#each this.filters as |filter|}}
+                <div class="gh-filter-block">
+                    <GhFormGroup @property={{filter.id}} @classNames="max-width">
+                        <div class="gh-filter-inputgroup">
+                            <span class="gh-select">
+                                <OneWaySelect
+                                    @value={{filter.type}}
+                                    @options={{this.availableFilterProperties}}
+                                    @optionValuePath="name"
+                                    @optionLabelPath="label"
+                                    @optionTargetPath="name"
+                                    @groupLabelPath="group"
+                                />
+                                {{svg-jar "arrow-down-small"}}
+                            </span>
+                            <span class="gh-select">
+                                <OneWaySelect
+                                    @value={{filter.relation}}
+                                    @options={{this.availableFilterRelations}}
+                                    @optionValuePath="name"
+                                    @optionLabelPath="label"
+                                    @optionTargetPath="name"
+                                />
+                                {{svg-jar "arrow-down-small"}}
+                            </span>
+                            <GhTextInput @name="filter-value-1" @value={{filter.value}} />
+                            <button
+                                class="gh-delete-filter" title="Delete filter"
+                                {{action "deleteFilter" filter.id}}
+                            >
+                                {{svg-jar "close"}} <span class="hidden">Delete filter</span>
+                            </button>
+                        </div>
+                        <GhErrorMessage @errors={{member.errors}} @property="filter-property-1" />
+                    </GhFormGroup>
+                </div>
+            {{/each}}
             {{!-- <div class="gh-filter-block-divider">And</div> --}}
-            <div class="gh-filter-block">
-                <GhFormGroup @property="filter-2" @classNames="max-width">
-                    <div class="gh-filter-inputgroup">
-                        <span class="gh-select">
-                            <OneWaySelect 
-                                @options={{this.availableFilterProperties}}
-                                @optionValuePath="name"
-                                @optionLabelPath="label"
-                                @optionTargetPath="name"
-                                @groupLabelPath="group"
-                            />
-                            {{svg-jar "arrow-down-small"}}
-                        </span>
-                        <span class="gh-select">
-                            <OneWaySelect 
-                                @options={{this.availableFilterRelations}}
-                                @optionValuePath="name"
-                                @optionLabelPath="label"
-                                @optionTargetPath="name"
-                            />
-                            {{svg-jar "arrow-down-small"}}
-                        </span>
-                        <GhTextInput @id="filter-value-2" @name="filter-value-2" />
-                        <button class="gh-delete-filter" title="Delete filter">{{svg-jar "close"}}<span class="hidden">Delete filter</span></button>
-                    </div>
-                    <GhErrorMessage @errors={{member.errors}} @property="filter-property-2" />
-                </GhFormGroup>
-            </div>
-            {{!-- <div class="gh-filter-block-divider">And</div> --}}
-            <div class="gh-filter-block">
-                <GhFormGroup @property="filter-3" @classNames="max-width">
-                    <div class="gh-filter-inputgroup">
-                        <span class="gh-select">
-                            <OneWaySelect 
-                                @options={{this.availableFilterProperties}}
-                                @optionValuePath="name"
-                                @optionLabelPath="label"
-                                @optionTargetPath="name"
-                                @groupLabelPath="group"
-                            />
-                            {{svg-jar "arrow-down-small"}}
-                        </span>
-                        <span class="gh-select">
-                            <OneWaySelect 
-                                @options={{this.availableFilterRelations}}
-                                @optionValuePath="name"
-                                @optionLabelPath="label"
-                                @optionTargetPath="name"
-                            />
-                            {{svg-jar "arrow-down-small"}}
-                        </span>
-                        <GhTextInput @id="filter-value-3" @name="filter-value-3" />
-                        <button class="gh-delete-filter" title="Delete filter">{{svg-jar "close"}}<span class="hidden">Delete filter</span></button>
-                    </div>
-                    <GhErrorMessage @errors={{member.errors}} @property="filter-property-3" />
-                </GhFormGroup>
-            </div>
-            <button type="button" class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter">
+            <button type="button"
+                class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
+                {{action "addFilter"}}
+            >
                 <span>{{svg-jar "add"}} Add filter</span>
             </button>
         </section>
