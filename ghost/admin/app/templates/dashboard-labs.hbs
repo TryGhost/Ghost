@@ -1,0 +1,330 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            Dashboard
+        </h2>
+    </GhCanvasHeader>
+
+    <div class="view-container gh-dashboard">
+
+        {{#if (and this.session.user.isOwnerOnly (not this.feature.launchComplete))}}
+            <section class="gh-dashboard-area lw-banner">
+                <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
+                    <h1>Select your publication style</h1>
+                    <p>Customize your brand and connect to Stripe to get your membership site ready to be shown to the world.</p>
+                    <LinkTo class="gh-btn gh-btn-green" @route="launch"><span>Start setup guide</span></LinkTo>
+                    <div class="gh-dashboard-dismiss">
+                        <GhDropdownButton @dropdownName="launch-wizard-dismiss"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-dashboard-dismissbutton dark">
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown @name="launch-wizard-dismiss" @classNames="gh-dashboard-dismiss-dropdown dropdown-menu dropdown-triangle-top-right">
+                            <button class="gh-btn" {{action "dismissLaunchBanner"}}><span>Dismiss</span></button>
+                        </GhDropdown>
+                    </div>
+                </div>
+            </section>
+        {{else if this.showMembersData}}
+            <section class="gh-dashboard-area charts">
+                <div class="gh-dashboard-box mrr">
+                    <div class="flex items-center justify-between">
+                        <h4 class="gh-dashboard-header">MRR</h4>
+                        <h4 class="gh-dashboard-header secondary">30 days</h4>
+                    </div>
+                    <div class="gh-dashboard-chart-container">
+                        {{#if this.mrrStatsLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.mrrStatsError}}
+                                <p class="error">
+                                    There was an error loading MRR
+                                    <code>{{this.mrrStatsError.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary">
+                                    <div class="data"><span class="currency">{{this.mrrStatsData.currency}}</span>{{format-number this.mrrStatsData.currentAmount}}</div>
+                                    <div class="growth {{this.mrrStatsData.percentClass}}">{{this.mrrStatsData.percentGrowth}}%</div>
+                                </div>
+                                {{#if this.mrrStatsData}}
+                                    <div class="gh-dashboard-chart">
+                                        <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @showSummary={{false}} @showRange={{false}} @chartType="mrr" @chartStats={{this.mrrStatsData}} />
+                                    </div>
+                                {{/if}}
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="gh-dashboard-box total-members">
+                    <div class="gh-dashboard-chart-container">
+                        {{#if this.memberCountStatsLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.memberCountStatsError}}
+                                <p class="error">
+                                    There was an error loading total members
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Total members</h4>
+                                    <div class="data-container">
+                                        <div class="data">{{format-number this.memberCountStatsData.all.total}}</div>
+                                        <div class="growth {{this.memberCountStatsData.all.percentClass}}">{{this.memberCountStatsData.all.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="all-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.all}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="gh-dashboard-box paid-members">
+                    <div class="gh-dashboard-chart-container">
+                        {{#if this.memberCountStatsLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.memberCountStatsError}}
+                                <p class="error">
+                                    There was an error loading paid members
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Paid members</h4>
+                                    <div class="data-container">
+                                        <div class="data">{{format-number this.memberCountStatsData.paid.total}}</div>
+                                        <div class="growth {{this.memberCountStatsData.paid.percentClass}}">{{this.memberCountStatsData.paid.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.paid}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="gh-dashboard-box newsletter-open-rate">
+                    <div class="gh-dashboard-chart-container">
+                        {{#if this.newsletterOpenRatesLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.newsletterOpenRatesError}}
+                                <p class="error">
+                                    There was an error loading newsletter open rates
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Email open rate</h4>
+
+                                    <div class="data-container">
+                                        <div class="data">{{this.newsletterOpenRatesData.current}}%</div>
+                                        <div class="growth {{this.newsletterOpenRatesData.percentClass}}">{{this.newsletterOpenRatesData.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="bar" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="open-rate" @showRange={{false}} @chartStats={{this.newsletterOpenRatesData}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+            </section>
+        {{/if}}
+
+
+        <section class="gh-dashboard-area mixed">
+            {{#if (not this.feature.launchComplete)}}
+            <div class="gh-dashboard-container start-contents">
+                <div class="gh-dashboard-box blogpost">
+                    <h2>Start creating content</h2>
+                    {{#if this.showMembersData}}
+                        <LinkTo @route="members">
+                            <span class="icon">{{svg-jar "members"}}</span>
+                            <div>
+                                <h4>Create your first member</h4>
+                                <p>Add yourself or import members from CSV</p>
+                            </div>
+                        </LinkTo>
+                    {{/if}}
+                    <LinkTo @route="editor.new" @model="post">
+                        <span class="icon green">{{svg-jar "posts"}}</span>
+                        <div>
+                            <h4>Publish a post</h4>
+                            <p>Get familiar with the Ghost editor and start creating</p>
+                        </div>
+                    </LinkTo>
+                </div>
+            </div>
+            {{/if}}
+
+            <div class="gh-dashboard-container col-2">
+                <div class="gh-dashboard-box">
+                    <div class="content">
+                        <h2>Customize your site design</h2>
+                        <p>Stand out from the crowd. Ghost lets you customize everything so you can create a publication that doesn’t just look the same as what everyone else has.</p>
+                    </div>
+                    <div class="footer">
+                        <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings"><span>Brand</span></LinkTo>
+                        <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings.members-email"><span>Email</span></LinkTo>
+                        <LinkTo class="gh-btn gh-btn-outline mt2" @route="settings.theme"><span>Theme</span></LinkTo>
+                    </div>
+                </div>
+                <div class="gh-dashboard-box">
+                    <div class="content">
+                        <h2>Looking for help with Ghost features?</h2>
+                        <p>Our product knowledgebase is packed full of guides, tutorials, answers to frequently asked questions, tips for dealing with common errors, and much more. </p>
+                    </div>
+                    <div class="footer">
+                        <a class="gh-btn gh-btn-outline mt2" href="https://ghost.org/help/" target="_blank" rel="noopener"><span>Visit the help center &rarr;</span></a>
+                    </div>
+                </div>
+            </div>
+
+            <a class="gh-dashboard-container" href="https://ghost.org/blog/types-of-newsletters/?utm_source=dashboard" target="_blank" rel="noopener noreferrer">
+                <div class="gh-dashboard-box blogpost">
+                    <div class="content">
+                        <h2>6 types of newsletters you can start today</h2>
+                        <p>Choosing one of these newsletter types for your publication will help you create better content at a faster pace with less work.</p>
+                        <p class="green">Get some inspiration &rarr;</p>
+                        <div class="read-time">5 MIN READ</div>
+                    </div>
+                    <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp1.jpg);"></div>
+                </div>
+            </a>
+
+            <a class="gh-dashboard-container" href="https://careers.ghost.org?utm_source=dashboard" target="_blank" rel="noopener">
+                <div class="gh-dashboard-box grey gh-dashboard-careers">
+                    <div class="summary">
+                        <h2>We're hiring! Join the team that makes Ghost.</h2>
+                        <p>The creator economy is growing faster than ever, and so are we! 📈 Join a team that's determined to make decentralised, open technology the heart and soul of new media 🌺</p>
+                    </div>
+                    <div class="gh-dashboard-careers-cta">
+                        <span class="gh-btn gh-btn-primary"><span>See open roles &rarr;</span></span>
+                    </div>
+                </div>
+            </a>
+
+            <a class="gh-dashboard-container reverse" href="https://ghost.org/blog/content-strategy-creator-funnel/?utm_source=dashboard" target="_blank" rel="noopener noreferrer">
+                <div class="gh-dashboard-box blogpost">
+                    <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp2.jpg);"></div>
+                    <div class="content">
+                        <h2>How to grow your audience, starting from 0</h2>
+                        <p>Starting from zero is hard. Thankfully, successful creators have given us clues on how to grow an audience by using something called a content funnel.</p>
+                        <p class="green">Here's how it works &rarr;</p>
+                        <div class="read-time">9 MIN READ</div>
+                    </div>
+                </div>
+            </a>
+
+            <div class="gh-dashboard-join-community" style="background-image: url(assets/img/dashboard/join-community.jpg)">
+                <div>
+                    <h2>Join the Ghost creator community.</h2>
+                    <p>Meet other people building both free &amp; paid publications with Ghost. Talk strategy, get advice, or just hang out.</p>
+                    <a class="gh-btn gh-btn-white gh-dashboard-btn" href="https://community.ghost.org" target="_blank" rel="noopener noreferrer"><span>Share the journey</span></a>
+                </div>
+                <a class="footer-link" href="https://community.ghost.org" target="_blank" rel="noopener noreferrer">community.ghost.org</a>
+            </div>
+        </section>
+
+        <section class="gh-dashboard-area members-activity">
+            {{#if this.showMembersData}}
+                {{#if this.topMembersData}}
+                    <div class="gh-dashboard-box grey top-members">
+                        <div class="gh-dashboard-header-container">
+                            <h4 class="gh-dashboard-header">Top members</h4>
+                            {{#if this.topMembersDataHasOpenRates}}
+                            <h4 class="gh-dashboard-header secondary">Open rate</h4>
+                            {{else}}
+                            <h4 class="gh-dashboard-header secondary">Member since</h4>
+                            {{/if}}
+                        </div>
+                        <div class="gh-dashboard-list">
+                            {{#if this.topMembersLoading}}
+                                Loading...
+                            {{else}}
+                                {{#if this.topMembersError}}
+                                    <p class="tc">
+                                        There was an error loading member events.
+                                        <code class="hidden">{{this.events.error.message}}</code>
+                                    </p>
+                                {{else}}
+                                <ul class="gh-dashboard-top-members">
+                                    {{#each this.topMembersData as |member|}}
+                                        <li class="gh-dashboard-top-member">
+                                            <LinkTo class="member-details" @route="member" @model="{{member.id}}">
+                                                <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                                {{#if member.name}}
+                                                    <span class="name">{{member.name}}</span>
+                                                {{else}}
+                                                    <span class="email">{{member.email}}</span>
+                                                {{/if}}
+                                            </LinkTo>
+                                            {{#if member.emailOpenRate}}
+                                                <span class="open-rate">{{member.emailOpenRate}}%</span>
+                                            {{else}}
+                                                <span class="open-rate">
+                                                    {{moment-format member.createdAtUTC "D MMM YYYY"}}
+                                                </span>
+                                            {{/if}}
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                                {{/if}}
+                            {{/if}}
+                            <div class="gh-dashboard-top-members-footer">
+                                <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
+                            </div>
+                        </div>
+                    </div>
+                {{/if}}
+
+                {{#unless (and this.session.user.isOwnerOnly (not this.feature.launchComplete))}}
+                    <div class="gh-dashboard-box grey activity-feed">
+                        <h4 class="gh-dashboard-header">Activity feed</h4>
+                        <div class="content">
+                            {{#if this.eventsLoading}}
+                                Loading...
+                            {{else}}
+                                {{#if this.eventsError}}
+                                    <p class="error">
+                                        There was an error loading events
+                                        <code>{{this.eventsError.message}}</code>
+                                    </p>
+                                {{else}}
+                                    <GhEventTimeline @events={{this.eventsData}}/>
+                                {{/if}}
+                            {{/if}}
+                        </div>
+                    </div>
+                {{/unless}}
+            {{/if}}
+
+            {{#unless (or  whatsNewEntriesLoading whatsNewEntriesError)}}
+            <div class="gh-dashboard-box whats-new">
+                <div class="gh-dashboard-header-container">
+                    <h4 class="gh-dashboard-header">What's new?</h4>
+                    {{svg-jar "gift"}}
+                </div>
+                <div class="content">
+                    {{#each this.whatsNewEntries as |entry|}}
+                        <a href={{entry.url}} target="_blank" rel="noopener noreferrer">
+                            <h2>{{entry.title}}</h2>
+                            <span class="wn-date">{{moment-format entry.published_at "D MMM YYYY"}}</span>
+                            {{#if entry.custom_excerpt}}
+                                <p>{{entry.custom_excerpt}}</p>
+                            {{/if}}
+                        </a>
+                    {{/each}}
+                </div>
+                <div class="footer">
+                    <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates</a>
+                </div>
+            </div>
+            {{/unless}}
+        </section>
+    </div>
+</section>

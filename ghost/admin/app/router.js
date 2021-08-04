@@ -24,6 +24,7 @@ Router.map(function () {
     this.route('about');
     this.route('site');
     this.route('dashboard');
+    this.route('dashboard-labs');
     this.route('launch');
 
     this.route('pro', function () {

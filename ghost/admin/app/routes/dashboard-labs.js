@@ -11,8 +11,8 @@ export default class DashboardRoute extends AuthenticatedRoute {
             return this.transitionTo('site');
         }
 
-        if (this.feature.dashboardTwo) {
-            return this.transitionTo('dashboard-labs');
+        if (!this.feature.dashboardTwo) {
+            return this.transitionTo('dashboard');
         }
     }
 
