@@ -61,6 +61,7 @@ export default Service.extend({
     oauthLogin: feature('oauthLogin', {developer: true}),
     checkEmailList: feature('checkEmailList', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
+    dashboardTwo: feature('dashboardTwo', {developer: true}),
 
     _user: null,
 
