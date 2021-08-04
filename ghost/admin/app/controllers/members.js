@@ -156,7 +156,7 @@ export default class MembersController extends Controller {
 
         let filters = [];
 
-        filters.concat(extraFilters);
+        filters = filters.concat(extraFilters);
 
         if (label) {
             filters.push(`label:'${label}'`);
