@@ -600,6 +600,35 @@ describe('Posts API (canary)', function () {
                 });
         });
 
+        it('can edit post_meta field that has default value and no previously created posts_meta relation', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    should.equal(res.body.posts[0].email_only, false);
+
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                email_only: true,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    should.exist(res.headers['x-cache-invalidate']);
+
+                    should.exist(res.body.posts);
+                    should.equal(res.body.posts[0].email_only, true);
+                });
+        });
+
         it('saving post with no modbiledoc content doesn\t trigger cache invalidation', function () {
             return request
                 .post(localUtils.API.getApiQuery('posts/'))
