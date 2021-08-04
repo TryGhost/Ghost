@@ -55,7 +55,9 @@ const mapPost = (model, frame) => {
     _(metaAttrs).filter((k) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
-        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
+        if (!(attr === 'email_only')) {
+            jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
+        }
     });
     delete jsonModel.posts_meta;
 
