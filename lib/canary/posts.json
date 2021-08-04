@@ -122,6 +122,9 @@
           "format": "uri-reference",
           "maxLength": 2000
         },
+        "email_only": {
+          "type": "boolean"
+        },
         "authors": {
           "$ref": "#/definitions/post-authors"
         },
