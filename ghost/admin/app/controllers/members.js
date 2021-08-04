@@ -297,7 +297,7 @@ export default class MembersController extends Controller {
             || label !== this._lastLabel
             || paidParam !== this._lastPaidParam
             || searchParam !== this._lastSearchParam
-            || orderParam !== this._orderParam
+            || orderParam !== this._lastOrderParam
             || filterParam !== this._lastFilterParam;
         this._lastLabel = label;
         this._lastPaidParam = paidParam;
