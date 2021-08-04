@@ -69,7 +69,7 @@ export default Component.extend({
             urlParts.push(this.post.slug);
         }
 
-        return urlParts.join(' > ');
+        return urlParts.join(' › ');
     }),
 
     willDestroyElement() {
