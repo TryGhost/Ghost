@@ -170,7 +170,7 @@ export default class MembersController extends Controller {
             }
         }
 
-        if (filterParam) {
+        if (filterParam && this.feature.get('membersFiltering')) {
             filters.push(filterParam);
         }
 
