@@ -52,6 +52,9 @@ const mapPost = (model, frame) => {
     _(metaAttrs).filter((k) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
+        // NOTE: the default of `email_only` is `false` which is why we default to `false` instead of `null`
+        //       The undefined value is possible because `posts_meta` table is lazily created only one of the
+        //       values is assigned.
         const defaultValue = (attr === 'email_only') ? false : null;
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
     });
