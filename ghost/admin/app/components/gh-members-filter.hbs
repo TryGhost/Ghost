@@ -30,6 +30,7 @@
                                     @optionLabelPath="label"
                                     @optionTargetPath="name"
                                     @groupLabelPath="group"
+                                    @update={{action "setFilterType" filter.id}}
                                 />
                                 {{svg-jar "arrow-down-small"}}
                             </span>
@@ -40,10 +41,15 @@
                                     @optionValuePath="name"
                                     @optionLabelPath="label"
                                     @optionTargetPath="name"
+                                    @update={{action "setFilterRelation" filter.id}}
                                 />
                                 {{svg-jar "arrow-down-small"}}
                             </span>
-                            <GhTextInput @name="filter-value-1" @value={{filter.value}} />
+                            <GhTextInput
+                                @name="filter-value-1"
+                                @value={{filter.value}}
+                                @input={{action "setFilterValue" filter.id}}
+                            />
                             <button
                                 class="gh-delete-filter" title="Delete filter"
                                 {{action "deleteFilter" filter.id}}
@@ -64,7 +70,10 @@
             </button>
         </section>
         <div class="gh-filter-builder-footer">
-            <button class="gh-btn gh-btn-primary gh-btn-icon">
+            <button
+                class="gh-btn gh-btn-primary gh-btn-icon"
+                {{action "applyFilter"}}
+            >
                 <span>Apply filter</span>
             </button>
         </div>

@@ -5,17 +5,7 @@
             <div class="view-actions-bottom-row">
                 {{#unless (feature "membersFiltering")}}
                 <GhMembersFilter
-                    @selectedLabel={{this.selectedLabel}}
-                    @availableLabels={{this.availableLabels}}
-                    @onLabelChange={{this.changeLabel}}
-                    @onLabelAdd={{this.addLabel}}
-                    @onLabelEdit={{this.editLabel}}
-                    @selectedPaidParam={{this.selectedPaidParam}}
-                    @availablePaidParams={{this.paidParams}}
-                    @onPaidParamChange={{this.changePaidParam}}
-                    @availableOrders={{this.availableOrders}}
-                    @selectedOrder={{this.selectedOrder}}
-                    @onOrderChange={{this.changeOrder}}
+                    @onApplyFilter={{this.applyFilter}}
                 />
                 {{/unless}}
                 <div class="relative gh-members-header-search">
@@ -31,17 +21,7 @@
             <div class="view-actions-top-row">
                 {{#if (feature "membersFiltering")}}
                 <GhMembersFilter
-                    @selectedLabel={{this.selectedLabel}}
-                    @availableLabels={{this.availableLabels}}
-                    @onLabelChange={{this.changeLabel}}
-                    @onLabelAdd={{this.addLabel}}
-                    @onLabelEdit={{this.editLabel}}
-                    @selectedPaidParam={{this.selectedPaidParam}}
-                    @availablePaidParams={{this.paidParams}}
-                    @onPaidParamChange={{this.changePaidParam}}
-                    @availableOrders={{this.availableOrders}}
-                    @selectedOrder={{this.selectedOrder}}
-                    @onOrderChange={{this.changeOrder}}
+                    @onApplyFilter={{this.applyFilter}}
                 />
                 {{/if}}
                 <span class="dropdown">

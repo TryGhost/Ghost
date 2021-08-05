@@ -195,6 +195,11 @@ export default class MembersController extends Controller {
     }
 
     @action
+    applyFilter(filterStr) {
+        this.filterParam = filterStr || null;
+    }
+
+    @action
     search(e) {
         this.searchTask.perform(e.target.value);
     }
