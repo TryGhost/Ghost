@@ -2,8 +2,17 @@ const models = require('../../models');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
+const PostsService = require('../../services/posts/posts-service');
 const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
+
+const postsService = new PostsService({
+    apiVersion: 'v2',
+    mega: null,
+    urlUtils: urlUtils,
+    i18n: i18n,
+    models: models
+});
 
 module.exports = {
     docName: 'pages',
@@ -147,23 +156,7 @@ module.exports = {
         async query(frame) {
             const model = await models.Post.edit(frame.data.pages[0], frame.options);
 
-            if (
-                model.get('status') === 'published' && model.wasChanged() ||
-                model.get('status') === 'draft' && model.previous('status') === 'published'
-            ) {
-                this.headers.cacheInvalidate = true;
-            } else if (
-                model.get('status') === 'draft' && model.previous('status') !== 'published' ||
-                model.get('status') === 'scheduled' && model.wasChanged()
-            ) {
-                this.headers.cacheInvalidate = {
-                    value: urlUtils.urlFor({
-                        relativeUrl: urlUtils.urlJoin('/p', model.get('uuid'), '/')
-                    })
-                };
-            } else {
-                this.headers.cacheInvalidate = false;
-            }
+            this.headers.cacheInvalidate = postsService.handleCacheInvalidation(model);
 
             return model;
         }

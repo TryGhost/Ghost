@@ -3,9 +3,17 @@ const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const {mega} = require('../../services/mega');
-const {BadRequestError} = require('@tryghost/errors');
+const PostsService = require('../../services/posts/posts-service');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
+
+const postsService = new PostsService({
+    apiVersion: 'canary',
+    mega: mega,
+    urlUtils: urlUtils,
+    i18n: i18n,
+    models: models
+});
 
 module.exports = {
     docName: 'posts',
@@ -209,24 +217,8 @@ module.exports = {
                 }
             }
 
-            /**Handle cache invalidation */
-            if (
-                model.get('status') === 'published' && model.wasChanged() ||
-                model.get('status') === 'draft' && model.previous('status') === 'published'
-            ) {
-                this.headers.cacheInvalidate = true;
-            } else if (
-                model.get('status') === 'draft' && model.previous('status') !== 'published' ||
-                model.get('status') === 'scheduled' && model.wasChanged()
-            ) {
-                this.headers.cacheInvalidate = {
-                    value: urlUtils.urlFor({
-                        relativeUrl: urlUtils.urlJoin('/p', model.get('uuid'), '/')
-                    })
-                };
-            } else {
-                this.headers.cacheInvalidate = false;
-            }
+            this.headers.cacheInvalidate = postsService.handleCacheInvalidation(model);
+
             return model;
         }
     },
