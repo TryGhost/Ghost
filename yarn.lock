@@ -657,20 +657,20 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.8.tgz#b08074cdc6f8a379209750e60c2ab62c8ba895cf"
   integrity sha512-3/w0k2JlpYjG/3tU3zjvVlrNH+kK9bjZvp7xaCkvmbsLGxQFMtlKU4fFY+rcpDVWOkywIHmKbLGmAqADgZeakA==
 
-"@tryghost/debug@0.1.3", "@tryghost/debug@^0.1.2":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.3.tgz#183883585b9cdb75648ccd63edd4eac67126c9be"
-  integrity sha512-3KlcWbM8cIwYwB10JH0O/6tar76sBIpe0LpJ8Dre1Eg8AzAZxsEA0Pl2uD2C2krIaDjgMqHLyYmjwAkXSDXt/Q==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.2"
-    debug "^4.3.1"
-
-"@tryghost/debug@^0.1.4":
+"@tryghost/debug@0.1.4", "@tryghost/debug@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.4.tgz#9a290573cf41f60516a140dd7de79ad2ffe44b78"
   integrity sha512-/GtRqcaQsEUpyr8DKpM9jgI5VtTxZNcj+MrYjTIf1WTuZcwzBHDYl7aO0x6bqJFPr23Ubphx9SmRLLfIjBJXBw==
   dependencies:
     "@tryghost/root-utils" "^0.3.3"
+    debug "^4.3.1"
+
+"@tryghost/debug@^0.1.2":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.3.tgz#183883585b9cdb75648ccd63edd4eac67126c9be"
+  integrity sha512-3KlcWbM8cIwYwB10JH0O/6tar76sBIpe0LpJ8Dre1Eg8AzAZxsEA0Pl2uD2C2krIaDjgMqHLyYmjwAkXSDXt/Q==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.2"
     debug "^4.3.1"
 
 "@tryghost/elasticsearch-bunyan@0.1.1", "@tryghost/elasticsearch-bunyan@^0.1.1":
