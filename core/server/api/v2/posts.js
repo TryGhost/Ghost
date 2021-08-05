@@ -141,7 +141,7 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         async query(frame) {
-            const model = await models.Post.edit(frame.data.posts[0], frame.options)
+            const model = await models.Post.edit(frame.data.posts[0], frame.options);
 
             if (
                 model.get('status') === 'published' && model.wasChanged() ||
