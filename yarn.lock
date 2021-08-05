@@ -964,10 +964,10 @@
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.2", "@tryghost/root-utils@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.2.tgz#f15a9f938ef9639149fe5f18ba7fb3326ec5ea57"
-  integrity sha512-7zHrzfBa6Qka1CyO0RphBuVL0JOlc8sNiectPs6dAD6vTbeduCCGAl1lm9RXB7FNinuNBzRRRcVYZzMISNIvIw==
+"@tryghost/root-utils@0.3.3", "@tryghost/root-utils@^0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.3.tgz#0a3b228987df16dd9a2931498707e6c2438c99a2"
+  integrity sha512-oCYJ0W9BQQgu+CqxG1mN5BK9TNYLse9c9JjBMiiRCgMQwZH7yBVj/8MdnkdMx0sBM3VFwhk6cI3LPo251ZVzBA==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -980,10 +980,10 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.3.tgz#0a3b228987df16dd9a2931498707e6c2438c99a2"
-  integrity sha512-oCYJ0W9BQQgu+CqxG1mN5BK9TNYLse9c9JjBMiiRCgMQwZH7yBVj/8MdnkdMx0sBM3VFwhk6cI3LPo251ZVzBA==
+"@tryghost/root-utils@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.2.tgz#f15a9f938ef9639149fe5f18ba7fb3326ec5ea57"
+  integrity sha512-7zHrzfBa6Qka1CyO0RphBuVL0JOlc8sNiectPs6dAD6vTbeduCCGAl1lm9RXB7FNinuNBzRRRcVYZzMISNIvIw==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
