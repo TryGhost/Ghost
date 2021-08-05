@@ -640,7 +640,7 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/color-utils@^0.1.0":
+"@tryghost/color-utils@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.0.tgz#8a1be31f197d5ad899961b24e3db440038eae876"
   integrity sha512-FzBH6vazZYNo+FfyltXcRq4vTiBcz0o3Em7iFETQIaMPHVSIBsPjXy5Vvhm7LaT+tyyZInXCsogfKlXynPVOqQ==
