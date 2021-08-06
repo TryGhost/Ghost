@@ -651,6 +651,12 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
+        // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
+        //       but the usual publis/send newsletter flow continues
+        if (model.related('posts_meta').get('email_only') && (newStatus === 'published') && this.hasChanged('status')) {
+            this.set('status', 'draft');
+        }
+
         // If a title is set, not the same as the old title, a draft post, and has never been published
         if (prevTitle !== undefined && newTitle !== prevTitle && newStatus === 'draft' && !publishedAt) {
             ops.push(function updateSlug() {
