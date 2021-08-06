@@ -1,19 +1,11 @@
 const models = require('../../models');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
-const {mega} = require('../../services/mega');
-const PostsService = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
-const postsService = new PostsService({
-    apiVersion: 'canary',
-    mega: mega,
-    urlUtils: urlUtils,
-    i18n: i18n,
-    models: models
-});
+const postsService = getPostServiceInstance('canary');
 
 module.exports = {
     docName: 'posts',

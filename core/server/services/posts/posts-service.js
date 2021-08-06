@@ -97,4 +97,23 @@ class PostsService {
     }
 }
 
-module.exports = PostsService;
+/**
+ * @param {string} apiVersion - API version to use within the service
+ * @returns {PostsService} instance of the PostsService
+ */
+const getPostServiceInstance = (apiVersion) => {
+    const urlUtils = require('../../../shared/url-utils');
+    const {mega} = require('../mega');
+    const i18n = require('../../../shared/i18n');
+    const models = require('../../models');
+
+    return new PostsService({
+        apiVersion: apiVersion,
+        mega: mega,
+        urlUtils: urlUtils,
+        i18n: i18n,
+        models: models
+    });
+};
+
+module.exports = getPostServiceInstance;
