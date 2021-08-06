@@ -12,7 +12,6 @@ let request;
 
 describe('Posts API (canary)', function () {
     let ghostServer;
-    let ownerCookie;
 
     before(function () {
         return ghost()
@@ -21,10 +20,7 @@ describe('Posts API (canary)', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
-            })
-            .then(function (cookie) {
-                ownerCookie = cookie;
+                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'members');
             });
     });
 
@@ -343,6 +339,50 @@ describe('Posts API (canary)', function () {
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
                 });
+        });
+
+        it('publishes a post with email_only and sends email', async function () {
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Email me',
+                        email_only: true
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Email me');
+            res.body.posts[0].email_only.should.be.true();
+            res.body.posts[0].status.should.equal('draft');
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+
+            const publishedRes = await request
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_recipient_filter=all&send_email_when_published=true`))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        status: 'published',
+                        updated_at: res.body.posts[0].updated_at
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.exist(publishedRes.body.posts);
+            res.body.posts[0].email_only.should.be.true();
+            publishedRes.body.posts[0].status.should.equal('draft');
+
+            should.exist(publishedRes.body.posts[0].email);
+            publishedRes.body.posts[0].email.email_count.should.equal(8);
         });
 
         it('read-only value do not cause errors when edited', function () {
