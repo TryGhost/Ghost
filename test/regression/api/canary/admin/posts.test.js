@@ -10,7 +10,7 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 let request;
 
-describe.only('Posts API (canary)', function () {
+describe('Posts API (canary)', function () {
     let ghostServer;
 
     before(function () {
