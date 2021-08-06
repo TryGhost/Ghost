@@ -633,7 +633,10 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // email_recipient_filter is read-only and should only be set using a query param when publishing/scheduling
-        if (options.email_recipient_filter && options.email_recipient_filter !== 'none' && this.hasChanged('status') && (newStatus === 'published' || newStatus === 'scheduled')) {
+        if (options.email_recipient_filter
+            && (options.email_recipient_filter !== 'none')
+            && this.hasChanged('status')
+            && (newStatus === 'published' || newStatus === 'scheduled')) {
             this.set('email_recipient_filter', options.email_recipient_filter);
         }
 
