@@ -42,6 +42,11 @@ const readRedirectsFile = (redirectsPath) => {
  * @returns {RedirectConfig[]} of parsed redirect config objects
  */
 const parseRedirectsFile = (content, ext) => {
+    // Validate if it's null, undefined or empty
+    if (!content) {
+        throw new errors.IncorrectUsageError();
+    }
+
     if (ext === '.json') {
         let redirects;
 
@@ -49,7 +54,7 @@ const parseRedirectsFile = (content, ext) => {
             redirects = JSON.parse(content);
         } catch (err) {
             throw new errors.BadRequestError({
-                message: i18n.t('errors.general.jsonParse', {context: err.message})
+                message: i18n.t('errors.general.jsonParse', { context: err.message })
             });
         }
 
@@ -58,7 +63,16 @@ const parseRedirectsFile = (content, ext) => {
 
     if (ext === '.yaml') {
         let redirects = [];
+
         let configYaml = yaml.load(content);
+
+        // Check if it is null or undefined
+        if (!configYaml) {
+            throw new errors.BadRequestError({
+                message: i18n.t('errors.api.redirects.yamlParse'),
+                help: 'https://ghost.org/docs/themes/routing/#redirects'
+            });
+        }
 
         // yaml.load passes almost every yaml code.
         // Because of that, it's hard to detect if there's an error in the file.
@@ -73,24 +87,30 @@ const parseRedirectsFile = (content, ext) => {
 
         /**
          * 302: Temporary redirects
+         * Check and add, if key '302' exist
          */
-        for (const redirect in configYaml['302']) {
-            redirects.push({
-                from: redirect,
-                to: configYaml['302'][redirect],
-                permanent: false
-            });
+        if (configYaml['302']) {
+            for (const redirect in configYaml['302']) {
+                redirects.push({
+                    from: redirect,
+                    to: configYaml['302'][redirect],
+                    permanent: false
+                });
+            }
         }
 
         /**
          * 301: Permanent redirects
+         * Check and add, if key '301' exist
          */
-        for (const redirect in configYaml['301']) {
-            redirects.push({
-                from: redirect,
-                to: configYaml['301'][redirect],
-                permanent: true
-            });
+        if (configYaml['301']) {
+            for (const redirect in configYaml['301']) {
+                redirects.push({
+                    from: redirect,
+                    to: configYaml['301'][redirect],
+                    permanent: true
+                });
+            }
         }
 
         return redirects;
@@ -138,7 +158,7 @@ const getCurrentRedirectsFilePathSync = () => {
 };
 
 const getBackupRedirectsFilePath = (filePath) => {
-    const {dir, name, ext} = path.parse(filePath);
+    const { dir, name, ext } = path.parse(filePath);
 
     return path.join(dir, `${name}-${moment().format('YYYY-MM-DD-HH-mm-ss')}${ext}`);
 };
