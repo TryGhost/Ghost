@@ -1,12 +1,12 @@
 const {BadRequestError} = require('@tryghost/errors');
-
 class PostsService {
-    constructor({mega, apiVersion, urlUtils, i18n, models}) {
+    constructor({mega, apiVersion, urlUtils, i18n, models, isSet}) {
         this.apiVersion = apiVersion;
         this.mega = mega;
         this.urlUtils = urlUtils;
         this.i18n = i18n;
         this.models = models;
+        this.isSet = isSet;
     }
 
     async editPost(frame) {
@@ -56,7 +56,9 @@ class PostsService {
             }
 
             const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
-            if (postPublished) {
+            const emailOnlyEnabled = model.related('posts_meta').get('email_only') && this.isSet('emailOnlyPosts');
+
+            if (postPublished || emailOnlyEnabled) {
                 let postEmail = model.relations.email;
 
                 if (!postEmail) {
@@ -104,6 +106,7 @@ class PostsService {
 const getPostServiceInstance = (apiVersion) => {
     const urlUtils = require('../../../shared/url-utils');
     const {mega} = require('../mega');
+    const labs = require('../../../shared/labs');
     const i18n = require('../../../shared/i18n');
     const models = require('../../models');
 
@@ -112,7 +115,8 @@ const getPostServiceInstance = (apiVersion) => {
         mega: mega,
         urlUtils: urlUtils,
         i18n: i18n,
-        models: models
+        models: models,
+        isSet: labs.isSet.bind(labs)
     });
 };
 
