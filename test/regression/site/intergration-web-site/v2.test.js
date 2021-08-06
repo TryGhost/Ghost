@@ -28,9 +28,6 @@ describe('Integration - Web - Site v2', function () {
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
-                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                     app = siteApp({start: true});
                     return testUtils.integrationTesting.urlServiceInitAndWait();
                 })
@@ -45,18 +42,20 @@ describe('Integration - Web - Site v2', function () {
         });
 
         beforeEach(function () {
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
             const postsAPI = require('../../../../core/server/api/v2/posts-public');
             postSpy = sinon.spy(postsAPI.browse, 'query');
         });
 
         afterEach(function () {
             postSpy.restore();
+            sinon.restore();
         });
 
         after(function () {
             configUtils.restore();
             urlUtils.restore();
-            sinon.restore();
         });
 
         describe('behaviour: default cases', function () {
@@ -397,9 +396,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -514,9 +510,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -575,9 +568,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -677,9 +667,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -763,9 +750,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -921,9 +905,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -1038,9 +1019,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -1108,9 +1086,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -1167,9 +1142,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlServiceInitAndWait();
                     });
@@ -1353,7 +1325,6 @@ describe('Integration - Web - Site v2', function () {
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
                         sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                         app = siteApp({start: true});
@@ -1603,9 +1574,6 @@ describe('Integration - Web - Site v2', function () {
 
             return testUtils.integrationTesting.initGhost()
                 .then(function () {
-                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
                     app = siteApp({start: true});
                     return testUtils.integrationTesting.urlServiceInitAndWait();
                 });
