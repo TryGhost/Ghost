@@ -1,0 +1,81 @@
+<span class="dropdown">
+    <GhDropdownButton
+        @dropdownName="members-actions-filter"
+        @classNames="gh-btn gh-btn-icon gh-btn-action-icon"
+        @title="Members Actions"
+        data-test-button="members-actions"
+    >
+        <span>
+            {{svg-jar "filter"}}
+            Filter
+        </span>
+    </GhDropdownButton>
+    <GhDropdown
+        @name="members-actions-filter"
+        @tagName="div"
+        @classNames="gh-member-actions-menu gh-filter-builder gh-members-filter-builder dropdown-menu dropdown-triangle-top-right"
+    >
+        <h3>Filter list</h3>
+        <section class="gh-filters">
+            {{#each this.filters as |filter|}}
+                <div class="gh-filter-block">
+                    <GhFormGroup @property={{filter.id}} @classNames="max-width">
+                        <div class="gh-filter-inputgroup">
+                            <span class="gh-select">
+                                <OneWaySelect
+                                    @value={{filter.type}}
+                                    @options={{this.availableFilterProperties}}
+                                    @optionValuePath="name"
+                                    @optionLabelPath="label"
+                                    @optionTargetPath="name"
+                                    @groupLabelPath="group"
+                                    @update={{fn this.setFilterType filter.id}}
+                                />
+                                {{svg-jar "arrow-down-small"}}
+                            </span>
+                            <span class="gh-select">
+                                <OneWaySelect
+                                    @value={{filter.relation}}
+                                    @options={{this.availableFilterRelations}}
+                                    @optionValuePath="name"
+                                    @optionLabelPath="label"
+                                    @optionTargetPath="name"
+                                    @update={{fn this.setFilterRelation filter.id}}
+                                />
+                                {{svg-jar "arrow-down-small"}}
+                            </span>
+                            <GhTextInput
+                                @name="filter-value-1"
+                                @value={{filter.value}}
+                                @input={{fn this.setFilterValue filter.id}}
+                            />
+                            <button
+                                type="button"
+                                class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
+                                title="Delete filter"
+                                {{on "click" (fn this.deleteFilter filter.id)}}
+                            >
+                                {{svg-jar "close"}} <span class="hidden">Delete filter</span>
+                            </button>
+                        </div>
+                    </GhFormGroup>
+                </div>
+            {{/each}}
+            {{!-- <div class="gh-filter-block-divider">And</div> --}}
+            <button type="button"
+                class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
+                {{on "click" this.addFilter}}
+            >
+                <span>{{svg-jar "add"}} Add filter</span>
+            </button>
+        </section>
+        <div class="gh-filter-builder-footer">
+            <button
+                class="gh-btn gh-btn-primary gh-btn-icon"
+                {{on "click" this.applyFilter}}
+            >
+                <span>Apply filter</span>
+            </button>
+        </div>
+    </GhDropdown>
+</span>

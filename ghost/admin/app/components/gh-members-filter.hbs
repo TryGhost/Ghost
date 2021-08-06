@@ -1,159 +1,76 @@
-{{#if (feature "membersFiltering")}}
-<span class="dropdown">
+<span class="dropdown dropdown-topmenu">
+    <span class="{{if @selectedLabel.slug "gh-contentfilter-selected"}}">
     <GhDropdownButton
-        @dropdownName="members-actions-filter"
-        @classNames="gh-btn gh-btn-icon gh-btn-action-icon"
-        @title="Members Actions"
-        data-test-button="members-actions"
+        @dropdownName="members-label-menu"
+        @classNames="gh-contentfilter-menu-trigger"
+        @title="Member Labels"
+        data-test-button="labels-filter"
     >
-        <span>
-            {{svg-jar "filter"}}
-            Filter
-        </span>
+            <span class="gh-btn-filter-maxwidth" title="{{@selectedLabel.name}}">
+                <span>{{@selectedLabel.name}}</span>
+                {{svg-jar "arrow-down-small"}}
+            </span>
     </GhDropdownButton>
+    </span>
     <GhDropdown
-        @name="members-actions-filter"
+        @name="members-label-menu"
         @tagName="div"
-        @classNames="gh-member-actions-menu gh-filter-builder gh-members-filter-builder dropdown-menu dropdown-triangle-top-right"
+        @classNames="dropdown-menu dropdown-triangle-top-right dropdown-action members-label-list"
     >
-        <h3>Filter list</h3>
-        <section class="gh-filters">
-            {{#each this.filters as |filter|}}
-                <div class="gh-filter-block">
-                    <GhFormGroup @property={{filter.id}} @classNames="max-width">
-                        <div class="gh-filter-inputgroup">
-                            <span class="gh-select">
-                                <OneWaySelect
-                                    @value={{filter.type}}
-                                    @options={{this.availableFilterProperties}}
-                                    @optionValuePath="name"
-                                    @optionLabelPath="label"
-                                    @optionTargetPath="name"
-                                    @groupLabelPath="group"
-                                    @update={{action "setFilterType" filter.id}}
-                                />
-                                {{svg-jar "arrow-down-small"}}
-                            </span>
-                            <span class="gh-select">
-                                <OneWaySelect
-                                    @value={{filter.relation}}
-                                    @options={{this.availableFilterRelations}}
-                                    @optionValuePath="name"
-                                    @optionLabelPath="label"
-                                    @optionTargetPath="name"
-                                    @update={{action "setFilterRelation" filter.id}}
-                                />
-                                {{svg-jar "arrow-down-small"}}
-                            </span>
-                            <GhTextInput
-                                @name="filter-value-1"
-                                @value={{filter.value}}
-                                @input={{action "setFilterValue" filter.id}}
-                            />
-                            <button
-                                class="gh-delete-filter" title="Delete filter"
-                                {{action "deleteFilter" filter.id}}
-                            >
-                                {{svg-jar "close"}} <span class="hidden">Delete filter</span>
-                            </button>
-                        </div>
-                        <GhErrorMessage @errors={{member.errors}} @property="filter-property-1" />
-                    </GhFormGroup>
-                </div>
-            {{/each}}
-            {{!-- <div class="gh-filter-block-divider">And</div> --}}
-            <button type="button"
-                class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
-                {{action "addFilter"}}
-            >
-                <span>{{svg-jar "add"}} Add filter</span>
-            </button>
-        </section>
-        <div class="gh-filter-builder-footer">
-            <button
-                class="gh-btn gh-btn-primary gh-btn-icon"
-                {{action "applyFilter"}}
-            >
-                <span>Apply filter</span>
-            </button>
-        </div>
-    </GhDropdown>
-</span>
-{{else}}
-    <span class="dropdown dropdown-topmenu">
-        <span class="{{if @selectedLabel.slug "gh-contentfilter-selected"}}">
-        <GhDropdownButton
-            @dropdownName="members-label-menu"
-            @classNames="gh-contentfilter-menu-trigger"
-            @title="Member Labels"
-            data-test-button="labels-filter"
-        >
-                <span class="gh-btn-filter-maxwidth" title="{{@selectedLabel.name}}">
-                    <span>{{@selectedLabel.name}}</span>
-                    {{svg-jar "arrow-down-small"}}
-                </span>
-        </GhDropdownButton>
-        </span>
-        <GhDropdown
-            @name="members-label-menu"
-            @tagName="div"
-            @classNames="dropdown-menu dropdown-triangle-top-right dropdown-action members-label-list"
-        >
-            <ul class="dropdown-content">
-                {{#each @availableLabels as |label|}}
-                    <li class="{{if (eq @selectedLabel.name label.name) "selected"}}">
-                        <a>
-                            <span class="dropdown-label" title="{{label.name}}" {{on "click" (fn @onLabelChange label)}} data-test-label-filter={{label.name}}>{{label.name}} </span>
-                            {{#if label.slug}}
-                                <span class="dropdown-action-icon" {{on "click" (fn @onLabelEdit label.slug)}}> {{svg-jar "pen"}} </span>
-                            {{/if}}
-                        </a>
-                    </li>
-                {{/each}}
-            </ul>
-            <ul class="dropdown-footer">
-                <li>
-                    <a {{on "click" (fn @onLabelAdd)}}>
-                        <span>
-                            {{svg-jar "add"}}
-                            Add Label
-                        </span>
+        <ul class="dropdown-content">
+            {{#each @availableLabels as |label|}}
+                <li class="{{if (eq @selectedLabel.name label.name) "selected"}}">
+                    <a>
+                        <span class="dropdown-label" title="{{label.name}}" {{on "click" (fn @onLabelChange label)}} data-test-label-filter={{label.name}}>{{label.name}} </span>
+                        {{#if label.slug}}
+                            <span class="dropdown-action-icon" {{on "click" (fn @onLabelEdit label.slug)}}> {{svg-jar "pen"}} </span>
+                        {{/if}}
                     </a>
                 </li>
-            </ul>
-        </GhDropdown>
-    </span>
+            {{/each}}
+        </ul>
+        <ul class="dropdown-footer">
+            <li>
+                <a {{on "click" (fn @onLabelAdd)}}>
+                    <span>
+                        {{svg-jar "add"}}
+                        Add Label
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </GhDropdown>
+</span>
 
-    <div class="gh-contentfilter-menu {{if @selectedPaidParam.value "gh-contentfilter-selected"}}" data-test-select="paidParam">
-        <PowerSelect
-            @selected={{@selectedPaidParam}}
-            @options={{@availablePaidParams}}
-            @searchEnabled={{false}}
-            @onChange={{@onPaidParamChange}}
-            @triggerComponent="gh-power-select/trigger"
-            @triggerClass="gh-contentfilter-menu-trigger"
-            @dropdownClass="gh-contentfilter-menu-dropdown"
-            @searchPlaceholder="Search authors"
-            @matchTriggerWidth={{false}}
-            as |paidParam|
-        >
-            {{#if paidParam.name}}{{paidParam.name}}{{else}}<span class="red">Unknown paid status</span>{{/if}}
-        </PowerSelect>
-    </div>
+<div class="gh-contentfilter-menu {{if @selectedPaidParam.value "gh-contentfilter-selected"}}" data-test-select="paidParam">
+    <PowerSelect
+        @selected={{@selectedPaidParam}}
+        @options={{@availablePaidParams}}
+        @searchEnabled={{false}}
+        @onChange={{@onPaidParamChange}}
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @searchPlaceholder="Search authors"
+        @matchTriggerWidth={{false}}
+        as |paidParam|
+    >
+        {{#if paidParam.name}}{{paidParam.name}}{{else}}<span class="red">Unknown paid status</span>{{/if}}
+    </PowerSelect>
+</div>
 
-    <div class="gh-contenfilter-menu gh-contentfilter-sort" data-test-select="members-order">
-        <PowerSelect
-            @selected={{@selectedOrder}}
-            @options={{@availableOrders}}
-            @searchEnabled={{false}}
-            @onChange={{@onOrderChange}}
-            @triggerComponent="gh-power-select/trigger"
-            @triggerClass="gh-contentfilter-menu-trigger"
-            @dropdownClass="gh-contentfilter-menu-dropdown"
-            @matchTriggerWidth={{false}}
-            as |order|
-        >
-            {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}
-        </PowerSelect>
-    </div>
-{{/if}}
+<div class="gh-contenfilter-menu gh-contentfilter-sort" data-test-select="members-order">
+    <PowerSelect
+        @selected={{@selectedOrder}}
+        @options={{@availableOrders}}
+        @searchEnabled={{false}}
+        @onChange={{@onOrderChange}}
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @matchTriggerWidth={{false}}
+        as |order|
+    >
+        {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}
+    </PowerSelect>
+</div>
