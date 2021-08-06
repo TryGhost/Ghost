@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.6.0",
-    "@sentry/node": "6.10.0",
+    "@sentry/node": "6.11.0",
     "@tryghost/adapter-manager": "0.2.14",
     "@tryghost/admin-api-schema": "2.5.2",
     "@tryghost/bookshelf-plugins": "0.3.0",
