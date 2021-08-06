@@ -332,7 +332,6 @@
             },
             "posts": {
                 "postNotFound": "Post not found.",
-                "invalidEmailRecipientFilter": "Invalid filter in email_recipient_filter param.",
                 "invalidVisibilityFilter": "Invalid filter in visibility property"
             },
             "authors": {

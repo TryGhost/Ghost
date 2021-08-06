@@ -1,10 +1,15 @@
 const {BadRequestError} = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    invalidEmailRecipientFilter: 'Invalid filter in email_recipient_filter param.'
+};
+
 class PostsService {
-    constructor({mega, apiVersion, urlUtils, i18n, models, isSet}) {
+    constructor({mega, apiVersion, urlUtils, models, isSet}) {
         this.apiVersion = apiVersion;
         this.mega = mega;
         this.urlUtils = urlUtils;
-        this.i18n = i18n;
         this.models = models;
         this.isSet = isSet;
     }
@@ -49,7 +54,7 @@ class PostsService {
                     await this.models.Member.findPage({filter: `subscribed:true+${emailRecipientFilter}`, limit: 1});
                 } catch (err) {
                     return Promise.reject(new BadRequestError({
-                        message: this.i18n.t('errors.api.posts.invalidEmailRecipientFilter'),
+                        message: tpl(messages.invalidEmailRecipientFileterParam),
                         context: err.message
                     }));
                 }
@@ -107,14 +112,12 @@ const getPostServiceInstance = (apiVersion) => {
     const urlUtils = require('../../../shared/url-utils');
     const {mega} = require('../mega');
     const labs = require('../../../shared/labs');
-    const i18n = require('../../../shared/i18n');
     const models = require('../../models');
 
     return new PostsService({
         apiVersion: apiVersion,
         mega: mega,
         urlUtils: urlUtils,
-        i18n: i18n,
         models: models,
         isSet: labs.isSet.bind(labs)
     });
