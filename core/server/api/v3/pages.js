@@ -1,18 +1,11 @@
 const models = require('../../models');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
-const PostsService = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service');
 const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
-const postsService = new PostsService({
-    apiVersion: 'v3',
-    mega: null,
-    urlUtils: urlUtils,
-    i18n: i18n,
-    models: models
-});
+const postsService = getPostServiceInstance('v3');
 
 module.exports = {
     docName: 'pages',
