@@ -712,10 +712,10 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.7.16":
-  version "0.7.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.16.tgz#f0c02902608d8694e3a5fe6cc5f958c9d81d9ea1"
-  integrity sha512-DfWHY1E/nwKwQ4L44P4lSptqRXEBOHVX5dTIHfWqLgdepsH8wyijajcRGpljyuC8WQxo/bl52ec+kk1np5tqSQ==
+"@tryghost/html-to-mobiledoc@0.7.17":
+  version "0.7.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.17.tgz#52b1bbe85f425c149f18cbd5a2db54cb57b44c15"
+  integrity sha512-IYDmNK+23ThmCG/u5tlA4E7VvBYVKw9RZOA+EtpgJu9c/zCUid5RoE3PpPKcZbA0qFoxyXMRw6oCzuY0GSRsow==
   dependencies:
     "@tryghost/kg-parser-plugins" "^1.1.7"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
