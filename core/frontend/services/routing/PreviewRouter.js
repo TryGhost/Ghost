@@ -1,5 +1,6 @@
 const ParentRouter = require('./ParentRouter');
 const urlUtils = require('../../../shared/url-utils');
+const labs = require('../../../shared/labs');
 const controllers = require('./controllers');
 
 /**
@@ -27,6 +28,12 @@ class PreviewRouter extends ParentRouter {
 
         // REGISTER: actual preview route
         this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.preview);
+
+        // NOTE: temporary hack aliasing /email/ route to /p/ preview route
+        //       /email/ will become it's own Router once the feature enters beta stage
+        if (labs.isSet('emailOnlyPosts')) {
+            this.mountRoute(urlUtils.urlJoin('/email/', ':uuid', ':options?'), controllers.preview);
+        }
     }
 
     /**
