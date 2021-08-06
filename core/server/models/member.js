@@ -57,23 +57,6 @@ const Member = ghostBookshelf.Model.extend({
                 joinFrom: 'member_id',
                 joinTo: 'customer_id',
                 joinToForeign: 'customer_id'
-            },
-            payments_agg: {
-                tableName: 'payments_agg',
-                type: 'oneToOne',
-                virtualTable: true,
-                virtualTableDefinition: ghostBookshelf.knex.raw(`
-                    SELECT
-                       members_payments_events.member_id,
-                       members_payments_events.currency,
-                       SUM(members_payments_events.amount) AS total
-                    FROM members
-                    JOIN events
-                       ON members.id = events.member_id
-                    GROUP BY
-                       members.id, members_payments_events.currency
-                `),
-                joinFrom: 'member_id'
             }
         };
     },
