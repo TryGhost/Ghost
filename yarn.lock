@@ -1022,10 +1022,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.13"
 
-"@tryghost/social-urls@0.1.25":
-  version "0.1.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.25.tgz#f3a731c0c5f0e795225dd9b2ebbbc087094b285a"
-  integrity sha512-etymNuACTLDn7Db+733tg/AiiyR4D57Vr66KTUwuxmSmjjPSJ7RvgGpL7eiyI7hbcSQ2tWsbYYThQXSj/PumCA==
+"@tryghost/social-urls@0.1.26":
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.26.tgz#dfacc38cf187d9f6733155e6408329ef54210c72"
+  integrity sha512-gwh8W2tlaaKwxrQSNvvnJTUUOVyDQQ4DR+ukEgVBwKbU5m7BePACf/0iuLY3PZ3mvZyzaQ3Jc3IWQHd/FDglPA==
 
 "@tryghost/string@0.1.20", "@tryghost/string@^0.1.17":
   version "0.1.20"
