@@ -10,7 +10,7 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Posts API (canary)', function () {
+describe.only('Posts API (canary)', function () {
     let ghostServer;
 
     before(function () {
@@ -642,14 +642,14 @@ describe('Posts API (canary)', function () {
 
         it('can edit post_meta field that has default value and no previously created posts_meta relation', function () {
             return request
-                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/`))
                 .set('Origin', config.get('url'))
                 .expect(200)
                 .then((res) => {
                     should.equal(res.body.posts[0].email_only, false);
 
                     return request
-                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id + '/'))
                         .set('Origin', config.get('url'))
                         .send({
                             posts: [{
@@ -666,6 +666,7 @@ describe('Posts API (canary)', function () {
 
                     should.exist(res.body.posts);
                     should.equal(res.body.posts[0].email_only, true);
+                    should.equal(res.body.posts[0].url, 'http://127.0.0.1:2369/email/d52c42ae-2755-455c-80ec-70b2ec55c903/');
                 });
         });
 
