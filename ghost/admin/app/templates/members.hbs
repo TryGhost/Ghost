@@ -5,7 +5,17 @@
             <div class="view-actions-bottom-row">
                 {{#unless (feature "membersFiltering")}}
                 <GhMembersFilter
-                    @onApplyFilter={{this.applyFilter}}
+                    @selectedLabel={{this.selectedLabel}}
+                    @availableLabels={{this.availableLabels}}
+                    @onLabelChange={{this.changeLabel}}
+                    @onLabelAdd={{this.addLabel}}
+                    @onLabelEdit={{this.editLabel}}
+                    @selectedPaidParam={{this.selectedPaidParam}}
+                    @availablePaidParams={{this.paidParams}}
+                    @onPaidParamChange={{this.changePaidParam}}
+                    @availableOrders={{this.availableOrders}}
+                    @selectedOrder={{this.selectedOrder}}
+                    @onOrderChange={{this.changeOrder}}
                 />
                 {{/unless}}
                 <div class="relative gh-members-header-search">
@@ -20,7 +30,7 @@
 
             <div class="view-actions-top-row">
                 {{#if (feature "membersFiltering")}}
-                <GhMembersFilter
+                <GhMembersFilterLabs
                     @onApplyFilter={{this.applyFilter}}
                 />
                 {{/if}}
