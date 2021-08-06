@@ -54,7 +54,7 @@ class PostsService {
                     await this.models.Member.findPage({filter: `subscribed:true+${emailRecipientFilter}`, limit: 1});
                 } catch (err) {
                     return Promise.reject(new BadRequestError({
-                        message: tpl(messages.invalidEmailRecipientFileterParam),
+                        message: tpl(messages.invalidEmailRecipientFilter),
                         context: err.message
                     }));
                 }
