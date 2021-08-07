@@ -112,10 +112,13 @@ export default class DashboardController extends Controller {
                 const dateValues = Object.values(statsDateObj);
                 const currentAllCount = dateValues.length ? dateValues[dateValues.length - 1].total : 0;
                 const currentPaidCount = dateValues.length ? dateValues[dateValues.length - 1].paid : 0;
+                const currentFreeCount = dateValues.length ? dateValues[dateValues.length - 1].free : 0;
                 const rangeStartAllCount = dateValues.length ? dateValues[0].total : 0;
                 const rangeStartPaidCount = dateValues.length ? dateValues[0].paid : 0;
+                const rangeStartFreeCount = dateValues.length ? dateValues[0].free : 0;
                 const allCountPercentGrowth = rangeStartAllCount !== 0 ? ((currentAllCount - rangeStartAllCount) / rangeStartAllCount) * 100 : 0;
                 const paidCountPercentGrowth = rangeStartPaidCount !== 0 ? ((currentPaidCount - rangeStartPaidCount) / rangeStartPaidCount) * 100 : 0;
+                const freeCountPercentGrowth = rangeStartFreeCount !== 0 ? ((currentFreeCount - rangeStartFreeCount) / rangeStartFreeCount) * 100 : 0;
 
                 this.memberCountStatsData = {
                     all: {
@@ -146,6 +149,21 @@ export default class DashboardController extends Controller {
                             dateValues: dateValues.map(d => d.paid)
                         },
                         title: 'Paid Members',
+                        stats: stats
+                    },
+                    free: {
+                        percentGrowth: freeCountPercentGrowth.toFixed(1),
+                        percentClass: (freeCountPercentGrowth > 0 ? 'positive' : (freeCountPercentGrowth < 0 ? 'negative' : '')),
+                        total: dateValues.length ? dateValues[dateValues.length - 1].free : 0,
+                        options: {
+                            rangeInDays: 30
+                        },
+                        data: {
+                            label: 'Members',
+                            dateLabels: Object.keys(statsDateObj),
+                            dateValues: dateValues.map(d => d.paid)
+                        },
+                        title: 'Free Members',
                         stats: stats
                     }
                 };
