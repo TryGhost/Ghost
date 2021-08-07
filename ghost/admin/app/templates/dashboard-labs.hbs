@@ -108,25 +108,24 @@
                 </div>
                 <div class="gh-dashboard-box newsletter-open-rate">
                     <div class="gh-dashboard-chart-container">
-                        {{#if this.newsletterOpenRatesLoading}}
+                        {{#if this.memberCountStatsLoading}}
                             Loading...
                         {{else}}
-                            {{#if this.newsletterOpenRatesError}}
+                            {{#if this.memberCountStatsError}}
                                 <p class="error">
-                                    There was an error loading newsletter open rates
+                                    There was an error loading free members
                                     <code>{{this.memberCountStatsData.message}}</code>
                                 </p>
                             {{else}}
                                 <div class="gh-dashboard-summary small">
-                                    <h4 class="gh-dashboard-header">Email open rate</h4>
-
+                                    <h4 class="gh-dashboard-header">Free members</h4>
                                     <div class="data-container">
-                                        <div class="data">{{this.newsletterOpenRatesData.current}}%</div>
-                                        <div class="growth {{this.newsletterOpenRatesData.percentClass}}">{{this.newsletterOpenRatesData.percentGrowth}}%</div>
+                                        <div class="data">{{format-number this.memberCountStatsData.free.total}}</div>
+                                        <div class="growth {{this.memberCountStatsData.free.percentClass}}">{{this.memberCountStatsData.free.percentGrowth}}%</div>
                                     </div>
                                 </div>
                                 <div class="gh-dashboard-chart small">
-                                    <GhMembersChart @type="bar" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="open-rate" @showRange={{false}} @chartStats={{this.newsletterOpenRatesData}} />
+                                    <GhMembersChart @type="LineWithLine" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="paid-members" @showRange={{false}} @chartStats={{this.memberCountStatsData.free}} />
                                 </div>
                             {{/if}}
                         {{/if}}
@@ -313,6 +312,33 @@
                         </div>
                     </div>
                 {{/if}}
+
+                <div class="gh-dashboard-box">
+                    <div class="gh-dashboard-chart-container">
+                        {{#if this.newsletterOpenRatesLoading}}
+                            Loading...
+                        {{else}}
+                            {{#if this.newsletterOpenRatesError}}
+                                <p class="error">
+                                    There was an error loading newsletter open rates
+                                    <code>{{this.memberCountStatsData.message}}</code>
+                                </p>
+                            {{else}}
+                                <div class="gh-dashboard-summary small">
+                                    <h4 class="gh-dashboard-header">Email open rate</h4>
+
+                                    <div class="data-container">
+                                        <div class="data">{{this.newsletterOpenRatesData.current}}%</div>
+                                        <div class="growth {{this.newsletterOpenRatesData.percentClass}}">{{this.newsletterOpenRatesData.percentGrowth}}%</div>
+                                    </div>
+                                </div>
+                                <div class="gh-dashboard-chart small">
+                                    <GhMembersChart @type="bar" @nightShift={{feature "nightShift"}} @chartSize="small" @showSummary={{false}} @chartType="open-rate" @showRange={{false}} @chartStats={{this.newsletterOpenRatesData}} />
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
 
                 {{#unless (and this.session.user.isOwnerOnly (not this.feature.launchComplete))}}
                     <div class="gh-dashboard-box grey activity-feed">
