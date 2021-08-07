@@ -2,6 +2,7 @@ import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class DashboardController extends Controller {
@@ -32,6 +33,8 @@ export default class DashboardController extends Controller {
     @tracked newsletterOpenRatesError = null;
     @tracked newsletterOpenRatesLoading = false;
 
+    @tracked latestNewsletters = null;
+
     @tracked whatsNewEntries = null;
     @tracked whatsNewEntriesLoading = null;
     @tracked whatsNewEntriesError = null;
@@ -50,6 +53,7 @@ export default class DashboardController extends Controller {
         this.loadEvents();
         this.loadTopMembers();
         this.loadCharts();
+        this.loadLatestNewsletters.perform();
         this.loadWhatsNew();
     }
 
@@ -166,6 +170,14 @@ export default class DashboardController extends Controller {
         }, (error) => {
             this.eventsError = error;
             this.eventsLoading = false;
+        });
+    }
+
+    @task
+    *loadLatestNewsletters() {
+        this.latestNewsletters = yield this.store.query('email', {
+            limit: 5,
+            order: 'created_at desc'
         });
     }
 
