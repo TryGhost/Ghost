@@ -135,8 +135,40 @@
             </section>
         {{/if}}
 
-
         <section class="gh-dashboard-area mixed">
+            <div class="gh-dashboard-container">
+                <div class="gh-dashboard-box">
+                    <div class="gh-dashboard-header-container">
+                        <h4 class="gh-dashboard-header w-100">Latest newsletters</h4>
+                    </div>
+                    <div class="content">
+                        {{#if this.loadLatestNewsletters.isRunning}}
+                            Loading...
+                        {{else}}
+                            <ol class="gh-list">
+                                <li class="gh-list-row header">
+                                    <div class="gh-list-header w-100">Title</div>
+                                    <div class="gh-list-header">Sends</div>
+                                    <div class="gh-list-header">Open %</div>
+                                </li>
+                                {{#each this.latestNewsletters as |newsletter|}}
+                                    <li class="gh-list-row">
+                                        <LinkTo @route="editor.edit" @models={{array "post" newsletter.postId}} class="gh-list-data">{{newsletter.subject}}</LinkTo>
+                                        <div class="gh-list-data">{{newsletter.emailCount}}</div>
+                                        <div class="gh-list-data">{{newsletter.openRate}}%</div>
+                                    </li>
+                                {{else}}
+                                    <li>No newsletters sent.</li>
+                                {{/each}}
+                            </ol>
+                        {{/if}}
+                    </div>
+                    <div class="footer">
+                        <LinkTo @route="posts" class="green">See all posts</LinkTo>
+                    </div>
+                </div>
+            </div>
+
             {{#if (not this.feature.launchComplete)}}
             <div class="gh-dashboard-container start-contents">
                 <div class="gh-dashboard-box blogpost">
