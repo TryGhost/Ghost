@@ -5,7 +5,7 @@ const debug = require('@tryghost/debug')('settings:cache');
 const _ = require('lodash');
 const publicSettings = require('./public');
 
-// Local function, only ever used for initialising
+// Local function, only ever used for initializing
 // We deliberately call "set" on each model so that set is a consistent interface
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     debug('Auto updating', settingModel.get('key'));
