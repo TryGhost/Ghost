@@ -656,9 +656,9 @@ const toDoList = {
  * Takes the arguments from a setup function and turns them into an array of promises to fullfil
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
- *  * `default` - a special option which will cause the full suite of normal fixtures to be initialised
- *  * `perms:init` - initialise the permissions object after having added permissions
- *  * `perms:obj` - initialise permissions for a particular object type
+ *  * `default` - a special option which will cause the full suite of normal fixtures to be initialized
+ *  * `perms:init` - initialize the permissions object after having added permissions
+ *  * `perms:obj` - initialize permissions for a particular object type
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */
@@ -668,7 +668,7 @@ const getFixtureOps = (toDos) => {
 
     const fixtureOps = [];
 
-    // Database initialisation
+    // Database initialization
     if (toDos.init || toDos.default) {
         fixtureOps.push(function initDB() {
             // skip adding all fixtures!

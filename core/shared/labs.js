@@ -62,7 +62,7 @@ module.exports.isSet = function isSet(flag) {
 /**
  *
  * @param {object} options
- * @param {string} options.flagKey the interal lookup key of the flag e.g. labs.isSet(matchHelper)
+ * @param {string} options.flagKey the internal lookup key of the flag e.g. labs.isSet(matchHelper)
  * @param {string} options.flagName the user-facing name of the flag e.g. Match helper
  * @param {string} options.helperName Name of the helper to be enabled/disabled
  * @param {string} [options.errorMessage] Optional replacement error message
