@@ -91,7 +91,13 @@ export default class MembersStatsService extends Service {
         const firstDateInRangeIndex = data.findIndex((val) => {
             return moment(val.date).isAfter(currentRangeDate);
         });
-        const initialDateInRangeVal = firstDateInRangeIndex > 0 ? data[firstDateInRangeIndex - 1] : null;
+        let initialDateInRangeVal = firstDateInRangeIndex > 0 ? data[firstDateInRangeIndex - 1] : null;
+        if (firstDateInRangeIndex === 0 && !initialDateInRangeVal) {
+            initialDateInRangeVal = data[firstDateInRangeIndex];
+        }
+        if (data.length > 0 && !initialDateInRangeVal && firstDateInRangeIndex !== 0) {
+            initialDateInRangeVal = data[data.length - 1];
+        }
         let lastVal = initialDateInRangeVal ? initialDateInRangeVal.value : 0;
 
         while (currentRangeDate.isBefore(endDate)) {
@@ -113,6 +119,9 @@ export default class MembersStatsService extends Service {
             return moment(val.date).isAfter(currentRangeDate);
         });
         let initialDateInRangeVal = firstDateInRangeIndex > 0 ? data[firstDateInRangeIndex - 1] : null;
+        if (firstDateInRangeIndex === 0 && !initialDateInRangeVal) {
+            initialDateInRangeVal = data[firstDateInRangeIndex];
+        }
         if (data.length > 0 && !initialDateInRangeVal && firstDateInRangeIndex !== 0) {
             initialDateInRangeVal = data[data.length - 1];
         }
