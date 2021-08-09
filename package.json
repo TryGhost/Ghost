@@ -142,7 +142,7 @@
     "metascraper-url": "5.24.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23",
-    "multer": "1.4.2",
+    "multer": "1.4.3",
     "mysql": "2.18.1",
     "nconf": "0.11.3",
     "node-jose": "2.0.0",
