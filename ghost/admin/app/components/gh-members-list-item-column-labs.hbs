@@ -1,0 +1,45 @@
+{{#if (eq @filterColumn 'label')}}
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+        <span class="midlightgrey">{{labels}}</span>
+    </LinkTo>
+{{/if}}
+
+{{#if (eq @filterColumn 'status')}}
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+        {{#if (not (is-empty @member.status))}}
+            <span class="gh-members-list-open-rate-mobile">{{capitalize @member.status}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+{{/if}}
+
+{{#if (eq @filterColumn 'email_count')}}
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+        {{#if (not (is-empty @member.emailCount))}}
+            <span class="gh-members-list-open-rate-mobile">{{@member.emailCount}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+{{/if}}
+
+{{#if (eq @filterColumn 'email_opened_count')}}
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+        {{#if (not (is-empty @member.emailOpenedCount))}}
+            <span class="gh-members-list-open-rate-mobile">{{@member.emailOpenedCount}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+{{/if}}
+
+{{#if (eq @filterColumn 'subscribed')}}
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+        {{#if (not (is-empty @member.subscribed))}}
+            <span class="gh-members-list-open-rate-mobile">{{@member.subscribed}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+{{/if}}

@@ -8,34 +8,35 @@ const FILTER_PROPERTIES = [
     // Basic
     {label: 'Name', name: 'name', group: 'Basic'},
     {label: 'Email', name: 'email', group: 'Basic'},
-    {label: 'Location', name: 'location', group: 'Basic'},
+    // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Newsletter subscription status', name: 'subscribed', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
 
     // Member subscription
-    {label: 'Member status', name: 'member-status', group: 'Subscription'},
-    {label: 'Tier', name: 'tier', group: 'Subscription'},
-    {label: 'Billing period', name: 'billing-period', group: 'Subscription'},
+    {label: 'Member status', name: 'status', group: 'Subscription'},
+    // {label: 'Tier', name: 'tier', group: 'Subscription'},
+    // {label: 'Billing period', name: 'billing-period', group: 'Subscription'},
 
     // Emails
-    {label: 'Emails sent (all time)', name: 'x', group: 'Email'},
-    {label: 'Emails opened (all time)', name: 'x', group: 'Email'},
-    {label: 'Open rate (all time)', name: 'x', group: 'Email'},
-    {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
-    {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},
-    {label: 'Open rate (30 days)', name: 'x', group: 'Email'},
-    {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
-    {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
-    {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
-    {label: 'Stripe subscription status', name: 'status', group: 'Email'}
+    {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
+    {label: 'Emails opened (all time)', name: 'email_opened_count', group: 'Email'},
+    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'},
+    // {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
+    // {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},
+    // {label: 'Open rate (30 days)', name: 'x', group: 'Email'},
+    // {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
+    // {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
+    // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
+    {label: 'Stripe subscription status', name: 'stripe-status', group: 'Email'}
 ];
 
 const FILTER_RELATIONS = [
     {label: 'is', name: 'is'},
     {label: 'is not', name: 'is-not'},
-    {label: 'contains', name: 'contains'},
-    {label: 'exists', name: 'exists'},
-    {label: 'does not exist', name: 'does-not-exist'}
+    {label: 'in', name: 'in'}
+    // {label: 'contains', name: 'contains'},
+    // {label: 'exists', name: 'exists'},
+    // {label: 'does not exist', name: 'does-not-exist'}
 ];
 
 export default class GhMembersFilterLabsComponent extends Component {
@@ -71,7 +72,8 @@ export default class GhMembersFilterLabsComponent extends Component {
         let query = '';
         filters.forEach((filter) => {
             const relationStr = filter.relation === 'is-not' ? '-' : '';
-            query += `${filter.type}:${relationStr}'${filter.value}',`;
+            const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
+            query += `${filter.type}:${relationStr}${filterValue}+`;
         });
         return query.slice(0, -1);
     }
@@ -103,6 +105,6 @@ export default class GhMembersFilterLabsComponent extends Component {
     @action
     applyFilter() {
         const query = this.generateNqlFilter(this.filters);
-        this.args.onApplyFilter(query);
+        this.args.onApplyFilter(query, this.filters);
     }
 }

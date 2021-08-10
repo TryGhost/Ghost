@@ -5,6 +5,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
+import {capitalize} from '@ember/string';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
@@ -51,6 +52,7 @@ export default class MembersController extends Controller {
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
     @tracked showDeleteMembersModal = false;
+    @tracked filters = A([]);
 
     @tracked _availableLabels = A([]);
 
@@ -151,6 +153,21 @@ export default class MembersController extends Controller {
         return !!(this.label || this.paidParam || this.searchParam || this.filterParam);
     }
 
+    get filterColumns() {
+        const defaultColumns = ['name', 'email'];
+        return this.filters.map((filter) => {
+            return filter.type;
+        }).filter((f, idx, arr) => {
+            return arr.indexOf(f) === idx;
+        }).filter(d => !defaultColumns.includes(d));
+    }
+
+    get filterColumnLabels() {
+        return this.filterColumns.map((d) => {
+            return capitalize(d.replace(/_/g, ' '));
+        });
+    }
+
     getApiQueryObject({params, extraFilters = []} = {}) {
         let {label, paidParam, searchParam, filterParam} = params ? params : this;
 
@@ -195,7 +212,8 @@ export default class MembersController extends Controller {
     }
 
     @action
-    applyFilter(filterStr) {
+    applyFilter(filterStr, filters) {
+        this.filters = filters;
         this.filterParam = filterStr || null;
     }
 
