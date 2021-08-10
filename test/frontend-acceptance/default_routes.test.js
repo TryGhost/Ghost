@@ -300,7 +300,8 @@ describe('Default Frontend routing', function () {
             res.text.should.equal(
                 'User-agent: *\n' +
                 'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
-                'Disallow: /p/\n'
+                'Disallow: /p/\n' +
+                'Disallow: /email/\n'
             );
         });
 
