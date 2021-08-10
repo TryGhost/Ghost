@@ -1,0 +1,71 @@
+<tr>
+    {{#if @member.is_loading}}
+        <div class="gh-list-data gh-members-list-basic gh-list-loadingcell">
+            <div class="gh-list-loading-title"></div>
+            <div class="gh-list-loading-detail"></div>
+        </div>
+        <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div>
+        {{#each @filterColumns as |filterColumn|}}
+        <div class="gh-list-data"></div>
+        {{/each}}
+        {{!-- <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div>
+        <div class="gh-list-data"></div> --}}
+    {{else}}
+        <LinkTo @route="member" @model={{@member}}  title="Member details" class="gh-list-data">
+            <div class="flex items-center">
+                <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                <div class="w-80">
+                    <h3 class="ma0 pa0 gh-members-list-name {{if (not @member.name) "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
+                    {{#if @member.name}}
+                        <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
+                    {{/if}}
+                </div>
+            </div>
+        </LinkTo>
+
+        {{#if (feature "emailAnalytics")}}
+            <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8 {{if (not @member.name) "gh-members-list-open-rate-noname"}}">
+                {{#if (not (is-empty @member.emailOpenRate))}}
+                    <span class="gh-members-list-open-rate-mobile">{{@member.emailOpenRate}}%</span>
+                {{else}}
+                    <span class="midlightgrey">N/A</span>
+                {{/if}}
+            </LinkTo>
+        {{/if}}
+
+        <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
+            {{#if (and @member.geolocation @member.geolocation.country)}}
+                {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
+                    {{@member.geolocation.region}}, US
+                {{else}}
+                    {{#if @member.geolocation.country}}
+                        {{@member.geolocation.country}}
+                    {{else}}
+                        <span class="midlightgrey">Unknown</span>
+                    {{/if}}
+                {{/if}}
+            {{else}}
+                <span class="midlightgrey">Unknown</span>
+            {{/if}}
+        </LinkTo>
+
+        <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+            {{#if @member.createdAtUTC}}
+                <div>{{moment-format @member.createdAtUTC "D MMM YYYY"}}</div>
+                <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.createdAtUTC}}</div>
+            {{/if}}
+        </LinkTo>
+        {{#each @filterColumns as |filterColumn|}}
+            <GhMembersListItemColumnLabs @member={{@member}} @filterColumn={{filterColumn}} />
+            {{!-- <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data middarkgrey f8">
+                <span class="midlightgrey">Unknown</span>
+            </LinkTo> --}}
+        {{/each}}
+    {{/if}}
+</tr>
