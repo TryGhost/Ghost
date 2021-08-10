@@ -16,6 +16,7 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         delete json.stripe;
         delete json.geolocation;
         delete json.email_recipients;
+        delete json.status;
 
         // Normalize properties
         json.name = json.name || '';
