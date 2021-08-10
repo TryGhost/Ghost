@@ -289,11 +289,19 @@ describe('Default Frontend routing', function () {
         });
 
         it('should retrieve default robots.txt', async function () {
-            await request.get('/robots.txt')
+            const res = await request.get('/robots.txt')
                 .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('ETag', /[0-9a-f]{32}/i)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
+
+            // The response here is a publicly documented format users rely on
+            // In case it's changed remember to update the docs at https://ghost.org/help/modifying-robots-txt/
+            res.text.should.equal(
+                'User-agent: *\n' +
+                'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
+                'Disallow: /p/\n'
+            );
         });
 
         it('should retrieve default favicon.ico', async function () {
