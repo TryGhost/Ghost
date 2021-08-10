@@ -9,6 +9,7 @@ export default Model.extend(ValidationEngine, {
     name: attr('string'),
     email: attr('string'),
     note: attr('string'),
+    status: attr('string'),
     createdAtUTC: attr('moment-utc'),
     subscriptions: attr('member-subscription'),
     subscribed: attr('boolean', {defaultValue: true}),
