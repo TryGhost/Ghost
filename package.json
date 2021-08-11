@@ -110,7 +110,7 @@
     "express": "4.17.1",
     "express-brute": "1.0.1",
     "express-hbs": "2.4.0",
-    "express-jwt": "6.0.0",
+    "express-jwt": "6.1.0",
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.2",
     "fs-extra": "10.0.0",
