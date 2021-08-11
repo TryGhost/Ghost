@@ -971,11 +971,11 @@ figure {
 /* -------------------------------------------------------------------------- */
 
 .kg-email-card .border-top {
-    margin: -1.6rem 0 2.4rem;
+    margin: -1.6rem 0 5rem;
 }
 
 .kg-email-card .border-bottom {
-    margin: 2.4rem 0 1rem;
+    margin: 5rem 0 1.6rem;
 }
 
 .kg-email-card.no-border {
@@ -1042,8 +1042,10 @@ figure {
 }
 
 .gh-email-cta-segment-indicator p {
-    padding: 4px 0 24px !important;
-    color: var(--midgrey);
+    padding: 6px 0 24px !important;
+    color: var(--midlightgrey-d1);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 1.4rem;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
