@@ -15,7 +15,7 @@ const FILTER_PROPERTIES = [
     // Member subscription
     {label: 'Member status', name: 'status', group: 'Subscription'},
     // {label: 'Tier', name: 'tier', group: 'Subscription'},
-    // {label: 'Billing period', name: 'billing-period', group: 'Subscription'},
+    {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
 
     // Emails
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
@@ -27,7 +27,7 @@ const FILTER_PROPERTIES = [
     // {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
-    {label: 'Stripe subscription status', name: 'stripe-status', group: 'Email'}
+    {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Email'}
 ];
 
 const FILTER_RELATIONS = [
