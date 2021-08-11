@@ -478,6 +478,10 @@ module.exports = class MemberRepository {
                     return product.id !== ghostProduct.id;
                 });
             }
+
+            if (memberProducts.length === 0) {
+                status = 'free';
+            }
         }
         let updatedMember;
         try {
