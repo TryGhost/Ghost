@@ -51,7 +51,7 @@
                             />
                             <button
                                 type="button"
-                                class="gh-btn gh-btn-text gh-btn-link gh-btn-icon gh-add-filter"
+                                class="gh-btn gh-btn-text gh-btn-link gh-btn-icon gh-delete-filter"
                                 title="Delete filter"
                                 {{!-- {{on "click" (fn this.deleteFilter filter.id)}} --}}
                                 {{action "deleteFilter" filter.id}}
@@ -63,12 +63,14 @@
                 </div>
             {{/each}}
             {{!-- <div class="gh-filter-block-divider">And</div> --}}
-            <button type="button"
-                class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
-                {{on "click" this.addFilter}}
-            >
-                <span>{{svg-jar "add"}} Add filter</span>
-            </button>
+            <div>
+                <button type="button"
+                    class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
+                    {{on "click" this.addFilter}}
+                >
+                    <span>{{svg-jar "add"}} Add filter</span>
+                </button>
+            </div>
         </section>
         <div class="gh-filter-builder-footer">
             <button
