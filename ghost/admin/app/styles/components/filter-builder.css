@@ -35,8 +35,8 @@
     grid-column-gap: 8px;
 }
 
-.gh-filter-builder .gh-input, 
-.gh-filter-builder .gh-select, 
+.gh-filter-builder .gh-input,
+.gh-filter-builder .gh-select,
 .gh-filter-builder select {
     height: 33px;
     font-size: 1.35rem;
@@ -108,4 +108,12 @@
     align-items: center;
     justify-content: flex-end;
     margin-top: 20px;
+}
+
+.gh-filter-block .ember-power-select-multiple-trigger {
+    height: 33px !important;
+}
+
+.gh-filter-block .label-token {
+    margin: 2px !important;
 }
