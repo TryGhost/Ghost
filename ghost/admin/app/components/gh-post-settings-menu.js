@@ -43,19 +43,11 @@ export default Component.extend({
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),
     twitterImage: or('post.twitterImage', 'post.featureImage', 'settings.twitterImage', 'settings.coverImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
-
+    showVisibilityInput: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
     showEmailNewsletter: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
 
     showEmailOnlyInput: computed('post.isPost', function () {
         return this.feature.get('emailOnlyPosts') && this.get('post.isPost');
-    }),
-
-    showVisibilityInput: computed('post.emailOnly', function () {
-        if (this.get('post.emailOnly')) {
-            return false;
-        }
-
-        return this.get('session.user.isOwnerOnly') || this.get('session.user.isAdminOnly') || this.get('session.user.isEditor');
     }),
 
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
@@ -115,7 +107,6 @@ export default Component.extend({
 
         toggleEmailOnly() {
             this.toggleProperty('post.emailOnly');
-            this.set('post.visibility', 'public');
         },
 
         toggleFeatured() {
