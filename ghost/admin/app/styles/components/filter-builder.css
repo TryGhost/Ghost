@@ -50,6 +50,7 @@
 
 .gh-filter-builder .gh-delete-filter {
     margin-left: 4px;
+    width: 20px;
 }
 
 .gh-filter-builder .gh-delete-filter svg {
