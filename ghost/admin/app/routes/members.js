@@ -3,6 +3,7 @@ import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends AuthenticatedRoute {
     @service store;
+    @service feature;
 
     queryParams = {
         label: {refreshModel: true},
@@ -33,8 +34,16 @@ export default class MembersRoute extends AuthenticatedRoute {
     }
 
     buildRouteInfoMetadata() {
-        return {
-            titleToken: 'Members'
-        };
+        if (this.feature.membersFiltering) {
+            return {
+                titleToken: 'Members',
+                mainClasses: ['gh-main-fullwidth']
+
+            };
+        } else {
+            return {
+                titleToken: 'Members'
+            };
+        }
     }
 }

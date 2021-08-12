@@ -311,6 +311,7 @@ ul.nostyle li {
     position: relative;
     border-collapse: inherit;
     margin: 0;
+    border-bottom: none;
 }
 
 .gh-list-scrolling thead th {
