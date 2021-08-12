@@ -44,6 +44,14 @@ async function insertMultiple(knex, table, chunk) {
     await knex(table).insert(chunk);
 }
 
+async function editSingle(knex, table, id, options) {
+    await knex(table).where('id', id).update(options.data);
+}
+
+async function editMultiple(knex, table, chunk, options) {
+    await knex(table).whereIn('id', chunk).update(options.data);
+}
+
 async function delSingle(knex, table, id) {
     try {
         await knex(table).where('id', id).del();
@@ -63,6 +71,7 @@ async function delMultiple(knex, table, chunk) {
 }
 
 const insert = createBulkOperation(insertSingle, insertMultiple);
+const edit = createBulkOperation(editSingle, editMultiple);
 const del = createBulkOperation(delSingle, delMultiple);
 
 /**
@@ -74,6 +83,12 @@ module.exports = function (Bookshelf) {
             tableName = tableName || this.prototype.tableName;
 
             return insert(Bookshelf.knex, tableName, data);
+        },
+
+        bulkEdit: function bulkEdit(data, tableName, options) {
+            tableName = tableName || this.prototype.tableName;
+
+            return edit(Bookshelf.knex, tableName, data, options);
         },
 
         bulkDestroy: function bulkDestroy(data, tableName) {
