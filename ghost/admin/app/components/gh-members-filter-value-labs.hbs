@@ -1,6 +1,7 @@
 {{#if (eq @filter.type 'label')}}
-    <GhMemberLabelInput
+    <GhMemberLabelInputLabs
         @onChange={{fn this.setLabelsFilterValue @filter.type @filter.id}}
+        @onLabelEdit={{@onLabelEdit}}
         @triggerId="label-input"
         data-test-input=""
     />
