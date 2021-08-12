@@ -898,7 +898,7 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/magic-link@^1.0.7":
+"@tryghost/magic-link@^1.0.8":
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.8.tgz#a5ef3e77562715b11537d73af4f5d3d56b1cbb41"
   integrity sha512-TKRnCTbRbhkkCMlwE55nMruZRiH82byLlNlQ4Uw9MzQAMJn2m5M9LDshtX/eUbOHvSESBkMF5G2UdcgvsG19Rw==
@@ -907,15 +907,15 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.23.1":
-  version "1.23.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.23.1.tgz#2ea436d7ed3d99a1d55218b360b0f698fa064bb4"
-  integrity sha512-uRapjVQBd9Rzb0yt8nLf2jGFcRBcOZFclLbf5H6NUgpC9Y3N2/uVSdtm9EXViq6bMEAlK+ewnTIp4LAQAwk5mw==
+"@tryghost/members-api@1.24.0":
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.24.0.tgz#993a43332f342f9887ca1c933487cf3362a39972"
+  integrity sha512-UTLuCNRCGZhMDG2YRgBHd0LGsjqDy09UUuzohbCxKVnsVTLBoYyCV/Pwqypwu4enf4fJvJxVWHVeqSv7sRNXkQ==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
     "@tryghost/ignition-errors" "^0.1.2"
-    "@tryghost/magic-link" "^1.0.7"
+    "@tryghost/magic-link" "^1.0.8"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
