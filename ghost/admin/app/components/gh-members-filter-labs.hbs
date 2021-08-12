@@ -44,10 +44,9 @@
                                 />
                                 {{svg-jar "arrow-down-small"}}
                             </span>
-                            <GhTextInput
-                                @name="filter-value-1"
-                                @value={{filter.value}}
-                                @input={{fn this.setFilterValue filter.id}}
+                            <GhMembersFilterValueLabs
+                                @filter={{filter}}
+                                @setFilterValue={{this.setFilterValue}}
                             />
                             <button
                                 type="button"

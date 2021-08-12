@@ -9,7 +9,7 @@ const FILTER_PROPERTIES = [
     {label: 'Name', name: 'name', group: 'Basic'},
     {label: 'Email', name: 'email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
-    {label: 'Newsletter subscription status', name: 'subscribed', group: 'Basic'},
+    {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
 
     // Member subscription
@@ -71,9 +71,15 @@ export default class GhMembersFilterLabsComponent extends Component {
     generateNqlFilter(filters) {
         let query = '';
         filters.forEach((filter) => {
-            const relationStr = filter.relation === 'is-not' ? '-' : '';
-            const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
-            query += `${filter.type}:${relationStr}${filterValue}+`;
+            if (filter.type === 'label') {
+                const relationStr = filter.relation === 'is-not' ? '-' : '';
+                const filterValue = '[' + filter.value.join(',') + ']';
+                query += `${filter.type}:${relationStr}${filterValue}+`;
+            } else {
+                const relationStr = filter.relation === 'is-not' ? '-' : '';
+                const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
+                query += `${filter.type}:${relationStr}${filterValue}+`;
+            }
         });
         return query.slice(0, -1);
     }
@@ -88,6 +94,7 @@ export default class GhMembersFilterLabsComponent extends Component {
     setFilterType(filterId, newType) {
         const filterToEdit = this.filters.findBy('id', filterId);
         filterToEdit.set('type', newType);
+        filterToEdit.set('value', '');
     }
 
     @action
@@ -97,9 +104,13 @@ export default class GhMembersFilterLabsComponent extends Component {
     }
 
     @action
-    setFilterValue(filterId, event) {
+    setFilterValue(filterType, filterId, filterValue) {
         const filterToEdit = this.filters.findBy('id', filterId);
-        filterToEdit.set('value', event.target.value);
+        if (filterType === 'label') {
+            filterToEdit.set('value', filterValue);
+        } else {
+            filterToEdit.set('value', filterValue);
+        }
     }
 
     @action
