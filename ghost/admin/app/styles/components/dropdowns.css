@@ -273,3 +273,7 @@
     animation-duration: .001s;
     pointer-events: none;
 }
+
+.dropdown-menu .label-token-labs svg {
+    margin-right: 0;
+}
