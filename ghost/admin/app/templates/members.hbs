@@ -32,6 +32,7 @@
                 {{#if (feature "membersFiltering")}}
                 <GhMembersFilterLabs
                     @onApplyFilter={{this.applyFilter}}
+                    @onLabelEdit={{this.editLabel}}
                 />
                 {{/if}}
                 <span class="dropdown">
