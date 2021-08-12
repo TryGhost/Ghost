@@ -26,8 +26,8 @@ function getFromAddress(requestedFromAddress) {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(address, {require_tld: false})) {
-        const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: getDomain()});
-        return `"${defaultBlogTitle}" <${address}>`;
+        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: getDomain()});
+        return `"${defaultSiteTitle}" <${address}>`;
     }
 
     return address;
