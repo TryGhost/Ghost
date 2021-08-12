@@ -8,7 +8,7 @@
             <GhNavMenu />
         {{/if}}
 
-        <main class="gh-main {{this.ui.mainClass}} {{if (and (feature "membersFiltering") (or (eq this.router.currentURL "/members") (eq this.router.currentURL "/members/import"))) "gh-main-fullwidth"}}" role="main">
+        <main class="gh-main {{this.ui.mainClass}}" role="main">
             {{outlet}}
 
             {{#if this.showBilling}}
