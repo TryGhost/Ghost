@@ -80,6 +80,7 @@ const startEmailVerification = async (importedNumber) => {
             }], {context: {internal: true}});
 
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
+            const fromAddress = config.get('user_email');
 
             if (escalationAddress) {
                 ghostMailer.send({
@@ -89,6 +90,7 @@ const startEmailVerification = async (importedNumber) => {
                         siteUrl: urlUtils.getSiteUrl()
                     }),
                     forceTextContent: true,
+                    from: fromAddress,
                     to: escalationAddress
                 });
             }
