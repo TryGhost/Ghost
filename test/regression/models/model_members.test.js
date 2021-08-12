@@ -345,5 +345,158 @@ describe('Member Model', function run() {
             should.not.exist(foundMemberInPodcast, 'Member should not have been included in products filter');
         });
     });
+
+    describe('Filtering', function () {
+        it('Should allow filtering on name', async function () {
+            const context = testUtils.context.admin;
+
+            await Member.add({
+                name: 'Name Filter Test',
+                email: 'name-filter-test@test.member',
+                products: [{
+                    name: 'VIP',
+                    slug: 'vip'
+                }]
+            }, context);
+
+            const member = await Member.findOne({
+                email: 'name-filter-test@test.member'
+            }, context);
+
+            should.exist(member, 'Member should have been created');
+
+            const membersByName = await Member.findPage({filter: `name:'Name Filter Test'`});
+            const foundMember = membersByName.data.find(model => model.id === member.id);
+
+            should.exist(foundMember, 'Member should have been included in name filter');
+        });
+
+        it('Should allow filtering on email', async function () {
+            const context = testUtils.context.admin;
+
+            await Member.add({
+                email: 'email-filter-test@test.member',
+                products: [{
+                    name: 'VIP',
+                    slug: 'vip'
+                }]
+            }, context);
+
+            const member = await Member.findOne({
+                email: 'email-filter-test@test.member'
+            }, context);
+
+            should.exist(member, 'Member should have been created');
+
+            const membersByName = await Member.findPage({filter: `email:email-filter-test@test.member`});
+            const foundMember = membersByName.data.find(model => model.id === member.id);
+
+            should.exist(foundMember, 'Member should have been included in name filter');
+        });
+
+        it('Should allow filtering on subscriptions', async function () {
+            const context = testUtils.context.admin;
+
+            const member = await Member.add({
+                email: 'test@test.member',
+                labels: []
+            }, context);
+
+            const product = await Product.add({
+                name: 'Ghost Product',
+                slug: 'ghost-product'
+            }, context);
+
+            await StripeProduct.add({
+                product_id: product.get('id'),
+                stripe_product_id: 'fake_product_id'
+            }, context);
+
+            await StripePrice.add({
+                stripe_price_id: 'fake_plan_id',
+                stripe_product_id: 'fake_product_id',
+                amount: 5000,
+                interval: 'monthly',
+                active: 1,
+                nickname: 'Monthly',
+                currency: 'USD',
+                type: 'recurring'
+            }, context);
+
+            await MemberStripeCustomer.add({
+                member_id: member.get('id'),
+                customer_id: 'fake_customer_id1'
+            }, context);
+
+            await MemberStripeCustomer.add({
+                member_id: member.get('id'),
+                customer_id: 'fake_customer_id2'
+            }, context);
+
+            const subscription1 = await StripeCustomerSubscription.add({
+                customer_id: 'fake_customer_id1',
+                subscription_id: 'fake_subscription_id1',
+                plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
+                plan_amount: 1337,
+                plan_nickname: 'e-LEET',
+                plan_interval: 'year',
+                plan_currency: 'btc',
+                status: 'active',
+                start_date: new Date(),
+                current_period_end: new Date(),
+                cancel_at_period_end: false
+            }, context);
+
+            const subscription2 = await StripeCustomerSubscription.add({
+                customer_id: 'fake_customer_id2',
+                subscription_id: 'fake_subscription_id2',
+                plan_id: 'fake_plan_id',
+                stripe_price_id: 'fake_plan_id',
+                plan_amount: 1337,
+                plan_nickname: 'e-LEET',
+                plan_interval: 'year',
+                plan_currency: 'btc',
+                status: 'canceled',
+                start_date: new Date(),
+                current_period_end: new Date(),
+                cancel_at_period_end: false
+            }, context);
+
+            {
+                const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
+                should.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
+            }
+
+            await StripeCustomerSubscription.edit({
+                status: 'canceled'
+            }, {
+                id: subscription1.id,
+                ...context
+            });
+
+            {
+                const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
+                should.equal(members.data.length, 1, 'Can search for members with canceled subscription and no active ones');
+            }
+
+            {
+                const members = await Member.findPage({filter: `subscriptions.plan_interval:year`});
+                should.equal(members.data.length, 1, 'Can search for members by plan_interval');
+            }
+
+            await StripeCustomerSubscription.edit({
+                plan_interval: 'month'
+            }, {
+                id: subscription2.id,
+                ...context
+            });
+
+            {
+                const members = await Member.findPage({filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`});
+                should.equal(members.data.length, 0, 'Can search for members by plan_interval');
+            }
+        });
+    });
 });
 

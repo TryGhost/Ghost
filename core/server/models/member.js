@@ -48,6 +48,15 @@ const Member = ghostBookshelf.Model.extend({
                 joinTable: 'members_products',
                 joinFrom: 'member_id',
                 joinTo: 'product_id'
+            },
+            subscriptions: {
+                tableName: 'members_stripe_customers_subscriptions',
+                tableNameAs: 'subscriptions',
+                type: 'manyToMany',
+                joinTable: 'members_stripe_customers',
+                joinFrom: 'member_id',
+                joinTo: 'customer_id',
+                joinToForeign: 'customer_id'
             }
         };
     },
