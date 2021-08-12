@@ -379,36 +379,7 @@ module.exports = {
             method: 'destroy'
         },
         async query(frame) {
-            const {all, filter, search} = frame.options;
-
-            if (!filter && !search && (!all || all !== true)) {
-                throw new errors.IncorrectUsageError({
-                    message: 'DELETE /members/ must be used with a filter or ?all=true'
-                });
-            }
-
-            const knexOptions = _.pick(frame.options, ['transacting']);
-            const filterOptions = Object.assign({}, knexOptions);
-
-            if (all !== true) {
-                if (filter) {
-                    filterOptions.filter = filter;
-                }
-
-                if (search) {
-                    filterOptions.search = search;
-                }
-            }
-
-            // fetch ids of all matching members
-            const memberRows = await models.Member
-                .getFilteredCollectionQuery(filterOptions)
-                .select('members.id')
-                .distinct();
-
-            const memberIds = memberRows.map(row => row.id);
-
-            const bulkDestroyResult = await models.Member.bulkDestroy(memberIds);
+            const bulkDestroyResult = await membersService.api.members.bulkDestroy(frame.options);
 
             // shaped to match the importer response
             return {
