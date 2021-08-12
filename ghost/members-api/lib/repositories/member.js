@@ -7,7 +7,8 @@ const messages = {
     moreThanOneProduct: 'A member cannot have more than one Product',
     existingSubscriptions: 'Cannot modify Products for a Member with active Subscriptions',
     subscriptionNotFound: 'Could not find Subscription {id}',
-    productNotFound: 'Could not find Product {id}'
+    productNotFound: 'Could not find Product {id}',
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true'
 };
 
 module.exports = class MemberRepository {
@@ -287,6 +288,40 @@ module.exports = class MemberRepository {
         return this._Member.destroy({
             id: data.id
         }, options);
+    }
+
+    async bulkDestroy(options) {
+        const {all, filter, search} = options;
+
+        if (!filter && !search && (!all || all !== true)) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.bulkActionRequiresFilter, {action: 'bulk delete'})
+            });
+        }
+
+        const filterOptions = {};
+
+        if (options.transacting) {
+            filterOptions.transacting = options.transacting;
+        }
+
+        if (all !== true) {
+            if (filter) {
+                filterOptions.filter = filter;
+            }
+
+            if (filter) {
+                filterOptions.search = search;
+            }
+        }
+
+        const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
+            .select('members.id')
+            .distinct();
+
+        const memberIds = memberRows.map(row => row.id);
+
+        return this._Member.bulkDestroy(memberIds);
     }
 
     async upsertCustomer(data) {
