@@ -46,4 +46,10 @@ export default class MembersRoute extends AuthenticatedRoute {
             };
         }
     }
+
+    resetController(controller, isExiting) {
+        if (isExiting) {
+            controller.reset();
+        }
+    }
 }
