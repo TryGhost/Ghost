@@ -190,4 +190,9 @@ export default class GhMembersFilterLabsComponent extends Component {
         const query = this.generateNqlFilter(this.filters);
         this.args.onApplyFilter(query, this.filters);
     }
+
+    @action
+    resetFilter() {
+        this.args.onResetFilter();
+    }
 }
