@@ -13,9 +13,9 @@ const events = require('../../../server/lib/common/events');
  * This is a connector for url generator and resources.
  * Stores relative urls by default.
  *
- * We have to have a centralised place where we keep track of all urls, otherwise
+ * We have to have a centralized place where we keep track of all urls, otherwise
  * we will never know if we generate the same url twice. Furthermore, it's easier
- * to ask a centralised class instance if you want a url for a resource than
+ * to ask a centralized class instance if you want a url for a resource than
  * iterating over all url generators and asking for it.
  * You can easily ask `this.urls[resourceId]`.
  */

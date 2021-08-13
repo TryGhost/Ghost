@@ -125,7 +125,7 @@ module.exports = {
                 setting.value = JSON.stringify(setting.value);
             }
 
-            // @TODO: handle these transformations in a centralised API place (these rules should apply for ALL resources)
+            // @TODO: handle these transformations in a centralized API place (these rules should apply for ALL resources)
 
             // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
             if (settingType === 'boolean' && (setting.value === '0' || setting.value === '1')) {
