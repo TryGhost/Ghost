@@ -7,6 +7,6 @@ export default class GhMembersListItemColumnLabs extends Component {
 
     get labels() {
         const labelData = this.args.member.get('labels') || [];
-        return labelData.map(label => label.name).join(',');
+        return labelData.map(label => label.name).join(', ');
     }
 }
