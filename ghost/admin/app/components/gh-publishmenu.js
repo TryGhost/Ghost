@@ -95,13 +95,18 @@ export default Component.extend({
         return runningText || 'Publishing';
     }),
 
-    buttonText: computed('postState', 'saveType', function () {
+    buttonText: computed('postState', 'saveType', 'post.emailOnly', function () {
         let saveType = this.saveType;
         let postState = this.postState;
+        let emailOnly = this.get('post.emailOnly');
         let buttonText;
 
         if (postState === 'draft') {
-            buttonText = saveType === 'publish' ? 'Publish' : 'Schedule';
+            if (emailOnly) {
+                buttonText = saveType === 'publish' ? 'Send' : 'Schedule';
+            } else {
+                buttonText = saveType === 'publish' ? 'Publish' : 'Schedule';
+            }
         }
 
         if (postState === 'published') {

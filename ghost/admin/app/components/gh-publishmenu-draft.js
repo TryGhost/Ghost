@@ -24,6 +24,10 @@ export default class GhPublishMenuDraftComponent extends Component {
         return this.session.user.isAdmin && (this.totalMemberCount === 0 || this.countTotalMembersTask.isRunning);
     }
 
+    get nextActionName() {
+        return this.args.post.get('emailOnly') ? 'send' : 'publish';
+    }
+
     constructor() {
         super(...arguments);
         this.args.post.set('publishedAtBlogTZ', this.args.post.publishedAtUTC);

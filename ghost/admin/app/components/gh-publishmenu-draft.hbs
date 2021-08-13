@@ -1,5 +1,5 @@
 <div {{did-insert (fn this.setSaveType "publish")}} ...attributes>
-    <header class="gh-publishmenu-heading">Ready to publish your {{@post.displayName}}?</header>
+    <header class="gh-publishmenu-heading">Ready to {{this.nextActionName}} this {{@post.displayName}}?</header>
     <section class="gh-publishmenu-content">
         <div class="gh-publishmenu-section">
             <div class="gh-publishmenu-radio {{if (eq @saveType "publish") "active"}}" {{on "click" (fn this.setSaveType "publish")}}>
