@@ -8,7 +8,6 @@ const FILTER_PROPERTIES = [
     // Basic
     {label: 'Name', name: 'name', group: 'Basic'},
     {label: 'Email', name: 'email', group: 'Basic'},
-    {label: 'Name or Email', name: 'name_email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
@@ -32,9 +31,6 @@ const FILTER_PROPERTIES = [
 ];
 
 const FILTER_RELATIONS_OPTIONS = {
-    name_email: [
-        {label: 'contains', name: 'contains'}
-    ],
     subscribed: [
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
@@ -143,16 +139,14 @@ export default class GhMembersFilterLabsComponent extends Component {
     generateNqlFilter(filters) {
         let query = '';
         filters.forEach((filter) => {
-            if (filter.value && !['name_email'].includes(filter.type)) {
-                if (filter.type === 'label') {
-                    const relationStr = filter.relation === 'is-not' ? '-' : '';
-                    const filterValue = '[' + filter.value.join(',') + ']';
-                    query += `${filter.type}:${relationStr}${filterValue}+`;
-                } else {
-                    const relationStr = filter.relation === 'is-not' ? '-' : '';
-                    const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
-                    query += `${filter.type}:${relationStr}${filterValue}+`;
-                }
+            if (filter.type === 'label' && filter.value?.length) {
+                const relationStr = filter.relation === 'is-not' ? '-' : '';
+                const filterValue = '[' + filter.value.join(',') + ']';
+                query += `${filter.type}:${relationStr}${filterValue}+`;
+            } else {
+                const relationStr = filter.relation === 'is-not' ? '-' : '';
+                const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
+                query += `${filter.type}:${relationStr}${filterValue}+`;
             }
         });
         return query.slice(0, -1);
@@ -195,8 +189,14 @@ export default class GhMembersFilterLabsComponent extends Component {
 
     @action
     applyFilter() {
-        const query = this.generateNqlFilter(this.filters);
-        this.args.onApplyFilter(query, this.filters);
+        const validFilters = this.filters.filter((fil) => {
+            if (fil.type === 'label') {
+                return fil.value?.length;
+            }
+            return fil.value;
+        });
+        const query = this.generateNqlFilter(validFilters);
+        this.args.onApplyFilter(query, validFilters);
     }
 
     @action
