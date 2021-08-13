@@ -15,8 +15,9 @@ const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
+
 const MOBILEDOC_REVISIONS_COUNT = 10;
-const ALL_STATUSES = ['published', 'draft', 'scheduled'];
+const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
 let Post;
 let Posts;
@@ -654,7 +655,7 @@ Post = ghostBookshelf.Model.extend({
         // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
         //       but the usual publis/send newsletter flow continues
         if (model.related('posts_meta').get('email_only') && (newStatus === 'published') && this.hasChanged('status')) {
-            this.set('status', 'draft');
+            this.set('status', 'sent');
         }
 
         // If a title is set, not the same as the old title, a draft post, and has never been published
