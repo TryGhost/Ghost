@@ -73,6 +73,7 @@
                             {{/if}}
                         </li>
                         {{#if (and this.members.length this.isFiltered)}}
+                            <li class="divider"></li>
                             {{#if (feature "membersFiltering")}}
                                 <li>
                                     <button class="mr2" {{on "click" this.toggleAddMembersLabelModal}} data-test-button="add-label-selected">
@@ -81,7 +82,7 @@
                                 </li>
                                 <li>
                                     <button class="mr2" {{on "click" this.toggleRemoveMembersLabelModal}} data-test-button="remove-label-selected">
-                                        <span>Remove label for selected members ({{this.members.length}})</span>
+                                        <span>Remove label from selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
                                 <li>
@@ -90,6 +91,7 @@
                                     </button>
                                 </li>
                             {{/if}}
+                            <li class="divider"></li>
                             <li>
                                 <button class="mr2" {{on "click" this.toggleDeleteMembersModal}} data-test-button="delete-selected">
                                     <span class="red">Delete selected members ({{this.members.length}})</span>
