@@ -8,6 +8,7 @@ const FILTER_PROPERTIES = [
     // Basic
     {label: 'Name', name: 'name', group: 'Basic'},
     {label: 'Email', name: 'email', group: 'Basic'},
+    {label: 'Name or Email', name: 'name_email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
@@ -30,15 +31,79 @@ const FILTER_PROPERTIES = [
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Email'}
 ];
 
-const FILTER_RELATIONS = [
-    {label: 'is', name: 'is'},
-    {label: 'is not', name: 'is-not'},
-    {label: 'in', name: 'in'}
-    // {label: 'contains', name: 'contains'},
-    // {label: 'exists', name: 'exists'},
-    // {label: 'does not exist', name: 'does-not-exist'}
-];
+const FILTER_RELATIONS_OPTIONS = {
+    name_email: [
+        {label: 'contains', name: 'contains'}
+    ],
+    subscribed: [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    name: [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    email: [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    status: [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    'subscriptions.plan_interval': [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    'subscriptions.status': [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    label: [
+        {label: 'is in', name: 'is'},
+        {label: 'is not in', name: 'is-not'}
+    ],
+    email_count: [
+        {label: 'is', name: 'is'},
+        {label: 'is greater than', name: 'is-greater'},
+        {label: 'is less than', name: 'is-less'}
+    ],
+    email_opened_count: [
+        {label: 'is', name: 'is'},
+        {label: 'is greater than', name: 'is-greater'},
+        {label: 'is less than', name: 'is-less'}
+    ],
+    email_open_rate: [
+        {label: 'is', name: 'is'},
+        {label: 'is greater than', name: 'is-greater'},
+        {label: 'is less than', name: 'is-less'}
+    ]
+};
 
+const FILTER_VALUE_OPTIONS = {
+    'subscriptions.plan_interval': [
+        {label: 'Monthly', name: 'month'},
+        {label: 'Yearly', name: 'year'}
+    ],
+    status: [
+        {label: 'Paid', name: 'paid'},
+        {label: 'Free', name: 'free'},
+        {label: 'Complimentary', name: 'comped'}
+    ],
+    subscribed: [
+        {label: 'Subscribed', name: 'true'},
+        {label: 'Unsubscribed', name: 'false'}
+    ],
+    'subscriptions.status': [
+        {label: 'Active', name: 'active'},
+        {label: 'Trialing', name: 'trialing'},
+        {label: 'Canceled', name: 'canceled'},
+        {label: 'Unpaid', name: 'unpaid'},
+        {label: 'Past Due', name: 'past_due'},
+        {label: 'Incomplete', name: 'incomplete'},
+        {label: 'Incomplete - Expired', name: 'incomplete_expired'}
+    ]
+};
 export default class GhMembersFilterLabsComponent extends Component {
     @service session
     @tracked filters = A([
@@ -46,14 +111,16 @@ export default class GhMembersFilterLabsComponent extends Component {
             id: `filter-0`,
             type: 'name',
             relation: 'is',
-            value: ''
+            value: '',
+            relationOptions: FILTER_RELATIONS_OPTIONS.name
         })
     ]);
 
     constructor(...args) {
         super(...args);
         this.availableFilterProperties = FILTER_PROPERTIES;
-        this.availableFilterRelations = FILTER_RELATIONS;
+        this.availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
+        this.availableFilterValueOptions = FILTER_VALUE_OPTIONS;
         this.nextFilterId = 1;
     }
 
@@ -63,7 +130,8 @@ export default class GhMembersFilterLabsComponent extends Component {
             id: `filter-${this.nextFilterId}`,
             type: 'name',
             relation: 'is',
-            value: ''
+            value: '',
+            relationOptions: this.availableFilterRelationsOptions.name
         }));
         this.nextFilterId = this.nextFilterId + 1;
     }
@@ -71,14 +139,16 @@ export default class GhMembersFilterLabsComponent extends Component {
     generateNqlFilter(filters) {
         let query = '';
         filters.forEach((filter) => {
-            if (filter.type === 'label') {
-                const relationStr = filter.relation === 'is-not' ? '-' : '';
-                const filterValue = '[' + filter.value.join(',') + ']';
-                query += `${filter.type}:${relationStr}${filterValue}+`;
-            } else {
-                const relationStr = filter.relation === 'is-not' ? '-' : '';
-                const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
-                query += `${filter.type}:${relationStr}${filterValue}+`;
+            if (filter.value && !['name_email'].includes(filter.type)) {
+                if (filter.type === 'label') {
+                    const relationStr = filter.relation === 'is-not' ? '-' : '';
+                    const filterValue = '[' + filter.value.join(',') + ']';
+                    query += `${filter.type}:${relationStr}${filterValue}+`;
+                } else {
+                    const relationStr = filter.relation === 'is-not' ? '-' : '';
+                    const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
+                    query += `${filter.type}:${relationStr}${filterValue}+`;
+                }
             }
         });
         return query.slice(0, -1);
@@ -94,7 +164,9 @@ export default class GhMembersFilterLabsComponent extends Component {
     setFilterType(filterId, newType) {
         const filterToEdit = this.filters.findBy('id', filterId);
         filterToEdit.set('type', newType);
-        filterToEdit.set('value', '');
+        filterToEdit.set('relationOptions', this.availableFilterRelationsOptions[newType]);
+        const defaultValue = this.availableFilterValueOptions[newType] ? this.availableFilterValueOptions[newType][0].name : '';
+        filterToEdit.set('value', defaultValue);
     }
 
     @action
