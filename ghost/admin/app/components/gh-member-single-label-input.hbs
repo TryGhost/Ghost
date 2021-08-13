@@ -1,0 +1,10 @@
+<span class="gh-select">
+    <OneWaySelect
+        @options={{this.availableLabels}}
+        @optionValuePath="slug"
+        @optionLabelPath="name"
+        @optionTargetPath="slug"
+        @update={{this.updateLabel}}
+    />
+    {{svg-jar "arrow-down-small"}}
+</span>

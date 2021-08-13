@@ -52,6 +52,9 @@ export default class MembersController extends Controller {
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
     @tracked showDeleteMembersModal = false;
+    @tracked showUnsubscribeMembersModal = false;
+    @tracked showAddMembersLabelModal = false;
+    @tracked showRemoveMembersLabelModal = false;
     @tracked filters = A([]);
 
     @tracked _availableLabels = A([]);
@@ -294,8 +297,38 @@ export default class MembersController extends Controller {
     }
 
     @action
+    toggleUnsubscribeMembersModal() {
+        this.showUnsubscribeMembersModal = !this.showUnsubscribeMembersModal;
+    }
+
+    @action
+    toggleAddMembersLabelModal() {
+        this.showAddMembersLabelModal = !this.showAddMembersLabelModal;
+    }
+
+    @action
+    toggleRemoveMembersLabelModal() {
+        this.showRemoveMembersLabelModal = !this.showRemoveMembersLabelModal;
+    }
+
+    @action
     deleteMembers() {
         return this.deleteMembersTask.perform();
+    }
+
+    @action
+    unsubscribeMembers() {
+        return this.unsubscribeMembersTask.perform();
+    }
+
+    @action
+    addLabelsToMembers() {
+        return this.addLabelToMembersTask.perform();
+    }
+
+    @action
+    removeLabelsFromMembers() {
+        return this.removeLabelFromMembersTask.perform();
     }
 
     // Tasks -------------------------------------------------------------------
@@ -411,6 +444,44 @@ export default class MembersController extends Controller {
         return response.meta;
     }
 
+    @task({drop: true})
+    *unsubscribeMembersTask() {
+        yield Promise.resolve();
+
+        // reset and reload
+        this.store.unloadAll('member');
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.membersStats.invalidate();
+        this.membersStats.fetchCounts();
+
+        return {};
+    }
+
+    @task({drop: true})
+    *addLabelToMembersTask() {
+        yield Promise.resolve();
+
+        // reset and reload
+        this.store.unloadAll('member');
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.membersStats.invalidate();
+        this.membersStats.fetchCounts();
+
+        return {};
+    }
+
+    @task({drop: true})
+    *removeLabelFromMembersTask() {
+        yield Promise.resolve();
+
+        // reset and reload
+        this.store.unloadAll('member');
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.membersStats.invalidate();
+        this.membersStats.fetchCounts();
+
+        return {};
+    }
     // Internal ----------------------------------------------------------------
 
     resetSearch() {
