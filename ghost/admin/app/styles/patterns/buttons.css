@@ -379,6 +379,10 @@ svg.gh-btn-icon-right {
     stroke: currentColor;
 }
 
+.gh-btn-label-green {
+    color: var(--green);
+}
+
 
 /*
 /* Button Variations
