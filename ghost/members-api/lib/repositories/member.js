@@ -305,12 +305,16 @@ module.exports = class MemberRepository {
             filterOptions.transacting = options.transacting;
         }
 
+        if (options.context) {
+            filterOptions.context = options.context;
+        }
+
         if (all !== true) {
             if (filter) {
                 filterOptions.filter = filter;
             }
 
-            if (filter) {
+            if (search) {
                 filterOptions.search = search;
             }
         }
@@ -321,7 +325,13 @@ module.exports = class MemberRepository {
 
         const memberIds = memberRows.map(row => row.id);
 
-        return this._Member.bulkDestroy(memberIds);
+        const bulkDestroyResult = await this._Member.bulkDestroy(memberIds);
+
+        bulkDestroyResult.unsuccessfulIds = bulkDestroyResult.unsuccessfulData;
+
+        delete bulkDestroyResult.unsuccessfulData;
+
+        return bulkDestroyResult;
     }
 
     async upsertCustomer(data) {
