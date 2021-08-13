@@ -4,87 +4,75 @@ const logging = require('@tryghost/logging');
 
 const CHUNK_SIZE = 100;
 
-async function insertChunkSequential(knex, table, chunk, result) {
-    for (const record of chunk) {
-        try {
-            await knex(table).insert(record);
-            result.successful += 1;
-        } catch (err) {
-            err.errorDetails = record;
-            result.errors.push(err);
-            result.unsuccessfulRecords.push(record);
-            result.unsuccessful += 1;
+function createBulkOperation(singular, multiple) {
+    return async function (knex, table, data, options) {
+        const result = {
+            successful: 0,
+            unsuccessful: 0,
+            unsuccessfulData: [],
+            errors: []
+        };
+
+        for (const chunkedData of _.chunk(data, CHUNK_SIZE)) {
+            try {
+                await multiple(knex, table, chunkedData, options);
+                result.successful += chunkedData.length;
+            } catch (errToIgnore) {
+                for (const singularData of chunkedData) {
+                    try {
+                        await singular(knex, table, singularData, options);
+                        result.successful += 1;
+                    } catch (err) {
+                        err.errorDetails = singularData;
+                        result.errors.push(err);
+                        result.unsuccessfulData.push(singularData);
+                        result.unsuccessful += 1;
+                    }
+                }
+            }
         }
-    }
-}
 
-async function insertChunk(knex, table, chunk, result) {
-    try {
-        await knex(table).insert(chunk);
-        result.successful += chunk.length;
-    } catch (err) {
-        await insertChunkSequential(table, chunk, result);
-    }
-}
-
-async function insert(knex, table, data) {
-    const result = {
-        successful: 0,
-        unsuccessful: 0,
-        unsuccessfulRecords: [],
-        errors: []
+        return result;
     };
-
-    for (const chunk of _.chunk(data, CHUNK_SIZE)) {
-        await insertChunk(knex, table, chunk, result);
-    }
-
-    return result;
 }
 
-async function delChunkSequential(knex, table, chunk, result) {
-    for (const id of chunk) {
-        try {
-            await knex(table).where('id', id).del();
-            result.successful += 1;
-        } catch (err) {
-            const importError = new errors.DataImportError({
-                message: `Failed to remove entry from ${table}`,
-                context: `Entry id: ${id}`,
-                err: err
-            });
-            logging.error(importError);
-
-            result.errors.push(importError);
-            result.unsuccessfulIds.push(id);
-            result.unsuccessful += 1;
-        }
-    }
+async function insertSingle(knex, table, record) {
+    await knex(table).insert(record);
 }
 
-async function delChunk(knex, table, chunk, result) {
+async function insertMultiple(knex, table, chunk) {
+    await knex(table).insert(chunk);
+}
+
+async function editSingle(knex, table, id, options) {
+    await knex(table).where('id', id).update(options.data);
+}
+
+async function editMultiple(knex, table, chunk, options) {
+    await knex(table).whereIn('id', chunk).update(options.data);
+}
+
+async function delSingle(knex, table, id) {
     try {
-        await knex(table).whereIn('id', chunk).del();
-        result.successful += chunk.length;
+        await knex(table).where('id', id).del();
     } catch (err) {
-        await delChunkSequential(table, chunk, result);
+        const importError = new errors.DataImportError({
+            message: `Failed to remove entry from ${table}`,
+            context: `Entry id: ${id}`,
+            err: err
+        });
+        logging.error(importError);
+        throw importError;
     }
 }
 
-async function del(knex, table, ids) {
-    const result = {
-        successful: 0,
-        unsuccessful: 0,
-        unsuccessfulIds: [],
-        errors: []
-    };
-
-    for (const chunk of _.chunk(ids, CHUNK_SIZE)) {
-        await delChunk(knex, table, chunk, result);
-    }
-
-    return result;
+async function delMultiple(knex, table, chunk) {
+    await knex(table).whereIn('id', chunk).del();
 }
+
+const insert = createBulkOperation(insertSingle, insertMultiple);
+const edit = createBulkOperation(editSingle, editMultiple);
+const del = createBulkOperation(delSingle, delMultiple);
 
 /**
  * @param {import('bookshelf')} Bookshelf
@@ -95,6 +83,12 @@ module.exports = function (Bookshelf) {
             tableName = tableName || this.prototype.tableName;
 
             return insert(Bookshelf.knex, tableName, data);
+        },
+
+        bulkEdit: function bulkEdit(data, tableName, options) {
+            tableName = tableName || this.prototype.tableName;
+
+            return edit(Bookshelf.knex, tableName, data, options);
         },
 
         bulkDestroy: function bulkDestroy(data, tableName) {
