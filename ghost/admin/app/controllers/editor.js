@@ -67,17 +67,23 @@ const messageMap = {
             published: {
                 published: 'Updated',
                 draft: 'Saved',
-                scheduled: 'Scheduled'
+                scheduled: 'Scheduled',
+                sent: 'Sent'
             },
             draft: {
                 published: 'Published',
                 draft: 'Saved',
-                scheduled: 'Scheduled'
+                scheduled: 'Scheduled',
+                sent: 'Sent'
             },
             scheduled: {
                 scheduled: 'Updated',
                 draft: 'Unscheduled',
-                published: 'Published'
+                published: 'Published',
+                sent: 'Sent'
+            },
+            sent: {
+                sent: 'Sent'
             }
         }
     }
