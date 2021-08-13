@@ -19,10 +19,6 @@ module.exports = {
         return require('./error-handler');
     },
 
-    get labs() {
-        return require('./labs');
-    },
-
     get maintenance() {
         return require('./maintenance');
     },
