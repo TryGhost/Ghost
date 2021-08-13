@@ -1,9 +1,9 @@
 <span class="gh-select">
     <OneWaySelect
         @options={{this.availableLabels}}
-        @optionValuePath="slug"
+        @optionValuePath="id"
         @optionLabelPath="name"
-        @optionTargetPath="slug"
+        @optionTargetPath="id"
         @update={{this.updateLabel}}
     />
     {{svg-jar "arrow-down-small"}}
