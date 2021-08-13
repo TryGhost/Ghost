@@ -19,6 +19,7 @@ export const DEFAULT_QUERY_PARAMS = {
         label: null,
         paid: null,
         search: '',
+        filter: null,
         order: null
     }
 };
