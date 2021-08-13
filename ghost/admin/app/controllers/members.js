@@ -461,7 +461,7 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index', {filter: this.filterParam, search: null}))});
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
@@ -485,7 +485,7 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index', {filter: this.filterParam, search: null}))});
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
@@ -509,7 +509,7 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index', {filter: this.filterParam, search: null}))});
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
