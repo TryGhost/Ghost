@@ -36,6 +36,13 @@ module.exports.QUERY = {
     preview: {
         controller: 'preview',
         resource: 'preview'
+    },
+    email: {
+        controller: 'emailPost',
+        resource: 'email_posts',
+        options: {
+            slug: '%s'
+        }
     }
 };
 

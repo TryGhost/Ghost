@@ -15,6 +15,10 @@ module.exports = {
         return require('./preview');
     },
 
+    get email() {
+        return require('./email-post');
+    },
+
     get channel() {
         return require('./channel');
     },
