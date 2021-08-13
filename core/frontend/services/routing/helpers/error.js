@@ -1,5 +1,5 @@
 /**
- * @description Centralised error handling for API requests.
+ * @description Centralized error handling for API requests.
  * @param {Function} next
  * @returns {Function} handleErrorClosure
  */
