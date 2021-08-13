@@ -325,13 +325,13 @@ export default class MembersController extends Controller {
     }
 
     @action
-    addLabelsToMembers() {
-        return this.addLabelToMembersTask.perform();
+    addLabelToMembers(selectedLabel) {
+        return this.addLabelToMembersTask.perform(selectedLabel);
     }
 
     @action
-    removeLabelsFromMembers() {
-        return this.removeLabelFromMembersTask.perform();
+    removeLabelFromMembers(selectedLabel) {
+        return this.removeLabelFromMembersTask.perform(selectedLabel);
     }
 
     // Tasks -------------------------------------------------------------------
@@ -449,7 +449,15 @@ export default class MembersController extends Controller {
 
     @task({drop: true})
     *unsubscribeMembersTask() {
-        yield Promise.resolve();
+        const query = new URLSearchParams(this.getApiQueryObject());
+        const unsubscribeUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
+        // response contains details of which members failed to be unsubscribe
+        const response = yield this.ajax.put(unsubscribeUrl, {
+            data: {
+                action: 'unsubscribe',
+                meta: {}
+            }
+        });
 
         // reset and reload
         this.store.unloadAll('member');
@@ -457,12 +465,23 @@ export default class MembersController extends Controller {
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
-        return {};
+        return response.meta;
     }
 
     @task({drop: true})
-    *addLabelToMembersTask() {
-        yield Promise.resolve();
+    *addLabelToMembersTask(selectedLabel) {
+        const query = new URLSearchParams(this.getApiQueryObject());
+        const addLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
+        const response = yield this.ajax.put(addLabelUrl, {
+            data: {
+                action: 'addLabel',
+                meta: {
+                    label: {
+                        id: selectedLabel
+                    }
+                }
+            }
+        });
 
         // reset and reload
         this.store.unloadAll('member');
@@ -470,12 +489,23 @@ export default class MembersController extends Controller {
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
-        return {};
+        return response.meta;
     }
 
     @task({drop: true})
-    *removeLabelFromMembersTask() {
-        yield Promise.resolve();
+    *removeLabelFromMembersTask(selectedLabel) {
+        const query = new URLSearchParams(this.getApiQueryObject());
+        const removeLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
+        const response = yield this.ajax.put(removeLabelUrl, {
+            data: {
+                action: 'removeLabel',
+                meta: {
+                    label: {
+                        id: selectedLabel
+                    }
+                }
+            }
+        });
 
         // reset and reload
         this.store.unloadAll('member');
@@ -483,7 +513,7 @@ export default class MembersController extends Controller {
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
-        return {};
+        return response.meta;
     }
     // Internal ----------------------------------------------------------------
 
