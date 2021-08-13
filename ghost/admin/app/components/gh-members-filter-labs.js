@@ -161,7 +161,11 @@ export default class GhMembersFilterLabsComponent extends Component {
     @action
     deleteFilter(filterId) {
         const filterToDelete = this.filters.findBy('id', filterId);
-        this.filters.removeObject(filterToDelete);
+        if (this.filters.length === 1) {
+            this.resetFilter();
+        } else {
+            this.filters.removeObject(filterToDelete);
+        }
     }
 
     @action
@@ -197,6 +201,16 @@ export default class GhMembersFilterLabsComponent extends Component {
 
     @action
     resetFilter() {
+        this.nextFilterId = 1;
+        this.filters = A([
+            EmberObject.create({
+                id: `filter-0`,
+                type: 'name',
+                relation: 'is',
+                value: '',
+                relationOptions: FILTER_RELATIONS_OPTIONS.name
+            })
+        ]);
         this.args.onResetFilter();
     }
 }
