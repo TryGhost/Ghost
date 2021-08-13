@@ -96,9 +96,9 @@ const forcePageFilter = (frame) => {
 
 const forceStatusFilter = (frame) => {
     if (!frame.options.filter) {
-        frame.options.filter = 'status:[draft,published,scheduled]';
+        frame.options.filter = 'status:[draft,published,scheduled,sent]';
     } else if (!frame.options.filter.match(/status:/)) {
-        frame.options.filter = `(${frame.options.filter})+status:[draft,published,scheduled]`;
+        frame.options.filter = `(${frame.options.filter})+status:[draft,published,scheduled,sent]`;
     }
 };
 

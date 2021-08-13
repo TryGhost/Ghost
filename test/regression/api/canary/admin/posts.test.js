@@ -379,7 +379,7 @@ describe('Posts API (canary)', function () {
 
             should.exist(publishedRes.body.posts);
             res.body.posts[0].email_only.should.be.true();
-            publishedRes.body.posts[0].status.should.equal('draft');
+            publishedRes.body.posts[0].status.should.equal('sent');
 
             should.exist(publishedRes.body.posts[0].email);
             publishedRes.body.posts[0].email.email_count.should.equal(8);
