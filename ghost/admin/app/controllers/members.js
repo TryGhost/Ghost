@@ -166,8 +166,12 @@ export default class MembersController extends Controller {
     }
 
     get filterColumnLabels() {
+        const filterColumnLabelMap = {
+            'subscriptions.plan_interval': 'Plan Interval',
+            'subscriptions.status': 'Subscription Status'
+        };
         return this.filterColumns.map((d) => {
-            return capitalize(d.replace(/_/g, ' '));
+            return filterColumnLabelMap[d] ? filterColumnLabelMap[d] : capitalize(d.replace(/_/g, ' '));
         });
     }
 
