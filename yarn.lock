@@ -899,7 +899,7 @@
     moment "^2.29.1"
     prettyjson "^1.2.1"
 
-"@tryghost/magic-link@1.0.9", "@tryghost/magic-link@^1.0.8":
+"@tryghost/magic-link@1.0.9":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.9.tgz#d76725d1509a2e545dd7d0b7beb5105a61114a97"
   integrity sha512-5ALQY2UKhyB4hak22FJ5ILXH546IvEIkGL9PuB6os+2qdqPtAHjVOdBynTCmP9MrzU6ODAfIvtRUauu3Xmllnw==
@@ -908,19 +908,29 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.24.1":
-  version "1.24.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.24.1.tgz#034a40c755ce2f73bee0b3b982e55062ddd0ad97"
-  integrity sha512-bcYt2qFPGBHB5QO5c034quqPSvEFZPIAcfCCVfO7Y9d6h5dykGuS/ZDg5TMMv0E5u2o9Nf+MIWrcRk0mqumPUQ==
+"@tryghost/magic-link@^1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.10.tgz#934bbc8823c73b665212d51f0624dc8882f549cb"
+  integrity sha512-SqR1bd0iRfVcC8fuIX0mDuWbinhLtpFejeZRnAhhpBi5EitbnboKXH9BBWSJkWxpzJQhfP0Aru/q6XQalVDC4Q==
+  dependencies:
+    bluebird "^3.5.5"
+    jsonwebtoken "^8.5.1"
+    lodash "^4.17.15"
+
+"@tryghost/members-api@1.25.2":
+  version "1.25.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.25.2.tgz#b9e0150dad7b3dce66e7cc202de810e2598a771e"
+  integrity sha512-/zcOxNtgxw2mLj6+X8XI0iw4/DS64H/3qhXLKXiiu1ySL6ea5pK8TsvMx06jVCDu9thUzj1NHitCi3tPbYkZ9Q==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
     "@tryghost/ignition-errors" "^0.1.2"
-    "@tryghost/magic-link" "^1.0.8"
+    "@tryghost/magic-link" "^1.0.10"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
+    bson-objectid "^2.0.1"
     cookies "^0.8.0"
     express "^4.16.4"
     got "^9.6.0"
@@ -1914,7 +1924,7 @@ brute-knex@4.0.1:
     express-brute "^1.0.1"
     knex "^0.20"
 
-bson-objectid@2.0.1:
+bson-objectid@2.0.1, bson-objectid@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.1.tgz#226a9ffecd3a8d52f565d71012dd5b176560fef1"
   integrity sha512-b4D1/G4uP9Yks4rv+nDVsZ4ybT1W5nQYw4lfpfaRP2Q18azlR6Oe2BAuirG1lzrwQFtHnJ0nrK5kWKKZVEMUng==

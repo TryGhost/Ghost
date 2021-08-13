@@ -1,0 +1,9 @@
+email,subscribed,labels
+member+bulk_unsubscribe_test_1@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_2@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_3@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_4@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_5@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_6@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_7@example.com,true,bulk-unsubscribe-test
+member+bulk_unsubscribe_test_8@example.com,true,bulk-unsubscribe-test

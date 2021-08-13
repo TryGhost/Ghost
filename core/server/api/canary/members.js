@@ -395,6 +395,34 @@ module.exports = {
         }
     },
 
+    bulkEdit: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'all',
+            'filter',
+            'search'
+        ],
+        data: [
+            'action',
+            'meta'
+        ],
+        validation: {
+            data: {
+                action: {
+                    required: true,
+                    values: ['unsubscribe', 'addLabel', 'removeLabel']
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            return membersService.api.members.bulkEdit(frame.data, frame.options);
+        }
+    },
+
     exportCSV: {
         options: [
             'limit',
