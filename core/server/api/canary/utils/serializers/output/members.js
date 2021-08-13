@@ -12,7 +12,7 @@ module.exports = {
     editSubscription: createSerializer('editSubscription', singleMember),
     createSubscription: createSerializer('createSubscription', singleMember),
     bulkDestroy: createSerializer('bulkDestroy', passthrough),
-
+    bulkEdit: createSerializer('bulkEdit', bulkAction),
     exportCSV: createSerializer('exportCSV', exportCSV),
 
     importCSV: createSerializer('importCSV', passthrough),
@@ -50,6 +50,29 @@ function paginatedMembers(page, _apiConfig, frame) {
 function singleMember(model, _apiConfig, frame) {
     return {
         members: [serializeMember(model, frame.options)]
+    };
+}
+
+/**
+ * @param {object} bulkActionResult
+ * @param {APIConfig} _apiConfig
+ * @param {Frame} frame
+ *
+ * @returns {{bulk: SerializedBulkAction}}
+ */
+function bulkAction(bulkActionResult, _apiConfig, frame) {
+    return {
+        bulk: {
+            action: frame.data.action,
+            meta: {
+                stats: {
+                    successful: bulkActionResult.successful,
+                    unsuccessful: bulkActionResult.unsuccessful
+                },
+                errors: bulkActionResult.errors,
+                unsuccessfulData: bulkActionResult.unsuccessfulData
+            }
+        }
     };
 }
 
@@ -250,6 +273,21 @@ function createSerializer(debugString, serialize) {
  * @prop {string} created_by
  * @prop {string} updated_at
  * @prop {string} updated_by
+ */
+
+/**
+ *
+ * @typedef {Object} SerializedBulkAction
+ *
+ * @prop {string} action
+ *
+ * @prop {object} meta
+ * @prop {object[]} meta.unsuccessfulData
+ * @prop {Error[]} meta.errors
+ * @prop {object} meta.stats
+ *
+ * @prop {number} meta.stats.successful
+ * @prop {number} meta.stats.unsuccessful
  */
 
 /**
