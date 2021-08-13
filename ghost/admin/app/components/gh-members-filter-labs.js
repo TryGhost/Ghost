@@ -116,6 +116,10 @@ export default class GhMembersFilterLabsComponent extends Component {
         })
     ]);
 
+    get totalFilters() {
+        return this.filters.length;
+    }
+
     constructor(...args) {
         super(...args);
         this.availableFilterProperties = FILTER_PROPERTIES;
