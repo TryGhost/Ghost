@@ -14,7 +14,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.deleteMember.perform();
+            this.removeLabelTask.perform();
         },
 
         setLabel(label) {
@@ -22,9 +22,9 @@ export default ModalComponent.extend({
         }
     },
 
-    deleteMember: task(function* () {
+    removeLabelTask: task(function* () {
         try {
-            yield this.confirm(this.shouldCancelSubscriptions);
+            yield this.confirm(this.selectedLabel);
             this.membersStats.invalidate();
         } finally {
             this.send('closeModal');
