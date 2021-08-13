@@ -213,8 +213,16 @@ export default class MembersController extends Controller {
 
     @action
     applyFilter(filterStr, filters) {
-        this.filters = filters;
+        this.filters = filters.filter((filter) => {
+            return filter.type !== 'name_email';
+        });
         this.filterParam = filterStr || null;
+        this.searchParam = null;
+        filters.forEach((filter) => {
+            if (filter.type === 'name_email' && filter.value) {
+                this.searchParam = filter.value;
+            }
+        });
     }
 
     @action
