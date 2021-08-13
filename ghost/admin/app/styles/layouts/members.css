@@ -131,6 +131,11 @@ p.gh-members-list-email {
     padding-right: 0;
 }
 
+.gh-members-list-labels {
+    display: inline-block;
+    max-width: 300px;
+}
+
 .gh-members-placeholder {
     width: 118px;
     margin: -30px 0 15px;

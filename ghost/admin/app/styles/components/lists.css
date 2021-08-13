@@ -357,9 +357,9 @@ ul.nostyle li {
     background: var(--whitegrey);
 }
 
-.gh-list-scrolling td,
-.gh-list-scrolling th,
-.gh-list-scrolling a {
+.gh-list-scrolling td:not(.wrap),
+.gh-list-scrolling th:not(.wrap),
+.gh-list-scrolling a:not(.wrap) {
     white-space: nowrap;
 }
 
