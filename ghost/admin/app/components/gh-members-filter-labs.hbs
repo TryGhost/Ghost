@@ -8,6 +8,9 @@
         <span>
             {{svg-jar "filter"}}
             Filter
+            {{#if @isFiltered}}
+            | {{totalFilters}}
+            {{/if}}
         </span>
     </GhDropdownButton>
     <GhDropdown

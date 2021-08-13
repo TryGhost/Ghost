@@ -31,6 +31,7 @@
             <div class="view-actions-top-row">
                 {{#if (feature "membersFiltering")}}
                 <GhMembersFilterLabs
+                    @isFiltered={{this.isFiltered}}
                     @onApplyFilter={{this.applyFilter}}
                     @onResetFilter={{this.resetFilter}}
                     @onLabelEdit={{this.editLabel}}
