@@ -486,6 +486,10 @@ export default class MembersController extends Controller {
         this.searchText = '';
     }
 
+    reset() {
+        this.filterParam = null;
+    }
+
     reload(params) {
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
