@@ -91,6 +91,10 @@ module.exports = {
         return require('./preview');
     },
 
+    get email_post() {
+        return require('./email-posts');
+    },
+
     get oembed() {
         return require('./oembed');
     },
