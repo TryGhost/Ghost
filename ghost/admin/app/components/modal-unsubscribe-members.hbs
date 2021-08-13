@@ -1,5 +1,5 @@
 <header class="modal-header" data-test-modal="delete-members">
-    <h1>Unsubscribe selected members?</h1>
+    <h1>Unsubscribe members from email?</h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
@@ -7,8 +7,8 @@
     <div class="modal-body" data-test-state="delete-unconfirmed">
         <p>
             You're about to unsubscribe
-            <strong data-test-text="unsubscribe-count">{{gh-pluralize this.model.memberCount "member"}}</strong>.
-            Are you sure ?
+            <strong data-test-text="unsubscribe-count">{{gh-pluralize this.model.memberCount "member"}}</strong> from email newsletters.
+            Are you sure?
         </p>
     </div>
 {{else}}
