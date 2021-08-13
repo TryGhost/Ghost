@@ -5,14 +5,14 @@ const controllers = require('./controllers');
 /**
  * @description Preview Router.
  */
-class PreviewRouter extends ParentRouter {
+class EmailRouter extends ParentRouter {
     constructor(RESOURCE_CONFIG) {
         super('PreviewRouter');
 
-        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.preview;
+        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.email;
 
         // @NOTE: hardcoded, not configureable
-        this.route = {value: '/p/'};
+        this.route = {value: '/email/'};
 
         this._registerRoutes();
     }
@@ -25,8 +25,8 @@ class PreviewRouter extends ParentRouter {
         // REGISTER: prepare context
         this.router().use(this._prepareContext.bind(this));
 
-        // REGISTER: actual preview route
-        this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.preview);
+        // REGISTER: actual email route
+        this.mountRoute(urlUtils.urlJoin(this.route.value, ':slug', ':options?'), controllers.email);
     }
 
     /**
@@ -40,11 +40,11 @@ class PreviewRouter extends ParentRouter {
         res.routerOptions = {
             type: 'entry',
             query: this.RESOURCE_CONFIG,
-            context: ['preview']
+            context: ['emailPost']
         };
 
         next();
     }
 }
 
-module.exports = PreviewRouter;
+module.exports = EmailRouter;

@@ -10,16 +10,15 @@ const cheerio = require('cheerio');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const settingsCache = require('../../../core/shared/settings-cache');
+const bridge = require('../../../core/bridge');
 
 describe('Frontend Routing: Email Routes', function () {
     let request;
     let emailPosts;
 
-    afterEach(function () {
-        sinon.restore();
-    });
-
     before(async function () {
+        sinon.stub(bridge, 'getFrontendApiVersion')
+            .returns('v4');
         const originalSettingsCacheGetFn = settingsCache.get;
 
         // NOTE: this wacky stubbing can be removed once emailOnlyPosts enters GA stage
@@ -39,6 +38,12 @@ describe('Frontend Routing: Email Routes', function () {
 
         emailPosts = await testUtils.fixtures.insertPosts([{
             title: 'I am visible through email route!',
+            status: 'sent',
+            posts_meta: {
+                email_only: true
+            }
+        }, {
+            title: 'I am NOT visible through email route!',
             status: 'draft',
             posts_meta: {
                 email_only: true
@@ -51,7 +56,7 @@ describe('Frontend Routing: Email Routes', function () {
     });
 
     it('should display email_only post', async function () {
-        const res = await request.get(`/email/${emailPosts[0].get('uuid')}/`)
+        const res = await request.get(`/email/${emailPosts[0].get('slug')}/`)
             .expect('Content-Type', /html/)
             .expect(200);
 
@@ -65,13 +70,13 @@ describe('Frontend Routing: Email Routes', function () {
         should.exist(res.headers.date);
     });
 
-    it('404s when accessed by slug', function () {
-        return request.get(`/${emailPosts[0].get('slug')}/`)
+    it('404s for draft email only post', function () {
+        return request.get(`/email/${emailPosts[1].get('slug')}/`)
             .expect(404);
     });
 
-    it('404s unknown uuids', function () {
-        return request.get('/email/aac6b4f6-e1f3-406c-9247-c94a0496d39f/')
+    it('404s unknown slug', function () {
+        return request.get('/email/random-slug/')
             .expect(404);
     });
 });
