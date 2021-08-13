@@ -36,7 +36,11 @@
                             @focus-out={{action "updateSlug" this.slugValue}}
                             @stopEnterKeyDownPropagation={{true}} />
                     </div>
-                    <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                    {{#if this.post.isSent}}
+                        <GhUrlPreview @prefix="email" @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                    {{else}}
+                        <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                    {{/if}}
                 </div>
 
                 <div class="form-group">
