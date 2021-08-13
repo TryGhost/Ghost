@@ -12,7 +12,7 @@ const urlUtils = require('../../../shared/url-utils');
 const events = require('../../../server/lib/common/events');
 
 /**
- * The url service class holds all instances in a centralised place.
+ * The url service class holds all instances in a centralized place.
  * It's the public API you can talk to.
  * It will tell you if the url generation is in progress or not.
  */
