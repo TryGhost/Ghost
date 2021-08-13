@@ -7,12 +7,11 @@ const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const labs = require('../../../core/shared/labs');
 const Papa = require('papaparse');
-const moment = require('moment-timezone');
 
 describe('Members API', function () {
     let request;
 
-    after(function () {
+    afterEach(function () {
         sinon.restore();
     });
 
@@ -472,5 +471,138 @@ describe('Members API', function () {
                         jsonResponse.members.should.have.length(0);
                     });
             });
+    });
+
+    it('Can bulk unsubscribe members with filter', async function () {
+        // import our dummy data for deletion
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-unsubscribe.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        const browseResponse = await request
+            .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        browseResponse.body.members.should.have.length(8);
+        const allMembersSubscribed = browseResponse.body.members.every((member) => {
+            return member.subscribed;
+        });
+
+        should.ok(allMembersSubscribed);
+
+        const bulkUnsubscribeResponse = await request
+            .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
+            .set('Origin', config.get('url'))
+            .send({
+                action: 'unsubscribe'
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.exist(bulkUnsubscribeResponse.body.bulk);
+        should.exist(bulkUnsubscribeResponse.body.bulk.meta);
+        should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
+        should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
+        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
+
+        const postUnsubscribeBrowseResponse = await request
+            .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        postUnsubscribeBrowseResponse.body.members.should.have.length(8);
+        const allMembersUnsubscribed = postUnsubscribeBrowseResponse.body.members.every((member) => {
+            return !member.subscribed;
+        });
+
+        should.ok(allMembersUnsubscribed);
+    });
+
+    it('Can bulk add and remove labels to members with filter', async function () {
+        // import our dummy data for deletion
+        await request
+            .post(localUtils.API.getApiQuery('members/upload/'))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-add-labels.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        const newLabelResponse = await request
+            .post(localUtils.API.getApiQuery('labels'))
+            .set('Origin', config.get('url'))
+            .send({
+                labels: [{
+                    name: 'Awesome Label For Testing Bulk Add'
+                }]
+            });
+
+        const labelToAdd = newLabelResponse.body.labels[0];
+
+        const bulkAddLabelResponse = await request
+            .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
+            .set('Origin', config.get('url'))
+            .send({
+                action: 'addLabel',
+                meta: {
+                    label: labelToAdd
+                }
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.exist(bulkAddLabelResponse.body.bulk);
+        should.exist(bulkAddLabelResponse.body.bulk.meta);
+        should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
+        should.exist(bulkAddLabelResponse.body.bulk.meta.stats.successful);
+        should.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
+
+        const postLabelAddBrowseResponse = await request
+            .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToAdd.slug}`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        postLabelAddBrowseResponse.body.members.should.have.length(8);
+
+        const labelToRemove = newLabelResponse.body.labels[0];
+
+        const bulkRemoveLabelResponse = await request
+            .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
+            .set('Origin', config.get('url'))
+            .send({
+                action: 'removeLabel',
+                meta: {
+                    label: labelToRemove
+                }
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.exist(bulkRemoveLabelResponse.body.bulk);
+        should.exist(bulkRemoveLabelResponse.body.bulk.meta);
+        should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats);
+        should.exist(bulkRemoveLabelResponse.body.bulk.meta.stats.successful);
+        should.equal(bulkRemoveLabelResponse.body.bulk.meta.stats.successful, 8);
+
+        const postLabelRemoveBrowseResponse = await request
+            .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToRemove.slug}`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        postLabelRemoveBrowseResponse.body.members.should.have.length(0);
     });
 });
