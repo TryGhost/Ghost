@@ -134,6 +134,12 @@ export default class GhMembersFilterLabsComponent extends Component {
             relationOptions: this.availableFilterRelationsOptions.name
         }));
         this.nextFilterId = this.nextFilterId + 1;
+        this.applySoftFilter();
+    }
+
+    @action
+    onDropdownClose() {
+        this.args.onResetSoftFilter();
     }
 
     generateNqlFilter(filters) {
@@ -159,6 +165,7 @@ export default class GhMembersFilterLabsComponent extends Component {
             this.resetFilter();
         } else {
             this.filters.removeObject(filterToDelete);
+            this.applySoftFilter();
         }
     }
 
@@ -185,6 +192,19 @@ export default class GhMembersFilterLabsComponent extends Component {
         } else {
             filterToEdit.set('value', filterValue);
         }
+        this.applySoftFilter();
+    }
+
+    @action
+    applySoftFilter() {
+        const validFilters = this.filters.filter((fil) => {
+            if (fil.type === 'label') {
+                return fil.value?.length;
+            }
+            return fil.value;
+        });
+        const query = this.generateNqlFilter(validFilters);
+        this.args.onApplySoftFilter(query, validFilters);
     }
 
     @action
@@ -194,6 +214,13 @@ export default class GhMembersFilterLabsComponent extends Component {
                 return fil.value?.length;
             }
             return fil.value;
+        });
+        this.filters.forEach((fil) => {
+            if (fil.type === 'label' && !fil.value?.length) {
+                this.filters.removeObject(fil);
+            } else if (!fil.value) {
+                this.filters.removeObject(fil);
+            }
         });
         const query = this.generateNqlFilter(validFilters);
         this.args.onApplyFilter(query, validFilters);
