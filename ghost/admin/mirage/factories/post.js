@@ -23,7 +23,7 @@ export default Factory.extend({
     publishedAt: '2015-12-19T16:25:07.000Z',
     publishedBy: 1,
     status(i) {
-        let statuses = ['draft', 'published', 'scheduled'];
+        let statuses = ['draft', 'published', 'scheduled','sent'];
         return statuses[i % statuses.length];
     },
     title(i) { return `Post ${i}`; },
