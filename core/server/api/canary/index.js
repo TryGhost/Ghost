@@ -107,6 +107,10 @@ module.exports = {
         return shared.pipeline(require('./preview'), localUtils);
     },
 
+    get emailPost() {
+        return shared.pipeline(require('./email-post'), localUtils);
+    },
+
     get oembed() {
         return shared.pipeline(require('./oembed'), localUtils);
     },
