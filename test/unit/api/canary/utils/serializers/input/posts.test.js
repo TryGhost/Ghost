@@ -1,7 +1,5 @@
 const should = require('should');
-const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
-const urlUtils = require('../../../../../../utils/urlUtils');
 
 describe('Unit: canary/utils/serializers/input/posts', function () {
     describe('browse', function () {
@@ -36,7 +34,7 @@ describe('Unit: canary/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled]');
+            should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
         it('combine filters', function () {
@@ -179,7 +177,7 @@ describe('Unit: canary/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:post)+status:[draft,published,scheduled]');
+            frame.options.filter.should.eql('(type:post)+status:[draft,published,scheduled,sent]');
         });
 
         it('with apiType of "admin" it forces type:post filter & respects custom status filter', function () {
