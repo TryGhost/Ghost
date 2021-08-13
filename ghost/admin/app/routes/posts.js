@@ -120,7 +120,7 @@ export default AuthenticatedRoute.extend({
     },
 
     _getTypeFilters(type) {
-        let status = '[draft,scheduled,published]';
+        let status = '[draft,scheduled,published,sent]';
 
         switch (type) {
         case 'draft':
@@ -131,6 +131,9 @@ export default AuthenticatedRoute.extend({
             break;
         case 'scheduled':
             status = 'scheduled';
+            break;
+        case 'sent':
+            status = 'sent';
             break;
         }
 
