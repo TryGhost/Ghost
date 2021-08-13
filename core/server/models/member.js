@@ -328,6 +328,19 @@ const Member = ghostBookshelf.Model.extend({
             });
         }
         return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
+    },
+
+    getLabelRelations(data, unfilteredOptions = {}) {
+        const query = ghostBookshelf.knex('members_labels')
+            .select('id')
+            .where('label_id', data.labelId)
+            .whereIn('member_id', data.memberIds);
+
+        if (unfilteredOptions.transacting) {
+            query.transacting(unfilteredOptions.transacting);
+        }
+
+        return query;
     }
 });
 
