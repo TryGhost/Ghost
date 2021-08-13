@@ -173,7 +173,7 @@ const STAGES = {
  *
  * @param {Function} apiController
  * @param {Object} apiUtils - Local utils (validation & serialisation) from target API version
- * @param {String} apiType - Content or Admin API access
+ * @param {String} [apiType] - Content or Admin API access
  * @return {Function}
  */
 const pipeline = (apiController, apiUtils, apiType) => {
