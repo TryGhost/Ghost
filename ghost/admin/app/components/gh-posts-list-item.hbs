@@ -70,6 +70,12 @@
                 Published
             </span>
             {{/if}}
+
+            {{#if @post.isSent}}
+            <span class="gh-content-status-published nowrap">
+                Sent
+            </span>
+            {{/if}}
         </div>
     </LinkTo>
 </li>

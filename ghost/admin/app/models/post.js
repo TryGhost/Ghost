@@ -153,6 +153,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     isDraft: equal('status', 'draft'),
     internalTags: filterBy('tags', 'isInternal', true),
     isScheduled: equal('status', 'scheduled'),
+    isSent: equal('status', 'sent'),
 
     isPost: equal('displayName', 'post'),
     isPage: equal('displayName', 'page'),
