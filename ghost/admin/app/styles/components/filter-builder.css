@@ -144,3 +144,23 @@
 .gh-filter-block .dropdown-action-icon:hover svg path {
     fill: var(--darkgrey);
 }
+
+.gh-filter-builder .ember-power-select-multiple-trigger {
+    padding: 2px;
+}
+
+.gh-filter-builder .ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    font-size: 1.3rem;
+}
+
+.gh-filter-builder .ember-power-select-trigger {
+    max-height: 72px;
+}
+
+.gh-filter-builder .ember-power-select-multiple-option {
+    padding: 1px 6px;
+}
+
+.gh-filter-builder .ember-power-select-trigger-multiple-input {
+    height: 23px;
+}
