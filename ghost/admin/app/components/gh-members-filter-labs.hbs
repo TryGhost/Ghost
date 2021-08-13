@@ -5,11 +5,11 @@
         @title="Members Actions"
         data-test-button="members-actions"
     >
-        <span>
+        <span class="{{if @isFiltered "gh-btn-label-green"}}">
             {{svg-jar "filter"}}
             Filter
             {{#if @isFiltered}}
-            | {{totalFilters}}
+            ({{totalFilters}})
             {{/if}}
         </span>
     </GhDropdownButton>
