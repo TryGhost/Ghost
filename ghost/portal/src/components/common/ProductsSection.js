@@ -191,7 +191,6 @@ export const ProductsSectionStyles = ({site}) => {
             line-height: 1.45em;
             margin: -12px 0 0;
             padding: 14px 24px;
-            border-top: 1px solid var(--grey12);
             color: var(--grey3);
             width: 100%;
         }
@@ -558,7 +557,7 @@ function ProductCard({product}) {
                     setSelectedProduct(product.id);
                 }} />
                 <h4 className="gh-portal-product-name">{product.name}</h4>
-                <div className="gh-portal-product-description">{product.description}</div>
+                {product.description ? <div className="gh-portal-product-description">{product.description}</div> : ''}
                 <ProductBenefitsContainer product={product} />
             </div>
             <ProductCardFooter product={product} />
