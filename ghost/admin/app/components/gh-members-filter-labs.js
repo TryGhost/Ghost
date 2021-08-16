@@ -150,12 +150,23 @@ export default class GhMembersFilterLabsComponent extends Component {
                 const filterValue = '[' + filter.value.join(',') + ']';
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else {
-                const relationStr = filter.relation === 'is-not' ? '-' : '';
+                const relationStr = this.getFilterRelationOperator(filter.relation);
                 const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             }
         });
         return query.slice(0, -1);
+    }
+
+    getFilterRelationOperator(relation) {
+        if (relation === 'is-not') {
+            return '-';
+        } else if (relation === 'is-greater') {
+            return '>';
+        } else if (relation === 'is-less') {
+            return '<';
+        }
+        return '';
     }
 
     @action
