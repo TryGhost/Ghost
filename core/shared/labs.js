@@ -30,7 +30,8 @@ const ALPHA_FEATURES = [
     'oauthLogin',
     'membersFiltering',
     'emailOnlyPosts',
-    'dashboardTwo'
+    'dashboardTwo',
+    'snippetReplacements'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
