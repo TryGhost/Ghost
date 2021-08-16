@@ -527,7 +527,7 @@ describe('Members API', function () {
         should.ok(allMembersUnsubscribed);
     });
 
-    it.only('Can bulk add and remove labels to members with filter', async function () {
+    it('Can bulk add and remove labels to members with filter', async function () {
         // import our dummy data for deletion
         await request
             .post(localUtils.API.getApiQuery('members/upload/'))
