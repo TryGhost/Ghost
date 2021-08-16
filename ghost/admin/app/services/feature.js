@@ -62,6 +62,7 @@ export default Service.extend({
     checkEmailList: feature('checkEmailList', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
     dashboardTwo: feature('dashboardTwo', {developer: true}),
+    snippetReplacements: feature('snippetReplacements', {developer: true}),
 
     _user: null,
 
