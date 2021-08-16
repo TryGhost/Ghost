@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const ObjectId = require('bson-objectid');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -332,6 +333,79 @@ module.exports = class MemberRepository {
         delete bulkDestroyResult.unsuccessfulData;
 
         return bulkDestroyResult;
+    }
+
+    async bulkEdit(data, options) {
+        const {all, filter, search} = options;
+
+        if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
+            throw new errors.IncorrectUsageError({
+                message: 'Unsupported bulk action'
+            });
+        }
+
+        if (!filter && !search && (!all || all !== true)) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.bulkActionRequiresFilter, {action: 'bulk edit'})
+            });
+        }
+
+        const filterOptions = {};
+
+        if (options.transacting) {
+            filterOptions.transacting = options.transacting;
+        }
+
+        if (options.context) {
+            filterOptions.context = options.context;
+        }
+
+        if (all !== true) {
+            if (filter) {
+                filterOptions.filter = filter;
+            }
+
+            if (search) {
+                filterOptions.search = search;
+            }
+        }
+
+        const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
+            .select('members.id')
+            .distinct();
+
+        const memberIds = memberRows.map(row => row.id);
+
+        if (data.action === 'unsubscribe') {
+            return await this._Member.bulkEdit(memberIds, 'members', {
+                data: {
+                    subscribed: false
+                }
+            });
+        }
+
+        if (data.action === 'removeLabel') {
+            const membersLabelsRows = await this._Member.getLabelRelations({
+                labelId: data.meta.label.id,
+                memberIds
+            });
+
+            const membersLabelsIds = membersLabelsRows.map(row => row.id);
+
+            return this._Member.bulkDestroy(membersLabelsIds, 'members_labels');
+        }
+
+        if (data.action === 'addLabel') {
+            const relations = memberIds.map((id) => {
+                return {
+                    member_id: id,
+                    label_id: data.meta.label.id,
+                    id: ObjectId()
+                };
+            });
+
+            return this._Member.bulkAdd(relations, 'members_labels');
+        }
     }
 
     async upsertCustomer(data) {
