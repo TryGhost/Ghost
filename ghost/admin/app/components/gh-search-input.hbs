@@ -3,9 +3,13 @@
     @onChange={{action "openSelected"}}
     @placeholder="Search site..."
     @searchEnabled={{false}}
-    @triggerComponent="gh-search-input-trigger"
+    @triggerComponent="gh-power-select/input-trigger"
     @renderInPlace={{true}}
     @loadingMessage="Loading"
+    @extra={{hash
+        inputIcon="search"
+        inputIconClass="gh-nav-search-icon"
+    }}
     as |name select|
 >
     {{highlighted-text name.title select.searchText}}

@@ -1,5 +1,7 @@
 <div class="ember-power-select-search" {{on "mousedown" this.captureMousedown}}>
-    {{svg-jar "search" class="gh-nav-search-icon"}}
+    {{#if @extra.inputIcon}}
+        {{svg-jar @extra.inputIcon class=@extra.inputIconClass}}
+    {{/if}}
     <input type="search"
         {{autofocus}}
         {{did-insert this.registerInput}}
