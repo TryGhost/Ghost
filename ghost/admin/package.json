@@ -31,7 +31,7 @@
     "@glimmer/component": "1.0.4",
     "@html-next/vertical-collection": "2.0.0",
     "@sentry/ember": "6.10.0",
-    "@tryghost/color-utils": "0.1.0",
+    "@tryghost/color-utils": "0.1.1",
     "@tryghost/helpers": "1.1.50",
     "@tryghost/kg-clean-basic-html": "2.0.3",
     "@tryghost/kg-parser-plugins": "2.0.3",
