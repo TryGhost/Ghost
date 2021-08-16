@@ -37,13 +37,23 @@
 
 {{!-- pop-up snippet editing toolbar --}}
 {{#if this.snippetRange}}
-    <KoenigSnippetInput
-        @editor={{this.editor}}
-        @snippetRange={{this.snippetRange}}
-        @snippetRect={{this.snippetRect}}
-        @save={{@saveSnippet}}
-        @cancel={{this.cancelAddSnippet}}
-    />
+    {{#if (feature "snippetReplacements")}}
+        <KoenigSnippetInputLabs
+            @editor={{this.editor}}
+            @snippetRange={{this.snippetRange}}
+            @snippetRect={{this.snippetRect}}
+            @save={{@saveSnippet}}
+            @cancel={{this.cancelAddSnippet}}
+        />
+    {{else}}
+        <KoenigSnippetInput
+            @editor={{this.editor}}
+            @snippetRange={{this.snippetRange}}
+            @snippetRect={{this.snippetRect}}
+            @save={{@saveSnippet}}
+            @cancel={{this.cancelAddSnippet}}
+        />
+    {{/if}}
 {{/if}}
 
 {{!-- (+) icon and pop-up menu --}}
