@@ -1861,10 +1861,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.48":
-  version "0.2.48"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.48.tgz#c1e9daeebd2be052ba6666047bd3ef2ea33699dd"
-  integrity sha512-NW4blaPz0kRwgMmP0xuEt706iuFrieH+uYxJGI0Xr4d5IoGBp3VT+Ra+h7v8PW9TLSQwiUCNJMUY+PosohwuVA==
+"@tryghost/timezone-data@0.2.49":
+  version "0.2.49"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.49.tgz#141e87db1a2a59900d4683a4f6004dfb2ed980ff"
+  integrity sha512-2LqsgY/JH0EuGUNO5gNi48aiJFwIS6zd7lMR98ASyujkQQBHQtiK5lhcTZeVD9FneCvmI130od7s2oQ3t32uHA==
 
 "@types/acorn@^4.0.3":
   version "4.0.6"
