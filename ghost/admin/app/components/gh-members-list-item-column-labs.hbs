@@ -40,16 +40,16 @@
     </LinkTo>
 {{else if (eq @filterColumn 'subscriptions.status')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8">
-        {{#if (not (is-empty @member.subscriptions?.[0]?.status))}}
-            <span class="gh-members-list-open-rate-mobile">{{@member.subscriptions?.[0]?.status}}</span>
+        {{#if (not (is-empty this.subscriptionStatus))}}
+            <span class="gh-members-list-open-rate-mobile">{{capitalize this.subscriptionStatus}}</span>
         {{else}}
             <span class="midlightgrey">-</span>
         {{/if}}
     </LinkTo>
 {{else if (eq @filterColumn 'subscriptions.plan_interval')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8">
-        {{#if (not (is-empty @member.subscriptions?.[0]?.plan?.interval))}}
-            <span class="gh-members-list-open-rate-mobile">{{@member.subscriptions?.[0]?.plan?.interval}}</span>
+        {{#if (not (is-empty this.billingPeriod))}}
+            <span class="gh-members-list-open-rate-mobile">{{capitalize this.billingPeriod}}</span>
         {{else}}
             <span class="midlightgrey">-</span>
         {{/if}}
