@@ -6,11 +6,11 @@ import {tracked} from '@glimmer/tracking';
 
 const FILTER_PROPERTIES = [
     // Basic
-    {label: 'Name', name: 'name', group: 'Basic'},
-    {label: 'Email', name: 'email', group: 'Basic'},
+    // {label: 'Name', name: 'name', group: 'Basic'},
+    // {label: 'Email', name: 'email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
-    {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
+    {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
 
     // Member subscription
     {label: 'Member status', name: 'status', group: 'Subscription'},
