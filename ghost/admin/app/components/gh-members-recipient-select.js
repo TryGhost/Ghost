@@ -152,7 +152,7 @@ export default class GhMembersRecipientSelect extends Component {
 
             if (products.length > 1) {
                 const productsGroup = {
-                    groupName: 'Products',
+                    groupName: 'Tiers',
                     options: []
                 };
 
