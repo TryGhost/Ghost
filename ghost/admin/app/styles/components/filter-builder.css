@@ -157,6 +157,10 @@
     max-height: 72px;
 }
 
+.gh-filter-builder .ember-power-select-option {
+    padding: 6px 0px 6px 12px;
+}
+
 .gh-filter-builder .ember-power-select-multiple-option {
     padding: 1px 6px;
 }
