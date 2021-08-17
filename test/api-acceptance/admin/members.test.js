@@ -475,6 +475,7 @@ describe('Members API', function () {
 
     it('Can bulk unsubscribe members with filter', async function () {
         // import our dummy data for deletion
+        sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:22:00.000Z'));
         await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-unsubscribe.csv'))
@@ -529,6 +530,7 @@ describe('Members API', function () {
 
     it('Can bulk add and remove labels to members with filter', async function () {
         // import our dummy data for deletion
+        sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:23:00.000Z'));
         await request
             .post(localUtils.API.getApiQuery('members/upload/'))
             .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-add-labels.csv'))
