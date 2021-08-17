@@ -20,6 +20,7 @@ export default class MembersAccessController extends Controller {
     @service membersUtils;
     @service settings;
     @service store;
+    @service session;
 
     @tracked showLeavePortalModal = false;
     @tracked showLeaveRouteModal = false;
