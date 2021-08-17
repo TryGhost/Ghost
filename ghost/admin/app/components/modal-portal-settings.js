@@ -12,6 +12,7 @@ export default ModalComponent.extend({
     membersUtils: service(),
     settings: service(),
     store: service(),
+    session: service(),
 
     page: 'signup',
     iconExtensions: null,
