@@ -146,7 +146,7 @@ export const ProductsSectionStyles = ({site}) => {
             font-size: 1.35rem;
             line-height: 1.45em;
             text-align: center;
-            color: var(--grey5);
+            color: var(--grey3);
             margin-bottom: 24px;
         }
 
