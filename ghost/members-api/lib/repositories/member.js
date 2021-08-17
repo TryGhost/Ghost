@@ -57,6 +57,10 @@ module.exports = class MemberRepository {
         return ['active', 'trialing', 'unpaid', 'past_due'].includes(status);
     }
 
+    isComplimentarySubscription(subscription) {
+        return subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
+    }
+
     async get(data, options) {
         if (data.customer_id) {
             const customer = await this._StripeCustomer.findOne({
@@ -600,7 +604,11 @@ module.exports = class MemberRepository {
         const oldMemberProducts = member.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
         if (this.isActiveSubscriptionStatus(subscription.status)) {
-            status = 'paid';
+            if (this.isComplimentarySubscription(subscription)) {
+                status = 'comped';
+            } else {
+                status = 'paid';
+            }
             if (!model) {
                 // This is a new subscription! Add the product
                 if (ghostProduct) {
