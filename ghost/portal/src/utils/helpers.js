@@ -263,7 +263,8 @@ export function getProductBenefits({product, site = null}) {
         const yearlyBenefits = [...monthlyBenefits];
         if (yearlyDiscount > 0 && availablePrices.length > 1) {
             yearlyBenefits.push({
-                name: `${yearlyDiscount}% discount`
+                name: `${yearlyDiscount}% annual discount`,
+                className: `gh-portal-strong`
             });
         }
         return {

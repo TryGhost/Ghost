@@ -77,7 +77,7 @@ export const SignupPageStyles = `
         background: linear-gradient(#fff 30%,hsla(0,0%,100%,0)),
                     linear-gradient(hsla(0,0%,100%,0),#fff 70%) 0 100%,
                     linear-gradient(#fff,transparent),
-                    linear-gradient(transparent,rgba(0,0,0,.08)) 0 100%;
+                    linear-gradient(transparent,rgba(0,0,0,.03)) 0 100%;
         background-repeat: no-repeat;
         background-color: #fff;
         background-size: 100% 40px,100% 40px,100% 14px,100% 14px;
