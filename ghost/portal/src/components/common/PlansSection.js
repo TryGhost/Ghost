@@ -566,9 +566,12 @@ function PlanBenefits({product, plans, selectedPlan}) {
     });
     let planBenefits = [];
     let planDescription = product.description;
+    if (!product.description) {
+        planDescription = `Get full access to ` + site.title;
+    }
     if (selectedPlan === 'free') {
         planBenefits = [];
-        planDescription = `Free preview of ` + site.title;
+        planDescription = `Get a free preview of ` + site.title;
     } else if (plan?.interval === 'month') {
         planBenefits = productBenefits.monthly;
     } else if (plan?.interval === 'year') {
@@ -585,7 +588,7 @@ function PlanBenefits({product, plans, selectedPlan}) {
 
     return (
         <div className={'gh-portal-singleproduct-benefits gh-portal-product-benefits ' + benefitsClass}>
-            {(product.description ? <div className='gh-portal-product-description'> {planDescription} </div> : '')}
+            <div className='gh-portal-product-description'> {planDescription} </div>
             {benefits}
         </div>
     );
