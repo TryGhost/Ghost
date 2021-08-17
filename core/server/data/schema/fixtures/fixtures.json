@@ -738,7 +738,8 @@
                     "email": "all",
                     "member_signin_url": "read",
                     "snippet": "all",
-                    "authentication": "resetAllPasswords"
+                    "authentication": "resetAllPasswords",
+                    "members_stripe_connect": "auth"
                 },
                 "DB Backup Integration": {
                     "db": "all"
