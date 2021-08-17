@@ -27,7 +27,7 @@ const products = [
     {
         id: 'product_1',
         name: 'Ball is life membership',
-        description: '',
+        description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
         monthlyPrice: {
             id: '6085adc776909b1a2382369a',
             stripe_price_id: '7d6c89c0289ca1731226e86b95b5a162085b8561ca0d10d3a4f03afd3e3e6ba6',
@@ -50,7 +50,6 @@ const products = [
             type: 'recurring',
             interval: 'year'
         },
-        // benefits: [],
         benefits: [
             {
                 id: 'a1',
@@ -163,8 +162,8 @@ export const site = {
         currency: 'USD'
     },
     portal_products: ['product_1', 'product_2', 'product_3'],
-    products: [products[0]],
-    // products: products,
+    // products: [products[0]],
+    products: products,
     prices,
     allow_self_signup: true,
     members_signup_access: 'all',

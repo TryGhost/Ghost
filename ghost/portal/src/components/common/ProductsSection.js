@@ -93,7 +93,7 @@ export const ProductsSectionStyles = ({site}) => {
             align-items: center;
             justify-content: space-between;
             background: white;
-            padding: 24px 24px 18px;
+            padding: 24px;
             border-radius: 3px;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             min-height: 240px;
@@ -144,10 +144,19 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-product-description {
             font-size: 1.35rem;
+            font-weight: 500;
             line-height: 1.45em;
             text-align: center;
             color: var(--grey3);
-            margin-bottom: 24px;
+            margin-bottom: 14px;
+            margin-top: 8px;
+            padding: 0 4px;
+            width: 100%;
+        }
+
+        .gh-portal-product-card:not(.free) .gh-portal-product-description {
+            padding-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .gh-portal-product-price {
@@ -177,7 +186,7 @@ export const ProductsSectionStyles = ({site}) => {
         }
 
         .gh-portal-product-alternative-price {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             line-height: 1.6em;
             color: var(--grey7);
             text-align: center;
@@ -189,10 +198,16 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-product-benefits {
             font-size: 1.3rem;
             line-height: 1.45em;
-            margin: -12px 0 0;
-            padding: 14px 24px;
+            margin: -8px 0 0;
+            padding: 16px 8px 16px;
             color: var(--grey3);
             width: 100%;
+        }
+
+        .gh-portal-product-card .gh-portal-product-description + .gh-portal-product-benefits {
+            border-top: 1px solid var(--grey12);
+            margin-top: -16px;
+            padding-top: 24px;
         }
 
         .gh-portal-product-benefit {
@@ -215,6 +230,7 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-benefit-title {
             flex-grow: 1;
+            color: var(--grey5);
         }
 
         .gh-portal-product-benefits.vertical {
@@ -223,6 +239,13 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-products-grid.change-plan {
             padding: 0;
+        }
+
+        .gh-portal-discount-label {
+            color: var(--brandcolor);
+            font-size: 1.2rem;
+            margin-top: 4px;
+            margin-bottom: -12px;
         }
 
         @media (max-width: 480px) {
@@ -581,7 +604,7 @@ function ProductCards({products}) {
 function FreeProductCard() {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
-    const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
+    const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
 
     return (
         <div className={cardClass} onClick={(e) => {
