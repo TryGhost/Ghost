@@ -404,8 +404,8 @@ export const PlanSectionStyles = `
         flex-direction: column;
         border: 1px solid var(--grey11);
         border-top: none !important;
-        padding: 16px 24px 12px !important;
         margin: 0 0 4px !important;
+        padding: 16px 24px 12px !important;
         border-radius: 0 0 5px 5px;
     }
 
@@ -413,26 +413,14 @@ export const PlanSectionStyles = `
         padding: 0 8px;
     }
 
-    .gh-portal-singleproduct-benefits .gh-portal-product-description {
-        margin-top: 8px !important;
-        margin-bottom: 14px !important;
-    }
-
-    .gh-portal-singleproduct-benefits:not(.free) .gh-portal-product-description {
-        border-bottom: 1px solid var(--grey11);
-        padding-bottom: 20px;
-        margin-bottom: 20px !important;
-    }
-
     .gh-portal-singleproduct-benefits .gh-portal-product-benefit:last-of-type {
         margin-bottom: 12px;
     }
 
-    .gh-portal-discount-label {
-        color: var(--brandcolor);
-        font-size: 1.2rem;
-        margin-top: 4px;
-        margin-bottom: -12px;
+    .gh-portal-singleproduct-benefits:not(.free) .gh-portal-product-description {
+        border-bottom: 1px solid var(--grey12);
+        padding-bottom: 20px;
+        margin-bottom: 16px;
     }
 
     @media (max-width: 480px) {
