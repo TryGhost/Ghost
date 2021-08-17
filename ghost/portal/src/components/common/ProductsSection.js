@@ -271,7 +271,6 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-product-description {
                 grid-column: 2 / 3;
                 margin-bottom: 0px;
-                text-align: left;
             }
 
             .gh-portal-product-price {

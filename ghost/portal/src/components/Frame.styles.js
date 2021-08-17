@@ -516,6 +516,8 @@ const FrameStyles = `
 
     /* Spacing modifiers
     /* ----------------------------------------------------- */
+    .gh-portal-strong { font-weight: 600; }
+
     .mt1 { margin-top: 4px; }
     .mt2 { margin-top: 8px; }
     .mt3 { margin-top: 12px; }

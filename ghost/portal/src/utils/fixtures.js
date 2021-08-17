@@ -150,7 +150,7 @@ const products = [
 ];
 
 export const site = {
-    title: 'A Ghost site',
+    title: 'The Blueprint',
     description: 'Thoughts, stories and ideas.',
     logo: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
     icon: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
