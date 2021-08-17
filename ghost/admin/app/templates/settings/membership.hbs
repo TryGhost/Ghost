@@ -69,11 +69,13 @@
         <div class="gh-setting-members-tierscontainer">
             <div class="gh-settings-members-tiersheader">
                 <h4 class="gh-main-section-header small bn">Membership tiers</h4>
+                {{#if this.session.user.isOwnerOnly}}
                 <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status {{if this.isConnectDisallowed "disabled"}} {{if this.settings.stripeConnectAccountId "connected" ""}}" {{on "click" this.openStripeConnect}}>
                     <span>
                         {{if this.settings.stripeConnectAccountId "Connected to Stripe" "Stripe not connected"}}
                     </span>
                 </button>
+                {{/if}}
             </div>
             <section class="gh-expandable">
                 <div class="gh-expandable-block">
@@ -119,7 +121,7 @@
                         {{#if this.settings.stripeConnectAccountId}}
                             <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
                         {{else}}
-                            <button type="button" class="stripe-connect {{if this.isConnectDisallowed "disabled"}}" {{on "click" this.openStripeConnect}}>
+                            <button type="button" class="stripe-connect {{if (or (not this.session.user.isOwnerOnly) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
                                 <span>Connect with Stripe</span>
                             </button>
                         {{/if}}
