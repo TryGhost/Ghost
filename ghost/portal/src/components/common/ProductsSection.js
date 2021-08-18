@@ -161,6 +161,7 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-product-price {
             display: flex;
+            justify-content: center;
         }
 
         .gh-portal-product-price .currency-sign {
@@ -188,7 +189,7 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-product-alternative-price {
             font-size: 1.2rem;
             line-height: 1.6em;
-            color: var(--grey7);
+            color: var(--grey3);
             text-align: center;
             margin-top: 4px;
             letter-spacing: 0.3px;
@@ -603,6 +604,7 @@ function ProductCards({products}) {
 }
 
 function FreeProductCard() {
+    const {site} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
     const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
@@ -617,7 +619,7 @@ function FreeProductCard() {
                     setSelectedProduct('free');
                 }} />
                 <h4 className="gh-portal-product-name">Free</h4>
-                <div className="gh-portal-product-description">Free preview</div>
+                <div className="gh-portal-product-description">Free preview of {(site.title)}</div>
             </div>
             <div className="gh-portal-product-card-footer">
                 <div className="gh-portal-product-price">
