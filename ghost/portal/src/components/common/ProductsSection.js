@@ -317,7 +317,7 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-product-card {
                 display: grid;
                 grid-template-columns: 1fr minmax(60px, auto);
-                grid-gap: 12px;
+                grid-gap: 8px;
                 align-items: start;
                 min-height: 68px;
                 padding: 12px 20px;
@@ -349,6 +349,12 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-singleproduct-benefits .gh-portal-product-description {
                 text-align: center;
                 padding-bottom: 12px;
+            }
+
+            .gh-portal-popup-container.multiple-products .gh-portal-product-description {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                padding-left: 0;
             }
 
             .gh-portal-product-price {
