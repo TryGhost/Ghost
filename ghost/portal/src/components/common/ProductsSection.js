@@ -708,7 +708,7 @@ function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
 
     let yearlyDiscount = 0;
 
-    if (selectedProduct !== 'free') {
+    if (products && selectedProduct !== 'free') {
         const product = products.find(prod => prod.id === selectedProduct);
         yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
     }
