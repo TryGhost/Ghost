@@ -93,9 +93,9 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-products-priceswitch .gh-portal-discount-label {
             position: relative;
-            font-size: 1.3rem;
-            letter-spacing: 0.3px;
-            margin: 0 0 0 4px;
+            font-size: 1.25rem;
+            letter-spacing: 0.25px;
+            margin: 0 0 0 6px;
             padding: 2px 6px;
             top: unset;
             left: unset;
@@ -103,8 +103,8 @@ export const ProductsSectionStyles = ({site}) => {
             width: unset;
         }
 
-        .gh-portal-products-priceswitch. gh-portal-discount-label:before {
-            border-radius: 5px;
+        .gh-portal-products-priceswitch .gh-portal-discount-label:before {
+            border-radius: 3px;
         }
 
         .gh-portal-products-grid {
