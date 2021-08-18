@@ -931,10 +931,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-importer@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.1.2.tgz#6298fa9eff6d4a536b7c8229ad5e2bff54db92cd"
-  integrity sha512-nLGVctLvt7NtqkodKztdb1smTR3FmVPgfrCrEFGZbZR5Au79a0lsjKgebLFH6D7D1dWOu/hHLSY4n3Vh93Hq0Q==
+"@tryghost/members-importer@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.2.0.tgz#90b8829a951685773ec36ef4aaf66b76aefe0367"
+  integrity sha512-7iLkvP1XItjUBeyP7e+rVxmeQQHv404ZPMknMPofnfksmYJ3Izz13e958D5poWLJgTdl08LAvYub0NfKaNFvGA==
   dependencies:
     "@tryghost/errors" "^0.2.13"
     "@tryghost/members-csv" "^1.1.3"
