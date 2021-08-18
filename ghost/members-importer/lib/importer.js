@@ -23,9 +23,9 @@ module.exports = class MembersCSVImporter {
      * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
-     * @param {number} options.importThreshold - threshold to activate freeze flag if reached
+     * @param {() => Promise<number>} options.fetchThreshold - fetches the threshold to activate freeze flag if reached
      */
-    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor, importThreshold}) {
+    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor, fetchThreshold}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersApi = getMembersApi;
@@ -34,7 +34,7 @@ module.exports = class MembersCSVImporter {
         this._addJob = addJob;
         this._knex = knex;
         this._urlFor = urlFor;
-        this._importThreshold = importThreshold;
+        this._fetchThreshold = fetchThreshold;
     }
 
     /**
@@ -274,8 +274,9 @@ module.exports = class MembersCSVImporter {
 
         meta.originalImportSize = job.batches;
 
-        if (this._isSet('checkEmailList') && this._importThreshold) {
-            meta.freeze = job.batches > this._importThreshold;
+        if (this._isSet('checkEmailList')) {
+            const threshold = await this._fetchThreshold();
+            meta.freeze = job.batches > threshold;
         } else {
             meta.freeze = false;
         }
