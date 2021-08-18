@@ -73,7 +73,8 @@ describe('Importer', function () {
                 isSet: isSetStub,
                 addJob: sinon.stub(),
                 knex: knexStub,
-                urlFor: sinon.stub()
+                urlFor: sinon.stub(),
+                fetchThreshold: async () => 2
             });
 
             const result = await importer.process({
@@ -96,7 +97,7 @@ describe('Importer', function () {
             should.exist(result.meta.stats.invalid);
             should.equal(result.meta.import_label, null);
 
-            // freeze not triggered if it's not provided
+            // freeze not triggered if the import is not over the threshold
             should.exist(result.meta.freeze);
             result.meta.freeze.should.be.false();
 
@@ -153,7 +154,7 @@ describe('Importer', function () {
                 addJob: sinon.stub(),
                 knex: knexStub,
                 urlFor: sinon.stub(),
-                importThreshold: 1
+                fetchThreshold: async () => 1
             });
 
             const result = await importer.process({
