@@ -4,6 +4,7 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg'
 import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getMemberActivePrice, getProductFromPrice} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import ActionButton from './ActionButton';
+import calculateDiscount from '../../utils/discount';
 
 export const ProductsSectionStyles = ({site}) => {
     const products = getSiteProducts({site});
@@ -30,6 +31,11 @@ export const ProductsSectionStyles = ({site}) => {
             letter-spacing: 0.3px;
             text-transform: uppercase;
             margin: 0 6px;
+            min-width: 180px;
+        }
+
+        .gh-portal-priceoption-label.monthly {
+            text-align: right;
         }
 
         .gh-portal-products-priceswitch .gh-portal-for-switch label, .gh-portal-for-switch .container {
@@ -59,6 +65,48 @@ export const ProductsSectionStyles = ({site}) => {
             transform: translateX(19px);
         }
 
+        .gh-portal-discount-label {
+            position: absolute;
+            top: -19px;
+            left: -1px;
+            right: -1px;
+            color: var(--brandcolor);
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            padding: 0px 4px;
+            text-align: center;
+        }
+        
+        .gh-portal-discount-label:before {
+            position: absolute;
+            content: "";
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: var(--brandcolor);
+            opacity: 0.15;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .gh-portal-products-priceswitch .gh-portal-discount-label {
+            position: relative;
+            font-size: 1.3rem;
+            letter-spacing: 0.3px;
+            margin: 0 0 0 4px;
+            padding: 2px 6px;
+            top: unset;
+            left: unset;
+            right: unset;
+            width: unset;
+        }
+
+        .gh-portal-products-priceswitch. gh-portal-discount-label:before {
+            border-radius: 5px;
+        }
+
         .gh-portal-products-grid {
             display: grid;
             grid-template-columns: repeat(${productColumns(noOfProducts)}, minmax(0, ${(productColumns(noOfProducts) <= 3 ? `360px` : `300px`)}));
@@ -82,6 +130,13 @@ export const ProductsSectionStyles = ({site}) => {
         @media (max-width: 600px) {
             .gh-portal-products-grid {
                 grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 360px) {
+            div:not(.gh-portal-products-priceswitch) .gh-portal-discount-label {
+                font-size: 0.9rem;
+                white-space: nowrap;
             }
         }
 
@@ -242,13 +297,6 @@ export const ProductsSectionStyles = ({site}) => {
             padding: 0;
         }
 
-        .gh-portal-discount-label {
-            color: var(--brandcolor);
-            font-size: 1.2rem;
-            margin-top: 4px;
-            margin-bottom: -12px;
-        }
-
         @media (max-width: 480px) {
             .gh-portal-products {
                 margin: 0 -32px;
@@ -295,6 +343,12 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-product-description {
                 grid-column: 2 / 3;
                 margin-bottom: 0px;
+                text-align: left;
+            }
+
+            .gh-portal-singleproduct-benefits .gh-portal-product-description {
+                text-align: center;
+                padding-bottom: 12px;
             }
 
             .gh-portal-product-price {
@@ -632,20 +686,44 @@ function FreeProductCard() {
     );
 }
 
-function ProductPriceSwitch({selectedInterval, setSelectedInterval}) {
+function YearlyDiscount({discount}) {
+    if (discount === 0) {
+        return null;
+    }
+
+    return (
+        <>
+            <span className="gh-portal-discount-label">{discount}% discount</span>
+        </>
+    );
+}
+
+function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
     const {site} = useContext(AppContext);
+    const {selectedProduct} = useContext(ProductsContext);
     const {portal_plans: portalPlans} = site;
     if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
         return null;
     }
+
+    let yearlyDiscount = 0;
+
+    if (selectedProduct !== 'free') {
+        const product = products.find(prod => prod.id === selectedProduct);
+        yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
+    }
+
     return (
         <div className="gh-portal-products-priceswitch">
-            <span className="gh-portal-priceoption-label">Monthly</span>
+            <span className="gh-portal-priceoption-label monthly">Monthly</span>
             <Switch id='product-interval' onToggle={(e) => {
                 const interval = selectedInterval === 'month' ? 'year' : 'month';
                 setSelectedInterval(interval);
             }} checked={selectedInterval === 'year'} />
-            <span className="gh-portal-priceoption-label">Yearly</span>
+            <span className="gh-portal-priceoption-label">
+                Yearly
+                <YearlyDiscount discount={yearlyDiscount} />
+            </span>
         </div>
     );
 }
@@ -719,6 +797,7 @@ function ProductsSection({onPlanSelect, products, type = null}) {
         }}>
             <section className={className}>
                 <ProductPriceSwitch
+                    products={products}
                     selectedInterval={activeInterval}
                     setSelectedInterval={setSelectedInterval}
                 />
