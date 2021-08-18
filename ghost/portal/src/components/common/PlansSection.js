@@ -69,6 +69,15 @@ export const PlanSectionStyles = `
         border-bottom-right-radius: 0;
     }
 
+    .gh-portal-plans-container.has-multiple-products.has-discount {
+        margin-top: 40px;
+    }
+
+    .gh-portal-plans-container.has-multiple-products.has-discount,
+    .gh-portal-plans-container.has-multiple-products.has-discount .gh-portal-plan-section:last-of-type::before {
+        border-top-right-radius: 0;
+    }
+
     .gh-portal-plans-container.is-change-plan.has-multiple-products .gh-portal-plan-section::before {
         border-top-left-radius: 0;
         border-top-right-radius: 0;
@@ -498,16 +507,16 @@ function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
             break;
         }
 
-        const planClass = (isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section');
+        let planClass = isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section';
         const planNameClass = planDetails.feature ? 'gh-portal-plan-name' : 'gh-portal-plan-name no-description';
         const featureClass = hasMultipleProductsFeature({site}) ? 'gh-portal-plan-featurewrapper hidden' : 'gh-portal-plan-featurewrapper';
 
         return (
             <div className={planClass} key={id} onClick={e => onPlanSelect(e, id)}>
+                {(hasMultipleProductsFeature({site}) ? <PlanDiscount discount={description} /> : ``)}
                 <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
                 <h4 className={planNameClass}>{displayName}</h4>
                 <PriceLabel currencySymbol={currencySymbol} price={price} interval={interval} />
-                {(hasMultipleProductsFeature({site}) ? <PlanDiscount discount={description} /> : ``)}
                 <div className={featureClass}>
                     <PlanFeature feature={planDetails.feature} />
                     {(changePlan && selectedPlan === id ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
@@ -605,6 +614,21 @@ function getPlanClassNames({changePlan, cookiesDisabled, plans = [], showVertica
     }
     if (hasMultipleProductsFeature({site})) {
         className += ' has-multiple-products';
+
+        const filteredPlans = plans.filter(d => d.id !== 'free');
+        const monthlyPlan = plans.find((d) => {
+            return d.name === 'Monthly' && !d.description && d.interval === 'month';
+        });
+        const yearlyPlan = plans.find((d) => {
+            return d.name === 'Yearly' && !d.description && d.interval === 'year';
+        });
+
+        if (filteredPlans.length === 2 && monthlyPlan && yearlyPlan) {
+            const discount = calculateDiscount(monthlyPlan.amount, yearlyPlan.amount);
+            if (discount) {
+                className += ' has-discount';
+            }
+        }
     }
     return className;
 }
