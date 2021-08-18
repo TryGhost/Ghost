@@ -417,7 +417,7 @@ export const PlanSectionStyles = `
         margin-bottom: 12px;
     }
 
-    .gh-portal-singleproduct-benefits:not(.free) .gh-portal-product-description {
+    .gh-portal-singleproduct-benefits:not(.no-benefits) .gh-portal-product-description {
         border-bottom: 1px solid var(--grey12);
         padding-bottom: 20px;
         margin-bottom: 16px;
@@ -555,11 +555,11 @@ function PlanBenefits({product, plans, selectedPlan}) {
     let planBenefits = [];
     let planDescription = product.description;
     if (!product.description) {
-        planDescription = `Get full access to ` + site.title;
+        planDescription = `Full access to ` + site.title;
     }
     if (selectedPlan === 'free') {
         planBenefits = [];
-        planDescription = `Get a free preview of ` + site.title;
+        planDescription = `Free preview of ` + site.title;
     } else if (plan?.interval === 'month') {
         planBenefits = productBenefits.monthly;
     } else if (plan?.interval === 'year') {
@@ -572,7 +572,8 @@ function PlanBenefits({product, plans, selectedPlan}) {
         );
     });
 
-    const benefitsClass = (selectedPlan === 'free') ? `free` : ``;
+    let benefitsClass = (selectedPlan === 'free') ? `no-benefits` : ``;
+    benefitsClass = benefits.length === 0 ? `no-benefits` : ``;
 
     return (
         <div className={'gh-portal-singleproduct-benefits gh-portal-product-benefits ' + benefitsClass}>
@@ -620,9 +621,7 @@ export function MultipleProductsPlansSection({products, selectedPlan, onPlanSele
             <section className="gh-portal-plans">
                 <div>
                     <ChangeProductSection
-                        type='changePlan'
                         products={products}
-                        selectedPlan={selectedPlan}
                         onPlanSelect={onPlanSelect}
                     />
                 </div>

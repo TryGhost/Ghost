@@ -1,4 +1,4 @@
-import calculateDiscount from './discount';
+// import calculateDiscount from './discount';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
@@ -254,19 +254,17 @@ export function getFreeBenefits() {
 
 export function getProductBenefits({product, site = null}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
-        const availablePrices = getAvailablePrices({site, products: [product]});
-        const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
         const productBenefits = product?.benefits || [];
-        const monthlyBenefits = product?.benefits?.length > 0 ? [...productBenefits] : [{
-            name: 'Access to all articles'
-        }];
-        const yearlyBenefits = [...monthlyBenefits];
-        if (yearlyDiscount > 0 && availablePrices.length > 1) {
-            yearlyBenefits.push({
-                name: `${yearlyDiscount}% annual discount`,
-                className: `gh-portal-strong`
-            });
-        }
+        const monthlyBenefits = productBenefits;
+        const yearlyBenefits = productBenefits;
+        // const availablePrices = getAvailablePrices({site, products: [product]});
+        // const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
+        // if (yearlyDiscount > 0 && availablePrices.length > 1) {
+        //     yearlyBenefits.push({
+        //         name: `${yearlyDiscount}% annual discount`,
+        //         className: `gh-portal-strong`
+        //     });
+        // }
         return {
             monthly: monthlyBenefits,
             yearly: yearlyBenefits

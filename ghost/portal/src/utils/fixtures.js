@@ -46,10 +46,11 @@ const products = [
             active: 1,
             nickname: 'Yearly',
             currency: 'usd',
-            amount: 20000,
+            amount: 17000,
             type: 'recurring',
             interval: 'year'
         },
+        // benefits: []
         benefits: [
             {
                 id: 'a1',
@@ -132,7 +133,7 @@ const products = [
             active: 1,
             nickname: 'Yearly',
             currency: 'usd',
-            amount: 7000,
+            amount: 8000,
             type: 'recurring',
             interval: 'year'
         },
