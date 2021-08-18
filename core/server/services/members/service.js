@@ -52,8 +52,18 @@ function reconfigureMembersAPI() {
     });
 }
 
-const getThreshold = () => {
-    return _.get(config.get('hostSettings'), 'emailVerification.importThreshold');
+/**
+ * @description Calculates threshold based on following formula
+ * Threshold = max{[current number of members], [volume threshold]}
+ *
+ * @returns {Promise<number>}
+ */
+const fetchImportThreshold = async () => {
+    const membersTotal = await membersService.stats.getTotalMembers();
+    const volumeThreshold = _.get(config.get('hostSettings'), 'emailVerification.importThreshold') || Infinity;
+    const threshold = Math.max(membersTotal, volumeThreshold);
+
+    return threshold;
 };
 
 const membersImporter = new MembersCSVImporter({
@@ -65,7 +75,7 @@ const membersImporter = new MembersCSVImporter({
     addJob: jobsService.addJob.bind(jobsService),
     knex: db.knex,
     urlFor: urlUtils.urlFor.bind(urlUtils),
-    importThreshold: getThreshold()
+    fetchThreshold: fetchImportThreshold
 });
 
 const startEmailVerification = async (importedNumber) => {
