@@ -203,7 +203,7 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
     );
 };
 
-function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, changePlan}) {
+function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, changePlan = false}) {
     const {site, member} = useContext(AppContext);
     const products = getUpgradeProducts({site, member});
     if (hasMultipleProductsFeature({site})) {

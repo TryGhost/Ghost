@@ -1,9 +1,9 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getMemberActivePrice, getAvailablePrices} from '../../utils/helpers';
+import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getMemberActivePrice, getProductFromPrice} from '../../utils/helpers';
 import AppContext from '../../AppContext';
-import {ChangeProductPlansSection} from './PlansSection';
+import ActionButton from './ActionButton';
 
 export const ProductsSectionStyles = ({site}) => {
     const products = getSiteProducts({site});
@@ -465,6 +465,7 @@ export const ProductsSectionStyles = ({site}) => {
 const ProductsContext = React.createContext({
     selectedInterval: 'month',
     selectedProduct: 'free',
+    selectedPlan: null,
     setSelectedProduct: null
 });
 
@@ -514,8 +515,8 @@ function ProductBenefits({product}) {
     });
 }
 
-function ProductBenefitsContainer({product, showVertical = false}) {
-    if (!product.benefits || !product.benefits.length) {
+function ProductBenefitsContainer({product, showVertical = false, hide = false}) {
+    if (!product.benefits || !product.benefits.length || hide) {
         return null;
     }
 
@@ -708,7 +709,6 @@ function ProductsSection({onPlanSelect, products, type = null}) {
     if (type === 'upgrade') {
         className += ' gh-portal-upgrade-product';
     }
-
     return (
         <ProductsContext.Provider value={{
             selectedInterval: activeInterval,
@@ -729,57 +729,137 @@ function ProductsSection({onPlanSelect, products, type = null}) {
     );
 }
 
-function ChangeProductCard({product, onPlanSelect}) {
-    const {member} = useContext(AppContext);
-    const cardClass = 'gh-portal-product-card';
-    const {site} = useContext(AppContext);
-    const plans = getAvailablePrices({site, products: [product]});
-    const selectedPlan = getMemberActivePrice({member});
+export function ChangeProductSection({onPlanSelect, selectedPlan, products, type = null}) {
+    const {site, member, brandColor} = useContext(AppContext);
+    const {portal_plans: portalPlans} = site;
+    const activePrice = getMemberActivePrice({member});
+    const activeMemberProduct = getProductFromPrice({site, priceId: activePrice.id});
+    const defaultInterval = getActiveInterval({portalPlans, selectedInterval: activePrice.interval});
+    const defaultProductId = activeMemberProduct?.id || products?.[0]?.id;
+    const [selectedInterval, setSelectedInterval] = useState(defaultInterval);
+    const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
+
+    const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
+    const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+
+    useEffect(() => {
+        setSelectedProduct(defaultProductId);
+    }, [defaultProductId]);
+
+    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
+        return null;
+    }
+
+    if (products.length === 0) {
+        return null;
+    }
+
+    let className = 'gh-portal-products';
+    if (type === 'upgrade') {
+        className += ' gh-portal-upgrade-product';
+    }
+    if (type === 'changePlan') {
+        className += ' gh-portal-upgrade-product gh-portal-change-plan';
+    }
+
     return (
-        <div>
-            <div className={cardClass} key={product.id}>
-                <div className="gh-portal-product-card-header">
-                    <h4 className="gh-portal-product-name">{product.name}</h4>
-                    <div className="gh-portal-product-description" style={{
-                        gridColumn: '1/2'
-                    }}>{product.description}</div>
-                    <ProductBenefitsContainer product={product} />
+        <ProductsContext.Provider value={{
+            selectedInterval: activeInterval,
+            selectedProduct,
+            selectedPlan,
+            setSelectedProduct
+        }}>
+            <section className={className}>
+                <ProductPriceSwitch
+                    selectedInterval={activeInterval}
+                    setSelectedInterval={setSelectedInterval}
+                />
+
+                <div className="gh-portal-products-grid">
+                    <ChangeProductCards products={products} />
                 </div>
-                {/* <ProductCardFooter product={product} /> */}
-                <ProductBenefitsContainer product={product} showVertical={true} />
+                <ActionButton
+                    onClick={e => onPlanSelect(null, selectedPrice.id)}
+                    isRunning={false}
+                    disabled={activePrice.id === selectedPrice.id}
+                    isPrimary={true}
+                    brandColor={brandColor}
+                    label={'Continue'}
+                    style={{height: '40px', width: '100%', marginTop: '24px'}}
+                />
+            </section>
+        </ProductsContext.Provider>
+    );
+}
+
+function CurrentPlanLabel({selectedPrice, activePrice}) {
+    const {brandColor} = useContext(AppContext);
+    if (selectedPrice.id === activePrice.id) {
+        return (
+            <div style={{marginTop: '6px'}}>
+                <span style={{
+                    color: 'black',
+                    border: `1px solid ${brandColor}`,
+                    background: brandColor,
+                    borderRadius: '6px',
+                    padding: '3px'
+                }}>Current Plan</span>
             </div>
-            <ChangeProductPlansSection
-                product={product}
-                plans={plans}
-                selectedPlan={selectedPlan?.id}
-                changePlan={true}
-                onPlanSelect={onPlanSelect}
-            />
+        );
+    }
+    return null;
+}
+
+function ProductDescription({product, selectedPrice, activePrice}) {
+    if (product?.description) {
+        return (
+            <div className="gh-portal-product-description">
+                {product.description}
+                <CurrentPlanLabel selectedPrice={selectedPrice} activePrice={activePrice} />
+            </div>
+        );
+    }
+    return null;
+}
+
+function ChangeProductCard({product}) {
+    const {member} = useContext(AppContext);
+    const {selectedProduct, setSelectedProduct, selectedInterval} = useContext(ProductsContext);
+    const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
+    const monthlyPrice = product.monthlyPrice;
+    const yearlyPrice = product.yearlyPrice;
+    const memberActivePrice = getMemberActivePrice({member});
+
+    const selectedPrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
+
+    return (
+        <div className={cardClass} key={product.id} onClick={(e) => {
+            e.stopPropagation();
+            setSelectedProduct(product.id);
+        }}>
+            <div className="gh-portal-product-card-header">
+                <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
+                    setSelectedProduct(product.id);
+                }} />
+                <h4 className="gh-portal-product-name">{product.name}</h4>
+                <ProductDescription product={product} selectedPrice={selectedPrice} activePrice={memberActivePrice} />
+                <ProductBenefitsContainer product={product} hide={selectedProduct !== product.id} />
+            </div>
+            <ProductCardFooter product={product} />
+            <ProductBenefitsContainer product={product} showVertical={true} hide={selectedProduct !== product.id} />
         </div>
     );
 }
 
-function ChangeProductCards({products, onPlanSelect}) {
+function ChangeProductCards({products}) {
     return products.map((product) => {
         if (product.id === 'free') {
             return null;
         }
         return (
-            <ChangeProductCard product={product} key={product.id} onPlanSelect={onPlanSelect} />
+            <ChangeProductCard product={product} key={product.id} />
         );
     });
-}
-
-export function ChangeProductSection({products, onPlanSelect}) {
-    let className = 'gh-portal-products gh-portal-upgrade-product';
-
-    return (
-        <section className={className}>
-            <div className="gh-portal-products-grid change-plan">
-                <ChangeProductCards products={products} onPlanSelect={onPlanSelect} />
-            </div>
-        </section>
-    );
 }
 
 export default ProductsSection;
