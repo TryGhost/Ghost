@@ -645,7 +645,9 @@ export function MultipleProductsPlansSection({products, selectedPlan, onPlanSele
             <section className="gh-portal-plans">
                 <div>
                     <ChangeProductSection
+                        type='changePlan'
                         products={products}
+                        selectedPlan={selectedPlan}
                         onPlanSelect={onPlanSelect}
                     />
                 </div>
