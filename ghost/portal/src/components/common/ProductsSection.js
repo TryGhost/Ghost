@@ -274,15 +274,15 @@ export const ProductsSectionStyles = ({site}) => {
         }
 
         .gh-portal-benefit-checkmark {
-            width: 12px;
-            height: 12px;
+            width: 13px;
+            height: 13px;
             min-width: 12px;
             margin: 3px 6px 0 0;
             overflow: visible;
         }
 
-        .gh-portal-benefit-checkmark path {
-            stroke-width: 2.5px;
+        .gh-portal-benefit-checkmark polyline {
+            stroke-width: 3px;
         }
 
         .gh-portal-benefit-title {
@@ -339,6 +339,10 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-product-card.vertical .gh-portal-product-price {
             justify-content: flex-end;
             margin-top: -1px;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-price .amount {
+            font-size: 2.6rem !important;
         }
 
         .gh-portal-product-card.vertical .gh-portal-product-price .billing-period {
@@ -475,6 +479,7 @@ export const ProductsSectionStyles = ({site}) => {
             font-size: 1.2rem;
             letter-spacing: 0.3px;
             text-transform: uppercase;
+            margin-bottom: 4px;
         }
 
         .gh-portal-upgrade-product .gh-portal-product-card .gh-portal-plan-current::before {
